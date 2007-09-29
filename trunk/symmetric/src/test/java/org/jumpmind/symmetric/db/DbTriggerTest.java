@@ -17,6 +17,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class DbTriggerTest {
@@ -43,6 +45,11 @@ public class DbTriggerTest {
             + TestConstants.TEST_ROOT_NODE_GROUP
             + "' and channel_id='"
             + TestConstants.TEST_CHANNEL_ID + "'";
+    
+    @BeforeTest(groups = "integration")
+    public void init() {
+        SymmetricEngineTestFactory.resetSchemasAndEngines();
+    }
 
     @Test(groups = "continuous")
     public void testBootstrapSchemaSync() throws Exception {
@@ -53,12 +60,25 @@ public class DbTriggerTest {
         }
     }
 
-    private void testBootstrapSchemaSync(SymmetricEngine engine) {
+    private void testBootstrapSchemaSync(SymmetricEngine engine) throws Exception {
         IBootstrapService service = (IBootstrapService) engine
                 .getApplicationContext().getBean("bootstrapService");
 
+        // baseline
         service.syncTriggers();
-        Assert.assertEquals(getAuditTableRowCount(engine), 9,
+        
+        // get the current number of hist rows
+        int count = getTriggerHistTableRowCount(engine);
+
+        Thread.sleep(1000);
+        
+        // force the triggers to rebuild
+        count = count + getJdbcTemplate(engine).update("update " + TestConstants.TEST_PREFIX + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP +"'");
+        
+        service.syncTriggers();        
+        
+        // check to see that we recorded the rebuilds
+        Assert.assertEquals(getTriggerHistTableRowCount(engine), count,
                 "Wrong trigger_hist row count. engine="
                         + getDbDialect(engine).getPlatform().getName());
     }
@@ -73,7 +93,7 @@ public class DbTriggerTest {
                 Constants.DB_DIALECT);
     }
 
-    private int getAuditTableRowCount(SymmetricEngine engine) {
+    private int getTriggerHistTableRowCount(SymmetricEngine engine) {
         return getJdbcTemplate(engine).queryForInt(
                 "select count(*) from " + TestConstants.TEST_PREFIX
                         + "trigger_hist");
@@ -91,7 +111,6 @@ public class DbTriggerTest {
     private void validateTestTableTriggers(SymmetricEngine engine)
             throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        //getDbDialect(engine).enableSyncTriggers();
 
         int count = jdbcTemplate.update(INSERT1);
 
@@ -236,5 +255,11 @@ public class DbTriggerTest {
                 + TestConstants.TEST_PREFIX + "data)", String.class);
 
     }
+    
+    @AfterClass(groups = "integration")
+    public void tearDown() {
+        SymmetricEngineTestFactory.resetSchemasAndEngines();
+    }
+
 
 }

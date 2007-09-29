@@ -2,12 +2,15 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -160,14 +163,14 @@ public class BootstrapService extends AbstractService implements
 
     public void register() {
         boolean registered = false;
-        Node client = nodeService.findIdentity();
-        if (client == null) {
+        Node node = nodeService.findIdentity();
+        if (node == null) {
             // If we cannot contact the server to register, we simply must wait and try again.   
             while (!registered) {
                 try {
                     registered = dataLoaderService.loadData(transportManager
-                            .getRegisterTransport(new Node(this.runtimeConfiguration,
-                                    dbDialect)));
+                            .getRegisterTransport(new Node(
+                                    this.runtimeConfiguration, dbDialect)));
                 } catch (ConnectException e) {
                     logger.warn("Connection failed while registering.");
                 } catch (IOException e) {
@@ -181,7 +184,22 @@ public class BootstrapService extends AbstractService implements
                 }
             }
         } else {
-            // TODO - check in with the server to update schema version numbers
+            heartbeat();
+        }
+    }
+
+    public void heartbeat() {
+        Node node = nodeService.findIdentity();
+        if (node != null) {
+            node.setHeartbeatTime(new Date());
+            node.setDatabaseType(dbDialect.getName());
+            node.setDatabaseVersion(dbDialect.getVersion());
+            node.setSchemaVersion(runtimeConfiguration.getSchemaVersion());
+            node.setExternalId(runtimeConfiguration.getExternalId());
+            node.setNodeGroupId(runtimeConfiguration.getNodeGroupId());
+            node.setSymmetricVersion(Version.VERSION);
+            node.setSyncURL(runtimeConfiguration.getMyUrl());
+            nodeService.updateNode(node);
         }
     }
 
@@ -202,28 +220,29 @@ public class BootstrapService extends AbstractService implements
      * configuration tables.
      */
     protected void syncTableAuditConfigForConfigChannel() {
-        if (runtimeConfiguration.getRegistrationUrl() == null
-                || runtimeConfiguration.getRegistrationUrl().trim().equals("")) {
-            configurationService.initConfigChannel();
-            String domainName = runtimeConfiguration.getNodeGroupId();
-            List<NodeGroupLink> targets = configurationService
-                    .getGroupLinksFor(domainName);
-            List<String> tableNames = configurationService
-                    .getConfigChannelTableNames();
-            if (targets != null && targets.size() > 0) {
-                for (NodeGroupLink target : targets) {
-                    for (String tableName : tableNames) {
-                        configurationService.initTriggersForConfigTables(
-                                tableName, domainName, target
-                                        .getTargetGroupId());
-                    }
+        List<String> tableNames = null;
+
+        if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
+            tableNames = configurationService.getRootConfigChannelTableNames();
+        } else {
+            tableNames = configurationService.getNodeConfigChannelTableNames();
+        }
+        configurationService.initConfigChannel();
+        String domainName = runtimeConfiguration.getNodeGroupId();
+        List<NodeGroupLink> targets = configurationService
+                .getGroupLinksFor(domainName);
+        if (targets != null && targets.size() > 0) {
+            for (NodeGroupLink target : targets) {
+                for (String tableName : tableNames) {
+                    configurationService.initTriggersForConfigTables(tableName,
+                            domainName, target.getTargetGroupId());
                 }
-            } else {
-                logger
-                        .error("Could not find any targets for your group id of "
-                                + runtimeConfiguration.getNodeGroupId()
-                                + ".  Please validate your node group id against the setup in the database.");
             }
+        } else {
+            logger
+                    .error("Could not find any targets for your group id of "
+                            + runtimeConfiguration.getNodeGroupId()
+                            + ".  Please validate your node group id against the setup in the database.");
         }
     }
 
@@ -258,7 +277,6 @@ public class BootstrapService extends AbstractService implements
         }
 
         if (!triggerExists && forceRebuild) {
-            logger.info("Did not find trigger.  Rebuilding.");
             reason = TriggerReBuildReason.TRIGGERS_MISSING;
         }
 

@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.model;
 
+import java.util.Date;
+
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -7,13 +9,13 @@ import org.jumpmind.symmetric.db.IDbDialect;
 /**
  * This class represents a node who has registered for sync updates.
  */
-public class Node extends BaseEntity {
+public class Node {
 
     private static final long serialVersionUID = 5228552569658130763L;
 
     private String nodeId;
 
-    private String groupId;
+    private String nodeGroupId;
 
     private String externalId;
 
@@ -37,12 +39,14 @@ public class Node extends BaseEntity {
     private String databaseVersion;
 
     private boolean syncEnabled;
+    
+    private Date heartbeatTime = new Date();
 
     public Node() {
     }
 
     public Node(IRuntimeConfig runtimeConfig, IDbDialect dbDialect) {
-        setGroupId(runtimeConfig.getNodeGroupId());
+        setNodeGroupId(runtimeConfig.getNodeGroupId());
         setExternalId(runtimeConfig.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
@@ -112,12 +116,12 @@ public class Node extends BaseEntity {
         this.externalId = domainId;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getNodeGroupId() {
+        return nodeGroupId;
     }
 
-    public void setGroupId(String domainName) {
-        this.groupId = domainName;
+    public void setNodeGroupId(String domainName) {
+        this.nodeGroupId = domainName;
     }
 
     public String getSymmetricVersion() {
@@ -129,6 +133,14 @@ public class Node extends BaseEntity {
     }
     
     public String toString() {
-        return groupId + ":" + externalId + ":" + (nodeId == null ? "?" : nodeId);
+        return nodeGroupId + ":" + externalId + ":" + (nodeId == null ? "?" : nodeId);
+    }
+
+    public Date getHeartbeatTime() {
+        return heartbeatTime;
+    }
+
+    public void setHeartbeatTime(Date heartbeatTime) {
+        this.heartbeatTime = heartbeatTime;
     }
 }

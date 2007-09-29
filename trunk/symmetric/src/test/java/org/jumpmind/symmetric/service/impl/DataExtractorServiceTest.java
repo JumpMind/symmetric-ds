@@ -35,11 +35,11 @@ public class DataExtractorServiceTest extends AbstractTest {
     public void testInitialLoadExtract() throws Exception {
         ((IBootstrapService)getBeanFactory().getBean(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
-        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_ROOT_NODE_GROUP), mockTransport);
+        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP), mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(10, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
+        Assert.assertEquals(11, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
         Assert.assertTrue(loadResults.contains("insert, \"CORP\",\"Central Office\""), "Did not find expected insert for CORP");
-        Assert.assertTrue(loadResults.startsWith("nodeid, CORP"), "Unexpected line at the start of the feed.");
+        Assert.assertTrue(loadResults.startsWith("nodeid, 00001"), "Unexpected line at the start of the feed.");
     }
     
     private int countLines(String results) {

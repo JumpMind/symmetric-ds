@@ -27,7 +27,7 @@ public class RegistrationServlet extends HttpServlet {
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
         IRegistrationService service = (IRegistrationService) ctx.getBean(Constants.REGISTRATION_SERVICE);
         Node node = new Node();
-        node.setGroupId(req.getParameter(WebConstants.NODE_GROUP_ID));
+        node.setNodeGroupId(req.getParameter(WebConstants.NODE_GROUP_ID));
         node.setSymmetricVersion(req.getParameter(WebConstants.SYMMETRIC_VERSION));
         node.setExternalId(req.getParameter(WebConstants.EXTERNAL_ID));
         String syncUrlString = req.getParameter(WebConstants.SYNC_URL);

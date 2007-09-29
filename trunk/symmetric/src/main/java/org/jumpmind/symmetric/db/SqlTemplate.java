@@ -48,7 +48,7 @@ public class SqlTemplate
             .getInitialLoadSelect(), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
-        sql = replace("groupId", node.getGroupId(), sql);
+        sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
 
         Column[] columns = config.orderColumnsForTable(metaData);

@@ -89,9 +89,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
-    public String createInitalLoadSqlFor(Node client, Trigger config) {
+    public String createInitalLoadSqlFor(Node node, Trigger config) {
         return sqlTemplate.createInitalLoadSql(
-                client,
+                node,
                 this,
                 config,
                 getMetaDataFor(config.getSourceSchemaName(), config

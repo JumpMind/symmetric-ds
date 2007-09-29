@@ -101,7 +101,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
         StringBuilder builder = append(new StringBuilder(runtimeConfiguration
                 .getRegistrationUrl()
                 + "/registration?"), WebConstants.NODE_GROUP_ID, node
-                .getGroupId());
+                .getNodeGroupId());
         append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
         append(builder, WebConstants.SYNC_URL, node.getSyncURL());
         append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
