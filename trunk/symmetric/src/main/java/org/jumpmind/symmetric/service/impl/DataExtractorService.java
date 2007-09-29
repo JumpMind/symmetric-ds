@@ -1,0 +1,270 @@
+package org.jumpmind.symmetric.service.impl;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IDataExtractor;
+import org.jumpmind.symmetric.model.BatchType;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IExtractListener;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+public class DataExtractorService implements IDataExtractorService {
+
+    private IOutgoingBatchService outgoingBatchService;
+
+    private IConfigurationService configurationService;
+
+    private IDataExtractor dataExtractor;
+
+    private IDbDialect dbDialect;
+
+    private JdbcTemplate jdbcTemplate;
+
+    private DataExtractorContext context;
+
+    private String tablePrefix;
+
+    private String selectEventDataToExtractSql;
+
+    public void extractClientIdentityFor(Node node, IOutgoingTransport transport) {
+        String tableName = tablePrefix + "_node_identity";
+        OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG,
+                BatchType.INITIAL_LOAD);
+        outgoingBatchService.insertOutgoingBatch(batch);
+
+        try {
+            BufferedWriter writer = transport.open();
+            DataExtractorContext ctxCopy = context.copy();
+            dataExtractor.init(writer, ctxCopy);
+            dataExtractor.begin(batch, writer);
+            TriggerHistory audit = new TriggerHistory(tableName, "node_id",
+                    "node_id");
+            Data data = new Data(1, null, node.getNodeId(),
+                    DataEventType.INSERT, tableName, batch.getBatchId(), null,
+                    audit);
+            dataExtractor.write(writer, data, ctxCopy);
+            dataExtractor.commit(batch, writer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void extractInitialLoadFor(Node client, final Trigger trigger,
+            final IOutgoingTransport transport) {
+        final String sql = dbDialect.createInitalLoadSqlFor(client, trigger);
+        final OutgoingBatch batch = new OutgoingBatch(client, trigger
+                .getChannelId(), BatchType.INITIAL_LOAD);
+        final TriggerHistory audit = configurationService
+                .getLatestHistoryRecordFor(trigger.getTriggerId());
+
+        outgoingBatchService.insertOutgoingBatch(batch);
+
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException,
+                    DataAccessException {
+                try {
+
+                    PreparedStatement statement = conn.prepareStatement(sql,
+                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    // TODO: move fetchsize to dbdialect?
+                    //statement.setFetchSize(Integer.MIN_VALUE);
+                    ResultSet results = statement.executeQuery();
+                    final BufferedWriter writer = transport.open();
+                    final DataExtractorContext ctxCopy = context.copy();
+                    dataExtractor.init(writer, ctxCopy);
+                    dataExtractor.begin(batch, writer);
+                    while (results.next()) {
+                        dataExtractor.write(writer, new Data(1, null, results
+                                .getString(1), DataEventType.INSERT, trigger
+                                .getSourceTableName(), batch.getBatchId(),
+                                null, audit), ctxCopy);
+                    }
+                    dataExtractor.commit(batch, writer);
+                    results.close();
+                    statement.close();
+                    return null;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        });
+        outgoingBatchService.markOutgoingBatchSent(batch);
+    }
+
+    public boolean extract(Node node, IOutgoingTransport transport)
+            throws Exception {
+        ExtractStreamHandler handler = new ExtractStreamHandler(transport);
+        return extract(node, handler);
+    }
+
+    /**
+     * Allow a handler callback to do the work so we can route the extracted data to 
+     * other types of handlers for processing.
+     */
+    public boolean extract(Node node, final IExtractListener handler)
+            throws Exception {
+        outgoingBatchService.buildOutgoingBatches(node.getNodeId());
+
+        List<OutgoingBatch> batches = outgoingBatchService
+                .getOutgoingBatches(node.getNodeId());
+
+        if (batches != null && batches.size() > 0) {
+            try {
+                handler.init();
+                for (final OutgoingBatch batch : batches) {
+                    handler.startBatch(batch);
+                    jdbcTemplate.execute(new ConnectionCallback() {
+                        public Object doInConnection(Connection conn)
+                                throws SQLException, DataAccessException {
+                            PreparedStatement statement = conn
+                                    .prepareStatement(
+                                            selectEventDataToExtractSql,
+                                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                            //statement.setFetchSize(Integer.MIN_VALUE);
+                            statement.setString(1, batch.getClientId());
+                            statement.setString(2, batch.getBatchId());
+                            ResultSet results = statement.executeQuery();
+                            while (results.next()) {
+                                try {
+                                    handler.dataExtracted(next(results));
+                                } catch (RuntimeException e) {
+                                    throw e;
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            results.close();
+                            statement.close();
+                            return null;
+                        }
+                    });
+
+                    handler.endBatch(batch);
+
+                    // At this point, we've already sent the data to the client, so if
+                    // updating the batch to 'sent' fails, all this means is that the batch
+                    // will be sent to the client again. This is expected to happen so
+                    // infrequently, that any ineffiencies associated with resending a batch
+                    // are negligible.
+                    outgoingBatchService.markOutgoingBatchSent(batch);
+                }
+            } finally {
+                handler.done();
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private Data next(ResultSet results) throws SQLException {
+        long dataId = results.getLong(1);
+        String tableName = results.getString(2);
+        DataEventType eventType = DataEventType.getEventType(results
+                .getString(3));
+        String rowData = results.getString(4);
+        String pk = results.getString(5);
+        String batchId = results.getString(6);
+        Date created = results.getDate(7);
+        TriggerHistory audit = configurationService.getHistoryRecordFor(results
+                .getInt(8));
+        return new Data(dataId, pk, rowData, eventType, tableName, batchId,
+                created, audit);
+    }
+
+    public void setOutgoingBatchService(
+            IOutgoingBatchService batchBuilderService) {
+        this.outgoingBatchService = batchBuilderService;
+    }
+
+    public void setDataExtractor(IDataExtractor dataExtractor) {
+        this.dataExtractor = dataExtractor;
+    }
+
+    public void setContext(DataExtractorContext context) {
+        this.context = context;
+    }
+
+    public void setDbDialect(IDbDialect dialect) {
+        this.dbDialect = dialect;
+    }
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public void setConfigurationService(
+            IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
+
+    public void setSelectEventDataToExtractSql(
+            String selectEventDataToExtractSql) {
+        this.selectEventDataToExtractSql = selectEventDataToExtractSql;
+    }
+
+    class ExtractStreamHandler implements IExtractListener {
+
+        IOutgoingTransport transport;
+
+        DataExtractorContext context;
+
+        BufferedWriter writer;
+
+        ExtractStreamHandler(IOutgoingTransport transport) throws Exception {
+            this.transport = transport;
+        }
+
+        public void dataExtracted(Data data) throws Exception {
+            DataExtractorService.this.dataExtractor
+                    .write(writer, data, context);
+        }
+
+        public void done() throws IOException {           
+        }
+
+        public void endBatch(OutgoingBatch batch) throws Exception {
+            dataExtractor.commit(batch, writer);
+        }
+
+        public void init() throws Exception {
+            this.writer = transport.open();
+            this.context = DataExtractorService.this.context.copy();
+            dataExtractor.init(writer, context);
+        }
+
+        public void startBatch(OutgoingBatch batch) throws Exception {
+            dataExtractor.begin(batch, writer);
+        }
+
+    }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+    }
+
+}
