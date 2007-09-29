@@ -20,17 +20,19 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.testng.Assert;
 
 public class SymmetricEngineTestFactory {
-
+    
     private static SymmetricEngine mySqlEngine1;
 
     private static SymmetricEngine mySqlEngine2;
-    
+
     private static SymmetricEngine oracleEngine1;
 
     static final String ENGINE_1_PROPERTIES = "symmetric-mysql-engine-1.properties";
+    
+    static final String ENGINE_1_CONTINUOUS_PROPERTIES = "symmetric-mysql-engine-1-continuous.properties";
 
     static final String ENGINE_2_PROPERTIES = "symmetric-mysql-engine-2.properties";
-    
+
     static final String ORACLE_ENGINE_1_PROPERTIES = "symmetric-oracle-engine-1.properties";
 
     public static SymmetricEngine getMySqlTestEngine1(String engineScript) {
@@ -46,6 +48,19 @@ public class SymmetricEngineTestFactory {
         }
         return mySqlEngine1;
     }
+    
+    public static SymmetricEngine getContinuousTestEngine() {
+        if (mySqlEngine1 == null) {
+            File file = assertThatFileExists(new File(System
+                    .getProperty("user.home")
+                    + "/" + ENGINE_1_PROPERTIES));
+            mySqlEngine1 = new SymmetricEngine("classpath:/"
+                    + ENGINE_1_CONTINUOUS_PROPERTIES, "file:" + file.getAbsolutePath());
+            resetSchemaForEngine(mySqlEngine1, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT);
+            mySqlEngine1.start();
+        }
+        return mySqlEngine1;
+    }    
 
     public static SymmetricEngine getMySqlTestEngine2(String engineScript) {
 
@@ -60,7 +75,7 @@ public class SymmetricEngineTestFactory {
         }
         return mySqlEngine2;
     }
-    
+
     public static SymmetricEngine getOracleTestEngine1(String engineScript) {
 
         if (oracleEngine1 == null) {
@@ -68,22 +83,26 @@ public class SymmetricEngineTestFactory {
                     .getProperty("user.home")
                     + "/" + ORACLE_ENGINE_1_PROPERTIES));
             oracleEngine1 = new SymmetricEngine("classpath:/"
-                    + ORACLE_ENGINE_1_PROPERTIES, "file:/" + file.getAbsolutePath());
-           // dropOracleSequences(oracleEngine1);
+                    + ORACLE_ENGINE_1_PROPERTIES, "file:/"
+                    + file.getAbsolutePath());
+            // dropOracleSequences(oracleEngine1);
             resetSchemaForEngine(oracleEngine1, engineScript);
             oracleEngine1.start();
-           
+
         }
         return oracleEngine1;
-    }    
-    
+    }
+
     public static SymmetricEngine[] getUnitTestableEngines() {
         List<SymmetricEngine> engines = new ArrayList<SymmetricEngine>();
-        if (Boolean.TRUE.toString().equalsIgnoreCase(System.getProperty("symmetric.include.oracle.tests"))) {
-            engines.add(getOracleTestEngine1(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT));
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                System.getProperty("symmetric.include.oracle.tests"))) {
+            engines
+                    .add(getOracleTestEngine1(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT));
         }
-     
-        engines.add(getMySqlTestEngine1(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT));
+
+        engines
+                .add(getMySqlTestEngine1(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT));
         return engines.toArray(new SymmetricEngine[engines.size()]);
     }
 
@@ -108,7 +127,8 @@ public class SymmetricEngineTestFactory {
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds,
                     false).execute();
             // Need to init the table before running insert statements
-            ((IBootstrapService)engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).init();
+            ((IBootstrapService) engine.getApplicationContext().getBean(
+                    Constants.BOOTSTRAP_SERVICE)).init();
             if (setupScript != null) {
                 new SqlScript(getResource(setupScript), ds, true).execute();
             }
@@ -117,19 +137,18 @@ public class SymmetricEngineTestFactory {
         }
     }
 
-    private static void dropOracleSequences(SymmetricEngine engine)
-    {
+    private static void dropOracleSequences(SymmetricEngine engine) {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(
-            Constants.DATA_SOURCE);
+                Constants.DATA_SOURCE);
         try {
-        new SqlScript(getResource(TestConstants.TEST_DROP_SEQ_SCRIPT ), ds,
-            false).execute();
-        }
-        catch (Exception e) {
+            new SqlScript(getResource(TestConstants.TEST_DROP_SEQ_SCRIPT), ds,
+                    false).execute();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
     }
+
     private static URL getResource(String resource) {
         return SymmetricEngineTestFactory.class.getResource(resource);
     }

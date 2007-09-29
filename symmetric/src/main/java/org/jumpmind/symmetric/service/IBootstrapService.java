@@ -10,5 +10,7 @@ public interface IBootstrapService {
     public void syncTriggers();
     
     public void register();
+    
+    public void heartbeat();
 
 }

@@ -30,19 +30,19 @@ public class RegistrationServiceTest extends AbstractTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // Existing domain name and ID that is not open to register
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("00001");
         Assert.assertFalse(registrationService.registerNode(client, out),
                 "Client should NOT be allowed to register");
 
         // Existing domain name but wrong ID
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("wrongId");
         Assert.assertFalse(registrationService.registerNode(client, out),
                 "Client should NOT be allowed to register");
 
         // Wrong domain name and wrong ID
-        client.setGroupId("wrongDomain");
+        client.setNodeGroupId("wrongDomain");
         client.setExternalId("wrongId");
         Assert.assertFalse(registrationService.registerNode(client, out),
                 "Client should NOT be allowed to register");
@@ -51,7 +51,7 @@ public class RegistrationServiceTest extends AbstractTest {
     @Test(groups = "continuous")
     public void testRegisterClient() throws Exception {
         Node client = new Node();
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("00002");
         client.setSyncURL("http://localhost:8080/sync");
         client.setSchemaVersion("1");
@@ -63,7 +63,7 @@ public class RegistrationServiceTest extends AbstractTest {
 
         client = nodeService.findNode("00002");
         Assert.assertEquals(client.getNodeId(), "00002", "Wrong clientId");
-        Assert.assertEquals(client.getGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
         Assert.assertEquals(client.getExternalId(), "00002", "Wrong domainId");
         Assert.assertEquals(client.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(client.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -82,7 +82,7 @@ public class RegistrationServiceTest extends AbstractTest {
         registrationService.openRegistration("test-root-group", "09999");
 
         Node client = new Node();
-        client.setGroupId("test-root-group");
+        client.setNodeGroupId("test-root-group");
         client.setExternalId("09999");
         client.setSyncURL("http://localhost:8080/sync");
         client.setSchemaVersion("1");
@@ -111,7 +111,7 @@ public class RegistrationServiceTest extends AbstractTest {
         Assert.assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
 
         Node client = new Node();
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("00003");
         client.setSyncURL("http://0:8080/sync");
         client.setSchemaVersion("1");
@@ -123,7 +123,7 @@ public class RegistrationServiceTest extends AbstractTest {
 
         client = nodeService.findNode("00003");
         Assert.assertEquals(client.getNodeId(), "00003", "Wrong clientId");
-        Assert.assertEquals(client.getGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
         Assert.assertEquals(client.getExternalId(), "00003", "Wrong domainId");
         Assert.assertEquals(client.getSyncURL().toString(), "http://0:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(client.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -150,7 +150,7 @@ public class RegistrationServiceTest extends AbstractTest {
 
         Node client = nodeService.findNode("00005");
         Assert.assertEquals(client.getNodeId(), "00005", "Wrong clientId");
-        Assert.assertEquals(client.getGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
         Assert.assertEquals(client.getExternalId(), "00005", "Wrong domainId");
         Assert.assertEquals(client.getSyncURL(), null, "Wrong syncUrl");
         Assert.assertEquals(client.getSchemaVersion(), null, "Wrong schemaVersion");
@@ -168,7 +168,7 @@ public class RegistrationServiceTest extends AbstractTest {
     public void testOpenRegistrationOnceAndRegisterTwice() throws Exception {
         registrationService.openRegistration("STORE", "00006");
         Node client = new Node();
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("00006");
         client.setSyncURL("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -183,7 +183,7 @@ public class RegistrationServiceTest extends AbstractTest {
         registrationService.openRegistration("STORE", "00007");
         registrationService.openRegistration("STORE", "00007");
         Node client = new Node();
-        client.setGroupId("STORE");
+        client.setNodeGroupId("STORE");
         client.setExternalId("00007");
         client.setSyncURL("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();

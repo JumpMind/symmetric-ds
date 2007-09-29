@@ -16,15 +16,17 @@ public class NodeService extends AbstractService implements INodeService {
 
     protected static final Log logger = LogFactory.getLog(NodeService.class);
 
-    protected String findClientSql;
+    protected String findNodeSql;
 
-    protected String findClientSecuritySql;
+    protected String findNodeSecuritySql;
 
-    protected String findClientIdentitySql;
+    protected String findNodeIdentitySql;
 
-    protected String findClientsWhoTargetMeSql;
+    protected String findNodesWhoTargetMeSql;
 
-    protected String findClientsWhoITargetSql;
+    protected String findNodesWhoITargetSql;
+
+    protected String updateNodeSql;
 
     /**
      * Lookup a client in the database, which contains information for syncing
@@ -32,8 +34,8 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public Node findNode(String id) {
-        List<Node> list = jdbcTemplate.query(findClientSql,
-                new Object[] { id }, new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(findNodeSql, new Object[] { id },
+                new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
@@ -43,9 +45,17 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String id) {
-        List<NodeSecurity> list = jdbcTemplate.query(findClientSecuritySql,
+        List<NodeSecurity> list = jdbcTemplate.query(findNodeSecuritySql,
                 new Object[] { id }, new NodeSecurityRowMapper());
         return (NodeSecurity) getFirstEntry(list);
+    }
+
+    public boolean updateNode(Node node) {
+        return jdbcTemplate.update(updateNodeSql, new Object[] {
+                node.getNodeGroupId(), node.getExternalId(),
+                node.getDatabaseType(), node.getDatabaseVersion(),
+                node.getSchemaVersion(), node.getSymmetricVersion(),
+                node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled(), node.getNodeId() }) == 1;
     }
 
     protected <T> T getFirstEntry(List<T> list) {
@@ -71,7 +81,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public Node findIdentity() {
-        List<Node> list = jdbcTemplate.query(findClientIdentitySql,
+        List<Node> list = jdbcTemplate.query(findNodeIdentitySql,
                 new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
@@ -79,17 +89,16 @@ public class NodeService extends AbstractService implements INodeService {
     @SuppressWarnings("unchecked")
     public List<Node> findNodesToPull() {
         Node node = findIdentity();
-        return jdbcTemplate.query(findClientsWhoTargetMeSql,
-                new Object[] { node.getGroupId(),
-                        DataEventAction.WAIT_FOR_POLL.getCode() },
+        return jdbcTemplate.query(findNodesWhoTargetMeSql, new Object[] {
+                node.getNodeGroupId(), DataEventAction.WAIT_FOR_POLL.getCode() },
                 new NodeRowMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<Node> findNodesToPushTo() {
         Node node = findIdentity();
-        return jdbcTemplate.query(findClientsWhoITargetSql, new Object[] {
-                node.getGroupId(), DataEventAction.PUSH.getCode() },
+        return jdbcTemplate.query(findNodesWhoITargetSql, new Object[] {
+                node.getNodeGroupId(), DataEventAction.PUSH.getCode() },
                 new NodeRowMapper());
     }
 
@@ -97,7 +106,7 @@ public class NodeService extends AbstractService implements INodeService {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             Node node = new Node();
             node.setNodeId(rs.getString(1));
-            node.setGroupId(rs.getString(2));
+            node.setNodeGroupId(rs.getString(2));
             node.setExternalId(rs.getString(3));
             node.setSyncEnabled(rs.getBoolean(4));
             node.setSyncURL(rs.getString(5));
@@ -119,24 +128,28 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    public void setFindClientSecuritySql(String findClientSecuritySql) {
-        this.findClientSecuritySql = findClientSecuritySql;
+    public void setFindNodeSecuritySql(String findNodeSecuritySql) {
+        this.findNodeSecuritySql = findNodeSecuritySql;
     }
 
-    public void setFindClientSql(String findClientSql) {
-        this.findClientSql = findClientSql;
+    public void setFindNodeSql(String findNodeSql) {
+        this.findNodeSql = findNodeSql;
     }
 
-    public void setFindClientIdentitySql(String findClientIdentitySql) {
-        this.findClientIdentitySql = findClientIdentitySql;
+    public void setFindNodeIdentitySql(String findNodeIdentitySql) {
+        this.findNodeIdentitySql = findNodeIdentitySql;
     }
 
-    public void setFindClientsWhoITargetSql(String findClientsWhoITargetSql) {
-        this.findClientsWhoITargetSql = findClientsWhoITargetSql;
+    public void setFindNodesWhoITargetSql(String findNodesWhoITargetSql) {
+        this.findNodesWhoITargetSql = findNodesWhoITargetSql;
     }
 
-    public void setFindClientsWhoTargetMeSql(String findClientsWhoTargetMeSql) {
-        this.findClientsWhoTargetMeSql = findClientsWhoTargetMeSql;
+    public void setFindNodesWhoTargetMeSql(String findNodesWhoTargetMeSql) {
+        this.findNodesWhoTargetMeSql = findNodesWhoTargetMeSql;
+    }
+
+    public void setUpdateNodeSql(String updateNodeSql) {
+        this.updateNodeSql = updateNodeSql;
     }
 
 }

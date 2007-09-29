@@ -57,7 +57,9 @@ public class ConfigurationService extends AbstractService implements
     
     private String inactiveTriggersForSourceNodeGroupSql;
 
-    private List<String> configChannelTableNames;
+    private List<String> rootConfigChannelTableNames;
+    
+    private List<String> nodeConfigChannelTableNames;
     
     private IDbDialect dbDialect;
 
@@ -79,8 +81,8 @@ public class ConfigurationService extends AbstractService implements
                 new Object[] { nodeGroupId }, new DomainTargetRowMapper());
     }
 
-    public List<String> getConfigChannelTableNames() {
-        return configChannelTableNames;
+    public List<String> getRootConfigChannelTableNames() {
+        return rootConfigChannelTableNames;
     }
 
     public void initTriggersForConfigTables(String configTable,
@@ -352,8 +354,8 @@ public class ConfigurationService extends AbstractService implements
         this.insertTriggerSql = insertTableSyncConfigSql;
     }
 
-    public void setConfigChannelTableNames(List<String> configChannelTableNames) {
-        this.configChannelTableNames = configChannelTableNames;
+    public void setRootConfigChannelTableNames(List<String> configChannelTableNames) {
+        this.rootConfigChannelTableNames = configChannelTableNames;
     }
 
     public void setSelectTriggerSql(String selectTableSyncConfigSql) {
@@ -397,6 +399,15 @@ public class ConfigurationService extends AbstractService implements
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setNodeConfigChannelTableNames(
+            List<String> nodeConfigChannelTableNames) {
+        this.nodeConfigChannelTableNames = nodeConfigChannelTableNames;
+    }
+
+    public List<String> getNodeConfigChannelTableNames() {
+        return nodeConfigChannelTableNames;
     }
 
 }

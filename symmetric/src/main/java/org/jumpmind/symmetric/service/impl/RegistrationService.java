@@ -47,7 +47,7 @@ public class RegistrationService extends AbstractService implements
      */
     public boolean registerNode(Node node, OutputStream out) throws IOException {
         String clientId = (String) jdbcTemplate.queryForObject(
-                findClientToRegisterSql, new Object[] { node.getGroupId(),
+                findClientToRegisterSql, new Object[] { node.getNodeGroupId(),
                         node.getExternalId() }, String.class);
         if (clientId == null) {
             return false;
@@ -70,12 +70,12 @@ public class RegistrationService extends AbstractService implements
         boolean written = false;
         IOutgoingTransport transport = new InternalOutgoingTransport(out);
         List<String> tableNames = configurationService
-                .getConfigChannelTableNames();
+                .getRootConfigChannelTableNames();
         if (tableNames != null && tableNames.size() > 0) {
             for (String tableName : tableNames) {
                 Trigger trigger = configurationService
                         .getTriggerForTarget(tableName, runtimeConfiguration
-                                .getNodeGroupId(), node.getGroupId(),
+                                .getNodeGroupId(), node.getNodeGroupId(),
                                 Constants.CHANNEL_CONFIG);
                 if (trigger != null) {
                     dataExtractorService.extractInitialLoadFor(node,

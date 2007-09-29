@@ -163,7 +163,6 @@ public class OutgoingBatchServiceTest extends AbstractTest
                 statement.setString(4, "r.o.w., dat-a");
                 statement.setString(5, "p-k d.a.t.a");
                 statement.setString(6, type.getCode());
-
                 statement.executeUpdate();
                 ResultSet results = statement.getGeneratedKeys();
                 results.next();

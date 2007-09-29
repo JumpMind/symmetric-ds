@@ -19,4 +19,6 @@ public interface INodeService {
     
     public List<Node> findNodesToPushTo();
     
+    public boolean updateNode(Node node);
+    
 }

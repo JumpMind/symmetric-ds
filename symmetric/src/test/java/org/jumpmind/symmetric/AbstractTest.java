@@ -6,7 +6,6 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.dao.DataAccessException;
@@ -21,7 +20,7 @@ abstract public class AbstractTest {
     @BeforeTest(groups = "continuous")
     synchronized public void init() throws Exception {
         engine = SymmetricEngineTestFactory
-                .getMySqlTestEngine1(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT);
+                .getContinuousTestEngine();
     }
 
     protected BeanFactory getBeanFactory() {

@@ -36,9 +36,9 @@
     <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService"
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="dbDialect" ref="dbDialect" />        
+        <property name="dbDialect" ref="dbDialect" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
-        <property name="configChannelTableNames">
+        <property name="rootConfigChannelTableNames">
             <list>
                 <value>${sync.table.prefix}_node_group</value>
                 <value>${sync.table.prefix}_node_group_link</value>
@@ -49,7 +49,11 @@
                 <value>${sync.table.prefix}_trigger</value>
             </list>
         </property>
-
+        <property name="nodeConfigChannelTableNames">
+            <list>
+                <value>${sync.table.prefix}_node</value>
+            </list>
+        </property>
         <property name="inactivateTriggerHistorySql">
             <value>
                 update ${sync.table.prefix}_trigger_hist set inactive_time = current_timestamp where
@@ -276,26 +280,34 @@
     <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService"
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="findClientSql">
+        <property name="updateNodeSql">
+            <value>
+                update ${sync.table.prefix}_node set node_group_id=?, external_id=?,
+                database_type=?, database_version=?, schema_version=?, symmetric_version=?,
+                sync_url=?, heartbeat_time=?, sync_enabled=? where node_id =
+                ?
+            </value>
+        </property>
+        <property name="findNodeSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
                 database_type, database_version from ${sync.table.prefix}_node where node_id = ?
             </value>
         </property>
-        <property name="findClientSecuritySql">
+        <property name="findNodeSecuritySql">
             <value>
                 select node_id, password, registration_enabled, registration_time from
                 ${sync.table.prefix}_node_security where node_id = ?
             </value>
         </property>
-        <property name="findClientIdentitySql">
+        <property name="findNodeIdentitySql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
                 c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node
                 c inner join ${sync.table.prefix}_node_identity i on c.node_id = i.node_id
             </value>
         </property>
-        <property name="findClientsWhoTargetMeSql">
+        <property name="findNodesWhoTargetMeSql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
                 c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node
@@ -303,7 +315,7 @@
                 d.source_node_group_id where d.target_node_group_id = ? and d.data_event_action = ?
             </value>
         </property>
-        <property name="findClientsWhoITargetSql">
+        <property name="findNodesWhoITargetSql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
                 c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node

@@ -16,7 +16,9 @@ public interface IConfigurationService {
     
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
     
-    public List<String> getConfigChannelTableNames();
+    public List<String> getRootConfigChannelTableNames();
+    
+    public List<String> getNodeConfigChannelTableNames();
     
     public void initTriggersForConfigTables(String configTable, String groupId, String targetGroupId);
 

@@ -97,9 +97,10 @@
         <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="sync_url" type="VARCHAR" size="2000" />
         <column name="schema_version" type="VARCHAR" size="50" />
-        <column name="symmetric_version" type="VARCHAR" size="50" />        
+        <column name="symmetric_version" type="VARCHAR" size="50" />
         <column name="database_type" type="VARCHAR" size="50" />
         <column name="database_version" type="VARCHAR" size="50" />
+        <column name="heartbeat_time" type="TIMESTAMP" />
         <foreign-key name="fk_c_node_group_id" foreignTable="node_group">
             <reference local="node_group_id" foreign="node_group_id" />
         </foreign-key>
@@ -125,8 +126,8 @@
     <table name="trigger">
         <column name="trigger_id" type="INTEGER" required="true" primaryKey="true"
             autoIncrement="true" />
-        <column name="source_schema_name" type="VARCHAR" size="50"  />
-        <column name="source_table_name" type="VARCHAR" size="50" required="true" />        
+        <column name="source_schema_name" type="VARCHAR" size="50" />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true" />
         <column name="target_schema_name" type="VARCHAR" size="50" />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" />
@@ -179,8 +180,7 @@
     </table>
 
     <table name="global_parameter">
-        <column name="node_group_id" type="VARCHAR" size="50" required="true"
-            primaryKey="true" />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="param_key" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="param_order" type="INTEGER" required="true" default="1" primaryKey="true" />
         <column name="param_type" type="INTEGER" required="true" />
@@ -214,5 +214,5 @@
             <index-column name="node_id" />
         </index>
     </table>
-    
+
 </database>
