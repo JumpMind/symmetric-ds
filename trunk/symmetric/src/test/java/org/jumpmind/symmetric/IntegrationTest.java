@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -166,7 +167,7 @@ public class IntegrationTest {
         Thread.sleep(1000);
         clientEngine.heartbeat();
         clientEngine.push();
-        Date time = (Date)rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX+"node where external_id='"+TestConstants.TEST_CLIENT_EXTERNAL_ID+"'", Date.class);
+        Date time = (Date)rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX+"node where external_id='"+TestConstants.TEST_CLIENT_EXTERNAL_ID+"'", Timestamp.class);
         Assert.assertTrue(time.getTime() > ts, "The client node was not sync'd to the root as expected.");
     }    
 
