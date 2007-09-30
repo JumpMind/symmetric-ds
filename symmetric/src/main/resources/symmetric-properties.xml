@@ -27,6 +27,7 @@
                 <prop key="symmetric.runtime.start.pull.job">true</prop>
                 <prop key="symmetric.runtime.start.push.job">true</prop>
                 <prop key="symmetric.runtime.start.purge.job">true</prop>
+                <prop key="symmetric.runtime.start.heartbeat.job">true</prop>
                 <prop key="symmetric.runtime.start.synctriggers.job">true</prop>
                 <prop key="symmetric.runtime.registration.url"></prop>
                 <prop key="symmetric.runtime.my.url">http://localhost:8080/sync</prop>

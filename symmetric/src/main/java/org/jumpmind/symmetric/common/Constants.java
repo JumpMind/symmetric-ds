@@ -48,6 +48,8 @@ public class Constants {
     
     public static final String PURGE_JOB_TIMER = "purgeJobTimer";
     
+    public static final String HEARTBEAT_JOB_TIMER = "heartbeatJobTimer";
+    
     public static final String SYNC_TRIGGERS_JOB_TIMER = "syncTriggersJobTimer";
     
     public static final String DATA_EXTRACTOR = "dataExtractor";
