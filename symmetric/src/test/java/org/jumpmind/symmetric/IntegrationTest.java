@@ -163,7 +163,7 @@ public class IntegrationTest {
     @Test(groups = "integration")
     public void testHeartbeat() throws Exception {
         long ts = System.currentTimeMillis();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         clientEngine.heartbeat();
         clientEngine.push();
         Date time = (Date)rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX+"node where external_id='"+TestConstants.TEST_CLIENT_EXTERNAL_ID+"'", Date.class);
