@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.IOException;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
@@ -44,10 +43,13 @@ public class BootstrapService extends AbstractService implements
     private ITransportManager transportManager;
 
     private IDataLoaderService dataLoaderService;
+    
+    private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
 
     public void init() {
+        this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
         if (autoConfigureDatabase) {
             logger.info("Initializing symmetric database.");
             dbDialect.initConfigDb(tablePrefix);
@@ -168,12 +170,13 @@ public class BootstrapService extends AbstractService implements
             // If we cannot contact the server to register, we simply must wait and try again.   
             while (!registered) {
                 try {
+                    logger.info("Attempting to register.");
                     registered = dataLoaderService.loadData(transportManager
                             .getRegisterTransport(new Node(
                                     this.runtimeConfiguration, dbDialect)));
                 } catch (ConnectException e) {
                     logger.warn("Connection failed while registering.");
-                } catch (IOException e) {
+                } catch (Exception e) {
                     logger.error(e, e);
                 }
 
@@ -205,10 +208,10 @@ public class BootstrapService extends AbstractService implements
     }
 
     private void sleepBeforeRegistrationRetry() {
-        RandomTimeSlot ts = new RandomTimeSlot(this.runtimeConfiguration, 60);
+        
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
-                    * ts.getRandomValueSeededByDomainId();
+                    * randomSleepTimeSlot.getRandomValueSeededByDomainId();
             logger.warn("Could not register.  Sleeping for " + sleepTimeInMs
                     + "ms before attempting again.");
             Thread.sleep(sleepTimeInMs);

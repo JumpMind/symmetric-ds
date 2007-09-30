@@ -14,24 +14,28 @@ public class RandomTimeSlot {
 
     int maxValue = 1000;
 
-    public RandomTimeSlot() {        
+    Random random;
+
+    public RandomTimeSlot() {
+        random = new Random();
     }
-    
+
     public RandomTimeSlot(IRuntimeConfig config, int maxValue) {
         this.runtimeConfiguration = config;
         this.maxValue = maxValue;
+        random = new Random(runtimeConfiguration.getExternalId().hashCode());
     }
-    
+
     public void setMaxValue(int maxValue) {
         this.maxValue = maxValue;
     }
 
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
+        random = new Random(runtimeConfiguration.getExternalId().hashCode());
     }
 
     public int getRandomValueSeededByDomainId() {
-        return new Random(runtimeConfiguration.getExternalId().hashCode())
-                .nextInt(maxValue);
+        return random.nextInt(maxValue);
     }
 }

@@ -69,6 +69,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
+        conn.setConnectTimeout(10000);
         conn.setRequestProperty("Content-Length", Integer.toString(data
                 .length()));
         writeMessage(conn.getOutputStream(), data);
@@ -110,8 +111,8 @@ public class HttpTransportManager extends AbstractTransportManager implements
                 .getDatabaseVersion());
         append(builder, WebConstants.SYMMETRIC_VERSION, node
                 .getSymmetricVersion());
-
-        HttpURLConnection conn = sendMessage(new URL(builder.toString()), "");
+        HttpURLConnection conn = (HttpURLConnection) new URL(builder.toString()).openConnection();
+        conn.setRequestMethod("GET");
         return new HttpIncomingTransport(conn);
     }
     

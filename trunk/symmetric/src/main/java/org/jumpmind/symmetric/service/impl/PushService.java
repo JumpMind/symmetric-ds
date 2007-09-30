@@ -34,7 +34,7 @@ public class PushService implements IPushService {
     }
 
     public void pushData() {
-        debug("Push requested.");
+        info("Push requested.");
 
         List<Node> clients = nodeService.findNodesToPushTo();
         if (clients != null) {
@@ -43,7 +43,7 @@ public class PushService implements IPushService {
             }
         }
         
-        debug("Push request completed.");
+        info("Push request completed.");
     }
 
     class ParameterParser {
@@ -134,11 +134,11 @@ public class PushService implements IPushService {
         }
     }
     
-    private void debug(String s)
+    private void info(String s)
     {
-        if (logger.isDebugEnabled())
+        if (logger.isInfoEnabled())
         {
-            logger.debug(s);
+            logger.info(s);
         }
     }
 

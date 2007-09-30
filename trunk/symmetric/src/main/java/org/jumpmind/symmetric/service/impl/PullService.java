@@ -21,6 +21,7 @@ public class PullService implements IPullService {
     private IDataLoaderService dataLoaderService;
 
     public void pullData() {
+        logger.info("Pull requested");
         List<Node> nodes = nodeService.findNodesToPull();
         for (Node node : nodes) {
             try {
@@ -31,6 +32,7 @@ public class PullService implements IPullService {
                 logger.error(e, e);
             }
         }
+        logger.info("Pull completed.");
     }
 
     public void setNodeService(INodeService clientService) {
