@@ -1,4 +1,3 @@
-
 package org.jumpmind.symmetric.db.oracle;
 
 import java.net.URL;
@@ -7,12 +6,15 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
-public class OracleDbDialect extends AbstractDbDialect implements IDbDialect
-{
+public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(OracleDbDialect.class);
 
@@ -23,82 +25,87 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
     @Override
-    protected void initForSpecificDialect()
-    {
-        try
-        {
-            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME))
-            {
-                logger.info("Creating function " + TRANSACTION_ID_FUNCTION_NAME);
-                new SqlScript(getTransactionIdSqlUrl(), getPlatform().getDataSource(), '/').execute();
+    protected void initForSpecificDialect() {
+        try {
+            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
+                logger
+                        .info("Creating function "
+                                + TRANSACTION_ID_FUNCTION_NAME);
+                new SqlScript(getTransactionIdSqlUrl(), getPlatform()
+                        .getDataSource(), '/').execute();
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             logger.error("Error while initializing Oracle.", ex);
         }
 
     }
 
-    private URL getTransactionIdSqlUrl()
-    {
+    @Override
+    public void initTrigger(DataEventType dml, Trigger config,
+            TriggerHistory audit, String tablePrefix, Table table) {
+        // TODO: fix node table trigger which cannot select itself
+        if (!config.getSourceTableName().endsWith("node")) {
+            super.initTrigger(dml, config, audit, tablePrefix, table);
+        } else {
+            logger.warn("Not creating trigger for " + config.getSourceTableName() + " because of a current bug we have with the oracle triggers and a trigger not being able to select from the table it fired for.");
+        }
+    }
+
+    private URL getTransactionIdSqlUrl() {
         return getClass().getResource("/oracle-transactionid.sql");
     }
 
-    public boolean isFunctionUpToDate(String name) throws Exception
-    {
-        long lastModified = getTransactionIdSqlUrl().openConnection().getLastModified();
-        
-        
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd':'HH:mm:ss");
-        
-        return jdbcTemplate.queryForInt(
-            "select count(*) from all_objects where timestamp < ? and object_name= upper(?) ", new Object[] {
-               dateFormat.format( new Date(lastModified)), name}) > 0;
+    public boolean isFunctionUpToDate(String name) throws Exception {
+        long lastModified = getTransactionIdSqlUrl().openConnection()
+                .getLastModified();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd':'HH:mm:ss");
+
+        return jdbcTemplate
+                .queryForInt(
+                        "select count(*) from all_objects where timestamp < ? and object_name= upper(?) ",
+                        new Object[] {
+                                dateFormat.format(new Date(lastModified)), name }) > 0;
     }
 
-    public boolean isCharSpacePadded()
-    {
+    public boolean isCharSpacePadded() {
         return true;
     }
 
-    public boolean isCharSpaceTrimmed()
-    {
+    public boolean isCharSpaceTrimmed() {
         return false;
     }
 
-    public boolean isEmptyStringNulled()
-    {
+    public boolean isEmptyStringNulled() {
         return true;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
-        schemaName = schemaName == null ? "" : (  schemaName+".");
+        schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
-            jdbcTemplate
-                    .update("drop trigger " + schemaName + triggerName);
-        }
-        catch (Exception e) {
+            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
+        } catch (Exception e) {
             logger.warn("Trigger does not exist", e);
         }
     }
 
-    public String getTransactionTriggerExpression()
-    {
+    public String getTransactionTriggerExpression() {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
 
     @Override
-    public boolean doesTriggerExist(String schema, String tableName, String triggerName)
-    {
-        return jdbcTemplate.queryForInt(
-            "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
-            new Object[] {triggerName, tableName}) > 0;
+    public boolean doesTriggerExist(String schema, String tableName,
+            String triggerName) {
+        return jdbcTemplate
+                .queryForInt(
+                        "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
+                        new Object[] { triggerName, tableName }) > 0;
     }
 
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
-        
+
     }
 
     public void disableSyncTriggers() {
@@ -108,10 +115,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect
     public void enableSyncTriggers() {
         jdbcTemplate.update("call  pack_var.setValue(null)");
     }
-    
+
     public String getDefaultSchema() {
-        return (String)jdbcTemplate.queryForObject("SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
+        return (String) jdbcTemplate.queryForObject(
+                "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",
+                String.class);
     }
 
-    
 }

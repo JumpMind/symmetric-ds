@@ -291,13 +291,9 @@ public class BootstrapService extends AbstractService implements
                 audit = configurationService.getLatestHistoryRecordFor(trigger
                         .getTriggerId());
             }
-            // TODO: fix node table trigger which cannot select itself
-            if (!trigger.getSourceTableName().endsWith("node")) {
-                logger.info("Creating " + dmlType.toString() + " trigger for "
-                        + trigger.getSourceTableName());
+
                 dbDialect.initTrigger(dmlType, trigger, audit, tablePrefix,
                         table);
-            }
         }
 
         return audit;

@@ -169,6 +169,10 @@ public class SymmetricEngine {
                     "Cannot actuate a purge if it is already scheduled.");
         }
     }
+    
+    public void heartbeat() {
+        bootstrapService.heartbeat();
+    }
 
     public void openRegistration(String domainName, String domainId) {
         registrationService.openRegistration(domainName, domainId);

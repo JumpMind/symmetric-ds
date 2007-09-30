@@ -159,6 +159,16 @@ public class IntegrationTest {
                 "Expected all data rows to have been purged.");
         
     }
+    
+    @Test(groups = "integration")
+    public void testHeartbeat() throws Exception {
+        long ts = System.currentTimeMillis();
+        Thread.sleep(500);
+        clientEngine.heartbeat();
+        clientEngine.push();
+        Date time = (Date)rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX+"node where external_id='"+TestConstants.TEST_CLIENT_EXTERNAL_ID+"'", Date.class);
+        Assert.assertTrue(time.getTime() > ts, "The client node was not sync'd to the root as expected.");
+    }    
 
     @Test(groups = "integration")
     public void testMultipleChannels() {
