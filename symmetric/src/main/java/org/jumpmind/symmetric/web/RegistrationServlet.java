@@ -22,7 +22,7 @@ public class RegistrationServlet extends HttpServlet {
     protected static final Log logger = LogFactory.getLog(RegistrationServlet.class);
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
         IRegistrationService service = (IRegistrationService) ctx.getBean(Constants.REGISTRATION_SERVICE);
