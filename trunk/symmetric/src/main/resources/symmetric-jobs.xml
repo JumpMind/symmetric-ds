@@ -95,6 +95,23 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 </bean>
             </list>
         </property>
+    </bean>
+    
+    <bean id="heartbeatJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <property name="delay" value="900000" />
+                    <property name="period" value="900000" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
+                            <property name="bootstrapService" ref="bootstrapService" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
     </bean>     
+         
 
 </beans>

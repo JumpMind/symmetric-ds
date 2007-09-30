@@ -119,6 +119,14 @@ public class SymmetricEngine {
                 .toString()
                 .equalsIgnoreCase(
                         properties
+                                .getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
+            applicationContext.getBean(Constants.HEARTBEAT_JOB_TIMER);
+        }
+
+        if (Boolean.TRUE
+                .toString()
+                .equalsIgnoreCase(
+                        properties
                                 .getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
@@ -169,7 +177,7 @@ public class SymmetricEngine {
                     "Cannot actuate a purge if it is already scheduled.");
         }
     }
-    
+
     public void heartbeat() {
         bootstrapService.heartbeat();
     }
