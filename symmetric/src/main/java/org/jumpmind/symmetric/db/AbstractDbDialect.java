@@ -297,9 +297,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return (String) values.get("COLUMN_NAME");
     }
 
-    public void initTrigger(DataEventType dml, Trigger config,
+    public void initTrigger(DataEventType dml, Trigger trigger,
             TriggerHistory audit, String tablePrefix, Table table) {
-        jdbcTemplate.update(createTriggerDDL(dml, config, audit, tablePrefix,
+        logger.info("Creating " + dml.toString() + " trigger for "
+                + trigger.getSourceTableName());
+        jdbcTemplate.update(createTriggerDDL(dml, trigger, audit, tablePrefix,
                 table));
     }
 
