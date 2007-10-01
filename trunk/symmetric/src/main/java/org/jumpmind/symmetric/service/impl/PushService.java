@@ -18,11 +18,11 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
 public class PushService implements IPushService {
-    
+
     private static final Log logger = LogFactory.getLog(PushService.class);
 
     private IDataExtractorService extractor;
-    
+
     private IAcknowledgeService ackService;
 
     private ITransportManager transportManager;
@@ -35,14 +35,12 @@ public class PushService implements IPushService {
 
     public void pushData() {
         info("Push requested.");
-
         List<Node> clients = nodeService.findNodesToPushTo();
         if (clients != null) {
             for (Node client : clients) {
                 pushToClient(client);
             }
         }
-        
         info("Push request completed.");
     }
 
@@ -63,13 +61,14 @@ public class PushService implements IPushService {
             assert (elements.length == 2);
             assert (elements[0].equalsIgnoreCase("batch"));
             String batchId = elements[1];
-            
+
             if (!tokenizer.hasMoreTokens()) {
-                throw new RuntimeException("Batch ack for batch " + batchId + " doesn't have a status.");
+                throw new RuntimeException("Batch ack for batch " + batchId
+                        + " doesn't have a status.");
             }
-            
+
             String status = tokenizer.nextToken();
-            
+
             if (status.equalsIgnoreCase(BatchInfo.OK)) {
                 return new BatchInfo(batchId);
             } else {
@@ -87,39 +86,38 @@ public class PushService implements IPushService {
         this.nodeService = clientService;
     }
 
-    public void setAckService(IAcknowledgeService ackService)
-    {
+    public void setAckService(IAcknowledgeService ackService) {
         this.ackService = ackService;
     }
-    
-    private void pushToClient(Node remote)
-    {
+
+    private void pushToClient(Node remote) {
         try {
-            IOutgoingWithResponseTransport transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
+            IOutgoingWithResponseTransport transport = transportManager
+                    .getPushTransport(remote, nodeService.findIdentity());
 
             try {
-                
+
                 if (!extractor.extract(remote, transport)) {
                     return;
                 }
-                 
+
+                debug("Just pushed data, about to read the response.");
+
                 BufferedReader reader = transport.readResponse();
-                ParameterParser parser = new ParameterParser(reader
-                        .readLine());
+                ParameterParser parser = new ParameterParser(reader.readLine());
 
                 List<BatchInfo> batches = new ArrayList<BatchInfo>();
                 BatchInfo batchInfo = parser.nextBatch();
                 while (batchInfo != null) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Ack -- Batch: "
-                                        + batchInfo.getBatchId()
-                                        + " outcome: "
-                                        + (batchInfo.isOk() ? "OK" : "error"));
+                        logger.debug("Ack -- Batch: " + batchInfo.getBatchId()
+                                + " outcome: "
+                                + (batchInfo.isOk() ? "OK" : "error"));
                     }
                     batches.add(batchInfo);
                     batchInfo = parser.nextBatch();
                 }
-                
+
                 ackService.ack(batches);
             } finally {
                 transport.close();
@@ -133,12 +131,26 @@ public class PushService implements IPushService {
             logger.error(e, e);
         }
     }
-    
-    private void info(String s)
-    {
-        if (logger.isInfoEnabled())
-        {
-            logger.info(s);
+
+    private void info(String... s) {
+        if (logger.isInfoEnabled()) {
+            StringBuilder msg = new StringBuilder();
+            for (String string : s) {
+                msg.append(string);
+                msg.append(" ");
+            }
+            logger.info(msg);
+        }
+    }
+
+    private void debug(String... s) {
+        if (logger.isDebugEnabled()) {
+            StringBuilder msg = new StringBuilder();
+            for (String string : s) {
+                msg.append(string);
+                msg.append(" ");
+            }
+            logger.debug(msg);
         }
     }
 
