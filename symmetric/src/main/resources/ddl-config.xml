@@ -51,8 +51,7 @@
         <column name="batch_id" type="INTEGER" required="true" />
         <column name="status" type="CHAR" size="2" />
         <column name="data_event_count" type="INTEGER" />
-        <column name="sent_timestamp" type="TIMESTAMP" />
-        <column name="complete_time" type="TIMESTAMP" />
+        <column name="event_time" type="TIMESTAMP" />
         <column name="failed_data_id" type="INTEGER" />
     </table>
 

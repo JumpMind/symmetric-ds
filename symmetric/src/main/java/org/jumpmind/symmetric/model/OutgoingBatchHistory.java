@@ -21,9 +21,7 @@ public class OutgoingBatchHistory implements Serializable
     
     private long failedDataId;
     
-    private Date sent;
-    
-    private Date complete;
+    private Date eventTime;
 
     public OutgoingBatchHistory()
     {
@@ -39,14 +37,14 @@ public class OutgoingBatchHistory implements Serializable
         this.batchId = batchId;
     }
 
-    public Date getComplete()
+    public Date getEventTime()
     {
-        return complete;
+        return eventTime;
     }
 
-    public void setComplete(Date complete)
+    public void setEventTime(Date complete)
     {
-        this.complete = complete;
+        this.eventTime = complete;
     }
 
     public long getDataEventCount()
@@ -67,16 +65,6 @@ public class OutgoingBatchHistory implements Serializable
     public void setFailedDataId(long failedDataId)
     {
         this.failedDataId = failedDataId;
-    }
-
-    public Date getSent()
-    {
-        return sent;
-    }
-
-    public void setSent(Date sent)
-    {
-        this.sent = sent;
     }
 
     public Status getStatus()
