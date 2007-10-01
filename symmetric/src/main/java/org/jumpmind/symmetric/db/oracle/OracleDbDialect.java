@@ -41,14 +41,21 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void initTrigger(DataEventType dml, Trigger config,
+    public void initTrigger(DataEventType dml, Trigger trigger,
             TriggerHistory audit, String tablePrefix, Table table) {
         // TODO: fix node table trigger which cannot select itself
-        if (!config.getSourceTableName().endsWith("node")) {
-            super.initTrigger(dml, config, audit, tablePrefix, table);
+        if (!isSkipTriggerCreation(trigger.getSourceTableName())) {
+            super.initTrigger(dml, trigger, audit, tablePrefix, table);
         } else {
-            logger.warn("Not creating trigger for " + config.getSourceTableName() + " because of a current bug we have with the oracle triggers and a trigger not being able to select from the table it fired for.");
+            logger
+                    .warn("Not creating trigger for "
+                            + trigger.getSourceTableName()
+                            + " because of a current bug we have with the oracle triggers and a trigger not being able to select from the table it fired for.");
         }
+    }
+
+    private boolean isSkipTriggerCreation(String table) {
+        return table.toLowerCase().endsWith("node");
     }
 
     private URL getTransactionIdSqlUrl() {
@@ -86,7 +93,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);
         } catch (Exception e) {
-            logger.warn("Trigger does not exist", e);
+            logger.warn("Trigger does not exist");
         }
     }
 
@@ -97,10 +104,14 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public boolean doesTriggerExist(String schema, String tableName,
             String triggerName) {
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
-                        new Object[] { triggerName, tableName }) > 0;
+        if (!isSkipTriggerCreation(tableName)) {
+            return jdbcTemplate
+                    .queryForInt(
+                            "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
+                            new Object[] { triggerName, tableName }) > 0;
+        } else {
+            return true;
+        }
     }
 
     public void purge() {

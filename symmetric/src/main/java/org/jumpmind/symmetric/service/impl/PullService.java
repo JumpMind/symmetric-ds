@@ -32,7 +32,7 @@ public class PullService implements IPullService {
                 logger.error(e, e);
             }
         }
-        logger.info("Pull completed.");
+        logger.info("Pull completed");
     }
 
     public void setNodeService(INodeService clientService) {

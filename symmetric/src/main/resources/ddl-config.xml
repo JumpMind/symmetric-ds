@@ -127,8 +127,9 @@
         <column name="trigger_id" type="INTEGER" required="true" primaryKey="true"
             autoIncrement="true" />
         <column name="source_schema_name" type="VARCHAR" size="50" />
-        <column name="source_table_name" type="VARCHAR" size="50" required="true" />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true" />        
         <column name="target_schema_name" type="VARCHAR" size="50" />
+        <column name="target_table_name" type="VARCHAR" size="50" />        
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true" />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true" />
         <column name="channel_id" type="VARCHAR" size="50" required="true" />

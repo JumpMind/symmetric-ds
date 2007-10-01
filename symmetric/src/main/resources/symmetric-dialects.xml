@@ -34,7 +34,7 @@
                 <property name="newTriggerValue" value="new"/>
                  <property name="oldTriggerValue" value="old"/>
                 <property name="sqlTemplates">
-                    <map>
+                    <map>           
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[
@@ -43,7 +43,7 @@
                                   if $(syncOnInsertCondition) and @sync_triggers_disabled is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',
                                       'I',
                                       $(triggerHistoryId),
@@ -52,7 +52,7 @@
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
                                   end if;
                                 end
@@ -67,7 +67,7 @@
                                   if $(syncOnUpdateCondition) and @sync_triggers_disabled is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',      
                                       'U',
                                       $(triggerHistoryId),
@@ -78,7 +78,7 @@
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
                                   end if;
                                 end
@@ -93,7 +93,7 @@
                                   if $(syncOnDeleteCondition) and @sync_triggers_disabled is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',
                                       'D',
                                       $(triggerHistoryId),
@@ -102,7 +102,7 @@
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
                                   end if;
                                 end
@@ -160,7 +160,7 @@
                                   if $(syncOnInsertCondition)  and isTriggerDisabled() is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',
                                       'I',
                                       $(triggerHistoryId),
@@ -183,7 +183,7 @@
                                   if $(syncOnUpdateCondition)  and isTriggerDisabled() is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',      
                                       'U',
                                       $(triggerHistoryId),
@@ -207,7 +207,7 @@
                                   if $(syncOnDeleteCondition) and isTriggerDisabled() is null then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
                                     values(
-                                      '$(tableName)',
+                                      '$(targetTableName)',
                                       '$(channelName)',
                                       'D',
                                       $(triggerHistoryId),

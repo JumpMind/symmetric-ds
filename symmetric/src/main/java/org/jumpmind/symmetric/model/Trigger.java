@@ -24,6 +24,8 @@ public class Trigger extends BaseEntity {
 
     private String sourceTableName;
 
+    private String targetTableName;
+
     private String sourceGroupId;
 
     private String channelId;
@@ -357,6 +359,14 @@ public class Trigger extends BaseEntity {
 
     public void setTargetSchemaName(String targetSchemaName) {
         this.targetSchemaName = targetSchemaName;
+    }
+
+    public String getTargetTableName() {
+        return targetTableName;
+    }
+
+    public void setTargetTableName(String targetTableName) {
+        this.targetTableName = targetTableName;
     }
 
 }

@@ -75,7 +75,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getTransactionTriggerExpression() {
-        return TRANSACTION_ID_FUNCTION_NAME + "()";
+        return getDefaultSchema() + "." + TRANSACTION_ID_FUNCTION_NAME + "()";
     }
     
     public boolean isCharSpacePadded()

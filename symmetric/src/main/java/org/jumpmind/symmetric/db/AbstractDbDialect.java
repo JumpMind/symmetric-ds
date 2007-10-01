@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -146,7 +149,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             c = platform.borrowConnection();
             DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
             metaData.setMetaData(c.getMetaData());
-            metaData.setCatalog(null);
+            metaData.setCatalog(schema);
             metaData.setSchemaPattern(schema);
             metaData.setTableTypes(null);
             ResultSet tableData = metaData.getTables(tableName);
@@ -297,12 +300,39 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return (String) values.get("COLUMN_NAME");
     }
 
-    public void initTrigger(DataEventType dml, Trigger trigger,
-            TriggerHistory audit, String tablePrefix, Table table) {
-        logger.info("Creating " + dml.toString() + " trigger for "
-                + trigger.getSourceTableName());
-        jdbcTemplate.update(createTriggerDDL(dml, trigger, audit, tablePrefix,
-                table));
+    /**
+     * Create the configured trigger.  The catalog will be changed to the source schema if the source schema 
+     * is configured.
+     */
+    public void initTrigger(final DataEventType dml, final Trigger trigger,
+            final TriggerHistory audit, final String tablePrefix,
+            final Table table) {
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection con) throws SQLException,
+                    DataAccessException {
+                String catalog = trigger.getSourceSchemaName();
+                logger.info("Creating " + dml.toString() + " trigger for "
+                        + (catalog != null ? (catalog + ".") : "")
+                        + trigger.getSourceTableName());
+                String previousCatalog = con.getCatalog();
+                try {
+                    if (catalog != null) {
+                        con.setCatalog(catalog);
+                    }
+                    Statement stmt = con.createStatement();
+                    stmt.executeUpdate(createTriggerDDL(dml, trigger, audit,
+                            tablePrefix, table));
+                    stmt.close();
+                } finally {
+                    if (catalog != null
+                            && !catalog.equalsIgnoreCase(previousCatalog)) {
+                        con.setCatalog(previousCatalog);
+                    }
+                }
+
+                return null;
+            }
+        });
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger config,
