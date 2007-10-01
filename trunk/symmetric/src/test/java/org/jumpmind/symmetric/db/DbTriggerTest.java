@@ -34,18 +34,18 @@ public class DbTriggerTest {
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values('here','here',1,null,null,1,1,1)";
-
+    
     final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
     final static String EXPECTED_INSERT2_CSV = "3,\"here\",\"here\",\"1\",,,1,1";
 
-    final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='"+TEST_TRIGGERS_TABLE+"' and source_node_group_id='"
+    final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='"
+            + TEST_TRIGGERS_TABLE + "' and source_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP
             + "' and target_node_group_id='"
-            + TestConstants.TEST_ROOT_NODE_GROUP
-            + "' and channel_id='"
+            + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='"
             + TestConstants.TEST_CHANNEL_ID + "'";
-    
+
     @BeforeTest(groups = "integration")
     public void init() {
         SymmetricEngineTestFactory.resetSchemasAndEngines();
@@ -60,23 +60,31 @@ public class DbTriggerTest {
         }
     }
 
-    private void testBootstrapSchemaSync(SymmetricEngine engine) throws Exception {
+    private void testBootstrapSchemaSync(SymmetricEngine engine)
+            throws Exception {
         IBootstrapService service = (IBootstrapService) engine
                 .getApplicationContext().getBean("bootstrapService");
 
         // baseline
         service.syncTriggers();
-        
+
         // get the current number of hist rows
         int count = getTriggerHistTableRowCount(engine);
 
         Thread.sleep(1000);
-        
+
         // force the triggers to rebuild
-        count = count + getJdbcTemplate(engine).update("update " + TestConstants.TEST_PREFIX + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP +"'");
-        
-        service.syncTriggers();        
-        
+        count = count
+                + getJdbcTemplate(engine)
+                        .update(
+                                "update "
+                                        + TestConstants.TEST_PREFIX
+                                        + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='"
+                                        + TestConstants.TEST_ROOT_NODE_GROUP
+                                        + "'");
+
+        service.syncTriggers();
+
         // check to see that we recorded the rebuilds
         Assert.assertEquals(getTriggerHistTableRowCount(engine), count,
                 "Wrong trigger_hist row count. engine="
@@ -191,7 +199,6 @@ public class DbTriggerTest {
         for (SymmetricEngine engine : engines2test) {
             testExcludedColumnsFunctionality(engine);
         }
-
     }
 
     private void testExcludedColumnsFunctionality(SymmetricEngine engine)
@@ -212,11 +219,16 @@ public class DbTriggerTest {
                                         + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
-        
-        
-        IConfigurationService configService = (IConfigurationService)engine.getApplicationContext().getBean(Constants.CONFIG_SERVICE);
-        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id="+trigger.getTriggerId()+" and inactive_time is null"), 1, "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
+
+        IConfigurationService configService = (IConfigurationService) engine
+                .getApplicationContext().getBean(Constants.CONFIG_SERVICE);
+        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE,
+                TestConstants.TEST_ROOT_NODE_GROUP);
+        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from "
+                + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id="
+                + trigger.getTriggerId() + " and inactive_time is null"), 1,
+                "We expected only one active record in the trigger_hist table for "
+                        + TEST_TRIGGERS_TABLE);
 
         Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
 
@@ -247,6 +259,53 @@ public class DbTriggerTest {
                 + EXPECTED_INSERT2_CSV;
     }
 
+    @Test(groups = "continuous", dependsOnMethods = "testDisableTriggers")
+    public void testTargetTableNameFunctionality() throws Exception {
+        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
+                .getUnitTestableEngines();
+        for (SymmetricEngine engine : engines2test) {
+            testTargetTableNameFunctionality(engine);
+        }
+    }
+
+    private void testTargetTableNameFunctionality(SymmetricEngine engine)
+            throws Exception {
+        
+        final String TARGET_TABLE_NAME = "SOME_OTHER_TABLE_NAME";
+        IBootstrapService service = (IBootstrapService) engine
+                .getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
+        // need to wait for a second to make sure enough time has passed so the update of the trigger
+        // table will have a greater timestamp than the audit table.
+        Thread.sleep(1000);
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        Assert
+                .assertEquals(
+                        1,
+                        jdbcTemplate
+                                .update("update "
+                                        + TestConstants.TEST_PREFIX
+                                        + "trigger set target_table_name='"+TARGET_TABLE_NAME+"', last_updated_time=current_timestamp "
+                                        + TEST_TRIGGER_WHERE_CLAUSE));
+
+        service.syncTriggers();
+
+        IConfigurationService configService = (IConfigurationService) engine
+                .getApplicationContext().getBean(Constants.CONFIG_SERVICE);
+        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE,
+                TestConstants.TEST_ROOT_NODE_GROUP);
+        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from "
+                + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id="
+                + trigger.getTriggerId() + " and inactive_time is null"), 1,
+                "We expected only one active record in the trigger_hist table for "
+                        + TEST_TRIGGERS_TABLE);
+
+        Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
+
+        String tableName = getNextDataRowTableName(engine);
+        Assert.assertEquals(tableName, TARGET_TABLE_NAME, "Received "
+                + tableName + ", Expected " + TARGET_TABLE_NAME);
+    }
+
     private String getNextDataRow(SymmetricEngine engine) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
         return (String) jdbcTemplate.queryForObject("select row_data from "
@@ -256,10 +315,17 @@ public class DbTriggerTest {
 
     }
     
+    private String getNextDataRowTableName(SymmetricEngine engine) {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        return (String) jdbcTemplate.queryForObject("select table_name from "
+                + TestConstants.TEST_PREFIX
+                + "data where data_id = (select max(data_id) from "
+                + TestConstants.TEST_PREFIX + "data)", String.class);
+    }    
+
     @AfterClass(groups = "integration")
     public void tearDown() {
         SymmetricEngineTestFactory.resetSchemasAndEngines();
     }
-
 
 }

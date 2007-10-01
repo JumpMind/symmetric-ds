@@ -283,6 +283,7 @@ public class ConfigurationService extends AbstractService implements
             trig.setTriggerId(rs.getInt("trigger_id"));
             trig.setChannelId(rs.getString("channel_id"));
             trig.setSourceTableName(rs.getString("source_table_name"));
+            trig.setTargetTableName(rs.getString("target_table_name"));
             trig.setSourceGroupId(rs.getString("source_node_group_id"));
             trig.setTargetSchemaName(rs.getString("target_schema_name"));
             trig.setSyncOnInsert(rs.getBoolean("sync_on_insert"));
@@ -295,7 +296,7 @@ public class ConfigurationService extends AbstractService implements
             trig.setNameForUpdateTrigger(rs
                     .getString("name_for_update_trigger"));
             String schema = rs.getString("source_schema_name");
-            trig.setSourceSchemaName(schema == null ? dbDialect.getDefaultSchema()  : schema);
+            trig.setSourceSchemaName(schema == null ? dbDialect.getDefaultSchema() : schema);
             trig.setTargetGroupId(rs.getString("target_node_group_id"));
             trig.setExcludedColumnNames(rs.getString("excluded_column_names"));
             String condition = rs.getString("sync_on_insert_condition");

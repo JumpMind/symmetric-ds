@@ -43,13 +43,14 @@ public class BootstrapService extends AbstractService implements
     private ITransportManager transportManager;
 
     private IDataLoaderService dataLoaderService;
-    
+
     private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
 
     public void init() {
-        this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
+        this.randomSleepTimeSlot = new RandomTimeSlot(
+                this.runtimeConfiguration, 60);
         if (autoConfigureDatabase) {
             logger.info("Initializing symmetric database.");
             dbDialect.initConfigDb(tablePrefix);
@@ -106,60 +107,67 @@ public class BootstrapService extends AbstractService implements
 
         for (Trigger trigger : triggers) {
 
-            TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
+            try {
+                TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-            Table table = dbDialect.getMetaDataFor(trigger
-                    .getSourceSchemaName(), trigger.getSourceTableName()
-                    .toUpperCase(), false);
+                Table table = dbDialect.getMetaDataFor(trigger
+                        .getSourceSchemaName(), trigger.getSourceTableName()
+                        .toUpperCase(), false);
 
-            if (table != null) {
-                TriggerHistory latestHistoryBeforeRebuild = configurationService
-                        .getLatestHistoryRecordFor(trigger.getTriggerId());
+                if (table != null) {
+                    TriggerHistory latestHistoryBeforeRebuild = configurationService
+                            .getLatestHistoryRecordFor(trigger.getTriggerId());
 
-                boolean forceRebuildOfTriggers = false;
-                if (latestHistoryBeforeRebuild == null) {
-                    reason = TriggerReBuildReason.NEW_TRIGGERS;
-                    forceRebuildOfTriggers = true;
+                    boolean forceRebuildOfTriggers = false;
+                    if (latestHistoryBeforeRebuild == null) {
+                        reason = TriggerReBuildReason.NEW_TRIGGERS;
+                        forceRebuildOfTriggers = true;
 
-                } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild
-                        .getTableHash()) {
-                    reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
-                    forceRebuildOfTriggers = true;
+                    } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild
+                            .getTableHash()) {
+                        reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
+                        forceRebuildOfTriggers = true;
 
-                } else if (trigger
-                        .hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
-                                .getCreateTime())) {
-                    reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
-                    forceRebuildOfTriggers = true;
+                    } else if (trigger
+                            .hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
+                                    .getCreateTime())) {
+                        reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
+                        forceRebuildOfTriggers = true;
+                    }
+                    // TODO should probably check to see if the time stamp on the symmetric-dialects.xml is newer than the
+                    // create time on the audit record.
+
+                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(
+                            forceRebuildOfTriggers, trigger,
+                            DataEventType.DELETE, reason,
+                            latestHistoryBeforeRebuild,
+                            rebuildTriggerIfNecessary(forceRebuildOfTriggers,
+                                    trigger, DataEventType.UPDATE, reason,
+                                    latestHistoryBeforeRebuild,
+                                    rebuildTriggerIfNecessary(
+                                            forceRebuildOfTriggers, trigger,
+                                            DataEventType.INSERT, reason,
+                                            latestHistoryBeforeRebuild, null,
+                                            trigger.isSyncOnInsert(), table),
+                                    trigger.isSyncOnUpdate(), table), trigger
+                                    .isSyncOnDelete(), table);
+
+                    if (latestHistoryBeforeRebuild != null
+                            && newestHistory != null) {
+                        configurationService
+                                .inactivateTriggerHistory(latestHistoryBeforeRebuild);
+                    }
+
+                } else {
+                    logger
+                            .error("The configured table does not exist in the datasource that is configured: "
+                                    + trigger.getSourceTableName());
                 }
-                // TODO should probably check to see if the time stamp on the symmetric-dialects.xml is newer than the
-                // create time on the audit record.
-
-                TriggerHistory newestHistory = rebuildTriggerIfNecessary(
-                        forceRebuildOfTriggers, trigger, DataEventType.DELETE,
-                        reason, latestHistoryBeforeRebuild,
-                        rebuildTriggerIfNecessary(forceRebuildOfTriggers,
-                                trigger, DataEventType.UPDATE, reason,
-                                latestHistoryBeforeRebuild,
-                                rebuildTriggerIfNecessary(
-                                        forceRebuildOfTriggers, trigger,
-                                        DataEventType.INSERT, reason,
-                                        latestHistoryBeforeRebuild, null,
-                                        trigger.isSyncOnInsert(), table),
-                                trigger.isSyncOnUpdate(), table), trigger
-                                .isSyncOnDelete(), table);
-
-                if (latestHistoryBeforeRebuild != null && newestHistory != null) {
-                    configurationService
-                            .inactivateTriggerHistory(latestHistoryBeforeRebuild);
-                }
-
-            } else {
-                // TODO do we need to log configuration errors to a common place?
-                logger
-                        .error("The configured table does not exist in the datasource that is configured: "
-                                + trigger.getSourceTableName());
+            } catch (Exception ex) {
+                logger.error("Failed to synchronize trigger for "
+                        + trigger.getSourceTableName(), ex);
             }
+
         }
     }
 
@@ -208,7 +216,6 @@ public class BootstrapService extends AbstractService implements
     }
 
     private void sleepBeforeRegistrationRetry() {
-        
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
                     * randomSleepTimeSlot.getRandomValueSeededByDomainId();
@@ -296,8 +303,7 @@ public class BootstrapService extends AbstractService implements
                         .getTriggerId());
             }
 
-                dbDialect.initTrigger(dmlType, trigger, audit, tablePrefix,
-                        table);
+            dbDialect.initTrigger(dmlType, trigger, audit, tablePrefix, table);
         }
 
         return audit;
