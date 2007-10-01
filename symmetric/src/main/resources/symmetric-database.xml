@@ -21,6 +21,9 @@
         <property name="password" value="${db.password}" />
         <property name="initialSize" value="${db.pool.initial.size}"/>
         <property name="maxActive" value="${db.pool.max.active}"/>
+        <property name="maxWait" value="${db.pool.max.wait.millis}"/>
+        <property name="minEvictableIdleTimeMillis" value="${db.pool.min.evictable.idle.millis}"/>
+         
     </bean>
 
     <bean id="jndiDataSource" class="org.springframework.jndi.JndiObjectFactoryBean"

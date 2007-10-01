@@ -17,7 +17,9 @@
                 <prop key="db.password"></prop>
                 <prop key="db.pool.initial.size">5</prop>
                 <prop key="db.pool.max.active">10</prop>   
-                <prop key="db.sql.query.timeout.seconds">60</prop>                
+                <prop key="db.sql.query.timeout.seconds">60</prop>
+                <prop key="db.pool.max.wait.millis">30000</prop>  
+                <prop key="db.pool.min.evictable.idle.millis">120000</prop>                                              
                 <prop key="sync.table.prefix">sym</prop>
                 <prop key="symmetric.auto.config.database">true</prop>
                 <prop key="symmetric.runtime.schema.version">?</prop>
