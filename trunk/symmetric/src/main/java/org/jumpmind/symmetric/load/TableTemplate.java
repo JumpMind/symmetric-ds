@@ -116,8 +116,9 @@ public class TableTemplate {
 
             if (column != null) {
                 int type = column.getTypeCode();
-                if (column.isRequired()
-                        && (value == null || (dbDialect.isEmptyStringNulled() && value.equals("")))) {
+                // TODO: should there be defaults for date and numeric types?
+                if ((value == null || (dbDialect.isEmptyStringNulled() && value.equals("")))
+                        && column.isRequired() && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 } else if (value != null && type == Types.DATE) {
                     objectValue = getDate(value, DATE_PATTERNS);
