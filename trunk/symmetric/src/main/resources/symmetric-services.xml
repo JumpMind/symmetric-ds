@@ -433,19 +433,19 @@
         <property name="errorSql">
             <value>
                 insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                complete_time, failed_data_id) values (?, 'ER', current_timestamp, ?)
+                event_time, failed_data_id) values (?, 'ER', current_timestamp, ?)
             </value>
         </property>
         <property name="okSql">
             <value>
                 insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                complete_time) values (?, 'OK', current_timestamp)
+                event_time) values (?, 'OK', current_timestamp)
             </value>
         </property>
         <property name="sentSql">
             <value>
                 insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                sent_timestamp) values (?, 'SE', current_timestamp)
+                event_time) values (?, 'SE', current_timestamp)
             </value>
         </property>
     </bean>
