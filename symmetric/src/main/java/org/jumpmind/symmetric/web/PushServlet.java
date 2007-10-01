@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +15,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.util.MeteredOutputStream;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -33,18 +33,16 @@ public class PushServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Push request received from "
+                    + req.getParameter(WebConstants.NODE_ID));
+        }
+
         ApplicationContext ctx = WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
         IDataLoaderService service = (IDataLoaderService) ctx
                 .getBean(Constants.DATALOADER_SERVICE);
-
-        // TODO get the pull rate per client
-        String param = getInitParameter("kbs-rate");
-        int rate = 20;
-
-        if (param != null) {
-            rate = Integer.parseInt(param);
-        }
 
         InputStream is = null;
 
@@ -66,10 +64,31 @@ public class PushServlet extends HttpServlet {
             is = req.getInputStream();
         }
 
-        MeteredOutputStream out = new MeteredOutputStream(resp
-                .getOutputStream(), MeteredOutputStream.KB * rate);
+        OutputStream out = getOutputstream(resp);
         service.loadData(is, out);
-        out.close();
+        out.flush();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Done with push request from "
+                    + req.getParameter(WebConstants.NODE_ID));
+        }
+    }
+
+    private OutputStream getOutputstream(HttpServletResponse resp)
+            throws IOException {
+        //        // TODO get the pull rate per client
+        //        String param = getInitParameter("kbs-rate");
+        //        int rate = 20;
+        //
+        //        if (param != null) {
+        //            rate = Integer.parseInt(param);
+        //        }
+        //        
+        //        MeteredOutputStream out = new MeteredOutputStream(resp
+        //                .getOutputStream(), MeteredOutputStream.KB * rate);
+
+        return resp.getOutputStream();
+
     }
 
 }

@@ -13,8 +13,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.metered.MeteredOutputStreamOutgoingTransport;
-import org.jumpmind.symmetric.util.MeteredOutputStream;
+import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -26,9 +25,9 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  *
  */
 public class PullServlet extends HttpServlet {
-    
+
     private static final Log logger = LogFactory.getLog(PullServlet.class);
-    
+
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -46,30 +45,22 @@ public class PullServlet extends HttpServlet {
             return;
         }
 
-        String clientId = req.getParameter(WebConstants.NODE_ID).trim();
+        String nodeId = req.getParameter(WebConstants.NODE_ID).trim();
 
         ApplicationContext ctx = WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
 
         IDataExtractorService extractor = (IDataExtractorService) ctx
                 .getBean(Constants.DATAEXTRACTOR_SERVICE);
-        INodeService clientService = (INodeService) ctx
+        INodeService nodeService = (INodeService) ctx
                 .getBean(Constants.NODE_SERVICE);
         try {
-            // TODO get the pull rate per client
-            String param = getInitParameter("kbs-rate");
-            int rate = 20;
-
-            if (param != null) {
-                rate = Integer.parseInt(param);
-            }
-
-            IOutgoingTransport out = new MeteredOutputStreamOutgoingTransport(
-                    resp.getOutputStream(), MeteredOutputStream.KB * rate);
-            extractor.extract(clientService.findNode(clientId), out);
+            IOutgoingTransport out = new InternalOutgoingTransport(resp
+                    .getOutputStream());
+            extractor.extract(nodeService.findNode(nodeId), out);
             out.close();
         } catch (Exception ex) {
-            logger.error("Error while pulling data for " + clientId,ex);
+            logger.error("Error while pulling data for " + nodeId, ex);
             resp.sendError(501);
         }
     }
