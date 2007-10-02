@@ -22,6 +22,7 @@
                 <prop key="db.pool.min.evictable.idle.millis">120000</prop>                                              
                 <prop key="sync.table.prefix">sym</prop>
                 <prop key="symmetric.auto.config.database">true</prop>
+                <prop key="symmetric.runtime.download.rate.kb">-1</prop>                
                 <prop key="symmetric.runtime.schema.version">?</prop>
                 <prop key="symmetric.runtime.job.random.max.start.time.ms">10000</prop>
                 <prop key="symmetric.runtime.purge.retention.minutes">7200</prop>
@@ -54,6 +55,10 @@
                 <value>${symmetric.override.properties.file.2}</value>
             </list>
         </property>
+    </bean>
+    
+    <bean id="downloadRateKb" class="java.lang.Integer">
+     <constructor-arg value="${symmetric.runtime.download.rate.kb}"/>
     </bean>
 
     <bean id="propertyPlaceholderConfigurer"

@@ -60,4 +60,6 @@ public class Constants {
     
     public static final String JDBC = "jdbcTemplate";
     
+    public static final String DOWNLOAD_RATE = "downloadRateKb";
+    
 }
