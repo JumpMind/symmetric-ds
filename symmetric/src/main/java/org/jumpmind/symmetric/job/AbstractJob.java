@@ -14,9 +14,9 @@ abstract public class AbstractJob extends TimerTask {
     @Override
     public void run() {
         try {
-            printDatabaseStats();
+            //printDatabaseStats();
             doJob();
-            printDatabaseStats();
+            //printDatabaseStats();
         } catch (Throwable ex) {
             getLogger().error(ex, ex);
         }
@@ -26,6 +26,7 @@ abstract public class AbstractJob extends TimerTask {
 
     abstract Log getLogger();
     
+    @SuppressWarnings("unused")
     private void printDatabaseStats() {
         if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource) {
             BasicDataSource ds = (BasicDataSource)dataSource;
