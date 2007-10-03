@@ -39,6 +39,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PushJob">
                             <property name="pushService" ref="pushService" />
+                            <property name="dataSource" ref="dataSource"/>
                         </bean>
                     </property>
                 </bean>
@@ -56,6 +57,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PullJob">
                             <property name="pullService" ref="pullService" />
+                            <property name="dataSource" ref="dataSource"/>
                         </bean>
                     </property>
                 </bean>
@@ -73,6 +75,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PurgeJob">
                             <property name="purgeService" ref="purgeService" />
+                            <property name="dataSource" ref="dataSource"/>
                         </bean>
                     </property>
                 </bean>
@@ -90,6 +93,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.SyncTriggersJob">
                             <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="dataSource" ref="dataSource"/>
                         </bean>
                     </property>
                 </bean>
@@ -106,6 +110,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
                             <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="dataSource" ref="dataSource"/>
                         </bean>
                     </property>
                 </bean>

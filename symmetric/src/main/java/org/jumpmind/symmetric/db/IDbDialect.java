@@ -30,6 +30,10 @@ public interface IDbDialect {
     public String getTransactionTriggerExpression();
 
     public String createInitalLoadSqlFor(Node client, Trigger config);
+    
+    public String createCsvDataSql(Trigger trig, String whereClause);
+    
+    public String createCsvPrimaryKeySql(Trigger trig, String whereClause);
 
     public boolean isCharSpacePadded();
     

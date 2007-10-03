@@ -85,7 +85,7 @@ public class ConfigurationService extends AbstractService implements
         return rootConfigChannelTableNames;
     }
 
-    public void initTriggersForConfigTables(String configTable,
+    public void initTriggerRowsForConfigChannel(String configTable,
             String sourceNodeGroupId, String targetNodeGroupId) {
         Trigger trigger = getTriggerForTarget(configTable, sourceNodeGroupId, targetNodeGroupId,
                 Constants.CHANNEL_CONFIG);

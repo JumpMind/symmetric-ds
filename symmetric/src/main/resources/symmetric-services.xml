@@ -23,6 +23,17 @@
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="autoConfigureDatabase" value="${symmetric.auto.config.database}" />
+        <property name="insertNodeIntoDataSql">
+            <value>
+                insert into ${sync.table.prefix}_data
+                (channel_id,table_name,event_type,row_data,pk_data,trigger_hist_id,create_time)
+                values('config','${sync.table.prefix}_node','U',?,?,?,current_timestamp)
+            </value>
+        </property>
+        <property name="insertIntoDataEventSql">
+            <value>insert into ${sync.table.prefix}_data_event (data_id,node_id) values(?,?)</value>
+        </property>
+
     </bean>
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
@@ -284,8 +295,7 @@
             <value>
                 update ${sync.table.prefix}_node set node_group_id=?, external_id=?,
                 database_type=?, database_version=?, schema_version=?, symmetric_version=?,
-                sync_url=?, heartbeat_time=?, sync_enabled=? where node_id =
-                ?
+                sync_url=?, heartbeat_time=?, sync_enabled=? where node_id = ?
             </value>
         </property>
         <property name="findNodeSql">
@@ -432,20 +442,20 @@
         </property>
         <property name="errorSql">
             <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                event_time, failed_data_id) values (?, 'ER', current_timestamp, ?)
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time,
+                failed_data_id) values (?, 'ER', current_timestamp, ?)
             </value>
         </property>
         <property name="okSql">
             <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                event_time) values (?, 'OK', current_timestamp)
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
+                values (?, 'OK', current_timestamp)
             </value>
         </property>
         <property name="sentSql">
             <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                event_time) values (?, 'SE', current_timestamp)
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
+                values (?, 'SE', current_timestamp)
             </value>
         </property>
     </bean>
