@@ -9,12 +9,12 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.impl.BootstrapService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -31,7 +31,7 @@ public class SymmetricEngine {
 
     private ApplicationContext applicationContext;
 
-    private BootstrapService bootstrapService;
+    private IBootstrapService bootstrapService;
 
     private IRuntimeConfig runtimeConfig;
 
@@ -76,7 +76,7 @@ public class SymmetricEngine {
         this.applicationContext = applicationContext;
         properties = (Properties) applicationContext
                 .getBean(Constants.PROPERTIES);
-        bootstrapService = (BootstrapService) applicationContext
+        bootstrapService = (IBootstrapService) applicationContext
                 .getBean(Constants.BOOTSTRAP_SERVICE);
         runtimeConfig = (IRuntimeConfig) applicationContext
                 .getBean(Constants.RUNTIME_CONFIG);

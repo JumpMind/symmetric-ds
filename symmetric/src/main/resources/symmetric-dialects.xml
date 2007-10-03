@@ -226,7 +226,7 @@
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t]]>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
                             </value>
                         </entry>
 
