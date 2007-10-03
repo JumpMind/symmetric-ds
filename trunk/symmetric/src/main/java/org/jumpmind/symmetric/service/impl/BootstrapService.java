@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
