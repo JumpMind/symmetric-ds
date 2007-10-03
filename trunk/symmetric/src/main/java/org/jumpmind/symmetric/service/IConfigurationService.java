@@ -20,7 +20,7 @@ public interface IConfigurationService {
     
     public List<String> getNodeConfigChannelTableNames();
     
-    public void initTriggersForConfigTables(String configTable, String groupId, String targetGroupId);
+    public void initTriggerRowsForConfigChannel(String configTable, String groupId, String targetGroupId);
 
     public void initConfigChannel();
     

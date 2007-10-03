@@ -6,13 +6,9 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.model.DataEventType;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -23,7 +19,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-
+    
     @Override
     protected void initForSpecificDialect() {
         try {
@@ -37,25 +33,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         } catch (Exception ex) {
             logger.error("Error while initializing Oracle.", ex);
         }
-
-    }
-
-    @Override
-    public void initTrigger(DataEventType dml, Trigger trigger,
-            TriggerHistory audit, String tablePrefix, Table table) {
-        // TODO: fix node table trigger which cannot select itself
-        if (!isSkipTriggerCreation(trigger.getSourceTableName())) {
-            super.initTrigger(dml, trigger, audit, tablePrefix, table);
-        } else {
-            logger
-                    .warn("Not creating trigger for "
-                            + trigger.getSourceTableName()
-                            + " because of a current bug we have with the oracle triggers and a trigger not being able to select from the table it fired for.");
-        }
-    }
-
-    private boolean isSkipTriggerCreation(String table) {
-        return table.toLowerCase().endsWith("node");
     }
 
     private URL getTransactionIdSqlUrl() {
@@ -102,16 +79,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public boolean doesTriggerExist(String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(String schema, String tableName,
             String triggerName) {
-        if (!isSkipTriggerCreation(tableName)) {
             return jdbcTemplate
                     .queryForInt(
                             "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
                             new Object[] { triggerName, tableName }) > 0;
-        } else {
-            return true;
-        }
     }
 
     public void purge() {

@@ -29,7 +29,7 @@ public class NodeService extends AbstractService implements INodeService {
     protected String updateNodeSql;
 
     /**
-     * Lookup a client in the database, which contains information for syncing
+     * Lookup a client in the database, which contains information for synching
      * with it.
      */
     @SuppressWarnings("unchecked")
@@ -51,11 +51,12 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNode(Node node) {
-        return jdbcTemplate.update(updateNodeSql, new Object[] {
+        boolean updated = jdbcTemplate.update(updateNodeSql, new Object[] {
                 node.getNodeGroupId(), node.getExternalId(),
                 node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSchemaVersion(), node.getSymmetricVersion(),
-                node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled(), node.getNodeId() }) == 1;
+                node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled(), node.getNodeId() }) == 1;        
+        return updated;
     }
 
     protected <T> T getFirstEntry(List<T> list) {

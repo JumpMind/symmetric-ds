@@ -1,6 +1,9 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.net.ConnectException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -24,6 +27,8 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 
 public class BootstrapService extends AbstractService implements
         IBootstrapService {
@@ -47,6 +52,10 @@ public class BootstrapService extends AbstractService implements
     private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
+
+    private String insertNodeIntoDataSql;
+
+    private String insertIntoDataEventSql;
 
     public void init() {
         this.randomSleepTimeSlot = new RandomTimeSlot(
@@ -212,6 +221,52 @@ public class BootstrapService extends AbstractService implements
             node.setSymmetricVersion(Version.VERSION);
             node.setSyncURL(runtimeConfiguration.getMyUrl());
             nodeService.updateNode(node);
+            insertPushDataForNode(node);
+            logger
+                    .info("Done updating my node information and heartbeat time.");
+        }
+    }
+
+    /**
+     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
+     * @param node
+     */
+    private void insertPushDataForNode(Node node) {
+        String whereClause = " node_id = '" + node.getNodeId() + "'";
+        Trigger trig = configurationService.getTriggerFor(
+                tablePrefix + "_node", runtimeConfiguration.getNodeGroupId());
+        if (trig != null) {
+            final String data = (String) jdbcTemplate.queryForObject(dbDialect
+                    .createCsvDataSql(trig, whereClause), String.class);
+            final String pk = (String) jdbcTemplate.queryForObject(dbDialect
+                    .createCsvPrimaryKeySql(trig, whereClause), String.class);
+            final TriggerHistory hist = configurationService
+                    .getLatestHistoryRecordFor(trig.getTriggerId());
+            int dataId = (Integer) jdbcTemplate.execute(insertNodeIntoDataSql,
+                    new PreparedStatementCallback() {
+                        public Object doInPreparedStatement(
+                                PreparedStatement pstmt) throws SQLException,
+                                DataAccessException {
+                            pstmt.setString(1, data);
+                            pstmt.setString(2, pk);
+                            pstmt.setInt(3, hist.getTriggerHistoryId());
+                            pstmt.execute();
+                            ResultSet rs = pstmt.getGeneratedKeys();
+                            rs.next();
+                            int dataId = rs.getInt(1);
+                            rs.close();
+                            return dataId;
+                        }
+                    });
+
+            List<Node> nodes = nodeService.findNodesToPushTo();
+            for (Node node2 : nodes) {
+                jdbcTemplate.update(insertIntoDataEventSql, new Object[] {
+                        dataId, node2.getNodeId() });
+            }
+        } else {
+            logger
+                    .info("Not generating data and data events for node because a trigger had not been created for that table yet.");
         }
     }
 
@@ -239,14 +294,14 @@ public class BootstrapService extends AbstractService implements
             tableNames = configurationService.getNodeConfigChannelTableNames();
         }
         configurationService.initConfigChannel();
-        String domainName = runtimeConfiguration.getNodeGroupId();
+        String groupId = runtimeConfiguration.getNodeGroupId();
         List<NodeGroupLink> targets = configurationService
-                .getGroupLinksFor(domainName);
+                .getGroupLinksFor(groupId);
         if (targets != null && targets.size() > 0) {
             for (NodeGroupLink target : targets) {
                 for (String tableName : tableNames) {
-                    configurationService.initTriggersForConfigTables(tableName,
-                            domainName, target.getTargetGroupId());
+                    configurationService.initTriggerRowsForConfigChannel(
+                            tableName, groupId, target.getTargetGroupId());
                 }
             }
         } else {
@@ -348,6 +403,14 @@ public class BootstrapService extends AbstractService implements
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public void setInsertNodeIntoDataSql(String insertNodeIntoDataSql) {
+        this.insertNodeIntoDataSql = insertNodeIntoDataSql;
+    }
+
+    public void setInsertIntoDataEventSql(String insertIntoDataEventSql) {
+        this.insertIntoDataEventSql = insertIntoDataEventSql;
     }
 
 }

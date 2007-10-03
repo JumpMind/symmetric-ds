@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -51,6 +50,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     private Map<Integer, String> _defaultSizes;
 
+    protected String tablePrefix;
+
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
@@ -83,10 +84,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
         addPrefixAndCreateTableIfNecessary(getConfigDdlDatabase(), tablePrefix);
     }
 
+    protected boolean isSkipTriggerCreation(String table) {
+        return table.toLowerCase().equals(tablePrefix + "_node");
+    }
+
     public boolean doesTriggerExist(String schema, String tableName,
             String triggerName) {
-        throw new NotImplementedException();
+        if (!isSkipTriggerCreation(tableName)) {
+            return doesTriggerExistOnPlatform(schema, tableName, triggerName);
+        } else {
+            return true;
+        }
     }
+
+    abstract protected boolean doesTriggerExistOnPlatform(String schema,
+            String tableName, String triggerName);
 
     public String getTransactionTriggerExpression() {
         return "null";
@@ -100,7 +112,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 getMetaDataFor(config.getSourceSchemaName(), config
                         .getSourceTableName(), true)).trim();
     }
-
+    
+    public String createCsvDataSql(Trigger trig, String whereClause) {
+        return sqlTemplate.createCsvDataSql(
+                trig,
+                getMetaDataFor(trig.getSourceSchemaName(), trig
+                        .getSourceTableName(), true), whereClause).trim();
+    }
+    
+    public String createCsvPrimaryKeySql(Trigger trig, String whereClause) {
+        return sqlTemplate.createCsvPrimaryKeySql(
+                trig,
+                getMetaDataFor(trig.getSourceSchemaName(), trig
+                        .getSourceTableName(), true), whereClause).trim();        
+    }
+    
     /**
      * This method uses the ddlutil's model reader which uses the jdbc metadata to lookup up
      * table metadata.
@@ -307,32 +333,40 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void initTrigger(final DataEventType dml, final Trigger trigger,
             final TriggerHistory audit, final String tablePrefix,
             final Table table) {
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection con) throws SQLException,
-                    DataAccessException {
-                String catalog = trigger.getSourceSchemaName();
-                logger.info("Creating " + dml.toString() + " trigger for "
-                        + (catalog != null ? (catalog + ".") : "")
-                        + trigger.getSourceTableName());
-                String previousCatalog = con.getCatalog();
-                try {
-                    if (catalog != null) {
-                        con.setCatalog(catalog);
+        if (!isSkipTriggerCreation(trigger.getSourceTableName())) {
+            jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection con)
+                        throws SQLException, DataAccessException {
+                    String catalog = trigger.getSourceSchemaName();
+                    logger.info("Creating " + dml.toString() + " trigger for "
+                            + (catalog != null ? (catalog + ".") : "")
+                            + trigger.getSourceTableName());
+                    String previousCatalog = con.getCatalog();
+                    try {
+                        if (catalog != null) {
+                            con.setCatalog(catalog);
+                        }
+                        Statement stmt = con.createStatement();
+                        stmt.executeUpdate(createTriggerDDL(dml, trigger,
+                                audit, tablePrefix, table));
+                        stmt.close();
+                    } finally {
+                        if (catalog != null
+                                && !catalog.equalsIgnoreCase(previousCatalog)) {
+                            con.setCatalog(previousCatalog);
+                        }
                     }
-                    Statement stmt = con.createStatement();
-                    stmt.executeUpdate(createTriggerDDL(dml, trigger, audit,
-                            tablePrefix, table));
-                    stmt.close();
-                } finally {
-                    if (catalog != null
-                            && !catalog.equalsIgnoreCase(previousCatalog)) {
-                        con.setCatalog(previousCatalog);
-                    }
-                }
 
-                return null;
-            }
-        });
+                    return null;
+                }
+            });
+        } else {
+            logger
+                    .warn("Not creating trigger for "
+                            + trigger.getSourceTableName()
+                            + " because of a current bug we have with a trigger not being able to select from the table it fired for.");
+        }
+
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger config,
@@ -350,7 +384,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             boolean createTables = false;
             for (Table table : tables) {
-                table.setName(tablePrefix.toUpperCase() + table.getName().toUpperCase());
+                table.setName(tablePrefix.toUpperCase()
+                        + table.getName().toUpperCase());
                 fixForeignKeys(table, tablePrefix, false);
 
                 if (getMetaDataFor(getDefaultSchema(), table.getName()
@@ -435,5 +470,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public SQLErrorCodeSQLExceptionTranslator getSqlErrorTranslator() {
         return sqlErrorTranslator;
+    }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
 }

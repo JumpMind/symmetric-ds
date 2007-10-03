@@ -16,6 +16,7 @@
 
     <bean id="mysqlDialect" class="org.jumpmind.symmetric.db.mysql.MySqlDbDialect"
         scope="prototype">
+        <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
@@ -111,7 +112,7 @@
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select concat($(columns)) from $(schemaName)$(tableName) t where $(initialLoadCondition)]]>
+                                <![CDATA[select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)]]>
                             </value>
                         </entry>
 
@@ -124,6 +125,7 @@
 
     <bean id="oracleDialect" class="org.jumpmind.symmetric.db.oracle.OracleDbDialect"
         scope="prototype">
+        <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="stringColumnTemplate" >

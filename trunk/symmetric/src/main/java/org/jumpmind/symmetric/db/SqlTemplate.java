@@ -39,26 +39,56 @@ public class SqlTemplate {
     String oldTriggerValue;
 
     public String createInitalLoadSql(Node node, IDbDialect dialect,
-            Trigger config, Table metaData) {
+            Trigger trig, Table metaData) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        sql = replace("tableName", config.getSourceTableName(), sql);
+        sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName",
-                config.getSourceSchemaName() != null ? config
+                trig.getSourceSchemaName() != null ? trig
                         .getSourceSchemaName()
                         + "." : "", sql);
-        sql = replace("initialLoadCondition",
-                config.getInitialLoadSelect() == null ? "1=1" : config
+        sql = replace("whereClause",
+                trig.getInitialLoadSelect() == null ? "1=1" : trig
                         .getInitialLoadSelect(), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
         sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
 
-        Column[] columns = config.orderColumnsForTable(metaData);
+        Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString("t", columns);
         sql = replace("columns", columnsText, sql);
         return sql;
     }
+            
+    public String createCsvDataSql(Trigger trig, Table metaData, String whereClause) {
+        String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
+        sql = replace("tableName", trig.getSourceTableName(), sql);
+        sql = replace("schemaName",
+                trig.getSourceSchemaName() != null ? trig
+                        .getSourceSchemaName()
+                        + "." : "", sql);
+        sql = replace("whereClause", whereClause, sql);
+
+        Column[] columns = trig.orderColumnsForTable(metaData);
+        String columnsText = buildColumnString("t", columns);
+        sql = replace("columns", columnsText, sql);
+        return sql;
+    }
+    
+    public String createCsvPrimaryKeySql(Trigger trig, Table metaData, String whereClause) {
+        String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
+        sql = replace("tableName", trig.getSourceTableName(), sql);
+        sql = replace("schemaName",
+                trig.getSourceSchemaName() != null ? trig
+                        .getSourceSchemaName()
+                        + "." : "", sql);
+        sql = replace("whereClause", whereClause, sql);
+
+        Column[] columns = metaData.getPrimaryKeyColumns();
+        String columnsText = buildColumnString("t", columns);
+        sql = replace("columns", columnsText, sql);
+        return sql;
+    } 
 
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml,
             Trigger trigger, TriggerHistory history, String tablePrefix,
