@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.net.ConnectException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +29,10 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 public class BootstrapService extends AbstractService implements
         IBootstrapService {
@@ -143,6 +147,7 @@ public class BootstrapService extends AbstractService implements
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
                     }
+
                     // TODO should probably check to see if the time stamp on the symmetric-dialects.xml is newer than the
                     // create time on the audit record.
 
@@ -208,6 +213,7 @@ public class BootstrapService extends AbstractService implements
         }
     }
 
+    @Transactional
     public void heartbeat() {
         Node node = nodeService.findIdentity();
         if (node != null) {
@@ -232,7 +238,7 @@ public class BootstrapService extends AbstractService implements
      * @param node
      */
     private void insertPushDataForNode(Node node) {
-        String whereClause = " node_id = '" + node.getNodeId() + "'";
+        String whereClause = " t.node_id = '" + node.getNodeId() + "'";
         Trigger trig = configurationService.getTriggerFor(
                 tablePrefix + "_node", runtimeConfiguration.getNodeGroupId());
         if (trig != null) {
@@ -242,11 +248,12 @@ public class BootstrapService extends AbstractService implements
                     .createCsvPrimaryKeySql(trig, whereClause), String.class);
             final TriggerHistory hist = configurationService
                     .getLatestHistoryRecordFor(trig.getTriggerId());
-            int dataId = (Integer) jdbcTemplate.execute(insertNodeIntoDataSql,
-                    new PreparedStatementCallback() {
-                        public Object doInPreparedStatement(
-                                PreparedStatement pstmt) throws SQLException,
-                                DataAccessException {
+            int dataId = (Integer) jdbcTemplate
+                    .execute(new ConnectionCallback() {
+                        public Object doInConnection(Connection c)
+                                throws SQLException, DataAccessException {
+                            PreparedStatement pstmt = c.prepareStatement(
+                                    insertNodeIntoDataSql, new int[] { 1 });
                             pstmt.setString(1, data);
                             pstmt.setString(2, pk);
                             pstmt.setInt(3, hist.getTriggerHistoryId());
@@ -254,7 +261,8 @@ public class BootstrapService extends AbstractService implements
                             ResultSet rs = pstmt.getGeneratedKeys();
                             rs.next();
                             int dataId = rs.getInt(1);
-                            rs.close();
+                            JdbcUtils.closeResultSet(rs);
+                            JdbcUtils.closeStatement(pstmt);
                             return dataId;
                         }
                     });

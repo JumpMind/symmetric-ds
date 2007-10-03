@@ -26,8 +26,8 @@
         <property name="insertNodeIntoDataSql">
             <value>
                 insert into ${sync.table.prefix}_data
-                (channel_id,table_name,event_type,row_data,pk_data,trigger_hist_id,create_time)
-                values('config','${sync.table.prefix}_node','U',?,?,?,current_timestamp)
+                (data_id, channel_id,table_name,event_type,row_data,pk_data,trigger_hist_id,create_time)
+                values(null,'config','${sync.table.prefix}_node','U',?,?,?,current_timestamp)
             </value>
         </property>
         <property name="insertIntoDataEventSql">
