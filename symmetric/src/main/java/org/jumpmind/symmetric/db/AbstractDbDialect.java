@@ -112,21 +112,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 getMetaDataFor(config.getSourceSchemaName(), config
                         .getSourceTableName(), true)).trim();
     }
-    
+
     public String createCsvDataSql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvDataSql(
                 trig,
                 getMetaDataFor(trig.getSourceSchemaName(), trig
                         .getSourceTableName(), true), whereClause).trim();
     }
-    
+
     public String createCsvPrimaryKeySql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvPrimaryKeySql(
                 trig,
                 getMetaDataFor(trig.getSourceSchemaName(), trig
-                        .getSourceTableName(), true), whereClause).trim();        
+                        .getSourceTableName(), true), whereClause).trim();
     }
-    
+
     /**
      * This method uses the ddlutil's model reader which uses the jdbc metadata to lookup up
      * table metadata.
@@ -166,31 +166,28 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 .toUpperCase();
     }
 
-    public Table findTable(String schema, String tableName) throws Exception {
-        Connection c = null;
-        schema = checkSchema(schema);
-        tableName = tableName.toUpperCase();
-        try {
-            Table table = null;
-            c = platform.borrowConnection();
-            DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
-            metaData.setMetaData(c.getMetaData());
-            metaData.setCatalog(schema);
-            metaData.setSchemaPattern(schema);
-            metaData.setTableTypes(null);
-            ResultSet tableData = metaData.getTables(tableName);
-            while (tableData != null && tableData.next()) {
-                Map<String, Object> values = readColumns(tableData,
-                        initColumnsForTable());
-                table = readTable(metaData, values);
+    public Table findTable(String _schema, String _tableName) throws Exception {
+        final String schema = checkSchema(_schema);
+        final String tableName = _tableName.toUpperCase();
+        return (Table) jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException,
+                    DataAccessException {
+                Table table = null;
+                DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                metaData.setMetaData(c.getMetaData());
+                metaData.setCatalog(schema);
+                metaData.setSchemaPattern(schema);
+                metaData.setTableTypes(null);
+                ResultSet tableData = metaData.getTables(tableName);
+                while (tableData != null && tableData.next()) {
+                    Map<String, Object> values = readColumns(tableData,
+                            initColumnsForTable());
+                    table = readTable(metaData, values);
+                }
+                JdbcUtils.closeResultSet(tableData);
+                return table;
             }
-
-            JdbcUtils.closeResultSet(tableData);
-
-            return table;
-        } finally {
-            platform.returnConnection(c);
-        }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -443,25 +440,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getName() {
-        try {
-            return platform.borrowConnection().getMetaData()
-                    .getDatabaseProductName();
-        } catch (SQLException e) {
-            throw sqlErrorTranslator.translate("Unable to get database name",
-                    "getDatabaseProductName", e);
-        }
+        return (String) jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException,
+                    DataAccessException {
+                return c.getMetaData().getDatabaseProductName();
+            }
+        });
     }
 
     public String getVersion() {
-        try {
-            DatabaseMetaData meta = platform.borrowConnection().getMetaData();
-            return meta.getDatabaseMajorVersion() + "."
-                    + meta.getDatabaseMinorVersion();
-        } catch (SQLException e) {
-            throw sqlErrorTranslator.translate(
-                    "Unable to get database version",
-                    "getDatabaseMajorVersion", e);
-        }
+        return (String) jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException,
+                    DataAccessException {
+                DatabaseMetaData meta = c.getMetaData();
+                return meta.getDatabaseMajorVersion() + "."
+                        + meta.getDatabaseMinorVersion();
+            }
+        });
     }
 
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
