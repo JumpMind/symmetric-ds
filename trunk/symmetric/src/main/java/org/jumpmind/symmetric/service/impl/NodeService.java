@@ -87,21 +87,30 @@ public class NodeService extends AbstractService implements INodeService {
         return (Node) getFirstEntry(list);
     }
 
-    @SuppressWarnings("unchecked")
     public List<Node> findNodesToPull() {
+        return findSourceNodesFor(DataEventAction.WAIT_FOR_POLL);
+    }
+
+    public List<Node> findNodesToPushTo() {
+        return findTargetNodesFor(DataEventAction.PUSH);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Node> findSourceNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         return jdbcTemplate.query(findNodesWhoTargetMeSql, new Object[] {
-                node.getNodeGroupId(), DataEventAction.WAIT_FOR_POLL.getCode() },
+                node.getNodeGroupId(), eventAction.getCode() },
+                new NodeRowMapper());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Node> findTargetNodesFor(DataEventAction eventAction) {
+        Node node = findIdentity();
+        return jdbcTemplate.query(findNodesWhoITargetSql, new Object[] {
+                node.getNodeGroupId(), eventAction.getCode() },
                 new NodeRowMapper());
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Node> findNodesToPushTo() {
-        Node node = findIdentity();
-        return jdbcTemplate.query(findNodesWhoITargetSql, new Object[] {
-                node.getNodeGroupId(), DataEventAction.PUSH.getCode() },
-                new NodeRowMapper());
-    }
 
     class NodeRowMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
