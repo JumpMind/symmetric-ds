@@ -20,6 +20,8 @@ public class Constants {
     
     public static final String DATALOADER_SERVICE = "dataLoaderService";
     
+    public static final String PARAMETER_SERVICE = "parameterService";
+    
     public static final String DATALOADER = "dataLoader";
     
     public static final String INCOMING_BATCH_SERVICE = "incomingBatchService";
@@ -61,5 +63,7 @@ public class Constants {
     public static final String JDBC = "jdbcTemplate";
     
     public static final String DOWNLOAD_RATE = "downloadRateKb";
+    
+    public static final String MAX_CONCURRENT_WORKERS = "maxConcurrentWorkers";
     
 }
