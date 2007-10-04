@@ -54,7 +54,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
@@ -80,7 +80,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
@@ -104,7 +104,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
@@ -171,7 +171,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>
@@ -195,7 +195,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>
@@ -218,7 +218,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>

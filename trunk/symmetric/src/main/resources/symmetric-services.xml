@@ -55,6 +55,7 @@
                 <value>${sync.table.prefix}_node_group_link</value>
                 <value>${sync.table.prefix}_node</value>
                 <value>${sync.table.prefix}_node_security</value>
+                <value>${sync.table.prefix}_node_channel_ctl</value>                
                 <value>${sync.table.prefix}_global_parameter</value>
                 <value>${sync.table.prefix}_channel</value>
                 <value>${sync.table.prefix}_trigger</value>

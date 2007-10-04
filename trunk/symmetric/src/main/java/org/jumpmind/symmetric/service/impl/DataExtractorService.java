@@ -72,6 +72,7 @@ public class DataExtractorService implements IDataExtractorService {
 
     public void extractInitialLoadFor(Node client, final Trigger trigger,
             final IOutgoingTransport transport) {
+        
         final String sql = dbDialect.createInitalLoadSqlFor(client, trigger);
         final OutgoingBatch batch = new OutgoingBatch(client, trigger
                 .getChannelId(), BatchType.INITIAL_LOAD);
