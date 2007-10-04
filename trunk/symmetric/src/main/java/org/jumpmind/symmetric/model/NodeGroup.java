@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.model;
 
-public class NodeGroup extends BaseEntity {
+public class NodeGroup  {
 
     private static final long serialVersionUID = -8244845505598568994L;
 

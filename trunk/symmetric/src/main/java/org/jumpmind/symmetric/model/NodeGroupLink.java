@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.model;
 
-public class NodeGroupLink extends BaseEntity {
+public class NodeGroupLink  {
 
     private static final long serialVersionUID = 1L;
 

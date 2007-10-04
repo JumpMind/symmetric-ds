@@ -3,8 +3,8 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -33,7 +33,7 @@ public interface IConfigurationService {
     
     public TriggerHistory getLatestHistoryRecordFor(int triggerId);
 
-    public List<Channel> getChannelsFor(String configurationId, boolean failIfTableDoesNotExist);
+    public List<NodeChannel> getChannelsFor(String nodeId, boolean failIfTableDoesNotExist);
     
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId); 
     

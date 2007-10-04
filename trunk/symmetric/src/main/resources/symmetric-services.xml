@@ -79,7 +79,7 @@
             </value>
         </property>
         <property name="selectChannelsSql">
-            <value>select * from ${sync.table.prefix}_channel order by processing_order asc</value>
+            <value>select * from ${sync.table.prefix}_channel c left outer join ${sync.table.prefix}_node_channel_ctl nc on nc.node_id=? and c.channel_id=nc.channel_id order by c.processing_order asc</value>
         </property>
         <property name="selectGroupTriggersSql">
             <value>
