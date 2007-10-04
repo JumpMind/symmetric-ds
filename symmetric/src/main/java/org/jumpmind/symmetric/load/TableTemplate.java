@@ -1,9 +1,10 @@
 package org.jumpmind.symmetric.load;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,9 +122,9 @@ public class TableTemplate {
                         && column.isRequired() && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 } else if (value != null && type == Types.DATE) {
-                    objectValue = getDate(value, DATE_PATTERNS);
+                    objectValue = new Date(getTime(value, DATE_PATTERNS));
                 } else if (value != null && type == Types.TIMESTAMP) {
-                    objectValue = getDate(value, TIMESTAMP_PATTERNS);
+                    objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                 }
                 list.add(objectValue);
             }
@@ -131,9 +132,9 @@ public class TableTemplate {
         return list.toArray();
     }
     
-    private Date getDate(String value, String[] pattern) {
+    private long getTime(String value, String[] pattern) {
         try {
-            return DateUtils.parseDate(value, pattern);
+            return DateUtils.parseDate(value, pattern).getTime();
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
