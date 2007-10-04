@@ -66,7 +66,7 @@ public class Trigger  {
      * Default to selecting all. This can be changed to select based on
      * joins between node parameters and data column values.
      */
-    private String nodeSelect = " and c.sync_enabled=1";
+    private String nodeSelect = "";
 
     /**
      * This is a sql expression that creates a unique id which the sync
