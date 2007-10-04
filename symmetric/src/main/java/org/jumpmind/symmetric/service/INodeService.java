@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 
@@ -18,6 +19,10 @@ public interface INodeService {
     public List<Node> findNodesToPull();
     
     public List<Node> findNodesToPushTo();
+    
+    public List<Node> findSourceNodesFor(DataEventAction eventAction);
+    
+    public List<Node> findTargetNodesFor(DataEventAction eventAction);
     
     public boolean updateNode(Node node);
     
