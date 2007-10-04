@@ -20,6 +20,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -85,6 +86,8 @@ public class DataLoaderService extends AbstractService implements
             }
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
+        } catch (RegistrationNotOpenException ex) {
+            logger.warn("Registration attempt failed.  Registration was not open for the node.");
         } catch (Exception e) {
             if (status != null) {
                 logger.error("Failed to load batch "
