@@ -6,7 +6,7 @@ package org.jumpmind.symmetric.model;
  * 
  * @author chenson
  */
-public class Channel extends BaseEntity {
+public class Channel {
 
     private static final long serialVersionUID = -8183376200537307264L;
 

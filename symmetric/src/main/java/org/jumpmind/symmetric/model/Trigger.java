@@ -12,7 +12,7 @@ import org.apache.ddlutils.model.Table;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class Trigger extends BaseEntity {
+public class Trigger  {
 
     private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
 
@@ -80,6 +80,12 @@ public class Trigger extends BaseEntity {
     private int initialLoadOrder;
 
     private Date inactiveTime;
+    
+    private Date createdOn;
+
+    private Date lastModifiedTime;
+
+    private String updatedBy;
 
     public Trigger() {
     }
@@ -98,6 +104,30 @@ public class Trigger extends BaseEntity {
         this.syncOnInsertCondition = syncOnInsertCondition;
         this.syncOnDeleteCondition = syncOnDeleteCondition;
     }
+    
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+
+    public Date getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public void setLastModifiedTime(Date lastModifiedOn) {
+        this.lastModifiedTime = lastModifiedOn;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }    
 
     /**
      * When dealing with columns, always use this method to order the columns so that the primary keys are first.

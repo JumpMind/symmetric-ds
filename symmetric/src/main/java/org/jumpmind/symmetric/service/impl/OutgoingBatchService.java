@@ -6,9 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchType;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
@@ -21,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class OutgoingBatchService extends AbstractService implements
         IOutgoingBatchService {
 
+    final static Log logger = LogFactory.getLog(OutgoingBatchService.class);
+    
     IConfigurationService configurationService;
 
     private String selectEventsToBatchSql;
@@ -32,47 +36,51 @@ public class OutgoingBatchService extends AbstractService implements
     private String selectOutgoingBatchSql;
 
     private String changeBatchStatusSql;
-    
+
     private IOutgoingBatchHistoryService historyService;
 
     @Transactional
-    public void buildOutgoingBatches(final String locationId) {
-
-        // TODO clean this up (maybe break up into a couple different methods) and unit test still ...
-        // This is very important code.  It will be called during the staggered pull and must scale.
-        
+    public void buildOutgoingBatches(final String nodeId) {
         // TODO should channels be cached?
-        final List<Channel> channels = configurationService
-                .getChannelsFor(runtimeConfiguration
-                        .getNodeGroupId(), true);
+        final List<NodeChannel> channels = configurationService.getChannelsFor(
+                nodeId, true);
+
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException,
                     DataAccessException {
                 PreparedStatement update = conn
                         .prepareStatement(updateBatchedEventsSql);
 
-                for (Channel channel : channels) {
-                    if (channel.isEnabled()) {
+                for (NodeChannel channel : channels) {
+
+                    if (channel.isSuspended()) {
+                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
+                    } else if (channel.isEnabled()) {
                         // determine which transactions will be part of this batch on this channel
                         PreparedStatement select = conn
                                 .prepareStatement(selectEventsToBatchSql);
-                        select.setString(1, locationId);
+                        select.setString(1, nodeId);
                         select.setString(2, channel.getId());
                         ResultSet results = select.executeQuery();
 
                         int count = 0;
                         boolean stopOnNextTxIdChange = false;
                         String lastTrxId = null;
-                        
+
                         OutgoingBatch newBatch = new OutgoingBatch();
                         newBatch.setBatchType(BatchType.EVENTS);
                         newBatch.setChannelId(channel.getId());
-                        newBatch.setClientId(locationId);
+                        newBatch.setClientId(nodeId);
                         
-                        if (results.next()) {          
-                            
+                        // node channel is setup to ignore, just mark the batch as already processed.
+                        if (channel.isIgnored()) {
+                            newBatch.setStatus(Status.OK);
+                        }
+
+                        if (results.next()) {
+
                             insertOutgoingBatch(conn, newBatch);
-                            
+
                             do {
                                 String trxId = results.getString(1);
 
@@ -86,7 +94,7 @@ public class OutgoingBatchService extends AbstractService implements
 
                                 update.clearParameters();
                                 update.setString(1, newBatch.getBatchId());
-                                update.setString(2, locationId);
+                                update.setString(2, nodeId);
                                 update.setInt(3, dataId);
                                 update.addBatch();
 
@@ -99,16 +107,17 @@ public class OutgoingBatchService extends AbstractService implements
 
                                 lastTrxId = trxId;
                             } while (results.next());
-                            historyService.created(new Integer(newBatch.getBatchId()), count);                            
-                        } 
-                    } 
+                            historyService.created(new Integer(newBatch
+                                    .getBatchId()), count);
+                        }
+                    }
                     update.executeBatch();
                 }
                 return null;
             }
         });
     }
-    
+
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException,
@@ -118,10 +127,12 @@ public class OutgoingBatchService extends AbstractService implements
             }
         });
     }
-    
-    private void insertOutgoingBatch(Connection conn, OutgoingBatch outgoingBatch) throws SQLException {
+
+    private void insertOutgoingBatch(Connection conn,
+            OutgoingBatch outgoingBatch) throws SQLException {
         // TODO: move generated key retrieval to DbDialect
-        PreparedStatement insert = conn.prepareStatement(createBatchSql, new int[] { 1 });
+        PreparedStatement insert = conn.prepareStatement(createBatchSql,
+                new int[] { 1 });
         insert.setString(1, outgoingBatch.getClientId());
         insert.setString(2, outgoingBatch.getChannelId());
         insert.setString(3, outgoingBatch.getBatchType().getCode());
@@ -130,8 +141,7 @@ public class OutgoingBatchService extends AbstractService implements
         if (rs.next()) {
             outgoingBatch.setBatchId(rs.getString(1));
         } else {
-            throw new RuntimeException(
-                    "Unable to get batch id");
+            throw new RuntimeException("Unable to get batch id");
         }
         historyService.created(new Integer(outgoingBatch.getBatchId()), -1);
     }
@@ -154,26 +164,21 @@ public class OutgoingBatchService extends AbstractService implements
     }
 
     public void markOutgoingBatchSent(OutgoingBatch batch) {
-       setBatchStatus(batch.getBatchId(), Status.SE);
+        setBatchStatus(batch.getBatchId(), Status.SE);
     }
-    
+
     public void setBatchStatus(String batchId, Status status) {
-        jdbcTemplate.update(changeBatchStatusSql, new Object[] {
-                status.name(), batchId });
-        
-        if (status == Status.SE)
-        {
+        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(),
+                batchId });
+
+        if (status == Status.SE) {
             historyService.sent(new Integer(batchId));
-        }
-        else if (status == Status.ER) 
-        {
+        } else if (status == Status.ER) {
             historyService.error(new Integer(batchId), 0L);
-        } 
-        else if (status == Status.OK)
-        {
+        } else if (status == Status.OK) {
             historyService.ok(new Integer(batchId));
         }
-        
+
     }
 
     public void setConfigurationService(
@@ -201,8 +206,7 @@ public class OutgoingBatchService extends AbstractService implements
         this.changeBatchStatusSql = markBatchSentSql;
     }
 
-    public void setHistoryService(IOutgoingBatchHistoryService historyService)
-    {
+    public void setHistoryService(IOutgoingBatchHistoryService historyService) {
         this.historyService = historyService;
     }
 
