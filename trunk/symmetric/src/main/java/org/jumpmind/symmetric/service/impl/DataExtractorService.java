@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.JdbcUtils;
 
 public class DataExtractorService implements IDataExtractorService {
 
@@ -158,8 +159,8 @@ public class DataExtractorService implements IDataExtractorService {
                                     throw new RuntimeException(e);
                                 }
                             }
-                            results.close();
-                            statement.close();
+                            JdbcUtils.closeResultSet(results);
+                            JdbcUtils.closeStatement(statement);
                             return null;
                         }
                     });
