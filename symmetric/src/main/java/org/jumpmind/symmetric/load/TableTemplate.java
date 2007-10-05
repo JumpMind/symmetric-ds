@@ -133,7 +133,7 @@ public class TableTemplate {
                             TIMESTAMP_PATTERNS));
                 } else if (value != null && type == Types.CHAR
                         && dbDialect.isCharSpacePadded()) {
-                    objectValue = StringUtils.left(value.toString(), column
+                    objectValue = StringUtils.right(value.toString(), column
                             .getSizeAsInt());
                 }
                 list.add(objectValue);
