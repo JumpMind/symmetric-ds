@@ -33,6 +33,7 @@
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="purgeService" ref="purgeService" />
         <property name="properties" ref="properties" />
+        <property name="dataSource" ref="dataSource" />        
     </bean>
 
 </beans>

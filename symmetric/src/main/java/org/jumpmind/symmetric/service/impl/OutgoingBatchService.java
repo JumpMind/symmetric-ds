@@ -39,6 +39,15 @@ public class OutgoingBatchService extends AbstractService implements
 
     private IOutgoingBatchHistoryService historyService;
 
+    /**
+     * Create a batch and mark events as tied to that batch.  We iterate through 
+     * all the events so we can find a transaction boundary to stop on.
+     * <p/>
+     * This method is currently non-transactional because of the fear of having to deal with
+     * large numbers of events as part of the same batch.  This shouldn't be an issue in most cases
+     * other than possibly leaving a batch row w/out data every now and then or leaving a batch w/out the
+     * associated history row.
+     */
     public void buildOutgoingBatches(final String nodeId) {
         // TODO should channels be cached?
         final List<NodeChannel> channels = configurationService.getChannelsFor(
