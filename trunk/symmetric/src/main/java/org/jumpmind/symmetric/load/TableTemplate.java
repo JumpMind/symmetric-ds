@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.load;
 
 import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
@@ -127,7 +128,7 @@ public class TableTemplate {
                         && column.isRequired() && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 } else if (value != null && type == Types.DATE) {
-                    objectValue = new Date(getTime(value, DATE_PATTERNS));
+                    objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
                 } else if (value != null && type == Types.TIMESTAMP) {
                     objectValue = new Timestamp(getTime(value,
                             TIMESTAMP_PATTERNS));
@@ -138,6 +139,8 @@ public class TableTemplate {
                 } else if (value != null
                         && (type == Types.BLOB || type == Types.LONGVARBINARY)) {
                     objectValue = value.getBytes();
+                } else if (value != null && type == Types.TIME) {
+                    objectValue = new Time(getTime(value, TIMESTAMP_PATTERNS));
                 }
                 list.add(objectValue);
             }
