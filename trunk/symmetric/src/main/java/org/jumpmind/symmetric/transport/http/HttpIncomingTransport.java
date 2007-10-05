@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
@@ -32,9 +33,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
         if (WebConstants.REGISTRATION_NOT_OPEN == conn.getResponseCode()) {
             throw new RegistrationNotOpenException();
         } else {
-        reader = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), "UTF-8"));
-        return reader;
+            reader = new BufferedReader(new InputStreamReader(
+                    new GZIPInputStream(conn.getInputStream()), "UTF-8"));
+            return reader;
         }
     }
 }

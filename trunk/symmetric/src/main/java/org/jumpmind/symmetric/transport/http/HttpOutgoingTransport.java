@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -57,6 +58,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setDoOutput(true);
         connection.setUseCaches(false);
         connection.setRequestMethod("PUT");
+        connection.setRequestProperty("accept-encoding", "gzip");
         OutputStream out = connection.getOutputStream();
         OutputStreamWriter wout = new OutputStreamWriter(out, "UTF-8");
         writer = new BufferedWriter(wout);
@@ -65,7 +67,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public BufferedReader readResponse() throws IOException {
         closeWriter();
-        InputStream in = connection.getInputStream();
+        InputStream in = new GZIPInputStream(connection.getInputStream());
         reader = new BufferedReader(new InputStreamReader(in));
         return reader;
     }
