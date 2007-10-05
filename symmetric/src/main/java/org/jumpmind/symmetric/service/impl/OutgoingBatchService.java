@@ -18,13 +18,14 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 public class OutgoingBatchService extends AbstractService implements
         IOutgoingBatchService {
 
     final static Log logger = LogFactory.getLog(OutgoingBatchService.class);
-    
+
     IConfigurationService configurationService;
 
     private String selectEventsToBatchSql;
@@ -48,17 +49,24 @@ public class OutgoingBatchService extends AbstractService implements
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException,
                     DataAccessException {
+
                 PreparedStatement update = conn
                         .prepareStatement(updateBatchedEventsSql);
+
+                update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
                 for (NodeChannel channel : channels) {
 
                     if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
+                        logger.warn(channel.getId() + " channel for " + nodeId
+                                + " is currently suspended.");
                     } else if (channel.isEnabled()) {
                         // determine which transactions will be part of this batch on this channel
                         PreparedStatement select = conn
                                 .prepareStatement(selectEventsToBatchSql);
+
+                        select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+
                         select.setString(1, nodeId);
                         select.setString(2, channel.getId());
                         ResultSet results = select.executeQuery();
@@ -71,7 +79,7 @@ public class OutgoingBatchService extends AbstractService implements
                         newBatch.setBatchType(BatchType.EVENTS);
                         newBatch.setChannelId(channel.getId());
                         newBatch.setClientId(nodeId);
-                        
+
                         // node channel is setup to ignore, just mark the batch as already processed.
                         if (channel.isIgnored()) {
                             newBatch.setStatus(Status.OK);
@@ -102,7 +110,6 @@ public class OutgoingBatchService extends AbstractService implements
 
                                 if (count > channel.getMaxBatchSize()) {
                                     stopOnNextTxIdChange = true;
-                                    count--;
                                 }
 
                                 lastTrxId = trxId;
@@ -110,9 +117,13 @@ public class OutgoingBatchService extends AbstractService implements
                             historyService.created(new Integer(newBatch
                                     .getBatchId()), count);
                         }
+
+                        JdbcUtils.closeStatement(select);
                     }
                     update.executeBatch();
                 }
+
+                JdbcUtils.closeStatement(update);
                 return null;
             }
         });
@@ -133,6 +144,7 @@ public class OutgoingBatchService extends AbstractService implements
         // TODO: move generated key retrieval to DbDialect
         PreparedStatement insert = conn.prepareStatement(createBatchSql,
                 new int[] { 1 });
+        insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
         insert.setString(1, outgoingBatch.getClientId());
         insert.setString(2, outgoingBatch.getChannelId());
         insert.setString(3, outgoingBatch.getBatchType().getCode());
@@ -143,6 +155,8 @@ public class OutgoingBatchService extends AbstractService implements
         } else {
             throw new RuntimeException("Unable to get batch id");
         }
+        JdbcUtils.closeResultSet(rs);
+        JdbcUtils.closeStatement(insert);
         historyService.created(new Integer(outgoingBatch.getBatchId()), -1);
     }
 
