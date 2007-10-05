@@ -135,6 +135,9 @@ public class TableTemplate {
                         && dbDialect.isCharSpacePadded()) {
                     objectValue = StringUtils.rightPad(value.toString(), column
                             .getSizeAsInt(), ' ');
+                } else if (value != null
+                        && (type == Types.BLOB || type == Types.LONGVARBINARY)) {
+                    objectValue = value.getBytes();
                 }
                 list.add(objectValue);
             }
