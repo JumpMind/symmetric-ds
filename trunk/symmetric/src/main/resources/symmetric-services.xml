@@ -437,8 +437,8 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="createdSql">
             <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status,
-                data_event_count) values (?, 'NE', ?)
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time
+                data_event_count) values (?, 'NE', current_timestamp, ?)
             </value>
         </property>
         <property name="errorSql">

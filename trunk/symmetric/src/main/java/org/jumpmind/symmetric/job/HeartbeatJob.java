@@ -12,6 +12,7 @@ public class HeartbeatJob extends AbstractJob {
 
     @Override
     public void doJob() throws Exception {
+        printDatabaseStats();
         bootstrapService.heartbeat();
     }
 
