@@ -4,6 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IPurgeService;
@@ -21,6 +24,8 @@ public class SymmetricManagementService {
     private IPurgeService purgeService;
 
     private Properties properties;
+
+    private DataSource dataSource;
 
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
@@ -49,6 +54,20 @@ public class SymmetricManagementService {
         return runtimeConfiguration.getExternalId();
     }
 
+    @ManagedAttribute(description = "Whether the basic data source is being used as the default datasource.")
+    public boolean isBasicDataSource() {
+        return dataSource instanceof BasicDataSource;
+    }
+
+    @ManagedAttribute(description = "If a BasicDataSource, then show the number of active connections.")
+    public int getNumberOfActiveConnections() {
+        if (isBasicDataSource()) {
+            return ((BasicDataSource) dataSource).getNumActive();
+        } else {
+            return -1;
+        }
+    }
+
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
     }
@@ -63,5 +82,9 @@ public class SymmetricManagementService {
 
     public void setPurgeService(IPurgeService purgeService) {
         this.purgeService = purgeService;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 }
