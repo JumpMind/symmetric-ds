@@ -87,6 +87,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
             throws IOException {
         URL url = new URL(buildURL("pull", remote, local));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("accept-encoding", "gzip");
         conn.setRequestMethod("GET");
         return new HttpIncomingTransport(conn);
     }

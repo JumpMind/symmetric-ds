@@ -216,6 +216,11 @@
             <artifactId>servlet-api</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+            <groupId>net.sourceforge.javawebparts</groupId>
+            <artifactId>javawebparts-filter</artifactId>
+            <version>1.0-beta4</version>
+        </dependency>
         <!-- Commons -->
         <dependency>
             <groupId>commons-net</groupId>

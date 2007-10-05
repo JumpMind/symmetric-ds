@@ -8,6 +8,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
         
+    @SuppressWarnings("unused")
     private IDataExtractorService dataExtractorService;
     
     public void execute(BufferedWriter out, Data data) throws IOException {
