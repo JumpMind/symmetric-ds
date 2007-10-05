@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
@@ -29,10 +30,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class TableTemplate {
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
-    
+
     public static final String[] DATE_PATTERNS = { "yyyy-MM-dd" };
-    
-    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+
+    public static final String[] TIMESTAMP_PATTERNS = {
+            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
 
     private JdbcTemplate jdbcTemplate;
 
@@ -55,8 +57,9 @@ public class TableTemplate {
     private Column[] columnMetaData;
 
     private HashMap<DmlType, StatementBuilder> statementMap;
-    
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName) {
+
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect,
+            String tableName) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         // TODO should we be passing the schema in the csv?
@@ -87,8 +90,8 @@ public class TableTemplate {
 
     public int update(String[] columnValues, String[] keyValues) {
         StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
-        Object[] values = ArrayUtils.addAll(filterValues(columnMetaData, columnValues),
-                filterValues(keyMetaData, keyValues));
+        Object[] values = ArrayUtils.addAll(filterValues(columnMetaData,
+                columnValues), filterValues(keyMetaData, keyValues));
         return jdbcTemplate.update(st.getSql(), values);
     }
 
@@ -101,7 +104,8 @@ public class TableTemplate {
     private StatementBuilder getStatementBuilder(DmlType type) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
-            st = new StatementBuilder(type, table.getName(), existKeyNames, existColumnNames);
+            st = new StatementBuilder(type, table.getName(), existKeyNames,
+                    existColumnNames);
             statementMap.put(type, st);
         }
         return st;
@@ -109,7 +113,7 @@ public class TableTemplate {
 
     private Object[] filterValues(Column[] metaData, String[] values) {
         List<Object> list = new ArrayList<Object>();
-        
+
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
             Object objectValue = value;
@@ -118,20 +122,26 @@ public class TableTemplate {
             if (column != null) {
                 int type = column.getTypeCode();
                 // TODO: should there be defaults for date and numeric types?
-                if ((value == null || (dbDialect.isEmptyStringNulled() && value.equals("")))
+                if ((value == null || (dbDialect.isEmptyStringNulled() && value
+                        .equals("")))
                         && column.isRequired() && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 } else if (value != null && type == Types.DATE) {
                     objectValue = new Date(getTime(value, DATE_PATTERNS));
                 } else if (value != null && type == Types.TIMESTAMP) {
-                    objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
+                    objectValue = new Timestamp(getTime(value,
+                            TIMESTAMP_PATTERNS));
+                } else if (value != null && type == Types.CHAR
+                        && dbDialect.isCharSpacePadded()) {
+                    objectValue = StringUtils.left(value.toString(), column
+                            .getSizeAsInt());
                 }
                 list.add(objectValue);
             }
         }
         return list.toArray();
     }
-    
+
     private long getTime(String value, String[] pattern) {
         try {
             return DateUtils.parseDate(value, pattern).getTime();
@@ -153,7 +163,7 @@ public class TableTemplate {
         existColumnNames = getExistColumnNames(columnMetaData);
         statementMap.clear();
     }
-    
+
     private Column[] getColumnMetaData(String[] names) {
         Column[] columns = new Column[names.length];
         for (int i = 0; i < names.length; i++) {
