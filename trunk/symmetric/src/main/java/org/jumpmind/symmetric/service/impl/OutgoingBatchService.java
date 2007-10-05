@@ -19,7 +19,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 public class OutgoingBatchService extends AbstractService implements
         IOutgoingBatchService {
@@ -40,7 +39,6 @@ public class OutgoingBatchService extends AbstractService implements
 
     private IOutgoingBatchHistoryService historyService;
 
-    @Transactional
     public void buildOutgoingBatches(final String nodeId) {
         // TODO should channels be cached?
         final List<NodeChannel> channels = configurationService.getChannelsFor(
@@ -112,12 +110,19 @@ public class OutgoingBatchService extends AbstractService implements
                                     stopOnNextTxIdChange = true;
                                 }
 
+                                // put this in so we don't build up too many
+                                // statements to send to the server.
+                                if (count % 10000 == 0) {
+                                    update.executeBatch();
+                                }
+
                                 lastTrxId = trxId;
                             } while (results.next());
                             historyService.created(new Integer(newBatch
                                     .getBatchId()), count);
                         }
 
+                        JdbcUtils.closeResultSet(results);
                         JdbcUtils.closeStatement(select);
                     }
                     update.executeBatch();
