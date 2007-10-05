@@ -32,10 +32,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class TableTemplate {
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    public static final String[] DATE_PATTERNS = { "yyyy-MM-dd" };
-
     public static final String[] TIMESTAMP_PATTERNS = {
-            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss" };
+            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
 
     private JdbcTemplate jdbcTemplate;
 
