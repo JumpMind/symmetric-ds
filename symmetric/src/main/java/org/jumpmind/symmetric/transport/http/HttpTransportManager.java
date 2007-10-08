@@ -85,11 +85,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
 
     public IIncomingTransport getPullTransport(Node remote, Node local)
             throws IOException {
-        URL url = new URL(buildURL("pull", remote, local));
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("accept-encoding", "gzip");
-        conn.setRequestMethod("GET");
-        return new HttpIncomingTransport(conn);
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildURL("pull", remote, local))));
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
@@ -112,9 +108,14 @@ public class HttpTransportManager extends AbstractTransportManager implements
                 .getDatabaseVersion());
         append(builder, WebConstants.SYMMETRIC_VERSION, node
                 .getSymmetricVersion());
-        HttpURLConnection conn = (HttpURLConnection) new URL(builder.toString()).openConnection();
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(builder.toString())));
+    }
+    
+    private HttpURLConnection createGetConnectionFor(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestProperty("accept-encoding", "gzip");
         conn.setRequestMethod("GET");
-        return new HttpIncomingTransport(conn);
+        return conn;
     }
     
     /**
