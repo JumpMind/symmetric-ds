@@ -127,7 +127,7 @@ public class AcknowledgeServiceTest extends AbstractTest {
         this
                 .getJdbcTemplate()
                 .update(
-                        "insert into " + TestConstants.TEST_PREFIX + "outgoing_batch (batch_id,location_id,channel_id,batch_type,status,create_time) values("
+                        "insert into " + TestConstants.TEST_PREFIX + "outgoing_batch (batch_id,node_id,channel_id,batch_type,status,create_time) values("
                                 + batchId
                                 + ",'"
                                 + TestConstants.TEST_CLIENT_EXTERNAL_ID

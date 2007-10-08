@@ -71,7 +71,7 @@ public class OutgoingBatchServiceTest extends AbstractTest
         
         // test for initial load (batch type == IL)
         OutgoingBatch ilBatch = new OutgoingBatch();
-        ilBatch.setClientId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        ilBatch.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         ilBatch.setChannelId(TestConstants.TEST_CHANNEL_ID);
         ilBatch.setBatchType(BatchType.INITIAL_LOAD);
         batchService.insertOutgoingBatch(ilBatch);

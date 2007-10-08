@@ -181,7 +181,7 @@
         </property>
         <property name="createBatchSql">
             <value>
-                insert into ${sync.table.prefix}_outgoing_batch (batch_id, location_id, channel_id,
+                insert into ${sync.table.prefix}_outgoing_batch (batch_id, node_id, channel_id,
                 status, batch_type, create_time) values (null, ?, ?, 'NE', ?, current_timestamp)
             </value>
         </property>
@@ -193,10 +193,10 @@
         </property>
         <property name="selectOutgoingBatchSql">
             <value>
-                select batch.batch_id, batch.location_id, batch.channel_id, batch.status,
+                select batch.batch_id, batch.node_id, batch.channel_id, batch.status,
                 batch.batch_type, case status when 'NE' then 3 when 'SE' then 2 when 'ER' then 1 end
                 from ${sync.table.prefix}_outgoing_batch batch, ${sync.table.prefix}_channel channel
-                where location_id = ? and status in ('NE','SE','ER') and batch.channel_id =
+                where node_id = ? and status in ('NE','SE','ER') and batch.channel_id =
                 channel.channel_id order by channel.processing_order asc, 2 asc
             </value>
         </property>
