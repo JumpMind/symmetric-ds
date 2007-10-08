@@ -38,7 +38,7 @@
     <table name="outgoing_batch">
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true"
             autoIncrement="true" />
-        <column name="location_id" type="VARCHAR" size="50" required="false" primaryKey="false" />
+        <column name="node_id" type="VARCHAR" size="50" required="false" primaryKey="false" />
         <column name="channel_id" type="VARCHAR" size="50" />
         <column name="batch_type" type="CHAR" size="2" required="true" default="EV" />
         <column name="status" type="CHAR" size="2" />
@@ -204,14 +204,14 @@
     </table>
 
     <table name="incoming_batch">
-        <column name="batch_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="status" type="CHAR" size="2" />
         <column name="create_time" type="TIMESTAMP" />
     </table>
 
     <table name="incoming_batch_hist">
-        <column name="batch_id" type="VARCHAR" size="50" />
+        <column name="batch_id" type="INTEGER" size="50" />
         <column name="node_id" type="VARCHAR" size="50" />
         <column name="status" type="CHAR" size="2" />
         <column name="start_time" type="TIMESTAMP" />

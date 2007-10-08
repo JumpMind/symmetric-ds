@@ -12,7 +12,7 @@ public class OutgoingBatch implements Serializable {
 
     private String batchId;
 
-    private String clientId;
+    private String nodeId;
 
     private String channelId;
 
@@ -24,7 +24,7 @@ public class OutgoingBatch implements Serializable {
     }
     
     public OutgoingBatch(Node client, String channelId, BatchType batchType) {
-        this.clientId = client.getNodeId();
+        this.nodeId = client.getNodeId();
         this.channelId = channelId;
         this.status = Status.NE;
         this.batchType = batchType;
@@ -47,12 +47,12 @@ public class OutgoingBatch implements Serializable {
         this.status = status;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public void setClientId(String locationId) {
-        this.clientId = locationId;
+    public void setNodeId(String locationId) {
+        this.nodeId = locationId;
     }
 
     public String getChannelId() {

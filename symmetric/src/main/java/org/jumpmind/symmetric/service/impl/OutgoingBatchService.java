@@ -85,7 +85,7 @@ public class OutgoingBatchService extends AbstractService implements
                         OutgoingBatch newBatch = new OutgoingBatch();
                         newBatch.setBatchType(BatchType.EVENTS);
                         newBatch.setChannelId(channel.getId());
-                        newBatch.setClientId(nodeId);
+                        newBatch.setNodeId(nodeId);
 
                         // node channel is setup to ignore, just mark the batch as already processed.
                         if (channel.isIgnored()) {
@@ -159,7 +159,7 @@ public class OutgoingBatchService extends AbstractService implements
         PreparedStatement insert = conn.prepareStatement(createBatchSql,
                 new int[] { 1 });
         insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-        insert.setString(1, outgoingBatch.getClientId());
+        insert.setString(1, outgoingBatch.getNodeId());
         insert.setString(2, outgoingBatch.getChannelId());
         insert.setString(3, outgoingBatch.getBatchType().getCode());
         insert.execute();
@@ -182,7 +182,7 @@ public class OutgoingBatchService extends AbstractService implements
                             throws SQLException {
                         OutgoingBatch batch = new OutgoingBatch();
                         batch.setBatchId(rs.getString(1));
-                        batch.setClientId(rs.getString(2));
+                        batch.setNodeId(rs.getString(2));
                         batch.setChannelId(rs.getString(3));
                         batch.setStatus(rs.getString(4));
                         batch.setBatchType(rs.getString(5));
