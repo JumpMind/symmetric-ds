@@ -51,4 +51,6 @@ public interface IDbDialect {
     
     public String getDefaultSchema();
     
+    public int getStreamingResultsFetchSize();
+    
 }

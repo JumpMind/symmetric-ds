@@ -340,6 +340,7 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
+        <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />

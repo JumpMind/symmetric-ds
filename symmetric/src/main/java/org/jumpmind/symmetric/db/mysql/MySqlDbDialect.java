@@ -107,4 +107,15 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 String.class);
     }
 
+    /**
+     * According to the documentation (and experience) the jdbc driver for mysql requires the 
+     * fetch size to be as follows.
+     */
+    @Override   
+    public int getStreamingResultsFetchSize() {
+        return Integer.MIN_VALUE;
+    }
+    
+    
+
 }
