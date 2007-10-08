@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.service;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
@@ -9,7 +10,7 @@ public interface IDataExtractorService {
     public void extractClientIdentityFor(Node client,
             IOutgoingTransport transport);
 
-    public void extractInitialLoadFor(Node client, Trigger config,
+    public OutgoingBatch extractInitialLoadFor(Node client, Trigger config,
             IOutgoingTransport transport);
 
     /**

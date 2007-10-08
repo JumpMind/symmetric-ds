@@ -51,6 +51,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private Map<Integer, String> _defaultSizes;
 
     protected String tablePrefix;
+    
+    private int streamingResultsFetchSize;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -469,5 +471,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public int getStreamingResultsFetchSize() {
+        return streamingResultsFetchSize;
+    }
+
+    public void setStreamingResultsFetchSize(int streamingResultsFetchSize) {
+        this.streamingResultsFetchSize = streamingResultsFetchSize;
     }
 }

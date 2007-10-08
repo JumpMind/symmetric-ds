@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OutgoingBatch implements Serializable {
 
@@ -69,6 +71,12 @@ public class OutgoingBatch implements Serializable {
 
     public BatchType getBatchType() {
         return batchType;
+    }
+    
+    public List<BatchInfo> getBatchInfoList() {
+        List<BatchInfo> list = new ArrayList<BatchInfo>();
+        list.add(new BatchInfo(this.batchId));
+        return list;
     }
 
     public void setBatchType(BatchType batchType) {

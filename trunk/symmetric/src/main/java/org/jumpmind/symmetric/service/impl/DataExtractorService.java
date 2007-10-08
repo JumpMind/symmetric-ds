@@ -71,7 +71,7 @@ public class DataExtractorService implements IDataExtractorService {
         }
     }
 
-    public void extractInitialLoadFor(Node client, final Trigger trigger,
+    public OutgoingBatch extractInitialLoadFor(Node client, final Trigger trigger,
             final IOutgoingTransport transport) {
         
         final String sql = dbDialect.createInitalLoadSqlFor(client, trigger);
@@ -90,8 +90,7 @@ public class DataExtractorService implements IDataExtractorService {
                     PreparedStatement statement = conn.prepareStatement(sql,
                             java.sql.ResultSet.TYPE_FORWARD_ONLY,
                             java.sql.ResultSet.CONCUR_READ_ONLY);
-                    // TODO: move fetchsize to dbdialect?
-                    //statement.setFetchSize(Integer.MIN_VALUE);
+                    statement.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ResultSet results = statement.executeQuery();
                     final BufferedWriter writer = transport.open();
                     final DataExtractorContext ctxCopy = context.copy();
@@ -114,6 +113,8 @@ public class DataExtractorService implements IDataExtractorService {
             }
         });
         outgoingBatchService.markOutgoingBatchSent(batch);
+        
+        return batch;
     }
 
     public boolean extract(Node node, IOutgoingTransport transport)
@@ -146,7 +147,7 @@ public class DataExtractorService implements IDataExtractorService {
                                             selectEventDataToExtractSql,
                                             java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                             java.sql.ResultSet.CONCUR_READ_ONLY);
-                            //statement.setFetchSize(Integer.MIN_VALUE);
+                            statement.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                             statement.setString(1, batch.getNodeId());
                             statement.setString(2, batch.getBatchId());
                             ResultSet results = statement.executeQuery();

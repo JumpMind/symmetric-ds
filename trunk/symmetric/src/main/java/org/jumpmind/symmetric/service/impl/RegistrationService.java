@@ -9,7 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -26,6 +28,8 @@ public class RegistrationService extends AbstractService implements
     private INodeService nodeService;
 
     private IDataExtractorService dataExtractorService;
+    
+    private IAcknowledgeService acknowledgeService;
 
     private IConfigurationService configurationService;
 
@@ -78,8 +82,11 @@ public class RegistrationService extends AbstractService implements
                                 .getNodeGroupId(), node.getNodeGroupId(),
                                 Constants.CHANNEL_CONFIG);
                 if (trigger != null) {
-                    dataExtractorService.extractInitialLoadFor(node,
+                    OutgoingBatch batch = dataExtractorService.extractInitialLoadFor(node,
                             trigger, transport);
+                    // acknowledge right away, because the acknowledgement is not build into the registration
+                    // protocol.
+                    acknowledgeService.ack(batch.getBatchInfoList());
                 }
             }
             dataExtractorService.extractClientIdentityFor(node, transport);
@@ -183,6 +190,10 @@ public class RegistrationService extends AbstractService implements
     public void setConfigurationService(
             IConfigurationService configurationService) {
         this.configurationService = configurationService;
+    }
+
+    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
+        this.acknowledgeService = acknowledgeService;
     }
 
 }
