@@ -154,7 +154,7 @@ public class DataExtractorService implements IDataExtractorService {
                     final DataExtractorContext ctxCopy = context.copy();
                     while (rs.next()) {
                         dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
-                                trigger.getSourceTableName(), null, null, audit), ctxCopy);
+                                trigger.getSourceTableName(), null, audit), ctxCopy);
                     }
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(st);
