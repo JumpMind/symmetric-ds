@@ -23,8 +23,9 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
 interface IStreamDataCommand {
-    void execute(BufferedWriter out, Data data) throws IOException;
+    void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException;
 }

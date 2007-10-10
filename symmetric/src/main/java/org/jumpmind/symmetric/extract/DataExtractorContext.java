@@ -23,10 +23,13 @@ package org.jumpmind.symmetric.extract;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.symmetric.model.OutgoingBatch;
+
 public class DataExtractorContext implements Cloneable {
     
     private List<String> auditRecordsWritten = new ArrayList<String>();
     private String lastTableName;
+    private OutgoingBatch batch;
 
     public DataExtractorContext copy() {
         DataExtractorContext newVersion;
@@ -49,6 +52,14 @@ public class DataExtractorContext implements Cloneable {
     
     public boolean isLastTable(String tableName) {
         return lastTableName.equals(tableName);
+    }
+
+    public OutgoingBatch getBatch() {
+        return batch;
+    }
+
+    public void setBatch(OutgoingBatch batch) {
+        this.batch = batch;
     }
 
 }
