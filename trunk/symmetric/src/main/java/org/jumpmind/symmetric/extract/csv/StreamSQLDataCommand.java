@@ -23,10 +23,11 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
 class StreamSQLDataCommand extends AbstractStreamDataCommand {
-    public void execute(BufferedWriter out, Data data) throws IOException {
+    public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
         // ???
     }
 }
