@@ -32,6 +32,7 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="purgeService" ref="purgeService" />
+        <property name="dataService" ref="dataService" />
         <property name="properties" ref="properties" />
         <property name="dataSource" ref="dataSource" />        
     </bean>

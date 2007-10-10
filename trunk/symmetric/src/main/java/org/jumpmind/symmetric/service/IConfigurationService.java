@@ -55,7 +55,9 @@ public interface IConfigurationService {
 
     public List<NodeChannel> getChannelsFor(String nodeId, boolean failIfTableDoesNotExist);
     
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId); 
+    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
+    
+    public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
     
     public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
     
@@ -65,6 +67,8 @@ public interface IConfigurationService {
     
     public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetDomainName, String channel);
 
+    public Trigger getTriggerById(int triggerId);
+    
     public void insert(TriggerHistory newAuditRecord);
 
     public Map<Long, TriggerHistory> getHistoryRecords();

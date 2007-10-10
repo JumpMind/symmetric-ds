@@ -1,14 +1,22 @@
 /*
- * SymmetricDS is an open source database synchronization solution. Copyright
- * (C) Chris Henson <chenson42@users.sourceforge.net> This library is free
- * software; you can redistribute it and/or modify it under the terms of the GNU
- * Lesser General Public License as published by the Free Software Foundation;
- * either version 3 of the License, or (at your option) any later version. This
- * library is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see <http://www.gnu.org/licenses/>.
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
  */
 
 package org.jumpmind.symmetric.service.impl;
@@ -125,8 +133,37 @@ public class DataExtractorService implements IDataExtractorService {
             }
         });
         outgoingBatchService.markOutgoingBatchSent(batch);
-
+        
         return batch;
+    }
+
+    public void extractInitialLoadBatchFor(Node node, final Trigger trigger,
+            final IOutgoingTransport transport) {
+
+        final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
+        final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                try {
+                    PreparedStatement st = conn.prepareStatement(sql,
+                            java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+                    st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ResultSet rs = st.executeQuery();
+                    final BufferedWriter writer = transport.open();
+                    final DataExtractorContext ctxCopy = context.copy();
+                    while (rs.next()) {
+                        dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
+                                trigger.getSourceTableName(), null, null, audit), ctxCopy);
+                    }
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(st);
+                    return null;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     public boolean extract(Node node, IOutgoingTransport transport)
@@ -255,11 +292,10 @@ public class DataExtractorService implements IDataExtractorService {
         }
 
         public void dataExtracted(Data data) throws Exception {
-            DataExtractorService.this.dataExtractor
-                    .write(writer, data, context);
+            dataExtractor.write(writer, data, context);
         }
 
-        public void done() throws IOException {
+        public void done() throws IOException {           
         }
 
         public void endBatch(OutgoingBatch batch) throws Exception {
@@ -273,6 +309,7 @@ public class DataExtractorService implements IDataExtractorService {
         }
 
         public void startBatch(OutgoingBatch batch) throws Exception {
+            context.setBatch(batch);
             dataExtractor.begin(batch, writer);
         }
 
