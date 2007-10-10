@@ -56,13 +56,8 @@ public class Data {
      */
     private Date createTime;
 
-    /**
-     * This is populated by the trigger if a batchId select
-     */
-    private String batchId;
-
     public Data(long dataId, String pkData, String rowData,
-            DataEventType eventType, String tableName, String batchId,
+            DataEventType eventType, String tableName,
             Date createTime, TriggerHistory audit) {
         super();
         this.dataId = dataId;
@@ -70,17 +65,8 @@ public class Data {
         this.rowData = rowData;
         this.eventType = eventType;
         this.tableName = tableName;
-        this.batchId = batchId;
         this.createTime = createTime;
         this.audit = audit;
-    }
-
-    public String getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
     }
 
     public long getDataId() {

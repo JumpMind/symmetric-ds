@@ -1,21 +1,14 @@
 /*
- * SymmetricDS is an open source database synchronization solution.
- *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, see
- * <http://www.gnu.org/licenses/>.
+ * SymmetricDS is an open source database synchronization solution. Copyright
+ * (C) Chris Henson <chenson42@users.sourceforge.net> This library is free
+ * software; you can redistribute it and/or modify it under the terms of the GNU
+ * Lesser General Public License as published by the Free Software Foundation;
+ * either version 3 of the License, or (at your option) any later version. This
+ * library is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jumpmind.symmetric.service.impl;
@@ -82,8 +75,7 @@ public class DataExtractorService implements IDataExtractorService {
             TriggerHistory audit = new TriggerHistory(tableName, "node_id",
                     "node_id");
             Data data = new Data(1, null, node.getNodeId(),
-                    DataEventType.INSERT, tableName, batch.getBatchId(), null,
-                    audit);
+                    DataEventType.INSERT, tableName, null, audit);
             dataExtractor.write(writer, data, ctxCopy);
             dataExtractor.commit(batch, writer);
         } catch (IOException e) {
@@ -91,9 +83,9 @@ public class DataExtractorService implements IDataExtractorService {
         }
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node client, final Trigger trigger,
-            final IOutgoingTransport transport) {
-        
+    public OutgoingBatch extractInitialLoadFor(Node client,
+            final Trigger trigger, final IOutgoingTransport transport) {
+
         final String sql = dbDialect.createInitalLoadSqlFor(client, trigger);
         final OutgoingBatch batch = new OutgoingBatch(client, trigger
                 .getChannelId(), BatchType.INITIAL_LOAD);
@@ -110,7 +102,8 @@ public class DataExtractorService implements IDataExtractorService {
                     PreparedStatement statement = conn.prepareStatement(sql,
                             java.sql.ResultSet.TYPE_FORWARD_ONLY,
                             java.sql.ResultSet.CONCUR_READ_ONLY);
-                    statement.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    statement.setFetchSize(dbDialect
+                            .getStreamingResultsFetchSize());
                     ResultSet results = statement.executeQuery();
                     final BufferedWriter writer = transport.open();
                     final DataExtractorContext ctxCopy = context.copy();
@@ -119,8 +112,7 @@ public class DataExtractorService implements IDataExtractorService {
                     while (results.next()) {
                         dataExtractor.write(writer, new Data(1, null, results
                                 .getString(1), DataEventType.INSERT, trigger
-                                .getSourceTableName(), batch.getBatchId(),
-                                null, audit), ctxCopy);
+                                .getSourceTableName(), null, audit), ctxCopy);
                     }
                     dataExtractor.commit(batch, writer);
                     results.close();
@@ -133,7 +125,7 @@ public class DataExtractorService implements IDataExtractorService {
             }
         });
         outgoingBatchService.markOutgoingBatchSent(batch);
-        
+
         return batch;
     }
 
@@ -167,7 +159,8 @@ public class DataExtractorService implements IDataExtractorService {
                                             selectEventDataToExtractSql,
                                             java.sql.ResultSet.TYPE_FORWARD_ONLY,
                                             java.sql.ResultSet.CONCUR_READ_ONLY);
-                            statement.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                            statement.setFetchSize(dbDialect
+                                    .getStreamingResultsFetchSize());
                             statement.setString(1, batch.getNodeId());
                             statement.setString(2, batch.getBatchId());
                             ResultSet results = statement.executeQuery();
@@ -211,12 +204,11 @@ public class DataExtractorService implements IDataExtractorService {
                 .getString(3));
         String rowData = results.getString(4);
         String pk = results.getString(5);
-        String batchId = results.getString(6);
         Date created = results.getDate(7);
         TriggerHistory audit = configurationService.getHistoryRecordFor(results
                 .getInt(8));
-        return new Data(dataId, pk, rowData, eventType, tableName, batchId,
-                created, audit);
+        return new Data(dataId, pk, rowData, eventType, tableName, created,
+                audit);
     }
 
     public void setOutgoingBatchService(
@@ -267,7 +259,7 @@ public class DataExtractorService implements IDataExtractorService {
                     .write(writer, data, context);
         }
 
-        public void done() throws IOException {           
+        public void done() throws IOException {
         }
 
         public void endBatch(OutgoingBatch batch) throws Exception {
