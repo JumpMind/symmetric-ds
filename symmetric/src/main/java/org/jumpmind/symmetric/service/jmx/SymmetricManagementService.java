@@ -29,6 +29,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -42,6 +43,8 @@ public class SymmetricManagementService {
     private IBootstrapService bootstrapService;
 
     private IPurgeService purgeService;
+    
+    private IDataService dataService;
 
     private Properties properties;
 
@@ -88,6 +91,11 @@ public class SymmetricManagementService {
         }
     }
 
+    @ManagedOperation(description = "Send an initial load of data to a node.")
+    public void reloadNode(String nodeId) {
+        dataService.reloadNode(nodeId);
+    }
+
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
     }
@@ -106,5 +114,9 @@ public class SymmetricManagementService {
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
 }

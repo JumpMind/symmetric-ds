@@ -93,6 +93,13 @@
                 inactive_time is null
             </value>
         </property>
+        <property name="activeTriggersForReloadSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_node_group_id = ? and
+                target_node_group_id = ? and channel_id != ? and inactive_time is null 
+                order by initial_load_order
+            </value>
+        </property>
         <property name="inactiveTriggersForSourceNodeGroupSql">
             <value>
                 select * from ${sync.table.prefix}_trigger t inner join
@@ -163,6 +170,11 @@
                 target_node_group_id = ? and channel_id = ? and source_node_group_id = ?
             </value>
         </property>
+        <property name="selectTriggerByIdSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where trigger_id = ?
+            </value>
+        </property>
     </bean>
 
     <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService"
@@ -220,6 +232,23 @@
                 trigger_hist_id from ${sync.table.prefix}_data a, ${sync.table.prefix}_data_event b
                 where a.data_id = b.data_id and node_id = ? and batch_id=? order by data_id asc
             </value>
+        </property>
+    </bean>
+
+    <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="insertIntoDataSql">
+            <value>
+                insert into ${sync.table.prefix}_data
+                (data_id, channel_id, table_name, event_type, row_data, pk_data, trigger_hist_id, create_time)
+                values(null, ?, ?, ?, ?, ?, ?, current_timestamp)
+            </value>
+        </property>
+        <property name="insertIntoDataEventSql">
+            <value>insert into ${sync.table.prefix}_data_event (data_id, node_id) values(?, ?)</value>
         </property>
     </bean>
 
@@ -423,7 +452,11 @@
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
                 </entry>
                 <entry key="R">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
+                        <property name="dataExtractorService" ref="dataExtractorService" />
+                        <property name="configurationService" ref="configurationService" />
+                        <property name="nodeService" ref="nodeService" />
+                     </bean>
                 </entry>
                 <entry key="S">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>

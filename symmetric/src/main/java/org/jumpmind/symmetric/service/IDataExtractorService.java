@@ -33,6 +33,9 @@ public interface IDataExtractorService {
     public OutgoingBatch extractInitialLoadFor(Node client, Trigger config,
             IOutgoingTransport transport);
 
+    public void extractInitialLoadBatchFor(Node node, final Trigger trigger,
+            final IOutgoingTransport transport);
+
     /**
      * @return true if work was done or false if there was no work to do.
      */

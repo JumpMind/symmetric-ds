@@ -60,6 +60,8 @@ public class ConfigurationService extends AbstractService implements
     private String insertTriggerSql;
 
     private String selectTriggerSql;
+    
+    private String selectTriggerByIdSql;
 
     private String selectTriggerTargetSql;
 
@@ -74,6 +76,8 @@ public class ConfigurationService extends AbstractService implements
     private String inactivateTriggerHistorySql;
 
     private String activeTriggersForSourceNodeGroupSql;
+    
+    private String activeTriggersForReloadSql;
 
     private String inactiveTriggersForSourceNodeGroupSql;
 
@@ -193,6 +197,12 @@ public class ConfigurationService extends AbstractService implements
     }
 
     @SuppressWarnings("unchecked")
+    public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId) {
+        return (List<Trigger>) jdbcTemplate.query(activeTriggersForReloadSql, new Object[] {
+                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerMapper());
+    }
+
+    @SuppressWarnings("unchecked")
     public List<Trigger> getInactiveTriggersForSourceNodeGroup(
             String sourceNodeGroupId) {
         return (List<Trigger>) jdbcTemplate.query(
@@ -209,6 +219,17 @@ public class ConfigurationService extends AbstractService implements
                 new TriggerMapper());
         if (configs.size() > 0) {
             return configs.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Trigger getTriggerById(int triggerId) {
+        List<Trigger> triggers = (List<Trigger>) jdbcTemplate.query(selectTriggerByIdSql,
+                new Object[] { triggerId }, new TriggerMapper());
+        if (triggers.size() > 0) {
+            return triggers.get(0);
         } else {
             return null;
         }
@@ -452,6 +473,14 @@ public class ConfigurationService extends AbstractService implements
 
     public List<String> getNodeConfigChannelTableNames() {
         return nodeConfigChannelTableNames;
+    }
+
+    public void setSelectTriggerByIdSql(String selectTriggerByIdSql) {
+        this.selectTriggerByIdSql = selectTriggerByIdSql;
+    }
+
+    public void setActiveTriggersForReloadSql(String activeTriggersForReloadSql) {
+        this.activeTriggersForReloadSql = activeTriggersForReloadSql;
     }
 
 }
