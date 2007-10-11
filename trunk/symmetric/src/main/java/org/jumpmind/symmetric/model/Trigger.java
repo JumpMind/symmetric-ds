@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 
@@ -413,6 +415,14 @@ public class Trigger  {
 
     public String getTargetTableName() {
         return targetTableName;
+    }
+
+    public String getDefaultTargetTableName() {
+        if (StringUtils.isBlank(targetTableName)) {
+            return sourceTableName;
+        } else {
+            return targetTableName;
+        }
     }
 
     public void setTargetTableName(String targetTableName) {

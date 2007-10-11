@@ -74,6 +74,8 @@ public enum DataEventType implements ICoded {
             return DataEventType.DELETE;
         } else if (s.equals("R")) {
             return DataEventType.RELOAD;
+        } else if (s.equals("S")) {
+            return DataEventType.SQL;
         }
         return null;
     }    

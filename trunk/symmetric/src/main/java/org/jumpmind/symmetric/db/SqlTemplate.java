@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +25,6 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -123,7 +123,7 @@ public class SqlTemplate {
         }
         ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(),
                 ddl);
-        ddl = replace("targetTableName", getTargetTableName(trigger).toUpperCase(),
+        ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(),
                 ddl);        
         ddl = replace("schemaName",
                 trigger.getSourceSchemaName() != null ? trigger
@@ -159,14 +159,6 @@ public class SqlTemplate {
         ddl = replace("oldKeys", columnsText, ddl);
 
         return ddl;
-    }
-
-    private String getTargetTableName(Trigger trigger) {
-        if (StringUtils.isBlank(trigger.getTargetTableName())) {
-            return trigger.getSourceTableName();
-        } else {
-            return trigger.getTargetTableName();
-        }
     }
 
     private String buildColumnString(String tableAlias, Column[] columns) {
