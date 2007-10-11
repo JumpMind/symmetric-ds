@@ -33,6 +33,8 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedOperationParameter;
+import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for symmetric")
@@ -92,6 +94,7 @@ public class SymmetricManagementService {
     }
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
     public void reloadNode(String nodeId) {
         dataService.reloadNode(nodeId);
     }
