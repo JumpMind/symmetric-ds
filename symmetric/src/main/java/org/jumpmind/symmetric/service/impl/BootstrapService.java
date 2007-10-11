@@ -54,8 +54,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-public class BootstrapService extends AbstractService implements
-        IBootstrapService {
+public class BootstrapService extends AbstractService implements IBootstrapService {
 
     static final Log logger = LogFactory.getLog(BootstrapService.class);
 
@@ -83,16 +82,14 @@ public class BootstrapService extends AbstractService implements
 
     public void init() {
         logger.info("SymmetricDS version " + Version.VERSION);
-        this.randomSleepTimeSlot = new RandomTimeSlot(
-                this.runtimeConfiguration, 60);
+        this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
         if (autoConfigureDatabase) {
             logger.info("Initializing symmetric database.");
             dbDialect.initConfigDb(tablePrefix);
             populateDefautGlobalParametersIfNeeded();
             logger.info("Done initializing symmetric database.");
         } else {
-            logger
-                    .info("Symmetric is not configured to auto create the database.");
+            logger.info("Symmetric is not configured to auto create the database.");
         }
     }
 
@@ -110,61 +107,49 @@ public class BootstrapService extends AbstractService implements
     }
 
     private void removeInactiveTriggers() {
-        List<Trigger> triggers = configurationService
-                .getInactiveTriggersForSourceNodeGroup(runtimeConfiguration
-                        .getNodeGroupId());
+        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(runtimeConfiguration
+                .getNodeGroupId());
         for (Trigger trigger : triggers) {
-            TriggerHistory history = configurationService
-                    .getLatestHistoryRecordFor(trigger.getTriggerId());
+            TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
-                logger.info("About to remove triggers for inactivated table: "
-                        + history.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history
-                        .getNameForInsertTrigger());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history
-                        .getNameForDeleteTrigger());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history
-                        .getNameForUpdateTrigger());
+                logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForInsertTrigger());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForDeleteTrigger());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForUpdateTrigger());
                 configurationService.inactivateTriggerHistory(history);
             } else {
-                logger
-                        .info("A trigger was inactivated that had not yet been built.  Taking no action.");
+                logger.info("A trigger was inactivated that had not yet been built.  Taking no action.");
             }
         }
     }
 
     private void updateOrCreateTriggers() {
 
-        List<Trigger> triggers = configurationService
-                .getActiveTriggersForSourceNodeGroup(runtimeConfiguration
-                        .getNodeGroupId());
+        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(runtimeConfiguration
+                .getNodeGroupId());
 
         for (Trigger trigger : triggers) {
 
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getMetaDataFor(trigger
-                        .getSourceSchemaName(), trigger.getSourceTableName()
+                Table table = dbDialect.getMetaDataFor(trigger.getSourceSchemaName(), trigger.getSourceTableName()
                         .toUpperCase(), false);
 
                 if (table != null) {
-                    TriggerHistory latestHistoryBeforeRebuild = configurationService
-                            .getLatestHistoryRecordFor(trigger.getTriggerId());
+                    TriggerHistory latestHistoryBeforeRebuild = configurationService.getLatestHistoryRecordFor(trigger
+                            .getTriggerId());
 
                     boolean forceRebuildOfTriggers = false;
                     if (latestHistoryBeforeRebuild == null) {
                         reason = TriggerReBuildReason.NEW_TRIGGERS;
                         forceRebuildOfTriggers = true;
 
-                    } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild
-                            .getTableHash()) {
+                    } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild.getTableHash()) {
                         reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
                         forceRebuildOfTriggers = true;
 
-                    } else if (trigger
-                            .hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild
-                                    .getCreateTime())) {
+                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
                     }
@@ -172,35 +157,24 @@ public class BootstrapService extends AbstractService implements
                     // TODO should probably check to see if the time stamp on the symmetric-dialects.xml is newer than the
                     // create time on the audit record.
 
-                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(
-                            forceRebuildOfTriggers, trigger,
-                            DataEventType.DELETE, reason,
-                            latestHistoryBeforeRebuild,
-                            rebuildTriggerIfNecessary(forceRebuildOfTriggers,
-                                    trigger, DataEventType.UPDATE, reason,
-                                    latestHistoryBeforeRebuild,
-                                    rebuildTriggerIfNecessary(
-                                            forceRebuildOfTriggers, trigger,
-                                            DataEventType.INSERT, reason,
-                                            latestHistoryBeforeRebuild, null,
-                                            trigger.isSyncOnInsert(), table),
-                                    trigger.isSyncOnUpdate(), table), trigger
+                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(forceRebuildOfTriggers, trigger,
+                            DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(
+                                    forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
+                                    latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(forceRebuildOfTriggers,
+                                            trigger, DataEventType.INSERT, reason, latestHistoryBeforeRebuild, null,
+                                            trigger.isSyncOnInsert(), table), trigger.isSyncOnUpdate(), table), trigger
                                     .isSyncOnDelete(), table);
 
-                    if (latestHistoryBeforeRebuild != null
-                            && newestHistory != null) {
-                        configurationService
-                                .inactivateTriggerHistory(latestHistoryBeforeRebuild);
+                    if (latestHistoryBeforeRebuild != null && newestHistory != null) {
+                        configurationService.inactivateTriggerHistory(latestHistoryBeforeRebuild);
                     }
 
                 } else {
-                    logger
-                            .error("The configured table does not exist in the datasource that is configured: "
-                                    + trigger.getSourceTableName());
+                    logger.error("The configured table does not exist in the datasource that is configured: "
+                            + trigger.getSourceTableName());
                 }
             } catch (Exception ex) {
-                logger.error("Failed to synchronize trigger for "
-                        + trigger.getSourceTableName(), ex);
+                logger.error("Failed to synchronize trigger for " + trigger.getSourceTableName(), ex);
             }
 
         }
@@ -214,9 +188,8 @@ public class BootstrapService extends AbstractService implements
             while (!registered) {
                 try {
                     logger.info("Attempting to register.");
-                    registered = dataLoaderService.loadData(transportManager
-                            .getRegisterTransport(new Node(
-                                    this.runtimeConfiguration, dbDialect)));
+                    registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
+                            this.runtimeConfiguration, dbDialect)));
                 } catch (ConnectException e) {
                     logger.warn("Connection failed while registering.");
                 } catch (Exception e) {
@@ -249,8 +222,7 @@ public class BootstrapService extends AbstractService implements
             node.setSyncURL(runtimeConfiguration.getMyUrl());
             nodeService.updateNode(node);
             insertPushDataForNode(node);
-            logger
-                    .info("Done updating my node information and heartbeat time.");
+            logger.info("Done updating my node information and heartbeat time.");
         }
     }
 
@@ -260,38 +232,32 @@ public class BootstrapService extends AbstractService implements
      */
     private void insertPushDataForNode(Node node) {
         String whereClause = " t.node_id = '" + node.getNodeId() + "'";
-        Trigger trig = configurationService.getTriggerFor(
-                tablePrefix + "_node", runtimeConfiguration.getNodeGroupId());
+        Trigger trig = configurationService.getTriggerFor(tablePrefix + "_node", runtimeConfiguration.getNodeGroupId());
         if (trig != null) {
-            final String data = (String) jdbcTemplate.queryForObject(dbDialect
-                    .createCsvDataSql(trig, whereClause), String.class);
-            final String pk = (String) jdbcTemplate.queryForObject(dbDialect
-                    .createCsvPrimaryKeySql(trig, whereClause), String.class);
-            final TriggerHistory hist = configurationService
-                    .getLatestHistoryRecordFor(trig.getTriggerId());
-            int dataId = (Integer) jdbcTemplate
-                    .execute(new ConnectionCallback() {
-                        public Object doInConnection(Connection c)
-                                throws SQLException, DataAccessException {
-                            PreparedStatement pstmt = c.prepareStatement(
-                                    insertNodeIntoDataSql, new int[] { 1 });
-                            pstmt.setString(1, data);
-                            pstmt.setString(2, pk);
-                            pstmt.setInt(3, hist.getTriggerHistoryId());
-                            pstmt.execute();
-                            ResultSet rs = pstmt.getGeneratedKeys();
-                            rs.next();
-                            int dataId = rs.getInt(1);
-                            JdbcUtils.closeResultSet(rs);
-                            JdbcUtils.closeStatement(pstmt);
-                            return dataId;
-                        }
-                    });
+            final String data = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trig, whereClause),
+                    String.class);
+            final String pk = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trig, whereClause),
+                    String.class);
+            final TriggerHistory hist = configurationService.getLatestHistoryRecordFor(trig.getTriggerId());
+            int dataId = (Integer) jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+                    PreparedStatement pstmt = c.prepareStatement(insertNodeIntoDataSql, new int[] { 1 });
+                    pstmt.setString(1, data);
+                    pstmt.setString(2, pk);
+                    pstmt.setInt(3, hist.getTriggerHistoryId());
+                    pstmt.execute();
+                    ResultSet rs = pstmt.getGeneratedKeys();
+                    rs.next();
+                    int dataId = rs.getInt(1);
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(pstmt);
+                    return dataId;
+                }
+            });
 
             List<Node> nodes = nodeService.findNodesToPushTo();
             for (Node node2 : nodes) {
-                jdbcTemplate.update(insertIntoDataEventSql, new Object[] {
-                        dataId, node2.getNodeId() });
+                jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataId, node2.getNodeId() });
             }
         } else {
             logger
@@ -301,10 +267,8 @@ public class BootstrapService extends AbstractService implements
 
     private void sleepBeforeRegistrationRetry() {
         try {
-            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND
-                    * randomSleepTimeSlot.getRandomValueSeededByDomainId();
-            logger.warn("Could not register.  Sleeping for " + sleepTimeInMs
-                    + "ms before attempting again.");
+            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
+            logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
         }
@@ -324,59 +288,42 @@ public class BootstrapService extends AbstractService implements
         }
         configurationService.initSystemChannels();
         String groupId = runtimeConfiguration.getNodeGroupId();
-        List<NodeGroupLink> targets = configurationService
-                .getGroupLinksFor(groupId);
+        List<NodeGroupLink> targets = configurationService.getGroupLinksFor(groupId);
         if (targets != null && targets.size() > 0) {
             for (NodeGroupLink target : targets) {
                 for (String tableName : tableNames) {
-                    configurationService.initTriggerRowsForConfigChannel(
-                            tableName, groupId, target.getTargetGroupId());
+                    configurationService.initTriggerRowsForConfigChannel(tableName, groupId, target.getTargetGroupId());
                 }
             }
         } else {
-            logger
-                    .error("Could not find any targets for your group id of "
-                            + runtimeConfiguration.getNodeGroupId()
-                            + ".  Please validate your node group id against the setup in the database.");
+            logger.error("Could not find any targets for your group id of " + runtimeConfiguration.getNodeGroupId()
+                    + ".  Please validate your node group id against the setup in the database.");
         }
     }
 
-    private TriggerHistory rebuildTriggerIfNecessary(boolean forceRebuild,
-            Trigger trigger, DataEventType dmlType,
-            TriggerReBuildReason reason, TriggerHistory oldAudit,
-            TriggerHistory audit, boolean create, Table table) {
+    private TriggerHistory rebuildTriggerIfNecessary(boolean forceRebuild, Trigger trigger, DataEventType dmlType,
+            TriggerReBuildReason reason, TriggerHistory oldAudit, TriggerHistory audit, boolean create, Table table) {
 
         boolean triggerExists = false;
 
-        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger,
-                reason, trigger.getTriggerName(DataEventType.INSERT), trigger
-                        .getTriggerName(DataEventType.UPDATE), trigger
-                        .getTriggerName(DataEventType.DELETE));
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger
+                .getTriggerName(DataEventType.INSERT), trigger.getTriggerName(DataEventType.UPDATE), trigger
+                .getTriggerName(DataEventType.DELETE));
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
         if (oldAudit != null) {
             oldTriggerName = oldAudit.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = oldAudit.getSourceSchemaName();
-            triggerExists = dbDialect.doesTriggerExist(oldAudit
-                    .getSourceSchemaName(), oldAudit.getSourceTableName()
+            triggerExists = dbDialect.doesTriggerExist(oldAudit.getSourceSchemaName(), oldAudit.getSourceTableName()
                     .toUpperCase(), oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as defined in the trigger
             // does not exist as well.
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
-            try {
-                triggerExists = dbDialect.doesTriggerExist(trigger
-                        .getSourceSchemaName(), trigger.getSourceTableName()
-                        .toUpperCase(), oldTriggerName);
-            } catch (Exception ex) {
-                triggerExists = false;
-                logger
-                        .warn(
-                                "Could not figure out if the trigger exists.  Assuming that is does not.",
-                                ex);
-            }
+            triggerExists = dbDialect.doesTriggerExist(trigger.getSourceSchemaName(), trigger.getSourceTableName()
+                    .toUpperCase(), oldTriggerName);
         }
 
         if (!triggerExists && forceRebuild) {
@@ -388,10 +335,9 @@ public class BootstrapService extends AbstractService implements
             triggerExists = false;
         }
 
-        if (audit == null && (oldAudit == null  || (!triggerExists && create))) {
+        if (audit == null && (oldAudit == null || (!triggerExists && create))) {
             configurationService.insert(newTriggerHist);
-            audit = configurationService.getLatestHistoryRecordFor(trigger
-                    .getTriggerId());            
+            audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
 
         if (!triggerExists && create) {
@@ -409,8 +355,7 @@ public class BootstrapService extends AbstractService implements
         this.parameterService = parameterService;
     }
 
-    public void setConfigurationService(
-            IConfigurationService configurationService) {
+    public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
 
