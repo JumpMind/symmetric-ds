@@ -322,7 +322,7 @@ public class BootstrapService extends AbstractService implements
         } else {
             tableNames = configurationService.getNodeConfigChannelTableNames();
         }
-        configurationService.initConfigChannel();
+        configurationService.initSystemChannels();
         String groupId = runtimeConfiguration.getNodeGroupId();
         List<NodeGroupLink> targets = configurationService
                 .getGroupLinksFor(groupId);

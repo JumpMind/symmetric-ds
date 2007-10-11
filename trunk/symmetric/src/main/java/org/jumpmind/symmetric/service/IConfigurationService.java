@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,7 +43,7 @@ public interface IConfigurationService {
     
     public void initTriggerRowsForConfigChannel(String configTable, String groupId, String targetGroupId);
 
-    public void initConfigChannel();
+    public void initSystemChannels();
     
     public Map<String, DataEventAction> getDataEventActionsByGroupId(String groupId);
 

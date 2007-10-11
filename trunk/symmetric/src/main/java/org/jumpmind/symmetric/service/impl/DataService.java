@@ -57,7 +57,7 @@ public class DataService implements IDataService {
         int dataId = (Integer) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 PreparedStatement ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
-                ps.setString(1, Constants.CHANNEL_CONFIG);
+                ps.setString(1, Constants.CHANNEL_RELOAD);
                 ps.setString(2, trigger.getSourceTableName());
                 ps.setString(3, DataEventType.RELOAD.getCode());
                 ps.setString(4, null);

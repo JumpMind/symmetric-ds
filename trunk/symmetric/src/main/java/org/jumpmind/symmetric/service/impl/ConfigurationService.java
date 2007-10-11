@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,7 +54,7 @@ public class ConfigurationService extends AbstractService implements
 
     private String allTriggerHistSql;
 
-    private String insertConfigChannelSql;
+    private String insertChannelSql;
 
     private String groupsLinksForSql;
 
@@ -87,11 +88,16 @@ public class ConfigurationService extends AbstractService implements
 
     private IDbDialect dbDialect;
 
-    public void initConfigChannel() {
+    public void initSystemChannels() {
         try {
-            jdbcTemplate.update(insertConfigChannelSql);
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_CONFIG, 0, 100 });
         } catch (DataIntegrityViolationException ex) {
-            logger.info("Config channel already created.");
+            logger.debug("Channel " + Constants.CHANNEL_CONFIG + " already created.");
+        }
+        try {
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 100000 });
+        } catch (DataIntegrityViolationException ex) {
+            logger.debug("Channel " + Constants.CHANNEL_RELOAD + " already created.");
         }
     }
 
@@ -406,8 +412,8 @@ public class ConfigurationService extends AbstractService implements
         this.allTriggerHistSql = allTableSyncAuditSql;
     }
 
-    public void setInsertConfigChannelSql(String insertConfigChannelSql) {
-        this.insertConfigChannelSql = insertConfigChannelSql;
+    public void setInsertChannelSql(String insertChannelSql) {
+        this.insertChannelSql = insertChannelSql;
     }
 
     public void setGroupsLinksForSql(String groupsTargetsForSql) {

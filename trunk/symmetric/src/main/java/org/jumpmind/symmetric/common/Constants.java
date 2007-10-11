@@ -33,6 +33,8 @@ public class Constants {
     
     public static final String CHANNEL_CONFIG = "config";
     
+    public static final String CHANNEL_RELOAD = "reload";
+    
     public static final String DATA_SOURCE = "dataSource";
     
     public static final String BOOTSTRAP_SERVICE = "bootstrapService";
