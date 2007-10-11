@@ -77,11 +77,14 @@ public class TableTemplate {
     private Column[] columnMetaData;
 
     private HashMap<DmlType, StatementBuilder> statementMap;
+    
+    private IColumnFilter columnFilter;
 
     public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect,
-            String tableName) {
+            String tableName, IColumnFilter columnFilter) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
+        this.columnFilter = columnFilter;
         // TODO should we be passing the schema in the csv?
         table = dbDialect.getMetaDataFor(null, tableName, true);
         allMetaData = new HashMap<String, Column>();
@@ -105,6 +108,9 @@ public class TableTemplate {
     public int insert(String[] columnValues) {
         StatementBuilder st = getStatementBuilder(DmlType.INSERT);
         Object[] values = filterValues(columnMetaData, columnValues);
+        if (this.columnFilter != null) {
+            values = this.columnFilter.filterColumnsValues(DmlType.INSERT, values);
+        }
         return jdbcTemplate.update(st.getSql(), values);
     }
 
@@ -112,20 +118,30 @@ public class TableTemplate {
         StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
         Object[] values = ArrayUtils.addAll(filterValues(columnMetaData,
                 columnValues), filterValues(keyMetaData, keyValues));
+        if (this.columnFilter != null) {
+            values = this.columnFilter.filterColumnsValues(DmlType.UPDATE, values);
+        }
         return jdbcTemplate.update(st.getSql(), values);
     }
 
     public int delete(String[] keyValues) {
         StatementBuilder st = getStatementBuilder(DmlType.DELETE);
         Object[] values = filterValues(keyMetaData, keyValues);
+        if (this.columnFilter != null) {
+            values = this.columnFilter.filterColumnsValues(DmlType.DELETE, values);
+        }        
         return jdbcTemplate.update(st.getSql(), values);
     }
 
     private StatementBuilder getStatementBuilder(DmlType type) {
         StatementBuilder st = statementMap.get(type);
+        String[] statementColumns = existColumnNames;
+        if (this.columnFilter != null) {
+            statementColumns = this.columnFilter.filterColumnsNames(type, statementColumns);
+        }
         if (st == null) {
             st = new StatementBuilder(type, table.getName(), existKeyNames,
-                    existColumnNames);
+                    statementColumns);
             statementMap.put(type, st);
         }
         return st;

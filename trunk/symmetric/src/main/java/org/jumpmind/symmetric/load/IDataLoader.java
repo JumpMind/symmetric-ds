@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.load;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public interface IDataLoader extends Cloneable {
 
     public void open(BufferedReader in) throws IOException;
     
-    public void open(BufferedReader in, List<IDataLoaderFilter> filters) throws IOException;
+    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String,IColumnFilter> columnFilters) throws IOException;
 
     public boolean hasNext() throws IOException;
 

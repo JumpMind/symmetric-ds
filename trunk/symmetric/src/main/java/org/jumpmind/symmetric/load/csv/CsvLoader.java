@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.load.csv;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -31,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
+import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
@@ -62,6 +64,8 @@ public class CsvLoader implements IDataLoader {
     protected boolean allowMissingDelete;
     
     protected List<IDataLoaderFilter> filters;
+    
+    protected Map<String, IColumnFilter> columnFilters;
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
@@ -70,9 +74,10 @@ public class CsvLoader implements IDataLoader {
         stats = new DataLoaderStatistics();
     }
 
-    public void open(BufferedReader reader, List<IDataLoaderFilter> filters) throws IOException {
+    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters) throws IOException {
         open(reader);
         this.filters = filters;
+        this.columnFilters = columnFilters;
     }
     
     public boolean hasNext() throws IOException {
@@ -147,7 +152,7 @@ public class CsvLoader implements IDataLoader {
     protected void setTable(String tableName) {
         context.setTableName(tableName);
         if (context.getTableTemplate() == null) {
-            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName));
+            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName, this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
     }
 
