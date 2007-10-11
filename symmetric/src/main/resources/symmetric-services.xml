@@ -123,10 +123,10 @@
                 ${sync.table.prefix}_node_group_link where source_node_group_id = ?
             </value>
         </property>
-        <property name="insertConfigChannelSql">
+        <property name="insertChannelSql">
             <value>
-                insert into ${sync.table.prefix}_channel values('config', 0, 100, 1,
-                'system-generated. do not mess with me.')
+                insert into ${sync.table.prefix}_channel values(?, ?, ?, 1,
+                'System-generated channel.  Do not remove.')
             </value>
         </property>
         <property name="allTriggerHistSql">
