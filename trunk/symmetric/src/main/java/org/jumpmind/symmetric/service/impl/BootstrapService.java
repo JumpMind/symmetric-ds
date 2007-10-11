@@ -388,13 +388,13 @@ public class BootstrapService extends AbstractService implements
             triggerExists = false;
         }
 
-        if (!triggerExists && create) {
-            if (audit == null) {
-                configurationService.insert(newTriggerHist);
-                audit = configurationService.getLatestHistoryRecordFor(trigger
-                        .getTriggerId());
-            }
+        if (audit == null && (oldAudit == null  || (!triggerExists && create))) {
+            configurationService.insert(newTriggerHist);
+            audit = configurationService.getLatestHistoryRecordFor(trigger
+                    .getTriggerId());            
+        }
 
+        if (!triggerExists && create) {
             dbDialect.initTrigger(dmlType, trigger, audit, tablePrefix, table);
         }
 
