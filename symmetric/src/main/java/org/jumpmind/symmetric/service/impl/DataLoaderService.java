@@ -26,13 +26,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -69,6 +72,8 @@ public class DataLoaderService extends AbstractService implements
     protected BeanFactory beanFactory;
 
     protected List<IDataLoaderFilter> filters;
+    
+    protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of
@@ -97,7 +102,7 @@ public class DataLoaderService extends AbstractService implements
         IncomingBatch status = null;
         IncomingBatchHistory history = null;
         try {
-            dataLoader.open(transport.open(), filters);
+            dataLoader.open(transport.open(), filters, columnFilters);
             while (dataLoader.hasNext()) {
                 status = new IncomingBatch(dataLoader.getContext());
                 history = new IncomingBatchHistory(dataLoader.getContext());
@@ -235,6 +240,10 @@ public class DataLoaderService extends AbstractService implements
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void addColumnFilter(String tableName, IColumnFilter filter) {
+        this.columnFilters.put(tableName, filter);
     }
 
 }
