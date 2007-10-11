@@ -172,12 +172,14 @@ public class CsvLoader implements IDataLoader {
         } catch (DataIntegrityViolationException e) {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
             if (enableFallbackUpdate) {
-                logger.warn("Unable to insert, updating instead: " + ArrayUtils.toString(tokens));
+                logger.warn("Unable to insert into " + context.getTableName() + ", updating instead: "
+                        + ArrayUtils.toString(tokens));
                 String keyValues[] = parseKeys(tokens, 1);
                 stats.incrementFallbackUpdateCount();
                 rows = context.getTableTemplate().update(columnValues, keyValues);
                 if (rows == 0) {
-                    throw new RuntimeException("Unable to update: " + ArrayUtils.toString(tokens));
+                    throw new RuntimeException("Unable to update " + context.getTableName() + ": "
+                            + ArrayUtils.toString(tokens));
                 }
             } else {
                 throw e;                
@@ -200,14 +202,17 @@ public class CsvLoader implements IDataLoader {
         int rows = context.getTableTemplate().update(columnValues, keyValues);
         if (rows == 0) {
             if (enableFallbackInsert) {
-                logger.warn("Unable to update, inserting instead: " + ArrayUtils.toString(tokens));
+                logger.warn("Unable to update " + context.getTableName() + ", inserting instead: "
+                        + ArrayUtils.toString(tokens));
                 stats.incrementFallbackInsertCount();
                 return context.getTableTemplate().insert(columnValues);
             } else {
-                throw new RuntimeException("Unable to update: " + ArrayUtils.toString(tokens));
+                throw new RuntimeException("Unable to update " + context.getTableName() + ": "
+                        + ArrayUtils.toString(tokens));
             }
         } else if (rows > 1) {
-            logger.warn("Too many rows (" + rows + ") updated: " + ArrayUtils.toString(tokens));
+            logger.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
+                    + ArrayUtils.toString(tokens));
         }
         return rows;
     }
@@ -225,11 +230,13 @@ public class CsvLoader implements IDataLoader {
         int rows = context.getTableTemplate().delete(keyValues);
         if (rows == 0) {
             if (allowMissingDelete) {
-                logger.warn("Delete affected no rows: " + ArrayUtils.toString(tokens));
+                logger.warn("Delete of " + context.getTableName() + " affected no rows: "
+                        + ArrayUtils.toString(tokens));
                 stats.incrementMissingDeleteCount();
             }
             else {
-                throw new RuntimeException("Delete affected no rows: " + ArrayUtils.toString(tokens));
+                throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
+                        + ArrayUtils.toString(tokens));
             }
         }        
         return rows;
