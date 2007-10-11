@@ -128,6 +128,10 @@ public class CsvLoader implements IDataLoader {
                 continue;
             } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                 break;
+            } else if (tokens[0].equals(CsvConstants.SQL)) {
+                if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                    runSql(tokens);
+                }
             } else {
                 throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
                         + stats.getLineCount() + " of batch " + context.getBatchId());
@@ -240,6 +244,11 @@ public class CsvLoader implements IDataLoader {
             }
         }        
         return rows;
+    }
+
+    protected void runSql(String[] tokens) {
+        stats.incrementStatementCount();
+        jdbcTemplate.execute(tokens[1]);
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {

@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,11 +24,14 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
 class StreamSQLDataCommand extends AbstractStreamDataCommand {
-    public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        // ???
+
+    public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
+        Util.write(writer, CsvConstants.SQL, DELIMITER, data.getRowData());
+        writer.newLine();
     }
 }

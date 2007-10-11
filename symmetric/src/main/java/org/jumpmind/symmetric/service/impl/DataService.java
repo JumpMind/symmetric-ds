@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ListIterator;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -51,18 +53,31 @@ public class DataService implements IDataService {
     private String insertIntoDataEventSql;
 
     public void createReloadEvent(final Node targetNode, final Trigger trigger) {
-
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
-        int dataId = (Integer) jdbcTemplate.execute(new ConnectionCallback() {
+        int dataId = insertData(new Object[] { Constants.CHANNEL_RELOAD, trigger.getSourceTableName(),
+                DataEventType.RELOAD.getCode(), null, null, history.getTriggerHistoryId() });
+        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataId, targetNode.getNodeId() });
+    }
+
+    public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
+        final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        final String sql = "\"delete from " + trigger.getDefaultTargetTableName() + " where "
+                + trigger.getInitialLoadSelect().replaceAll("\"", "\\\"") + "\"";
+
+        int dataId = insertData(new Object[] { Constants.CHANNEL_RELOAD, trigger.getSourceTableName(),
+                DataEventType.SQL.getCode(), sql, null, history.getTriggerHistoryId() });
+        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataId, targetNode.getNodeId() });
+    }
+
+    protected int insertData(final Object[] values) {
+        return (Integer) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 PreparedStatement ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
-                ps.setString(1, Constants.CHANNEL_RELOAD);
-                ps.setString(2, trigger.getSourceTableName());
-                ps.setString(3, DataEventType.RELOAD.getCode());
-                ps.setString(4, null);
-                ps.setString(5, null);
-                ps.setInt(6, history.getTriggerHistoryId());
+                int columnNumber = 1;
+                for (Object value : values) {
+                    ps.setObject(columnNumber++, value);
+                }
                 ps.execute();
                 ResultSet rs = ps.getGeneratedKeys();
                 rs.next();
@@ -72,15 +87,18 @@ public class DataService implements IDataService {
                 return dataId;
             }
         });
-
-        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataId, targetNode.getNodeId() });
     }
-
+    
     public void reloadNode(String nodeId) {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
-        for (Trigger trigger : configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
-                targetNode.getNodeGroupId())) {
+        List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
+                targetNode.getNodeGroupId());
+        for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
+            Trigger trigger = iterator.previous();
+            createPurgeEvent(targetNode, trigger);
+        }
+        for (Trigger trigger : triggers) {
             createReloadEvent(targetNode, trigger);
         }
     }
