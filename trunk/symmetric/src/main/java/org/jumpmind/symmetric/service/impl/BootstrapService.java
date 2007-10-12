@@ -81,7 +81,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private String insertIntoDataEventSql;
 
     public void init() {
-        logger.info("SymmetricDS version " + Version.VERSION);
         this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
         if (autoConfigureDatabase) {
             logger.info("Initializing symmetric database.");
@@ -187,7 +186,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             // If we cannot contact the server to register, we simply must wait and try again.   
             while (!registered) {
                 try {
-                    logger.info("Attempting to register.");
+                    logger.info("Attempting to register with " + runtimeConfiguration.getRegistrationUrl());
                     registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
                             this.runtimeConfiguration, dbDialect)));
                 } catch (ConnectException e) {
@@ -199,7 +198,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 if (!registered) {
                     sleepBeforeRegistrationRetry();
                 } else {
-                    logger.info("Successfully registered.");
+                    node = nodeService.findIdentity();
+                    if (node != null) {
+                        logger.info("Successfully registered node [id=" + node.getNodeId() + "]");
+                    } else {
+                        logger.error("Node registration is unavailable");
+                    }
                 }
             }
         } else {
