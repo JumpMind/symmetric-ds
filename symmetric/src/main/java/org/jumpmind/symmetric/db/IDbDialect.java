@@ -51,6 +51,8 @@ public interface IDbDialect {
 
     public String createInitalLoadSqlFor(Node client, Trigger config);
     
+    public String createPurgeSqlFor(Node node, Trigger trig);
+    
     public String createCsvDataSql(Trigger trig, String whereClause);
     
     public String createCsvPrimaryKeySql(Trigger trig, String whereClause);

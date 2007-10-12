@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -47,6 +48,9 @@ public class DataService implements IDataService {
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
+    
+    @SuppressWarnings("unused")
+    private IDbDialect dbDialect;
 
     private String insertIntoDataSql;
 
@@ -62,8 +66,8 @@ public class DataService implements IDataService {
 
     public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        final String sql = "\"delete from " + trigger.getDefaultTargetTableName() + " where "
-                + trigger.getInitialLoadSelect().replaceAll("\"", "\\\"") + "\"";
+        //final String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
+        final String sql = "delete from " + trigger.getDefaultTargetTableName();
 
         int dataId = insertData(new Object[] { Constants.CHANNEL_RELOAD, trigger.getSourceTableName(),
                 DataEventType.SQL.getCode(), sql, null, history.getTriggerHistoryId() });
@@ -121,6 +125,10 @@ public class DataService implements IDataService {
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
 }
