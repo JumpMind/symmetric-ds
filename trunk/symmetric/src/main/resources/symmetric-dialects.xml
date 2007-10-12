@@ -9,7 +9,7 @@
     <bean id="mysqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',replace(replace($(tableAlias).$(columnName),'\\\\','\\\\\\\\'),'"','\\\\"'),'"')),',',]]>
+                <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"'),'"')),',',]]>
             </value>
         </constructor-arg>
     </bean>
@@ -132,7 +132,7 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="stringColumnTemplate" >
                 <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\'),'"','\\"')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"')),'"') end ||','||]]>
                  </value>
                 </property>
                  <property name="clobColumnTemplate">
