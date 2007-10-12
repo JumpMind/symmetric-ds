@@ -248,6 +248,7 @@ public class CsvLoader implements IDataLoader {
 
     protected void runSql(String[] tokens) {
         stats.incrementStatementCount();
+        logger.debug("Running SQL: " + tokens[1]);
         jdbcTemplate.execute(tokens[1]);
     }
 
