@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -107,6 +108,7 @@ public class SymmetricEngine {
         purgeService = (IPurgeService) applicationContext
                 .getBean(Constants.PURGE_SERVICE);
         registerEngine();
+        logger.info("Initialized SymmetricDS version " + Version.VERSION);
     }
 
     /**
@@ -155,6 +157,14 @@ public class SymmetricEngine {
     public synchronized void start() {
         if (!started) {
             initDb();
+            Node node = nodeService.findIdentity();
+            if (node != null) {
+                logger.info("Starting registered node [group=" + node.getNodeGroupId() +
+                        ", id=" + node.getNodeId() + ", externalId=" + node.getExternalId() + "]");
+            } else {
+                logger.info("Starting unregistered node [group=" + runtimeConfig.getNodeGroupId() +
+                        ", externalId=" + runtimeConfig.getExternalId() + "]");
+            }
             bootstrapService.register();
             bootstrapService.syncTriggers();
             startJobs();
