@@ -25,6 +25,7 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -79,7 +80,15 @@ public class SqlTemplate {
         sql = replace("columns", columnsText, sql);
         return sql;
     }
-            
+
+    public String createPurgeSql(Node node, IDbDialect dialect, Trigger trig) {
+        String sql = "delete from " + trig.getDefaultTargetTableName() + " where "
+                + trig.getInitialLoadSelect();
+        sql = replace("groupId", node.getNodeGroupId(), sql);
+        sql = replace("externalId", node.getExternalId(), sql);
+        return sql;
+    }
+
     public String createCsvDataSql(Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -232,13 +241,7 @@ public class SqlTemplate {
     }
 
     private String replace(String prop, String replaceWith, String sourceString) {
-        String replaceString = "\\$\\(" + prop + "\\)";
-        if (sourceString.contains("$(" + prop + ")")) {
-            return sourceString.replaceAll(replaceString, String
-                    .valueOf(replaceWith));
-        } else {
-            return sourceString;
-        }
+        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
     public void setStringColumnTemplate(String columnTemplate) {

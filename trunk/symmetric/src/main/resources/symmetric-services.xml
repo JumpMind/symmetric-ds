@@ -240,6 +240,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="dbDialect" ref="dbDialect" />
         <property name="insertIntoDataSql">
             <value>
                 insert into ${sync.table.prefix}_data

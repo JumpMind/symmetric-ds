@@ -134,6 +134,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 getMetaDataFor(config.getSourceSchemaName(), config.getSourceTableName(), true)).trim();
     }
 
+    public String createPurgeSqlFor(Node node, Trigger trig) {
+        return sqlTemplate.createPurgeSql(node, this, trig);
+    }
+
     public String createCsvDataSql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvDataSql(trig,
                 getMetaDataFor(trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();

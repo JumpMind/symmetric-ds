@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +34,7 @@ public interface IDataExtractorService {
     public OutgoingBatch extractInitialLoadFor(Node client, Trigger config,
             IOutgoingTransport transport);
 
-    public void extractInitialLoadBatchFor(Node node, final Trigger trigger,
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
             final IOutgoingTransport transport);
 
     /**

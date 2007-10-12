@@ -106,7 +106,6 @@ public class DataExtractorService implements IDataExtractorService {
             public Object doInConnection(Connection conn) throws SQLException,
                     DataAccessException {
                 try {
-
                     PreparedStatement statement = conn.prepareStatement(sql,
                             java.sql.ResultSet.TYPE_FORWARD_ONLY,
                             java.sql.ResultSet.CONCUR_READ_ONLY);
@@ -127,7 +126,7 @@ public class DataExtractorService implements IDataExtractorService {
                     statement.close();
                     return null;
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Error during SQL: " + sql, e);
                 }
 
             }
@@ -137,7 +136,7 @@ public class DataExtractorService implements IDataExtractorService {
         return batch;
     }
 
-    public void extractInitialLoadBatchFor(Node node, final Trigger trigger,
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
             final IOutgoingTransport transport) {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
@@ -160,7 +159,7 @@ public class DataExtractorService implements IDataExtractorService {
                     JdbcUtils.closeStatement(st);
                     return null;
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Error during SQL: " + sql, e);
                 }
             }
         });
