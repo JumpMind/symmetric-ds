@@ -91,57 +91,28 @@ public class DataExtractorService implements IDataExtractorService {
         }
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node client,
-            final Trigger trigger, final IOutgoingTransport transport) {
+    public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger,
+            final IOutgoingTransport transport) {
 
-        final String sql = dbDialect.createInitalLoadSqlFor(client, trigger);
-        final OutgoingBatch batch = new OutgoingBatch(client, trigger
-                .getChannelId(), BatchType.INITIAL_LOAD);
-        final TriggerHistory audit = configurationService
-                .getLatestHistoryRecordFor(trigger.getTriggerId());
-
+        OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
-
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException,
-                    DataAccessException {
-                try {
-                    PreparedStatement statement = conn.prepareStatement(sql,
-                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
-                    statement.setFetchSize(dbDialect
-                            .getStreamingResultsFetchSize());
-                    ResultSet results = statement.executeQuery();
-                    final BufferedWriter writer = transport.open();
-                    final DataExtractorContext ctxCopy = context.copy();
-                    dataExtractor.init(writer, ctxCopy);
-                    dataExtractor.begin(batch, writer);
-                    while (results.next()) {
-                        dataExtractor.write(writer, new Data(1, null, results
-                                .getString(1), DataEventType.INSERT, trigger
-                                .getSourceTableName(), null, audit), ctxCopy);
-                    }
-                    dataExtractor.commit(batch, writer);
-                    results.close();
-                    statement.close();
-                    return null;
-                } catch (IOException e) {
-                    throw new RuntimeException("Error during SQL: " + sql, e);
-                }
-
-            }
-        });
+        writeInitialLoad(node, trigger, transport, batch);
         outgoingBatchService.markOutgoingBatchSent(batch);
-        
         return batch;
     }
 
     public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
             final IOutgoingTransport transport) {
 
+        writeInitialLoad(node, trigger, transport, null);
+    }
+
+    protected void writeInitialLoad(Node node, final Trigger trigger,
+            final IOutgoingTransport transport, final OutgoingBatch batch) {
+
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
         final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-
+        
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
@@ -151,14 +122,21 @@ public class DataExtractorService implements IDataExtractorService {
                     ResultSet rs = st.executeQuery();
                     final BufferedWriter writer = transport.open();
                     final DataExtractorContext ctxCopy = context.copy();
+                    if (batch != null) {
+                        dataExtractor.init(writer, ctxCopy);
+                        dataExtractor.begin(batch, writer);
+                    }
                     while (rs.next()) {
                         dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
                                 trigger.getSourceTableName(), null, audit), ctxCopy);
                     }
+                    if (batch != null) {
+                        dataExtractor.commit(batch, writer);
+                    }
                     JdbcUtils.closeResultSet(rs);
                     JdbcUtils.closeStatement(st);
                     return null;
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw new RuntimeException("Error during SQL: " + sql, e);
                 }
             }
