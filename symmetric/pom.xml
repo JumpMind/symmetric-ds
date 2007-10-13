@@ -3,17 +3,106 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
-    <artifactId>symmetric-lib</artifactId>
+    <artifactId>symmetric</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <name>symmetric</name>
-    <url>http://maven.apache.org</url>
+    <version>0.9-SNAPSHOT</version>
+    <name>SymmetricDS</name>
+    <url>http://symmetricds.org</url>
+    <inceptionYear>2007</inceptionYear>
+    <description>
+        SymmetricDS is an open source database synchronization solution. It is platform-independent,
+        web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between
+        'retail store' databases and a centralized 'corporate' database.
+    </description>
     <scm>
-        <connection>https://jumppos.svn.sourceforge.net/svnroot/jumppos/trunk/symmetric</connection>
-        <url>https://jumppos.svn.sourceforge.net/svnroot/jumppos/trunk/symmetric</url>
+        <connection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk
+        </connection>
+        <developerConnection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk
+        </developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk</url>
     </scm>
+    <issueManagement>
+        <system>SourceForge</system>
+        <url>http://sourceforge.net/tracker/?group_id=206470</url>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>LGPL</name>
+            <url>http://www.gnu.org/licenses/gpl.txt</url>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <mailingLists>
+        <mailingList>
+            <name>SymmetricDS Development Mailing list</name>
+            <subscribe>
+                http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
+            </subscribe>
+            <unsubscribe>
+                http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
+            </unsubscribe>
+            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=</archive>
+            <post>symmetricds-development@lists.sourceforge.net</post>
+        </mailingList>
+        <mailingList>
+            <name>SymmetricDS User Mailing list</name>
+            <subscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users</subscribe>
+            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users</unsubscribe>
+            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=</archive>
+            <post>symmetricds-users@lists.sourceforge.net</post>
+        </mailingList>
+    </mailingLists>
+    <developers>
+        <developer>
+            <id>chenson42</id>
+            <name>Chris Henson</name>
+            <email>chenson42@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+                <role>architect</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+        <developer>
+            <id>erilong</id>
+            <name>Eric Long</name>
+            <email>erilong@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+                <role>architect</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+        <developer>
+            <id>andrewbwilcox</id>
+            <name>Andrew Wilcox</name>
+            <email>andrewbwilcox@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>Megha Shetty</name>
+            <email>megha_s@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>
+    </contributors>
+    <distributionManagement>
+        <site>
+            <id>sourceforge.net</id>
+            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs</url>
+        </site>
+    </distributionManagement>
     <build>
-        <finalName>symmetric</finalName>
+        <finalName>symmetric-ds</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -54,63 +143,24 @@
                         </configuration>
                     </execution>
                 </executions>
-
             </plugin>
-            <!-- 
-                <plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-                </descriptorRefs>
-                </configuration>
-                <executions>
-                <execution>
-                <id>make-assembly</id>
-                <phase>package</phase>
-                <goals>
-                <goal>attached</goal>
-                </goals>
-                </execution>
-                </executions>
-                </plugin>
-            -->
-            <!-- 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>${cobertura-maven-plugin-release-version}</version>
-                <configuration>
-                    <check>
-                        <branchRate>90</branchRate>
-                        <lineRate>90</lineRate>
-                        <haltOnFailure>false</haltOnFailure>
-                        <totalBranchRate>90</totalBranchRate>
-                        <totalLineRate>90</totalLineRate>
-                        <packageLineRate>90</packageLineRate>
-                        <packageBranchRate>90</packageBranchRate>
-                    </check>
-                    <instrumentation></instrumentation>
+                    <descriptorRefs>
+                        <descriptorRef>bin</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>cobertura-clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>cobertura-run</id>
+                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>clean</goal>
-                            <goal>check</goal>
+                            <goal>attached</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-            -->
             <!-- 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -123,20 +173,62 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <siteDirectory>${basedir}/src/site</siteDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <reporting>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>project-team</report>
+                            <report>mailing-list</report>
+                            <report>issue-tracking</report>
+                            <report>license</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jdepend-maven-plugin</artifactId>
             </plugin>
-            <!-- 
-                <plugin>
+            <!-- ToDos -->
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                </plugin>
-            -->
+                <artifactId>taglist-maven-plugin</artifactId>
+                <version>2.0-beta-1</version>
+                <configuration>
+                    <tags>TODO</tags>
+                </configuration>
+            </plugin>
+            <!-- Java Cross Reference (JXR) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jxr-maven-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/site</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </reporting>
     <repositories>
@@ -260,7 +352,6 @@
         </dependency>
     </dependencies>
     <properties>
-        <cobertura-maven-plugin-release-version>2.0</cobertura-maven-plugin-release-version>
         <surefire-report-release-version>2.4-collab-SNAPSHOT</surefire-report-release-version>
         <springframework-release-version>2.0.5</springframework-release-version>
     </properties>
