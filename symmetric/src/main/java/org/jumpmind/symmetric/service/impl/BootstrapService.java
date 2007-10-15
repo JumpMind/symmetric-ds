@@ -79,6 +79,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private String insertNodeIntoDataSql;
 
     private String insertIntoDataEventSql;
+    
+    private String triggerPrefix;
 
     public void init() {
         this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
@@ -311,8 +313,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         boolean triggerExists = false;
 
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger
-                .getTriggerName(DataEventType.INSERT), trigger.getTriggerName(DataEventType.UPDATE), trigger
-                .getTriggerName(DataEventType.DELETE));
+                .getTriggerName(DataEventType.INSERT, triggerPrefix), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix), trigger
+                .getTriggerName(DataEventType.DELETE, triggerPrefix));
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -397,6 +399,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setInsertIntoDataEventSql(String insertIntoDataEventSql) {
         this.insertIntoDataEventSql = insertIntoDataEventSql;
+    }
+
+    public void setTriggerPrefix(String triggerPrefix) {
+        this.triggerPrefix = triggerPrefix;
     }
 
 }

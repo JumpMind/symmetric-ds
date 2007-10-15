@@ -29,6 +29,7 @@
                 <prop key="symmetric.http.concurrent.workers.max">20</prop>                
                 <prop key="symmetric.runtime.engine.name">Default</prop>                               
                 <prop key="symmetric.runtime.schema.version">?</prop>
+                <prop key="symmetric.runtime.trigger.prefix"></prop>
                 <prop key="symmetric.runtime.job.random.max.start.time.ms">10000</prop>
                 <prop key="symmetric.runtime.purge.retention.minutes">7200</prop>
                 <prop key="symmetric.runtime.job.push.period.time.ms">60000</prop>

@@ -34,7 +34,7 @@ import org.apache.ddlutils.model.Table;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class Trigger  {
+public class Trigger {
 
     private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
 
@@ -102,7 +102,7 @@ public class Trigger  {
     private int initialLoadOrder;
 
     private Date inactiveTime;
-    
+
     private Date createdOn;
 
     private Date lastModifiedTime;
@@ -112,10 +112,9 @@ public class Trigger  {
     public Trigger() {
     }
 
-    public Trigger(String tableName, boolean syncOnUpdate,
-            boolean syncOnInsert, boolean syncOnDelete, String configurationId,
-            String channelId, String syncOnUpdateCondition,
-            String syncOnInsertCondition, String syncOnDeleteCondition) {
+    public Trigger(String tableName, boolean syncOnUpdate, boolean syncOnInsert, boolean syncOnDelete,
+            String configurationId, String channelId, String syncOnUpdateCondition, String syncOnInsertCondition,
+            String syncOnDeleteCondition) {
         this.sourceTableName = tableName;
         this.syncOnUpdate = syncOnUpdate;
         this.syncOnInsert = syncOnInsert;
@@ -126,7 +125,7 @@ public class Trigger  {
         this.syncOnInsertCondition = syncOnInsertCondition;
         this.syncOnDeleteCondition = syncOnDeleteCondition;
     }
-    
+
     public Date getCreatedOn() {
         return createdOn;
     }
@@ -149,7 +148,7 @@ public class Trigger  {
 
     public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
-    }    
+    }
 
     /**
      * When dealing with columns, always use this method to order the columns so that the primary keys are first.
@@ -164,9 +163,7 @@ public class Trigger  {
         }
         for (int i = 0; i < cols.length; i++) {
             Column col = cols[i];
-            if (!col.isPrimaryKey()
-                    && !excludedColumnNames.contains(col.getName()
-                            .toLowerCase())) {
+            if (!col.isPrimaryKey() && !excludedColumnNames.contains(col.getName().toLowerCase())) {
                 orderedColumns.add(col);
             }
         }
@@ -176,10 +173,8 @@ public class Trigger  {
     @SuppressWarnings("unchecked")
     private List<String> getExcludedColumnNamesAsList() {
         if (excludedColumnNames != null && excludedColumnNames.length() > 0) {
-            StringTokenizer tokenizer = new StringTokenizer(
-                    excludedColumnNames, ",");
-            List<String> columnNames = new ArrayList<String>(tokenizer
-                    .countTokens());
+            StringTokenizer tokenizer = new StringTokenizer(excludedColumnNames, ",");
+            List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
                 columnNames.add(tokenizer.nextToken().toLowerCase());
             }
@@ -189,7 +184,10 @@ public class Trigger  {
         }
     }
 
-    public String getTriggerName(DataEventType dml) {
+    public String getTriggerName(DataEventType dml, String triggerPrefix) {
+        if (triggerPrefix == null) {
+            triggerPrefix = "";
+        }
         switch (dml) {
         case INSERT:
             if (nameForInsertTrigger != null) {
@@ -207,24 +205,20 @@ public class Trigger  {
             }
             break;
         }
-        return "on_" + dml.getCode().toLowerCase() + "_to_"
-                + getShortTableName();
+        return triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName();
     }
 
     private String getShortTableName() {
         StringBuilder shortName = new StringBuilder();
         String table = getSourceTableName();
         if (table.toUpperCase().startsWith(DEFAULT_SYMMETRIC_TABLE_PREFIX)) {
-            table = table
-                    .substring(DEFAULT_SYMMETRIC_TABLE_PREFIX.length() + 1);
+            table = table.substring(DEFAULT_SYMMETRIC_TABLE_PREFIX.length() + 1);
         }
         CharSequence seq = table;
         char previousChar = ' ';
         for (int i = 0; i < seq.length(); i++) {
             char c = seq.charAt(i);
-            if (i == 0
-                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e'
-                            || c == 'i' || c == 'o' || c == 'u')) {
+            if (i == 0 || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')) {
                 shortName.append(c);
             }
             previousChar = c;
