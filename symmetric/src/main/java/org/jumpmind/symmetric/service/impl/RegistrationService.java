@@ -121,29 +121,29 @@ public class RegistrationService extends AbstractService implements
     }
 
     /**
-     * Re-open registration for a single client that already exists in the
+     * Re-open registration for a single node that already exists in the
      * database. A new password is generated and the registration_enabled flag
-     * is turned on. The next client to try registering for this domain name and
-     * domain ID will be given this information.
+     * is turned on. The next node to try registering for this node group and
+     * external ID will be given this information.
      */
-    public void reOpenRegistration(String clientId) {
+    public void reOpenRegistration(String nodeId) {
         String password = generatePassword();
         jdbcTemplate.update(reopenRegistrationSql, new Object[] { password,
-                clientId });
+                nodeId });
     }
 
     /**
-     * Open registration for a single new client given a domain (f.e., "STORE")
-     * and domain ID (f.e., "00001"). The unique client ID and password are
-     * generated and stored in the client and client_security tables with the
-     * registration_enabled flag turned on. The next client to try registering
-     * for this domain name and domain ID will be given this information.
+     * Open registration for a single new node given a node group (f.e., "STORE")
+     * and external ID (f.e., "00001"). The unique node ID and password are
+     * generated and stored in the node and node_security tables with the
+     * registration_enabled flag turned on. The next node to try registering
+     * for this node group and external ID will be given this information.
      */
-    public void openRegistration(String nodeGroup, String externalid) {
-        String clientId = generateClientId(nodeGroup, externalid);
+    public void openRegistration(String nodeGroup, String externalId) {
+        String clientId = generateClientId(nodeGroup, externalId);
         String password = generatePassword();
         jdbcTemplate.update(openRegistrationClientSql, new Object[] { clientId,
-                nodeGroup, externalid });
+                nodeGroup, externalId });
         jdbcTemplate.update(openRegistrationClientSecuritySql, new Object[] {
                 clientId, password });
     }
