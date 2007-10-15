@@ -51,6 +51,12 @@ public class NodeService extends AbstractService implements INodeService {
     protected String updateNodeSql;
     
     protected String isNodeRegisteredSql;
+    
+    protected String nodeChannelControlIgnoreSql;
+    
+    protected String insertNodeChannelControlSql;
+    
+    protected String findNodeByExternalIdSql;
 
     /**
      * Lookup a client in the database, which contains information for synching
@@ -61,6 +67,20 @@ public class NodeService extends AbstractService implements INodeService {
         List<Node> list = jdbcTemplate.query(findNodeSql, new Object[] { id },
                 new NodeRowMapper());
         return (Node) getFirstEntry(list);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Node findNodeByExternalId(String externalId) {
+        List<Node> list = jdbcTemplate.query(findNodeByExternalIdSql, new Object[] { externalId },
+                new NodeRowMapper());
+        return (Node) getFirstEntry(list);
+    }
+    
+    public void enableNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
+       Node node = findNodeByExternalId(externalId);
+       if (jdbcTemplate.update(nodeChannelControlIgnoreSql, new Object[] { enabled, node.getNodeId(), channelId}) == 0) {           
+           jdbcTemplate.update(insertNodeChannelControlSql, new Object[] { node.getNodeId(), channelId, enabled, false});           
+       }
     }
 
     /**
@@ -192,6 +212,18 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void setIsNodeRegisteredSql(String isNodeRegisteredSql) {
         this.isNodeRegisteredSql = isNodeRegisteredSql;
+    }
+
+    public void setNodeChannelControlIgnoreSql(String nodeChannelControlIgnoreSql) {
+        this.nodeChannelControlIgnoreSql = nodeChannelControlIgnoreSql;
+    }
+
+    public void setInsertNodeChannelControlSql(String insertNodeChannelControlSql) {
+        this.insertNodeChannelControlSql = insertNodeChannelControlSql;
+    }
+
+    public void setFindNodeByExternalIdSql(String findNodeByExternalIdSql) {
+        this.findNodeByExternalIdSql = findNodeByExternalIdSql;
     }
 
 }

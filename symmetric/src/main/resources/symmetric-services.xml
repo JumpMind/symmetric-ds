@@ -315,6 +315,12 @@
     <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService"
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="nodeChannelControlIgnoreSql">
+            <value>update ${sync.table.prefix}_node_channel_ctl set ignore_enabled=? where node_id=? and channel_id=?</value>
+        </property>
+        <property name="insertNodeChannelControlSql">
+            <value>insert into ${sync.table.prefix}_node_channel_ctl (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)</value>
+        </property>                                
         <property name="updateNodeSql">
             <value>
                 update ${sync.table.prefix}_node set node_group_id=?, external_id=?,
@@ -328,6 +334,12 @@
                 database_type, database_version from ${sync.table.prefix}_node where node_id = ?
             </value>
         </property>
+        <property name="findNodeByExternalIdSql">
+            <value>
+                select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
+                database_type, database_version from ${sync.table.prefix}_node where external_id = ?
+            </value>
+        </property>        
         <property name="findNodeSecuritySql">
             <value>
                 select node_id, password, registration_enabled, registration_time from
