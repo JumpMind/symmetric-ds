@@ -15,8 +15,8 @@
         <menu name="Project Info" href="maven-reports.html">
             <item name="Overview" href="/index.html"/>
             <item name="Features" href="/features.html"/>
+            <item name="News" href="/news.html"/>                        
             <item name="Support" href="/support.html"/>
-            <item name="News" href="/news.html"/>
             <item name="Project License" href="/license.html"/>
             <item name="Project Team" href="/team-list.html"/>
         </menu>
