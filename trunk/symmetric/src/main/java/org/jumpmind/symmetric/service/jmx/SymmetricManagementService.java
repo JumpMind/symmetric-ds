@@ -107,8 +107,8 @@ public class SymmetricManagementService {
             @ManagedOperationParameter(name = "enabled", description = "Set to true to enable and false to disable"),
             @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
-    public void setChannelEnabledForExternalId(String externalId) {
-
+    public void enableNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
+        nodeService.enableNodeChannelForExternalId(enabled, channelId, externalId);
     }
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
