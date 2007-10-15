@@ -30,7 +30,7 @@ public interface IRegistrationService {
    
     public boolean registerNode(Node client, OutputStream out) throws IOException;
     
-    public void openRegistration(String domainName, String domainId);
+    public void openRegistration(String nodeGroup, String externalId);
     
     public void reOpenRegistration(String clientId);
 
