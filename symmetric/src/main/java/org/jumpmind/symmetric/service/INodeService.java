@@ -36,7 +36,7 @@ public interface INodeService {
     
     public NodeSecurity findNodeSecurity(String clientId);
     
-    public void enableNodeChannelForExternalId(boolean enabled, String channelId, String externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId);
 
     public boolean isNodeAuthorized(String clientId, String password);
    

@@ -76,7 +76,7 @@ public class NodeService extends AbstractService implements INodeService {
         return (Node) getFirstEntry(list);
     }
     
-    public void enableNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
+    public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
        Node node = findNodeByExternalId(externalId);
        if (jdbcTemplate.update(nodeChannelControlIgnoreSql, new Object[] { enabled, node.getNodeId(), channelId}) == 0) {           
            jdbcTemplate.update(insertNodeChannelControlSql, new Object[] { node.getNodeId(), channelId, enabled, false});           

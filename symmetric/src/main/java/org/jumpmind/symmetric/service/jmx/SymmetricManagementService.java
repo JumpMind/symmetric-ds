@@ -29,6 +29,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -51,9 +52,9 @@ public class SymmetricManagementService {
 
     private INodeService nodeService;
     
-    private IRegistrationService registrationService;
-
     private IDataService dataService;
+
+    private IRegistrationService registrationService;
 
     private Properties properties;
 
@@ -108,31 +109,30 @@ public class SymmetricManagementService {
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "enabled", description = "Set to true to enable and false to disable"),
+            @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
             @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
-    public void enableNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
-        nodeService.enableNodeChannelForExternalId(enabled, channelId, externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId) {
+        nodeService.ignoreNodeChannelForExternalId(ignore, channelId, externalId);
+    }
+
+    @ManagedOperation(description = "Open the registration for a node with the specified external id")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeGroup", description = "The node group id this node will belong to"),
+            @ManagedOperationParameter(name = "externalId", description = "The external id for the node") })
+    public void openRegistration(String nodeGroupId, String externalId) {
+        Node node = nodeService.findNodeByExternalId(externalId);
+        if (node != null) {
+            registrationService.reOpenRegistration(node.getExternalId());
+        } else {
+            registrationService.openRegistration(nodeGroupId, externalId);
+        }
     }
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
     public String reloadNode(String nodeId) {
         return dataService.reloadNode(nodeId);
-    }
-
-    @ManagedOperation(description = "Re-Open registration for a specific node.  If the node loses its registration, you can use this.")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The unique node ID for the node.") })
-    public void reOpenRegistration(String nodeId) {
-        registrationService.reOpenRegistration(nodeId);
-    }
-    
-    @ManagedOperation(description = "Open registration for a node group for a specific external ID.")
-    @ManagedOperationParameters( { 
-        @ManagedOperationParameter(name = "nodeGroup", description = "The node group where the registering node will be placed."),
-        @ManagedOperationParameter(name = "externalId", description = "The external ID that identifies the specific node.") })
-    public void openRegistration(String nodeGroup, String externalId) {
-        registrationService.openRegistration(nodeGroup, externalId);
     }
 
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {

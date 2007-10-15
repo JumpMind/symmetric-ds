@@ -30,8 +30,8 @@ public interface IRegistrationService {
    
     public boolean registerNode(Node client, OutputStream out) throws IOException;
     
-    public void openRegistration(String nodeGroup, String externalId);
+    public void openRegistration(String nodeGroupId, String externalId);
     
-    public void reOpenRegistration(String clientId);
+    public void reOpenRegistration(String nodeId);
 
 }
