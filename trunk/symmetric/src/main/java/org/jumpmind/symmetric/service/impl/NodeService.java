@@ -49,6 +49,8 @@ public class NodeService extends AbstractService implements INodeService {
     protected String findNodesWhoITargetSql;
 
     protected String updateNodeSql;
+    
+    protected String isNodeRegisteredSql;
 
     /**
      * Lookup a client in the database, which contains information for synching
@@ -159,6 +161,10 @@ public class NodeService extends AbstractService implements INodeService {
             return clientSecurity;
         }
     }
+    
+    public boolean isExternalIdRegistered(String externalId) {
+        return jdbcTemplate.queryForInt(isNodeRegisteredSql, new Object[] {externalId}) > 0;
+    }
 
     public void setFindNodeSecuritySql(String findNodeSecuritySql) {
         this.findNodeSecuritySql = findNodeSecuritySql;
@@ -182,6 +188,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void setUpdateNodeSql(String updateNodeSql) {
         this.updateNodeSql = updateNodeSql;
+    }
+
+    public void setIsNodeRegisteredSql(String isNodeRegisteredSql) {
+        this.isNodeRegisteredSql = isNodeRegisteredSql;
     }
 
 }
