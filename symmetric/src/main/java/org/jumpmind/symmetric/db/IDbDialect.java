@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
@@ -74,5 +75,7 @@ public interface IDbDialect {
     public String getDefaultSchema();
     
     public int getStreamingResultsFetchSize();
+    
+    public JdbcTemplate getJdbcTemplate();
     
 }

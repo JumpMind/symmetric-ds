@@ -468,4 +468,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void setStreamingResultsFetchSize(int streamingResultsFetchSize) {
         this.streamingResultsFetchSize = streamingResultsFetchSize;
     }
+
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
 }
