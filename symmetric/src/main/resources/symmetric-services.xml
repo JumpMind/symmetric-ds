@@ -341,6 +341,11 @@
                 c inner join ${sync.table.prefix}_node_identity i on c.node_id = i.node_id
             </value>
         </property>
+        <property name="isNodeRegisteredSql">
+            <value>
+                select count(*) from ${sync.table.prefix}_node_security s inner join ${sync.table.prefix}_node n on n.node_id=s.node_id where n.external_id=? and s.registration_time is not null and s.registration_enabled=0 
+            </value>
+        </property>        
         <property name="findNodesWhoTargetMeSql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,

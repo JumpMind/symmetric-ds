@@ -1,23 +1,23 @@
- create or replace function fn_transaction_id
+CREATE OR REPLACE function fn_transaction_id
     return varchar is
     begin
        return DBMS_TRANSACTION.local_transaction_id(false);
     end;
 /
- CREATE OR REPLACE function isTriggerDisabled   return varchar is 
+CREATE OR REPLACE function fn_trigger_disabled return varchar is 
   begin 
-     return pack_var.disable_trigger;
+     return pack_symmetric.disable_trigger;
   end;
 /
-CREATE OR REPLACE package pack_var as
+CREATE OR REPLACE package pack_symmetric as
     disable_trigger pls_integer;
     procedure setValue (a IN number);
- end pack_var;
+ end pack_symmetric;
 /
- CREATE OR REPLACE package body pack_var as
+CREATE OR REPLACE package body pack_symmetric as
     procedure setValue(a IN number) is
     begin
-         pack_var.disable_trigger:=a;
+         pack_symmetric.disable_trigger:=a;
     end;
-  end pack_var;
+  end pack_symmetric;
 /
