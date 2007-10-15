@@ -1,0 +1,40 @@
+ ------
+ SymmetricDS
+ ------
+ ------
+ Date
+ ------
+
+Welcome to SymetricDS
+
+ SymmetricDS is database synchronization software.  It uses web and database technologies to enable the synchronization of relational databases.  It was originally built for use in a distributed store environment where data originates and is returned to a centralized database (i.e. a general office database).
+
+ Satellite databases (i.e. a store servers) register an interest in channels of data.   Channels are groups of database tables that can be synchronized in either direction.
+
+ SymmetricDS can be deployed as a Java web application.  It can be deployed as a standalone service or to an existing application server such as Tomcat, Jetty, or JBoss.  The same application software is deployed to the satellite systems as is deployed to the most central location.  The centralized locations may by configured as a web farm to ensure QOS for the satellite systems.
+
+ Configuration is always performed at the central most system.  The satellite systems get their configuration from their host system.  When a satellite application is started it is provided a couple pieces of information so it can begin it's work:
+
+    * Configuration name (or configuration id)
+    
+    * Host system - the URL to the server it will get it's configuration from and synchronize data with
+    
+    * Registration parameter(s) - a piece(s) of information identifying the system (such as store id)
+
+ SymmetricDS also allows for synchronizing n-tiers of databases.  For example,  a SymmetricDS configuration could entail:
+
+    * A farm of web servers fronting an enterprise class general office database.
+    
+    * 1000(s) of satellite store servers with their host system being the general office.
+    
+    * 10(s) of satellite register deployments with their host system being the store servers (allowing for offline registers)
+
+ The n-tier configuration can is not limited to the above configuration.  For example,  a series of regional servers could be inserted between the general office and store server if necessary.  Another option might be to not even have store servers.
+
+ The transport for data synchronization is HTTP.  SymmetricDS chose to use web technologies because of the proven ability to scale.  The web architecture is well understood and it is easy to find technical resources to help tune it. 
+
+ Symmetric works well in both low and high bandwidth environments.   It works well with existing databases.
+
+
+
+

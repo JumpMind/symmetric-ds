@@ -161,15 +161,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <archiveClasses>true</archiveClasses>
-                </configuration>
-            </plugin>
-            -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
@@ -212,7 +203,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jdepend-maven-plugin</artifactId>
             </plugin>
-            <!-- ToDos -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>taglist-maven-plugin</artifactId>
@@ -221,7 +211,6 @@
                     <tags>TODO</tags>
                 </configuration>
             </plugin>
-            <!-- Java Cross Reference (JXR) -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jxr-maven-plugin</artifactId>

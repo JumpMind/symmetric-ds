@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Maven">
+    <bannerLeft>
+        <name>SymmetricDS</name>
+        <!--
+        <src>images/ehcache_logo.gif</src>
+        -->
+        <href>/</href>
+    </bannerLeft>
+    <body>
+        <links>
+            <item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=206470"/>
+        </links>
+
+        <menu name="Project Info" href="maven-reports.html">
+            <item name="Overview" href="/index.html"/>
+            <item name="Features" href="/features.html"/>
+            <item name="Support" href="/support.html"/>
+            <item name="News" href="/news.html"/>
+            <item name="Project License" href="/license.html"/>
+            <item name="Project Team" href="/team-list.html"/>
+        </menu>
+
+        <menu name="Code" href="maven-reports.html">
+            <item name="Download" href="http://sourceforge.net/project/showfiles.php?group_id=206470"/>
+            <item name="Code Samples" href="/samples.html"/>
+            <item name="Source Repository" href="/source-repository.html"/>
+            <item name="Browsable Source Code" href="/jxr.html"/>
+            <item name="TODO List" href="/taglist.html"/>            
+        </menu>
+
+        <menu name="Documentation">
+            <item name="Getting Started" href="documentation/getting_started.html"/>
+            <item name="JavaDoc" href="apidocs/index.html"/>
+        </menu>
+
+        <menu name="Community" href="maven-reports.html">
+            <item name="SourceForge Home" href="http://sourceforge.net/projects/symmetricds/"/>
+            <item name="Mailing Lists" href="/mail-lists.html"/>
+            <item name="Issue Tracking" href="/issue-tracking.html"/>
+            <item name="Roadmap" href="/roadmap.html"/>
+        </menu>
+
+
+        <menu name="Project Reports" href="maven-reports.html">
+            <item name="Test Report" href="surefire-report.html"/>
+            <item name="JDepends Report" href="jdepend-report.html"/>
+        </menu>
+
+    </body>
+</project>
