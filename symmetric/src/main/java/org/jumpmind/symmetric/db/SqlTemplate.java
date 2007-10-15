@@ -196,6 +196,7 @@ public class SqlTemplate {
                 templateToUse = stringColumnTemplate;
                 break;
             case Types.CLOB:
+            case Types.BLOB:
                 templateToUse = clobColumnTemplate;
                 break;
             case Types.BINARY:
