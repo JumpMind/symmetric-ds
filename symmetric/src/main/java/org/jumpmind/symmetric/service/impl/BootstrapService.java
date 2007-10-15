@@ -22,10 +22,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.net.ConnectException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -45,13 +41,11 @@ import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 public class BootstrapService extends AbstractService implements IBootstrapService {
@@ -71,14 +65,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private ITransportManager transportManager;
 
     private IDataLoaderService dataLoaderService;
+    
+    private IDataService dataService;
 
     private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
-
-    private String insertNodeIntoDataSql;
-
-    private String insertIntoDataEventSql;
     
     private String triggerPrefix;
 
@@ -227,50 +219,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setSymmetricVersion(Version.VERSION);
             node.setSyncURL(runtimeConfiguration.getMyUrl());
             nodeService.updateNode(node);
-            insertPushDataForNode(node);
+            dataService.createHeartbeatEvent(node);
             logger.info("Done updating my node information and heartbeat time.");
         }
     }
-
-    /**
-     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
-     * @param node
-     */
-    private void insertPushDataForNode(Node node) {
-        String whereClause = " t.node_id = '" + node.getNodeId() + "'";
-        Trigger trig = configurationService.getTriggerFor(tablePrefix + "_node", runtimeConfiguration.getNodeGroupId());
-        if (trig != null) {
-            final String data = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trig, whereClause),
-                    String.class);
-            final String pk = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trig, whereClause),
-                    String.class);
-            final TriggerHistory hist = configurationService.getLatestHistoryRecordFor(trig.getTriggerId());
-            int dataId = (Integer) jdbcTemplate.execute(new ConnectionCallback() {
-                public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                    PreparedStatement pstmt = c.prepareStatement(insertNodeIntoDataSql, new int[] { 1 });
-                    pstmt.setString(1, data);
-                    pstmt.setString(2, pk);
-                    pstmt.setInt(3, hist.getTriggerHistoryId());
-                    pstmt.execute();
-                    ResultSet rs = pstmt.getGeneratedKeys();
-                    rs.next();
-                    int dataId = rs.getInt(1);
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(pstmt);
-                    return dataId;
-                }
-            });
-
-            List<Node> nodes = nodeService.findNodesToPushTo();
-            for (Node node2 : nodes) {
-                jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataId, node2.getNodeId() });
-            }
-        } else {
-            logger
-                    .info("Not generating data and data events for node because a trigger had not been created for that table yet.");
-        }
-    }
-
+    
     private void sleepBeforeRegistrationRetry() {
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
@@ -393,14 +346,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         this.tablePrefix = tablePrefix;
     }
 
-    public void setInsertNodeIntoDataSql(String insertNodeIntoDataSql) {
-        this.insertNodeIntoDataSql = insertNodeIntoDataSql;
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
-
-    public void setInsertIntoDataEventSql(String insertIntoDataEventSql) {
-        this.insertIntoDataEventSql = insertIntoDataEventSql;
-    }
-
+    
     public void setTriggerPrefix(String triggerPrefix) {
         this.triggerPrefix = triggerPrefix;
     }

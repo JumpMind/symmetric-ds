@@ -95,8 +95,8 @@ public class SymmetricManagementService {
 
     @ManagedOperation(description = "Send an initial load of data to a node.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload.") })
-    public void reloadNode(String nodeId) {
-        dataService.reloadNode(nodeId);
+    public String reloadNode(String nodeId) {
+        return dataService.reloadNode(nodeId);
     }
 
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
