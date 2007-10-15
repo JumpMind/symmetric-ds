@@ -23,18 +23,8 @@
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dataService" ref="dataService" />
         <property name="autoConfigureDatabase" value="${symmetric.auto.config.database}" />
-        <property name="insertNodeIntoDataSql">
-            <value>
-                insert into ${sync.table.prefix}_data
-                (data_id, channel_id,table_name,event_type,row_data,pk_data,trigger_hist_id,create_time)
-                values(null,'config','${sync.table.prefix}_node','U',?,?,?,current_timestamp)
-            </value>
-        </property>
-        <property name="insertIntoDataEventSql">
-            <value>insert into ${sync.table.prefix}_data_event (data_id,node_id) values(?,?)</value>
-        </property>
-
     </bean>
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
@@ -240,8 +230,10 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="insertIntoDataSql">
             <value>
                 insert into ${sync.table.prefix}_data

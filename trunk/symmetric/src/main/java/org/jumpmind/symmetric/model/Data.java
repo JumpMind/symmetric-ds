@@ -49,6 +49,8 @@ public class Data {
     private DataEventType eventType;
 
     private String tableName;
+    
+    private String channelId;
 
     /**
      * This is populated by the trigger when the event happens.  It will be useful for 
@@ -66,6 +68,16 @@ public class Data {
         this.eventType = eventType;
         this.tableName = tableName;
         this.createTime = createTime;
+        this.audit = audit;
+    }
+
+    public Data(String channelId, String tableName, DataEventType eventType, String rowData,
+            String pkData, TriggerHistory audit) {
+        this.channelId = channelId;
+        this.tableName = tableName;
+        this.eventType = eventType;
+        this.rowData = rowData;
+        this.pkData = pkData;
         this.audit = audit;
     }
 
@@ -125,6 +137,14 @@ public class Data {
     public void setAudit(TriggerHistory audit)
     {
         this.audit = audit;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
 }
