@@ -39,6 +39,7 @@
         <property name="properties" ref="properties" />
         <property name="dataSource" ref="dataSource" />
         <property name="nodeService" ref="nodeService" />
+        <property name="registrationService" ref="registrationService" />
     </bean>
 
 </beans>

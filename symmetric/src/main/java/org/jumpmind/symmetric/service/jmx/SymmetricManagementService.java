@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +33,7 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
@@ -48,6 +50,8 @@ public class SymmetricManagementService {
     private IPurgeService purgeService;
 
     private INodeService nodeService;
+    
+    private IRegistrationService registrationService;
 
     private IDataService dataService;
 
@@ -117,6 +121,20 @@ public class SymmetricManagementService {
         return dataService.reloadNode(nodeId);
     }
 
+    @ManagedOperation(description = "Re-Open registration for a specific node.  If the node loses its registration, you can use this.")
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The unique node ID for the node.") })
+    public void reOpenRegistration(String nodeId) {
+        registrationService.reOpenRegistration(nodeId);
+    }
+    
+    @ManagedOperation(description = "Open registration for a node group for a specific external ID.")
+    @ManagedOperationParameters( { 
+        @ManagedOperationParameter(name = "nodeGroup", description = "The node group where the registering node will be placed."),
+        @ManagedOperationParameter(name = "externalId", description = "The external ID that identifies the specific node.") })
+    public void openRegistration(String nodeGroup, String externalId) {
+        registrationService.openRegistration(nodeGroup, externalId);
+    }
+
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
     }
@@ -143,5 +161,9 @@ public class SymmetricManagementService {
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 }
