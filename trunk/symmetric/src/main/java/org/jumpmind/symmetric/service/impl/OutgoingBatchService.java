@@ -40,8 +40,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class OutgoingBatchService extends AbstractService implements
-        IOutgoingBatchService {
+public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
     final static Log logger = LogFactory.getLog(OutgoingBatchService.class);
 
@@ -57,6 +56,8 @@ public class OutgoingBatchService extends AbstractService implements
 
     private String changeBatchStatusSql;
 
+    private String initialLoadStatusSql;
+
     private IOutgoingBatchHistoryService historyService;
 
     /**
@@ -70,27 +71,22 @@ public class OutgoingBatchService extends AbstractService implements
      */
     public void buildOutgoingBatches(final String nodeId) {
         // TODO should channels be cached?
-        final List<NodeChannel> channels = configurationService.getChannelsFor(
-                nodeId, true);
+        final List<NodeChannel> channels = configurationService.getChannelsFor(nodeId, true);
 
         jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException,
-                    DataAccessException {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
-                PreparedStatement update = conn
-                        .prepareStatement(updateBatchedEventsSql);
+                PreparedStatement update = conn.prepareStatement(updateBatchedEventsSql);
 
                 update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
                 for (NodeChannel channel : channels) {
 
                     if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId
-                                + " is currently suspended.");
+                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
                     } else if (channel.isEnabled()) {
                         // determine which transactions will be part of this batch on this channel
-                        PreparedStatement select = conn
-                                .prepareStatement(selectEventsToBatchSql);
+                        PreparedStatement select = conn.prepareStatement(selectEventsToBatchSql);
 
                         select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
@@ -119,9 +115,7 @@ public class OutgoingBatchService extends AbstractService implements
                             do {
                                 String trxId = results.getString(1);
 
-                                if (stopOnNextTxIdChange
-                                        && (lastTrxId == null || !lastTrxId
-                                                .equals(trxId))) {
+                                if (stopOnNextTxIdChange && (lastTrxId == null || !lastTrxId.equals(trxId))) {
                                     break;
                                 }
 
@@ -147,8 +141,7 @@ public class OutgoingBatchService extends AbstractService implements
 
                                 lastTrxId = trxId;
                             } while (results.next());
-                            historyService.created(new Integer(newBatch
-                                    .getBatchId()), count);
+                            historyService.created(new Integer(newBatch.getBatchId()), count);
                         }
 
                         JdbcUtils.closeResultSet(results);
@@ -165,19 +158,16 @@ public class OutgoingBatchService extends AbstractService implements
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException,
-                    DataAccessException {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 insertOutgoingBatch(conn, outgoingBatch);
                 return null;
             }
         });
     }
 
-    private void insertOutgoingBatch(Connection conn,
-            OutgoingBatch outgoingBatch) throws SQLException {
+    private void insertOutgoingBatch(Connection conn, OutgoingBatch outgoingBatch) throws SQLException {
         // TODO: move generated key retrieval to DbDialect
-        PreparedStatement insert = conn.prepareStatement(createBatchSql,
-                new int[] { 1 });
+        PreparedStatement insert = conn.prepareStatement(createBatchSql, new int[] { 1 });
         insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
         insert.setString(1, outgoingBatch.getNodeId());
         insert.setString(2, outgoingBatch.getChannelId());
@@ -196,10 +186,9 @@ public class OutgoingBatchService extends AbstractService implements
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String clientId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchSql,
-                new Object[] { clientId }, new RowMapper() {
-                    public Object mapRow(ResultSet rs, int index)
-                            throws SQLException {
+        return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchSql, new Object[] { clientId },
+                new RowMapper() {
+                    public Object mapRow(ResultSet rs, int index) throws SQLException {
                         OutgoingBatch batch = new OutgoingBatch();
                         batch.setBatchId(rs.getString(1));
                         batch.setNodeId(rs.getString(2));
@@ -216,8 +205,7 @@ public class OutgoingBatchService extends AbstractService implements
     }
 
     public void setBatchStatus(String batchId, Status status) {
-        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(),
-                batchId });
+        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(), batchId });
 
         if (status == Status.SE) {
             historyService.sent(new Integer(batchId));
@@ -229,8 +217,21 @@ public class OutgoingBatchService extends AbstractService implements
 
     }
 
-    public void setConfigurationService(
-            IConfigurationService configurationService) {
+    public boolean isInitialLoadComplete(String nodeId) {
+        String status = (String) jdbcTemplate.queryForObject(initialLoadStatusSql, new Object[] { nodeId },
+                String.class);
+        if (status == null) {
+            throw new RuntimeException("The initial load has not been started for " + nodeId);
+        } else if (Status.ER.equals(status)) {
+            throw new RuntimeException("The initial load errored out for " + nodeId);
+        } else if (Status.OK.equals(status)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
 
@@ -256,6 +257,10 @@ public class OutgoingBatchService extends AbstractService implements
 
     public void setHistoryService(IOutgoingBatchHistoryService historyService) {
         this.historyService = historyService;
+    }
+
+    public void setInitialLoadStatusSql(String initialLoadStatusSql) {
+        this.initialLoadStatusSql = initialLoadStatusSql;
     }
 
 }

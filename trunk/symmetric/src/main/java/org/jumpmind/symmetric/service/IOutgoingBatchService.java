@@ -31,4 +31,5 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatch> getOutgoingBatches(String clientId);
     public void markOutgoingBatchSent(OutgoingBatch batch);
     public void setBatchStatus(String batchId, Status status);
+    public boolean isInitialLoadComplete(String nodeId);
 }

@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -53,6 +54,8 @@ public class SymmetricManagementService {
     private INodeService nodeService;
     
     private IDataService dataService;
+    
+    private IOutgoingBatchService outgoingBatchService;
 
     private IRegistrationService registrationService;
 
@@ -105,6 +108,12 @@ public class SymmetricManagementService {
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public boolean isExternalIdRegistered(String externalId) {
         return nodeService.isExternalIdRegistered(externalId);
+    }
+
+    @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
+    public boolean isInitialLoadComplete(String nodeId) {
+        return outgoingBatchService.isInitialLoadComplete(nodeId);
     }
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
@@ -165,5 +174,9 @@ public class SymmetricManagementService {
 
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
     }
 }

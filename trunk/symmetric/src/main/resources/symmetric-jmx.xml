@@ -39,6 +39,7 @@
         <property name="registrationService" ref="registrationService" />
         <property name="properties" ref="properties" />
         <property name="dataSource" ref="dataSource" />
+        <property name="outgoingBatchService" ref="" outgoingBatchService "" />
         <property name="nodeService" ref="nodeService" />
     </bean>
 
