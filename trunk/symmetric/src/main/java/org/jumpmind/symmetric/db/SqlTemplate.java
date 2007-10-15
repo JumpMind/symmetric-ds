@@ -44,6 +44,8 @@ public class SqlTemplate {
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
 
     Map<String, String> sqlTemplates;
+    
+    String triggerPrefix;
 
     String stringColumnTemplate;
 
@@ -140,7 +142,7 @@ public class SqlTemplate {
                         + "." : "", ddl);
         ddl = replace("defaultSchema", defaultSchema != null
                 && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
-        ddl = replace("triggerName", trigger.getTriggerName(dml).toUpperCase(),
+        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(),
                 ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
@@ -286,5 +288,9 @@ public class SqlTemplate {
 
     public void setOldTriggerValue(String oldTriggerValue) {
         this.oldTriggerValue = oldTriggerValue;
+    }
+
+    public void setTriggerPrefix(String triggerPrefix) {
+        this.triggerPrefix = triggerPrefix;
     }
 }

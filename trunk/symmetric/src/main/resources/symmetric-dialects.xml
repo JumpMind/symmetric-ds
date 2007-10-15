@@ -19,7 +19,8 @@
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
-            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
+                <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
                 <property name="numberColumnTemplate">
                     <value>
@@ -130,6 +131,7 @@
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" >
                 <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"')),'"') end ||','||]]>
