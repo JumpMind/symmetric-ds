@@ -264,20 +264,30 @@ public class CsvWriter {
 
 		checkInit();
 
+                // BEGIN <erilong@users.sourceforge.net> 
+                //if (content == null) {         
+                //        content = "";      
+                //}
+                // END
+                
 		if (!firstColumn) {
 			outputStream.write(userSettings.Delimiter);
 		}
 
 		boolean textQualify = userSettings.ForceQualifier;
 
-        if (content == null) {
-            content = "";
-            textQualify = false;
-        }
-        else if (content.equals(""))
-        {
-            textQualify = true;
-        }
+                // BEGIN <erilong@users.sourceforge.net>
+                // We want a null to be an empty unquoted element
+                if (content == null) {
+                    content = "";
+                    textQualify = false;
+                }
+                // We want an empty string to be a quoted element
+                else if (content.equals(""))
+                {
+                    textQualify = true;
+                }
+                // END
 
 		if (!preserveSpaces && content.length() > 0) {
 			content = content.trim();

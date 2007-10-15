@@ -1369,10 +1369,14 @@ public class CsvReader {
 			isQualified = qualifiedHolder;
 		}
 
-        if (! startedWithQualifier && currentValue.equals(""))
-        {
-            currentValue = null;
-        }
+                // BEGIN <erilong@users.sourceforge.net>
+                // An unquoted empty element string means null
+                if (! startedWithQualifier && currentValue.equals(""))
+                {
+                    currentValue = null;
+                }
+                // END
+                
 		values[columnsCount] = currentValue;
 
 		isQualified[columnsCount] = startedWithQualifier;
