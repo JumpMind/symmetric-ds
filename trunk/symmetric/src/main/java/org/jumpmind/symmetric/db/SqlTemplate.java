@@ -54,6 +54,8 @@ public class SqlTemplate {
     String datetimeColumnTemplate;
 
     String clobColumnTemplate;
+    
+    String blobColumnTemplate;
 
     String triggerConcatCharacter;
 
@@ -197,8 +199,10 @@ public class SqlTemplate {
                 templateToUse = stringColumnTemplate;
                 break;
             case Types.CLOB:
-            case Types.BLOB:
                 templateToUse = clobColumnTemplate;
+                break;
+            case Types.BLOB:
+                templateToUse = blobColumnTemplate;
                 break;
             case Types.BINARY:
             case Types.VARBINARY:
@@ -294,5 +298,13 @@ public class SqlTemplate {
 
     public void setTriggerPrefix(String triggerPrefix) {
         this.triggerPrefix = triggerPrefix;
+    }
+
+    public String getBlobColumnTemplate() {
+        return blobColumnTemplate;
+    }
+
+    public void setBlobColumnTemplate(String blobColumnTemplate) {
+        this.blobColumnTemplate = blobColumnTemplate;
     }
 }

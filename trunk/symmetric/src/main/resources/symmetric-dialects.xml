@@ -22,6 +22,12 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
+                <property name="clobColumnTemplate" ref="mysqlStringTemplate" />
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName)),',',]]>
+                    </value>
+                </property>
                 <property name="numberColumnTemplate">
                     <value>
                         <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), ''),',',]]>
@@ -35,7 +41,7 @@
                 </property>
                 <property name="triggerConcatCharacter" value=","/>
                 <property name="newTriggerValue" value="new"/>
-                 <property name="oldTriggerValue" value="old"/>
+                <property name="oldTriggerValue" value="old"/>
                 <property name="sqlTemplates">
                     <map>           
                         <entry key="insertTriggerTemplate">
@@ -117,12 +123,10 @@
                                 <![CDATA[select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)]]>
                             </value>
                         </entry>
-
                     </map>
                 </property>
             </bean>
         </property>
-
     </bean>
 
     <bean id="oracleDialect" class="org.jumpmind.symmetric.db.oracle.OracleDbDialect"
@@ -133,13 +137,18 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" >
-                <value>
+                    <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"')),'"') end ||','||]]>
-                 </value>
+                    </value>
                 </property>
-                 <property name="clobColumnTemplate">
+                <property name="clobColumnTemplate">
                     <value>
                         <![CDATA[concat(concat('"',replace(replace($(tableAlias).$(columnName),to_clob('\\'),to_clob('\\')),to_clob('"'),to_clob('\\"'))),'"') ||','||]]>
+                    </value>
+                </property>
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName))||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
@@ -148,13 +157,13 @@
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
-                 <property name="newTriggerValue" value=":new"/>
-                 <property name="oldTriggerValue" value=":old"/>
+                <property name="newTriggerValue" value=":new"/>
+                <property name="oldTriggerValue" value=":old"/>
                 <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
-                <value>
+                    <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
-                 </value>
+                    </value>
                 </property>
                 <property name="sqlTemplates">
                     <map>
@@ -233,12 +242,10 @@
                                 <![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
                             </value>
                         </entry>
-
                     </map>
                 </property>
             </bean>
         </property>
-
     </bean>
 
 </beans>
