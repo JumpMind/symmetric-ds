@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -31,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -55,6 +57,8 @@ public class DataService extends AbstractService implements IDataService {
     private String tablePrefix;
     
     private IDbDialect dbDialect;
+    
+    private List<IReloadListener> listeners;
 
     private String insertIntoDataSql;
 
@@ -111,6 +115,11 @@ public class DataService extends AbstractService implements IDataService {
         if (targetNode == null) {
             return "Unknown node " + nodeId;
         }
+        if (listeners != null) {
+            for (IReloadListener listener : listeners) {
+                listener.beforeReload(nodeId);
+            }
+        }
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
         for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
@@ -119,6 +128,11 @@ public class DataService extends AbstractService implements IDataService {
         }
         for (Trigger trigger : triggers) {
             createReloadEvent(targetNode, trigger);
+        }
+        if (listeners != null) {
+            for (IReloadListener listener : listeners) {
+                listener.afterReload(nodeId);
+            }
         }
         return "Successfully created events to reload node " + nodeId;
     }
@@ -148,6 +162,21 @@ public class DataService extends AbstractService implements IDataService {
         } else {
             logger.info("Not generating data/data events for node because a trigger is not created for that table yet.");
         }
+    }
+
+    public void setReloadListeners(List<IReloadListener> listeners) {
+        this.listeners = listeners;
+    }
+
+    public void addReloadListener(IReloadListener listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<IReloadListener>();
+        }
+        listeners.add(listener);
+    }
+
+    public void removeReloadListener(IReloadListener listener) {
+        listeners.remove(listener);
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {
