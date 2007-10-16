@@ -94,6 +94,14 @@
             </roles>
             <timezone>-5</timezone>
         </contributor>
+        <contributor>
+            <name>Jon Krajewski</name>
+            <email>jkrajewski@users.sourceforge.net</email>
+            <roles>
+                <role>designer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>        
     </contributors>
     <distributionManagement>
         <site>

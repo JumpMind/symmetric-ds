@@ -52,9 +52,9 @@ public class SymmetricManagementService {
     private IPurgeService purgeService;
 
     private INodeService nodeService;
-    
+
     private IDataService dataService;
-    
+
     private IOutgoingBatchService outgoingBatchService;
 
     private IRegistrationService registrationService;
@@ -114,6 +114,21 @@ public class SymmetricManagementService {
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
     public boolean isInitialLoadComplete(String nodeId) {
         return outgoingBatchService.isInitialLoadComplete(nodeId);
+    }
+
+    @ManagedOperation(description = "Enable or disable synchronization completely for a node")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node to enable or disable"),
+            @ManagedOperationParameter(name = "syncEnabled", description = "true is enabled, false is disabled") })
+    public boolean setSyncEnabledForNode(String nodeId, boolean syncEnabled) {
+        Node node = nodeService.findNode(nodeId);
+        if (node != null) {
+            node.setSyncEnabled(syncEnabled);
+            nodeService.updateNode(node);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
