@@ -534,8 +534,7 @@
                     create_time &lt; ?
                 </value>
                 <value>
-                    delete from ${sync.table.prefix}_data d where create_time &lt; ? and not exists
-                    (select data_id from ${sync.table.prefix}_data_event e where e.data_id=d.data_id)
+                    delete from ${sync.table.prefix}_data where create_time &lt; ?
                 </value>
                 <value>
                     delete from ${sync.table.prefix}_incoming_batch_hist where batch_id in (select
