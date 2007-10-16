@@ -26,7 +26,7 @@ final public class Version {
 
     public static final int FEATURE = 0;
 
-    public static final int MILESTONE = 1;
+    public static final int MILESTONE = 2;
 
     public static final int PATCH = 0;
 
