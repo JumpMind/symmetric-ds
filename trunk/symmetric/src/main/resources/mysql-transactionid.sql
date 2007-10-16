@@ -16,7 +16,7 @@ create function fn_transaction_id()
      end if;
   end
 /
-drop function fn_sym_blob2clob
+drop function if exists fn_sym_blob2clob
 /
 create function fn_sym_blob2clob(blob_in blob)
   returns mediumtext
