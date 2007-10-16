@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,6 +88,8 @@ public class ConfigurationService extends AbstractService implements
     private List<String> nodeConfigChannelTableNames;
 
     private IDbDialect dbDialect;
+    
+    private WeakHashMap<Integer, TriggerHistory> historyMap = new WeakHashMap<Integer, TriggerHistory>();
 
     public void initSystemChannels() {
         try {
@@ -282,13 +285,16 @@ public class ConfigurationService extends AbstractService implements
     }
 
     public TriggerHistory getHistoryRecordFor(int auditId) {
-        try {
-            return (TriggerHistory) jdbcTemplate.queryForObject(
-                    this.triggerHistSql, new Object[] { auditId },
-                    new TriggerHistoryMapper());
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
+        TriggerHistory history = historyMap.get(auditId);
+        if (history == null) {
+            try {
+                history = (TriggerHistory) jdbcTemplate.queryForObject(this.triggerHistSql,
+                        new Object[] { auditId }, new TriggerHistoryMapper());
+                historyMap.put(auditId, history);
+            } catch (EmptyResultDataAccessException ex) {
+            }
         }
+        return history;
     }
 
     public TriggerHistory getLatestHistoryRecordFor(int triggerId) {
