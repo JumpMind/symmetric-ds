@@ -21,8 +21,6 @@
 
 package org.jumpmind.symmetric.service.jmx;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -75,9 +73,11 @@ public class SymmetricManagementService {
 
     @ManagedAttribute(description = "The properties configured for this symmetric instance")
     public String getPropertiesList() {
-        StringWriter writer = new StringWriter();
-        properties.list(new PrintWriter(writer, true));
-        return writer.getBuffer().toString();
+        StringBuilder buffer = new StringBuilder();
+        for (Object key : properties.keySet()) {
+            buffer.append(key).append("=").append(properties.getProperty((String) key)).append("<br/>");
+        }
+        return buffer.toString();
     }
 
     @ManagedAttribute(description = "The group this node belongs to")
