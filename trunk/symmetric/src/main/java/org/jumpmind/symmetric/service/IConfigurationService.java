@@ -54,7 +54,7 @@ public interface IConfigurationService {
     
     public TriggerHistory getLatestHistoryRecordFor(int triggerId);
 
-    public List<NodeChannel> getChannelsFor(String nodeId, boolean failIfTableDoesNotExist);
+    public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist);
     
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
     

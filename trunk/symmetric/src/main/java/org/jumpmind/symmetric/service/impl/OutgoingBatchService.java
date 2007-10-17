@@ -71,7 +71,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     public void buildOutgoingBatches(final String nodeId) {
         // TODO should channels be cached?
-        final List<NodeChannel> channels = configurationService.getChannelsFor(nodeId, true);
+        final List<NodeChannel> channels = configurationService.getChannelsFor(true);
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -171,7 +171,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
         insert.setString(1, outgoingBatch.getNodeId());
         insert.setString(2, outgoingBatch.getChannelId());
-        insert.setString(3, outgoingBatch.getBatchType().getCode());
+        insert.setString(3, outgoingBatch.getStatus().name());
+        insert.setString(4, outgoingBatch.getBatchType().getCode());
         insert.execute();
         ResultSet rs = insert.getGeneratedKeys();
         if (rs.next()) {
