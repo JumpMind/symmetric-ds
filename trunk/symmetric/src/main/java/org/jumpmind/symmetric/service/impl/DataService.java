@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -63,6 +64,8 @@ public class DataService extends AbstractService implements IDataService {
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
+    
+    private IOutgoingBatchService outgoingBatchService;
     
     private String tablePrefix;
     
@@ -146,9 +149,14 @@ public class DataService extends AbstractService implements IDataService {
             Trigger trigger = iterator.previous();
             createPurgeEvent(targetNode, trigger);
         }
+        
+        outgoingBatchService.buildOutgoingBatches(nodeId);
+       
         for (Trigger trigger : triggers) {
             insertReloadEvent(targetNode, trigger);
+            outgoingBatchService.buildOutgoingBatches(nodeId);
         }
+        
         if (listeners != null) {
             for (IReloadListener listener : listeners) {
                 listener.afterReload(targetNode);
@@ -273,6 +281,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
     }
 
 }
