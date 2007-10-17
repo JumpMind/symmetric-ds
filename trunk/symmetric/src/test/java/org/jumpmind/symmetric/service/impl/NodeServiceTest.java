@@ -50,7 +50,7 @@ public class NodeServiceTest extends AbstractTest {
         Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
-        Assert.assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
+        Assert.assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
     }
 
     @Test(groups = "continuous")
@@ -96,7 +96,7 @@ public class NodeServiceTest extends AbstractTest {
         Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
-        Assert.assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
+        Assert.assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
     }
 
     @Test(groups = "continuous")
