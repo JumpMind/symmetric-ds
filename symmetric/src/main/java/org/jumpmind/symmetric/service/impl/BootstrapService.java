@@ -208,7 +208,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     @Transactional
     public void heartbeat() {
         Node node = nodeService.findIdentity();
-        if (node != null) {
+        if (node != null && !StringUtils.isBlank(runtimeConfiguration.getRegistrationUrl())) {
             logger.info("Updating my node information and heartbeat time.");
             node.setHeartbeatTime(new Date());
             node.setDatabaseType(dbDialect.getName());

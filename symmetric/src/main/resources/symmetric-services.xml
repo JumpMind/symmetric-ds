@@ -177,7 +177,7 @@
         
         <property name="initialLoadStatusSql">
             <value>
-                select status from ${sync.table.prefix}_outgoing_batch where batch_type='IL' and node_id=?
+                select status from ${sync.table.prefix}_outgoing_batch where channel_id='reload' and node_id=?
             </value>
         </property>
         
@@ -238,6 +238,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="outgoingBatchService" ref="outgoingBatchService"/>
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />

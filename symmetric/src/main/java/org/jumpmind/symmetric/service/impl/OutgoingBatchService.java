@@ -217,18 +217,25 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     }
 
+    // TODO Unit test and probably refactor this method.
+    @SuppressWarnings("unchecked")
     public boolean isInitialLoadComplete(String nodeId) {
-        String status = (String) jdbcTemplate.queryForObject(initialLoadStatusSql, new Object[] { nodeId },
+        boolean returnValue = false;
+        List<String> statuses = (List<String>) jdbcTemplate.queryForList(initialLoadStatusSql, new Object[] { nodeId },
                 String.class);
-        if (status == null) {
+        if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
-        } else if (Status.ER.equals(status)) {
-            throw new RuntimeException("The initial load errored out for " + nodeId);
-        } else if (Status.OK.equals(status)) {
-            return true;
-        } else {
-            return false;
         }
+        for (String status : statuses) {
+            if (Status.ER.equals(status)) {
+                throw new RuntimeException("The initial load errored out for " + nodeId);
+            } else if (Status.OK.equals(status)) {
+                returnValue = true;
+            } else {
+                return false;
+            }
+        }
+        return returnValue;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {
