@@ -60,40 +60,42 @@ import com.csvreader.CsvWriter;
 public class DataService extends AbstractService implements IDataService {
 
     static final Log logger = LogFactory.getLog(DataService.class);
-            
+
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
-    
+
     private IOutgoingBatchService outgoingBatchService;
-    
+
     private String tablePrefix;
-    
+
     private IDbDialect dbDialect;
-    
+
     private List<IReloadListener> listeners;
 
     private String insertIntoDataSql;
 
     private String insertIntoDataEventSql;
 
+    private boolean deleteFirstForReload;
+
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.RELOAD,
-                null, null, history);
+        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.RELOAD, null, null,
+                history);
         insertDataEvent(data, targetNode.getNodeId());
     }
 
     public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         final String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
-        
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL, sql,
-                null, history);
+
+        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL, sql, null,
+                history);
         insertDataEvent(data, targetNode.getNodeId());
     }
-    
+
     public long insertData(final Data data) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
@@ -114,22 +116,21 @@ public class DataService extends AbstractService implements IDataService {
             }
         });
     }
-    
+
     public void insertDataEvent(DataEvent dataEvent) {
-        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(),
-                dataEvent.getNodeId() });
+        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(), dataEvent.getNodeId() });
     }
 
-    public void insertDataEvent(Data data, List<Node> nodes) {       
+    public void insertDataEvent(Data data, List<Node> nodes) {
         long dataId = insertData(data);
         for (Node node : nodes) {
-            insertDataEvent(new DataEvent(dataId, node.getNodeId()));            
+            insertDataEvent(new DataEvent(dataId, node.getNodeId()));
         }
     }
 
     public void insertDataEvent(Data data, String nodeId) {
         long dataId = insertData(data);
-        insertDataEvent(new DataEvent(dataId, nodeId));        
+        insertDataEvent(new DataEvent(dataId, nodeId));
     }
 
     public String reloadNode(String nodeId) {
@@ -145,18 +146,21 @@ public class DataService extends AbstractService implements IDataService {
         }
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
-        for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
-            Trigger trigger = iterator.previous();
-            createPurgeEvent(targetNode, trigger);
+
+        if (deleteFirstForReload) {
+            for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
+                Trigger trigger = iterator.previous();
+                createPurgeEvent(targetNode, trigger);
+            }
+
+            outgoingBatchService.buildOutgoingBatches(nodeId);
         }
-        
-        outgoingBatchService.buildOutgoingBatches(nodeId);
-       
+
         for (Trigger trigger : triggers) {
             insertReloadEvent(targetNode, trigger);
             outgoingBatchService.buildOutgoingBatches(nodeId);
         }
-        
+
         if (listeners != null) {
             for (IReloadListener listener : listeners) {
                 listener.afterReload(targetNode);
@@ -175,30 +179,30 @@ public class DataService extends AbstractService implements IDataService {
             data.setChannelId(Constants.CHANNEL_CONFIG);
             insertDataEvent(data, nodeService.findNodesToPushTo());
         } else {
-            logger.info("Not generating data/data events for node because a trigger is not created for that table yet.");
+            logger
+                    .info("Not generating data/data events for node because a trigger is not created for that table yet.");
         }
     }
 
     public Data createData(String tableName) {
         return createData(tableName, null);
     }
-    
+
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        Trigger trigger = configurationService
-                .getTriggerFor(tableName, runtimeConfiguration.getNodeGroupId());
+        Trigger trigger = configurationService.getTriggerFor(tableName, runtimeConfiguration.getNodeGroupId());
         if (trigger != null) {
             String rowData = null;
             String pkData = null;
             if (whereClause != null) {
-                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger,
-                        whereClause), String.class);
-                pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger,
-                        whereClause), String.class);
+                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger, whereClause),
+                        String.class);
+                pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger, whereClause),
+                        String.class);
             }
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-            data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.UPDATE,
-                    rowData, pkData, history);
+            data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
+                    pkData, history);
         }
         return data;
     }
@@ -243,7 +247,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         return tokens;
     }
-    
+
     public void setReloadListeners(List<IReloadListener> listeners) {
         this.listeners = listeners;
     }
@@ -285,6 +289,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+
+    public void setDeleteFirstForReload(boolean deleteFirstForReload) {
+        this.deleteFirstForReload = deleteFirstForReload;
     }
 
 }
