@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -12,14 +13,28 @@ public interface IDataService {
 
     public String reloadNode(String nodeId);
     
-    public void createReloadEvent(final Node targetNode, final Trigger trigger);
+    public void insertReloadEvent(final Node targetNode, final Trigger trigger);
 
-    public void createHeartbeatEvent(Node node);
+    public void insertHeartbeatEvent(Node node);
     
-    public long createData(final Data data);
+    public long insertData(final Data data);
     
-    public void createDataEvent(DataEvent dataEvent);
+    public void insertDataEvent(DataEvent dataEvent);
 
+    public void insertDataEvent(Data data, List<Node> nodes);       
+
+    public void insertDataEvent(Data data, String nodeId);
+
+    public Data createData(String tableName);
+    
+    public Data createData(String tableName, String whereClause);
+    
+    public String[] tokenizeCsvData(String csvData);
+
+    public Map<String, String> getRowDataAsMap(Data data);
+    
+    public void setRowDataFromMap(Data data, Map<String, String> map);
+    
     public void addReloadListener(IReloadListener listener);
     
     public void setReloadListeners(List<IReloadListener> listeners);

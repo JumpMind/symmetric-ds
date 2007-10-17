@@ -219,7 +219,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setSymmetricVersion(Version.VERSION);
             node.setSyncURL(runtimeConfiguration.getMyUrl());
             nodeService.updateNode(node);
-            dataService.createHeartbeatEvent(node);
+            dataService.insertHeartbeatEvent(node);
             logger.info("Done updating my node information and heartbeat time.");
         }
     }
