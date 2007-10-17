@@ -38,7 +38,7 @@ public class OutgoingBatch implements Serializable {
 
     private String channelId;
 
-    private Status status;
+    private Status status = Status.NE;
 
     private BatchType batchType = BatchType.EVENTS;
 

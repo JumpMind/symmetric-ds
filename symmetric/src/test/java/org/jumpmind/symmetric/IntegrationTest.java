@@ -31,6 +31,7 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -163,6 +164,24 @@ public class IntegrationTest {
                         "Status should be complete");
         // TODO: make sure event did not fire
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test(groups = "integration", dependsOnMethods="testSyncUpdateCondition")
+    public void testIgnoreNodeChannel() {
+        INodeService nodeService = (INodeService)rootEngine.getApplicationContext().getBean("nodeService");
+        nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201,
+                "Charlie Dude", "1", "300 Grub Street", "New Yorl", "NY",
+                90009, new Date() });
+        clientEngine.pull();        
+        Assert
+                .assertEquals(
+                        clientJdbcTemplate
+                                .queryForInt("select count(*) from test_customer where customer_id=201"),
+                        0, "The customer was sync'd to the client.");
+        nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        
+    }       
 
     @Test(groups = "integration", dependsOnMethods = {
             "testSyncUpdateCondition", "testSyncInsertCondition",

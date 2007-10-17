@@ -131,27 +131,25 @@ public class ConfigurationService extends AbstractService implements
     }
 
     @SuppressWarnings("unchecked")
-    public List<NodeChannel> getChannelsFor(final String nodeId,
-            boolean failOnError) {
+    public List<NodeChannel> getChannelsFor(boolean failOnError) {
         try {
             return jdbcTemplate.query(selectChannelsSql,
-                    new Object[] { nodeId }, new RowMapper() {
+                    new Object[] { }, new RowMapper() {
                         public Object mapRow(java.sql.ResultSet rs, int arg1)
                                 throws java.sql.SQLException {
                             NodeChannel channel = new NodeChannel();
-                            channel.setId(rs.getString("channel_id"));
-                            channel.setNodeId(nodeId);
+                            channel.setId(rs.getString(1));
+                            channel.setNodeId(rs.getString(2));
                             channel.setIgnored(isSet(rs
-                                    .getObject("ignore_enabled")));
+                                    .getObject(3)));
                             channel.setSuspended(isSet(rs
-                                    .getObject("suspend_enabled")));
+                                    .getObject(4)));
                             channel.setProcessingOrder(rs
-                                    .getInt("processing_order"));
+                                    .getInt(5));
                             channel
                                     .setMaxBatchSize(rs
-                                            .getInt("max_batch_size"));
-                            channel.setEnabled(rs.getBoolean("enabled"));
-                            channel.setDescription(rs.getString("description"));
+                                            .getInt(6));
+                            channel.setEnabled(rs.getBoolean(7));
                             return channel;
                         };
                     });

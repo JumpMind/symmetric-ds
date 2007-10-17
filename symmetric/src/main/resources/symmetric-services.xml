@@ -70,7 +70,7 @@
             </value>
         </property>
         <property name="selectChannelsSql">
-            <value>select * from ${sync.table.prefix}_channel c left outer join ${sync.table.prefix}_node_channel_ctl nc on nc.node_id=? and c.channel_id=nc.channel_id order by c.processing_order asc</value>
+            <value>select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order, c.max_batch_size, c.enabled from ${sync.table.prefix}_channel c left outer join ${sync.table.prefix}_node_channel_ctl nc on nc.node_id in (select node_id from ${sync.table.prefix}_node_identity) and c.channel_id=nc.channel_id order by c.processing_order asc</value>
         </property>
         <property name="selectGroupTriggersSql">
             <value>
@@ -192,7 +192,7 @@
         <property name="createBatchSql">
             <value>
                 insert into ${sync.table.prefix}_outgoing_batch (batch_id, node_id, channel_id,
-                status, batch_type, create_time) values (null, ?, ?, 'NE', ?, current_timestamp)
+                status, batch_type, create_time) values (null, ?, ?, ?, ?, current_timestamp)
             </value>
         </property>
         <property name="updateBatchedEventsSql">

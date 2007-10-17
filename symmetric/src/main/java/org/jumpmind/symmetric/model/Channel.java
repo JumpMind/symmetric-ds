@@ -36,8 +36,6 @@ public class Channel {
 
     private int maxBatchSize;
 
-    private String description;
-    
     private boolean enabled;
 
     public Channel() {
@@ -62,14 +60,6 @@ public class Channel {
 
     public void setProcessingOrder(int priority) {
         this.processingOrder = priority;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public int getMaxBatchSize() {
