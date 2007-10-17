@@ -227,9 +227,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
         for (String status : statuses) {
-            if (Status.ER.equals(status)) {
+            if (Status.ER.name().equals(status)) {
                 throw new RuntimeException("The initial load errored out for " + nodeId);
-            } else if (Status.OK.equals(status)) {
+            } else if (Status.OK.name().equals(status)) {
                 returnValue = true;
             } else {
                 return false;
