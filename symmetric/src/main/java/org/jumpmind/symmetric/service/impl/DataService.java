@@ -20,13 +20,20 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +53,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
+import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
+
 public class DataService extends AbstractService implements IDataService {
 
     static final Log logger = LogFactory.getLog(DataService.class);
@@ -64,13 +74,12 @@ public class DataService extends AbstractService implements IDataService {
 
     private String insertIntoDataEventSql;
 
-    public void createReloadEvent(final Node targetNode, final Trigger trigger) {
+    public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
         Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.RELOAD,
                 null, null, history);
-        long dataId = createData(data);
-        createDataEvent(new DataEvent(dataId, targetNode.getNodeId()));
+        insertDataEvent(data, targetNode.getNodeId());
     }
 
     public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
@@ -79,11 +88,10 @@ public class DataService extends AbstractService implements IDataService {
         
         Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL, sql,
                 null, history);
-        long dataId = createData(data);
-        createDataEvent(new DataEvent(dataId, targetNode.getNodeId()));
+        insertDataEvent(data, targetNode.getNodeId());
     }
-
-    public long createData(final Data data) {
+    
+    public long insertData(final Data data) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 PreparedStatement ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
@@ -104,11 +112,23 @@ public class DataService extends AbstractService implements IDataService {
         });
     }
     
-    public void createDataEvent(DataEvent dataEvent) {
+    public void insertDataEvent(DataEvent dataEvent) {
         jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(),
                 dataEvent.getNodeId() });
     }
-    
+
+    public void insertDataEvent(Data data, List<Node> nodes) {       
+        long dataId = insertData(data);
+        for (Node node : nodes) {
+            insertDataEvent(new DataEvent(dataId, node.getNodeId()));            
+        }
+    }
+
+    public void insertDataEvent(Data data, String nodeId) {
+        long dataId = insertData(data);
+        insertDataEvent(new DataEvent(dataId, nodeId));        
+    }
+
     public String reloadNode(String nodeId) {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
@@ -117,7 +137,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         if (listeners != null) {
             for (IReloadListener listener : listeners) {
-                listener.beforeReload(nodeId);
+                listener.beforeReload(targetNode);
             }
         }
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
@@ -127,11 +147,11 @@ public class DataService extends AbstractService implements IDataService {
             createPurgeEvent(targetNode, trigger);
         }
         for (Trigger trigger : triggers) {
-            createReloadEvent(targetNode, trigger);
+            insertReloadEvent(targetNode, trigger);
         }
         if (listeners != null) {
             for (IReloadListener listener : listeners) {
-                listener.afterReload(nodeId);
+                listener.afterReload(targetNode);
             }
         }
         return "Successfully created events to reload node " + nodeId;
@@ -141,29 +161,81 @@ public class DataService extends AbstractService implements IDataService {
      * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
      * @param node
      */
-    public void createHeartbeatEvent(Node node) {
-        String whereClause = " t.node_id = '" + node.getNodeId() + "'";
-        Trigger trigger = configurationService.getTriggerFor(tablePrefix + "_node", runtimeConfiguration
-                .getNodeGroupId());
-        if (trigger != null) {
-            String rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger,
-                    whereClause), String.class);
-            String pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger,
-                    whereClause), String.class);
-            TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-            Data data = new Data(Constants.CHANNEL_CONFIG, trigger.getSourceTableName(),
-                    DataEventType.UPDATE, rowData, pkData, history);
-            long dataId = createData(data);
-
-            List<Node> nodes = nodeService.findNodesToPushTo();
-            for (Node pushNode : nodes) {
-                createDataEvent(new DataEvent(dataId, pushNode.getNodeId()));
-            }
+    public void insertHeartbeatEvent(Node node) {
+        Data data = createData(tablePrefix + "_node", " t.node_id = '" + node.getNodeId() + "'");
+        if (data != null) {
+            data.setChannelId(Constants.CHANNEL_CONFIG);
+            insertDataEvent(data, nodeService.findNodesToPushTo());
         } else {
             logger.info("Not generating data/data events for node because a trigger is not created for that table yet.");
         }
     }
 
+    public Data createData(String tableName) {
+        return createData(tableName, null);
+    }
+    
+    public Data createData(String tableName, String whereClause) {
+        Data data = null;
+        Trigger trigger = configurationService
+                .getTriggerFor(tableName, runtimeConfiguration.getNodeGroupId());
+        if (trigger != null) {
+            String rowData = null;
+            String pkData = null;
+            if (whereClause != null) {
+                rowData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvDataSql(trigger,
+                        whereClause), String.class);
+                pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger,
+                        whereClause), String.class);
+            }
+            TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.UPDATE,
+                    rowData, pkData, history);
+        }
+        return data;
+    }
+
+    public Map<String, String> getRowDataAsMap(Data data) {
+        Map<String, String> map = new HashMap<String, String>();
+        String[] columnNames = tokenizeCsvData(data.getAudit().getColumnNames());
+        String[] columnData = tokenizeCsvData(data.getRowData());
+        for (int i = 0; i < columnNames.length; i++) {
+            map.put(columnNames[i].toLowerCase(), columnData[i]);
+        }
+        return map;
+    }
+
+    public void setRowDataFromMap(Data data, Map<String, String> map) {
+        String[] columnNames = tokenizeCsvData(data.getAudit().getColumnNames());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+        for (String columnName : columnNames) {
+            try {
+                writer.write(map.get(columnName.toLowerCase()), true);
+            } catch (IOException e) {
+            }
+        }
+        writer.close();
+        data.setRowData(out.toString());
+    }
+
+    public String[] tokenizeCsvData(String csvData) {
+        String[] tokens = null;
+        if (csvData != null) {
+            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(csvData.getBytes()));
+            CsvReader csvReader = new CsvReader(reader);
+            csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+            try {
+                if (csvReader.readRecord()) {
+                    tokens = csvReader.getValues();
+                }
+            } catch (IOException e) {
+            }
+        }
+        return tokens;
+    }
+    
     public void setReloadListeners(List<IReloadListener> listeners) {
         this.listeners = listeners;
     }

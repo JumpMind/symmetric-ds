@@ -20,12 +20,14 @@
  */
 package org.jumpmind.symmetric.load;
 
+import org.jumpmind.symmetric.model.Node;
+
 /**
  * This is an extension point that can be implemented to listen in and take action
  * before or after a reload is requested for a Node.
  */
 public interface IReloadListener {
-    public void beforeReload(String nodeId);
+    public void beforeReload(Node node);
 
-    public void afterReload(String nodeId);
+    public void afterReload(Node node);
 }
