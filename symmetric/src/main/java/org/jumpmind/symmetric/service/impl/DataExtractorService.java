@@ -155,6 +155,7 @@ public class DataExtractorService implements IDataExtractorService {
      */
     public boolean extract(Node node, final IExtractListener handler)
             throws Exception {
+        
         outgoingBatchService.buildOutgoingBatches(node.getNodeId());
 
         List<OutgoingBatch> batches = outgoingBatchService
