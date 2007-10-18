@@ -187,6 +187,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String clientId) {
+        // TODO: limit number of batches handled in one extract pass
         return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchSql, new Object[] { clientId },
                 new RowMapper() {
                     public Object mapRow(ResultSet rs, int index) throws SQLException {
