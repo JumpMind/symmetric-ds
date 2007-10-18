@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -57,6 +58,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private String changeBatchStatusSql;
 
     private String initialLoadStatusSql;
+    
+    private JdbcTemplate outgoingBatchQueryTemplate;
 
     private IOutgoingBatchHistoryService historyService;
 
@@ -185,10 +188,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         historyService.created(new Integer(outgoingBatch.getBatchId()), -1);
     }
 
+    /**
+     * Select batches to process.  Batches that are NOT in error will be returned first.  They will be ordered
+     * by batch id as the batches will have already been created by {@link #buildOutgoingBatches(String)} in channel
+     * priority order.
+     */
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatches(String clientId) {
-        // TODO: limit number of batches handled in one extract pass
-        return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchSql, new Object[] { clientId },
+    public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId, nodeId },
                 new RowMapper() {
                     public Object mapRow(ResultSet rs, int index) throws SQLException {
                         OutgoingBatch batch = new OutgoingBatch();
@@ -270,6 +277,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setInitialLoadStatusSql(String initialLoadStatusSql) {
         this.initialLoadStatusSql = initialLoadStatusSql;
+    }
+
+    public void setOutgoingBatchQueryTemplate(JdbcTemplate outgoingBatchQueryTemplate) {
+        this.outgoingBatchQueryTemplate = outgoingBatchQueryTemplate;
     }
 
 }
