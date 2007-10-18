@@ -21,6 +21,9 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class DataLoaderContext implements IDataLoaderContext {
 
@@ -29,16 +32,26 @@ public class DataLoaderContext implements IDataLoaderContext {
     private String clientId;
 
     private String tableName;
-    
-    private String[] keyNames;
-    
-    private String[] columnNames;
 
     private String batchId;
     
     private boolean isSkipping;
     
+    private transient Map<String, TableTemplate> tableTemplateMap;
+
+    private TableTemplate tableTemplate;
+    
     public DataLoaderContext() {
+        this.tableTemplateMap = new HashMap<String, TableTemplate>();
+    }
+
+    public TableTemplate getTableTemplate() {
+        return tableTemplate;
+    }
+
+    public void setTableTemplate(TableTemplate tableTemplate) {
+        this.tableTemplate = tableTemplate;
+        tableTemplateMap.put(getTableName(), tableTemplate);
     }
     
     public String getBatchId() {
@@ -64,6 +77,7 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+        this.tableTemplate = tableTemplateMap.get(tableName);
     }
 
     public String getVersion() {
@@ -83,19 +97,19 @@ public class DataLoaderContext implements IDataLoaderContext {
     }
 
     public String[] getColumnNames() {
-        return columnNames;
+        return tableTemplate.getColumnNames();
     }
 
     public void setColumnNames(String[] columnNames) {
-        this.columnNames = columnNames;
+        tableTemplate.setColumnNames(columnNames);
     }
 
     public String[] getKeyNames() {
-        return keyNames;
+        return tableTemplate.getKeyNames();
     }
 
     public void setKeyNames(String[] keyNames) {
-        this.keyNames = keyNames;
+        tableTemplate.setKeyNames(keyNames);
     }
 
 }
