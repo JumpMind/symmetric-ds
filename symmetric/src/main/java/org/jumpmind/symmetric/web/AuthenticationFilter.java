@@ -48,19 +48,21 @@ public class AuthenticationFilter implements Filter
         throws IOException, ServletException
     {
         String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
-        String clientId = req.getParameter(WebConstants.NODE_ID);
+        String nodeId = req.getParameter(WebConstants.NODE_ID);
 
-        if (securityToken == null || clientId == null)
+        if (securityToken == null || nodeId == null)
         {
             ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
 
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
         INodeService sc = (INodeService) ctx.getBean(Constants.NODE_SERVICE);
 
-        if (!sc.isNodeAuthorized(clientId, securityToken))
+        if (!sc.isNodeAuthorized(nodeId, securityToken))
         {
             ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
 
         chain.doFilter(req, resp);
