@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -53,7 +54,7 @@ public class CsvLoader implements IDataLoader {
 
     protected CsvReader csvReader;
 
-    protected CsvContext context;
+    protected DataLoaderContext context;
     
     protected DataLoaderStatistics stats;
     
@@ -70,7 +71,7 @@ public class CsvLoader implements IDataLoader {
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
-        context = new CsvContext();
+        context = new DataLoaderContext();
         stats = new DataLoaderStatistics();
     }
 
