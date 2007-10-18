@@ -144,6 +144,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                                 lastTrxId = trxId;
                             } while (results.next());
+                            
                             historyService.created(new Integer(newBatch.getBatchId()), count);
                         }
 
@@ -185,7 +186,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         JdbcUtils.closeResultSet(rs);
         JdbcUtils.closeStatement(insert);
-        historyService.created(new Integer(outgoingBatch.getBatchId()), -1);
     }
 
     /**
