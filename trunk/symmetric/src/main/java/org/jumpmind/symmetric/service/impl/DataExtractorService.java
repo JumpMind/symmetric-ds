@@ -199,7 +199,7 @@ public class DataExtractorService implements IDataExtractorService {
                     // At this point, we've already sent the data to the client, so if
                     // updating the batch to 'sent' fails, all this means is that the batch
                     // will be sent to the client again. This is expected to happen so
-                    // infrequently, that any ineffiencies associated with resending a batch
+                    // infrequently, that the inefficiencies associated with re-sending a batch
                     // are negligible.
                     outgoingBatchService.markOutgoingBatchSent(batch);
                 }
