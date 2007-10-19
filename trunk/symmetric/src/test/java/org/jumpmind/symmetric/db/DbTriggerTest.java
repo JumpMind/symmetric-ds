@@ -101,7 +101,7 @@ public class DbTriggerTest {
                                         + TestConstants.TEST_PREFIX
                                         + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='"
                                         + TestConstants.TEST_ROOT_NODE_GROUP
-                                        + "'");
+                                        + "' and (sync_on_update = '1' or sync_on_insert = '1' or sync_on_delete = '1')");
 
         service.syncTriggers();
 
