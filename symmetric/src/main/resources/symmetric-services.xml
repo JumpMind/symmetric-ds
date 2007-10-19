@@ -183,7 +183,7 @@
                 <property name="dataSource" ref="dataSource" />
                 <property name="queryTimeout" value="${db.sql.query.timeout.seconds}" />
                 <property name="maxRows"
-                    value="${symmetric.runtime.max.outgoing.batches.to.process}" />
+                    value="${symmetric.runtime.outgoing.batches.max.to.process}" />
             </bean>
         </property>
         <property name="initialLoadStatusSql">
@@ -302,6 +302,7 @@
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
         scope="singleton">
+        <property name="skipDuplicateBatches" value="${symmetric.runtime.incoming.batches.skip.duplicates}"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="findIncomingBatchSql">
             <value>

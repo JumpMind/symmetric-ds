@@ -36,22 +36,24 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
-    protected static final Log logger = LogFactory.getLog(IncomingBatchService.class);
-    
-    protected String findIncomingBatchSql;
-    
-    protected String findIncomingBatchHistorySql;
-    
-    protected String insertIncomingBatchSql;
+    private static final Log logger = LogFactory.getLog(IncomingBatchService.class);
 
-    protected String updateIncomingBatchSql;
+    private String findIncomingBatchSql;
 
-    protected String insertIncomingBatchHistorySql;
+    private String findIncomingBatchHistorySql;
+
+    private String insertIncomingBatchSql;
+
+    private String updateIncomingBatchSql;
+
+    private String insertIncomingBatchHistorySql;
+
+    private boolean skipDuplicateBatches = true;
 
     public IncomingBatch findIncomingBatch(String batchId, String clientId) {
         try {
-            return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql, new Object[] {
-                    batchId, clientId }, new IncomingBatchMapper());
+            return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql,
+                    new Object[] { batchId, clientId }, new IncomingBatchMapper());
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -59,21 +61,23 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     @SuppressWarnings("unchecked")
     public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String clientId) {
-        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql,
-                new Object[] { batchId, clientId }, new IncomingBatchHistoryMapper());
+        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] { batchId,
+                clientId }, new IncomingBatchHistoryMapper());
     }
-    
+
     public boolean acquireIncomingBatch(IncomingBatch status) {
         boolean okayToProcess = true;
         try {
             insertIncomingBatch(status);
         } catch (DataIntegrityViolationException e) {
             status.setRetry(true);
-            okayToProcess = updateIncomingBatch(status) > 0;
-            if (okayToProcess) {
-                logger.warn("Retrying batch " + status.getClientBatchId());
-            } else {
-                logger.warn("Skipping batch " + status.getClientBatchId());
+            if (skipDuplicateBatches) {
+                okayToProcess = updateIncomingBatch(status) > 0;
+                if (okayToProcess) {
+                    logger.warn("Retrying batch " + status.getClientBatchId());
+                } else {
+                    logger.warn("Skipping batch " + status.getClientBatchId());
+                }
             }
         }
         return okayToProcess;
@@ -90,10 +94,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { history.getBatchId(),
-                history.getClientId(), history.getStatus().toString(), history.getHostName(),
-                history.getStatementCount(), history.getFallbackInsertCount(),
-                history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
+        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { history.getBatchId(), history.getClientId(),
+                history.getStatus().toString(), history.getHostName(), history.getStatementCount(),
+                history.getFallbackInsertCount(), history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
                 history.getFailedRowNumber(), history.getStartTime(), history.getEndTime() });
     }
 
@@ -123,7 +126,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return history;
         }
     }
-    
+
     public void setFindIncomingBatchHistorySql(String findIncomingBatchHistorySql) {
         this.findIncomingBatchHistorySql = findIncomingBatchHistorySql;
     }
@@ -142,6 +145,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void setUpdateIncomingBatchSql(String updateIncomingBatchSql) {
         this.updateIncomingBatchSql = updateIncomingBatchSql;
+    }
+
+    public void setSkipDuplicateBatches(boolean skipDuplicateBatchesEnabled) {
+        this.skipDuplicateBatches = skipDuplicateBatchesEnabled;
     }
 
 }
