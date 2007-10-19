@@ -12,6 +12,7 @@ Welcome to SymetricDS
  Satellite databases (i.e. a store servers) register an interest in channels of data.   Channels are groups of database tables that can be synchronized in either direction.
 
  SymmetricDS can be deployed in the following configurations:
+ 
     * web application archive (war) to an existing application server such as Tomcat, Jetty, or JBoss
     
     * as a standalone service
