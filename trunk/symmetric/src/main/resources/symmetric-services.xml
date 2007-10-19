@@ -110,7 +110,7 @@
                 insert into ${sync.table.prefix}_trigger (source_table_name, source_node_group_id,
                 target_node_group_id, channel_id, source_schema_name, sync_on_update,
                 sync_on_insert, sync_on_delete, initial_load_order, last_updated_by,
-                last_updated_time, create_time) values (?, ?, ?, ?, null, 1, 1, 1, 1, 'system',
+                last_updated_time, create_time) values (?, ?, ?, ?, null, 0, 0, 0, ?, 'system',
                 current_timestamp, current_timestamp)
             </value>
         </property>

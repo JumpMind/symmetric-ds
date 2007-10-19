@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -119,14 +120,32 @@ public class ConfigurationService extends AbstractService implements
         return rootConfigChannelTableNames;
     }
 
-    public void initTriggerRowsForConfigChannel(String configTable,
-            String sourceNodeGroupId, String targetNodeGroupId) {
-        Trigger trigger = getTriggerForTarget(configTable, sourceNodeGroupId,
-                targetNodeGroupId, Constants.CHANNEL_CONFIG);
-        if (trigger == null) {
-            jdbcTemplate.update(insertTriggerSql, new Object[] { configTable,
-                    sourceNodeGroupId, targetNodeGroupId,
-                    Constants.CHANNEL_CONFIG });
+    public void initTriggerRowsForConfigChannel() {
+        List<String> tableNames = null;
+        if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
+            tableNames = getRootConfigChannelTableNames();
+        } else {
+            tableNames = getNodeConfigChannelTableNames();
+        }
+        initSystemChannels();
+        String groupId = runtimeConfiguration.getNodeGroupId();
+        List<NodeGroupLink> targets = getGroupLinksFor(groupId);
+        if (targets != null && targets.size() > 0) {
+            for (NodeGroupLink target : targets) {
+                int initialLoadOrder = 1;
+                for (String tableName : tableNames) {
+                    Trigger trigger = getTriggerForTarget(tableName, groupId, target.getTargetGroupId(),
+                            Constants.CHANNEL_CONFIG);
+                    if (trigger == null) {
+                        jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, groupId,
+                                target.getTargetGroupId(), Constants.CHANNEL_CONFIG, initialLoadOrder++ });
+                    }
+                }
+            }
+        } else {
+            logger.error("Could not find any targets for your group id of "
+                    + runtimeConfiguration.getNodeGroupId()
+                    + ".  Please validate your node group id against the setup in the database.");
         }
     }
 

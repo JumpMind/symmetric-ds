@@ -28,36 +28,37 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.RowMapper;
 
 public class NodeService extends AbstractService implements INodeService {
 
-    protected static final Log logger = LogFactory.getLog(NodeService.class);
+    @SuppressWarnings("unused")
+    private static final Log logger = LogFactory.getLog(NodeService.class);
 
-    protected String findNodeSql;
+    private String findNodeSql;
 
-    protected String findNodeSecuritySql;
+    private String findNodeSecuritySql;
 
-    protected String findNodeIdentitySql;
+    private String findNodeIdentitySql;
 
-    protected String findNodesWhoTargetMeSql;
+    private String findNodesWhoTargetMeSql;
 
-    protected String findNodesWhoITargetSql;
+    private String findNodesWhoITargetSql;
 
-    protected String updateNodeSql;
+    private String updateNodeSql;
     
-    protected String isNodeRegisteredSql;
+    private String isNodeRegisteredSql;
     
-    protected String nodeChannelControlIgnoreSql;
+    private String nodeChannelControlIgnoreSql;
     
-    protected String insertNodeChannelControlSql;
+    private String insertNodeChannelControlSql;
     
-    protected String findNodeByExternalIdSql;
-
+    private String findNodeByExternalIdSql;
+    
     /**
      * Lookup a client in the database, which contains information for synching
      * with it.
@@ -83,6 +84,14 @@ public class NodeService extends AbstractService implements INodeService {
        }
     }
 
+    public boolean isRegistrationEnabled(String nodeId) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
+        if (nodeSecurity != null) {
+            return nodeSecurity.isRegistrationEnabled();
+        }
+        return false;
+    }
+    
     /**
      * Lookup a client_security in the database, which contains private
      * information used to authenticate.
@@ -115,10 +124,10 @@ public class NodeService extends AbstractService implements INodeService {
      * table. A client must authenticate before it's allowed to sync data.
      */
     public boolean isNodeAuthorized(String id, String password) {
-        NodeSecurity clientSecurity = findNodeSecurity(id);
-        if (clientSecurity != null && clientSecurity.getPassword() != null
-                && !clientSecurity.getPassword().equals("")
-                && clientSecurity.getPassword().equals(password)) {
+        NodeSecurity nodeSecurity = findNodeSecurity(id);
+        if (nodeSecurity != null
+                && ((nodeSecurity.getPassword() != null && !nodeSecurity.getPassword().equals("") && nodeSecurity
+                        .getPassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
             return true;
         }
         return false;

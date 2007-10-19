@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -105,21 +106,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         addPrefixAndCreateTableIfNecessary(getConfigDdlDatabase(), tablePrefix);
     }
 
-    protected boolean isSkipTriggerCreation(String table) {
-        return table.toLowerCase().equals(tablePrefix + "_node");
-    }
-
     final public boolean doesTriggerExist(String schema, String tableName, String triggerName) {
-        if (!isSkipTriggerCreation(tableName)) {
-            try {
-                return doesTriggerExistOnPlatform(schema, tableName, triggerName);
-            } catch (Exception ex) {
-                logger.warn("Could not figure out if the trigger exists.  Assuming that is does not.", ex);
-                return false;
-            }
-
-        } else {
-            return true;
+        try {
+            return doesTriggerExistOnPlatform(schema, tableName, triggerName);
+        } catch (Exception ex) {
+            logger.warn("Could not figure out if the trigger exists.  Assuming that is does not.", ex);
+            return false;
         }
     }
 
@@ -335,36 +327,27 @@ abstract public class AbstractDbDialect implements IDbDialect {
      */
     public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory audit,
             final String tablePrefix, final Table table) {
-        if (!isSkipTriggerCreation(trigger.getSourceTableName())) {
-            jdbcTemplate.execute(new ConnectionCallback() {
-                public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                    String catalog = trigger.getSourceSchemaName();
-                    logger.info("Creating " + dml.toString() + " trigger for "
-                            + (catalog != null ? (catalog + ".") : "") + trigger.getSourceTableName());
-                    String previousCatalog = con.getCatalog();
-                    try {
-                        if (catalog != null) {
-                            con.setCatalog(catalog);
-                        }
-                        Statement stmt = con.createStatement();
-                        stmt.executeUpdate(createTriggerDDL(dml, trigger, audit, tablePrefix, table));
-                        stmt.close();
-                    } finally {
-                        if (catalog != null && !catalog.equalsIgnoreCase(previousCatalog)) {
-                            con.setCatalog(previousCatalog);
-                        }
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                String catalog = trigger.getSourceSchemaName();
+                logger.info("Creating " + dml.toString() + " trigger for "
+                        + (catalog != null ? (catalog + ".") : "") + trigger.getSourceTableName());
+                String previousCatalog = con.getCatalog();
+                try {
+                    if (catalog != null) {
+                        con.setCatalog(catalog);
                     }
-
-                    return null;
+                    Statement stmt = con.createStatement();
+                    stmt.executeUpdate(createTriggerDDL(dml, trigger, audit, tablePrefix, table));
+                    stmt.close();
+                } finally {
+                    if (catalog != null && !catalog.equalsIgnoreCase(previousCatalog)) {
+                        con.setCatalog(previousCatalog);
+                    }
                 }
-            });
-        } else {
-            logger
-                    .warn("Not creating trigger for "
-                            + trigger.getSourceTableName()
-                            + " because of a current bug we have with a trigger not being able to select from the table it fired for.");
-        }
-
+                return null;
+            }
+        });
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit, String tablePrefix,

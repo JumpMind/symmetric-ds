@@ -40,6 +40,8 @@ public interface INodeService {
 
     public boolean isNodeAuthorized(String clientId, String password);
    
+    public boolean isRegistrationEnabled(String nodeId);
+    
     public Node findIdentity();
 
     public List<Node> findNodesToPull();
