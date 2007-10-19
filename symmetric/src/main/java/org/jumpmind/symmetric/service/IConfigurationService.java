@@ -41,7 +41,7 @@ public interface IConfigurationService {
     
     public List<String> getNodeConfigChannelTableNames();
     
-    public void initTriggerRowsForConfigChannel(String configTable, String groupId, String targetGroupId);
+    public void initTriggerRowsForConfigChannel();
 
     public void initSystemChannels();
     

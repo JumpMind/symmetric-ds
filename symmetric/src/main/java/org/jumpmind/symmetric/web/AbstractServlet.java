@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +36,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.transport.metered.MeteredOutputStreamOutgoingTransport;
@@ -108,6 +110,10 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected INodeService getNodeService() {
         return (INodeService) getContext().getBean(Constants.NODE_SERVICE);
+    }
+
+    protected IRegistrationService getRegistrationService() {
+        return (IRegistrationService) getContext().getBean(Constants.REGISTRATION_SERVICE);
     }
 
     protected IDataExtractorService getDataExtractorService() {

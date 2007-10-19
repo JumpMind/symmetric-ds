@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
@@ -93,7 +92,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      */
     public void syncTriggers() {
         logger.info("Synchronizing triggers.");
-        syncTableAuditConfigForConfigChannel();
+        configurationService.initTriggerRowsForConfigChannel();
         removeInactiveTriggers();
         updateOrCreateTriggers();
         logger.info("Done synchronizing triggers.");
@@ -230,33 +229,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
-        }
-    }
-
-    /**
-     * Need to make sure we are up to date with our table sync configuration of symmetric 
-     * configuration tables.
-     */
-    protected void syncTableAuditConfigForConfigChannel() {
-        List<String> tableNames = null;
-
-        if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
-            tableNames = configurationService.getRootConfigChannelTableNames();
-        } else {
-            tableNames = configurationService.getNodeConfigChannelTableNames();
-        }
-        configurationService.initSystemChannels();
-        String groupId = runtimeConfiguration.getNodeGroupId();
-        List<NodeGroupLink> targets = configurationService.getGroupLinksFor(groupId);
-        if (targets != null && targets.size() > 0) {
-            for (NodeGroupLink target : targets) {
-                for (String tableName : tableNames) {
-                    configurationService.initTriggerRowsForConfigChannel(tableName, groupId, target.getTargetGroupId());
-                }
-            }
-        } else {
-            logger.error("Could not find any targets for your group id of " + runtimeConfiguration.getNodeGroupId()
-                    + ".  Please validate your node group id against the setup in the database.");
         }
     }
 
