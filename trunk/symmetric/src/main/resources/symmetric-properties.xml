@@ -27,7 +27,8 @@
                 <prop key="symmetric.auto.config.database">true</prop>
                 <prop key="symmetric.http.download.rate.kb">-1</prop>
                 <prop key="symmetric.http.concurrent.workers.max">20</prop>   
-                <prop key="symmetric.runtime.max.outgoing.batches.to.process">60</prop>                             
+                <prop key="symmetric.runtime.outgoing.batches.max.to.process">60</prop>                             
+                <prop key="symmetric.runtime.incoming.batches.skip.duplicates">true</prop>
                 <prop key="symmetric.runtime.engine.name">Default</prop>                               
                 <prop key="symmetric.runtime.schema.version">?</prop>
                 <prop key="symmetric.runtime.trigger.prefix"></prop>
