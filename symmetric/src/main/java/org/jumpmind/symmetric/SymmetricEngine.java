@@ -29,6 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.job.PurgeJob;
+import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -41,9 +43,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is the preferred way to create, configure, start and manage an instance of
- * symmetric.
- * 
- * @author chenson
+ * symmetric.  The engine will bootstrap the symmetric.xml Spring context.
+ * <p/>
+ * The symmetric instance is configured by properties configuration files.  By default the engine 
+ * will look for and override existing properties with ones found in the properties files.  Symmetric looks 
+ * for:  symmetric.properties in the classpath (it will use the first one it finds), symmetric.properties found 
+ * in the user.home system property location.  Next, if provided in the constructor of the SymmetricEngine, it will
+ * locate and use the properties file passed to the engine.
+ * <p/>
+ * When the engine is ready to be started, the {@link #start()} method should be called.  It should only be called once.
  */
 public class SymmetricEngine {
 
@@ -64,10 +72,14 @@ public class SymmetricEngine {
 
     private boolean started = false;
 
-    Properties properties;
+    private Properties properties;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
 
+    /**
+     * @param overridePropertiesResource1 Provide a Spring resource path to a properties file to be used for configuration
+     * @param overridePropertiesResource2 Provide a Spring resource path to a properties file to be used for configuration
+     */
     public SymmetricEngine(String overridePropertiesResource1,
             String overridePropertiesResource2) {
         // Setting system properties is probably not the best way to accomplish this setup.
@@ -81,10 +93,17 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * Create a symmetric node
+     */
     public SymmetricEngine() {
         init(createContext());
     }
 
+    /**
+     * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
+     * @param ctx A Spring framework context
+     */
     protected SymmetricEngine(ApplicationContext ctx) {
         init(ctx);
     }
@@ -113,15 +132,15 @@ public class SymmetricEngine {
 
     /**
      * Register this instance of the engine so it can be found by other processes in the JVM.
+     * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
         registeredEnginesByUrl.put(runtimeConfig.getMyUrl(), this);
     }
 
-    private void initDb() {
-        bootstrapService.init();
-    }
-
+    /**
+     * Start the jobs if they are configured to be started in symmetric.properties
+     */
     private void startJobs() {
         if (Boolean.TRUE.toString().equalsIgnoreCase(
                 properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
@@ -154,9 +173,12 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * Must be called to start symmetric.
+     */
     public synchronized void start() {
         if (!started) {
-            initDb();
+        	bootstrapService.init();
             Node node = nodeService.findIdentity();
             if (node != null) {
                 logger.info("Starting registered node [group=" + node.getNodeGroupId() +
@@ -172,6 +194,11 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * This can be called if the push job has not been enabled.  It will perform a push
+     * the same way the {@link PushJob} would have.
+     * @see IPushService#pushData()
+     */
     public void push() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
                 properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
@@ -183,10 +210,19 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * Call this to resync triggers
+     * @see IBootstrapService#syncTriggers()
+     */
     public void syncTriggers() {
         bootstrapService.syncTriggers();
     }
 
+    /**
+     * This can be called if the pull job has not been enabled.  It will perform a pull
+     * the same way the {@link PullJob} would have.
+     * @see IPullService#pullData()
+     */
     public void pull() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
                 properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
@@ -198,6 +234,10 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * This can be called to do a purge.  It may be called only if the {@link PurgeJob} has not been enabled.
+     * @see IPurgeService#purge()
+     */
     public void purge() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
                 properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
@@ -208,22 +248,41 @@ public class SymmetricEngine {
         }
     }
 
+    /**
+     * Push a copy of the node onto the push queue so the symmetric node 'checks' in with it's root node.
+     * @see IBootstrapService#heartbeat()
+     */
     public void heartbeat() {
         bootstrapService.heartbeat();
     }
 
-    public void openRegistration(String domainName, String domainId) {
-        registrationService.openRegistration(domainName, domainId);
+    /**
+     * Open up registration for client to attach.  
+     * @see IRegistrationService#openRegistration(String, String)
+     */
+    public void openRegistration(String groupId, String externalId) {
+        registrationService.openRegistration(groupId, externalId);
     }
 
+    /**
+     * Check to see if this node has been registered.
+     * @return true if the node is registered
+     */
     public boolean isRegistered() {
         return nodeService.findIdentity() != null;
     }
 
+    /**
+     * Expose access to the Spring context.  This is for advanced use only.
+     * @return
+     */
     public ApplicationContext getApplicationContext() {
         return applicationContext;
     }
 
+    /**
+     * Locate a {@link SymmetricEngine} in the same JVM
+     */
     public static SymmetricEngine findEngineByUrl(String url) {
         return registeredEnginesByUrl.get(url);
     }
