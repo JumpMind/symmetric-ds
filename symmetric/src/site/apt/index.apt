@@ -29,9 +29,9 @@ Welcome to SymetricDS
 
  SymmetricDS also allows for synchronizing n-tiers of nodes.  For example, a SymmetricDS network could entail:
 
-    * A farm of web server nodes fronting an enterprise class general office database.
+    * A farm of web server nodes fronting an enterprise class general office database
     
-    * 1000(s) of store server nodes attached to a departmental class database with their root system being the general office.
+    * 1000(s) of store server nodes attached to a departmental class database with their root system being the general office
     
     * 10(s) of POS register nodes attached to an embedded database with their root system being the store servers
 
