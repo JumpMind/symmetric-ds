@@ -43,12 +43,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is the preferred way to create, configure, start and manage an instance of
- * symmetric.  The engine will bootstrap the symmetric.xml Spring context.
+ * Symmetric.  The engine will bootstrap the symmetric.xml Spring context.
  * <p/>
- * The symmetric instance is configured by properties configuration files.  By default the engine 
+ * The Symmetric instance is configured by properties configuration files.  By default the engine 
  * will look for and override existing properties with ones found in the properties files.  Symmetric looks 
- * for:  symmetric.properties in the classpath (it will use the first one it finds), symmetric.properties found 
- * in the user.home system property location.  Next, if provided in the constructor of the SymmetricEngine, it will
+ * for:  symmetric.properties in the classpath (it will use the first one it finds), and then for a symmetric.properties found 
+ * in the user.home system property location.  Next, if provided, in the constructor of the SymmetricEngine, it will
  * locate and use the properties file passed to the engine.
  * <p/>
  * When the engine is ready to be started, the {@link #start()} method should be called.  It should only be called once.
