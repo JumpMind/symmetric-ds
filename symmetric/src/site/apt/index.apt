@@ -7,39 +7,38 @@
 
 Welcome to SymetricDS
 
- SymmetricDS is database synchronization software.  It uses web and database technologies to enable the synchronization of relational databases.  It was originally built for use in a distributed store environment where data originates and is returned to a centralized database (i.e. a general office database).
+ SymmetricDS is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
 
- Satellite databases (i.e. a store servers) register an interest in channels of data.   Channels are groups of database tables that can be synchronized in either direction.
+ Because SymmetricDS uses web technologies for its transport it can synchronize data across the Internet.  The software was designed to scale to large numbers of clients, work across low bandwith connections and withstand days of outage time.  The web-based architecture is well understood and it is easy to find technical resources to help tune it. 
 
- SymmetricDS can be deployed in the following configurations:
+ Any database that supports trigger technology and has had a ‘database dialect’ written for SymmetricDS can be a ‘node’ in the network.  
+
+ SymmetricDS instances, also called nodes, register an interest in ‘channels’ of data.   Channels are pre-configured groups of database tables that can be synchronized in either direction.
+
+ Synchronizations are defined for ‘groups’ of ‘nodes.’  Each synchronization path is a ‘link’ between two ‘node groups.’
+
+ A SymmetricDS node is typically bootstrapped through the {{{apidocs/org/jumpmind/symmetric/SymmetricEngine.html} SymmetricEngine}} API.  A node is driven by its configuration which is retrieved from a set of configuration tables in the database itself. A node’s configuration is downloaded from a registration server during the secure registration process.
+
+ A SymmetricDS node can be deployed in the following configurations:
  
-    * web application archive (war) to an existing application server such as Tomcat, Jetty, or JBoss
+    * Web application archive (war) to an existing application server such as Tomcat, Jetty, or JBoss
     
-    * as a standalone service
+    * Standalone service
 
- The same application software is deployed to the satellite systems as is deployed to the most central location.  The centralized locations may by configured as a web farm to ensure QOS for the satellite systems.
+ The root node may be configured as a web farm to ensure QOS for as many nodes as the web site will scale to.
 
- Configuration is always performed at the central most system.  The satellite systems get their configuration from their host system.  When a satellite application is started it is provided a couple pieces of information so it can begin it's work:
+ SymmetricDS also allows for synchronizing n-tiers of nodes.  For example, a SymmetricDS network could entail:
 
-    * Configuration name (or configuration id)
+    * A farm of web server nodes fronting an enterprise class general office database.
     
-    * Host system - the URL to the server it will get it's configuration from and synchronize data with
+    * 1000(s) of store server nodes attached to a departmental class database with their root system being the general office.
     
-    * Registration parameter(s) - a piece(s) of information identifying the system (such as store id)
+    * 10(s) of POS register nodes attached to an embedded database with their root system being the store servers
 
- SymmetricDS also allows for synchronizing n-tiers of databases.  For example,  a SymmetricDS configuration could entail:
+ An n-tier configuration is not limited to the above scenario.  For example, a series of regional servers could be inserted between the general office and store server groups if necessary.
+ 
+ SymmetricDS is available under the LGPL open source software {{{license.html}license}} and is actively being developed and supported. 
 
-    * A farm of web servers fronting an enterprise class general office database.
-    
-    * 1000(s) of satellite store servers with their host system being the general office.
-    
-    * 10(s) of satellite register deployments with their host system being the store servers (allowing for offline registers)
-
- The n-tier configuration is not limited to the above configuration.  For example,  a series of regional servers could be inserted between the general office and store server if necessary.  Another option might be to not even have store servers.
-
- The transport for data synchronization is HTTP.  SymmetricDS chooses to use web technologies because of the proven ability to scale.  The web architecture is well understood and it is easy to find technical resources to help tune it. 
-
- Symmetric works well in both low and high bandwidth environments.   It works well with existing databases.
 
 
 
