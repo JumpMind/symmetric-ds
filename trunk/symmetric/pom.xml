@@ -5,7 +5,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
     <packaging>jar</packaging>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.0.9-SNAPSHOT</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
