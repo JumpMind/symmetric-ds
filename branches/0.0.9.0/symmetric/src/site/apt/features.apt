@@ -1,0 +1,42 @@
+ ------
+ Features
+ ------
+ ------
+ Date
+ ------ 
+
+Features
+
+  * Supports Data Channels - Table synchronizations are grouped into channels
+  
+  * Centralized Configuration - All configuration is downloaded from a centralized registration server
+   
+  * Many Deployment Options - Standalone engine, web application, embedded software component
+  
+  * Data Filtering and Rerouting - allows for localized passwords and sensitive data filtering/routing
+   
+  * HTTP transport - provides other pluggable implmetations as well (such as the internal transport which is useful for unit testing)
+  
+  * Notification Schemes: Push, Pull
+  
+  * Provides Symmetric Data Protocol - a CSV based streaming data format used in REST style
+  
+  * Provides Plugin Points - extend the replication functionality to meet your needs
+  
+  * Supports Two-Way Table Synchronization - will allow the same table to be synchronized both to and from the host system based on change criteria (ping ponging will be prevented)
+  
+  * Supports Database Versioning - satellite databases may be at difference versions and the host system will be able to target changes to specific database versions
+  
+  * Provides Auto Database Creation - satellite database will have the option of being auto-created and auto-upgraded
+  
+  * Embeddable - can be embedded or bootstrapped by another application (i.e. a POS application).
+  
+  * Supports multiple database schemas naturally through the existence of Data Channels
+   
+  * Supports updates to the primary key of a row of data
+  
+  * Provides Remote Management - through JMX
+  
+  * Efficient initial data load to seed satellite databases
+  
+ 
