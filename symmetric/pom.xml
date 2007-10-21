@@ -101,7 +101,7 @@
                 <role>designer</role>
             </roles>
             <timezone>-5</timezone>
-        </contributor>        
+        </contributor>
     </contributors>
     <distributionManagement>
         <site>
@@ -112,6 +112,18 @@
     <build>
         <finalName>symmetric-ds</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.jumpmind.symmetric.SymmetricLauncher</mainClass>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-plugin</artifactId>
@@ -154,19 +166,40 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>bin</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+                <version>2.1</version>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
+                        <id>bin</id>
                         <phase>package</phase>
                         <goals>
                             <goal>attached</goal>
                         </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    ${basedir}/src/main/assembly/assembly-bin.xml
+                                </descriptor>
+                            </descriptors>
+                            <finalName>symmetric-ds-${pom.version}</finalName>
+                        </configuration>
                     </execution>
+                    <!-- 
+                    <execution>
+                        <id>src</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>
+                                    ${basedir}/src/main/assembly/assembly-src.xml
+                                </descriptor>
+                            </descriptors>
+                            <finalName>symmetric-ds-${pom.version}</finalName>
+                        </configuration>
+                    </execution>
+                     -->
                 </executions>
             </plugin>
             <plugin>
