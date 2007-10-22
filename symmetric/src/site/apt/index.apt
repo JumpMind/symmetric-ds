@@ -7,9 +7,9 @@
 
 Welcome to SymetricDS
 
- SymmetricDS is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
+ SymmetricDS (Symmetric Data Sync) is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
 
- Because SymmetricDS uses web technologies for its transport it can synchronize data across the Internet.  The software was designed to scale to large numbers of clients, work across low bandwith connections and withstand days of outage time.  The web-based architecture is well understood and it is easy to find technical resources to help tune it. 
+ Because SymmetricDS uses web technologies for its transport it can synchronize data across the Internet.  The software was designed to scale to large numbers of clients, work across low bandwith connections, keep data synchronized near real time, and withstand days of outage time.  The web-based architecture is well understood and it is easy to find technical resources to help tune it. 
 
  Any database that supports trigger technology and has had a ‘database dialect’ written for SymmetricDS can be a ‘node’ in the network.  
 
@@ -39,7 +39,17 @@ Welcome to SymetricDS
  
  SymmetricDS is available under the LGPL open source software {{{license.html}license}} and is actively being developed and supported. 
 
+Why SymmetricDS?
+
+ SymmetricDS was built because the development team did not find a suitable open source solution that met the core requirements for keeping store databases durably synchronized in 'real-time' with a general office database.
+
+History
+ 
+ SymmetricDS was started as an open source project to document the experiences and solve the issues the development team encountered when integrating a store MySQL database with a corporate Oracle database for a major retailer.  The software gained momentum and is now being used by that same retailer.  
 
 
+ 
 
+ 
+ 
 
