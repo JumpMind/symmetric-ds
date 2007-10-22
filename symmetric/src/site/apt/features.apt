@@ -7,36 +7,38 @@
 
 Features
 
-  * Supports Data Channels - Table synchronizations are grouped into channels
+  * <<Data Channels>> - Table synchronizations are grouped into independent channels
   
-  * Centralized Configuration - All configuration is downloaded from a centralized registration server
+  * <<Transaction Aware>> - Data updates are recorded and replayed with the same atomicity
+  
+  * <<Centralized Configuration>> - All configuration is downloaded from a central registration server
    
-  * Many Deployment Options - Standalone engine, web application, embedded software component
+  * <<Multiple Deployment Options>> - Standalone engine, web application, embedded software component
   
-  * Data Filtering and Rerouting - allows for localized passwords and sensitive data filtering/routing
+  * <<Data Filtering and Rerouting>> - Allows for localized passwords and sensitive data filtering/routing
    
-  * HTTP transport - provides other pluggable implmetations as well (such as the internal transport which is useful for unit testing)
+  * <<HTTP Transport>> - Pluggable transport defaults to Representation State Transfer (REST-style) HTTP services
   
-  * Notification Schemes: Push, Pull
+  * <<Notification Schemes>> - Push (trickle-back data) or Pull (trickle-poll data) changes
   
-  * Provides Symmetric Data Protocol - a CSV based streaming data format used in REST style
+  * <<Symmetric Data Protocol>> - A fast streaming data format that is easy to generate, parse, and load
   
-  * Provides Plugin Points - extend the replication functionality to meet your needs
+  * <<Plug-In API>> - Add customizations through extensions and plug-in points
   
-  * Supports Two-Way Table Synchronization - will allow the same table to be synchronized both to and from the host system based on change criteria (ping ponging will be prevented)
+  * <<Two-Way Table Synchronization>> - The same table can be synchronized both to and from the host system while avoiding update loops
   
-  * Supports Database Versioning - satellite databases may be at difference versions and the host system will be able to target changes to specific database versions
+  * <<Database Versioning>> - Specify data synchronization by version of target database
   
-  * Provides Auto Database Creation - satellite database will have the option of being auto-created and auto-upgraded
+  * <<Auto Database Creation>> - Optionally allow creating and upgrading of database schema
   
-  * Embeddable - can be embedded or bootstrapped by another application (i.e. a POS application).
+  * <<Embeddable>> - Small enough to embed or bootstrap within another application (i.e. a POS application)
   
-  * Supports multiple database schemas naturally through the existence of Data Channels
+  * <<Multiple Schemas>> - Supports multiple database schemas naturally through the existence of Data Channels
    
-  * Supports updates to the primary key of a row of data
+  * <<Primary Key Updates>> - Captures the "before" and "after" data being changed, allowing updates to primary key data
   
-  * Provides Remote Management - through JMX
+  * <<Remote Management>> - Administration through a Java Management Extensions (JMX) console
   
-  * Efficient initial data load to seed satellite databases
+  * <<Initial Data Load>> - Prepare the satellite database with an initial or recovery load of data 
   
  
