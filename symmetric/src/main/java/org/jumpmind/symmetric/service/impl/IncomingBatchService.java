@@ -71,13 +71,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             insertIncomingBatch(status);
         } catch (DataIntegrityViolationException e) {
             status.setRetry(true);
-            if (skipDuplicateBatches) {
-                okayToProcess = updateIncomingBatch(status) > 0;
-                if (okayToProcess) {
-                    logger.warn("Retrying batch " + status.getClientBatchId());
-                } else {
-                    logger.warn("Skipping batch " + status.getClientBatchId());
-                }
+            okayToProcess = updateIncomingBatch(status) > 0 || (! skipDuplicateBatches);
+            if (okayToProcess) {
+                logger.warn("Retrying batch " + status.getClientBatchId());
+            } else {
+                logger.warn("Skipping batch " + status.getClientBatchId());
             }
         }
         return okayToProcess;
