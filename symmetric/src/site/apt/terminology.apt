@@ -7,12 +7,28 @@
 
 Terminology
 
-** Node
+* Node
 
-** Node Group
+	An instance of SymmetricDS that synchronizes data with one or more nodes.
+	Each node has a unique identifier (nodeID) that is used when communicating, as well as a domain-specific
+	identifier (externalId) that provides context within the local system.
 
-** Node Group Link
+* Node Group
 
-** Channel
+	A category of Nodes that synchronizes data with one or more NodeGroups.  A common use of NodeGroup 
+	is to describe a level in a hierarchy of data synchronization.
 
-** Batch
+* Node Group Link
+
+	A source NodeGroup sends its data updates to a target NodeGroup using a pull, push,
+	or custom technique.
+
+* Channel
+
+	A category of data that can be synchronized independently of other Channels.  Channels allow
+	control over the type of data flowing and prevents one type of synchronization from contending
+	with another.
+
+* Batch
+
+	A unit of updates that are processed together and tracked by an identifier (batchId).
