@@ -5,9 +5,9 @@
  Date
  ------
 
-Welcome to SymetricDS
+Welcome to SymmetricDS
 
- SymmetricDS (Symmetric Data Sync) is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
+ SymmetricDS (Symmetric Data Synchronization) is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
 
  Because SymmetricDS uses web technologies for its transport it can synchronize data across the Internet.  The software was designed to scale to large numbers of clients, work across low bandwith connections, keep data synchronized near real time, and withstand days of outage time.  The web-based architecture is well understood and it is easy to find technical resources to help tune it. 
 
