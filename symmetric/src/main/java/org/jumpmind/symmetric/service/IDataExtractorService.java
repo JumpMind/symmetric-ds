@@ -28,11 +28,9 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
 
-    public void extractClientIdentityFor(Node client,
-            IOutgoingTransport transport);
+    public void extractClientIdentityFor(Node client, IOutgoingTransport transport);
 
-    public OutgoingBatch extractInitialLoadFor(Node client, Trigger config,
-            IOutgoingTransport transport);
+    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 
     public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
             final IOutgoingTransport transport);
@@ -40,10 +38,13 @@ public interface IDataExtractorService {
     /**
      * @return true if work was done or false if there was no work to do.
      */
-    public boolean extract(Node client, IOutgoingTransport transport)
+    public boolean extract(Node node, IOutgoingTransport transport) throws Exception;
+
+    public boolean extract(Node node, final IExtractListener handler) throws Exception;
+
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws Exception;
 
-    public boolean extract(Node client, final IExtractListener handler)
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId)
             throws Exception;
-
 }

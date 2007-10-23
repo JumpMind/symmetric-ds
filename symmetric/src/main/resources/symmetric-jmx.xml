@@ -41,6 +41,7 @@
         <property name="dataSource" ref="dataSource" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
     </bean>
 
 </beans>
