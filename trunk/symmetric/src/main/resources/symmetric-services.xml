@@ -224,6 +224,14 @@
                   from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status = 'ER' order by 6, 1
             </value>
         </property>
+        <property name="selectOutgoingBatchRangeSql">
+            <value>
+                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type
+                from ${sync.table.prefix}_outgoing_batch b
+                where b.batch_id between ? and ?
+                order by b.batch_id
+            </value>
+        </property>
         <property name="changeBatchStatusSql">
             <value>update ${sync.table.prefix}_outgoing_batch set status=? where batch_id=?</value>
         </property>

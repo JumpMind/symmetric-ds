@@ -158,42 +158,14 @@ public class DataExtractorService implements IDataExtractorService {
         
         outgoingBatchService.buildOutgoingBatches(node.getNodeId());
 
-        List<OutgoingBatch> batches = outgoingBatchService
-                .getOutgoingBatches(node.getNodeId());
+        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
 
         if (batches != null && batches.size() > 0) {
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
                     handler.startBatch(batch);
-                    jdbcTemplate.execute(new ConnectionCallback() {
-                        public Object doInConnection(Connection conn)
-                                throws SQLException, DataAccessException {
-                            PreparedStatement statement = conn
-                                    .prepareStatement(
-                                            selectEventDataToExtractSql,
-                                            java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                                            java.sql.ResultSet.CONCUR_READ_ONLY);
-                            statement.setFetchSize(dbDialect
-                                    .getStreamingResultsFetchSize());
-                            statement.setString(1, batch.getNodeId());
-                            statement.setString(2, batch.getBatchId());
-                            ResultSet results = statement.executeQuery();
-                            while (results.next()) {
-                                try {
-                                    handler.dataExtracted(next(results));
-                                } catch (RuntimeException e) {
-                                    throw e;
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            JdbcUtils.closeResultSet(results);
-                            JdbcUtils.closeStatement(statement);
-                            return null;
-                        }
-                    });
-
+                    selectEventDataToExtract(handler, batch);
                     handler.endBatch(batch);
 
                     // At this point, we've already sent the data to the client, so if
@@ -207,9 +179,61 @@ public class DataExtractorService implements IDataExtractorService {
                 handler.done();
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
+    }
+
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId,
+            String endBatchId) throws Exception {
+
+        ExtractStreamHandler handler = new ExtractStreamHandler(transport);
+        return extractBatchRange(handler, startBatchId, endBatchId);
+    }
+
+    public boolean extractBatchRange(final IExtractListener handler, String startBatchId,
+            String endBatchId) throws Exception {
+
+        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
+
+        if (batches != null && batches.size() > 0) {
+            try {
+                handler.init();
+                for (final OutgoingBatch batch : batches) {
+                    handler.startBatch(batch);
+                    selectEventDataToExtract(handler, batch);
+                    handler.endBatch(batch);
+                }
+            } finally {
+                handler.done();
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                PreparedStatement ps = conn.prepareStatement(selectEventDataToExtractSql,
+                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                ps.setString(1, batch.getNodeId());
+                ps.setString(2, batch.getBatchId());
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    try {
+                        handler.dataExtracted(next(rs));
+                    } catch (RuntimeException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                JdbcUtils.closeResultSet(rs);
+                JdbcUtils.closeStatement(ps);
+                return null;
+            }
+        });
     }
 
     private Data next(ResultSet results) throws SQLException {

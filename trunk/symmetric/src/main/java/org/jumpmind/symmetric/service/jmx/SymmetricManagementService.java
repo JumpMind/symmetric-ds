@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.service.jmx;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -29,11 +31,14 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
@@ -56,6 +61,8 @@ public class SymmetricManagementService {
     private IOutgoingBatchService outgoingBatchService;
 
     private IRegistrationService registrationService;
+    
+    private IDataExtractorService dataExtractorService;
 
     private Properties properties;
 
@@ -159,6 +166,31 @@ public class SymmetricManagementService {
         return dataService.reloadNode(nodeId);
     }
 
+    @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
+    public String showBatch(String batchId) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        IOutgoingTransport transport = new InternalOutgoingTransport(out);
+        dataExtractorService.extractBatchRange(transport, batchId, batchId);
+        transport.close();
+        out.close();
+        return out.toString();
+    }
+
+    @ManagedOperation(description = "Write a range of batches to a file in Symmetric Data Format.")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
+            @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
+            @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
+    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
+            throws Exception {
+        FileOutputStream out = new FileOutputStream(fileName);
+        IOutgoingTransport transport = new InternalOutgoingTransport(out);
+        dataExtractorService.extractBatchRange(transport, startBatchId, endBatchId);
+        transport.close();
+        out.close();
+    }
+
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
     }
@@ -194,4 +226,9 @@ public class SymmetricManagementService {
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
+
+    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
+        this.dataExtractorService = dataExtractorService;
+    }
+
 }

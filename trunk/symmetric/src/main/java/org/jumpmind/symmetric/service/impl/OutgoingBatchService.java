@@ -55,6 +55,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private String selectOutgoingBatchSql;
 
+    private String selectOutgoingBatchRangeSql;
+    
     private String changeBatchStatusSql;
 
     private String initialLoadStatusSql;
@@ -209,6 +211,22 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 });
     }
 
+    @SuppressWarnings("unchecked")
+    public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql,
+                new Object[] { startBatchId, endBatchId }, new RowMapper() {
+                    public Object mapRow(ResultSet rs, int index) throws SQLException {
+                        OutgoingBatch batch = new OutgoingBatch();
+                        batch.setBatchId(rs.getString(1));
+                        batch.setNodeId(rs.getString(2));
+                        batch.setChannelId(rs.getString(3));
+                        batch.setStatus(rs.getString(4));
+                        batch.setBatchType(rs.getString(5));
+                        return batch;
+                    }
+                });
+    }
+
     public void markOutgoingBatchSent(OutgoingBatch batch) {
         setBatchStatus(batch.getBatchId(), Status.SE);
     }
@@ -281,6 +299,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setOutgoingBatchQueryTemplate(JdbcTemplate outgoingBatchQueryTemplate) {
         this.outgoingBatchQueryTemplate = outgoingBatchQueryTemplate;
+    }
+
+    public void setSelectOutgoingBatchRangeSql(String selectOutgoingBatchRangeSql) {
+        this.selectOutgoingBatchRangeSql = selectOutgoingBatchRangeSql;
     }
 
 }
