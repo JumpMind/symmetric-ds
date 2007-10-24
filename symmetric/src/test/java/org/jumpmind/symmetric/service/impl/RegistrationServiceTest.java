@@ -46,72 +46,72 @@ public class RegistrationServiceTest extends AbstractTest {
     }
 
     @Test(groups = "continuous")
-    public void testRegisterClientFail() throws Exception {
-        Node client = new Node();
+    public void testRegisterNodeFail() throws Exception {
+        Node node = new Node();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // Existing domain name and ID that is not open to register
-        client.setNodeGroupId("STORE");
-        client.setExternalId("00001");
-        Assert.assertFalse(registrationService.registerNode(client, out),
-                "Client should NOT be allowed to register");
+        node.setNodeGroupId("STORE");
+        node.setExternalId("00001");
+        Assert.assertFalse(registrationService.registerNode(node, out),
+                "Node should NOT be allowed to register");
 
         // Existing domain name but wrong ID
-        client.setNodeGroupId("STORE");
-        client.setExternalId("wrongId");
-        Assert.assertFalse(registrationService.registerNode(client, out),
-                "Client should NOT be allowed to register");
+        node.setNodeGroupId("STORE");
+        node.setExternalId("wrongId");
+        Assert.assertFalse(registrationService.registerNode(node, out),
+                "Node should NOT be allowed to register");
 
         // Wrong domain name and wrong ID
-        client.setNodeGroupId("wrongDomain");
-        client.setExternalId("wrongId");
-        Assert.assertFalse(registrationService.registerNode(client, out),
-                "Client should NOT be allowed to register");
+        node.setNodeGroupId("wrongDomain");
+        node.setExternalId("wrongId");
+        Assert.assertFalse(registrationService.registerNode(node, out),
+                "Node should NOT be allowed to register");
     }
 
     @Test(groups = "continuous")
-    public void testRegisterClient() throws Exception {
-        Node client = new Node();
-        client.setNodeGroupId("STORE");
-        client.setExternalId("00002");
-        client.setSyncURL("http://localhost:8080/sync");
-        client.setSchemaVersion("1");
-        client.setDatabaseType("MySQL");
-        client.setDatabaseVersion("5");
+    public void testRegisterNode() throws Exception {
+        Node node = new Node();
+        node.setNodeGroupId("STORE");
+        node.setExternalId("00002");
+        node.setSyncURL("http://localhost:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("MySQL");
+        node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be allowed to register");
 
-        client = nodeService.findNode("00002");
-        Assert.assertEquals(client.getNodeId(), "00002", "Wrong clientId");
-        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
-        Assert.assertEquals(client.getExternalId(), "00002", "Wrong domainId");
-        Assert.assertEquals(client.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
-        Assert.assertEquals(client.getSchemaVersion(), "1", "Wrong schemaVersion");
-        Assert.assertEquals(client.getDatabaseType(), "MySQL", "Wrong databaseType");
-        Assert.assertEquals(client.getDatabaseVersion(), "5", "Wrong databaseVersion");
+        node = nodeService.findNode("00002");
+        Assert.assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
+        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getExternalId(), "00002", "Wrong domainId");
+        Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
+        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
+        Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
+        Assert.assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
 
         NodeSecurity security = nodeService.findNodeSecurity("00002");
-        Assert.assertEquals(security.getNodeId(), "00002", "Wrong clientId");
+        Assert.assertEquals(security.getNodeId(), "00002", "Wrong nodeId");
         Assert.assertNotSame(security.getPassword(), null, "Wrong password");
         Assert.assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         Assert.assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
     }
 
     @Test(groups = "continuous")
-    public void testRegisterClientWithResponse() throws Exception {
+    public void testRegisterNodeWithResponse() throws Exception {
         registrationService.openRegistration("test-root-group", "09999");
 
-        Node client = new Node();
-        client.setNodeGroupId("test-root-group");
-        client.setExternalId("09999");
-        client.setSyncURL("http://localhost:8080/sync");
-        client.setSchemaVersion("1");
-        client.setDatabaseType("MySQL");
-        client.setDatabaseVersion("5");
+        Node node = new Node();
+        node.setNodeGroupId("test-root-group");
+        node.setExternalId("09999");
+        node.setSyncURL("http://localhost:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("MySQL");
+        node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be allowed to register");
         out.close();
         String response = out.toString();
         Assert.assertTrue(response.indexOf("batch,") != -1, "Expected batch");
@@ -126,33 +126,33 @@ public class RegistrationServiceTest extends AbstractTest {
     public void testReOpenRegistration() throws Exception {
         registrationService.reOpenRegistration("00003");
         NodeSecurity security = nodeService.findNodeSecurity("00003");
-        Assert.assertEquals(security.getNodeId(), "00003", "Wrong clientId");
+        Assert.assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
         Assert.assertNotSame(security.getPassword(), "notsecret", "Wrong password");
         Assert.assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
         Assert.assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
 
-        Node client = new Node();
-        client.setNodeGroupId("STORE");
-        client.setExternalId("00003");
-        client.setSyncURL("http://0:8080/sync");
-        client.setSchemaVersion("1");
-        client.setDatabaseType("hqsql");
-        client.setDatabaseVersion("1");
+        Node node = new Node();
+        node.setNodeGroupId("STORE");
+        node.setExternalId("00003");
+        node.setSyncURL("http://0:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("hqsql");
+        node.setDatabaseVersion("1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be allowed to register");
 
-        client = nodeService.findNode("00003");
-        Assert.assertEquals(client.getNodeId(), "00003", "Wrong clientId");
-        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
-        Assert.assertEquals(client.getExternalId(), "00003", "Wrong domainId");
-        Assert.assertEquals(client.getSyncURL().toString(), "http://0:8080/sync", "Wrong syncUrl");
-        Assert.assertEquals(client.getSchemaVersion(), "1", "Wrong schemaVersion");
-        Assert.assertEquals(client.getDatabaseType(), "hqsql", "Wrong databaseType");
-        Assert.assertEquals(client.getDatabaseVersion(), "1", "Wrong databaseVersion");
+        node = nodeService.findNode("00003");
+        Assert.assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
+        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getExternalId(), "00003", "Wrong domainId");
+        Assert.assertEquals(node.getSyncURL().toString(), "http://0:8080/sync", "Wrong syncUrl");
+        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
+        Assert.assertEquals(node.getDatabaseType(), "hqsql", "Wrong databaseType");
+        Assert.assertEquals(node.getDatabaseVersion(), "1", "Wrong databaseVersion");
 
         security = nodeService.findNodeSecurity("00003");
-        Assert.assertEquals(security.getNodeId(), "00003", "Wrong clientId");
+        Assert.assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
         Assert.assertNotSame(security.getPassword(), "notsecret", "Wrong password");
         Assert.assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         Assert.assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
@@ -169,17 +169,17 @@ public class RegistrationServiceTest extends AbstractTest {
     public void testOpenRegistration() throws Exception {
         registrationService.openRegistration("STORE", "00005");
 
-        Node client = nodeService.findNode("00005");
-        Assert.assertEquals(client.getNodeId(), "00005", "Wrong clientId");
-        Assert.assertEquals(client.getNodeGroupId(), "STORE", "Wrong domainName");
-        Assert.assertEquals(client.getExternalId(), "00005", "Wrong domainId");
-        Assert.assertEquals(client.getSyncURL(), null, "Wrong syncUrl");
-        Assert.assertEquals(client.getSchemaVersion(), null, "Wrong schemaVersion");
-        Assert.assertEquals(client.getDatabaseType(), null, "Wrong databaseType");
-        Assert.assertEquals(client.getDatabaseVersion(), null, "Wrong databaseVersion");
+        Node node = nodeService.findNode("00005");
+        Assert.assertEquals(node.getNodeId(), "00005", "Wrong nodeId");
+        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getExternalId(), "00005", "Wrong domainId");
+        Assert.assertEquals(node.getSyncURL(), null, "Wrong syncUrl");
+        Assert.assertEquals(node.getSchemaVersion(), null, "Wrong schemaVersion");
+        Assert.assertEquals(node.getDatabaseType(), null, "Wrong databaseType");
+        Assert.assertEquals(node.getDatabaseVersion(), null, "Wrong databaseVersion");
 
         NodeSecurity security = nodeService.findNodeSecurity("00005");
-        Assert.assertEquals(security.getNodeId(), "00005", "Wrong clientId");
+        Assert.assertEquals(security.getNodeId(), "00005", "Wrong nodeId");
         Assert.assertNotSame(security.getPassword(), null, "Wrong password");
         Assert.assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
         Assert.assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
@@ -188,32 +188,32 @@ public class RegistrationServiceTest extends AbstractTest {
     @Test(groups = "continuous")
     public void testOpenRegistrationOnceAndRegisterTwice() throws Exception {
         registrationService.openRegistration("STORE", "00006");
-        Node client = new Node();
-        client.setNodeGroupId("STORE");
-        client.setExternalId("00006");
-        client.setSyncURL("http://127.0.0.1");
+        Node node = new Node();
+        node.setNodeGroupId("STORE");
+        node.setExternalId("00006");
+        node.setSyncURL("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be able to register");
-        Assert.assertFalse(registrationService.registerNode(client, out),
-                "Client should NOT be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be able to register");
+        Assert.assertFalse(registrationService.registerNode(node, out),
+                "Node should NOT be able to register");
     }
 
     @Test(groups = "continuous")
     public void testOpenRegistrationTwiceAndRegisterThrice() throws Exception {
         registrationService.openRegistration("STORE", "00007");
         registrationService.openRegistration("STORE", "00007");
-        Node client = new Node();
-        client.setNodeGroupId("STORE");
-        client.setExternalId("00007");
-        client.setSyncURL("http://0");
+        Node node = new Node();
+        node.setNodeGroupId("STORE");
+        node.setExternalId("00007");
+        node.setSyncURL("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be able to register");
-        Assert.assertTrue(registrationService.registerNode(client, out),
-                "Client should be able to register");
-        Assert.assertFalse(registrationService.registerNode(client, out),
-                "Client should NOT be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be able to register");
+        Assert.assertFalse(registrationService.registerNode(node, out),
+                "Node should NOT be able to register");
     }
 
 }

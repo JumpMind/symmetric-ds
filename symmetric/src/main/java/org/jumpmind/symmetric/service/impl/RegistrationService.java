@@ -54,33 +54,33 @@ public class RegistrationService extends AbstractService implements
 
     private IConfigurationService configurationService;
 
-    private String findClientToRegisterSql;
+    private String findNodeToRegisterSql;
 
-    private String registerClientSql;
+    private String registerNodeSql;
 
-    private String registerClientSecuritySql;
+    private String registerNodeSecuritySql;
 
     private String reopenRegistrationSql;
 
-    private String openRegistrationClientSql;
+    private String openRegistrationNodeSql;
 
-    private String openRegistrationClientSecuritySql;
+    private String openRegistrationNodeSecuritySql;
 
     /**
-     * Register a client for the given domain name and domain ID if the
+     * Register a node for the given domain name and domain ID if the
      * registration is open.
      */
     public boolean registerNode(Node node, OutputStream out) throws IOException {
-        String clientId = (String) jdbcTemplate.queryForObject(
-                findClientToRegisterSql, new Object[] { node.getNodeGroupId(),
+        String nodeId = (String) jdbcTemplate.queryForObject(
+                findNodeToRegisterSql, new Object[] { node.getNodeGroupId(),
                         node.getExternalId() }, String.class);
-        if (clientId == null) {
+        if (nodeId == null) {
             return false;
         }
-        node.setNodeId(clientId);
-        jdbcTemplate.update(registerClientSecuritySql, new Object[] { node
+        node.setNodeId(nodeId);
+        jdbcTemplate.update(registerNodeSecuritySql, new Object[] { node
                 .getNodeId() });
-        jdbcTemplate.update(registerClientSql, new Object[] {
+        jdbcTemplate.update(registerNodeSql, new Object[] {
                 node.getSyncURL().toString(), node.getSchemaVersion(),
                 node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSymmetricVersion(), node.getNodeId() });
@@ -88,7 +88,7 @@ public class RegistrationService extends AbstractService implements
     }
 
     /**
-     * Synchronize client configuration.
+     * Synchronize node configuration.
      */
     protected boolean writeConfiguration(Node node, OutputStream out)
             throws IOException {
@@ -110,11 +110,11 @@ public class RegistrationService extends AbstractService implements
                     acknowledgeService.ack(batch.getBatchInfoList());
                 }
             }
-            dataExtractorService.extractClientIdentityFor(node, transport);
+            dataExtractorService.extractNodeIdentityFor(node, transport);
             written = true;
         } else {
             logger
-                    .error("There were no configuration tables to return to the client.  There is a good chance that the system is configured incorrectly.");
+                    .error("There were no configuration tables to return to the node.  There is a good chance that the system is configured incorrectly.");
         }
         transport.close();
         return written;
@@ -140,37 +140,37 @@ public class RegistrationService extends AbstractService implements
      * for this node group and external ID will be given this information.
      */
     public void openRegistration(String nodeGroup, String externalId) {
-        String clientId = generateClientId(nodeGroup, externalId);
+        String nodeId = generateNodeId(nodeGroup, externalId);
         String password = generatePassword();
-        jdbcTemplate.update(openRegistrationClientSql, new Object[] { clientId,
+        jdbcTemplate.update(openRegistrationNodeSql, new Object[] { nodeId,
                 nodeGroup, externalId });
-        jdbcTemplate.update(openRegistrationClientSecuritySql, new Object[] {
-                clientId, password });
+        jdbcTemplate.update(openRegistrationNodeSecuritySql, new Object[] {
+                nodeId, password });
     }
 
     /**
-     * Generate a secure random password for a client.
+     * Generate a secure random password for a node.
      */
-    // TODO: clientGenerator.generatePassword();
+    // TODO: nodeGenerator.generatePassword();
     protected String generatePassword() {
         return new RandomDataImpl().nextSecureHexString(30);
     }
 
     /**
-     * Generate the next client ID that is available. Try to use the domain ID
-     * as the client ID.
+     * Generate the next node ID that is available. Try to use the domain ID
+     * as the node ID.
      */
-    // TODO: clientGenerator.generateClientId();
-    protected String generateClientId(String nodeGroupId, String externalId) {
-        String clientId = externalId;
+    // TODO: nodeGenerator.generateNodeId();
+    protected String generateNodeId(String nodeGroupId, String externalId) {
+        String nodeId = externalId;
         int maxTries = 100;
         for (int sequence = 0; sequence < maxTries; sequence++) {
-            if (nodeService.findNode(clientId) == null) {
-                return clientId;
+            if (nodeService.findNode(nodeId) == null) {
+                return nodeId;
             }
-            clientId = externalId + "-" + sequence;
+            nodeId = externalId + "-" + sequence;
         }
-        throw new RuntimeException("Could not find clientId for domainId of "
+        throw new RuntimeException("Could not find nodeId for externalId of "
                 + externalId + " after " + maxTries + " tries.");
     }
 
@@ -178,29 +178,29 @@ public class RegistrationService extends AbstractService implements
         this.nodeService = nodeService;
     }
 
-    public void setOpenRegistrationClientSecuritySql(
-            String openRegistrationClientSecuritySql) {
-        this.openRegistrationClientSecuritySql = openRegistrationClientSecuritySql;
+    public void setOpenRegistrationNodeSecuritySql(
+            String openRegistrationNodeSecuritySql) {
+        this.openRegistrationNodeSecuritySql = openRegistrationNodeSecuritySql;
     }
 
-    public void setOpenRegistrationClientSql(String openRegistrationClientSql) {
-        this.openRegistrationClientSql = openRegistrationClientSql;
+    public void setOpenRegistrationNodeSql(String openRegistrationNodeSql) {
+        this.openRegistrationNodeSql = openRegistrationNodeSql;
     }
 
-    public void setRegisterClientSecuritySql(String registerClientSecuritySql) {
-        this.registerClientSecuritySql = registerClientSecuritySql;
+    public void setRegisterNodeSecuritySql(String registerNodeSecuritySql) {
+        this.registerNodeSecuritySql = registerNodeSecuritySql;
     }
 
-    public void setRegisterClientSql(String registerClientSql) {
-        this.registerClientSql = registerClientSql;
+    public void setRegisterNodeSql(String registerNodeSql) {
+        this.registerNodeSql = registerNodeSql;
     }
 
     public void setReopenRegistrationSql(String reopenRegistrationSql) {
         this.reopenRegistrationSql = reopenRegistrationSql;
     }
 
-    public void setFindClientToRegisterSql(String findClientToRegisterSql) {
-        this.findClientToRegisterSql = findClientToRegisterSql;
+    public void setFindNodeToRegisterSql(String findNodeToRegisterSql) {
+        this.findNodeToRegisterSql = findNodeToRegisterSql;
     }
 
     public void setDataExtractorService(

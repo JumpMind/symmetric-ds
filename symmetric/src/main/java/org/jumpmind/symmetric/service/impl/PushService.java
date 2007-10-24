@@ -55,10 +55,10 @@ public class PushService implements IPushService {
 
     public void pushData() {
         info("Push requested");
-        List<Node> clients = nodeService.findNodesToPushTo();
-        if (clients != null) {
-            for (Node client : clients) {
-                pushToClient(client);
+        List<Node> nodes = nodeService.findNodesToPushTo();
+        if (nodes != null) {
+            for (Node node : nodes) {
+                pushToNode(node);
             }
         }
         info("Push request completed");
@@ -102,15 +102,15 @@ public class PushService implements IPushService {
         this.transportManager = tm;
     }
 
-    public void setNodeService(INodeService clientService) {
-        this.nodeService = clientService;
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     public void setAckService(IAcknowledgeService ackService) {
         this.ackService = ackService;
     }
 
-    private void pushToClient(Node remote) {
+    private void pushToNode(Node remote) {
         try {
             IOutgoingWithResponseTransport transport = transportManager
                     .getPushTransport(remote, nodeService.findIdentity());
@@ -146,7 +146,7 @@ public class PushService implements IPushService {
             logger.warn("Server is not available at this url: "
                     + remote.getSyncURL());
         } catch (Exception e) {
-            // just report the error because we want to push to other clients
+            // just report the error because we want to push to other nodes
             // in our list
             logger.error(e, e);
         }

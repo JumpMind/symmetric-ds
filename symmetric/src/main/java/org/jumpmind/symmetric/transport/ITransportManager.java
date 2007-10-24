@@ -37,6 +37,6 @@ public interface ITransportManager {
     
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException;
 
-    public IIncomingTransport getRegisterTransport(Node client) throws IOException;
+    public IIncomingTransport getRegisterTransport(Node node) throws IOException;
     
 }

@@ -69,7 +69,7 @@ public class DataExtractorService implements IDataExtractorService {
 
     private String selectEventDataToExtractSql;
 
-    public void extractClientIdentityFor(Node node, IOutgoingTransport transport) {
+    public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
         String tableName = tablePrefix + "_node_identity";
         OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG,
                 BatchType.INITIAL_LOAD);
@@ -168,9 +168,9 @@ public class DataExtractorService implements IDataExtractorService {
                     selectEventDataToExtract(handler, batch);
                     handler.endBatch(batch);
 
-                    // At this point, we've already sent the data to the client, so if
+                    // At this point, we've already sent the data to the node, so if
                     // updating the batch to 'sent' fails, all this means is that the batch
-                    // will be sent to the client again. This is expected to happen so
+                    // will be sent to the node again. This is expected to happen so
                     // infrequently, that the inefficiencies associated with re-sending a batch
                     // are negligible.
                     outgoingBatchService.markOutgoingBatchSent(batch);

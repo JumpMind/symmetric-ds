@@ -29,9 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface IIncomingBatchService {
 
-    public IncomingBatch findIncomingBatch(String batchId, String clientId);
+    public IncomingBatch findIncomingBatch(String batchId, String nodeId);
 
-    public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String clientId);
+    public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId);
 
     @Transactional
     public boolean acquireIncomingBatch(IncomingBatch status);

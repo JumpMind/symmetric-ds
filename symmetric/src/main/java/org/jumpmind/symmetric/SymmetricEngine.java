@@ -257,7 +257,7 @@ public class SymmetricEngine {
     }
 
     /**
-     * Open up registration for client to attach.  
+     * Open up registration for node to attach.  
      * @see IRegistrationService#openRegistration(String, String)
      */
     public void openRegistration(String groupId, String externalId) {

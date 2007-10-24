@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.config.IRuntimeConfig;
 
 /**
  * Use runtime configuration specific seeding to get a random number for use in time 
- * slotting clients to help stagger load.
+ * slotting nodes to help stagger load.
  */
 public class RandomTimeSlot {
 

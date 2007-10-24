@@ -48,7 +48,7 @@ public class MockTransportManager implements ITransportManager {
         return true;
     }
 
-    public boolean sendMessage(Node client, String data) throws IOException {
+    public boolean sendMessage(Node node, String data) throws IOException {
         return true;
     }
 
@@ -74,7 +74,7 @@ public class MockTransportManager implements ITransportManager {
         this.outgoingTransport = outgoingTransport;
     }
 
-    public IIncomingTransport getRegisterTransport(Node client) throws IOException {
+    public IIncomingTransport getRegisterTransport(Node node) throws IOException {
         return incomingTransport;
     }
 

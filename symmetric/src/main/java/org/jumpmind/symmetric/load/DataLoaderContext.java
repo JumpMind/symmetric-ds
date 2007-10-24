@@ -29,7 +29,7 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     private String version;
 
-    private String clientId;
+    private String nodeId;
 
     private String tableName;
 
@@ -63,12 +63,12 @@ public class DataLoaderContext implements IDataLoaderContext {
         isSkipping = false;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public void setClientId(String locationId) {
-        this.clientId = locationId;
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
     }
 
     public String getTableName() {

@@ -55,8 +55,8 @@ public class PullService implements IPullService {
         logger.info("Pull completed");
     }
 
-    public void setNodeService(INodeService clientService) {
-        this.nodeService = clientService;
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {

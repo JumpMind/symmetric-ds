@@ -30,15 +30,15 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 
 public interface INodeService {
 
-    public Node findNode(String clientId);
+    public Node findNode(String nodeId);
     
     public Node findNodeByExternalId(String externalId);
     
-    public NodeSecurity findNodeSecurity(String clientId);
+    public NodeSecurity findNodeSecurity(String nodeId);
     
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId);
 
-    public boolean isNodeAuthorized(String clientId, String password);
+    public boolean isNodeAuthorized(String nodeId, String password);
    
     public boolean isRegistrationEnabled(String nodeId);
     

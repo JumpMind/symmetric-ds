@@ -302,8 +302,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         this.autoConfigureDatabase = autoConfigureDatabase;
     }
 
-    public void setNodeService(INodeService clientService) {
-        this.nodeService = clientService;
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     public void setTransportManager(ITransportManager transportManager) {
