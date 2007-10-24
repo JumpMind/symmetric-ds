@@ -48,14 +48,16 @@ public class DbTriggerTest {
     final static String INSERT1 = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
-            + "values('\\\\','\"','\"1\"',null,null,1,1,1)";
+            + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
+    
+    final static Object[] INSERT1_VALUES = new Object[] {"\\\\","\"","\"1\"",null,null,1,1,1};
 
     final static String INSERT2 = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values('here','here',1,null,null,1,1,1)";
     
-    final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
+    final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
     final static String EXPECTED_INSERT2_CSV = "3,\"here\",\"here\",\"1\",,,1,1";
 
@@ -140,7 +142,7 @@ public class DbTriggerTest {
             throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
 
-        int count = jdbcTemplate.update(INSERT1);
+        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
 
         assert count == 1;
         String csvString = getNextDataRow(engine);
@@ -235,7 +237,7 @@ public class DbTriggerTest {
                         jdbcTemplate
                                 .update("update "
                                         + TestConstants.TEST_PREFIX
-                                        + "trigger set excluded_column_names='boolean_value', last_updated_time=current_timestamp "
+                                        + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
                                         + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
@@ -269,7 +271,7 @@ public class DbTriggerTest {
     private void testDisableTriggers(SymmetricEngine engine) throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
         getDbDialect(engine).disableSyncTriggers();
-        int count = jdbcTemplate.update(INSERT1);
+        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
         getDbDialect(engine).enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(engine);

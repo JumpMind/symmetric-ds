@@ -138,12 +138,12 @@
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"')),'"') end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[concat(concat('"',replace(replace($(tableAlias).$(columnName),to_clob('\\'),to_clob('\\')),to_clob('"'),to_clob('\\"'))),'"') ||','||]]>
+                        <![CDATA[concat(concat('"',replace(replace($(tableAlias).$(columnName),to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"'))),'"') ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
