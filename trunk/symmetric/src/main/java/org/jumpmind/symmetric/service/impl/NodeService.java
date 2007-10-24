@@ -60,7 +60,7 @@ public class NodeService extends AbstractService implements INodeService {
     private String findNodeByExternalIdSql;
     
     /**
-     * Lookup a client in the database, which contains information for synching
+     * Lookup a node in the database, which contains information for synching
      * with it.
      */
     @SuppressWarnings("unchecked")
@@ -93,7 +93,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     /**
-     * Lookup a client_security in the database, which contains private
+     * Lookup a node_security in the database, which contains private
      * information used to authenticate.
      */
     @SuppressWarnings("unchecked")
@@ -120,8 +120,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     /**
-     * Check that the given client and password match in the client_security
-     * table. A client must authenticate before it's allowed to sync data.
+     * Check that the given node and password match in the node_security
+     * table. A node must authenticate before it's allowed to sync data.
      */
     public boolean isNodeAuthorized(String id, String password) {
         NodeSecurity nodeSecurity = findNodeSecurity(id);
@@ -182,12 +182,12 @@ public class NodeService extends AbstractService implements INodeService {
 
     class NodeSecurityRowMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
-            NodeSecurity clientSecurity = new NodeSecurity();
-            clientSecurity.setNodeId(rs.getString(1));
-            clientSecurity.setPassword(rs.getString(2));
-            clientSecurity.setRegistrationEnabled(rs.getBoolean(3));
-            clientSecurity.setRegistrationTime(rs.getTimestamp(4));
-            return clientSecurity;
+            NodeSecurity nodeSecurity = new NodeSecurity();
+            nodeSecurity.setNodeId(rs.getString(1));
+            nodeSecurity.setPassword(rs.getString(2));
+            nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
+            nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
+            return nodeSecurity;
         }
     }
     

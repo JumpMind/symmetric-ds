@@ -45,8 +45,8 @@ public class OutgoingBatch implements Serializable {
     public OutgoingBatch() {
     }
     
-    public OutgoingBatch(Node client, String channelId, BatchType batchType) {
-        this.nodeId = client.getNodeId();
+    public OutgoingBatch(Node node, String channelId, BatchType batchType) {
+        this.nodeId = node.getNodeId();
         this.channelId = channelId;
         this.status = Status.NE;
         this.batchType = batchType;

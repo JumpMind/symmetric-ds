@@ -54,12 +54,12 @@ public class HttpTransportManager extends AbstractTransportManager implements
 
     private IRuntimeConfig runtimeConfiguration;
 
-    private INodeService clientService;
+    private INodeService nodeService;
 
     public HttpTransportManager(IRuntimeConfig config,
-            INodeService clientService) {
+            INodeService nodeService) {
         this.runtimeConfiguration = config;
-        this.clientService = clientService;
+        this.nodeService = nodeService;
     }
 
     public boolean sendAcknowledgement(Node remote,
@@ -161,24 +161,24 @@ public class HttpTransportManager extends AbstractTransportManager implements
     }
 
     private String addSecurityToken(String base, String connector) {
-        String clientId = clientService.findIdentity().getNodeId();
-        StringBuilder sb = new StringBuilder(addNodeId(base, clientId,
+        String nodeId = nodeService.findIdentity().getNodeId();
+        StringBuilder sb = new StringBuilder(addNodeId(base, nodeId,
                 "?"));
         sb.append(connector);
         sb.append(WebConstants.SECURITY_TOKEN);
         sb.append("=");
-        String securityToken = clientService.findNodeSecurity(clientId)
+        String securityToken = nodeService.findNodeSecurity(nodeId)
                 .getPassword();
         sb.append(securityToken);
         return sb.toString();
     }
 
-    private String addNodeId(String base, String clientId, String connector) {
+    private String addNodeId(String base, String nodeId, String connector) {
         StringBuilder sb = new StringBuilder(base);
         sb.append(connector);
         sb.append(WebConstants.NODE_ID);
         sb.append("=");
-        sb.append(clientId);
+        sb.append(nodeId);
         return sb.toString();
     }
 

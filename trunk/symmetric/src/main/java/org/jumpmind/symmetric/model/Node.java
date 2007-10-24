@@ -74,8 +74,8 @@ public class Node {
         setSchemaVersion(runtimeConfig.getSchemaVersion());
     }
 
-    public Node(String clientId, String syncURL, String version) {
-        this.nodeId = clientId;
+    public Node(String nodeId, String syncURL, String version) {
+        this.nodeId = nodeId;
         this.syncURL = syncURL;
         this.schemaVersion = version;
     }
@@ -84,8 +84,8 @@ public class Node {
         return nodeId;
     }
 
-    public void setNodeId(String clientId) {
-        this.nodeId = clientId;
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
     }
 
     public String getSyncURL() {

@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
 
-    public void extractClientIdentityFor(Node client, IOutgoingTransport transport);
+    public void extractNodeIdentityFor(Node node, IOutgoingTransport transport);
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 

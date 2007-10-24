@@ -117,7 +117,7 @@ public class DataLoaderService extends AbstractService implements
         } catch (Exception e) {
             if (status != null) {
                 logger.error("Failed to load batch "
-                        + status.getClientBatchId(), e);
+                        + status.getNodeBatchId(), e);
                 history.setValues(dataLoader.getStatistics(), false);
                 handleBatchError(status, history);
             } else {
@@ -179,14 +179,14 @@ public class DataLoaderService extends AbstractService implements
             }
         } catch (Exception e) {
             logger.error("Failed to record status of batch "
-                    + status.getClientBatchId());
+                    + status.getNodeBatchId());
         }
         try {
             history.setStatus(IncomingBatchHistory.Status.ER);
             incomingBatchService.insertIncomingBatchHistory(history);
         } catch (Exception e) {
             logger.error("Failed to record history of batch "
-                    + status.getClientBatchId());
+                    + status.getNodeBatchId());
         }
     }
 

@@ -35,7 +35,7 @@ public class IncomingBatch implements Serializable {
 
     private String batchId;
 
-    private String clientId;
+    private String nodeId;
 
     private Status status;
 
@@ -46,12 +46,12 @@ public class IncomingBatch implements Serializable {
 
     public IncomingBatch(IDataLoaderContext context) {
         batchId = context.getBatchId();
-        clientId = context.getClientId();
+        nodeId = context.getNodeId();
         status = Status.OK;
     }
     
-    public String getClientBatchId() {
-        return clientId + "-" + batchId;
+    public String getNodeBatchId() {
+        return nodeId + "-" + batchId;
     }
 
     public String getBatchId() {
@@ -70,12 +70,12 @@ public class IncomingBatch implements Serializable {
         this.status = status;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getNodeId() {
+        return nodeId;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
     }
 
     public boolean isRetry() {

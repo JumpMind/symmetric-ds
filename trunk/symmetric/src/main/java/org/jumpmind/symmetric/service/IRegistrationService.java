@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.model.Node;
 
 public interface IRegistrationService {
    
-    public boolean registerNode(Node client, OutputStream out) throws IOException;
+    public boolean registerNode(Node node, OutputStream out) throws IOException;
     
     public void openRegistration(String nodeGroupId, String externalId);
     

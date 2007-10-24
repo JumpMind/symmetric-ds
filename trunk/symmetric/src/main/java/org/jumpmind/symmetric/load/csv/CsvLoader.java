@@ -90,7 +90,7 @@ public class CsvLoader implements IDataLoader {
                 stats = new DataLoaderStatistics();                
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
-                context.setClientId(tokens[1]);
+                context.setNodeId(tokens[1]);
             } else if (tokens[0].equals(CsvConstants.VERSION)) {
                 context.setVersion(tokens[1] + "." + tokens[2] + "." + tokens[3]);
             } else if (isMetaTokenParsed(tokens)) {

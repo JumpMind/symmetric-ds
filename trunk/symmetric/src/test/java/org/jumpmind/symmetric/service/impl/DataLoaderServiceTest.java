@@ -289,8 +289,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         dataLoaderService.loadData(client, null);
     }
 
-    protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String clientId) {
-        IncomingBatch batch = incomingBatchService.findIncomingBatch(batchId + "", clientId);
+    protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String nodeId) {
+        IncomingBatch batch = incomingBatchService.findIncomingBatch(batchId + "", nodeId);
         IncomingBatch.Status status = null;
         if (batch != null) {
             status = batch.getStatus();

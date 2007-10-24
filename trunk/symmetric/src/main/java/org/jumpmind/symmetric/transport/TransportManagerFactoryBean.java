@@ -65,11 +65,9 @@ public class TransportManagerFactoryBean implements FactoryBean {
         this.transport = transport;
     }
 
-    public void setNodeService(INodeService clientService)
+    public void setNodeService(INodeService nodeService)
     {
-        this.nodeService = clientService;
+        this.nodeService = nodeService;
     }
-    
-    
 
 }
