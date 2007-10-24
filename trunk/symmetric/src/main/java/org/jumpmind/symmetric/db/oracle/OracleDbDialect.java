@@ -113,11 +113,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers() {
-        jdbcTemplate.update("call  pack_var.setValue(1)");
+        jdbcTemplate.update("call pack_symmetric.setValue(1)");
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("call  pack_var.setValue(null)");
+        jdbcTemplate.update("call pack_symmetric.setValue(null)");
     }
 
     public String getDefaultSchema() {
