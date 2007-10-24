@@ -5,48 +5,56 @@
  Date
  ------
 
-Welcome to SymmetricDS
+Overview
 
- SymmetricDS (Symmetric Data Synchronization) is web-enabled, database agnostic, data synchronization software.  It uses web and database technologies to replicate tables in relational databases.  The software was originally built for use in a distributed store environment where data originates from and is returned to an enterprise class general office database.
+ SymmetricDS is web-enabled, database independent, <data synchronization> software.
+ It uses web and database technologies to replicate tables between relational databases in near real time. 
+ The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
+ and withstand periods of network outage.
 
- Because SymmetricDS uses web technologies for its transport it can synchronize data across the Internet.  The software was designed to scale to large numbers of clients, work across low bandwith connections, keep data synchronized near real time, and withstand days of outage time.  The web-based architecture is well understood and it is easy to find technical resources to help tune it. 
+ By using database triggers, SymmetricDS guarentees that data changes are captured and atomicity is preserved.
+ Support for database vendors is provided through a {{{terminology.html#DatabaseDialect}Database Dialect}},
+ with implementations for MySQL and Oracle included.
 
- Any database that supports trigger technology and has had a ‘database dialect’ written for SymmetricDS can be a ‘node’ in the network.  
-
- SymmetricDS instances, also called nodes, register an interest in ‘channels’ of data.   Channels are pre-configured groups of database tables that can be synchronized in either direction.
-
- Synchronizations are defined for ‘groups’ of ‘nodes.’  Each synchronization path is a ‘link’ between two ‘node groups.’
-
- A SymmetricDS node is typically bootstrapped through the {{{apidocs/org/jumpmind/symmetric/SymmetricEngine.html} SymmetricEngine}} API.  A node is driven by its configuration which is retrieved from a set of configuration tables in the database itself. A node’s configuration is downloaded from a registration server during the secure registration process.
-
- A SymmetricDS node can be deployed in the following configurations:
+ Each instance of SymmetricDS is a {{{terminology.html#Node}Node}} that contacts the registration
+ server for its configuration.
+ {{{terminology.html#NodeGroup}NodeGroups}} are groups of similar {{{terminology.html#Node}Nodes}}
+ that are configured to synchronize their data.
+ The data is categorized and placed in {{{terminology.html#Channel}Channels}} to provide control
+ and eliminate contention of active changes.
+ Synchronization can push data (trickle-back) or pull data (trickle-poll).
  
-    * Web application archive (war) to an existing application server such as Tomcat, Jetty, or JBoss
+ SymmetricDS can be deployed in any of the following configurations:
+ 
+    * Web application archive (WAR) deployed to an application server such as Tomcat, Jetty, or JBoss
     
     * Standalone service
-
- The root node may be configured as a web farm to ensure QOS for as many nodes as the web site will scale to.
-
- SymmetricDS also allows for synchronizing n-tiers of nodes.  For example, a SymmetricDS network could entail:
-
-    * A farm of web server nodes fronting an enterprise class general office database
     
-    * 1000(s) of store server nodes attached to a departmental class database with their root system being the general office
-    
-    * 10(s) of POS register nodes attached to an embedded database with their root system being the store servers
+    * Embedded in an application
 
- An n-tier configuration is not limited to the above scenario.  For example, a series of regional servers could be inserted between the general office and store server groups if necessary.
+ SymmetricDS also allows for n-tier synchronization.  For example, a large retailer might deploy the following:
+
+    * A farm of web server nodes fronting an enterprise-class general office database
+    
+    * A handful of regional servers for synchronizing from the general office to remote geographical areas
+     
+    * 1000(s) of store server nodes using a departmental class database to sync with a regional node
+    
+    * 10(s) of POS register nodes using an embedded database to sync with a store server
  
- SymmetricDS is available under the LGPL open source software {{{license.html}license}} and is actively being developed and supported. 
+ SymmetricDS is licensed as open source software under the 
+ {{{license.html}GNU Lesser General Public License}} (LGPL).
 
 Why SymmetricDS?
 
- SymmetricDS was built because the development team did not find a suitable open source solution that met the core requirements for keeping store databases durably synchronized in 'real-time' with a general office database.
+ SymmetricDS was built because the development team did not find a suitable open source solution that met the 
+ core requirements for keeping store databases durably synchronized in 'real-time' with a general office database.
 
 History
  
- SymmetricDS was started as an open source project to document the experiences and solve the issues the development team encountered when integrating a store MySQL database with a corporate Oracle database for a major retailer.  The software gained momentum and is now being used by that same retailer.  
-
+ SymmetricDS was started as an open source project to document the experiences and solve the issues the development
+ team encountered when integrating a store MySQL database with a corporate Oracle database for a major retailer.
+ The software gained momentum and is now being used by that same retailer.  
 
  
 
