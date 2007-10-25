@@ -33,7 +33,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.DbDialectFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
