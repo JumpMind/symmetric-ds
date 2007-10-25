@@ -80,4 +80,6 @@ public interface IDbDialect {
     
     public JdbcTemplate getJdbcTemplate();
     
+    public String getCreateSymmetricDDL();
+    
 }
