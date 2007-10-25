@@ -1,6 +1,7 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
- *   
+ *
+ * Copyright (C) Andrew Wilcox <andrewbwilcox@users.sourceforge.net>   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
