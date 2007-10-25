@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book>
+    <bookinfo>
+        <title>SymmetricDS User Guide</title>
+        <authorgroup>
+            <author>Eric Long</author>
+            <author>Chris Henson</author>
+        </authorgroup>
+        <edition>Version 1.0 for SymmetricDS v1.0.0.0</edition>
+        <copyright>
+            <year>2007</year>
+            <holder>Eric Long</holder>
+            <holder>Chris Henson</holder>
+        </copyright>
+        <legalnotice>
+            <para>
+                Permission to use, copy, modify, and distribute the SymmetricDS User Guide Version
+                1.0 for any purpose and without fee is hereby granted in perpetuity, provided that
+                the above copyright notice and this paragraph appear in all copies.
+            </para>
+        </legalnotice>
+    </bookinfo>
+    <chapter>
+        <title>Introduction</title>
+        <section>
+            <title>First Section</title>
+            <para>This is a paragraph for section one.</para>
+        </section>
+        <section>
+            <title>Second Section</title>
+            <para>This is a paragraph for section two.</para>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Getting Started</title>
+        <para>
+            To get started, you create a root database and a client database that each run the
+            SymmetricDS software to synchronize changes. You open registration for the client, which
+            registers with the root to receive the synchronization configuration. You ask the root
+            to reload the client in order to perform an initial synchronization. Then you make
+            changes to the databases and observe the changes propagating.
+        </para>
+        <section>
+            <title>Installing SymmetricDS</title>
+            <para>Download the symmetric-ds.jar.</para>
+        </section>
+        <section>
+            <title>Creating and Populating Your Databases</title>
+            <para>
+                Create new databases for the root and client nodes:
+
+                <command>mysqladmin --user=root --password=secret create symrootdb</command>
+                <command>mysqladmin --user=root --password=secret create symclientdb</command>
+
+                We make the first node the root node with an initial set of data and the
+                configuration that is needed by nodes that register.
+
+                <command>mysql --user=root --password=secret &lt; root_node.sql</command>
+
+                The second node the root node with an initial set of data and the configuration that
+                is needed by nodes that register.
+
+            </para>
+        </section>
+        <section>
+            <title>Starting the SymmetricDS Nodes</title>
+            <para>This is a paragraph.</para>
+        </section>
+        <section>
+            <title>Registration</title>
+            <para>This is a paragraph.</para>
+        </section>
+        <section>
+            <title>Initial Load</title>
+            <para>This is a paragraph.</para>
+        </section>
+        <section>
+            <title>Pulling and Pushing Data</title>
+            <para>This is a paragraph.</para>
+        </section>
+    </chapter>
+</book>

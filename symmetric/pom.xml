@@ -212,6 +212,33 @@
                     <siteDirectory>${basedir}/src/site</siteDirectory>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.agilejava.docbkx</groupId>
+                <artifactId>docbkx-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-html</goal>
+                            <goal>generate-pdf</goal>
+                        </goals>
+                        <phase>pre-site</phase>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.docbook</groupId>
+                        <artifactId>docbook-xml</artifactId>
+                        <version>4.4</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <sourceDirectory>${basedir}/src/docbook</sourceDirectory>
+                    <targetDirectory>${basedir}/target/site/guide</targetDirectory>
+                    <inputs>user-guide.xml</inputs>
+                    <chunkedOutput>true</chunkedOutput>
+                </configuration>                
+            </plugin>
         </plugins>
     </build>
     <reporting>
