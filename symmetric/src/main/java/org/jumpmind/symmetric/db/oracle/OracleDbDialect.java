@@ -38,7 +38,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
+    static final String SYNC_TRIGGERS_DISABLED_FUNCTION = "fn_trigger_disabled";
     
     @Override
     protected void initForSpecificDialect() {
@@ -118,6 +118,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public void enableSyncTriggers() {
         jdbcTemplate.update("call pack_symmetric.setValue(null)");
+    }
+
+    public String getSyncTriggersExpression() {
+        return SYNC_TRIGGERS_DISABLED_FUNCTION + "() is null";
     }
 
     public String getDefaultSchema() {

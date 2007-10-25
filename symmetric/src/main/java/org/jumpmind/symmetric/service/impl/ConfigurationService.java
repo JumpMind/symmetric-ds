@@ -380,6 +380,7 @@ public class ConfigurationService extends AbstractService implements
             trig.setSyncOnInsert(rs.getBoolean("sync_on_insert"));
             trig.setSyncOnUpdate(rs.getBoolean("sync_on_update"));
             trig.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
+            trig.setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
             trig.setNameForDeleteTrigger(rs
                     .getString("name_for_delete_trigger"));
             trig.setNameForInsertTrigger(rs

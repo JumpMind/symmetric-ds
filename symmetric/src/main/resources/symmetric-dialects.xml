@@ -49,7 +49,7 @@
                                 <![CDATA[
                                 create trigger $(triggerName) after insert on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnInsertCondition) and @sync_triggers_disabled is null then
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
@@ -73,7 +73,7 @@
                                 <![CDATA[
                                 create trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnUpdateCondition) and @sync_triggers_disabled is null then
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
@@ -99,7 +99,7 @@
                                 <![CDATA[
                                 create trigger $(triggerName) after delete on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnDeleteCondition) and @sync_triggers_disabled is null then
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
                                     values(
                                       '$(targetTableName)',
@@ -172,7 +172,7 @@
                                 <![CDATA[
                                 create or replace trigger $(triggerName) after insert on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnInsertCondition)  and fn_trigger_disabled() is null then
+                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
@@ -195,7 +195,7 @@
                                 <![CDATA[
                                  create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnUpdateCondition)  and fn_trigger_disabled() is null then
+                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
@@ -219,7 +219,7 @@
                                 <![CDATA[
                                  create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)
                                 for each row begin
-                                  if $(syncOnDeleteCondition) and fn_trigger_disabled() is null then
+                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
                                     values(
                                       '$(targetTableName)',

@@ -163,6 +163,8 @@ public class SqlTemplate {
                 .getSyncOnUpdateCondition(), ddl);
         ddl = replace("syncOnDeleteCondition", trigger
                 .getSyncOnDeleteCondition(), ddl);
+        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1" :
+                dialect.getSyncTriggersExpression(), ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(newTriggerValue, columns);
