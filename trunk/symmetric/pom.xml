@@ -5,7 +5,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.9-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -184,22 +184,22 @@
                         </configuration>
                     </execution>
                     <!-- 
-                    <execution>
+                        <execution>
                         <id>src</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                        <goal>attached</goal>
                         </goals>
                         <configuration>
-                            <descriptors>
-                                <descriptor>
-                                    ${basedir}/src/main/assembly/assembly-src.xml
-                                </descriptor>
-                            </descriptors>
-                            <finalName>symmetric-ds-${pom.version}</finalName>
+                        <descriptors>
+                        <descriptor>
+                        ${basedir}/src/main/assembly/assembly-src.xml
+                        </descriptor>
+                        </descriptors>
+                        <finalName>symmetric-ds-${pom.version}</finalName>
                         </configuration>
-                    </execution>
-                     -->
+                        </execution>
+                    -->
                 </executions>
             </plugin>
             <plugin>
@@ -367,6 +367,11 @@
         <dependency>
             <groupId>commons-math</groupId>
             <artifactId>commons-math</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
             <version>1.1</version>
         </dependency>
         <!-- Databases -->
