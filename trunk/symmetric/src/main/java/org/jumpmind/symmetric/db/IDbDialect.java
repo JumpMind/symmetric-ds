@@ -72,6 +72,8 @@ public interface IDbDialect {
 
     public void enableSyncTriggers();
     
+    public String getSyncTriggersExpression();
+
     public String getDefaultSchema();
     
     public int getStreamingResultsFetchSize();

@@ -102,6 +102,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
                 + "=null");
     }
+    
+    public String getSyncTriggersExpression() {
+        return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
+    }
 
     public String getTransactionTriggerExpression() {
         return getDefaultSchema() + "." + TRANSACTION_ID_FUNCTION_NAME + "()";
