@@ -38,7 +38,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * This class is used to run Symmetric utilities and launch an embedded version of Symmetric.
+ * Run SymmetricDS utilities and/or launch an embedded version of Symmetric.  If you run this
+ * program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
 
@@ -56,10 +57,13 @@ public class SymmetricLauncher {
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
-
+            CommandLine line = parser.parse(options, args);
+            
             int serverPort = 31415;
 
-            CommandLine line = parser.parse(options, args);
+            if (line.hasOption(OPTION_PORT_SERVER)) {
+                serverPort = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+            }            
 
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
                 generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
@@ -81,28 +85,29 @@ public class SymmetricLauncher {
                 return;
             }
 
-            if (line.hasOption(OPTION_PORT_SERVER)) {
-                serverPort = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
-            }
 
             if (line.hasOption(OPTION_START_SERVER)) {
                 new SymmetricWebServer().start(serverPort);
+                return;
             }
+            
+            printHelp(options);
 
         } catch (ParseException exp) {
             System.err.println(exp.getMessage());
             printHelp(options);
         } catch (Exception ex) {
             System.err.println(ExceptionUtils.getRootCause(ex).getMessage());
+            printHelp(options);
         }
     }
 
     private static void printHelp(Options options) {
-        new HelpFormatter().printHelp("symmetricds", options);
+        new HelpFormatter().printHelp("symmetric-ds", options);
     }
 
     private static Options buildOptions() {
-        Options options = new Options();
+        Options options = new Options();        
         options.addOption("s", OPTION_START_SERVER, false, "Start an embedded instance of SymmetricDS.");
         options.addOption("p", OPTION_PORT_SERVER, false,
                 "Optionally pass in the HTTP port number to use for the server instance.");
