@@ -5,10 +5,16 @@
     <bookinfo>
         <title>SymmetricDS User Guide</title>
         <authorgroup>
-            <author><firstname>Eric</firstname><surname>Long</surname></author>
-            <author><firstname>Chris</firstname><surname>Henson</surname></author>
+            <author>
+                <firstname>Eric</firstname>
+                <surname>Long</surname>
+            </author>
+            <author>
+                <firstname>Chris</firstname>
+                <surname>Henson</surname>
+            </author>
         </authorgroup>
-        <edition>Version 1.0 for SymmetricDS v1.0.0.0</edition>
+        <edition>Version 1.0 for SymmetricDS v1.0.0</edition>
         <copyright>
             <year>2007</year>
             <holder>Eric Long</holder>
@@ -22,15 +28,86 @@
             </para>
         </legalnotice>
     </bookinfo>
+    <preface>
+        <title>Preface</title>
+        <para>
+            SymmetricDS is web-enabled, database independent, data synchronization software. It uses
+            web and database technologies to replicate tables between relational databases in near
+            real time. The software was designed to scale for a large number of databases, work
+            across low-bandwidth connections, and withstand periods of network outage.
+        </para>
+        <para>
+            This User Guide describes the SymmetricDS library for data synchronization. It is
+            intended for users who want to be quickly familiarized with the software, configure it,
+            and use its features.
+        </para>
+    </preface>
     <chapter>
         <title>Introduction</title>
         <section>
-            <title>First Section</title>
-            <para>This is a paragraph for section one.</para>
+            <title>The Problem of Synchronization</title>
         </section>
         <section>
-            <title>Second Section</title>
-            <para>This is a paragraph for section two.</para>
+            <title>SymmetricDS Feature Overview</title>
+            <section>
+                <title>Notification Schemes</title>
+            </section>
+            <section>
+                <title>Two-Way Table Synchronization</title>
+            </section>
+            <section>
+                <title>Data Channels</title>
+            </section>
+            <section>
+                <title>Transaction Awareness</title>
+            </section>
+            <section>
+                <title>Data Filtering and Rerouting</title>
+            </section>
+            <section>
+                <title>HTTP Transport</title>
+            </section>
+            <section>
+                <title>Remote Management</title>
+            </section>
+        </section>
+        <section>
+            <title>Requirements</title>
+            <para>
+                SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or
+                Java SE Development Kit (JDK) version 5.0 or above.
+            </para>
+            <para>
+                Any database with trigger technology and a JDBC driver has the potential to run
+                SymmetricDS. The database is abstracted through a Database Dialect in order to
+                support specific features of each database. The following Database Dialects have
+                been included with release 1.0:
+            </para>
+            <itemizedlist spacing="compact">
+                <listitem>
+                    <para>MySQL version 5.0.2 and above</para>
+                </listitem>
+                <listitem>
+                    <para>Oracle version 8.1.7 and above</para>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section>
+            <title>Background</title>
+        </section>
+        <section>
+            <title>Version Numbering</title>
+            <para>
+                The software is released with a version number based on the
+                <ulink url="http://apr.apache.org/versioning.html">
+                    Apache Portable Runtime Project
+                </ulink>
+                version guidelines. In summary, the version is denoted as three integers in the
+                format of MAJOR.MINOR.PATCH. Major versions are incompatible at the API level, and
+                they can include any kind of change. Minor versions are compatible with older
+                versions at the API and binary level, and they can intoduce new functions or remove
+                old ones. Patch versions are perfectly compatible, and they are released to fix defects.
+            </para>
         </section>
     </chapter>
     <chapter>
@@ -44,41 +121,37 @@
         </para>
         <section>
             <title>Installing SymmetricDS</title>
-            <para>            
-	            Download the symmetric-ds.jar.
-            </para>
+            <para>Download the symmetric-ds.jar.</para>
             <para>
-       			<ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
-       				Download Symmetric-DS
-       			</ulink>
+                <ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
+                    Download Symmetric-DS
+                </ulink>
             </para>
         </section>
         <section>
             <title>Creating and Populating Your Databases</title>
+            <para>Create new databases for the root and client nodes:</para>
+
             <para>
-                Create new databases for the root and client nodes:
+                <command>mysqladmin --user=root --password=secret create symrootdb</command>
             </para>
 
-			<para>
-	            <command>mysqladmin --user=root --password=secret create symrootdb</command>
-			</para>
+            <para>
+                <command>mysqladmin --user=root --password=secret create symclientdb</command>
+            </para>
 
-			<para>
-	            <command>mysqladmin --user=root --password=secret create symclientdb</command>
-			</para>
-			
-			<para>
-                Load the root node database with an initial set of test data and the
-                synchronization configuration.
-			</para>
-			
-			<para>			
-            	<command>mysql --user=root --password=secret &lt; root_node.sql</command>
-			</para>
+            <para>
+                Load the root node database with an initial set of test data and the synchronization
+                configuration.
+            </para>
 
-			<para>
-                The client node database will be initialized and loaded after it registers with
-                the root node.
+            <para>
+                <command>mysql --user=root --password=secret &lt; root_node.sql</command>
+            </para>
+
+            <para>
+                The client node database will be initialized and loaded after it registers with the
+                root node.
             </para>
         </section>
         <section>
@@ -98,6 +171,72 @@
         <section>
             <title>Pulling and Pushing Data</title>
             <para>This is a paragraph.</para>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Concepts</title>
+        <section>
+            <title>Data Model</title>
+        </section>
+        <section>
+            <title>Node</title>
+        </section>
+        <section>
+            <title>Node Security</title>
+        </section>
+        <section>
+            <title>Node Group</title>
+        </section>
+        <section>
+            <title>Node Group Link</title>
+        </section>
+        <section>
+            <title>Channel</title>
+        </section>
+        <section>
+            <title>Trigger</title>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Architecture</title>
+        <section>
+            <title>Software Components</title>
+        </section>
+        <section>
+            <title>Deployment Options</title>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Basic Configuration</title>
+        <section>
+            <title>Nodes</title>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Advanced Configuration</title>
+        <section>
+            <title>Dead Triggers</title>
+        </section>
+        <section>
+            <title>Auto Creation</title>
+        </section>
+        <section>
+            <title>Secure Transport</title>
+        </section>
+    </chapter>
+    <chapter>
+        <title>Administration</title>
+        <section>
+            <title>Rebuilding Triggers</title>
+        </section>
+        <section>
+            <title>Opening Registration</title>
+        </section>
+        <section>
+            <title>Enabling and Disabling Synchronization</title>
+        </section>
+        <section>
+            <title>Viewing Batches</title>
         </section>
     </chapter>
 </book>
