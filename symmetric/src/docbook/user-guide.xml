@@ -5,8 +5,8 @@
     <bookinfo>
         <title>SymmetricDS User Guide</title>
         <authorgroup>
-            <author>Eric Long</author>
-            <author>Chris Henson</author>
+            <author><firstname>Eric</firstname><surname>Long</surname></author>
+            <author><firstname>Chris</firstname><surname>Henson</surname></author>
         </authorgroup>
         <edition>Version 1.0 for SymmetricDS v1.0.0.0</edition>
         <copyright>
@@ -40,33 +40,52 @@
             SymmetricDS software to synchronize changes. You open registration for the client, which
             registers with the root to receive the synchronization configuration. You ask the root
             to reload the client in order to perform an initial synchronization. Then you make
-            changes to the databases and observe the changes propagating.
+            changes to each database and observe the changes propagating.
         </para>
         <section>
             <title>Installing SymmetricDS</title>
-            <para>Download the symmetric-ds.jar.</para>
+            <para>            
+	            Download the symmetric-ds.jar.
+            </para>
+            <para>
+       			<ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
+       				Download Symmetric-DS
+       			</ulink>
+            </para>
         </section>
         <section>
             <title>Creating and Populating Your Databases</title>
             <para>
                 Create new databases for the root and client nodes:
+            </para>
 
-                <command>mysqladmin --user=root --password=secret create symrootdb</command>
-                <command>mysqladmin --user=root --password=secret create symclientdb</command>
+			<para>
+	            <command>mysqladmin --user=root --password=secret create symrootdb</command>
+			</para>
 
-                We make the first node the root node with an initial set of data and the
-                configuration that is needed by nodes that register.
+			<para>
+	            <command>mysqladmin --user=root --password=secret create symclientdb</command>
+			</para>
+			
+			<para>
+                Load the root node database with an initial set of test data and the
+                synchronization configuration.
+			</para>
+			
+			<para>			
+            	<command>mysql --user=root --password=secret &lt; root_node.sql</command>
+			</para>
 
-                <command>mysql --user=root --password=secret &lt; root_node.sql</command>
-
-                The second node the root node with an initial set of data and the configuration that
-                is needed by nodes that register.
-
+			<para>
+                The client node database will be initialized and loaded after it registers with
+                the root node.
             </para>
         </section>
         <section>
-            <title>Starting the SymmetricDS Nodes</title>
-            <para>This is a paragraph.</para>
+            <title>Configuring and Starting SymmetricDS</title>
+            <para>
+                <command>java -jar symmetric-ds.jar -properties root.properties -start</command>
+            </para>
         </section>
         <section>
             <title>Registration</title>
