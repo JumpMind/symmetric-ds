@@ -106,7 +106,8 @@
                 format of MAJOR.MINOR.PATCH. Major versions are incompatible at the API level, and
                 they can include any kind of change. Minor versions are compatible with older
                 versions at the API and binary level, and they can intoduce new functions or remove
-                old ones. Patch versions are perfectly compatible, and they are released to fix defects.
+                old ones. Patch versions are perfectly compatible, and they are released to fix
+                defects.
             </para>
         </section>
     </chapter>
@@ -121,44 +122,149 @@
         </para>
         <section>
             <title>Installing SymmetricDS</title>
-            <para>Download the symmetric-ds.jar.</para>
-            <para>
-                <ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
-                    Download Symmetric-DS
-                </ulink>
-            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Download the
+                        <ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
+                            symmetric-ds.zip
+                        </ulink>
+                        file from
+                        <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Unzip the file to create its own
+                        <filename class="directory">symmetric-ds-1.0.0</filename>
+                        directory.
+                    </para>
+                </step>
+                <step>
+                    <para>Edit the database properties for the root and client nodes.</para>
+                    <substeps>
+                        <step>
+                            <para>
+                                Edit the
+                                <filename>samples/root.properties</filename>
+                                for the root node.
+                            </para>
+                        </step>
+                        <step>
+                            <para>
+                                Edit the
+                                <filename>samples/client.properties</filename>
+                                for the client node.
+                            </para>
+                        </step>
+                    </substeps>
+                </step>
+                <step>
+                    <para>Set the following properties to correspond to your databases:</para>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>db.driver The class name for the JDBC Driver</para>
+                        </listitem>
+                        <listitem>
+                            <para>db.url The JDBC URL used to connect to the database</para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                db.user The user to login as who can create and update tables
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>db.password The password for the user to login as</para>
+                        </listitem>
+                    </itemizedlist>
+                </step>
+            </procedure>
         </section>
         <section>
             <title>Creating and Populating Your Databases</title>
-            <para>Create new databases for the root and client nodes:</para>
-
+            <important>
+                <para>
+                    You must first create the databases for your root and client nodes using the
+                    administration tools provided by your database vendor.
+                </para>
+            </important>
             <para>
-                <command>mysqladmin --user=root --password=secret create symrootdb</command>
+                Create and load the root node tables with sample data and the synchronization
+                configuration. Create the tables in the client node database to prepare it.
             </para>
-
-            <para>
-                <command>mysqladmin --user=root --password=secret create symclientdb</command>
-            </para>
-
-            <para>
-                Load the root node database with an initial set of test data and the synchronization
-                configuration.
-            </para>
-
-            <para>
-                <command>mysql --user=root --password=secret &lt; root_node.sql</command>
-            </para>
-
-            <para>
-                The client node database will be initialized and loaded after it registers with the
-                root node.
-            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open a command prompt and navigate to the
+                        <filename class="directory">samples</filename>
+                        subdirectory of your SymmetricDS installation.
+                    </para>
+                </step>
+                <step>
+                    <para>Create the sample tables in both the root and client databases.</para>
+                    <para>
+                        <command>symmetric -p root.properties --run-ddl create_sample.xml</command>
+                    </para>
+                    <para>
+                        <command>
+                            symmetric -p client.properties --run-ddl create_sample.xml
+                        </command>
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Create the symmetric tables in the root node database. These tables contain
+                        the configuration for synchronization. The following command uses the
+                        auto-creation feature to create all the necessary symmetric system tables.
+                    </para>
+                    <para>
+                        <command>symmetric -p root.properties --auto-create</command>
+                    </para>
+                </step>
+                <step>
+                    <para>Load sample data and configuration into the root node database.</para>
+                    <para>
+                        <command>symmetric -p root.properties --run-sql insert_sample.sql</command>
+                    </para>
+                </step>
+                <step>
+                    <para>Verify the databases by logging in and listing the tables.</para>
+                </step>
+            </procedure>
         </section>
         <section>
             <title>Configuring and Starting SymmetricDS</title>
-            <para>
-                <command>java -jar symmetric-ds.jar -properties root.properties -start</command>
-            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open a command prompt and navigate to the
+                        <filename class="directory">samples</filename>
+                        subdirectory of your SymmetricDS installation.
+                    </para>
+                </step>
+                <step>
+                    <para>Start the root node server.</para>
+                    <para>
+                        <command>symmetric -p root.properties --start</command>
+                    </para>
+                    <para>
+                        The root node server starts up and creates all the triggers that were
+                        configured by the sample configuration.
+                    </para>
+                </step>
+                <step>
+                    <para>Start the client node server.</para>
+                    <para>
+                        <command>symmetric -p root.properties --start</command>
+                    </para>
+                    <para>
+                        The client node server starts up and uses the auto-creation feature to
+                        create the symmetric system tables. It begins polling the root node in order
+                        to register. Since registration is not yet open, the client node receives an
+                        authorization failure.
+                    </para>
+                </step>
+            </procedure>
         </section>
         <section>
             <title>Registration</title>
