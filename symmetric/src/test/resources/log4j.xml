@@ -17,14 +17,6 @@
     <priority value="INFO" />
   </category>    
 
-  <category name="org.jumpmind.symmetric.service.impl.DataLoaderService">
-    <priority value="OFF" />
-  </category>    
-
-  <category name="org.jumpmind.symmetric.load.csv.CsvLoader">
-    <priority value="OFF" />
-  </category>    
-                  
   <category name="org.springframework.jdbc">
     <priority value="WARN" />
   </category>

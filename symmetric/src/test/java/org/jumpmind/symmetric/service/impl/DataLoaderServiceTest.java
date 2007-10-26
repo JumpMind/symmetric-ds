@@ -26,13 +26,16 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
-import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -53,11 +56,16 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     protected Node client;
 
+    protected void turnOffLoggingForTest() {
+        Logger.getLogger(DataLoaderService.class).setLevel(Level.OFF);
+        Logger.getLogger(CsvLoader.class).setLevel(Level.OFF);
+    }
+
     @BeforeTest(groups = "continuous")
     protected void setUp() {
+        turnOffLoggingForTest();
         dataLoaderService = (IDataLoaderService) getBeanFactory().getBean(Constants.DATALOADER_SERVICE);
-        incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(
-                Constants.INCOMING_BATCH_SERVICE);
+        incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(Constants.INCOMING_BATCH_SERVICE);
         transportManager = new MockTransportManager();
         dataLoaderService.setTransportManager(transportManager);
         client = new Node();
@@ -154,8 +162,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testErrorWhileSkip() throws Exception {
-        String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2", "2007-01-02",
+                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
 
         testSimple(CsvConstants.INSERT, values, values);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
@@ -189,8 +197,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testErrorWhileParsing() throws Exception {
-        String[] values = { getNextId(), "should not reach database", "string not null", "char",
-                "char not null", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        String[] values = { getNextId(), "should not reach database", "string not null", "char", "char not null",
+                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -215,8 +223,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test(groups = "continuous")
     public void testErrorThenSuccessBatch() throws Exception {
         String[] values = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0",
-                "47", "67.89" };
+                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47",
+                "67.89" };
         getNextBatchId();
         int retries = 3;
         for (int i = 0; i < retries; i++) {
@@ -249,11 +257,11 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testMultipleBatch() throws Exception {
-        String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
-                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2", "2007-01-02",
+                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         String[] values2 = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0",
-                "47", "67.89" };
+                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47",
+                "67.89" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);

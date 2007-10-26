@@ -56,7 +56,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private int retentionInMinutes = 7200;
 
     public void purge() {
-        logger.info("The symmetric purge process is about to run.");
+        logger.info("The purge process is about to run.");
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MINUTE, -retentionInMinutes);
         for (String sql : purgeSql) {
