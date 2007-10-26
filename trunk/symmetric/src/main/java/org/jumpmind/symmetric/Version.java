@@ -20,6 +20,9 @@
 
 package org.jumpmind.symmetric;
 
+/**
+ * Follow the Apache versioning scheme documented here: http://apr.apache.org/versioning.html
+ */
 final public class Version {
 
     public static final int MAJOR = 1;
