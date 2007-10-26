@@ -42,16 +42,22 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SymmetricLauncher {
 
+    private static final String OPTION_PORT_SERVER = "port-server";
+
     private static final String OPTION_DDL_GEN = "ddl-gen";
 
     private static final String OPTION_PROPERTIES_GEN = "properties-gen";
 
     private static final String OPTION_PROPERTIES_FILE = "properties-file";
 
+    private static final String OPTION_START_SERVER = "start-server";
+
     public static void main(String[] args) throws Exception {
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
+
+            int serverPort = 31415;
 
             CommandLine line = parser.parse(options, args);
 
@@ -60,21 +66,27 @@ public class SymmetricLauncher {
                 return;
             }
 
-            String propertiesFileArg = "";
-
             // validate that block-size has been set
             if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                propertiesFileArg = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
+                System.setProperty("symmetric.override.properties.file.1", "file:"
+                        + line.getOptionValue(OPTION_PROPERTIES_FILE));
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                    throw new ParseException("Could not find the properties file specified: " + propertiesFileArg);
+                    throw new ParseException("Could not find the properties file specified: "
+                            + line.getOptionValue(OPTION_PROPERTIES_FILE));
                 }
             }
 
-            SymmetricEngine engine = new SymmetricEngine(propertiesFileArg, "");
-
             if (line.hasOption(OPTION_DDL_GEN)) {
-                generateDDL(engine, line.getOptionValue(OPTION_DDL_GEN));
+                generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
                 return;
+            }
+
+            if (line.hasOption(OPTION_PORT_SERVER)) {
+                serverPort = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+            }
+
+            if (line.hasOption(OPTION_START_SERVER)) {
+                new SymmetricWebServer().start(serverPort);
             }
 
         } catch (ParseException exp) {
@@ -91,8 +103,12 @@ public class SymmetricLauncher {
 
     private static Options buildOptions() {
         Options options = new Options();
+        options.addOption("s", OPTION_START_SERVER, false, "Start an embedded instance of SymmetricDS.");
+        options.addOption("p", OPTION_PORT_SERVER, false,
+                "Optionally pass in the HTTP port number to use for the server instance.");
+
         options
-                .addOption("d", OPTION_DDL_GEN, true,
+                .addOption("D", OPTION_DDL_GEN, true,
                         "Output the DDL to create the SymmetricDS tables.  Takes an argument of the name of the file to write the ddl to.");
         options
                 .addOption(
