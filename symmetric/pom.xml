@@ -236,7 +236,7 @@
                     <sourceDirectory>${basedir}/src/docbook</sourceDirectory>
                     <targetDirectory>${basedir}/target/site/guide</targetDirectory>
                     <inputs>user-guide.xml</inputs>
-                    <chunkedOutput>true</chunkedOutput>
+                    <chunkedOutput>false</chunkedOutput>
                 </configuration>                
             </plugin>
         </plugins>
