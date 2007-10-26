@@ -54,14 +54,14 @@ public class PushService implements IPushService {
     }
 
     public void pushData() {
-        info("Push requested");
         List<Node> nodes = nodeService.findNodesToPushTo();
-        if (nodes != null) {
+        if (nodes != null && nodes.size() > 0) {
+            info("Push requested");
             for (Node node : nodes) {
                 pushToNode(node);
             }
-        }
-        info("Push request completed");
+            info("Push request completed");
+        }        
     }
 
     class ParameterParser {

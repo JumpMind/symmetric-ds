@@ -33,7 +33,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IPullService;
 
 public class PullService implements IPullService {
-    
+
     private static final Log logger = LogFactory.getLog(PullService.class);
 
     private INodeService nodeService;
@@ -41,18 +41,20 @@ public class PullService implements IPullService {
     private IDataLoaderService dataLoaderService;
 
     public void pullData() {
-        logger.info("Pull requested");
         List<Node> nodes = nodeService.findNodesToPull();
-        for (Node node : nodes) {
-            try {
-                dataLoaderService.loadData(node, nodeService.findIdentity());
-            } catch (ConnectException ex) {
-                logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
-            } catch (IOException e) {
-                logger.error(e, e);
+        if (nodes != null && nodes.size() > 0) {
+            logger.info("Pull requested");
+            for (Node node : nodes) {
+                try {
+                    dataLoaderService.loadData(node, nodeService.findIdentity());
+                } catch (ConnectException ex) {
+                    logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
+                } catch (IOException e) {
+                    logger.error(e, e);
+                }
             }
+            logger.info("Pull completed");
         }
-        logger.info("Pull completed");
     }
 
     public void setNodeService(INodeService nodeService) {
