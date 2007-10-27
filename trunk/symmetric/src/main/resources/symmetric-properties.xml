@@ -10,54 +10,15 @@
     <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="properties">
             <props>
-                <prop key="db.jndi.name"></prop>
-                <prop key="db.driver">com.mysql.jdbc.Driver</prop>
-                <prop key="db.url">jdbc:mysql://localhost/symmetric</prop>
-                <prop key="db.user">symmetric</prop>
-                <prop key="db.password"></prop>
-                <prop key="db.pool.initial.size">5</prop>
-                <prop key="db.pool.max.active">10</prop>
-                <!-- This has to be fairly big to account for large data loads -->   
-                <prop key="db.tx.timeout.seconds">7200</prop>
-                <prop key="db.sql.query.timeout.seconds">60</prop>
-                <prop key="db.pool.max.wait.millis">30000</prop>  
-                <prop key="db.pool.min.evictable.idle.millis">120000</prop>                                              
-                <prop key="db.jdbc.streaming.results.fetch.size">1000</prop>
-                <prop key="sync.table.prefix">sym</prop>
-                <prop key="symmetric.auto.config.database">true</prop>
-                <prop key="symmetric.http.download.rate.kb">-1</prop>
-                <prop key="symmetric.http.concurrent.workers.max">20</prop>   
-                <prop key="symmetric.runtime.outgoing.batches.max.to.process">60</prop>                             
-                <prop key="symmetric.runtime.incoming.batches.skip.duplicates">true</prop>
-                <prop key="symmetric.runtime.engine.name">Default</prop>                               
-                <prop key="symmetric.runtime.schema.version">?</prop>
-                <prop key="symmetric.runtime.trigger.prefix"></prop>
-                <prop key="symmetric.runtime.initial.load.delete.first">false</prop>
-                <prop key="symmetric.runtime.job.random.max.start.time.ms">10000</prop>
-                <prop key="symmetric.runtime.purge.retention.minutes">7200</prop>
-                <prop key="symmetric.runtime.job.push.period.time.ms">60000</prop>
-                <prop key="symmetric.runtime.job.pull.period.time.ms">60000</prop>
-                <prop key="symmetric.runtime.job.purge.period.time.ms">600000</prop>
-                <prop key="symmetric.runtime.job.synctriggers.aftermidnight.minutes">15</prop>                                                                
-                <prop key="symmetric.runtime.start.pull.job">true</prop>
-                <prop key="symmetric.runtime.start.push.job">true</prop>
-                <prop key="symmetric.runtime.start.purge.job">true</prop>
-                <prop key="symmetric.runtime.start.heartbeat.job">true</prop>
-                <prop key="symmetric.runtime.start.synctriggers.job">true</prop>
-                <prop key="symmetric.runtime.registration.url"></prop>
-                <prop key="symmetric.runtime.my.url">http://localhost:8080/sync</prop>
-                <prop key="symmetric.runtime.group.id">default</prop>
-                <prop key="symmetric.runtime.external.id"></prop>
-                <prop key="symmetric.runtime.configuration.class"></prop>
                 <prop key="symmetric.override.properties.file.1"></prop>
                 <prop key="symmetric.override.properties.file.2"></prop>
-                <prop key="symmetric.transport.type">http</prop>
             </props>
         </property>
         <property name="ignoreResourceNotFound" value="true" />
         <!--  Allow for the (optional) override of these properties -->
         <property name="locations">
             <list>
+                <value>classpath:/symmetric-default.properties</value>
                 <value>classpath:/symmetric.properties</value>
                 <value>file:${user.home}/symmetric.properties</value>
                 <value>${symmetric.override.properties.file.1}</value>
