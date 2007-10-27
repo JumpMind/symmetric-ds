@@ -19,11 +19,12 @@
  */
 package org.jumpmind.symmetric;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Properties;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -34,8 +35,6 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Run SymmetricDS utilities and/or launch an embedded version of Symmetric.  If you run this
@@ -43,15 +42,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SymmetricLauncher {
 
-    private static final String OPTION_PORT_SERVER = "port-server";
+    private static final String OPTION_PORT_SERVER = "port";
 
-    private static final String OPTION_DDL_GEN = "ddl-gen";
+    private static final String OPTION_DDL_GEN = "generate-config-dll";
 
-    private static final String OPTION_PROPERTIES_GEN = "properties-gen";
+    private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
 
-    private static final String OPTION_PROPERTIES_FILE = "properties-file";
+    private static final String OPTION_PROPERTIES_FILE = "properties";
 
-    private static final String OPTION_START_SERVER = "start-server";
+    private static final String OPTION_START_SERVER = "server";
 
     public static void main(String[] args) throws Exception {
         CommandLineParser parser = new PosixParser();
@@ -108,12 +107,12 @@ public class SymmetricLauncher {
 
     private static Options buildOptions() {
         Options options = new Options();        
-        options.addOption("s", OPTION_START_SERVER, false, "Start an embedded instance of SymmetricDS.");
-        options.addOption("p", OPTION_PORT_SERVER, false,
+        options.addOption("S", OPTION_START_SERVER, false, "Start an embedded instance of SymmetricDS.");
+        options.addOption("P", OPTION_PORT_SERVER, false,
                 "Optionally pass in the HTTP port number to use for the server instance.");
 
         options
-                .addOption("D", OPTION_DDL_GEN, true,
+                .addOption("c", OPTION_DDL_GEN, true,
                         "Output the DDL to create the SymmetricDS tables.  Takes an argument of the name of the file to write the ddl to.");
         options
                 .addOption(
@@ -122,7 +121,7 @@ public class SymmetricLauncher {
                         true,
                         "Takes an argument with the path to the properties file that will drive SymmetricDS.  If this is not provided, SymmetricDS will use defaults, then override with the first symmetric.properties in your classpath, then override with symmetric.properties values in your user.home directory.");
         options
-                .addOption("P", OPTION_PROPERTIES_GEN, true,
+                .addOption("g", OPTION_PROPERTIES_GEN, true,
                         "Takes an argument with the path to a file which all the default overrideable properties will be written.");
 
         return options;
@@ -139,11 +138,15 @@ public class SymmetricLauncher {
     private static void generateDefaultProperties(String fileName) throws IOException {
         File file = new File(fileName);
         file.getParentFile().mkdirs();
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:symmetric-properties.xml" });
-        Properties properties = (Properties) ctx.getBean("properties");
-        FileOutputStream os = new FileOutputStream(file, false);
-        properties.store(os, "Auto generated SymmetricDS properties file.");
+        BufferedReader is = new BufferedReader(new InputStreamReader(SymmetricLauncher.class.getResourceAsStream("/symmetric-default.properties"), Charset.defaultCharset()));
+        FileWriter os = new FileWriter(file, false);
+        String line = is.readLine();
+        while (line != null) {
+            os.write(line);
+            os.write(System.getProperty("line.separator"));
+            line = is.readLine();
+        }
+        is.close();
         os.close();
     }
 
