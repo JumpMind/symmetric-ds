@@ -53,7 +53,7 @@ public class SymmetricLauncher {
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
 
-    private static final String OPTION_RUN_DDL_XML = "run-dll-xml";
+    private static final String OPTION_RUN_DDL_XML = "run-ddl-xml";
 
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
 
@@ -147,8 +147,6 @@ public class SymmetricLauncher {
         options
         .addOption("a", OPTION_AUTO_CREATE, false,
                 "Attempts to create the symmetric tables in the configured database.");
-        
-
         return options;
     }
 
