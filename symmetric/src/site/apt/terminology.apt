@@ -32,3 +32,8 @@ Terminology
 * Batch
 
 	A unit of updates that are processed together and tracked by an identifier (batchId).
+	
+* Database Dialect
+   
+    An API that can be implemented in SymmetricDS for a specific database implementation.  The first two dialects
+    SymmetricDS supported were MySQL 5.0 and Oracle 10g.
