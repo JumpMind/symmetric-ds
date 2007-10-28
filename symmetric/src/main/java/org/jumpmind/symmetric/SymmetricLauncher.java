@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.cli.CommandLine;
@@ -39,6 +40,7 @@ import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 
 /**
@@ -53,7 +55,9 @@ public class SymmetricLauncher {
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
 
-    private static final String OPTION_RUN_DDL_XML = "run-ddl-xml";
+    private static final String OPTION_RUN_DDL_XML = "run-ddl";
+
+    private static final String OPTION_RUN_SQL = "run-sql";
 
     private static final String OPTION_PROPERTIES_GEN = "generate-default-properties";
 
@@ -92,7 +96,7 @@ public class SymmetricLauncher {
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
                 return;
             }
-            
+
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 autoCreateDatabase(new SymmetricEngine());
                 return;
@@ -100,6 +104,11 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
                 runDdlXml(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_DDL_XML));
+                return;
+            }
+
+            if (line.hasOption(OPTION_RUN_SQL)) {
+                runSql(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
                 return;
             }
 
@@ -145,7 +154,10 @@ public class SymmetricLauncher {
                 .addOption("r", OPTION_RUN_DDL_XML, true,
                         "Takes an argument of a DdlUtils xml file and applies it to the database configured in your symmetric properties file.");
         options
-        .addOption("a", OPTION_AUTO_CREATE, false,
+                .addOption("s", OPTION_RUN_SQL, true,
+                        "Takes an argument of a .sql file and runs it against the database configured in your symmetric properties file.");
+
+        options.addOption("a", OPTION_AUTO_CREATE, false,
                 "Attempts to create the symmetric tables in the configured database.");
         return options;
     }
@@ -173,9 +185,10 @@ public class SymmetricLauncher {
         is.close();
         os.close();
     }
-    
+
     private static void autoCreateDatabase(SymmetricEngine engine) {
-        IBootstrapService bootstrapService = (IBootstrapService)engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
+        IBootstrapService bootstrapService = (IBootstrapService) engine.getApplicationContext().getBean(
+                Constants.BOOTSTRAP_SERVICE);
         bootstrapService.setAutoConfigureDatabase(true);
         bootstrapService.init();
     }
@@ -184,9 +197,21 @@ public class SymmetricLauncher {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-        Platform pf = dialect.getPlatform();
-        Database db = new DatabaseIO().read(new File(fileName));
-        pf.createTables(db, true, true);
+            Platform pf = dialect.getPlatform();
+            Database db = new DatabaseIO().read(new File(fileName));
+            pf.createTables(db, true, true);
+        } else {
+            throw new FileNotFoundException("Could not find " + fileName);
+        }
+    }
+
+    private static void runSql(SymmetricEngine engine, String fileName) throws FileNotFoundException,
+            MalformedURLException {
+        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+        File file = new File(fileName);
+        if (file.exists() && file.isFile()) {
+            SqlScript script = new SqlScript(file.toURL(), dialect.getPlatform().getDataSource());
+            script.execute();
         } else {
             throw new FileNotFoundException("Could not find " + fileName);
         }
