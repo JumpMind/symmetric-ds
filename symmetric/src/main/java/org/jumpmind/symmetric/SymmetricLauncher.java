@@ -39,12 +39,15 @@ import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.service.IBootstrapService;
 
 /**
  * Run symmetric utilities and/or launch an embedded version of Symmetric.  If you run this
  * program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
+
+    private static final String OPTION_AUTO_CREATE = "auto-create";
 
     private static final String OPTION_PORT_SERVER = "port";
 
@@ -87,6 +90,11 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_DDL_GEN)) {
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
+                return;
+            }
+            
+            if (line.hasOption(OPTION_AUTO_CREATE)) {
+                autoCreateDatabase(new SymmetricEngine());
                 return;
             }
 
@@ -136,6 +144,10 @@ public class SymmetricLauncher {
         options
                 .addOption("r", OPTION_RUN_DDL_XML, true,
                         "Takes an argument of a DdlUtils xml file and applies it to the database configured in your symmetric properties file.");
+        options
+        .addOption("a", OPTION_AUTO_CREATE, false,
+                "Attempts to create the symmetric tables in the configured database.");
+        
 
         return options;
     }
@@ -162,6 +174,12 @@ public class SymmetricLauncher {
         }
         is.close();
         os.close();
+    }
+    
+    private static void autoCreateDatabase(SymmetricEngine engine) {
+        IBootstrapService bootstrapService = (IBootstrapService)engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
+        bootstrapService.setAutoConfigureDatabase(true);
+        bootstrapService.init();
     }
 
     private static void runDdlXml(SymmetricEngine engine, String fileName) throws FileNotFoundException {
