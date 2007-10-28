@@ -32,5 +32,7 @@ public interface IBootstrapService {
     public void register();
     
     public void heartbeat();
+    
+    public void setAutoConfigureDatabase(boolean autoConfigureDatabase);
 
 }
