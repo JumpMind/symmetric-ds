@@ -119,9 +119,8 @@ public class SymmetricLauncher {
     private static Options buildOptions() {
         Options options = new Options();
         options.addOption("S", OPTION_START_SERVER, false, "Start an embedded instance of symmetric.");
-        options.addOption("P", OPTION_PORT_SERVER, false,
+        options.addOption("P", OPTION_PORT_SERVER, true,
                 "Optionally pass in the HTTP port number to use for the server instance.");
-
         options
                 .addOption("c", OPTION_DDL_GEN, true,
                         "Output the DDL to create the symmetric tables.  Takes an argument of the name of the file to write the ddl to.");
