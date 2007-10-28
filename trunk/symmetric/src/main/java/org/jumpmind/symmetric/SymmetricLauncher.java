@@ -121,7 +121,7 @@ public class SymmetricLauncher {
     }
 
     private static void printHelp(Options options) {
-        new HelpFormatter().printHelp("symmetric-ds", options);
+        new HelpFormatter().printHelp("sym", options);
     }
 
     private static Options buildOptions() {
