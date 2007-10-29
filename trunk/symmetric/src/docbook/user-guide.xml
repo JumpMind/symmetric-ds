@@ -114,14 +114,23 @@
     <chapter>
         <title>Getting Started</title>
         <para>
-            To get started, you create a root database and a client database that each run the
-            SymmetricDS software to synchronize changes. You open registration for the client, which
-            registers with the root to receive the synchronization configuration. You ask the root
-            to reload the client in order to perform an initial synchronization. Then you make
-            changes to each database and observe the changes propagating.
+            This chapter is a hands-on tutorial that shows how to synchronize the sample database
+            between two running nodes of SymmetricDS.
+        </para>
+        <para>
+            To get started, you create a root (central source) database and a client (remote target)
+            database that each run the SymmetricDS software to synchronize changes. You open
+            registration for the client, which registers with the root to receive the
+            synchronization configuration. You ask the root to reload the client in order to perform
+            an initial synchronization. Then you make changes to each database and observe the
+            changes propagating.
         </para>
         <section>
             <title>Installing SymmetricDS</title>
+            <para>
+                Install the SymmetricDS software and configure it with your database connection
+                information.
+            </para>
             <procedure>
                 <step>
                     <para>
@@ -135,9 +144,9 @@
                 </step>
                 <step>
                     <para>
-                        Unzip the file to create its own
+                        Unzip the file, which creates a
                         <filename class="directory">symmetric-ds-1.0.0</filename>
-                        directory.
+                        subdirectory.
                     </para>
                 </step>
                 <step>
@@ -163,18 +172,28 @@
                     <para>Set the following properties to correspond to your databases:</para>
                     <itemizedlist spacing="compact">
                         <listitem>
-                            <para>db.driver The class name for the JDBC Driver</para>
-                        </listitem>
-                        <listitem>
-                            <para>db.url The JDBC URL used to connect to the database</para>
-                        </listitem>
-                        <listitem>
                             <para>
-                                db.user The user to login as who can create and update tables
+                                <literal>db.driver</literal>
+                                - The class name for the JDBC Driver
                             </para>
                         </listitem>
                         <listitem>
-                            <para>db.password The password for the user to login as</para>
+                            <para>
+                                <literal>db.url</literal>
+                                - The JDBC URL used to connect to the database
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>db.user</literal>
+                                - The user to login as who can create and update tables
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>db.password</literal>
+                                - The password for the user to login as
+                            </para>
                         </listitem>
                     </itemizedlist>
                 </step>
@@ -185,7 +204,8 @@
             <important>
                 <para>
                     You must first create the databases for your root and client nodes using the
-                    administration tools provided by your database vendor.
+                    administration tools provided by your database vendor. Make sure the name of the
+                    databases you create match the settings in the properties files.
                 </para>
             </important>
             <para>
@@ -213,9 +233,10 @@
                 </step>
                 <step>
                     <para>
-                        Create the symmetric tables in the root node database. These tables contain
-                        the configuration for synchronization. The following command uses the
-                        auto-creation feature to create all the necessary symmetric system tables.
+                        Create the symmetric tables in the root node database. These tables will
+                        contain the configuration for synchronization. The following command uses
+                        the auto-creation feature to create all the necessary symmetric system
+                        tables.
                     </para>
                     <para>
                         <command>symmetric -p root.properties --auto-create</command>
@@ -233,7 +254,8 @@
             </procedure>
         </section>
         <section>
-            <title>Configuring and Starting SymmetricDS</title>
+            <title>Starting SymmetricDS</title>
+            <para>Start the SymmetricDS nodes and observe the logging output.</para>
             <procedure>
                 <step>
                     <para>
@@ -255,7 +277,7 @@
                 <step>
                     <para>Start the client node server.</para>
                     <para>
-                        <command>symmetric -p root.properties --start</command>
+                        <command>symmetric -p client.properties --start</command>
                     </para>
                     <para>
                         The client node server starts up and uses the auto-creation feature to
@@ -267,16 +289,148 @@
             </procedure>
         </section>
         <section>
-            <title>Registration</title>
-            <para>This is a paragraph.</para>
+            <title>Registering a Node</title>
+            <para>
+                Open registration for the client node using the root node administration feature.
+            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open a command prompt and navigate to the
+                        <filename class="directory">samples</filename>
+                        subdirectory of your SymmetricDS installation.
+                    </para>
+                </step>
+                <step>
+                    <para>Open registration for the client node server.</para>
+                    <para>
+                        <command>
+                            symmetric -p root.properties --open-registration "store,1"
+                        </command>
+                    </para>
+                    <para>
+                        The registration is opened for a node group called "store" with an external
+                        identifier of "1".
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Watch the logging output of the client node to see it successfully register
+                        with the root node. The client is configured to attempt registration each
+                        minute. Once registered, the root and client are enabled for
+                        synchronization.
+                    </para>
+                </step>
+            </procedure>
         </section>
         <section>
-            <title>Initial Load</title>
-            <para>This is a paragraph.</para>
+            <title>Sending Initial Load</title>
+            <para>
+                Send an initial load of data to the client node using the root node administration
+                feature.
+            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open a command prompt and navigate to the
+                        <filename class="directory">samples</filename>
+                        subdirectory of your SymmetricDS installation.
+                    </para>
+                </step>
+                <step>
+                    <para>Send an initial load of data to the client node server.</para>
+                    <para>
+                        <command>symmetric -p root.properties --reload-node 1</command>
+                    </para>
+                    <para>
+                        With this command, the root node queues up an initial load for the client
+                        node that will sent the next time the client performs its pull. The initial
+                        load includes data for each table that is configured for synchronization.
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Watch the logging output of both nodes to see the data transfer. The client
+                        is configured to pull data from the root each minute.
+                    </para>
+                </step>
+            </procedure>
         </section>
         <section>
-            <title>Pulling and Pushing Data</title>
-            <para>This is a paragraph.</para>
+            <title>Pulling Data</title>
+            <para>
+                Change data on the root database, which is pulled by the client database.
+            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open an interactive SQL session with the root database.
+                    </para>
+                </step>
+                <step>
+                    <para>Add a new item for sale on the root database</para>
+                    <para>
+                        <command>insert into item_selling_price (price_id, price) values (55, 0.65);</command>
+                    </para>
+                    <para>
+                        <command>insert into item (item_id, price_id, name) values (110000055, 55, 'Soft Drink');</command>
+                    </para>
+                    <para>
+                        Once the statements are committed, the data change is captured and queued
+                        for the client node to pull.
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Watch the logging output of both nodes to see the data transfer. The client
+                        is configured to pull data from the root each minute.
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Verify that the new data arrives in the client database using
+                        another interactive SQL session.
+                    </para>
+                </step>
+            </procedure>
+        </section>
+        <section>
+            <title>Pushing Data</title>
+            <para>
+                Change data on the client database, which is pushed to the root database.
+            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open an interactive SQL session with the client database.
+                    </para>
+                </step>
+                <step>
+                    <para>Add a new sale on the client database</para>
+                    <para>
+                        <command>insert into transaction (tran_id, store, workstation, day, seq) values (1000, '1', '3', '2007-11-01', 100);</command>
+                    </para>
+                    <para>
+                        <command>insert into sale_return_line_item (tran_id, item_id, price, quantity) values (1000, 110000055, 0.65, 1);</command>
+                    </para>
+                    <para>
+                        Once the statements are committed, the data change is captured and queued
+                        for the client node to push.
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Watch the logging output of both nodes to see the data transfer. The client
+                        is configured to push data to the root each minute.
+                    </para>
+                </step>
+                <step>
+                    <para>
+                        Verify that the new data arrives in the root database using
+                        another interactive SQL session.
+                    </para>
+                </step>
+            </procedure>
         </section>
     </chapter>
     <chapter>
