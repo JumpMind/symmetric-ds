@@ -261,6 +261,10 @@
                             symmetric -p client.properties --run-ddl create_sample.xml
                         </command>
                     </para>
+                    <para>
+                        Note that the command may output warnings about altering foreign keys on the
+                        tables, which are safe to ignore.
+                    </para>
                 </step>
                 <step>
                     <para>
@@ -298,23 +302,24 @@
                 <step>
                     <para>Start the root node server.</para>
                     <para>
-                        <command>symmetric -p root.properties --start</command>
+                        <command>symmetric -p root.properties --port 8080 --server</command>
                     </para>
                     <para>
                         The root node server starts up and creates all the triggers that were
-                        configured by the sample configuration.
+                        configured by the sample configuration. It listens on port 8080 for
+                        synchronization and registration requests.
                     </para>
                 </step>
                 <step>
                     <para>Start the client node server.</para>
                     <para>
-                        <command>symmetric -p client.properties --start</command>
+                        <command>symmetric -p client.properties --port 9090 --server</command>
                     </para>
                     <para>
                         The client node server starts up and uses the auto-creation feature to
                         create the symmetric system tables. It begins polling the root node in order
                         to register. Since registration is not yet open, the client node receives an
-                        authorization failure.
+                        authorization failure (HTTP response of 403).
                     </para>
                 </step>
             </procedure>
