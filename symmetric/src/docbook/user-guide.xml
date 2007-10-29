@@ -51,24 +51,37 @@
             <title>SymmetricDS Feature Overview</title>
             <section>
                 <title>Notification Schemes</title>
+                <para>Push (trickle-back data) or Pull (trickle-poll data) changes</para>
             </section>
             <section>
                 <title>Two-Way Table Synchronization</title>
+                <para>
+                    The same table can be synchronized both to and from the host system while
+                    avoiding update loops
+                </para>
             </section>
             <section>
                 <title>Data Channels</title>
+                <para>Table synchronizations are grouped into independent channels</para>
             </section>
             <section>
                 <title>Transaction Awareness</title>
+                <para>Data updates are recorded and replayed with the same atomicity</para>
             </section>
             <section>
                 <title>Data Filtering and Rerouting</title>
+                <para>Allows for localized passwords and sensitive data filtering/routing</para>
             </section>
             <section>
                 <title>HTTP Transport</title>
+                <para>
+                    Pluggable transport defaults to Representation State Transfer (REST-style) HTTP
+                    services
+                </para>
             </section>
             <section>
                 <title>Remote Management</title>
+                <para>Administration through a Java Management Extensions (JMX) console</para>
             </section>
         </section>
         <section>
@@ -169,7 +182,9 @@
                     </substeps>
                 </step>
                 <step>
-                    <para>Set the following properties to correspond to your databases:</para>
+                    <para>
+                        Set the following properties in both files for the corresponding databases:
+                    </para>
                     <itemizedlist spacing="compact">
                         <listitem>
                             <para>
@@ -193,6 +208,22 @@
                             <para>
                                 <literal>db.password</literal>
                                 - The password for the user to login as
+                            </para>
+                        </listitem>
+                    </itemizedlist>
+                </step>
+                <step>
+                    <para>
+                        Set the following properties in the
+                        <filename>client.properties</filename>
+                        file:
+                    </para>
+                    <itemizedlist spacing="compact">
+                        <listitem>
+                            <para>
+                                <literal>symmetric.runtime.registration.url</literal>
+                                - The HTTP URL of the root node to contact for registration
+                                (http://hostname:8080/sync)
                             </para>
                         </listitem>
                     </itemizedlist>
@@ -358,22 +389,23 @@
         </section>
         <section>
             <title>Pulling Data</title>
-            <para>
-                Change data on the root database, which is pulled by the client database.
-            </para>
+            <para>Change data on the root database, which is pulled by the client database.</para>
             <procedure>
                 <step>
-                    <para>
-                        Open an interactive SQL session with the root database.
-                    </para>
+                    <para>Open an interactive SQL session with the root database.</para>
                 </step>
                 <step>
                     <para>Add a new item for sale on the root database</para>
                     <para>
-                        <command>insert into item_selling_price (price_id, price) values (55, 0.65);</command>
+                        <command>
+                            insert into item_selling_price (price_id, price) values (55, 0.65);
+                        </command>
                     </para>
                     <para>
-                        <command>insert into item (item_id, price_id, name) values (110000055, 55, 'Soft Drink');</command>
+                        <command>
+                            insert into item (item_id, price_id, name) values (110000055, 55, 'Soft
+                            Drink');
+                        </command>
                     </para>
                     <para>
                         Once the statements are committed, the data change is captured and queued
@@ -388,30 +420,32 @@
                 </step>
                 <step>
                     <para>
-                        Verify that the new data arrives in the client database using
-                        another interactive SQL session.
+                        Verify that the new data arrives in the client database using another
+                        interactive SQL session.
                     </para>
                 </step>
             </procedure>
         </section>
         <section>
             <title>Pushing Data</title>
-            <para>
-                Change data on the client database, which is pushed to the root database.
-            </para>
+            <para>Change data on the client database, which is pushed to the root database.</para>
             <procedure>
                 <step>
-                    <para>
-                        Open an interactive SQL session with the client database.
-                    </para>
+                    <para>Open an interactive SQL session with the client database.</para>
                 </step>
                 <step>
                     <para>Add a new sale on the client database</para>
                     <para>
-                        <command>insert into transaction (tran_id, store, workstation, day, seq) values (1000, '1', '3', '2007-11-01', 100);</command>
+                        <command>
+                            insert into transaction (tran_id, store, workstation, day, seq) values
+                            (1000, '1', '3', '2007-11-01', 100);
+                        </command>
                     </para>
                     <para>
-                        <command>insert into sale_return_line_item (tran_id, item_id, price, quantity) values (1000, 110000055, 0.65, 1);</command>
+                        <command>
+                            insert into sale_return_line_item (tran_id, item_id, price, quantity)
+                            values (1000, 110000055, 0.65, 1);
+                        </command>
                     </para>
                     <para>
                         Once the statements are committed, the data change is captured and queued
@@ -426,8 +460,8 @@
                 </step>
                 <step>
                     <para>
-                        Verify that the new data arrives in the root database using
-                        another interactive SQL session.
+                        Verify that the new data arrives in the root database using another
+                        interactive SQL session.
                     </para>
                 </step>
             </procedure>
@@ -440,21 +474,49 @@
         </section>
         <section>
             <title>Node</title>
+            <para>
+                An instance of SymmetricDS that synchronizes data with one or more nodes. Each node
+                has a unique identifier (nodeID) that is used when communicating, as well as a
+                domain-specific identifier (externalId) that provides context within the local
+                system.
+            </para>
         </section>
         <section>
             <title>Node Security</title>
+            <para>
+                Security features like node passwords and open registration flag are stored in the
+                NodeSecurity table.
+            </para>
         </section>
         <section>
             <title>Node Group</title>
+            <para>
+                A category of Nodes that synchronizes data with one or more NodeGroups. A common use
+                of NodeGroup is to describe a level in a hierarchy of data synchronization.
+            </para>
         </section>
         <section>
             <title>Node Group Link</title>
+            <para>
+                A source NodeGroup sends its data updates to a target NodeGroup using a pull, push,
+                or custom technique.
+            </para>
         </section>
         <section>
             <title>Channel</title>
+            <para>
+                A category of data that can be synchronized independently of other Channels.
+                Channels allow control over the type of data flowing and prevents one type of
+                synchronization from contending with another.
+            </para>
         </section>
         <section>
             <title>Trigger</title>
+            <para>
+                The database triggers that capture changes in the database are automatically
+                generated by SymmetricDS. Configuration of which triggers are generated and how they
+                will behave is stored in the Trigger table.
+            </para>
         </section>
     </chapter>
     <chapter>
@@ -499,4 +561,87 @@
             <title>Viewing Batches</title>
         </section>
     </chapter>
+    <appendix>
+        <title>SymmetricDS Data Format</title>
+        <para>
+            The SymmetricDS Data Format is used to stream data from node to another. The data format
+            reader and writer are pluggable with an initial implementation using a format based on
+            Comma Separated Values (CSV). Each line in the stream is a record with fields separated
+            by commas. String fields are surrounded with double quotes. Double quotes and
+            backslashes used in a string field are escaped with a backslash. Binary values are
+            represented as a string with hex values in "\0xab" format. The absence of any value in
+            the field indicates a null value. Extra spacing is ignored and lines starting with a
+            hash are ignored.
+        </para>
+        <para>
+            The first field of each line gives the directive for the line. The following directives
+            are used:
+
+            <itemizedlist spacing="compact">
+                <listitem>
+                    <para>
+                        <command>version {major},{minor},{patch}</command>
+                    </para>
+                    Indicates the version of the file format
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>table {table name}</command>
+                    </para>
+                    Sets the context of which table to operate on
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>keys {column name...}</command>
+                    </para>
+                    Lists the column names that are used as the primary key for the table. Only
+                    needs to occur after the first occurrence of the table.
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>columns {column name...}</command>
+                    </para>
+                    Lists all the column names of the table. Only needs to occur after the first
+                    occurrence of the table.
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>insert {column value...}</command>
+                    </para>
+                    Insert into the table with the values that correspond with the columns
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>update {old key value...},{new column value...}</command>
+                    </para>
+                    Update the table using the old key values to set the new column values
+                </listitem>
+                <listitem>
+                    <para>
+                        <command>delete {old key value...}</command>
+                    </para>
+                    Delete from the table using the old key values
+                </listitem>
+            </itemizedlist>
+        </para>
+        <example>
+            <title>Data Format Stream</title>
+            <programlisting>
+                <![CDATA[
+version, 1,0,0
+table, item_selling_price
+keys, price_id
+columns, price, cost
+insert, 55, 0.65, 0.55
+table, item
+keys, item_id 
+columns, item_id, price_id, name
+insert, 110000055, 55, "Soft Drink"
+delete, 110000001
+table, item_selling_price
+update, 55, 55, 0.75, 0.65
+                ]]>
+            </programlisting>
+        </example>
+    </appendix>
 </book>
