@@ -9,6 +9,8 @@ Features
 
   * <<Data Channels>> - Table synchronizations are grouped into independent channels
   
+  * <<Guaranteed Delivery>> - Synchronized data is guaranteed to arrive at the target destination.  If a synchronization fails, the same packet of data will be retried until it succeeds or manual intervention is taken.  All other data synchronization is halted for the failed channel only.  
+  
   * <<Transaction Aware>> - Data updates are recorded and replayed with the same atomicity
   
   * <<Centralized Configuration>> - All configuration is downloaded from a central registration server
