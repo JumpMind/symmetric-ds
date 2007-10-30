@@ -108,32 +108,43 @@
         <section>
             <title>Background</title>
             <para>
-            	While implementing a commercial Point of Sale (POS) system for a large retailer,
-            	the development team concluded that the software provided for trickling back transactions
-            	to the general office would not meet the project needs.
-            	The list of problems in the requirements made finding the ideal solution difficult:
-			</para>
+                While implementing a commercial Point of Sale (POS) system for a large retailer, the
+                development team concluded that the software available for trickling back
+                transactions to the general office did not meet the project needs. The list of
+                problems in the requirements made finding the ideal solution difficult:
+            </para>
             <itemizedlist spacing="compact">
                 <listitem>
-                    <para>Sending and receiving data with 2000 stores during peak holiday loads.</para>
+                    <para>
+                        Sending and receiving data with 2000 stores during peak holiday loads.
+                    </para>
                 </listitem>
                 <listitem>
-                    <para>Supporting one database platform at the store and another at general office.</para>
+                    <para>
+                        Supporting one database platform at the store and another at general office.
+                    </para>
                 </listitem>
                 <listitem>
-                    <para>Synchronizing some data in one direction, and other data in both directions.</para>
+                    <para>
+                        Synchronizing some data in one direction, and other data in both directions.
+                    </para>
                 </listitem>
                 <listitem>
-                    <para>Filtering out sensitive data and re-routing it to a protected database.</para>
+                    <para>
+                        Filtering out sensitive data and re-routing it to a protected database.
+                    </para>
                 </listitem>
                 <listitem>
-                    <para>Preparing the store database with an initial load of data from general office.</para>
+                    <para>
+                        Preparing the store database with an initial load of data from general
+                        office.
+                    </para>
                 </listitem>
             </itemizedlist>
-			<para>
-			    The team created a custom solution that met the requirements and made the project
-			    successful.  From this initial challenge came the knowledge and experience that
-			    SymmetricDS benefits from today.
+            <para>
+                The team created a custom solution that met the requirements and made the project
+                successful. From this initial challenge came the knowledge and experience that
+                SymmetricDS benefits from today.
             </para>
         </section>
         <section>
