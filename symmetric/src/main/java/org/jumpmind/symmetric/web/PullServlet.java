@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.net.SocketException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -75,6 +76,8 @@ public class PullServlet extends AbstractServlet {
                 getDataExtractorService().extract(getNodeService().findNode(nodeId), out);
                 out.close();
             }
+        } catch (SocketException ex) {
+            logger.warn("Socket error while procesing pull data for " + nodeId + ". " + ex.getMessage());            
         } catch (Exception ex) {
             logger.error("Error while pulling data for " + nodeId, ex);
             resp.sendError(501);

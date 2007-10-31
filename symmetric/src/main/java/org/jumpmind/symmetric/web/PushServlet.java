@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +53,8 @@ public class PushServlet extends AbstractServlet {
             OutputStream out = createOutputStream(resp);
             getDataLoaderService().loadData(is, out);
             out.flush();
+        } catch (SocketException ex) {
+            logger.warn("Socket error while procesing pushed data for " + nodeId + ". " + ex.getMessage());
         } catch (Exception ex) {
             logger
                     .error("Error while processing pushed data for " + nodeId,
