@@ -80,7 +80,7 @@
             primaryKey="true" />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"
             primaryKey="true" />
-        <column name="data_event_action" type="CHAR" size="1" default="U" required="true" />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" />
         <foreign-key name="fk_dt_node_group_id" foreignTable="node_group">
             <reference local="source_node_group_id" foreign="node_group_id" />
         </foreign-key>
