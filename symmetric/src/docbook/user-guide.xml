@@ -45,24 +45,49 @@
         <title>Introduction</title>
         <section>
             <title>The Problem of Synchronization</title>
-            <para></para>
-        </section>
-        <section>
-            <title>SymmetricDS Feature Overview</title>
+            <para>
+                SymmetricDS includes features that solve a particular set of synchronization
+                problems.
+            </para>
             <section>
                 <title>Notification Schemes</title>
-                <para>Push (trickle-back data) or Pull (trickle-poll data) changes</para>
+                <para>
+                    After a change to the database is recorded, the nodes interested in the change
+                    are notified. Change notification is configured to perform a push (trickle-back)
+                    or a pull (trickle-poll) of data. When several nodes target their changes to a
+                    central node, it is efficient to push the changes instead of waiting for the
+                    central node to pull from each source node. When network configuration protects
+                    a node with a firewall, a pull configuration allows the node to receive data
+                    changes that might otherwise be blocked using push. The frequency of the change
+                    notification is configured by default to one minute.
+                </para>
             </section>
             <section>
                 <title>Two-Way Table Synchronization</title>
                 <para>
-                    The same table can be synchronized both to and from the host system while
-                    avoiding update loops
+                    Some data may synchronize in one direction. For example, a retail store sends
+                    its sales transactions to a central office, and the central office sends its
+                    stock items to the store. Some data may synchronize in both directions. For
+                    example, the retail store sends the central office an inventory document, and
+                    the central office updates the document status, which is sent back to the store.
+                    SymmetricDS supports bi-directional synchronization and avoids getting into
+                    update loops by only recording data changes outside of synchronization.
                 </para>
             </section>
             <section>
                 <title>Data Channels</title>
-                <para>Table synchronizations are grouped into independent channels</para>
+                <para>
+                    Data synchronization is defined at the table (or table subset) level. Each
+                    managed table can be assigned to a channel that helps control the flow of data.
+                    A channel is a category of data that is be prioritized and synchronized
+                    independently of other channels. For example, in a retail environment, users may
+                    be waiting for inventory documents to update while a promotional sale event
+                    updates a large number of items. If processed in order, the item updates would
+                    delay the inventory updates even though the data is unrelated. By assigning item
+                    table changes to the "item" channel and inventory table changes to the
+                    "inventory" channel, the changes are processed independently so inventory can
+                    get through.
+                </para>
             </section>
             <section>
                 <title>Transaction Awareness</title>
@@ -166,8 +191,8 @@
     <chapter>
         <title>Getting Started</title>
         <para>
-            This chapter is a hands-on tutorial that shows how to synchronize the sample database
-            between two running nodes of SymmetricDS.
+            This chapter is a hands-on tutorial that demonstrates how to synchronize the sample
+            database between two running nodes of SymmetricDS.
         </para>
         <para>
             To get started, you create a root (central source) database and a client (remote target)
@@ -433,13 +458,16 @@
         </section>
         <section>
             <title>Pulling Data</title>
-            <para>Change data on the root database, which is pulled by the client database.</para>
+            <para>
+                Modify data in the root database. The changes are propagated to the client database
+                during pull synchronization.
+            </para>
             <procedure>
                 <step>
                     <para>Open an interactive SQL session with the root database.</para>
                 </step>
                 <step>
-                    <para>Add a new item for sale on the root database</para>
+                    <para>Add a new item for sale to the root database</para>
                     <para>
                         <command>
                             insert into item_selling_price (price_id, price) values (55, 0.65);
@@ -472,13 +500,16 @@
         </section>
         <section>
             <title>Pushing Data</title>
-            <para>Change data on the client database, which is pushed to the root database.</para>
+            <para>
+                Modify data in the client database. The changes are propagated to the root database
+                during push synchronization.
+            </para>
             <procedure>
                 <step>
                     <para>Open an interactive SQL session with the client database.</para>
                 </step>
                 <step>
-                    <para>Add a new sale on the client database</para>
+                    <para>Add a new sale to the client database</para>
                     <para>
                         <command>
                             insert into transaction (tran_id, store, workstation, day, seq) values
@@ -527,59 +558,121 @@
             </para>
             <para>
                 <table>
-                  <title>Node</title>
-                  <tgroup cols="3">
-                    <thead>
-                      <row>
-                        <entry>Column Name</entry><entry>Type</entry>
-                        <entry>Null</entry><entry>Key</entry><entry>Default</entry>
-                        <entry>Description</entry>
-                      </row>
-                    </thead>
-                    <tbody>
-                      <row>
-                        <entry>node_id</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry>PK</entry><entry></entry><entry>Unique identifier for a node</entry>
-                      </row>
-                      <row>
-                        <entry>node_group_id</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry>FK</entry><entry></entry><entry>The node group that this node belongs to, such as "store"</entry>
-                      </row>
-                      <row>
-                        <entry>external_id</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>A domain-specific identifier for context within the local system.  For example, the retail store number. </entry>
-                      </row>
-                      <row>
-                        <entry>sync_enabled</entry><entry>booleanint</entry><entry>N</entry>
-                        <entry></entry><entry>0</entry><entry>Indicates whether this node should be sent synchronization.  Disabled nodes are ignored by the triggers, so no entries are made in DataEvent for the node.</entry>
-                      </row>
-                      <row>
-                        <entry>sync_url</entry><entry>varchar(2000)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The URL to contact the node for synchronization.</entry>
-                      </row>
-                      <row>
-                        <entry>schema_version</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The version of the database schema this node manages.  Useful for specifying synchronization by version.</entry>
-                      </row>
-                      <row>
-                        <entry>symmetric_version</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The version of SymmetricDS running at this node.</entry>
-                      </row>
-                      <row>
-                        <entry>database_type</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The database product name at this node as reported by JDBC.</entry>
-                      </row>
-                      <row>
-                        <entry>database_version</entry><entry>varchar(50)</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The database product version at this node as reported by JDBC.</entry>
-                      </row>
-                      <row>
-                        <entry>heartbeat_time</entry><entry>timestamp</entry><entry>N</entry>
-                        <entry></entry><entry></entry><entry>The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default.</entry>
-                      </row>
-                    </tbody>
-                  </tgroup>
-                </table> 
+                    <title>Node</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Column Name</entry>
+                                <entry>Type</entry>
+                                <entry>Null</entry>
+                                <entry>Key</entry>
+                                <entry>Default</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>node_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK</entry>
+                                <entry></entry>
+                                <entry>Unique identifier for a node</entry>
+                            </row>
+                            <row>
+                                <entry>node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>FK</entry>
+                                <entry></entry>
+                                <entry>
+                                    The node group that this node belongs to, such as "store"
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>external_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    A domain-specific identifier for context within the local
+                                    system. For example, the retail store number.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>sync_enabled</entry>
+                                <entry>booleanint</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry>0</entry>
+                                <entry>
+                                    Indicates whether this node should be sent synchronization.
+                                    Disabled nodes are ignored by the triggers, so no entries are
+                                    made in DataEvent for the node.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>sync_url</entry>
+                                <entry>varchar(2000)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>The URL to contact the node for synchronization.</entry>
+                            </row>
+                            <row>
+                                <entry>schema_version</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    The version of the database schema this node manages. Useful for
+                                    specifying synchronization by version.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>symmetric_version</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>The version of SymmetricDS running at this node.</entry>
+                            </row>
+                            <row>
+                                <entry>database_type</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    The database product name at this node as reported by JDBC.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>database_version</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    The database product version at this node as reported by JDBC.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>heartbeat_time</entry>
+                                <entry>timestamp</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    The last timestamp when the node sent a heartbeat, which is
+                                    attempted every ten minutes by default.
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
             </para>
         </section>
         <section>
@@ -588,12 +681,105 @@
                 Security features like node passwords and open registration flag are stored in the
                 NodeSecurity table.
             </para>
+            <para>
+                <table>
+                    <title>Node Security</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Column Name</entry>
+                                <entry>Type</entry>
+                                <entry>Null</entry>
+                                <entry>Key</entry>
+                                <entry>Default</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>node_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK FK</entry>
+                                <entry></entry>
+                                <entry>Unique identifier for a node</entry>
+                            </row>
+                            <row>
+                                <entry>password</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>
+                                    The password used by the node to prove its identity during
+                                    synchronization.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>registration_enabled</entry>
+                                <entry>booleanint</entry>
+                                <entry>N</entry>
+                                <entry></entry>
+                                <entry>0</entry>
+                                <entry>Indicates whether registration is open for this node.</entry>
+                            </row>
+                            <row>
+                                <entry>registration_time</entry>
+                                <entry>timestamp</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>The timestamp when this node was registered.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </para>
+
         </section>
         <section>
             <title>Node Group</title>
             <para>
                 A category of Nodes that synchronizes data with one or more NodeGroups. A common use
                 of NodeGroup is to describe a level in a hierarchy of data synchronization.
+            </para>
+            <para>
+                <table>
+                    <title>Node Group</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Column Name</entry>
+                                <entry>Type</entry>
+                                <entry>Null</entry>
+                                <entry>Key</entry>
+                                <entry>Default</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK</entry>
+                                <entry></entry>
+                                <entry>
+                                    Unique identifier for a node group, usually named something
+                                    meaningful, like "store" or "warehouse".
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>description</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>Y</entry>
+                                <entry></entry>
+                                <entry></entry>
+                                <entry>A description of this node group.</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
             </para>
         </section>
         <section>
@@ -602,6 +788,52 @@
                 A source NodeGroup sends its data updates to a target NodeGroup using a pull, push,
                 or custom technique.
             </para>
+            <para>
+                <table>
+                    <title>Node Group Link</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Column Name</entry>
+                                <entry>Type</entry>
+                                <entry>Null</entry>
+                                <entry>Key</entry>
+                                <entry>Default</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>source_node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK FK</entry>
+                                <entry></entry>
+                                <entry>The node group where data changes should be captured.</entry>
+                            </row>
+                            <row>
+                                <entry>target_node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK FK</entry>
+                                <entry></entry>
+                                <entry>The node group where data changes will be sent.</entry>
+                            </row>
+                            <row>
+                                <entry>data_event_action</entry>
+                                <entry>char(1)</entry>
+                                <entry>N</entry>
+                                <entry></entry>
+                                <entry>P</entry>
+                                <entry>
+                                    The notification scheme used to send data changes to the target
+                                    node group. (P = Push, W = Wait for Pull, X = Extract Listener)
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </para>
         </section>
         <section>
             <title>Channel</title>
@@ -609,6 +841,52 @@
                 A category of data that can be synchronized independently of other Channels.
                 Channels allow control over the type of data flowing and prevents one type of
                 synchronization from contending with another.
+            </para>
+            <para>
+                <table>
+                    <title>Channel</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Column Name</entry>
+                                <entry>Type</entry>
+                                <entry>Null</entry>
+                                <entry>Key</entry>
+                                <entry>Default</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>source_node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK FK</entry>
+                                <entry></entry>
+                                <entry>The node group where data changes should be captured.</entry>
+                            </row>
+                            <row>
+                                <entry>target_node_group_id</entry>
+                                <entry>varchar(50)</entry>
+                                <entry>N</entry>
+                                <entry>PK FK</entry>
+                                <entry></entry>
+                                <entry>The node group where data changes will be sent.</entry>
+                            </row>
+                            <row>
+                                <entry>data_event_action</entry>
+                                <entry>char(1)</entry>
+                                <entry>N</entry>
+                                <entry></entry>
+                                <entry>P</entry>
+                                <entry>
+                                    The notification scheme used to send data changes to the target
+                                    node group. (P = Push, W = Wait for Pull, X = Extract Listener)
+                                </entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table>
             </para>
         </section>
         <section>
@@ -690,76 +968,70 @@
 
             <variablelist>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>version {major},{minor},{patch}</command>
                     </term>
                     <listitem>
-                    	<para>
-		                    Indicates the version of the file format
-                    	</para>
+                        <para>Indicates the version of the file format</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>table {table name}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Sets the context of which table to operate on
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>Sets the context of which table to operate on</para>
+                    </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>keys {column name...}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Lists the column names that are used as the primary key for the table. Only
-		                    needs to occur after the first occurrence of the table.
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>
+                            Lists the column names that are used as the primary key for the table.
+                            Only needs to occur after the first occurrence of the table.
+                        </para>
+                    </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>columns {column name...}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Lists all the column names of the table. Only needs to occur after the first
-		                    occurrence of the table.
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>
+                            Lists all the column names of the table. Only needs to occur after the
+                            first occurrence of the table.
+                        </para>
+                    </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>insert {column value...}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Insert into the table with the values that correspond with the columns
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>
+                            Insert into the table with the values that correspond with the columns
+                        </para>
+                    </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>update {old key value...},{new column value...}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Update the table using the old key values to set the new column values
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>
+                            Update the table using the old key values to set the new column values
+                        </para>
+                    </listitem>
                 </varlistentry>
                 <varlistentry>
-                	<term>
+                    <term>
                         <command>delete {old key value...}</command>
                     </term>
-	                <listitem>
-	                    <para>
-		                    Delete from the table using the old key values
-	                    </para>
-	                </listitem>
+                    <listitem>
+                        <para>Delete from the table using the old key values</para>
+                    </listitem>
                 </varlistentry>
             </variablelist>
         </para>
