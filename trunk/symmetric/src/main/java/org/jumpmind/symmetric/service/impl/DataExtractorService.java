@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
@@ -71,8 +72,7 @@ public class DataExtractorService implements IDataExtractorService {
 
     public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
         String tableName = tablePrefix + "_node_identity";
-        OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG,
-                BatchType.INITIAL_LOAD);
+        OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
 
         try {
@@ -80,10 +80,8 @@ public class DataExtractorService implements IDataExtractorService {
             DataExtractorContext ctxCopy = context.copy();
             dataExtractor.init(writer, ctxCopy);
             dataExtractor.begin(batch, writer);
-            TriggerHistory audit = new TriggerHistory(tableName, "node_id",
-                    "node_id");
-            Data data = new Data(1, null, node.getNodeId(),
-                    DataEventType.INSERT, tableName, null, audit);
+            TriggerHistory audit = new TriggerHistory(tableName, "node_id", "node_id");
+            Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, tableName, null, audit);
             dataExtractor.write(writer, data, ctxCopy);
             dataExtractor.commit(batch, writer);
         } catch (IOException e) {
@@ -91,8 +89,7 @@ public class DataExtractorService implements IDataExtractorService {
         }
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger,
-            final IOutgoingTransport transport) {
+    public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
@@ -101,23 +98,22 @@ public class DataExtractorService implements IDataExtractorService {
         return batch;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
-            final IOutgoingTransport transport) {
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
 
         writeInitialLoad(node, trigger, transport, null);
     }
 
-    protected void writeInitialLoad(Node node, final Trigger trigger,
-            final IOutgoingTransport transport, final OutgoingBatch batch) {
+    protected void writeInitialLoad(Node node, final Trigger trigger, final IOutgoingTransport transport,
+            final OutgoingBatch batch) {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
         final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        
+
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    PreparedStatement st = conn.prepareStatement(sql,
-                            java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+                    PreparedStatement st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ResultSet rs = st.executeQuery();
                     final BufferedWriter writer = transport.open();
@@ -127,8 +123,8 @@ public class DataExtractorService implements IDataExtractorService {
                         dataExtractor.begin(batch, writer);
                     }
                     while (rs.next()) {
-                        dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
-                                trigger.getSourceTableName(), null, audit), ctxCopy);
+                        dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, trigger
+                                .getSourceTableName(), null, audit), ctxCopy);
                     }
                     if (batch != null) {
                         dataExtractor.commit(batch, writer);
@@ -143,8 +139,7 @@ public class DataExtractorService implements IDataExtractorService {
         });
     }
 
-    public boolean extract(Node node, IOutgoingTransport transport)
-            throws Exception {
+    public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
         ExtractStreamHandler handler = new ExtractStreamHandler(transport);
         return extract(node, handler);
     }
@@ -153,9 +148,8 @@ public class DataExtractorService implements IDataExtractorService {
      * Allow a handler callback to do the work so we can route the extracted data to 
      * other types of handlers for processing.
      */
-    public boolean extract(Node node, final IExtractListener handler)
-            throws Exception {
-        
+    public boolean extract(Node node, final IExtractListener handler) throws Exception {
+
         outgoingBatchService.buildOutgoingBatches(node.getNodeId());
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
@@ -183,15 +177,15 @@ public class DataExtractorService implements IDataExtractorService {
         return false;
     }
 
-    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId,
-            String endBatchId) throws Exception {
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
+            throws Exception {
 
         ExtractStreamHandler handler = new ExtractStreamHandler(transport);
         return extractBatchRange(handler, startBatchId, endBatchId);
     }
 
-    public boolean extractBatchRange(final IExtractListener handler, String startBatchId,
-            String endBatchId) throws Exception {
+    public boolean extractBatchRange(final IExtractListener handler, String startBatchId, String endBatchId)
+            throws Exception {
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
 
@@ -199,9 +193,14 @@ public class DataExtractorService implements IDataExtractorService {
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
-                    handler.startBatch(batch);
-                    selectEventDataToExtract(handler, batch);
-                    handler.endBatch(batch);
+                    try {
+                        handler.startBatch(batch);
+                        selectEventDataToExtract(handler, batch);
+                        handler.endBatch(batch);
+                    } catch (Exception ex) {
+                        outgoingBatchService.setBatchStatus(batch.getBatchId(), Status.ER);
+                        throw ex;
+                    }
                 }
             } finally {
                 handler.done();
@@ -210,12 +209,12 @@ public class DataExtractorService implements IDataExtractorService {
         }
         return false;
     }
-    
+
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement ps = conn.prepareStatement(selectEventDataToExtractSql,
-                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                PreparedStatement ps = conn.prepareStatement(selectEventDataToExtractSql, ResultSet.TYPE_FORWARD_ONLY,
+                        ResultSet.CONCUR_READ_ONLY);
                 ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                 ps.setString(1, batch.getNodeId());
                 ps.setString(2, batch.getBatchId());
@@ -239,19 +238,15 @@ public class DataExtractorService implements IDataExtractorService {
     private Data next(ResultSet results) throws SQLException {
         long dataId = results.getLong(1);
         String tableName = results.getString(2);
-        DataEventType eventType = DataEventType.getEventType(results
-                .getString(3));
+        DataEventType eventType = DataEventType.getEventType(results.getString(3));
         String rowData = results.getString(4);
         String pk = results.getString(5);
         Date created = results.getDate(7);
-        TriggerHistory audit = configurationService.getHistoryRecordFor(results
-                .getInt(8));
-        return new Data(dataId, pk, rowData, eventType, tableName, created,
-                audit);
+        TriggerHistory audit = configurationService.getHistoryRecordFor(results.getInt(8));
+        return new Data(dataId, pk, rowData, eventType, tableName, created, audit);
     }
 
-    public void setOutgoingBatchService(
-            IOutgoingBatchService batchBuilderService) {
+    public void setOutgoingBatchService(IOutgoingBatchService batchBuilderService) {
         this.outgoingBatchService = batchBuilderService;
     }
 
@@ -271,13 +266,11 @@ public class DataExtractorService implements IDataExtractorService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void setConfigurationService(
-            IConfigurationService configurationService) {
+    public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
 
-    public void setSelectEventDataToExtractSql(
-            String selectEventDataToExtractSql) {
+    public void setSelectEventDataToExtractSql(String selectEventDataToExtractSql) {
         this.selectEventDataToExtractSql = selectEventDataToExtractSql;
     }
 
@@ -297,7 +290,7 @@ public class DataExtractorService implements IDataExtractorService {
             dataExtractor.write(writer, data, context);
         }
 
-        public void done() throws IOException {           
+        public void done() throws IOException {
         }
 
         public void endBatch(OutgoingBatch batch) throws Exception {
