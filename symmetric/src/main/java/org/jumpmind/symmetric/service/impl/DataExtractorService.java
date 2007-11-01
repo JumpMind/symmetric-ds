@@ -158,16 +158,21 @@ public class DataExtractorService implements IDataExtractorService {
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
-                    handler.startBatch(batch);
-                    selectEventDataToExtract(handler, batch);
-                    handler.endBatch(batch);
+                    try {
+                        handler.startBatch(batch);
+                        selectEventDataToExtract(handler, batch);
+                        handler.endBatch(batch);
 
-                    // At this point, we've already sent the data to the node, so if
-                    // updating the batch to 'sent' fails, all this means is that the batch
-                    // will be sent to the node again. This is expected to happen so
-                    // infrequently, that the inefficiencies associated with re-sending a batch
-                    // are negligible.
-                    outgoingBatchService.markOutgoingBatchSent(batch);
+                        // At this point, we've already sent the data to the node, so if
+                        // updating the batch to 'sent' fails, all this means is that the batch
+                        // will be sent to the node again. This is expected to happen so
+                        // infrequently, that the inefficiencies associated with re-sending a batch
+                        // are negligible.
+                        outgoingBatchService.markOutgoingBatchSent(batch);
+                    } catch (Exception ex) {
+                        outgoingBatchService.setBatchStatus(batch.getBatchId(), Status.ER);
+                        throw ex;
+                    }
                 }
             } finally {
                 handler.done();
