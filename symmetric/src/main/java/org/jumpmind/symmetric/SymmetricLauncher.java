@@ -42,12 +42,15 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
  * Run symmetric utilities and/or launch an embedded version of Symmetric.  If you run this
  * program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
+
+    private static final String OPTION_OPEN_REGISTRATION = "open-registration";
 
     private static final String OPTION_AUTO_CREATE = "auto-create";
 
@@ -96,6 +99,14 @@ public class SymmetricLauncher {
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
                 return;
             }
+            
+            if (line.hasOption(OPTION_OPEN_REGISTRATION)) {                
+                String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
+                openRegistration(new SymmetricEngine(), arg);
+                System.out.println("Opened Registration for " + arg);
+                return;
+            }
+            
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 autoCreateDatabase(new SymmetricEngine());
@@ -159,7 +170,23 @@ public class SymmetricLauncher {
 
         options.addOption("a", OPTION_AUTO_CREATE, false,
                 "Attempts to create the symmetric tables in the configured database.");
+        
+        options.addOption("R", OPTION_OPEN_REGISTRATION, true,
+        "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
+        
         return options;
+    }
+    
+    private static void openRegistration(SymmetricEngine engine, String argument) {
+        argument = argument.replace('\"', ' ');
+        int index = argument.trim().indexOf(",");
+        if (index < 0) {
+            throw new IllegalArgumentException("Check the argument you passed in.  --" + OPTION_OPEN_REGISTRATION + " takes an argument of {groupId},{externalId}");
+        }
+        String nodeGroupId = argument.substring(0, index).trim();
+        String externalId = argument.substring(index).trim();
+        IRegistrationService registrationService = (IRegistrationService)engine.getApplicationContext().getBean(Constants.REGISTRATION_SERVICE);
+        registrationService.openRegistration(nodeGroupId, externalId);
     }
 
     private static void generateDDL(SymmetricEngine engine, String fileName) throws IOException {
