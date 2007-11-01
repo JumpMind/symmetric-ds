@@ -56,7 +56,9 @@ public class SymmetricWebServer {
         compressionFilter.setInitParameter("compressType", "gzip_only");
         webContext.addFilter(compressionFilter, "/*", 0);
 
-        webContext.addFilter(AuthenticationFilter.class, "/*", 0);
+        webContext.addFilter(AuthenticationFilter.class, "/pull/*", 0);
+        webContext.addFilter(AuthenticationFilter.class, "/push/*", 0);
+        webContext.addFilter(AuthenticationFilter.class, "/ack/*", 0);
 
         webContext.addServlet(PullServlet.class, "/pull/*");
 
