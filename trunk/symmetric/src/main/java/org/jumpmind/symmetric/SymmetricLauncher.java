@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
@@ -56,6 +57,8 @@ public class SymmetricLauncher {
     private static final String OPTION_DUMP_BATCH = "dump-batch";
 
     private static final String OPTION_OPEN_REGISTRATION = "open-registration";
+    
+    private static final String OPTION_RELOAD_NODE = "reload-node";
 
     private static final String OPTION_AUTO_CREATE = "auto-create";
 
@@ -109,6 +112,13 @@ public class SymmetricLauncher {
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
                 openRegistration(new SymmetricEngine(), arg);
                 System.out.println("Opened Registration for " + arg);
+                return;
+            }
+
+            if (line.hasOption(OPTION_RELOAD_NODE)) {
+                String arg = line.getOptionValue(OPTION_RELOAD_NODE);
+                String message = reloadNode(new SymmetricEngine(), arg);
+                System.out.println(message);
                 return;
             }
 
@@ -183,6 +193,9 @@ public class SymmetricLauncher {
         options
                 .addOption("R", OPTION_OPEN_REGISTRATION, true,
                         "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
+        options
+                .addOption("l", OPTION_RELOAD_NODE, true,
+                        "Send an initial load of data to reload the passed in node id.");
         options.addOption("d", OPTION_DUMP_BATCH, true,
                 "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
 
@@ -209,6 +222,12 @@ public class SymmetricLauncher {
         IRegistrationService registrationService = (IRegistrationService) engine.getApplicationContext().getBean(
                 Constants.REGISTRATION_SERVICE);
         registrationService.openRegistration(nodeGroupId, externalId);
+    }
+
+    private static String reloadNode(SymmetricEngine engine, String argument) {
+        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(
+                Constants.DATA_SERVICE);
+        return dataService.reloadNode(argument);
     }
 
     private static void generateDDL(SymmetricEngine engine, String fileName) throws IOException {
