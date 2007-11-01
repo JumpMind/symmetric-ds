@@ -24,10 +24,17 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public interface IExtractListener {
+    
     public void init() throws Exception;
 
+    /**
+     * Gets called when the start of a batch is found.
+     */
     public void startBatch(OutgoingBatch batch) throws Exception;
 
+    /**
+     * Gets called only if batch has finished and is successful.
+     */
     public void endBatch(OutgoingBatch batch) throws Exception;
 
     public void dataExtracted(Data data) throws Exception;
