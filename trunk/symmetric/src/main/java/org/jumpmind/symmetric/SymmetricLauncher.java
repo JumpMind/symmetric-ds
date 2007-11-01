@@ -42,13 +42,18 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
 /**
  * Run symmetric utilities and/or launch an embedded version of Symmetric.  If you run this
  * program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
+
+    private static final String OPTION_DUMP_BATCH = "dump-batch";
 
     private static final String OPTION_OPEN_REGISTRATION = "open-registration";
 
@@ -99,14 +104,19 @@ public class SymmetricLauncher {
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
                 return;
             }
-            
-            if (line.hasOption(OPTION_OPEN_REGISTRATION)) {                
+
+            if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
                 openRegistration(new SymmetricEngine(), arg);
                 System.out.println("Opened Registration for " + arg);
                 return;
             }
-            
+
+            if (line.hasOption(OPTION_DUMP_BATCH)) {
+                String arg = line.getOptionValue(OPTION_DUMP_BATCH);
+                dumpBatch(new SymmetricEngine(), arg);
+                return;
+            }
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 autoCreateDatabase(new SymmetricEngine());
@@ -170,22 +180,34 @@ public class SymmetricLauncher {
 
         options.addOption("a", OPTION_AUTO_CREATE, false,
                 "Attempts to create the symmetric tables in the configured database.");
-        
-        options.addOption("R", OPTION_OPEN_REGISTRATION, true,
-        "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
-        
+        options
+                .addOption("R", OPTION_OPEN_REGISTRATION, true,
+                        "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
+        options.addOption("d", OPTION_DUMP_BATCH, true,
+                "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
+
         return options;
     }
-    
+
+    private static void dumpBatch(SymmetricEngine engine, String batchId) throws Exception {
+        IDataExtractorService dataExtractorService = (IDataExtractorService) engine.getApplicationContext().getBean(
+                Constants.DATAEXTRACTOR_SERVICE);
+        IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
+        dataExtractorService.extractBatchRange(transport, batchId, batchId);
+        transport.close();
+    }
+
     private static void openRegistration(SymmetricEngine engine, String argument) {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
-            throw new IllegalArgumentException("Check the argument you passed in.  --" + OPTION_OPEN_REGISTRATION + " takes an argument of {groupId},{externalId}");
+            throw new IllegalArgumentException("Check the argument you passed in.  --" + OPTION_OPEN_REGISTRATION
+                    + " takes an argument of {groupId},{externalId}");
         }
         String nodeGroupId = argument.substring(0, index).trim();
         String externalId = argument.substring(index).trim();
-        IRegistrationService registrationService = (IRegistrationService)engine.getApplicationContext().getBean(Constants.REGISTRATION_SERVICE);
+        IRegistrationService registrationService = (IRegistrationService) engine.getApplicationContext().getBean(
+                Constants.REGISTRATION_SERVICE);
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
