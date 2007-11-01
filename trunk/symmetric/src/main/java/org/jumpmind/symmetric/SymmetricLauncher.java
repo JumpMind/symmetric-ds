@@ -205,7 +205,7 @@ public class SymmetricLauncher {
                     + " takes an argument of {groupId},{externalId}");
         }
         String nodeGroupId = argument.substring(0, index).trim();
-        String externalId = argument.substring(index).trim();
+        String externalId = argument.substring(index + 1).trim();
         IRegistrationService registrationService = (IRegistrationService) engine.getApplicationContext().getBean(
                 Constants.REGISTRATION_SERVICE);
         registrationService.openRegistration(nodeGroupId, externalId);
