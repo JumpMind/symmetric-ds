@@ -2,9 +2,7 @@
 <project name="SymmetricDS">
     <bannerLeft>
         <name>SymmetricDS</name>
-        <!--
-            <src>images/logo_here.gif</src>
-        -->
+        <src>images/symmetric-chrome.png</src>
         <href>/</href>
     </bannerLeft>
     <poweredBy>
