@@ -5,8 +5,8 @@
 
     <table name="item_selling_price">
         <column name="price_id" type="INTEGER" required="true" primaryKey="true" />
-        <column name="price" type="DECIMAL" required="true" />
-        <column name="cost" type="DECIMAL" required="false" />
+        <column name="price" type="DECIMAL" size="10,2" required="true" />
+        <column name="cost" type="DECIMAL" size="10,2" required="false" />
     </table>
 
     <table name="item">
@@ -29,7 +29,7 @@
     <table name="sale_return_line_item">
         <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="item_id" type="INTEGER" required="true" />
-        <column name="price" type="DECIMAL" required="true" />
+        <column name="price" type="DECIMAL" size="10,2" required="true" />
         <column name="quantity" type="INTEGER" required="true" />
         <foreign-key name="fk_srli_tran_id" foreignTable="transaction">
             <reference local="tran_id" foreign="tran_id" />
