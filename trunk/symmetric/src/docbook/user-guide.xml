@@ -91,22 +91,54 @@
             </section>
             <section>
                 <title>Transaction Awareness</title>
-                <para>Data updates are recorded and replayed with the same atomicity</para>
+                <para>
+                Many databases provide a unique transaction identifier associated with the 
+                rows that are committed together.  SymmetricDS stores the transaction ID
+                along with the data that changed so it can play back the transaction exactly
+                the way it happened.  This means the target database maintains the same
+                integrity as its source.  Support for transaction ID is included in the Database
+                Dialects for both MySQL and Oracle in this release.
+                </para>
             </section>
             <section>
                 <title>Data Filtering and Rerouting</title>
-                <para>Allows for localized passwords and sensitive data filtering/routing</para>
+                <para>
+                Data can be filtered as it is recorded, extracted, and loaded.
+                Columns can be excluded from synchronization so they are never recorded when
+                the table is changed.  As data changes are extracted from the source database,
+                a class implementing <literal>IExtractorListener</literal> is called to
+                filter data or route it somewhere else.  As data changes are loaded in the
+                target database, a class implementing <literal>IDataLoaderFilter</literal>
+                can filter data or route it somewhere else.  For example, an employee 
+                table may be synchronized to a retail store database, but the employee's
+                password is only synchronized on the initial insert.
+                Another example is routing credit card data to a secure database and filtering
+                it out as it loads into a central office database.
+                </para>
             </section>
             <section>
                 <title>HTTP Transport</title>
                 <para>
-                    Pluggable transport defaults to Representation State Transfer (REST-style) HTTP
-                    services
+                    By default, SymmetricDS uses web-based HTTP in a style called Representation State 
+                    Transfer (REST) that is lightweight and easy to manage.
+                    A series of filters are also provided to enforce authentication and to
+                    restrict the number of simultaneous syncrhonization streams.
+                    The <literal>ITransportManager</literal> interface allows other transports to
+                    be implemented.  (The unit tests for SymmetricDS take advantage of this
+                    by using an <literal>InternalTransportManager</literal> that makes it easy
+                    to run automated tests locally.)
                 </para>
             </section>
             <section>
                 <title>Remote Management</title>
-                <para>Administration through a Java Management Extensions (JMX) console</para>
+                <para>
+                    Administration functions are exposed through Java Management Extensions (JMX)
+                    that can be accessed from the Java JConsole or through an application server.
+                    Functions include opening registration, reloading data, purging old data,
+                    and viewing batches.
+                    A number of configuration and runtime properties are available to be viewed
+                    as well. 
+                </para>
             </section>
         </section>
         <section>
@@ -318,11 +350,11 @@
                 <step>
                     <para>Create the sample tables in both the root and client databases.</para>
                     <para>
-                        <command>symmetric -p root.properties --run-ddl create_sample.xml</command>
+                        <command>../bin/sym -p root.properties --run-ddl create_sample.xml</command>
                     </para>
                     <para>
                         <command>
-                            symmetric -p client.properties --run-ddl create_sample.xml
+                            ../bin/sym -p client.properties --run-ddl create_sample.xml
                         </command>
                     </para>
                     <para>
@@ -338,13 +370,13 @@
                         tables.
                     </para>
                     <para>
-                        <command>symmetric -p root.properties --auto-create</command>
+                        <command>../bin/sym -p root.properties --auto-create</command>
                     </para>
                 </step>
                 <step>
                     <para>Load sample data and configuration into the root node database.</para>
                     <para>
-                        <command>symmetric -p root.properties --run-sql insert_sample.sql</command>
+                        <command>../bin/sym -p root.properties --run-sql insert_sample.sql</command>
                     </para>
                 </step>
                 <step>
@@ -366,7 +398,7 @@
                 <step>
                     <para>Start the root node server.</para>
                     <para>
-                        <command>symmetric -p root.properties --port 8080 --server</command>
+                        <command>../bin/sym -p root.properties --port 8080 --server</command>
                     </para>
                     <para>
                         The root node server starts up and creates all the triggers that were
@@ -377,7 +409,7 @@
                 <step>
                     <para>Start the client node server.</para>
                     <para>
-                        <command>symmetric -p client.properties --port 9090 --server</command>
+                        <command>../bin/sym -p client.properties --port 9090 --server</command>
                     </para>
                     <para>
                         The client node server starts up and uses the auto-creation feature to
@@ -405,7 +437,7 @@
                     <para>Open registration for the client node server.</para>
                     <para>
                         <command>
-                            symmetric -p root.properties --open-registration "store,1"
+                            ../bin/sym -p root.properties --open-registration "store,1"
                         </command>
                     </para>
                     <para>
@@ -440,7 +472,7 @@
                 <step>
                     <para>Send an initial load of data to the client node server.</para>
                     <para>
-                        <command>symmetric -p root.properties --reload-node 1</command>
+                        <command>../bin/sym -p root.properties --reload-node 1</command>
                     </para>
                     <para>
                         With this command, the root node queues up an initial load for the client
