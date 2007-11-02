@@ -92,41 +92,44 @@
             <section>
                 <title>Transaction Awareness</title>
                 <para>
-                Many databases provide a unique transaction identifier associated with the 
-                rows that are committed together.  SymmetricDS stores the transaction ID
-                along with the data that changed so it can play back the transaction exactly
-                the way it happened.  This means the target database maintains the same
-                integrity as its source.  Support for transaction ID is included in the Database
-                Dialects for both MySQL and Oracle in this release.
+                    Many databases provide a unique transaction identifier associated with the rows
+                    that are committed together. SymmetricDS stores the transaction ID along with
+                    the data that changed so it can play back the transaction exactly the way it
+                    happened. This means the target database maintains the same integrity as its
+                    source. Support for transaction ID is included in the Database Dialects for both
+                    MySQL and Oracle in this release.
                 </para>
             </section>
             <section>
                 <title>Data Filtering and Rerouting</title>
                 <para>
-                Data can be filtered as it is recorded, extracted, and loaded.
-                Columns can be excluded from synchronization so they are never recorded when
-                the table is changed.  As data changes are extracted from the source database,
-                a class implementing <literal>IExtractorListener</literal> is called to
-                filter data or route it somewhere else.  As data changes are loaded in the
-                target database, a class implementing <literal>IDataLoaderFilter</literal>
-                can filter data or route it somewhere else.  For example, an employee 
-                table may be synchronized to a retail store database, but the employee's
-                password is only synchronized on the initial insert.
-                Another example is routing credit card data to a secure database and filtering
-                it out as it loads into a central office database.
+                    Data can be filtered as it is recorded, extracted, and loaded. Columns can be
+                    excluded from synchronization so they are never recorded when the table is
+                    changed. As data changes are extracted from the source database, a class
+                    implementing
+                    <literal>IExtractorListener</literal>
+                    is called to filter data or route it somewhere else. As data changes are loaded
+                    in the target database, a class implementing
+                    <literal>IDataLoaderFilter</literal>
+                    can filter data or route it somewhere else. For example, an employee table may
+                    be synchronized to a retail store database, but the employee's password is only
+                    synchronized on the initial insert. Another example is routing credit card data
+                    to a secure database and filtering it out as it loads into a central office
+                    database.
                 </para>
             </section>
             <section>
                 <title>HTTP Transport</title>
                 <para>
-                    By default, SymmetricDS uses web-based HTTP in a style called Representation State 
-                    Transfer (REST) that is lightweight and easy to manage.
-                    A series of filters are also provided to enforce authentication and to
-                    restrict the number of simultaneous syncrhonization streams.
-                    The <literal>ITransportManager</literal> interface allows other transports to
-                    be implemented.  (The unit tests for SymmetricDS take advantage of this
-                    by using an <literal>InternalTransportManager</literal> that makes it easy
-                    to run automated tests locally.)
+                    By default, SymmetricDS uses web-based HTTP in a style called Representation
+                    State Transfer (REST) that is lightweight and easy to manage. A series of
+                    filters are also provided to enforce authentication and to restrict the number
+                    of simultaneous syncrhonization streams. The
+                    <literal>ITransportManager</literal>
+                    interface allows other transports to be implemented. (The unit tests for
+                    SymmetricDS take advantage of this by using an
+                    <literal>InternalTransportManager</literal>
+                    that makes it easy to run automated tests locally.)
                 </para>
             </section>
             <section>
@@ -134,10 +137,9 @@
                 <para>
                     Administration functions are exposed through Java Management Extensions (JMX)
                     that can be accessed from the Java JConsole or through an application server.
-                    Functions include opening registration, reloading data, purging old data,
-                    and viewing batches.
-                    A number of configuration and runtime properties are available to be viewed
-                    as well. 
+                    Functions include opening registration, reloading data, purging old data, and
+                    viewing batches. A number of configuration and runtime properties are available
+                    to be viewed as well.
                 </para>
             </section>
         </section>
@@ -592,6 +594,12 @@
                 <table>
                     <title>Node</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -717,6 +725,12 @@
                 <table>
                     <title>Node Security</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -779,6 +793,12 @@
                 <table>
                     <title>Node Group</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -824,6 +844,12 @@
                 <table>
                     <title>Node Group Link</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -878,6 +904,12 @@
                 <table>
                     <title>Channel</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -895,8 +927,9 @@
                                 <entry>N</entry>
                                 <entry>PK</entry>
                                 <entry></entry>
-                                <entry>A unique identifer, usually named something
-                                    meaningful, like "sales" or "inventory".
+                                <entry>
+                                    A unique identifer, usually named something meaningful, like
+                                    "sales" or "inventory".
                                 </entry>
                             </row>
                             <row>
@@ -914,8 +947,8 @@
                                 <entry></entry>
                                 <entry>1000</entry>
                                 <entry>
-                                    The maximum number of Data Events to process within a batch
-                                    for this channel.
+                                    The maximum number of Data Events to process within a batch for
+                                    this channel.
                                 </entry>
                             </row>
                             <row>
@@ -932,7 +965,9 @@
                                 <entry>Y</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>Description on the type of data carried in this channel.</entry>
+                                <entry>
+                                    Description on the type of data carried in this channel.
+                                </entry>
                             </row>
                         </tbody>
                     </tgroup>
@@ -942,15 +977,21 @@
         <section>
             <title>Node Channel Control</title>
             <para>
-                The Node Channel Control is used to ignore or suspend a channel.
-                A channel that is ignored will have its Data Events batched and they will
-                immediately be marked as "OK" without sending them.  A channel that is suspended
-                is skipped when batching Data Events.
+                The Node Channel Control is used to ignore or suspend a channel. A channel that is
+                ignored will have its Data Events batched and they will immediately be marked as
+                "OK" without sending them. A channel that is suspended is skipped when batching Data
+                Events.
             </para>
             <para>
                 <table>
                     <title>Node Channel Control</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -976,8 +1017,9 @@
                                 <entry>N</entry>
                                 <entry>PK FK</entry>
                                 <entry></entry>
-                                <entry>A unique identifer, usually named something
-                                    meaningful, like "sales" or "inventory".
+                                <entry>
+                                    A unique identifer, usually named something meaningful, like
+                                    "sales" or "inventory".
                                 </entry>
                             </row>
                             <row>
@@ -987,8 +1029,8 @@
                                 <entry></entry>
                                 <entry>0</entry>
                                 <entry>
-                                    Indicates if this channel is suspended, which prevents its
-                                    Data Events from being batched. 
+                                    Indicates if this channel is suspended, which prevents its Data
+                                    Events from being batched.
                                 </entry>
                             </row>
                             <row>
@@ -998,8 +1040,8 @@
                                 <entry></entry>
                                 <entry>0</entry>
                                 <entry>
-                                    Indicates if this channel is ignored, which marks its
-                                    Data Events as if they were actually processed.
+                                    Indicates if this channel is ignored, which marks its Data
+                                    Events as if they were actually processed.
                                 </entry>
                             </row>
                         </tbody>
@@ -1018,6 +1060,12 @@
                 <table>
                     <title>Trigger</title>
                     <tgroup cols="6">
+                        <colspec colwidth="115px" />
+                        <colspec colwidth="65px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="25px" />
+                        <colspec colwidth="40px" />
+                        <colspec colwidth="250px" />
                         <thead>
                             <row>
                                 <entry>Column Name</entry>
@@ -1052,8 +1100,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                The name of the source table that will have a trigger installed to
-                                watch for data changes.
+                                    The name of the source table that will have a trigger installed
+                                    to watch for data changes.
                                 </entry>
                             </row>
                             <row>
@@ -1062,9 +1110,7 @@
                                 <entry>Y</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>
-                                The schema name where the target table resides.
-                                </entry>
+                                <entry>The schema name where the target table resides.</entry>
                             </row>
                             <row>
                                 <entry>target_table_name</entry>
@@ -1073,8 +1119,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                The name of the target table that will have data changes
-                                synchronized to it.
+                                    The name of the target table that will have data changes
+                                    synchronized to it.
                                 </entry>
                             </row>
                             <row>
@@ -1084,8 +1130,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                The node group that will install this trigger to watch
-                                for data changes,
+                                    The node group that will install this trigger to watch for data
+                                    changes,
                                 </entry>
                             </row>
                             <row>
@@ -1095,7 +1141,7 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                The node group that will have data changes synchronized to it.
+                                    The node group that will have data changes synchronized to it.
                                 </entry>
                             </row>
                             <row>
@@ -1104,9 +1150,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>
-                                The channel that data changes will flow through.
-                                </entry>
+                                <entry>The channel that data changes will flow through.</entry>
                             </row>
                             <row>
                                 <entry>sync_on_update</entry>
@@ -1114,9 +1158,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry>1</entry>
-                                <entry>
-                                Whether or not to install an update trigger.
-                                </entry>
+                                <entry>Whether or not to install an update trigger.</entry>
                             </row>
                             <row>
                                 <entry>sync_on_insert</entry>
@@ -1124,9 +1166,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry>1</entry>
-                                <entry>
-                                Whether or not to install an insert trigger.
-                                </entry>
+                                <entry>Whether or not to install an insert trigger.</entry>
                             </row>
                             <row>
                                 <entry>sync_on_delete</entry>
@@ -1134,9 +1174,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry>1</entry>
-                                <entry>
-                                Whether or not to install a delete trigger.
-                                </entry>
+                                <entry>Whether or not to install a delete trigger.</entry>
                             </row>
                             <row>
                                 <entry>sync_on_incoming_batch</entry>
@@ -1145,9 +1183,9 @@
                                 <entry></entry>
                                 <entry>0</entry>
                                 <entry>
-                                Whether or not an incoming batch that loads data into this table
-                                should cause the triggers to capture Data Events.
-                                Be careful turning this on, because an update loop is possible.
+                                    Whether or not an incoming batch that loads data into this table
+                                    should cause the triggers to capture Data Events. Be careful
+                                    turning this on, because an update loop is possible.
                                 </entry>
                             </row>
                             <row>
@@ -1157,7 +1195,7 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Override the default generated name for the update trigger.
+                                    Override the default generated name for the update trigger.
                                 </entry>
                             </row>
                             <row>
@@ -1167,7 +1205,7 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Override the default generated name for the insert trigger.
+                                    Override the default generated name for the insert trigger.
                                 </entry>
                             </row>
                             <row>
@@ -1177,7 +1215,7 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Override the default generated name for the delete trigger.
+                                    Override the default generated name for the delete trigger.
                                 </entry>
                             </row>
                             <row>
@@ -1187,8 +1225,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a condition for the update trigger firing using an expression
-                                specific to the database.
+                                    Specify a condition for the update trigger firing using an
+                                    expression specific to the database.
                                 </entry>
                             </row>
                             <row>
@@ -1198,8 +1236,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a condition for the insert trigger firing using an expression
-                                specific to the database.
+                                    Specify a condition for the insert trigger firing using an
+                                    expression specific to the database.
                                 </entry>
                             </row>
                             <row>
@@ -1209,8 +1247,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a condition for the delete trigger firing using an expression
-                                specific to the database.
+                                    Specify a condition for the delete trigger firing using an
+                                    expression specific to the database.
                                 </entry>
                             </row>
                             <row>
@@ -1220,8 +1258,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a where-clause for an initial load of this table.
-                                The table is aliased as "t".
+                                    Specify a where-clause for an initial load of this table. The
+                                    table is aliased as "t".
                                 </entry>
                             </row>
                             <row>
@@ -1231,8 +1269,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a where-clause for selecting the nodes that will receive
-                                data changes.  The node table is aliased as "c".
+                                    Specify a where-clause for selecting the nodes that will receive
+                                    data changes. The node table is aliased as "c".
                                 </entry>
                             </row>
                             <row>
@@ -1242,8 +1280,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Override the default expression for the transaction identifier
-                                that groups the data changes that were committed together.
+                                    Override the default expression for the transaction identifier
+                                    that groups the data changes that were committed together.
                                 </entry>
                             </row>
                             <row>
@@ -1253,8 +1291,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Specify a comma-delimited list of columns that should not be
-                                synchronized from this table.
+                                    Specify a comma-delimited list of columns that should not be
+                                    synchronized from this table.
                                 </entry>
                             </row>
                             <row>
@@ -1264,7 +1302,8 @@
                                 <entry></entry>
                                 <entry>1</entry>
                                 <entry>
-                                Order sequence of this table when an initial load is sent to a node.
+                                    Order sequence of this table when an initial load is sent to a
+                                    node.
                                 </entry>
                             </row>
                             <row>
@@ -1273,9 +1312,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>
-                                Timestamp when this entry was created.
-                                </entry>
+                                <entry>Timestamp when this entry was created.</entry>
                             </row>
                             <row>
                                 <entry>inactive_time</entry>
@@ -1284,8 +1321,8 @@
                                 <entry></entry>
                                 <entry></entry>
                                 <entry>
-                                Timestamp when this entry was inactivated, which stops
-                                capturing of data changes.
+                                    Timestamp when this entry was inactivated, which stops capturing
+                                    of data changes.
                                 </entry>
                             </row>
                             <row>
@@ -1294,9 +1331,7 @@
                                 <entry>Y</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>
-                                The user who last updated this entry.
-                                </entry>
+                                <entry>The user who last updated this entry.</entry>
                             </row>
                             <row>
                                 <entry>last_updated_time</entry>
@@ -1304,9 +1339,7 @@
                                 <entry>N</entry>
                                 <entry></entry>
                                 <entry></entry>
-                                <entry>
-                                Timestamp when a user last updated this entry.
-                                </entry>
+                                <entry>Timestamp when a user last updated this entry.</entry>
                             </row>
                         </tbody>
                     </tgroup>
