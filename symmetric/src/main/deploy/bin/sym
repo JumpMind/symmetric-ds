@@ -12,5 +12,4 @@ then
    RUNJAVA="$JAVA_HOME/bin/java"
 fi
 
-shift
 exec "$RUNJAVA" -jar "$LIBDIR/symmetric-ds-1.0.0.jar" "$@"
