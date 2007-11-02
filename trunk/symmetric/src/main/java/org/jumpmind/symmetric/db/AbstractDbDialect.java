@@ -369,7 +369,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
             boolean createTables = false;
             for (Table table : tables) {
-                table.setName(tblPrefix.toUpperCase() + table.getName().toUpperCase());
+                table.setName(tblPrefix + table.getName().toLowerCase());
                 fixForeignKeys(table, tblPrefix, false);
 
                 if (getMetaDataFor(getDefaultSchema(), table.getName().toUpperCase(), false) == null) {
