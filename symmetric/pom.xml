@@ -16,12 +16,12 @@
     </description>
     <scm>
         <connection>
-            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
         </connection>
         <developerConnection>
-            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
         </developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/symmetric/trunk</url>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</url>
     </scm>
     <issueManagement>
         <system>SourceForge</system>
