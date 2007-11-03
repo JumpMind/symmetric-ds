@@ -21,6 +21,8 @@ Features
    
   * <<HTTP Transport>> - Pluggable transport defaults to Representation State Transfer (REST-style) HTTP services
   
+  * <<Payload Compression>> - Optionally compresses data on transport
+  
   * <<Notification Schemes>> - Push (trickle-back data) or Pull (trickle-poll data) changes
   
   * <<Symmetric Data Protocol>> - A fast streaming data format that is easy to generate, parse, and load
