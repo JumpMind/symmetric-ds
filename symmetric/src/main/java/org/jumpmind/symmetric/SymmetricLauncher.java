@@ -21,6 +21,7 @@ package org.jumpmind.symmetric;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -75,6 +77,8 @@ public class SymmetricLauncher {
     private static final String OPTION_PROPERTIES_FILE = "properties";
 
     private static final String OPTION_START_SERVER = "server";
+    
+    private static final String OPTION_LOAD_BATCH = "load-batch";
 
     public static void main(String[] args) throws Exception {
         CommandLineParser parser = new PosixParser();
@@ -142,6 +146,10 @@ public class SymmetricLauncher {
                 runSql(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
                 return;
             }
+            
+            if (line.hasOption(OPTION_LOAD_BATCH)) {
+                loadBatch(new SymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
+            }
 
             if (line.hasOption(OPTION_START_SERVER)) {
                 new SymmetricWebServer().start(serverPort);
@@ -198,6 +206,8 @@ public class SymmetricLauncher {
                         "Send an initial load of data to reload the passed in node id.");
         options.addOption("d", OPTION_DUMP_BATCH, true,
                 "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
+        options.addOption("b", OPTION_LOAD_BATCH, true,
+        "Load the CSV contents of the specfied file.");
 
         return options;
     }
@@ -208,6 +218,20 @@ public class SymmetricLauncher {
         IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
         dataExtractorService.extractBatchRange(transport, batchId, batchId);
         transport.close();
+    }
+    
+    private static void loadBatch(SymmetricEngine engine, String fileName) throws Exception {
+        IDataLoaderService service = (IDataLoaderService)engine.getApplicationContext().getBean(Constants.DATALOADER_SERVICE);
+        File file = new File(fileName);
+        if (file.exists() && file.isFile()) {
+            FileInputStream in = new FileInputStream(file);
+            service.loadData(in, System.out);
+            System.out.flush();
+            in.close();
+
+        } else {
+            throw new FileNotFoundException("Could not find " + fileName);
+        }
     }
 
     private static void openRegistration(SymmetricEngine engine, String argument) {
