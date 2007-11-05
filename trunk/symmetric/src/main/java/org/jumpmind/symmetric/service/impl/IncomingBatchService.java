@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,6 +40,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     private static final Log logger = LogFactory.getLog(IncomingBatchService.class);
 
     private String findIncomingBatchSql;
+
+    private String findIncomingBatchErrorsSql;
 
     private String findIncomingBatchHistorySql;
 
@@ -57,6 +60,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
+        return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
+                findIncomingBatchErrorsSql, maxRows), new IncomingBatchMapper());        
     }
 
     @SuppressWarnings("unchecked")
@@ -104,6 +113,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setBatchId(rs.getString(1));
             batch.setNodeId(rs.getString(2));
             batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(3)));
+            batch.setCreateTime(rs.getTimestamp(4));
             return batch;
         }
     }
@@ -147,6 +157,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void setSkipDuplicateBatches(boolean skipDuplicateBatchesEnabled) {
         this.skipDuplicateBatches = skipDuplicateBatchesEnabled;
+    }
+
+    public void setFindIncomingBatchErrorsSql(String findIncomingBatchErrorsSql) {
+        this.findIncomingBatchErrorsSql = findIncomingBatchErrorsSql;
     }
 
 }

@@ -215,21 +215,29 @@
         </property>
         <property name="selectOutgoingBatchSql">
             <value>
-                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, 1
+                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 1
                   from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status in ('NE','SE') 
                   and b.channel_id not in 
                   (select distinct e.channel_id from ${sync.table.prefix}_outgoing_batch e where e.status = 'ER' and e.node_id = b.node_id)
                 union
-                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, 2
-                  from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status = 'ER' order by 6, 1
+                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 2
+                  from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status = 'ER' order by 7, 1
             </value>
         </property>
         <property name="selectOutgoingBatchRangeSql">
             <value>
-                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type
-                from ${sync.table.prefix}_outgoing_batch b
-                where b.batch_id between ? and ?
-                order by b.batch_id
+                select batch_id, node_id, channel_id, status, batch_type
+                from ${sync.table.prefix}_outgoing_batch
+                where batch_id between ? and ?
+                order by batch_id
+            </value>
+        </property>
+        <property name="selectOutgoingBatchErrorsSql">
+            <value>
+                select batch_id, node_id, channel_id, status, batch_type, create_time
+                from ${sync.table.prefix}_outgoing_batch
+                where status = 'ER'
+                order by batch_id
             </value>
         </property>
         <property name="changeBatchStatusSql">
@@ -314,8 +322,15 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="findIncomingBatchSql">
             <value>
-                select batch_id, node_id, status from ${sync.table.prefix}_incoming_batch where
-                batch_id = ? and node_id = ?
+                select batch_id, node_id, status, create_time from 
+                ${sync.table.prefix}_incoming_batch where batch_id = ? and node_id = ?
+            </value>
+        </property>
+        <property name="findIncomingBatchErrorsSql">
+            <value>
+                select batch_id, node_id, status, create_time from 
+                ${sync.table.prefix}_incoming_batch where status = 'ER'
+                order by batch_id
             </value>
         </property>
         <property name="findIncomingBatchHistorySql">

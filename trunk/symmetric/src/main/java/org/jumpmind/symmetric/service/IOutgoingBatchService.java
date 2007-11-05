@@ -35,6 +35,8 @@ public interface IOutgoingBatchService {
 
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId);
 
+    public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows);
+    
     public void markOutgoingBatchSent(OutgoingBatch batch);
 
     public void setBatchStatus(String batchId, Status status);

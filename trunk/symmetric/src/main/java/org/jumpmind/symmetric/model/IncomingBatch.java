@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 
@@ -38,6 +39,8 @@ public class IncomingBatch implements Serializable {
     private String nodeId;
 
     private Status status;
+    
+    private Date createTime;
 
     private boolean isRetry;
 
@@ -84,6 +87,14 @@ public class IncomingBatch implements Serializable {
 
     public void setRetry(boolean isRetry) {
         this.isRetry = isRetry;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
 }
