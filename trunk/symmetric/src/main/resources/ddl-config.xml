@@ -68,6 +68,10 @@
         <foreign-key name="fk_de_batch_id" foreignTable="outgoing_batch">
             <reference local="batch_id" foreign="batch_id" />
         </foreign-key>
+        <index name="idx_de_batchid_nodeid">
+            <index-column name="batch_id" />
+            <index-column name="node_id" />
+        </index>        
     </table>
 
     <table name="node_group">
