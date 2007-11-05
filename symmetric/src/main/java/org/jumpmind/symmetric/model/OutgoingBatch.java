@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class OutgoingBatch implements Serializable {
@@ -41,6 +42,8 @@ public class OutgoingBatch implements Serializable {
     private Status status = Status.NE;
 
     private BatchType batchType = BatchType.EVENTS;
+    
+    private Date createTime;
 
     public OutgoingBatch() {
     }
@@ -52,6 +55,9 @@ public class OutgoingBatch implements Serializable {
         this.batchType = batchType;
     }
     
+    public String getNodeBatchId() {
+        return nodeId + "-" + batchId;
+    }
 
     public String getBatchId() {
         return batchId;
@@ -111,6 +117,14 @@ public class OutgoingBatch implements Serializable {
         } else {
             batchType = null;
         }
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
 }

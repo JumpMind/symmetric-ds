@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -56,6 +57,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private String selectOutgoingBatchSql;
 
     private String selectOutgoingBatchRangeSql;
+    
+    private String selectOutgoingBatchErrorsSql;
     
     private String changeBatchStatusSql;
 
@@ -198,35 +201,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
         return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId, nodeId },
-                new RowMapper() {
-                    public Object mapRow(ResultSet rs, int index) throws SQLException {
-                        OutgoingBatch batch = new OutgoingBatch();
-                        batch.setBatchId(rs.getString(1));
-                        batch.setNodeId(rs.getString(2));
-                        batch.setChannelId(rs.getString(3));
-                        batch.setStatus(rs.getString(4));
-                        batch.setBatchType(rs.getString(5));
-                        return batch;
-                    }
-                });
+                new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
         return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql,
-                new Object[] { startBatchId, endBatchId }, new RowMapper() {
-                    public Object mapRow(ResultSet rs, int index) throws SQLException {
-                        OutgoingBatch batch = new OutgoingBatch();
-                        batch.setBatchId(rs.getString(1));
-                        batch.setNodeId(rs.getString(2));
-                        batch.setChannelId(rs.getString(3));
-                        batch.setStatus(rs.getString(4));
-                        batch.setBatchType(rs.getString(5));
-                        return batch;
-                    }
-                });
+                new Object[] { startBatchId, endBatchId }, new OutgoingBatchMapper());
     }
 
+    @SuppressWarnings("unchecked")
+    public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(new MaxRowsStatementCreator(
+                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());        
+    }
+    
     public void markOutgoingBatchSent(OutgoingBatch batch) {
         setBatchStatus(batch.getBatchId(), Status.SE);
     }
@@ -263,6 +252,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
         return returnValue;
+    }
+
+    class OutgoingBatchMapper implements RowMapper {
+        public Object mapRow(ResultSet rs, int num) throws SQLException {
+            OutgoingBatch batch = new OutgoingBatch();
+            batch.setBatchId(rs.getString(1));
+            batch.setNodeId(rs.getString(2));
+            batch.setChannelId(rs.getString(3));
+            batch.setStatus(rs.getString(4));
+            batch.setBatchType(rs.getString(5));
+            batch.setCreateTime(rs.getTimestamp(6));
+            return batch;
+        }
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {
@@ -303,6 +305,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setSelectOutgoingBatchRangeSql(String selectOutgoingBatchRangeSql) {
         this.selectOutgoingBatchRangeSql = selectOutgoingBatchRangeSql;
+    }
+
+    public void setSelectOutgoingBatchErrorsSql(String selectOutgoingBatchErrorsSql) {
+        this.selectOutgoingBatchErrorsSql = selectOutgoingBatchErrorsSql;
     }
 
 }

@@ -428,5 +428,10 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>rome</groupId>
+            <artifactId>rome</artifactId>
+            <version>0.9</version>
+        </dependency>
     </dependencies>
 </project>
