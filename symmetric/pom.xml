@@ -109,6 +109,12 @@
             <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs</url>
         </site>
     </distributionManagement>
+    <properties>
+        <surefire-report-release-version>2.4-collab-SNAPSHOT</surefire-report-release-version>
+        <springframework-release-version>2.0.5</springframework-release-version>
+        <docbook.source>${basedir}/src/docbook</docbook.source>
+        <docbook.target>${basedir}/target/site/guide</docbook.target>
+    </properties>
     <build>
         <finalName>symmetric-ds</finalName>
         <plugins>
@@ -217,13 +223,24 @@
                 <artifactId>docbkx-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>generate-html</goal>
-                            <goal>generate-pdf</goal>
-                        </goals>
                         <phase>pre-site</phase>
+                        <goals>
+                            <goal>generate-pdf</goal>
+                            <goal>generate-html</goal>
+                        </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <sourceDirectory>${docbook.source}</sourceDirectory>
+                    <targetDirectory>${docbook.target}</targetDirectory>
+                    <xincludeSupported>true</xincludeSupported>
+                    <includes>*.xml</includes>
+                    <imgSrcPath>${docbook.source}/images</imgSrcPath>
+                    <admonGraphicsPath>${docbook.source}/resources/images/admons/</admonGraphicsPath>
+                    <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl</foCustomization>
+                    <chunkedOutput>false</chunkedOutput>
+                    <htmlCustomization>${docbook.source}/resources/xsl/docbook-html.xsl</htmlCustomization>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.docbook</groupId>
@@ -232,12 +249,6 @@
                         <scope>runtime</scope>
                     </dependency>
                 </dependencies>
-                <configuration>
-                    <sourceDirectory>${basedir}/src/docbook</sourceDirectory>
-                    <targetDirectory>${basedir}/target/site/guide</targetDirectory>
-                    <inputs>user-guide.xml</inputs>
-                    <chunkedOutput>false</chunkedOutput>
-                </configuration>                
             </plugin>
         </plugins>
     </build>
@@ -418,8 +429,4 @@
             <version>5.0.5</version>
         </dependency>
     </dependencies>
-    <properties>
-        <surefire-report-release-version>2.4-collab-SNAPSHOT</surefire-report-release-version>
-        <springframework-release-version>2.0.5</springframework-release-version>
-    </properties>
 </project>
