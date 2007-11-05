@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch04-architecture" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Architecture</title>
+    <para>
+        <figure>
+            <title>Software Stack</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </para>
+    <section>
+        <title>Software Components</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Deployment Options</title>
+        <para></para>
+    </section>
+</chapter>
