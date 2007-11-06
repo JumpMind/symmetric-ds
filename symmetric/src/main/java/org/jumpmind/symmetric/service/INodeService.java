@@ -32,11 +32,11 @@ public interface INodeService {
 
     public Node findNode(String nodeId);
     
-    public Node findNodeByExternalId(String externalId);
+    public Node findNodeByExternalId(String nodeGroupId, String externalId);
     
     public NodeSecurity findNodeSecurity(String nodeId);
     
-    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
    

@@ -169,7 +169,7 @@ public class IntegrationTest {
     @Test(groups = "integration", dependsOnMethods="testSyncUpdateCondition")
     public void testIgnoreNodeChannel() {
         INodeService nodeService = (INodeService)rootEngine.getApplicationContext().getBean("nodeService");
-        nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201,
                 "Charlie Dude", "1", "300 Grub Street", "New Yorl", "NY",
                 90009, new Date() });
@@ -179,7 +179,7 @@ public class IntegrationTest {
                         clientJdbcTemplate
                                 .queryForInt("select count(*) from test_customer where customer_id=201"),
                         0, "The customer was sync'd to the client.");
-        nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         
     }       
 

@@ -71,14 +71,14 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     @SuppressWarnings("unchecked")
-    public Node findNodeByExternalId(String externalId) {
-        List<Node> list = jdbcTemplate.query(findNodeByExternalIdSql, new Object[] { externalId },
+    public Node findNodeByExternalId(String nodeGroupId, String externalId) {
+        List<Node> list = jdbcTemplate.query(findNodeByExternalIdSql, new Object[] { nodeGroupId, externalId },
                 new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
     
-    public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String externalId) {
-       Node node = findNodeByExternalId(externalId);
+    public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String nodeGroupId, String externalId) {
+       Node node = findNodeByExternalId(nodeGroupId, externalId);
        if (jdbcTemplate.update(nodeChannelControlIgnoreSql, new Object[] { enabled, node.getNodeId(), channelId}) == 0) {           
            jdbcTemplate.update(insertNodeChannelControlSql, new Object[] { node.getNodeId(), channelId, enabled, false});           
        }
