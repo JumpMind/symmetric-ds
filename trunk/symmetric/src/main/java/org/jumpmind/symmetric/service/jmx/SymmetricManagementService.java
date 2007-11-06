@@ -142,9 +142,10 @@ public class SymmetricManagementService {
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
             @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),
+            @ManagedOperationParameter(name = "nodeGroupId", description = "The node group id for a node"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
-    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId) {
-        nodeService.ignoreNodeChannelForExternalId(ignore, channelId, externalId);
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId) {
+        nodeService.ignoreNodeChannelForExternalId(ignore, channelId, nodeGroupId, externalId);
     }
 
     @ManagedOperation(description = "Open the registration for a node with the specified external id")
@@ -152,7 +153,7 @@ public class SymmetricManagementService {
             @ManagedOperationParameter(name = "nodeGroup", description = "The node group id this node will belong to"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for the node") })
     public void openRegistration(String nodeGroupId, String externalId) {
-        Node node = nodeService.findNodeByExternalId(externalId);
+        Node node = nodeService.findNodeByExternalId(nodeGroupId, externalId);
         if (node != null) {
             registrationService.reOpenRegistration(node.getExternalId());
         } else {

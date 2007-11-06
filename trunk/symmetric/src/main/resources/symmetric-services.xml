@@ -393,7 +393,7 @@
         <property name="findNodeByExternalIdSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-                database_type, database_version from ${sync.table.prefix}_node where external_id = ?
+                database_type, database_version from ${sync.table.prefix}_node where node_group_id=? and external_id = ?
             </value>
         </property>
         <property name="findNodeSecuritySql">
