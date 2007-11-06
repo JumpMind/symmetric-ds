@@ -20,7 +20,6 @@
     <xsl:param name="callout.extension">1</xsl:param>
     <xsl:param name="graphicsize.extension">0</xsl:param>
     <xsl:param name="keep.relative.image.uris" select="1"></xsl:param>
-    <xsl:param name="img.src.path">./</xsl:param>
     
     <!--###################################################
                      Table Of Contents
@@ -103,9 +102,8 @@
         <div id="banner">
             <a style="border:none;" href="http://www.symmetricds.org/"
                title="SymmetricDS User Guide">
-                <img style="border:none;"
-                  width="455" height="69" alt="SymmetricDS"
-                  src="images/banner_logo.gif"/>
+                <img style="border:none;" alt="SymmetricDS"
+                  src="images/banner-logo.gif"/>
             </a>
         </div>
     </xsl:template>

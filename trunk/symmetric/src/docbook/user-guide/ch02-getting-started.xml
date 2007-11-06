@@ -90,13 +90,13 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
     </section>
     <section>
         <title>Creating and Populating Your Databases</title>
-        <note>
+        <important>
             <para>
                 You must first create the databases for your root and client nodes using the
                 administration tools provided by your database vendor. Make sure the name of the
                 databases you create match the settings in the properties files.
             </para>
-        </note>
+        </important>
         <para>
             Create and load the root node tables with sample data and the synchronization
             configuration. Create the tables in the client node database to prepare it.

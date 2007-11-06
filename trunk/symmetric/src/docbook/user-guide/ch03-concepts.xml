@@ -9,7 +9,16 @@
     <title>Concepts</title>
     <section>
         <title>Data Model</title>
-        <para></para>
+        <para>
+            <figure>
+                <title>Data Model - Configuration</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/data-model-config.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
     </section>
     <section>
         <title>Node</title>
