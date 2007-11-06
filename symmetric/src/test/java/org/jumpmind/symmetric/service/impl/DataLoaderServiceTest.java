@@ -191,7 +191,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertEquals(list.size(), 2, "Wrong number of history");
         history = list.get(1);
         Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        Assert.assertEquals(history.getFailedRowNumber(), 2, "Wrong failed row number");
+        Assert.assertEquals(history.getFailedRowNumber(), 0, "Wrong failed row number");
         Assert.assertEquals(history.getStatementCount(), 0, "Wrong statement count");
     }
 
