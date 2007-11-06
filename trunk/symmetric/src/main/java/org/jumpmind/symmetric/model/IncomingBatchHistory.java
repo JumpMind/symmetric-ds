@@ -87,7 +87,7 @@ public class IncomingBatchHistory implements Serializable {
         endTime = new Date();
         if (! isSuccess) {
             status = Status.ER;
-            failedRowNumber = statistics.getLineCount();
+            failedRowNumber = statistics.getStatementCount();
         }
     }    
 
