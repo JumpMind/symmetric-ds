@@ -1,13 +1,12 @@
 #banner {
-  background: transparent url( ../images/banner_1.jpg ) no-repeat scroll left top;
-  height: 75px;
+  background: transparent url( ../images/banner-bg.gif ) no-repeat scroll left top;
   border-bottom: 1px solid #fff;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: url( ../images/book_bg.gif ) top left repeat-x;
+  background: url( ../images/book-bg.gif ) top left repeat-x;
   font-family: Verdana, Arial, helvetica, sans-serif;
 }
 
@@ -89,7 +88,7 @@ ul, ol, li {
 }
 
 ul li, ol li {
-  list-style-image: url( ../images/bullet.png );
+  list-style-image: url( ../images/bullet.gif );
 }
 
 hr {
@@ -374,6 +373,19 @@ span.application {
   font-size: 100%;
   padding-top: 0;
   margin-left: 20px;
+}
+
+.important {
+  background: #FFF8DE url( ../images/important.gif ) no-repeat scroll 10px 12px;
+  border: 1px solid #EE8C00;
+  padding: 10px;
+  margin: 25px 20px;
+}
+
+.important .title {
+  font-size: 100%;
+  padding-top: 0;
+  margin-left: 40px;
 }
 
 .note {

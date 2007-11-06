@@ -31,7 +31,7 @@
                     <fo:table-row>
                         <fo:table-cell text-align="center">
                             <fo:block>
-                                <fo:external-graphic src="./src/docbook/resources/images/banner_logo.gif"/>
+                                <fo:external-graphic src="./src/docbook/resources/images/banner-logo.gif"/>
                             </fo:block>
                             <fo:block font-family="Helvetica" font-size="32pt"
                                       font-weight="bold" padding-before="60mm">

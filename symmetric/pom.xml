@@ -235,11 +235,30 @@
                     <targetDirectory>${docbook.target}</targetDirectory>
                     <xincludeSupported>true</xincludeSupported>
                     <includes>*.xml</includes>
-                    <imgSrcPath>${docbook.source}/images</imgSrcPath>
+                    <!-- <imgSrcPath>${docbook.source}/images</imgSrcPath> -->
                     <admonGraphicsPath>${docbook.source}/resources/images/admons/</admonGraphicsPath>
                     <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl</foCustomization>
+                    
                     <chunkedOutput>false</chunkedOutput>
+                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
                     <htmlCustomization>${docbook.source}/resources/xsl/docbook-html.xsl</htmlCustomization>
+                    <postProcess>
+                        <copy todir="${docbook.target}">
+                            <fileset dir="${docbook.source}/resources">
+                                <include name="images/*.png" />
+                                <include name="images/*.gif" />
+                                <include name="images/*.jpg" />
+                            </fileset>
+                            <fileset dir="${docbook.source}/resources">
+                                <include name="css/*.css" />
+                            </fileset>
+                        </copy>
+                        <copy todir="${docbook.target}/images" flatten="true">
+                            <fileset dir="${docbook.source}">
+                                <include name="**/images/*" />
+                            </fileset>
+                        </copy>
+                    </postProcess>
                 </configuration>
                 <dependencies>
                     <dependency>
