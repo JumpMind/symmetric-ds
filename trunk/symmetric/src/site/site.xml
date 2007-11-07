@@ -17,40 +17,39 @@
                 href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
         </links>
 
-        <menu name="Project Info" href="maven-reports.html">
+        <menu name="About">
             <item name="Overview" href="/index.html" />
             <item name="Features" href="/features.html" />
-            <item name="Terminology" href="/terminology.html" />
             <item name="News" href="/news.html" />
-            <!--                    
-            <item name="Support" href="/support.html"/>
-            -->
-            <item name="Project License" href="/license.html" />
-            <item name="Project Team" href="/team-list.html" />
+            <item name="Roadmap" href="/roadmap.html" />
+            <item name="License" href="/license.html" />
+            <item name="Team" href="/team-list.html" />
         </menu>
 
         <menu name="Documentation">
             <item name="Getting Started" href="getting_started.html" />
             <item name="JavaDoc" href="apidocs/index.html" />
+            <item name="Code Samples" href="/samples.html" />
         </menu>
 
-        <menu name="Community" href="maven-reports.html">
+        <menu name="Community">
             <item name="SourceForge Home" href="http://sourceforge.net/projects/symmetricds/" />
-            <item name="Mailing Lists" href="/mail-lists.html" />
-            <item name="Issue Tracking" href="/issue-tracking.html" />
-            <item name="Roadmap" href="/roadmap.html" />
+            <item name="Forums" href="http://sourceforge.net/forum/?group_id=206470" />
+            <item name="Bugs" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997724" />
+            <item name="Feature Requests" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727" />
+            <item name="Support Requests" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997725" />
+            <item name="Patches" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997726" />
         </menu>
 
-        <menu name="Code" href="maven-reports.html">
+        <menu name="Code">
             <item name="Download"
                 href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
-            <item name="Code Samples" href="/samples.html" />
-            <item name="Source Repository" href="/source-repository.html" />
+            <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
             <item name="Browsable Source Code" href="/jxr.html" />
-            <item name="TODO List" href="/taglist.html" />
+            <item name="Todo List" href="/taglist.html" />
         </menu>
 
-        <menu name="Project Reports" href="maven-reports.html">
+        <menu name="Reports">
             <item name="Test Report" href="surefire-report.html" />
             <item name="JDepends Report" href="jdepend-report.html" />
         </menu>
