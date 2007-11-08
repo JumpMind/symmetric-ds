@@ -148,7 +148,7 @@ public class TableTemplate {
     }
 
     private Object[] filterValues(Column[] metaData, String[] values) {
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
