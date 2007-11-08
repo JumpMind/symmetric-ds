@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -90,7 +89,11 @@ public class ConfigurationService extends AbstractService implements
 
     private IDbDialect dbDialect;
     
-    private WeakHashMap<Integer, TriggerHistory> historyMap = new WeakHashMap<Integer, TriggerHistory>();
+    /**
+     * Cache the history for performance.  History never changes and does not grow big so this should
+     * be OK.
+     */
+    private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
     public void initSystemChannels() {
         try {
