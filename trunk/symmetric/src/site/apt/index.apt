@@ -16,6 +16,8 @@ Overview
  Support for database vendors is provided through a Database Dialect layer,
  with implementations for MySQL and Oracle included.
 
+[images/n-tier-sync.gif]
+ 
  Synchronization can be configured to push data (trickle-back) or pull data (trickle-poll) at an interval.
  SymmetricDS allows for n-tier synchronization, such as the following:
 
