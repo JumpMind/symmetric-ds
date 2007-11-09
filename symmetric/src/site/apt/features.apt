@@ -43,6 +43,8 @@ Features
   
   * <<Remote Management>> - Administration through a Java Management Extensions (JMX) console
   
+  * <<Remote Database Administration>> - SQL can be delivered and run at remote databases via the synchronization infrastructure  
+  
   * <<Initial Data Load>> - Prepare the satellite database with an initial or recovery load of data 
   
  

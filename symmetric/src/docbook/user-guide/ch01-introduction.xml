@@ -43,7 +43,7 @@
             <para>
                 Data synchronization is defined at the table (or table subset) level. Each
                 managed table can be assigned to a channel that helps control the flow of data.
-                A channel is a category of data that is be prioritized and synchronized
+                A channel is a category of data that can be enabled, prioritized and synchronized
                 independently of other channels. For example, in a retail environment, users may
                 be waiting for inventory documents to update while a promotional sale event
                 updates a large number of items. If processed in order, the item updates would
@@ -67,19 +67,37 @@
         <section>
             <title>Data Filtering and Rerouting</title>
             <para>
-                Data can be filtered as it is recorded, extracted, and loaded. Columns can be
-                excluded from synchronization so they are never recorded when the table is
-                changed. As data changes are extracted from the source database, a class
-                implementing
-                <literal>IExtractorListener</literal>
-                is called to filter data or route it somewhere else. As data changes are loaded
-                in the target database, a class implementing
-                <literal>IDataLoaderFilter</literal>
-                can filter data or route it somewhere else. For example, an employee table may
-                be synchronized to a retail store database, but the employee's password is only
-                synchronized on the initial insert. Another example is routing credit card data
-                to a secure database and filtering it out as it loads into a central office
-                database.
+                Data can be filtered as it is recorded, extracted, and loaded.
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            Columns can be excluded from synchronization so they are never recorded
+                            when the table is changed. As data changes are extracted from the source
+                            database, a class implementing the
+                            <literal>IExtractorListener</literal>
+                            interface is called to filter data or route it somewhere else.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            As data changes are loaded in the target database, a class implementing
+                            <literal>IDataLoaderFilter</literal>
+                            can change the data in a column or route it somewhere else. One possible
+                            use might be to route credit card data to a secure database and blank it
+                            out as it loads into a central office database.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            As data changes are loaded into the target database, a class
+                            implementing
+                            <literal>IColumnFilter</literal>
+                            can altogether remove a column from the synchronization. For example, an
+                            employee table may be synchronized to a retail store database, but the
+                            employee's password is only synchronized on the initial insert.
+                        </para>
+                    </listitem>
+                </itemizedlist>
             </para>
         </section>
         <section>
@@ -88,7 +106,7 @@
                 By default, SymmetricDS uses web-based HTTP in a style called Representation
                 State Transfer (REST) that is lightweight and easy to manage. A series of
                 filters are also provided to enforce authentication and to restrict the number
-                of simultaneous syncrhonization streams. The
+                of simultaneous synchronization streams. The
                 <literal>ITransportManager</literal>
                 interface allows other transports to be implemented. (The unit tests for
                 SymmetricDS take advantage of this by using an
