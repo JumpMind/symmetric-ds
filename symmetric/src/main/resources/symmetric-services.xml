@@ -196,7 +196,7 @@
         <property name="selectEventsToBatchSql">
             <value>
                 select data.transaction_id, data.data_id from ${sync.table.prefix}_data data,
-                ${sync.table.prefix}_data_event data_event where data_event.batch_id is null and
+                ${sync.table.prefix}_data_event data_event where data_event.batched = '0' and
                 data_event.node_id = ? and data.channel_id=? and data.data_id = data_event.data_id
                 order by data.data_id asc
             </value>
@@ -209,8 +209,8 @@
         </property>
         <property name="updateBatchedEventsSql">
             <value>
-                update ${sync.table.prefix}_data_event set batch_id = ? where node_id = ? and
-                data_id = ?
+                update ${sync.table.prefix}_data_event set batch_id = ?, batched = '1'
+                where node_id = ? and data_id = ?
             </value>
         </property>
         <property name="selectOutgoingBatchSql">
