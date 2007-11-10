@@ -71,25 +71,17 @@
                 <itemizedlist>
                     <listitem>
                         <para>
-                            Columns can be excluded from synchronization so they are never recorded
-                            when the table is changed. As data changes are extracted from the source
-                            database, a class implementing the
-                            <literal>IExtractorListener</literal>
-                            interface is called to filter data or route it somewhere else.
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
                             As data changes are loaded in the target database, a class implementing
                             <literal>IDataLoaderFilter</literal>
                             can change the data in a column or route it somewhere else. One possible
                             use might be to route credit card data to a secure database and blank it
-                            out as it loads into a central office database.
+                            out as it loads into a centralized sales database.
                         </para>
                     </listitem>
                     <listitem>
                         <para>
-                            As data changes are loaded into the target database, a class
+                            Columns can be excluded from synchronization so they are never recorded
+                            when the table is changed.  As data changes are loaded into the target database, a class
                             implementing
                             <literal>IColumnFilter</literal>
                             can altogether remove a column from the synchronization. For example, an
@@ -97,6 +89,16 @@
                             employee's password is only synchronized on the initial insert.
                         </para>
                     </listitem>
+                    <listitem>
+                        <para>
+                            As data changes are extracted from the source
+                            database, a class implementing the
+                            <literal>IExtractorListener</literal>
+                            interface is called to filter data or route it somewhere else.  By default, SymmetricDS provides
+                            a handler that transforms and streams data as CSV.  Optionally, an alternate implementation
+                            may be provided to take some other action on the extracted data.
+                        </para>
+                    </listitem>                    
                 </itemizedlist>
             </para>
         </section>
@@ -122,6 +124,11 @@
                 Functions include opening registration, reloading data, purging old data, and
                 viewing batches. A number of configuration and runtime properties are available
                 to be viewed as well.
+            </para>
+            <para>
+                SymmetricDS also provides functionality to send a SQL events through the same synchronization
+                mechanism that is used to send data.  The data payload can be any SQL statement.  The event is 
+                processed and acknowledged just like any other event type.
             </para>
         </section>
     </section>

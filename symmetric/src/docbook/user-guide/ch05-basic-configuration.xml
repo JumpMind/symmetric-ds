@@ -1,12 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter version="5.0" xml:id="ch05-basic-configuration" xmlns="http://docbook.org/ns/docbook"
-         xmlns:xlink="http://www.w3.org/1999/xlink"
-         xmlns:xi="http://www.w3.org/2001/XInclude"
-         xmlns:svg="http://www.w3.org/2000/svg"
-         xmlns:ns="http://docbook.org/ns/docbook"
-         xmlns:mml="http://www.w3.org/1998/Math/MathML"
-         xmlns:html="http://www.w3.org/1999/xhtml">
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Basic Configuration</title>
+    <section>
+        <title>Startup Properties</title>
+        <para>
+            A SymmetricDS is configured at start time by a hierarchy of properties files. By
+            default, it looks for properties in the following files.
+
+            <table>
+                <title>Properties Files</title>
+                <tgroup cols="3">
+                    <colspec colwidth="115px" />                    
+                    <colspec colwidth="50px" />
+                    <colspec colwidth="250px" />
+                    <thead>
+                        <row>
+                            <entry>File Name</entry>
+                            <entry>Required</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <emphasis>default-symmetric.properties</emphasis>
+                            </entry>
+                            <entry>Y</entry>
+                            <entry>
+                                Packaged inside symmetric-ds.jar file. This file has all the default
+                                settings and along with descriptions.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>symmetric.properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user on the classpath. The first
+                                symmetric.properties found on the classpath will be used.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>symmetric.properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user in the current system user's user.home
+                                directory.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>named properties file 1</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user as a Java system property (i.e.
+                                -Dsymmetric.override.properties.file.1=file://my.properties) or in
+                                the constructor of a
+                                <literal>SymmetricEngine</literal>
+                                .
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>named properties file 2</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user as a Java system property (i.e.
+                                -Dsymmetric.override.properties.file.2=classpath://my.properties) or
+                                in the constructor of a
+                                <literal>SymmetricEngine</literal>
+                                .
+                            </entry>
+                        </row>
+
+                    </tbody>
+                </tgroup>
+            </table>
+
+        </para>
+    </section>
     <section>
         <title>Nodes</title>
         <para></para>
