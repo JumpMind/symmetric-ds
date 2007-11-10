@@ -8,10 +8,10 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Architecture</title>
     <para>
-        The SymmetricDS library allows for incoming and outgoing changes to be synchronized
-        with another database.  The Node that initiates the connection is the client, and the
+        The SymmetricDS library allows for outgoing and incoming changes to be synchronized
+        to/from another database.  The Node that initiates the connection is the client, and the
         Node receiving a connection is the host.  Because synchronization is configurable to
-        push or pull in both directions, the same Node can act as either a client or a host
+        push or pull in either direction, the same Node can act as either a client or a host
         in different circumstances.
     </para>
     <para>
