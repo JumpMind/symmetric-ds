@@ -8,7 +8,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Data Format</title>
     <para>
-        The SymmetricDS Data Format is used to stream data from node to another. The data format
+        The SymmetricDS Data Format is used to stream data from one node to another. The data format
         reader and writer are pluggable with an initial implementation using a format based on
         Comma Separated Values (CSV). Each line in the stream is a record with fields separated
         by commas. String fields are surrounded with double quotes. Double quotes and
