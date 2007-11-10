@@ -8,6 +8,34 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Architecture</title>
     <para>
+        The SymmetricDS library allows for incoming and outgoing changes to be synchronized
+        with another database.  The Node that initiates the connection is the client, and the
+        Node receiving a connection is the host.  Because synchronization is configurable to
+        push or pull in both directions, the same Node can act as either a client or a host
+        in different circumstances.
+    </para>
+    <para>
+        As a client, the Node runs the Push Job and Pull Job on a timer in order to synchronize
+        with a host Node.  The Push Job uses services to batch, extract, and stream data to
+        another Node (i.e. it pushes data).  The response from a push is a list
+        of batch acknowlegements to indicate that data was loaded.
+        The Pull Job uses services to load data that is streamed from another Node
+        (i.e. it pulls data).  After loading data, a second connection is made to send a list
+        of batch acknowlegements.
+    </para>
+    <para>
+        As a host, the Node waits for incoming connections that pull, push, or acknowledge data changes.
+        The Push Servlet uses services to load data that is pushed from a client Node.
+        After loading data, it responds with a list of batch acknowledgements.
+        The Pull Servlet uses services to batch, extract, and stream data back to the client Node.
+        The Ack Servlet uses services to update the status of data that was loaded at a client Node.
+    </para>
+    <para>
+        The Transport Manager handles the incoming and outgoing streams of data between Nodes.
+        The default transport is based on a simple implementation over HTTP, and other
+        implementations may be added.
+    </para>
+    <para>
         <figure>
             <title>Software Stack</title>
             <mediaobject>
