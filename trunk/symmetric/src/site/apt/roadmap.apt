@@ -7,4 +7,20 @@
  
 Development Roadmap
 
- Coming Soon ...
+* Ongoing
+
+  * <<User Guide Documentation>> - Please check back frequently.  We are updating the documentation on an ongoing basis.
+  
+* Slated for 1.1
+
+  * <<Alerts>> - RSS based feed
+  
+  * <<{{{http://sourceforge.net/tracker/?group_id=206470&amp;atid=997724}Bug Fixes}}>>
+  
+  * <<Apache Derby Dialect>> - Support for the Java-base embedded database
+  
+* Future Releases
+
+  * <<MS SQL Server Dialect>>
+  
+  * <<{{{http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727}Feature Requests}}>> - Prioritized by community requests
