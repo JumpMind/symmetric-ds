@@ -80,7 +80,16 @@
                                 .
                             </entry>
                         </row>
-
+                        <row>
+                            <entry>
+                                <emphasis>Java System Properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Any SymmetricDS property can be passed in as a -D property to the
+                                runtime. It will take precedence over any properties file property.
+                            </entry>
+                        </row>
                     </tbody>
                 </tgroup>
             </table>
