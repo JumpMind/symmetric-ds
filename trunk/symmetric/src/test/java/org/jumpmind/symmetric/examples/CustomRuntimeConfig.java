@@ -43,7 +43,7 @@ public class CustomRuntimeConfig {
         }
 
         public String getMyUrl() {
-            return "http://" + getHostName() + "/snc";
+            return "http://" + getHostName() + "/sync";
         }
 
         public String getNodeGroupId() {
