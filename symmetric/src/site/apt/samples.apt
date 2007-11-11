@@ -7,4 +7,6 @@
 
 Code Samples
 
- Coming soon ...
+  * {{{xref-test/org/jumpmind/symmetric/examples/StartSymmetricEngine.html}Start a Symmetric Engine}}
+  
+  * {{{xref-test/org/jumpmind/symmetric/examples/CustomRuntimeConfig.html}Provide a Custom IRuntimeConfig class}}
