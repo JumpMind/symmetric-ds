@@ -5,15 +5,15 @@
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Basic Configuration</title>
     <section>
-        <title>Startup Properties</title>
+        <title>Setting Startup Properties</title>
         <para>
-            A SymmetricDS instance is configured at start time by a hierarchy of properties files. By
-            default, it looks for properties in the following files.
+            A SymmetricDS instance is configured at start time by a hierarchy of properties files.
+            By default, it looks for properties in the following files.
 
             <table>
                 <title>Properties Files</title>
                 <tgroup cols="3">
-                    <colspec colwidth="115px" />                    
+                    <colspec colwidth="115px" />
                     <colspec colwidth="50px" />
                     <colspec colwidth="250px" />
                     <thead>
@@ -93,8 +93,88 @@
                     </tbody>
                 </tgroup>
             </table>
-
         </para>
+    </section>
+    <section>
+        <title>Basic Properties</title>
+        <para>
+            Each Node requires properties that will register it with the network and connect it to
+            the database. To give a Node its identity, the following properties are used:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.group.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The Node Group that this Node is a member of. Synchronization is specified
+                        between Node Groups, which means you only need to specify it once for
+                        multiple Nodes in the same group. For example, you might have groups of
+                        "STORE", "REGION", and "CENTRAL" that synchronize.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.external.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The External ID for this Node has meaning to the user and provides
+                        integration into the system where it is deployed. For example, it might be a
+                        retail store number or a region number. The External ID can be used in
+                        expressions for conditional and subset data synchronization. Behind the
+                        scenes, each Node has a unique sequence number for tracking synchronization
+                        events. That makes it possible to assign the same External ID to multiple
+                        Nodes, if desired.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            When a new Node is first started, it is has no information about synchronizing. It
+            contacts the registration server in order to join the network and receive its
+            configuration. The configuration for all Nodes is stored on the registration server, and
+            the URL must be specified in the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.registration.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this Node can connect for registration to receive its
+                        configuration. The registration server is part of SymmetricDS and is enabled
+                        as part of the deployement.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            If the database connection pool is located in JNDI:
+        </para>
+        <itemizedlist>
+            <listitem>
+                <para>db.jndi.name</para>
+            </listitem>
+        </itemizedlist>
+        <para>If the database connection pool should be create using a JDBC driver:</para>
+        <itemizedlist>
+            <listitem>
+                <para>db.driver</para>
+            </listitem>
+            <listitem>
+                <para>db.url</para>
+            </listitem>
+            <listitem>
+                <para>db.user</para>
+            </listitem>
+            <listitem>
+                <para>db.password</para>
+            </listitem>
+        </itemizedlist>
     </section>
     <section>
         <title>Nodes</title>
