@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="upgradeTaskMap" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="0.0" value-ref="upgrade1.1" />
+                <entry key="1.0" value-ref="upgrade1.1" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="upgrade1.1" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <ref bean="upgradeDatabase1.1" />
+            </list>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="upgradeDatabase1.1" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="sqlList">
+            <list>
+                <value>
+                    alter table ${sync.table.prefix}_trigger 
+                    add (sync_on_incoming_batch number(3) default 0)
+                </value>
+            </list>
+        </property>
+    </bean>
+    
+</beans>
