@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,9 +68,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     
     private IDataService dataService;
 
+    private IUpgradeService upgradeService;
+    
     private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
+    
+    private boolean autoUpgrade = true;
     
     private String triggerPrefix;
 
@@ -82,6 +87,15 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             logger.info("Done initializing symmetric database.");
         } else {
             logger.info("Symmetric is not configured to auto create the database.");
+        }
+        
+        if (upgradeService.isUpgradeNecessary()) {
+            if (autoUpgrade) {
+                upgradeService.upgrade();
+            } else {
+                throw new RuntimeException("Upgrade of node is necessary.  "
+                        + "Please set symmetric.auto.upgrade property to true.");
+            }
         }
     }
 
@@ -324,6 +338,14 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     
     public void setTriggerPrefix(String triggerPrefix) {
         this.triggerPrefix = triggerPrefix;
+    }
+
+    public void setUpgradeService(IUpgradeService upgradeService) {
+        this.upgradeService = upgradeService;
+    }
+
+    public void setAutoUpgrade(boolean autoUpgrade) {
+        this.autoUpgrade = autoUpgrade;
     }
 
 }
