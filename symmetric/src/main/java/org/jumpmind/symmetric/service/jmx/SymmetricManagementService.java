@@ -61,7 +61,7 @@ public class SymmetricManagementService {
     private IOutgoingBatchService outgoingBatchService;
 
     private IRegistrationService registrationService;
-    
+
     private IDataExtractorService dataExtractorService;
 
     private Properties properties;
@@ -112,10 +112,20 @@ public class SymmetricManagementService {
     }
 
     @ManagedOperation(description = "Check to see if the external id is registered")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
-    public boolean isExternalIdRegistered(String externalId) {
-        return nodeService.isExternalIdRegistered(externalId);
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeGroupId", description = "The node group id for a node"),
+            @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
+    public boolean isExternalIdRegistered(String nodeGroupdId, String externalId) {
+        return nodeService.isExternalIdRegistered(nodeGroupdId, externalId);
     }
+    
+    @Deprecated
+    @ManagedOperation(description = "Deprecated. Check to see if the external id is registered")
+    @ManagedOperationParameters( {            
+            @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
+    public boolean isExternalIdRegistered(String externalId) {
+        return nodeService.isExternalIdRegistered("store", externalId);
+    }    
 
     @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
@@ -137,6 +147,16 @@ public class SymmetricManagementService {
             return false;
         }
     }
+    
+    @Deprecated
+    @ManagedOperation(description = "Deprecated. Enable or disable a channel for a specific external id. ")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
+            @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),            
+            @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId) {
+        nodeService.ignoreNodeChannelForExternalId(ignore, channelId, "store", externalId);
+    }    
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters( {
@@ -183,8 +203,7 @@ public class SymmetricManagementService {
             @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
             @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
             @ManagedOperationParameter(name = "fileName", description = "File name to write batches") })
-    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName)
-            throws Exception {
+    public void writeBatchRangeToFile(String startBatchId, String endBatchId, String fileName) throws Exception {
         FileOutputStream out = new FileOutputStream(fileName);
         IOutgoingTransport transport = new InternalOutgoingTransport(out);
         dataExtractorService.extractBatchRange(transport, startBatchId, endBatchId);
