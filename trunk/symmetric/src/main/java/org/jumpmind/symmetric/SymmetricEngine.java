@@ -178,7 +178,7 @@ public class SymmetricEngine {
      */
     public synchronized void start() {
         if (!started) {
-        	bootstrapService.init();
+            bootstrapService.init();
             Node node = nodeService.findIdentity();
             if (node != null) {
                 logger.info("Starting registered node [group=" + node.getNodeGroupId() +
