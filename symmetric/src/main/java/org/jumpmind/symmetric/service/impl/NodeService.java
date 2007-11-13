@@ -176,6 +176,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setSchemaVersion(rs.getString(6));
             node.setDatabaseType(rs.getString(7));
             node.setDatabaseVersion(rs.getString(8));
+            node.setSymmetricVersion(rs.getString(9));
             return node;
         }
     }
