@@ -191,8 +191,8 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
     
-    public boolean isExternalIdRegistered(String externalId) {
-        return jdbcTemplate.queryForInt(isNodeRegisteredSql, new Object[] {externalId}) > 0;
+    public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
+        return jdbcTemplate.queryForInt(isNodeRegisteredSql, new Object[] {nodeGroupId, externalId}) > 0;
     }
 
     public void setFindNodeSecuritySql(String findNodeSecuritySql) {

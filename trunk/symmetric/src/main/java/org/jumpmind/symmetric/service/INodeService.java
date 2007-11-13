@@ -52,7 +52,7 @@ public interface INodeService {
     
     public List<Node> findTargetNodesFor(DataEventAction eventAction);
     
-    public boolean isExternalIdRegistered(String externalId);
+    public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
     
     public boolean updateNode(Node node);
     
