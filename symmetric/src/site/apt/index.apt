@@ -7,7 +7,7 @@
 
 Overview
 
- SymmetricDS is web-enabled, database independent, <data synchronization> software.
+ SymmetricDS is web-enabled, database independent, data synchronization/replication software.
  It uses web and database technologies to replicate tables between relational databases in near real time. 
  The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
  and withstand periods of network outage.
@@ -19,7 +19,7 @@ Overview
 [images/n-tier-sync.gif]
  
  Synchronization can be configured to push data (trickle-back) or pull data (trickle-poll) at an interval.
- SymmetricDS allows for n-tier synchronization, such as the following:
+ SymmetricDS allows for 2-tier and even n-tier synchronization, such as the following:
 
     * A farm of web server nodes fronting an enterprise-class general office database
     
