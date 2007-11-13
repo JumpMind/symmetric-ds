@@ -9,6 +9,7 @@
         <property name="transport" value="${symmetric.transport.type}" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
+        <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}"/>
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"

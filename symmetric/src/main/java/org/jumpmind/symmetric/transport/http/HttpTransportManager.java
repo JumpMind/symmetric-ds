@@ -53,11 +53,14 @@ public class HttpTransportManager extends AbstractTransportManager implements
     private IRuntimeConfig runtimeConfiguration;
 
     private INodeService nodeService;
+    
+    private int httpTimeout;
 
     public HttpTransportManager(IRuntimeConfig config,
-            INodeService nodeService) {
+            INodeService nodeService, int httpTimeout) {
         this.runtimeConfiguration = config;
         this.nodeService = nodeService;
+        this.httpTimeout = httpTimeout;
     }
 
     public boolean sendAcknowledgement(Node remote,
@@ -87,7 +90,8 @@ public class HttpTransportManager extends AbstractTransportManager implements
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
-        conn.setConnectTimeout(10000);
+        conn.setConnectTimeout(httpTimeout);
+        conn.setReadTimeout(httpTimeout);
         conn.setRequestProperty("Content-Length", Integer.toString(data
                 .length()));
         writeMessage(conn.getOutputStream(), data);
@@ -109,7 +113,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
             Node local) throws IOException {
         URL url = new URL(buildURL("push", remote, local));
-        return new HttpOutgoingTransport(url);
+        return new HttpOutgoingTransport(url, httpTimeout);
     }
 
     public IIncomingTransport getRegisterTransport(Node node)
@@ -132,6 +136,8 @@ public class HttpTransportManager extends AbstractTransportManager implements
     private HttpURLConnection createGetConnectionFor(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("accept-encoding", "gzip");
+        conn.setConnectTimeout(httpTimeout);
+        conn.setReadTimeout(httpTimeout);
         conn.setRequestMethod("GET");
         return conn;
     }
@@ -178,6 +184,10 @@ public class HttpTransportManager extends AbstractTransportManager implements
         sb.append("=");
         sb.append(nodeId);
         return sb.toString();
+    }
+
+    public void setHttpTimeout(int httpTimeout) {
+        this.httpTimeout = httpTimeout;
     }
 
 }

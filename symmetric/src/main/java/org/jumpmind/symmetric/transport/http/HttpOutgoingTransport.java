@@ -43,9 +43,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     BufferedReader reader;
 
     HttpURLConnection connection;
+    
+    int httpTimeout;
 
-    public HttpOutgoingTransport(URL url) {
+    public HttpOutgoingTransport(URL url, int httpTimeout) {
         this.url = url;
+        this.httpTimeout = httpTimeout;
     }
 
     public void close() throws IOException {
@@ -77,6 +80,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setUseCaches(false);
+        connection.setConnectTimeout(httpTimeout);
+        connection.setReadTimeout(httpTimeout);
         connection.setRequestMethod("PUT");
         connection.setRequestProperty("accept-encoding", "gzip");
         OutputStream out = connection.getOutputStream();
