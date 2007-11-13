@@ -25,7 +25,9 @@
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dataService" ref="dataService" />
+        <property name="upgradeService" ref="upgradeService" />
         <property name="autoConfigureDatabase" value="${symmetric.auto.config.database}" />
+        <property name="autoUpgrade" value="${symmetric.auto.upgrade}" />
     </bean>
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
@@ -406,7 +408,8 @@
         <property name="findNodeIdentitySql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-                c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version
+                from ${sync.table.prefix}_node
                 c inner join ${sync.table.prefix}_node_identity i on c.node_id = i.node_id
             </value>
         </property>
@@ -563,6 +566,13 @@
                 values (?, 'SE', current_timestamp)
             </value>
         </property>
+    </bean>
+
+    <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="upgradeTaskMap" ref="upgradeTaskMap" />
     </bean>
 
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
