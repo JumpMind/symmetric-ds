@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,15 +22,34 @@
 package org.jumpmind.symmetric;
 
 /**
- * Follow the Apache versioning scheme documented here: http://apr.apache.org/versioning.html
+ * Follow the Apache versioning scheme documented here:
+ * http://apr.apache.org/versioning.html
  */
 final public class Version {
 
     public static final int MAJOR = 1;
 
-    public static final int MINOR = 0;
+    public static final int MINOR = 1;
 
     public static final int PATCH = 0;
 
     public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH;
+
+    public static int[] parseVersion(String version) {
+        int[] versions = new int[3];
+        if (version != null) {
+            String[] splitVersion = version.split("\\.");
+            if (splitVersion.length >= 3) {
+                versions[2] = Integer.parseInt(splitVersion[2]);
+            }
+            if (splitVersion.length >= 2) {
+                versions[1] = Integer.parseInt(splitVersion[1]);
+            }
+            if (splitVersion.length >= 1) {
+                versions[0] = Integer.parseInt(splitVersion[0]);
+            }
+        }
+        return versions;
+    }
+
 }
