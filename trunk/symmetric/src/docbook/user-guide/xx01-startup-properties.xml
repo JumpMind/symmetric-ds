@@ -273,6 +273,28 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>symmetric.runtime.trigger.prefix</command>
+                </term>
+                <listitem>
+                    <para>
+                        Set this if the trigger names need to be prefixed. This is useful when running two
+                        symmetric instances against the same database. [&#xA0;Default:&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.http.timeout.ms</command>
+                </term>
+                <listitem>
+                    <para>
+                        Sets both the connection and read timeout on the internal HttpUrlConnection.
+                        [&#xA0;Default:&#xA0;600000s&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>            
+            <varlistentry>
+                <term>
                     <command>symmetric.runtime.job.random.max.start.time.ms</command>
                 </term>
                 <listitem>

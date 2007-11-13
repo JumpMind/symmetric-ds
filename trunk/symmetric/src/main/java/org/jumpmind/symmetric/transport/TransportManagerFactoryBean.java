@@ -38,9 +38,11 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     private String transport;
     
+    private int httpTimeout;
+    
     public Object getObject() throws Exception {
         if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
-            return new HttpTransportManager(runtimeConfiguration, nodeService);
+            return new HttpTransportManager(runtimeConfiguration, nodeService, httpTimeout);
         } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(runtimeConfiguration);
         } else {
@@ -68,6 +70,10 @@ public class TransportManagerFactoryBean implements FactoryBean {
     public void setNodeService(INodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setHttpTimeout(int httpTimeout) {
+        this.httpTimeout = httpTimeout;
     }
 
 }
