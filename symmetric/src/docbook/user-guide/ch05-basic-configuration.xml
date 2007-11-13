@@ -147,34 +147,75 @@
                     <para>
                         The URL where this Node can connect for registration to receive its
                         configuration. The registration server is part of SymmetricDS and is enabled
-                        as part of the deployement.
+                        as part of the deployment.
                     </para>
                 </listitem>
             </varlistentry>
         </variablelist>
         <para>
-            If the database connection pool is located in JNDI:
+            For a deployment to an application server, it is common for database connection pools
+            to be found in the Java naming directory (JNDI).  In this case, set the following property:
         </para>
-        <itemizedlist>
-            <listitem>
-                <para>db.jndi.name</para>
-            </listitem>
-        </itemizedlist>
-        <para>If the database connection pool should be create using a JDBC driver:</para>
-        <itemizedlist>
-            <listitem>
-                <para>db.driver</para>
-            </listitem>
-            <listitem>
-                <para>db.url</para>
-            </listitem>
-            <listitem>
-                <para>db.user</para>
-            </listitem>
-            <listitem>
-                <para>db.password</para>
-            </listitem>
-        </itemizedlist>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.jndi.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        The name of the database connection pool to use, which is registered in the JNDI
+                        directory tree of the application server. It is recommended that this DataSource is
+                        NOT transactional, because SymmetricDS will handle its own transactions.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            For a deployment where the database connection pool should be created using a JDBC driver,
+            set the following properties:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.driver</command>
+                </term>
+                <listitem>
+                    <para>
+                        The class name of the JDBC driver.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The JDBC URL used to connect to the database.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.user</command>
+                </term>
+                <listitem>
+                    <para>
+                        The database username, which is used to login, create, and update SymmetricDS tables.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.password</command>
+                </term>
+                <listitem>
+                    <para>
+                        The password for the database user.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
     </section>
     <section>
         <title>Nodes</title>
