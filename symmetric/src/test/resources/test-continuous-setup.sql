@@ -10,10 +10,10 @@ insert into sym_node_group_link values ('test-root-group','test-node-group', 'W'
 insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
 insert into sym_node_group_link values ('STORE','CORP', 'P');
 insert into sym_node_group_link values ('CORP','STORE', 'W');
-insert into sym_node values ('00000', 'CORP', '00000', '1', 'http://centraloffice:8080/sync', 1, null,'Oracle', '9', current_timestamp);
-insert into sym_node values ('00001', 'STORE', '00001', '1', 'http://localhost:8080/sync', 1, null, 'MySQL', '5', current_timestamp);
-insert into sym_node values ('00002', 'STORE', '00002', '0', null, null, null, null, null, current_timestamp);
-insert into sym_node values ('00003', 'STORE', '00003', '1', 'http://localhost:8080/', 0, null, 'MySql', '4', current_timestamp);
+insert into sym_node values ('00000', 'CORP', '00000', '1', 'http://centraloffice:8080/sync', 1, '1.1','Oracle', '9', current_timestamp);
+insert into sym_node values ('00001', 'STORE', '00001', '1', 'http://localhost:8080/sync', 1, '1.1', 'MySQL', '5', current_timestamp);
+insert into sym_node values ('00002', 'STORE', '00002', '0', null, null, '1.1', null, null, current_timestamp);
+insert into sym_node values ('00003', 'STORE', '00003', '1', 'http://localhost:8080/', 0, '1.1', 'MySql', '4', current_timestamp);
 insert into sym_node_security values ('00001', 'secret', '0', {ts '2007-01-01 01:01:01'});
 insert into sym_node_security values ('00002', 'supersecret', '1', null);
 insert into sym_node_security values ('00003', 'notsecret', '0', {ts '2007-01-01 01:01:01'});
