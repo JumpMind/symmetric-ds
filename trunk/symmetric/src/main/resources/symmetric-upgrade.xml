@@ -27,7 +27,7 @@
             <list>
                 <value>
                     alter table ${sync.table.prefix}_trigger 
-                    add (sync_on_incoming_batch number(3) default 0)
+                    add (sync_on_incoming_batch numeric(3) default 0)
                 </value>
             </list>
         </property>
