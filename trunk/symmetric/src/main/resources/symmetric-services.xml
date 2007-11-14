@@ -390,13 +390,14 @@
         <property name="findNodeSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-                database_type, database_version from ${sync.table.prefix}_node where node_id = ?
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node where node_id = ?
             </value>
         </property>
         <property name="findNodeByExternalIdSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-                database_type, database_version from ${sync.table.prefix}_node where node_group_id=? and external_id = ?
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node 
+                where node_group_id = ? and external_id = ?
             </value>
         </property>
         <property name="findNodeSecuritySql">
@@ -408,32 +409,34 @@
         <property name="findNodeIdentitySql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-                c.schema_version, c.database_type, c.database_version, c.symmetric_version
-                from ${sync.table.prefix}_node
-                c inner join ${sync.table.prefix}_node_identity i on c.node_id = i.node_id
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_identity i on
+                c.node_id = i.node_id
             </value>
         </property>
         <property name="isNodeRegisteredSql">
             <value>
                 select count(*) from ${sync.table.prefix}_node_security s inner join
-                ${sync.table.prefix}_node n on n.node_id=s.node_id where n.node_group_id=? and n.external_id=? and
-                s.registration_time is not null and s.registration_enabled=0
+                ${sync.table.prefix}_node n on n.node_id=s.node_id where n.node_group_id=? and
+                n.external_id=? and s.registration_time is not null and s.registration_enabled=0
             </value>
         </property>
         <property name="findNodesWhoTargetMeSql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-                c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node
-                c inner join ${sync.table.prefix}_node_group_link d on c.node_group_id =
-                d.source_node_group_id where d.target_node_group_id = ? and d.data_event_action = ?
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+                c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and
+                d.data_event_action = ?
             </value>
         </property>
         <property name="findNodesWhoITargetSql">
             <value>
                 select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-                c.schema_version, c.database_type, c.database_version from ${sync.table.prefix}_node
-                c inner join ${sync.table.prefix}_node_group_link d on c.node_group_id =
-                d.target_node_group_id where d.source_node_group_id = ? and d.data_event_action = ?
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+                c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and
+                d.data_event_action = ?
             </value>
         </property>
     </bean>

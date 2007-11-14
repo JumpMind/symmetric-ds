@@ -5,7 +5,7 @@ insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
 
-insert into sym_node values ('00000', 'test-root-group', '00000', '1', 'internal://symmetric', '?', null, 'MySQL', '5.0', current_timestamp);
+insert into sym_node values ('00000', 'test-root-group', '00000', '1', 'internal://symmetric', '?', '1.1', 'MySQL', '5.0', current_timestamp);
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
