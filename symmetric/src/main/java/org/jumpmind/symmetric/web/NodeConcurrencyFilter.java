@@ -52,7 +52,7 @@ public class NodeConcurrencyFilter implements Filter {
             FilterChain chain) throws IOException, ServletException {
         try {
             numberOfWorkers++;
-            if (numberOfWorkers >= getMaxNumberOfWorkers()) {
+            if (numberOfWorkers > getMaxNumberOfWorkers()) {
                 ((HttpServletResponse) resp)
                         .sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 logger
