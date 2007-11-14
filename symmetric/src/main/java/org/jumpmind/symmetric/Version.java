@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Follow the Apache versioning scheme documented here:
  * http://apr.apache.org/versioning.html
@@ -37,7 +39,7 @@ final public class Version {
 
     public static int[] parseVersion(String version) {
         int[] versions = new int[3];
-        if (version != null) {
+        if (!StringUtils.isEmpty(version)) {
             String[] splitVersion = version.split("\\.");
             if (splitVersion.length >= 3) {
                 versions[2] = Integer.parseInt(splitVersion[2]);
