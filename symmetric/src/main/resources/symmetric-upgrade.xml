@@ -33,6 +33,10 @@
                     alter table ${sync.table.prefix}_data_event
                     add (batched numeric(3) default 0)
                 </value>
+                <value>
+                    update ${sync.table.prefix}_data_event set batched = '1'
+                    where batch_id is not null
+                </value>
             </list>
         </property>
     </bean>
