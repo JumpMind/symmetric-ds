@@ -42,16 +42,25 @@ final public class Version {
         if (!StringUtils.isEmpty(version)) {
             String[] splitVersion = version.split("\\.");
             if (splitVersion.length >= 3) {
-                versions[2] = Integer.parseInt(splitVersion[2]);
+                versions[2] = parseVersionComponent(splitVersion[2]);
             }
             if (splitVersion.length >= 2) {
-                versions[1] = Integer.parseInt(splitVersion[1]);
+                versions[1] = parseVersionComponent(splitVersion[1]);
             }
             if (splitVersion.length >= 1) {
-                versions[0] = Integer.parseInt(splitVersion[0]);
+                versions[0] = parseVersionComponent(splitVersion[0]);
             }
         }
         return versions;
+    }
+    
+    private static int parseVersionComponent(String versionComponent) {
+        int version = 0;
+        try {
+            version = Integer.parseInt(versionComponent);
+        } catch (NumberFormatException e) {
+        }
+        return version;
     }
 
 }
