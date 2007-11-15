@@ -37,6 +37,10 @@
                     update ${sync.table.prefix}_data_event set batched = '1'
                     where batch_id is not null
                 </value>
+                <value>
+                    create index idx_de_batched_nodeid on 
+                    ${sync.table.prefix}_data_event(batched, node_id)
+                </value>
             </list>
         </property>
     </bean>
