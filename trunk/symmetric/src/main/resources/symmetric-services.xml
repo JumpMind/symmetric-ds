@@ -603,8 +603,8 @@
         </property>
         <property name="selectDataIdToPurgeSql">
             <value>
-                select data_id from ${sync.table.prefix}_data where not exists (select data_id from
-                ${sync.table.prefix}_data_event)
+                select data_id from ${sync.table.prefix}_data d where not exists (select 1 from
+                ${sync.table.prefix}_data_event de where d.data_id = de.data_id)
             </value>
         </property>
         <property name="deleteDataSql">
