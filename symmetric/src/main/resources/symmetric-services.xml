@@ -9,7 +9,7 @@
         <property name="transport" value="${symmetric.transport.type}" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
-        <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}"/>
+        <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"
@@ -212,35 +212,31 @@
         </property>
         <property name="updateBatchedEventsSql">
             <value>
-                update ${sync.table.prefix}_data_event set batch_id = ?, batched = '1'
-                where node_id = ? and data_id = ?
+                update ${sync.table.prefix}_data_event set batch_id = ?, batched = '1' where node_id
+                = ? and data_id = ?
             </value>
         </property>
         <property name="selectOutgoingBatchSql">
             <value>
                 select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 1
-                  from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status in ('NE','SE') 
-                  and b.channel_id not in 
-                  (select distinct e.channel_id from ${sync.table.prefix}_outgoing_batch e where e.status = 'ER' and e.node_id = b.node_id)
-                union
-                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 2
-                  from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status = 'ER' order by 7, 1
+                from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status in
+                ('NE','SE') and b.channel_id not in (select distinct e.channel_id from
+                ${sync.table.prefix}_outgoing_batch e where e.status = 'ER' and e.node_id =
+                b.node_id) union select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type,
+                create_time, 2 from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and
+                b.status = 'ER' order by 7, 1
             </value>
         </property>
         <property name="selectOutgoingBatchRangeSql">
             <value>
-                select batch_id, node_id, channel_id, status, batch_type
-                from ${sync.table.prefix}_outgoing_batch
-                where batch_id between ? and ?
-                order by batch_id
+                select batch_id, node_id, channel_id, status, batch_type from
+                ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? order by batch_id
             </value>
         </property>
         <property name="selectOutgoingBatchErrorsSql">
             <value>
-                select batch_id, node_id, channel_id, status, batch_type, create_time
-                from ${sync.table.prefix}_outgoing_batch
-                where status = 'ER'
-                order by batch_id
+                select batch_id, node_id, channel_id, status, batch_type, create_time from
+                ${sync.table.prefix}_outgoing_batch where status = 'ER' order by batch_id
             </value>
         </property>
         <property name="changeBatchStatusSql">
@@ -321,19 +317,19 @@
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
         scope="singleton">
-        <property name="skipDuplicateBatches" value="${symmetric.runtime.incoming.batches.skip.duplicates}"/>
+        <property name="skipDuplicateBatches"
+            value="${symmetric.runtime.incoming.batches.skip.duplicates}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="findIncomingBatchSql">
             <value>
-                select batch_id, node_id, status, create_time from 
+                select batch_id, node_id, status, create_time from
                 ${sync.table.prefix}_incoming_batch where batch_id = ? and node_id = ?
             </value>
         </property>
         <property name="findIncomingBatchErrorsSql">
             <value>
-                select batch_id, node_id, status, create_time from 
-                ${sync.table.prefix}_incoming_batch where status = 'ER'
-                order by batch_id
+                select batch_id, node_id, status, create_time from
+                ${sync.table.prefix}_incoming_batch where status = 'ER' order by batch_id
             </value>
         </property>
         <property name="findIncomingBatchHistorySql">
@@ -390,13 +386,14 @@
         <property name="findNodeSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-                database_type, database_version, symmetric_version from ${sync.table.prefix}_node where node_id = ?
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node
+                where node_id = ?
             </value>
         </property>
         <property name="findNodeByExternalIdSql">
             <value>
                 select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-                database_type, database_version, symmetric_version from ${sync.table.prefix}_node 
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node
                 where node_group_id = ? and external_id = ?
             </value>
         </property>
@@ -581,27 +578,40 @@
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
-        <property name="purgeSql">
+        <property name="selectOutgoingBatchIdsToPurgeSql">
+            <value>
+                select batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
+                create_time &lt; ?
+            </value>
+        </property>
+        <property name="deleteFromOutgoingBatchHistSql">
+            <value>delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id=?</value>
+        </property>
+        <property name="deleteFromOutgoingBatchSql">
+            <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
+        </property>
+        <property name="selectEventDataIdToPurgeSql">
+            <value>select data_id from ${sync.table.prefix}_data_event where batch_id=?</value>
+        </property>
+        <property name="deleteDataEventSql">
+            <value>
+                delete from ${sync.table.prefix}_data_event where data_id=? and batch_id=?
+            </value>
+        </property>
+        <property name="selectDataIdToPurgeSql">
+            <value>
+                select data_id from ${sync.table.prefix}_data where not exists (select data_id from
+                ${sync.table.prefix}_data_event)
+            </value>
+        </property>
+        <property name="deleteDataSql">
+            <value>delete from ${sync.table.prefix}_data where data_id=?</value>
+        </property>
+        <property name="otherPurgeSql">
             <list>
-                <value>
-                    delete from ${sync.table.prefix}_data_event where batch_id in (select batch_id
-                    from ${sync.table.prefix}_outgoing_batch where status='OK' and create_time &lt;
-                    ?)
-                </value>
-                <value>
-                    delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id in (select
-                    batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
-                    create_time &lt; ?)
-                </value>
-                <value>
-                    delete from ${sync.table.prefix}_outgoing_batch where status='OK' and
-                    create_time &lt; ?
-                </value>
-                <value>
-                    delete from ${sync.table.prefix}_data where data_id not in (select data_id from
-                    ${sync.table.prefix}_data_event) and create_time &lt; ?
-                </value>
                 <value>
                     delete from ${sync.table.prefix}_incoming_batch_hist where batch_id in (select
                     batch_id from ${sync.table.prefix}_incoming_batch where status='OK' and
