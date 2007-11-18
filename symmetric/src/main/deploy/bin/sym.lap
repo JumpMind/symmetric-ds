@@ -1,5 +1,5 @@
 # This is a .lap file comment
--Djava.class.path=..\lib\symmetric-ds-1.0.0.jar
+-Djava.class.path=..\lib\symmetric-ds-1.1.0.jar
 #-DJAVA_HOME=${FOUND_JAVA_HOME}
 janel.main.class=org.jumpmind.symmetric.SymmetricLauncher
 #janel.java.bundle=SDK
@@ -13,6 +13,7 @@ janel.min.java.version=1.5
 #janel.trap.console.ctrl=yes
 -Dcom.sun.management.jmxremote.authenticate=false 
 -Dcom.sun.management.jmxremote.port=2442
+-Dlog4j.configuration=file:log4j.xml
 #-Dself.home.test=${SELF_HOME}
 #-Dfound.exe.folder.test=${FOUND_EXE_FOLDER}
 #janel.classpath.jars.dir=..\..\Test\TestLaunch\dist

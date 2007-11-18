@@ -112,7 +112,7 @@
     </distributionManagement>
     <properties>
         <surefire-report-release-version>2.4-collab-SNAPSHOT</surefire-report-release-version>
-        <springframework-release-version>2.0.5</springframework-release-version>
+        <springframework-release-version>2.0.7</springframework-release-version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide</docbook.target>
     </properties>
@@ -237,12 +237,18 @@
                     <xincludeSupported>true</xincludeSupported>
                     <includes>*.xml</includes>
                     <!-- <imgSrcPath>${docbook.source}/images</imgSrcPath> -->
-                    <admonGraphicsPath>${docbook.source}/resources/images/admons/</admonGraphicsPath>
-                    <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl</foCustomization>
-                    
+                    <admonGraphicsPath>
+                        ${docbook.source}/resources/images/admons/
+                    </admonGraphicsPath>
+                    <foCustomization>
+                        ${docbook.source}/resources/xsl/docbook-fopdf.xsl
+                    </foCustomization>
+
                     <chunkedOutput>false</chunkedOutput>
                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
-                    <htmlCustomization>${docbook.source}/resources/xsl/docbook-html.xsl</htmlCustomization>
+                    <htmlCustomization>
+                        ${docbook.source}/resources/xsl/docbook-html.xsl
+                    </htmlCustomization>
                     <postProcess>
                         <copy todir="${docbook.target}">
                             <fileset dir="${docbook.source}/resources">
@@ -351,7 +357,6 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.14</version>
-            <scope>test</scope>
         </dependency>
         <!-- Spring Framework -->
         <dependency>
@@ -432,6 +437,11 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.jtds</groupId>
+            <artifactId>jtds</artifactId>
+            <version>1.2.2</version>
         </dependency>
     </dependencies>
 </project>
