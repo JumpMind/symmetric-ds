@@ -12,4 +12,4 @@ then
    RUNJAVA="$JAVA_HOME/bin/java"
 fi
 
-exec "$RUNJAVA" -jar "$LIBDIR/symmetric-ds-1.0.0.jar" "$@"
+exec "$RUNJAVA" -Dlog4j.configuration=file:log4j.xml -jar "$LIBDIR/symmetric-ds-1.1.0.jar" "$@"

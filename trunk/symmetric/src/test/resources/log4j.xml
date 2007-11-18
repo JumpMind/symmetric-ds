@@ -15,10 +15,10 @@
   
   <category name="org.jumpmind">
     <priority value="INFO" />
-  </category>    
-
-  <category name="org.springframework.jdbc">
-    <priority value="WARN" />
+  </category>
+  
+  <category name="org.springframework">
+    <priority value="ERROR" />
   </category>
 
   <root>
