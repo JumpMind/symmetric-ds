@@ -15,7 +15,7 @@ Developing With Eclipse
  Install {{{http://maven.apache.org/}Maven}} build manager.  Make sure the Maven "bin" directory is
  in your system path.
 
- Open the "symmetric.psf" project set file in Eclipse.  Go to File->Import, then select
+ Import the {{{/symmetric.psf}symmetric.psf}} project set file in Eclipse.  Go to File->Import, then select
  Team, Team Project Set.
 
  Configure the Maven repository variable for Eclipse.  Select the "symmetric" project and
@@ -23,7 +23,7 @@ Developing With Eclipse
  Click the New button and enter "M2_REPO" with a value of your ".m2" directory.
  (Windows: C:\Documents and Settings\user\.m2, Unix: /home/user/.m2)
  
- Common Maven tasks are accesed through Eclipse external tools.  Go to 
+ Common Maven tasks are accessible through Eclipse external tools.  Go to 
  Run->External Tools->External Tools.  The following tasks are avalable:
 
     * Symmetric Eclipse
