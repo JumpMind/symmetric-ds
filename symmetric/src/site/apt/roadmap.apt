@@ -22,6 +22,8 @@ Development Roadmap
   * <<PostgreSQL Dialect>>
       
   * <<Apache Derby Dialect>> - Support for the Java embedded database
+
+  * <<Firebird Dialect>>
   
 * Future Releases
  
