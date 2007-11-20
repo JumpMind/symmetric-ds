@@ -31,6 +31,7 @@ import org.apache.ddlutils.PlatformFactory;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.oracle.Oracle10Platform;
 import org.apache.ddlutils.platform.oracle.Oracle8Platform;
+import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -53,9 +54,15 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
         String productName = getDbProductName();
         int majorVersion = getDbMajorVersion();
+        
+        // Try to use latest version of platform, then fallback on default platform
         Platform pf = PlatformFactory.createNewPlatformInstance(productName
                 + majorVersion);
-        pf.setDataSource(dataSource);
+        if (pf == null) {
+        	pf = PlatformFactory.createNewPlatformInstance(dataSource);
+        } else {
+        	pf.setDataSource(dataSource);
+        }
 
         if (pf instanceof MySqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("mysqlDialect");
@@ -63,13 +70,13 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
         } else if (pf instanceof Oracle10Platform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
+        } else if (pf instanceof PostgreSqlPlatform) {
+        	dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
         } else {
             throw new DbNotSupportedException();
-
         }
 
         dialect.init(pf);
-
         return dialect;
     }
 

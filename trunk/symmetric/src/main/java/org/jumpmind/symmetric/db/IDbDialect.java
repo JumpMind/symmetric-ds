@@ -34,7 +34,10 @@ public interface IDbDialect {
     public void initTrigger(DataEventType dml, Trigger config,
             TriggerHistory audit, String tablePrefix, Table table);
 
+    @Deprecated
     public void removeTrigger(String schemaName, String triggerName);
+    
+    public void removeTrigger(String schemaName, String triggerName, String tableName);
 
     public void initConfigDb(String tablePrefix);
 

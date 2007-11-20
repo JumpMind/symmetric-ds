@@ -56,7 +56,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/oracle-transactionid.sql");
+        return getClass().getResource("/dialects/oracle-transactionid.sql");
     }
 
     public boolean isFunctionUpToDate(String name) throws Exception {
@@ -94,6 +94,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
+    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+        removeTrigger(schemaName, triggerName);
+    }
+    
     public String getTransactionTriggerExpression() {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }

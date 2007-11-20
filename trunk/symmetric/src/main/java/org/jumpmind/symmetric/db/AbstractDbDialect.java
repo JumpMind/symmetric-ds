@@ -147,8 +147,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Dialect may optionally override this method to more efficiently lookup up table metadata
      * directly against information schemas. 
      */
-    public Table getMetaDataFor(String schema, String tbNm, boolean useCache) {
-        final String tableName = tbNm.toUpperCase();
+    public Table getMetaDataFor(String schema, String tableName, boolean useCache) {
         Table retTable = cachedModel.findTable(tableName);
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
@@ -175,12 +174,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     private String checkSchema(String schema) {
-        return (schema == null || schema.trim().length() == 0) ? null : schema.toUpperCase();
+        return (schema == null || schema.trim().length() == 0) ? null : schema;
     }
 
-    public Table findTable(String _schema, String _tableName) throws Exception {
+    public Table findTable(String _schema, final String tableName) throws Exception {
         final String schema = checkSchema(_schema);
-        final String tableName = _tableName.toUpperCase();
         return (Table) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 Table table = null;
@@ -339,6 +337,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(createTriggerDDL(dml, trigger, audit, tablePrefix, table));
+                    String postTriggerDml = createPostTriggerDDL(dml, trigger, audit, tablePrefix, table);
+                    if (postTriggerDml != null) {
+                        stmt.executeUpdate(postTriggerDml);
+                    }
                     stmt.close();
                 } finally {
                     if (catalog != null && !catalog.equalsIgnoreCase(previousCatalog)) {
@@ -354,7 +356,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
             Table table) {
         return sqlTemplate.createTriggerDDL(this, dml, config, audit, tablePrefix, table, getDefaultSchema());
     }
-    
+
+    public String createPostTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit, String tablePrefix,
+            Table table) {
+        return sqlTemplate.createPostTriggerDDL(this, dml, config, audit, tablePrefix, table, getDefaultSchema());
+    }
+
     public String getCreateSymmetricDDL() {
         Database db = getConfigDdlDatabase();
         prefixConfigDatabase(db);
@@ -372,7 +379,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 table.setName(tblPrefix + table.getName().toLowerCase());
                 fixForeignKeys(table, tblPrefix, false);
 
-                if (getMetaDataFor(getDefaultSchema(), table.getName().toUpperCase(), false) == null) {
+                if (getMetaDataFor(getDefaultSchema(), table.getName(), false) == null) {
                     createTables = true;
                 }
             }
