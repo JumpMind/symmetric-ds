@@ -30,8 +30,6 @@ import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 
-import javax.sql.DataSource;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
