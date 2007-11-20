@@ -52,7 +52,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/mysql-transactionid.sql");
+        return getClass().getResource("/dialects/mysql-transactionid.sql");
     }
 
     public boolean isFunctionUpToDate(String name) throws Exception {
@@ -91,6 +91,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         } catch (Exception e) {
             logger.warn("Trigger does not exist");
         }
+    }
+    
+    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+        removeTrigger(schemaName, triggerName);
     }
 
     public void disableSyncTriggers() {

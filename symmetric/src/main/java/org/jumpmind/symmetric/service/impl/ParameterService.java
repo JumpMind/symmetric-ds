@@ -86,6 +86,7 @@ public class ParameterService extends AbstractService implements
         } else if (param instanceof Boolean) {
             column = "boolean_value";
             propertyType = GlobalParameterType.BOOLEAN.ordinal();
+            param = (Boolean) param ? 1 : 0;
         } else {
             throw new UnsupportedOperationException();
         }

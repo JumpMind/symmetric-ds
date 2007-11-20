@@ -177,6 +177,21 @@ public class SqlTemplate {
         return ddl;
     }
 
+    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger,
+            TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema) {
+
+        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
+        if (ddl != null) {
+            ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
+            ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger
+                    .getSourceSchemaName().toUpperCase()
+                    + "." : "", ddl);
+            ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(),
+                    ddl);
+        }
+        return ddl;
+    }
+
     private String buildColumnString(String tableAlias, Column[] columns) {
         String columnsText = "";
         for (Column column : columns) {

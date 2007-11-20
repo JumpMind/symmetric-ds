@@ -157,7 +157,7 @@ public class TriggerHistory {
     }
 
     public String getSourceTableName() {
-        return sourceTableName.toUpperCase();
+        return sourceTableName;
     }
 
     public void setSourceTableName(String tableName) {
