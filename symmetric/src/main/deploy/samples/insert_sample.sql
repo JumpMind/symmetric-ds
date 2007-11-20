@@ -25,8 +25,8 @@ values ('store', 'corp', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
 values ('corp', 'store', 'W');
 
-insert into sym_node (node_id, node_group_id, external_id, sync_enabled)
-values ('00000', 'corp', '00000', '1');
+insert into sym_node (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
+values ('00000', 'corp', '00000', '1', '1.1.0');
 insert into sym_node_identity values ('00000');
 
 --
@@ -44,17 +44,17 @@ values('item', 1, 100000, 1, 'Item and pricing data');
 -- Triggers
 --
 insert into sym_trigger 
-(trigger_id, source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values(1, 'item_selling_price', 'corp', 'store', 'item', 1, 1, 1, 100, 'demo', current_timestamp, current_timestamp);
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
+values('item_selling_price', 'corp', 'store', 'item', 1, 1, 1, 100, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
 (trigger_id, source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values(2, 'item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp, current_timestamp);
+values('item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
 (trigger_id, source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values(3, 'transaction', 'store', 'corp', 'transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
+values('transaction', 'store', 'corp', 'transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
 (trigger_id, source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values(4, 'sale_return_line_item', 'store', 'corp', 'transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
+values('sale_return_line_item', 'store', 'corp', 'transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
