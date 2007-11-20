@@ -177,7 +177,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return (schema == null || schema.trim().length() == 0) ? null : schema;
     }
 
-    public Table findTable(String _schema, final String tableName) throws Exception {
+    public Table findTable(String _schema, final String _tableName) throws Exception {
         final String schema = checkSchema(_schema);
         return (Table) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
@@ -187,6 +187,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 metaData.setCatalog(schema);
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
+                String tableName = _tableName;
+                if (!supportsMixedCaseNamesInCatalog()) {
+                    tableName = _tableName.toUpperCase();
+                }
                 ResultSet tableData = metaData.getTables(tableName);
                 while (tableData != null && tableData.next()) {
                     Map<String, Object> values = readColumns(tableData, initColumnsForTable());

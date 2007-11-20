@@ -67,6 +67,8 @@ public interface IDbDialect {
     
     public boolean isEmptyStringNulled();
     
+    public boolean supportsMixedCaseNamesInCatalog();
+    
     public void purge();
     
     public SQLErrorCodeSQLExceptionTranslator getSqlErrorTranslator();

@@ -111,6 +111,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                             new Object[] { triggerName, tableName }) > 0;
     }
 
+    public boolean supportsMixedCaseNamesInCatalog() {
+        return false;
+    }
+
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
 
