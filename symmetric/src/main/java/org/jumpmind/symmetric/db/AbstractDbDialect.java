@@ -90,7 +90,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(8), "15,0");
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
-
+    }
+    
+    public String getDefaultCatalog() {
+        return getDefaultSchema();
     }
 
     public void init(Platform pf) {
@@ -123,7 +126,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createInitalLoadSqlFor(Node node, Trigger config) {
         return sqlTemplate.createInitalLoadSql(node, this, config,
-                getMetaDataFor(config.getSourceSchemaName(), config.getSourceTableName(), true)).trim();
+                getMetaDataFor(getDefaultCatalog(), config.getSourceSchemaName(), config.getSourceTableName(), true)).trim();
     }
 
     public String createPurgeSqlFor(Node node, Trigger trig) {
@@ -132,12 +135,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createCsvDataSql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvDataSql(trig,
-                getMetaDataFor(trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
+                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvPrimaryKeySql(trig,
-                getMetaDataFor(trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
+                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
     }
 
     /**
@@ -147,12 +150,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Dialect may optionally override this method to more efficiently lookup up table metadata
      * directly against information schemas. 
      */
-    public Table getMetaDataFor(String schema, String tableName, boolean useCache) {
+    public Table getMetaDataFor(String catalog, String schema, String tableName, boolean useCache) {
         Table retTable = cachedModel.findTable(tableName);
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = findTable(checkSchema(schema), tableName);
+                    Table table = findTable(catalog, checkSchema(schema), tableName);
 
                     if (retTable != null) {
                         cachedModel.removeTable(retTable);
@@ -177,14 +180,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return (schema == null || schema.trim().length() == 0) ? null : schema;
     }
 
-    public Table findTable(String _schema, final String _tableName) throws Exception {
+    public Table findTable(String _catalog, String _schema, final String _tableName) throws Exception {
         final String schema = checkSchema(_schema);
+        final String catalog = _catalog;
         return (Table) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 Table table = null;
                 DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                 metaData.setMetaData(c.getMetaData());
-                metaData.setCatalog(schema);
+                metaData.setCatalog(catalog);
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
                 String tableName = _tableName;
@@ -383,7 +387,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 table.setName(tblPrefix + table.getName().toLowerCase());
                 fixForeignKeys(table, tblPrefix, false);
 
-                if (getMetaDataFor(getDefaultSchema(), table.getName(), false) == null) {
+                if (getMetaDataFor(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
                     createTables = true;
                 }
             }

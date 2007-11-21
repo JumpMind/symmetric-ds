@@ -139,7 +139,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getMetaDataFor(trigger.getSourceSchemaName(), trigger
+                Table table = dbDialect.getMetaDataFor(dbDialect.getDefaultCatalog(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), false);
 
                 if (table != null) {

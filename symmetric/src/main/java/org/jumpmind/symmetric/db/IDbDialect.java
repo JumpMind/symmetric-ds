@@ -49,7 +49,7 @@ public interface IDbDialect {
 
     public boolean doesTriggerExist(String schema, String tableName, String triggerName);
 
-    public Table getMetaDataFor(String schema, final String tableName, boolean useCache);
+    public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
 
     public String getTransactionTriggerExpression();
 
@@ -80,6 +80,8 @@ public interface IDbDialect {
     public String getSyncTriggersExpression();
 
     public String getDefaultSchema();
+    
+    public String getDefaultCatalog();
     
     public int getStreamingResultsFetchSize();
     
