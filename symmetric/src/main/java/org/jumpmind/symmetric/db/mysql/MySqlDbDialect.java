@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.db.mysql;
 
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
@@ -142,6 +144,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return (String) jdbcTemplate.queryForObject("select database()",
                 String.class);
     }
+    
+    protected String switchSchemasForTriggerInstall(String schema, Connection c) throws SQLException {
+        String previousCatalog = c.getCatalog();
+        c.setCatalog(schema);
+        return previousCatalog;
+    }    
 
     /**
      * According to the documentation (and experience) the jdbc driver for mysql requires the 

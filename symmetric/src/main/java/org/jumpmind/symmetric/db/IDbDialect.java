@@ -70,6 +70,10 @@ public interface IDbDialect {
     
     public boolean supportsMixedCaseNamesInCatalog();
     
+    /**
+     * Implement this if the database has some type of cleanup functionality that needs to be 
+     * run when dropping database objects.  An example is Oracle's 'purge recyclebin'
+     */
     public void purge();
     
     public SQLErrorCodeSQLExceptionTranslator getSqlErrorTranslator();

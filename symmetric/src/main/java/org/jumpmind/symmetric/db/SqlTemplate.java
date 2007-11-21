@@ -44,7 +44,7 @@ public class SqlTemplate {
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
 
     Map<String, String> sqlTemplates;
-    
+
     String triggerPrefix;
 
     String stringColumnTemplate;
@@ -54,7 +54,7 @@ public class SqlTemplate {
     String datetimeColumnTemplate;
 
     String clobColumnTemplate;
-    
+
     String blobColumnTemplate;
 
     String triggerConcatCharacter;
@@ -63,17 +63,11 @@ public class SqlTemplate {
 
     String oldTriggerValue;
 
-    public String createInitalLoadSql(Node node, IDbDialect dialect,
-            Trigger trig, Table metaData) {
+    public String createInitalLoadSql(Node node, IDbDialect dialect, Trigger trig, Table metaData) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName",
-                trig.getSourceSchemaName() != null ? trig
-                        .getSourceSchemaName()
-                        + "." : "", sql);
-        sql = replace("whereClause",
-                trig.getInitialLoadSelect() == null ? "1=1" : trig
-                        .getInitialLoadSelect(), sql);
+        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = replace("whereClause", trig.getInitialLoadSelect() == null ? "1=1" : trig.getInitialLoadSelect(), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
         sql = replace("groupId", node.getNodeGroupId(), sql);
@@ -97,10 +91,7 @@ public class SqlTemplate {
     public String createCsvDataSql(Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName",
-                trig.getSourceSchemaName() != null ? trig
-                        .getSourceSchemaName()
-                        + "." : "", sql);
+        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
@@ -108,63 +99,46 @@ public class SqlTemplate {
         sql = replace("columns", columnsText, sql);
         return sql;
     }
-    
+
     public String createCsvPrimaryKeySql(Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
         sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName",
-                trig.getSourceSchemaName() != null ? trig
-                        .getSourceSchemaName()
-                        + "." : "", sql);
+        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString("t", columns);
         sql = replace("columns", columnsText, sql);
         return sql;
-    } 
+    }
 
-    public String createTriggerDDL(IDbDialect dialect, DataEventType dml,
-            Trigger trigger, TriggerHistory history, String tablePrefix,
-            Table metaData, String defaultSchema) {
+    public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
+            String tablePrefix, Table metaData, String defaultSchema) {
 
-        String ddl = sqlTemplates.get(dml.name().toLowerCase()
-                + "TriggerTemplate");
+        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
         if (ddl == null) {
-            throw new NotImplementedException(dml.name()
-                    + " trigger is not implemented for "
+            throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + dialect.getPlatform().getName());
         }
-        ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(),
+        ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
+        ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(), ddl);
+        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName().toUpperCase()
+                + "." : "", ddl);
+        ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
-        ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(),
-                ddl);        
-        ddl = replace("schemaName",
-                trigger.getSourceSchemaName() != null ? trigger
-                        .getSourceSchemaName().toUpperCase()
-                        + "." : "", ddl);
-        ddl = replace("defaultSchema", defaultSchema != null
-                && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
-        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(),
-                ddl);
+        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
-        ddl = replace("triggerHistoryId", Integer.toString(history
-                .getTriggerHistoryId()), ddl);
-        ddl = replace("txIdExpression",
-                trigger.getTxIdExpression() == null ? dialect
-                        .getTransactionTriggerExpression() : trigger
-                        .getTxIdExpression(), ddl);
+        ddl = replace("triggerHistoryId", Integer.toString(history.getTriggerHistoryId()), ddl);
+        ddl = replace("txIdExpression", trigger.getTxIdExpression() == null ? dialect.getTransactionTriggerExpression()
+                : trigger.getTxIdExpression(), ddl);
         ddl = replace("nodeSelectWhere", trigger.getNodeSelect(), ddl);
-        ddl = replace("syncOnInsertCondition", trigger
-                .getSyncOnInsertCondition(), ddl);
-        ddl = replace("syncOnUpdateCondition", trigger
-                .getSyncOnUpdateCondition(), ddl);
-        ddl = replace("syncOnDeleteCondition", trigger
-                .getSyncOnDeleteCondition(), ddl);
-        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1" :
-                dialect.getSyncTriggersExpression(), ddl);
+        ddl = replace("syncOnInsertCondition", trigger.getSyncOnInsertCondition(), ddl);
+        ddl = replace("syncOnUpdateCondition", trigger.getSyncOnUpdateCondition(), ddl);
+        ddl = replace("syncOnDeleteCondition", trigger.getSyncOnDeleteCondition(), ddl);
+        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1" : dialect
+                .getSyncTriggersExpression(), ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(newTriggerValue, columns);
@@ -174,20 +148,39 @@ public class SqlTemplate {
         columnsText = buildColumnString(oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
 
+        ddl = replace("oldNewPrimaryKeyJoin", oldNewPrimaryKeyJoin(columns), ddl);
+
         return ddl;
     }
 
-    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger,
-            TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema) {
+    private String oldNewPrimaryKeyJoin(Column[] columns) {
+        StringBuilder b = new StringBuilder();
+        for (Column column : columns) {
+            b.append(oldTriggerValue);
+            b.append(".");
+            b.append(column.getName());
+            b.append("=");
+            b.append(newTriggerValue);
+            b.append(".");
+            b.append(column.getName());
+            if (!column.equals(columns[columns.length - 1])) {
+                b.append(" and ");
+            }
+        }
+
+        return b.toString();
+    }
+
+    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
+            String tablePrefix, Table metaData, String defaultSchema) {
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         if (ddl != null) {
             ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
-            ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger
-                    .getSourceSchemaName().toUpperCase()
+            ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
+                    .toUpperCase()
                     + "." : "", ddl);
-            ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(),
-                    ddl);
+            ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(), ddl);
         }
         return ddl;
     }
@@ -238,8 +231,7 @@ public class SqlTemplate {
             case Types.STRUCT:
             case Types.REF:
             case Types.DATALINK:
-                throw new NotImplementedException(column.getName()
-                        + " is of type " + column.getType());
+                throw new NotImplementedException(column.getName() + " is of type " + column.getType());
             }
 
             if (templateToUse != null) {
@@ -248,17 +240,14 @@ public class SqlTemplate {
                 throw new NotImplementedException();
             }
 
-            columnsText = columnsText + "\n          "
-                    + replace("columnName", column.getName(), templateToUse);
+            columnsText = columnsText + "\n          " + replace("columnName", column.getName(), templateToUse);
 
         }
 
-        String LAST_COMMAN_TOKEN = triggerConcatCharacter + "','"
-                + triggerConcatCharacter;
+        String LAST_COMMAN_TOKEN = triggerConcatCharacter + "','" + triggerConcatCharacter;
 
         if (columnsText.endsWith(LAST_COMMAN_TOKEN)) {
-            columnsText = columnsText.substring(0, columnsText.length()
-                    - LAST_COMMAN_TOKEN.length());
+            columnsText = columnsText.substring(0, columnsText.length() - LAST_COMMAN_TOKEN.length());
         }
 
         return replace("tableAlias", tableAlias, columnsText);
