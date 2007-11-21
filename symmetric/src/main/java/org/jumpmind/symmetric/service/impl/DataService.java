@@ -25,9 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +49,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
@@ -97,28 +94,24 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long insertData(final Data data) {
-        return (Long) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                PreparedStatement ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
-                ps.setString(1, data.getChannelId());
-                ps.setString(2, data.getTableName());
-                ps.setString(3, data.getEventType().getCode());
-                ps.setString(4, data.getRowData());
-                ps.setString(5, data.getPkData());
-                ps.setLong(6, data.getAudit().getTriggerHistoryId());
-                ps.execute();
-                ResultSet rs = ps.getGeneratedKeys();
-                rs.next();
-                long dataId = rs.getLong(1);
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(ps);
-                return dataId;
-            }
-        });
+        return dbDialect.insertWithGeneratedKey(insertIntoDataSql, "sym_data_data_id_seq",
+                new PreparedStatementCallback() {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
+                            DataAccessException {
+                        ps.setString(1, data.getChannelId());
+                        ps.setString(2, data.getTableName());
+                        ps.setString(3, data.getEventType().getCode());
+                        ps.setString(4, data.getRowData());
+                        ps.setString(5, data.getPkData());
+                        ps.setLong(6, data.getAudit().getTriggerHistoryId());
+                        return null;
+                    }
+                });
     }
 
     public void insertDataEvent(DataEvent dataEvent) {
-        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(), dataEvent.getNodeId() });
+        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(), dataEvent.getNodeId(),
+                dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0});
     }
 
     public void insertDataEvent(Data data, List<Node> nodes) {

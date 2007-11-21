@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,41 +21,53 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.AbstractTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
-import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEvent;
+import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.jdbc.core.RowMapper;
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class AcknowledgeServiceTest extends AbstractTest {
+    
+    protected IAcknowledgeService ackService;
+    
+    protected IOutgoingBatchService outgoingBatchService;
+    
+    protected IDataService dataService;
+
+    @BeforeTest(groups="continuous")
+    protected void setUp() {
+        ackService = (IAcknowledgeService) getBeanFactory().getBean(Constants.ACKNOWLEDGE_SERVICE);
+        outgoingBatchService = (IOutgoingBatchService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_SERVICE);
+        dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
+    }
+    
     @Test(groups = "continuous")
     public void okTest() {
         cleanSlate();
-        IAcknowledgeService service = (IAcknowledgeService) getBeanFactory()
-                .getBean(Constants.ACKNOWLEDGE_SERVICE);
         ArrayList<BatchInfo> list = new ArrayList<BatchInfo>();
         list.add(new BatchInfo("1"));
-        service.ack(list);
+        ackService.ack(list);
 
-        List<OutgoingBatchHistory> history = getOutgoingBatchHistory(1);
+        List<OutgoingBatchHistory> history = getOutgoingBatchHistory("1");
         Assert.assertEquals(history.size(), 1);
         OutgoingBatchHistory hist = history.get(0);
         Assert.assertEquals(hist.getBatchId(), 1);
@@ -69,56 +82,58 @@ public class AcknowledgeServiceTest extends AbstractTest {
     @Test(groups = "continuous")
     public void unspecifiedErrorTest() {
         cleanSlate();
-        makeFakeBatch(1, 5);
-        errorTestCore(1, -1, -1);
+        OutgoingBatch batch = createOutgoingBatch();
+        createDataEvents(batch, 5);
+        errorTestCore(batch.getBatchId(), -1, -1);
     }
 
     @Test(groups = "continuous")
     public void errorTest() {
         cleanSlate();
-        long[] id = makeFakeBatch(1, 5);
-        errorTestCore(1, 3, id[2]);
+        OutgoingBatch batch = createOutgoingBatch();
+        long dataId[] = createDataEvents(batch, 5);
+        errorTestCore(batch.getBatchId(), 3, dataId[2]);
     }
 
     @Test(groups = "continuous")
     public void errorTestBoundary1() {
         cleanSlate();
-        long[] id = makeFakeBatch(1, 5);
-        errorTestCore(1, 1, id[0]);
+        OutgoingBatch batch = createOutgoingBatch();
+        long dataId[] = createDataEvents(batch, 5);
+        errorTestCore(batch.getBatchId(), 1, dataId[0]);
     }
 
     @Test(groups = "continuous")
     public void errorTestBoundary2() {
         cleanSlate();
-        long[] id = makeFakeBatch(1, 5);
-        errorTestCore(1, 5, id[id.length - 1]);
+        OutgoingBatch batch = createOutgoingBatch();
+        long dataId[] = createDataEvents(batch, 5);
+        errorTestCore(batch.getBatchId(), 5, dataId[dataId.length - 1]);
     }
 
     @Test(groups = "continuous")
     public void errorErrorTest() {
         cleanSlate();
-        makeFakeBatch(1, 5);
-        errorTestCore(1, 7, -1);
+        OutgoingBatch batch = createOutgoingBatch();
+        createDataEvents(batch, 5);
+        errorTestCore(batch.getBatchId(), 7, -1);
     }
 
-    protected void errorTestCore(int batchId, int errorLine,
-            long expectedResults) {
-        IAcknowledgeService service = (IAcknowledgeService) getBeanFactory()
-                .getBean(Constants.ACKNOWLEDGE_SERVICE);
+    protected void errorTestCore(String batchId, int errorLine, long expectedResults) {
         ArrayList<BatchInfo> list = new ArrayList<BatchInfo>();
-        list.add(new BatchInfo(Integer.toString(batchId), errorLine));
-        service.ack(list);
+        list.add(new BatchInfo(batchId, errorLine));
+        ackService.ack(list);
 
         List<OutgoingBatchHistory> history = getOutgoingBatchHistory(batchId);
         Assert.assertEquals(history.size(), 1);
         OutgoingBatchHistory hist = history.get(0);
-        Assert.assertEquals(hist.getBatchId(), batchId);
+        Assert.assertEquals(String.valueOf(hist.getBatchId()), batchId);
         Assert.assertEquals(hist.getStatus(), OutgoingBatchHistory.Status.ER);
         Assert.assertEquals(hist.getFailedDataId(), expectedResults);
     }
 
     @SuppressWarnings("unchecked")
-    protected List<OutgoingBatchHistory> getOutgoingBatchHistory(int batchId) {
+    protected List<OutgoingBatchHistory> getOutgoingBatchHistory(String batchId) {
         final String sql = "select batch_id, status, data_event_count, event_time, "
                 + "failed_data_id from " + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
         final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
@@ -138,64 +153,31 @@ public class AcknowledgeServiceTest extends AbstractTest {
         return list;
     }
 
-    protected void executeSql(String file) {
-        new SqlScript(getClass().getResource(file), getDataSource()).execute();
+    protected OutgoingBatch createOutgoingBatch() {
+        OutgoingBatch batch = new OutgoingBatch();
+        batch.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        batch.setChannelId(TestConstants.TEST_CHANNEL_ID);
+        batch.setBatchType("EV");
+        batch.setStatus("SE");
+        batch.setCreateTime(new Date());
+        outgoingBatchService.insertOutgoingBatch(batch);
+        return batch;
     }
 
-    protected long[] makeFakeBatch(final int batchId, int size) {
+    protected long[] createDataEvents(OutgoingBatch batch, int size) {
+        TriggerHistory audit = new TriggerHistory();
+        audit.setTriggerHistoryId(TestConstants.TEST_AUDIT_ID);
         final long[] id = new long[size];
-        this
-                .getJdbcTemplate()
-                .update(
-                        "insert into " + TestConstants.TEST_PREFIX + "outgoing_batch (batch_id,node_id,channel_id,batch_type,status,create_time) values("
-                                + batchId
-                                + ",'"
-                                + TestConstants.TEST_CLIENT_EXTERNAL_ID
-                                + "','"
-                                + TestConstants.TEST_CHANNEL_ID
-                                + "','EV','SE',current_timestamp)");
         for (int i = 0; i < size; i++) {
-            final long dataId = (Long) this.getJdbcTemplate().execute(
-                    new ConnectionCallback() {
-
-                        public Object doInConnection(Connection connection)
-                                throws SQLException, DataAccessException {
-                            Statement s = connection.createStatement();
-                            s
-                                    .executeUpdate("insert into " + TestConstants.TEST_PREFIX + "data (table_name, trigger_hist_id) values ('table1', "
-                                            + TestConstants.TEST_AUDIT_ID
-                                            + ");");
-                            ResultSet rs = s.getGeneratedKeys();
-                            rs.next();
-                            return rs.getLong(1);
-                        }
-
-                    });
-            id[i] = dataId;
-            this.getJdbcTemplate().execute(new ConnectionCallback() {
-
-                public Object doInConnection(Connection connection)
-                        throws SQLException, DataAccessException {
-                    PreparedStatement s = connection
-                            .prepareStatement("insert into " + TestConstants.TEST_PREFIX + "data_event (data_id, node_id, batch_id) values (?, '"
-                                    + TestConstants.TEST_CLIENT_EXTERNAL_ID + "', ?)");
-                    s.setLong(1, dataId);
-                    s.setInt(2, batchId);
-                    s.executeUpdate();
-                    return null;
-                }
-
-            });
+            Data data = new Data(TestConstants.TEST_CHANNEL_ID, "table1", DataEventType.INSERT,
+                    "some data", "some data", audit);
+            id[i] = dataService.insertData(data);
+            DataEvent dataEvent = new DataEvent(id[i], TestConstants.TEST_CLIENT_EXTERNAL_ID);
+            dataEvent.setBatchId(Long.valueOf(batch.getBatchId()));
+            dataEvent.setBatched(true);
+            dataService.insertDataEvent(dataEvent);
         }
         return id;
-    }
-
-    protected DataSource getDataSource() {
-        return (DataSource) getBeanFactory().getBean("dataSource");
-    }
-
-    protected JdbcTemplate getJdbcTemplate() {
-        return new JdbcTemplate(getDataSource());
     }
 
 }

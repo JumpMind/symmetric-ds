@@ -25,11 +25,14 @@ import java.util.StringTokenizer;
 import org.jumpmind.symmetric.AbstractTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.transport.mock.MockOutgoingTransport;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
@@ -38,48 +41,64 @@ import org.testng.annotations.Test;
 public class DataExtractorServiceTest extends AbstractTest {
 
     protected IDataExtractorService dataExtractorService;
-    
+
     protected IConfigurationService configurationService;
-    
+
+    protected IDataService dataService;
+
     protected Node node;
-    
-    @BeforeTest(groups="continuous")
+
+    @BeforeTest(groups = "continuous")
     protected void setUp() {
-        dataExtractorService = (IDataExtractorService) getBeanFactory().getBean(Constants.DATAEXTRACTOR_SERVICE);
+        dataExtractorService = (IDataExtractorService) getBeanFactory().getBean(
+                Constants.DATAEXTRACTOR_SERVICE);
         configurationService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
+        dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testInitialLoadExtract() throws Exception {
-        ((IBootstrapService)getBeanFactory().getBean(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
+        ((IBootstrapService) getBeanFactory().getBean(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
-        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP), mockTransport);
+        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(
+                TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP),
+                mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(11, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
-        Assert.assertTrue(loadResults.contains("insert, \"CORP\",\"Central Office\""), "Did not find expected insert for CORP");
-        Assert.assertTrue(loadResults.startsWith("nodeid, 00001"), "Unexpected line at the start of the feed.");
-    }
-    
-    private int countLines(String results) {
-        return new StringTokenizer(results, "\n").countTokens();
+        Assert.assertEquals(11, countLines(loadResults), "Unexpected number of lines in the csv result: "
+                + loadResults);
+        Assert.assertTrue(loadResults.contains("insert, \"CORP\",\"Central Office\""),
+                "Did not find expected insert for CORP");
+        Assert.assertTrue(loadResults.startsWith("nodeid, 00001"),
+                "Unexpected line at the start of the feed.");
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testExtract() throws Exception {
-        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data", TestConstants.TEST_PREFIX + "outgoing_batch");
-        OutgoingBatchServiceTest obst = new OutgoingBatchServiceTest();
-        obst.init();
-        int dataId = obst.createData("Foo", TestConstants.TEST_AUDIT_ID, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT); 
-        obst.createEvent(dataId, node.getNodeId());
-        
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        createDataEvent("Foo", TestConstants.TEST_AUDIT_ID, TestConstants.TEST_CHANNEL_ID,
+                DataEventType.INSERT, node.getNodeId());
+
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         mockTransport.open();
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
-        
-        Assert.assertEquals(countLines(loadResults), 7, "Unexpected number of lines in the transport result: " + loadResults);
+
+        Assert.assertEquals(countLines(loadResults), 7,
+                "Unexpected number of lines in the transport result: " + loadResults);
     }
 
+    private int countLines(String results) {
+        return new StringTokenizer(results, "\n").countTokens();
+    }
+
+    private void createDataEvent(String tableName, int auditId, String channelId, DataEventType type,
+            String nodeId) {
+        TriggerHistory audit = new TriggerHistory();
+        audit.setTriggerHistoryId(auditId);
+        Data data = new Data(channelId, tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
+        dataService.insertDataEvent(data, nodeId);
+    }
 }
