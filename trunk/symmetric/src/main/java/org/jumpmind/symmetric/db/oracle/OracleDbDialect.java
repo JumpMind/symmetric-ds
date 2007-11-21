@@ -121,7 +121,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
-
     }
 
     public void disableSyncTriggers() {

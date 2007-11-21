@@ -20,110 +20,76 @@
 
 package org.jumpmind.symmetric.db.mssql;
 
-import java.net.URL;
-import java.util.Date;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
 
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(MsSqlDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
-
     protected void initForSpecificDialect() {
-        try {
-            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
-                logger
-                        .info("Creating function "
-                                + TRANSACTION_ID_FUNCTION_NAME);
-                new SqlScript(getTransactionIdSqlUrl(), getPlatform()
-                        .getDataSource(), '/').execute();
-            }
-        } catch (Exception ex) {
-            logger.error("Error while initializing MySql.", ex);
-        }
-    }
-
-    private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/dialects/mssql-transactionid.sql");
-    }
-
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        long lastModified = getTransactionIdSqlUrl().openConnection()
-                .getLastModified();
-        String checkSchema = (getDefaultSchema() != null && getDefaultSchema()
-                .length() > 0) ? " and routine_schema='" + getDefaultSchema()
-                + "'" : "";
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from information_schema.routines where created >= ? and routine_name=?"
-                                + checkSchema, new Object[] {
-                                new Date(lastModified), name }) > 0;
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema,
-            String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null
-                : getDefaultSchema()) : schema;
-        String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema='"
-                + schema + "'"
-                : "";
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                                + checkSchema, new Object[] { triggerName,
-                                tableName }) > 0;
+    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+        return jdbcTemplate.queryForInt(
+                "select count(*) from sysobjects where type = 'TR' AND name = ?"                
+                        , new Object[] { triggerName }) > 0;
     }
 
     public void disableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "=1");
+        jdbcTemplate.update("set context_info 0x1");
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "=null");
+        jdbcTemplate.update("set context_info 0x0");
     }
-    
+
     public String getSyncTriggersExpression() {
-        return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
+        return "select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID";
     }
 
     public String getTransactionTriggerExpression() {
-        return getDefaultSchema() + "." + TRANSACTION_ID_FUNCTION_NAME + "()";
+        return "@TransactionId";
     }
 
+    /**
+     * SQL Server always pads character fields out to the right to fill out field with space characters.
+     * @return true always
+     */
     public boolean isCharSpacePadded() {
-        return false;
-    }
-
-    public boolean isCharSpaceTrimmed() {
         return true;
     }
 
+    /**
+     * @return false always
+     */
+    public boolean isCharSpaceTrimmed() {
+        return false;
+    }
+
+    /**
+     * SQL Server pads an empty string with spaces.
+     * @return false always
+     */
     public boolean isEmptyStringNulled() {
         return false;
     }
 
+    /**
+     * Nothing to do for SQL Server
+     */
     public void purge() {
     }
-    
+
     public String getDefaultCatalog() {
-        return (String) jdbcTemplate.queryForObject("select DB_NAME()",
-                String.class);
+        return (String) jdbcTemplate.queryForObject("select DB_NAME()", String.class);
     }
 
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()",
-                String.class);
+        return (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
     }
 
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
@@ -134,20 +100,18 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
             logger.warn("Trigger does not exist");
         }
     }
+    
+    public void removeTrigger(String schemaName, String triggerName) {
+        removeTrigger(schemaName, triggerName, null);
+    }
 
+    /**
+     * SQL Server is case insensitive.
+     * @return false always
+     */
     public boolean supportsMixedCaseNamesInCatalog() {
         return false;
     }
 
-    public void removeTrigger(String schemaName, String triggerName) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
-        } catch (Exception e) {
-            logger.warn("Trigger does not exist");
-        }
-    }
-    
-    
 
 }

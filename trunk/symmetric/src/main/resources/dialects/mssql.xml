@@ -9,7 +9,7 @@
     <bean id="msSqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"'),'"')),',',]]>
+              <![CDATA[ case $(tableAlias).$(columnName) when null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
             </value>
         </constructor-arg>
     </bean>
@@ -23,104 +23,95 @@
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
                 <property name="clobColumnTemplate" ref="msSqlStringTemplate" />
+                <!-- 
                 <property name="blobColumnTemplate">
                     <value>
                         <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName)),',',]]>
                     </value>
                 </property>
+                 -->
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), ''),',',]]>
+                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), '') +','+]]>
                     </value>
                 </property>
                 <!-- TODO -->
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
+                        <![CDATA[case $(tableAlias).$(columnName) when null then '' else ('"' + cast($(tableAlias).$(columnName) as char) + '"')+','+]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value=","/>
-                <property name="newTriggerValue" value="new"/>
-                <property name="oldTriggerValue" value="old"/>
+                <property name="triggerConcatCharacter" value="+"/>
+                <property name="newTriggerValue" value="inserted"/>
+                <property name="oldTriggerValue" value="deleted"/>
                 <property name="sqlTemplates">
                     <map>           
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after insert on $(schemaName)$(tableName)
-                                for each row begin
-                                  if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
-                                    values(
-                                      '$(targetTableName)',
-                                      '$(channelName)',
-                                      'I',
-                                      $(triggerHistoryId),
-                                      $(txIdExpression),
-                                      concat($(columns)
-                                       ),
-                                      CURRENT_TIMESTAMP
-                                    );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
-                                  end if;
-                                end
+                                create trigger $(triggerName) on $(schemaName)$(tableName) after insert as
+                                begin
+                                  declare @TransactionId varchar(1000)
+                                  declare @SyncEnabled varbinary(128)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  $(syncOnIncomingBatchCondition) 
+                                  if (@SyncEnabled <> 0x1) begin
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
+                                     (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                     $(syncOnInsertCondition) and c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                  end
+                                end                                
                                 ]]>
                             </value>
                         </entry>
                         <entry key="updateTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after update on $(schemaName)$(tableName)
-                                for each row begin
-                                  if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
-                                    values(
-                                      '$(targetTableName)',
-                                      '$(channelName)',      
-                                      'U',
-                                      $(triggerHistoryId),
-                                      $(txIdExpression),
-                                      concat($(oldKeys)
-                                       ),
-                                      concat($(columns)
-                                       ),
-                                      CURRENT_TIMESTAMP
-                                    );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
-                                  end if;
-                                end
+                                create trigger $(triggerName) on $(schemaName)$(tableName) after update as
+                                begin
+                                  declare @TransactionId varchar(1000)
+                                  declare @SyncEnabled varbinary(128)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  $(syncOnIncomingBatchCondition) 
+                                  if (@SyncEnabled <> 0x1) begin
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
+                                     (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition));
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                     $(syncOnUpdateCondition) and c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                  end
+                                end                                  
                                 ]]>
                             </value>
                         </entry>
                         <entry key="deleteTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                create trigger $(triggerName) after delete on $(schemaName)$(tableName)
-                                for each row begin
-                                  if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
-                                    values(
-                                      '$(targetTableName)',
-                                      '$(channelName)',
-                                      'D',
-                                      $(triggerHistoryId),
-                                      $(txIdExpression),
-                                      concat($(oldKeys)
-                                       ),
-                                      CURRENT_TIMESTAMP
-                                    );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
-                                  end if;
-                                end
+                                create trigger $(triggerName) on $(schemaName)$(tableName) after delete as
+                                begin
+                                  declare @TransactionId varchar(1000)
+                                  declare @SyncEnabled varbinary(128)
+                                  if (@@TRANCOUNT > 0) begin
+                                    execute sp_getbindtoken @TransactionId output;
+                                  end
+                                  $(syncOnIncomingBatchCondition) 
+                                  if (@SyncEnabled <> 0x1) begin
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time) 
+                                     (select '$(targetTableName)','$(channelName)','D', $(triggerHistoryId), $(txIdExpression), $(oldKeys), current_timestamp from deleted where $(syncOnUpdateCondition));
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                     $(syncOnUpdateCondition) and c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                  end
+                                end                                   
                                 ]]>
                             </value>
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
                             </value>
                         </entry>
                     </map>

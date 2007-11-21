@@ -339,14 +339,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
             final String tablePrefix, final Table table) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                String catalog = trigger.getSourceSchemaName();
+                String previousSourceSchema = trigger.getSourceSchemaName();
                 logger.info("Creating " + dml.toString() + " trigger for "
-                        + (catalog != null ? (catalog + ".") : "") + trigger.getSourceTableName());
-                String previousCatalog = con.getCatalog();
+                        + (previousSourceSchema != null ? (previousSourceSchema + ".") : "") + trigger.getSourceTableName());
+                String previousCatalog = null;
                 try {
-                    if (catalog != null) {
-                        con.setCatalog(catalog);
-                    }
+                    previousCatalog = switchSchemasForTriggerInstall(previousSourceSchema, con);
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate(createTriggerDDL(dml, trigger, audit, tablePrefix, table));
                     String postTriggerDml = createPostTriggerDDL(dml, trigger, audit, tablePrefix, table);
@@ -355,13 +353,20 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                     stmt.close();
                 } finally {
-                    if (catalog != null && !catalog.equalsIgnoreCase(previousCatalog)) {
-                        con.setCatalog(previousCatalog);
+                    if (previousSourceSchema != null && !previousSourceSchema.equalsIgnoreCase(previousCatalog)) {
+                       switchSchemasForTriggerInstall(previousCatalog, con);
                     }
                 }
                 return null;
             }
         });
+    }
+    
+    /**
+     * Provide the option switch a connection's schema for trigger installation.
+     */
+    protected String switchSchemasForTriggerInstall(String schema, Connection c) throws SQLException {
+        return null;
     }
 
     public String createTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit, String tablePrefix,
