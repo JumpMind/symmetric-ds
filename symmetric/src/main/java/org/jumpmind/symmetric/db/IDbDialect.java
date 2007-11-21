@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
@@ -88,5 +89,12 @@ public interface IDbDialect {
     public JdbcTemplate getJdbcTemplate();
     
     public String getCreateSymmetricDDL();
+    
+    public String getSelectLastInsertIdSql(String sequenceName);
+    
+    public long insertWithGeneratedKey(final String sql, final String sequenceName);
+    
+    public long insertWithGeneratedKey(final String sql, final String sequenceName,
+            final PreparedStatementCallback psCallback);
     
 }
