@@ -134,7 +134,7 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
         if (value != null && getDbDialect().isCharSpacePadded()) {
             return StringUtils.rightPad(value, size);
         } else if (value != null && getDbDialect().isCharSpaceTrimmed()) {
-            return value.trim();
+            return value.replaceFirst(" *$", "");
         }
         return value;
     }
