@@ -7,6 +7,8 @@ public class DataEvent {
     private String nodeId;
     
     private Long batchId;
+    
+    private boolean batched;
 
     public DataEvent() {
     }
@@ -38,6 +40,14 @@ public class DataEvent {
 
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public boolean isBatched() {
+        return batched;
+    }
+
+    public void setBatched(boolean batched) {
+        this.batched = batched;
     }
 
 }
