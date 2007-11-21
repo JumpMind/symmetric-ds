@@ -91,19 +91,20 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatch(IncomingBatch status) {
-        jdbcTemplate.update(insertIncomingBatchSql, new Object[] { status.getBatchId(), status.getNodeId(),
-                status.getStatus().toString() });
+        jdbcTemplate.update(insertIncomingBatchSql, new Object[] { Long.valueOf(status.getBatchId()),
+                status.getNodeId(), status.getStatus().toString() });
     }
 
     public int updateIncomingBatch(IncomingBatch status) {
         return jdbcTemplate.update(updateIncomingBatchSql, new Object[] { status.getStatus().toString(),
-                status.getBatchId(), status.getNodeId(), IncomingBatch.Status.ER.toString() });
+                Long.valueOf(status.getBatchId()), status.getNodeId(), IncomingBatch.Status.ER.toString() });
     }
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { history.getBatchId(), history.getNodeId(),
-                history.getStatus().toString(), history.getHostName(), history.getStatementCount(),
-                history.getFallbackInsertCount(), history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
+        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { Long.valueOf(history.getBatchId()),
+                history.getNodeId(), history.getStatus().toString(), history.getHostName(),
+                history.getStatementCount(), history.getFallbackInsertCount(),
+                history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
                 history.getFailedRowNumber(), history.getStartTime(), history.getEndTime() });
     }
 
