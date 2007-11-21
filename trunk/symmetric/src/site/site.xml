@@ -10,6 +10,9 @@
             name="Powered by Sourceforge" href="http://sourceforge.net" />
         <logo img="images/logos/maven-feather.png" name="Powered by Apache Maven"
             href="http://maven.apache.org/" />
+        <!-- AddThis Bookmark Button BEGIN -->
+<a href="http://www.addthis.com/bookmark.php" onclick="window.open('http://www.addthis.com/bookmark.php?pub=ejboy&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'addthis', 'scrollbars=yes,menubar=no,width=620,height=520,resizable=yes,toolbar=no,location=no,status=no'); return false;" title="Bookmark using any bookmark manager!" target="_blank"><img src="http://www.addthis.com/images/button1-bm.gif" width="125" height="16" border="0" alt="AddThis Social Bookmark Button" /></a>
+<!-- AddThis Bookmark Button END -->
     </poweredBy>
     <body>
         <links>

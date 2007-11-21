@@ -86,7 +86,7 @@ public class TableTemplate {
         this.dbDialect = dbDialect;
         this.columnFilter = columnFilter;
         // TODO should we be passing the schema in the csv?
-        table = dbDialect.getMetaDataFor(null, tableName, true);
+        table = dbDialect.getMetaDataFor(null, null, tableName, true);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
 
