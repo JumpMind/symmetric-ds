@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -67,6 +69,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private JdbcTemplate outgoingBatchQueryTemplate;
 
     private IOutgoingBatchHistoryService historyService;
+    
+    private IDbDialect dbDialect;
 
     /**
      * Create a batch and mark events as tied to that batch.  We iterate through 
@@ -174,23 +178,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         });
     }
 
-    private void insertOutgoingBatch(Connection conn, OutgoingBatch outgoingBatch) throws SQLException {
-        // TODO: move generated key retrieval to DbDialect
-        PreparedStatement insert = conn.prepareStatement(createBatchSql, new int[] { 1 });
-        insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-        insert.setString(1, outgoingBatch.getNodeId());
-        insert.setString(2, outgoingBatch.getChannelId());
-        insert.setString(3, outgoingBatch.getStatus().name());
-        insert.setString(4, outgoingBatch.getBatchType().getCode());
-        insert.execute();
-        ResultSet rs = insert.getGeneratedKeys();
-        if (rs.next()) {
-            outgoingBatch.setBatchId(rs.getString(1));
-        } else {
-            throw new RuntimeException("Unable to get batch id");
-        }
-        JdbcUtils.closeResultSet(rs);
-        JdbcUtils.closeStatement(insert);
+    private void insertOutgoingBatch(Connection conn, final OutgoingBatch outgoingBatch) throws SQLException {
+        long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id_seq",
+                new PreparedStatementCallback() {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
+                            DataAccessException {
+                        ps.setString(1, outgoingBatch.getNodeId());
+                        ps.setString(2, outgoingBatch.getChannelId());
+                        ps.setString(3, outgoingBatch.getStatus().name());
+                        ps.setString(4, outgoingBatch.getBatchType().getCode());
+                        return null;
+                    }
+                });
+        outgoingBatch.setBatchId(String.valueOf(batchId));
     }
 
     /**
@@ -309,6 +309,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setSelectOutgoingBatchErrorsSql(String selectOutgoingBatchErrorsSql) {
         this.selectOutgoingBatchErrorsSql = selectOutgoingBatchErrorsSql;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
 }

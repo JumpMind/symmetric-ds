@@ -181,6 +181,7 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="configurationService" ref="configurationService" />
         <property name="historyService" ref="outgoingBatchHistoryService" />
+        <property name="dbDialect" ref="dbDialect" />
         <property name="outgoingBatchQueryTemplate">
             <bean class="org.springframework.jdbc.core.JdbcTemplate">
                 <property name="dataSource" ref="dataSource" />
@@ -282,7 +283,8 @@
         </property>
         <property name="insertIntoDataEventSql">
             <value>
-                insert into ${sync.table.prefix}_data_event (data_id, node_id) values(?, ?)
+                insert into ${sync.table.prefix}_data_event (data_id, node_id, batch_id, batched)
+                values(?, ?, ?, ?)
             </value>
         </property>
     </bean>
