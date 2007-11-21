@@ -114,6 +114,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getTransactionTriggerExpression() {
         return getDefaultSchema() + "." + TRANSACTION_ID_FUNCTION_NAME + "()";
     }
+    
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        return "select last_insert_id()";
+    }
 
     public boolean isCharSpacePadded() {
         return false;

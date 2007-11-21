@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,6 +53,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
@@ -74,6 +76,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected String tablePrefix;
 
     private int streamingResultsFetchSize;
+    
+    private Boolean supportsGetGeneratedKeys;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -458,6 +462,65 @@ abstract public class AbstractDbDialect implements IDbDialect {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData meta = c.getMetaData();
                 return meta.getDatabaseMajorVersion() + "." + meta.getDatabaseMinorVersion();
+            }
+        });
+    }
+
+    public boolean supportsGetGeneratedKeys() {
+        if (supportsGetGeneratedKeys == null) {
+            supportsGetGeneratedKeys = (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                    return conn.getMetaData().supportsGetGeneratedKeys();
+                }
+            });
+        }
+        return supportsGetGeneratedKeys;
+    }
+
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public long insertWithGeneratedKey(final String sql, final String sequenceName) {
+        return insertWithGeneratedKey(sql, sequenceName, null);
+    }
+    
+    public long insertWithGeneratedKey(final String sql, final String sequenceName,
+            final PreparedStatementCallback callback) {
+        return (Long) jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                long key = 0;
+                PreparedStatement ps = null;
+                boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
+                if (supportsGetGeneratedKeys) {
+                    ps = conn.prepareStatement(sql, new int[] { 1 });
+                } else {
+                    String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
+                    ps = conn.prepareStatement(replaceSql);
+                }
+                ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                if (callback != null) {
+                    callback.doInPreparedStatement(ps);
+                }
+                ps.execute();
+
+                if (supportsGetGeneratedKeys) {
+                    ResultSet rs = ps.getGeneratedKeys();
+                    if (rs.next()) {
+                        key = rs.getLong(1);
+                    }
+                    JdbcUtils.closeResultSet(rs);
+                } else {
+                    Statement st = conn.createStatement();
+                    ResultSet rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
+                    if (rs.next()) {
+                        key = rs.getLong(1);
+                    }
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(st);
+                }
+                JdbcUtils.closeStatement(ps);
+                return key;
             }
         });
     }

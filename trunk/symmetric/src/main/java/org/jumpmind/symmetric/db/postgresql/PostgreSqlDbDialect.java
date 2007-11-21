@@ -102,13 +102,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public String getTransactionTriggerExpression() {
         return "null";
     }
+    
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        return "select currval('" + sequenceName + "')";
+    }
 
     public boolean isCharSpacePadded() {
-        return false;
+        return true;
     }
 
     public boolean isCharSpaceTrimmed() {
-        return true;
+        return false;
     }
 
     public boolean isEmptyStringNulled() {
