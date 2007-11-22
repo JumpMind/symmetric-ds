@@ -25,6 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 
+/**
+ * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
+ * 
+ * TODO support text and image fields, they cannot be referenced from the inserted or deleted tables in the triggers.  Here is one
+ * idea we could implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
+ */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(MsSqlDbDialect.class);

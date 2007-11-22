@@ -69,7 +69,7 @@
                         </entry>
                         <entry key="updateTriggerTemplate">
                             <value>
-                                <![CDATA[
+                                <![CDATA[                                
                                 create trigger $(triggerName) on $(schemaName)$(tableName) after update as
                                 begin
                                   declare @TransactionId varchar(1000)
@@ -80,7 +80,12 @@
                                   $(syncOnIncomingBatchCondition) 
                                   if (@SyncEnabled <> 0x1) begin
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
-                                     (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition));
+                                     (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted left outer join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition));
+                                    if (@@ROWCOUNT = 1) begin
+                                      declare @OldKeys varchar(1000)
+                                      select @OldKeys=$(oldKeys) from deleted;                                      
+                                      update $(defaultSchema)$(prefixName)_data set pk_data=@OldKeys where data_id=@@IDENTITY;      
+                                    end                                     
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
                                      $(syncOnUpdateCondition) and c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end
