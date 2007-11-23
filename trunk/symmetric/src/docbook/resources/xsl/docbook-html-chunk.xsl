@@ -97,9 +97,8 @@
         <div id="banner">
             <a style="border:none;" href="http://www.symmetricds.org/"
                title="SymmetricDS User Guide">
-                <img style="border:none;"
-                  width="455" height="69" alt="SymmetricDS"
-                  src="images/banner_logo.gif"/>
+                <img style="border:none;" alt="SymmetricDS"
+                  src="images/banner-logo.gif"/>
             </a>
         </div>
     </xsl:template>
