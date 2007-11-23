@@ -224,49 +224,98 @@
                 <artifactId>docbkx-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>build-pdf-doc</id>
                         <phase>pre-site</phase>
                         <goals>
                             <goal>generate-pdf</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${docbook.source}</sourceDirectory>
+                            <targetDirectory>${docbook.target}/pdf</targetDirectory>
+                            <xincludeSupported>true</xincludeSupported>
+                            <includes>*.xml</includes>
+                            <imgSrcPath>${docbook.source}/images</imgSrcPath>
+                            <admonGraphicsPath>
+                                ${docbook.source}/resources/images/admons/
+                            </admonGraphicsPath>
+                            <foCustomization>
+                                ${docbook.source}/resources/xsl/docbook-fopdf.xsl
+                            </foCustomization>
+                        </configuration>                        
+                    </execution>
+                    
+                    <execution>
+                        <id>build-singlehtml-doc</id>
+                        <phase>pre-site</phase>
+                        <goals>
                             <goal>generate-html</goal>
                         </goals>
+                        <configuration>
+                            <sourceDirectory>${docbook.source}</sourceDirectory>
+                            <targetDirectory>${docbook.target}/html-single</targetDirectory>
+                            <xincludeSupported>true</xincludeSupported>
+                            <includes>*.xml</includes>
+                            <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
+                            <htmlCustomization>
+                                ${docbook.source}/resources/xsl/docbook-html.xsl
+                            </htmlCustomization>
+                            <chunkedOutput>false</chunkedOutput>
+                            <postProcess>
+                                <copy todir="${docbook.target}/html-single">
+                                    <fileset dir="${docbook.source}/resources">
+                                        <include name="images/*.png" />
+                                        <include name="images/*.gif" />
+                                        <include name="images/*.jpg" />
+                                    </fileset>
+                                    <fileset dir="${docbook.source}/resources">
+                                        <include name="css/*.css" />
+                                    </fileset>
+                                </copy>
+                                <copy todir="${docbook.target}/html-single/images" flatten="true">
+                                    <fileset dir="${docbook.source}">
+                                        <include name="**/images/*" />
+                                    </fileset>
+                                </copy>
+                            </postProcess>
+                        </configuration>                        
+                    </execution>
+                    
+                    <execution>
+                        <id>build-chunkedhtml-doc</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>generate-html</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${docbook.source}</sourceDirectory>
+                            <targetDirectory>${docbook.target}/html</targetDirectory>
+                            <xincludeSupported>true</xincludeSupported>
+                            <includes>*.xml</includes>
+                            <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
+                            <htmlCustomization>
+                                ${docbook.source}/resources/xsl/docbook-html-chunk.xsl
+                            </htmlCustomization>
+                            <chunkedOutput>true</chunkedOutput>
+                            <postProcess>
+                                <copy todir="${docbook.target}/html">
+                                    <fileset dir="${docbook.source}/resources">
+                                        <include name="images/*.png" />
+                                        <include name="images/*.gif" />
+                                        <include name="images/*.jpg" />
+                                    </fileset>
+                                    <fileset dir="${docbook.source}/resources">
+                                        <include name="css/*.css" />
+                                    </fileset>
+                                </copy>
+                                <copy todir="${docbook.target}/html/images" flatten="true">
+                                    <fileset dir="${docbook.source}">
+                                        <include name="**/images/*" />
+                                    </fileset>
+                                </copy>
+                            </postProcess>
+                        </configuration>                        
                     </execution>
                 </executions>
-                <configuration>
-                    <sourceDirectory>${docbook.source}</sourceDirectory>
-                    <targetDirectory>${docbook.target}</targetDirectory>
-                    <xincludeSupported>true</xincludeSupported>
-                    <includes>*.xml</includes>
-                    <!-- <imgSrcPath>${docbook.source}/images</imgSrcPath> -->
-                    <admonGraphicsPath>
-                        ${docbook.source}/resources/images/admons/
-                    </admonGraphicsPath>
-                    <foCustomization>
-                        ${docbook.source}/resources/xsl/docbook-fopdf.xsl
-                    </foCustomization>
-
-                    <chunkedOutput>false</chunkedOutput>
-                    <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
-                    <htmlCustomization>
-                        ${docbook.source}/resources/xsl/docbook-html.xsl
-                    </htmlCustomization>
-                    <postProcess>
-                        <copy todir="${docbook.target}">
-                            <fileset dir="${docbook.source}/resources">
-                                <include name="images/*.png" />
-                                <include name="images/*.gif" />
-                                <include name="images/*.jpg" />
-                            </fileset>
-                            <fileset dir="${docbook.source}/resources">
-                                <include name="css/*.css" />
-                            </fileset>
-                        </copy>
-                        <copy todir="${docbook.target}/images" flatten="true">
-                            <fileset dir="${docbook.source}">
-                                <include name="**/images/*" />
-                            </fileset>
-                        </copy>
-                    </postProcess>
-                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.docbook</groupId>
