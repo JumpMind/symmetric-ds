@@ -183,7 +183,10 @@ public class DbTriggerTest {
         SymmetricEngine[] engines2test = SymmetricEngineTestFactory
                 .getUnitTestableEngines();
         for (SymmetricEngine engine : engines2test) {
-            validateTransactionFunctionailty(engine);
+            IDbDialect dbDialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+            if (dbDialect.supportsTransactionId()) {
+                validateTransactionFunctionailty(engine);
+            }
         }
     }
 
@@ -205,9 +208,11 @@ public class DbTriggerTest {
                         .executeQuery("select transaction_id from "
                                 + TestConstants.TEST_PREFIX
                                 + "data where transaction_id is not null group by transaction_id having count(*)>1");
-                rs.next();
-                String batchId = rs.getString(1);
-                assert (batchId != null);
+                String batchId = null;
+                if (rs.next()) {
+                    batchId = rs.getString(1);
+                }
+                Assert.assertNotNull(batchId);
                 stmt.close();
                 return null;
             }
