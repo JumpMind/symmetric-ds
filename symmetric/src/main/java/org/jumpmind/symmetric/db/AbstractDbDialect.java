@@ -530,6 +530,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
+    public boolean supportsTransactionId() {
+        return false;
+    }
+
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
     }

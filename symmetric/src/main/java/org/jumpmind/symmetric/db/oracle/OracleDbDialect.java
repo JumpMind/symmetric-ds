@@ -102,6 +102,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
 
+    public boolean supportsTransactionId() {
+        return true;
+    }
+
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select " + sequenceName + ".currval from dual')";
     }

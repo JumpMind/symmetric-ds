@@ -51,7 +51,7 @@ public interface IDbDialect {
     public boolean doesTriggerExist(String schema, String tableName, String triggerName);
 
     public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
-
+    
     public String getTransactionTriggerExpression();
 
     public String createInitalLoadSqlFor(Node node, Trigger config);
@@ -69,6 +69,8 @@ public interface IDbDialect {
     public boolean isEmptyStringNulled();
     
     public boolean supportsMixedCaseNamesInCatalog();
+    
+    public boolean supportsTransactionId();
     
     /**
      * Implement this if the database has some type of cleanup functionality that needs to be 
