@@ -61,6 +61,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "@TransactionId";
     }
 
+    public boolean supportsTransactionId() {
+        return true;
+    }
+
     /**
      * SQL Server always pads character fields out to the right to fill out field with space characters.
      * @return true always
