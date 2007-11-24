@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.SQLException;
@@ -75,52 +76,42 @@ public class SqlScript {
     public void execute() {
         JdbcTemplate template = new JdbcTemplate(dataSource);
         template.execute(new StatementCallback() {
-            public Object doInStatement(Statement stat) throws SQLException,
-                    DataAccessException {
-                try {
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(script.openStream()));
-                    String line;
-                    StringBuilder query = new StringBuilder();
-                    boolean queryEnds = false;
-
-                    while ((line = reader.readLine()) != null) {
-                        if (isComment(line)) {
-                            continue;
-                        }
-                        queryEnds = checkStatementEnds(line);
-
-                        if (queryEnds) {
-                            query.append(line.substring(0, line
-                                    .indexOf(delimiter)));
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("query->" + query);
-                            }
-                            stat.addBatch(query.toString());                            
-                            if (!failOnError) {
-                                try {
-                                    stat.executeBatch();
-                                } catch (SQLException ex) {
-                                    logger.warn(ex.getMessage() + " for query -> " + query);
-                                }
-                            }
-                            query.setLength(0);
-                        } else {
-                            query.append(line);
-                        }
-                    }
-
-                    if (failOnError) {
-                        stat.executeBatch();
-                    }
-                    return null;
-                } catch (RuntimeException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+            public Object doInStatement(Statement statement) throws SQLException, DataAccessException {
+                executeScript(statement);
+                return null;
             }
         });
+    }
+
+    private void executeScript(Statement st) throws SQLException {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(script.openStream()));
+            String line;
+            StringBuilder sql = new StringBuilder();
+
+            while ((line = reader.readLine()) != null && ! isComment(line)) {
+                if (checkStatementEnds(line)) {
+                    sql.append(line.substring(0, line.indexOf(delimiter)));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("query->" + sql);
+                    }
+                    try {
+                        st.execute(sql.toString());
+                    } catch (SQLException e) {
+                        if (failOnError) {
+                            throw e;
+                        } else {
+                            logger.warn(e.getMessage() + ": " + sql.toString());
+                        }
+                    }
+                    sql.setLength(0);
+                } else {
+                    sql.append(line);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean checkStatementEnds(String s) {
