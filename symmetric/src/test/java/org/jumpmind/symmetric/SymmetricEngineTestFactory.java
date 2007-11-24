@@ -146,6 +146,9 @@ public class SymmetricEngineTestFactory {
             platform.createTables(testDb, false, true);
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds,
                     false).execute();
+            new SqlScript(getResource(TestConstants.TEST_DROP_SEQ_SCRIPT), ds,
+                    false).execute();
+
             // Need to init the table before running insert statements
             ((IBootstrapService) engine.getApplicationContext().getBean(
                     Constants.BOOTSTRAP_SERVICE)).init();
