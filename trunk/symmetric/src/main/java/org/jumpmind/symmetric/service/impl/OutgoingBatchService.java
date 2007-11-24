@@ -134,9 +134,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 int dataId = results.getInt(2);
 
                                 update.clearParameters();
-                                update.setString(1, newBatch.getBatchId());
+                                update.setLong(1, Long.valueOf(newBatch.getBatchId()));
                                 update.setString(2, nodeId);
-                                update.setInt(3, dataId);
+                                update.setLong(3, dataId);
                                 update.addBatch();
 
                                 count++;
