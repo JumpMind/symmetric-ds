@@ -213,7 +213,7 @@
         </property>
         <property name="updateBatchedEventsSql">
             <value>
-                update ${sync.table.prefix}_data_event set batch_id = ?, batched = '1' where node_id
+                update ${sync.table.prefix}_data_event set batch_id = ?, batched = 1 where node_id
                 = ? and data_id = ?
             </value>
         </property>
