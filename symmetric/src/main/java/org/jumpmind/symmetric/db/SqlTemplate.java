@@ -147,8 +147,11 @@ public class SqlTemplate {
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
-
         ddl = replace("oldNewPrimaryKeyJoin", oldNewPrimaryKeyJoin(columns), ddl);
+        
+        // replace $(newTriggerValue) and $(oldTriggerValue)
+        ddl = replace("newTriggerValue", newTriggerValue, ddl);
+        ddl = replace("oldTriggerValue", oldTriggerValue, ddl);
 
         return ddl;
     }

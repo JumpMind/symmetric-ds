@@ -457,7 +457,7 @@
         </property>
         <property name="registerNodeSql">
             <value>
-                update ${sync.table.prefix}_node c set sync_enabled = '1', sync_url = ?,
+                update ${sync.table.prefix}_node set sync_enabled = '1', sync_url = ?,
                 schema_version = ?, database_type = ?, database_version = ?, symmetric_version = ?
                 where node_id = ?
             </value>

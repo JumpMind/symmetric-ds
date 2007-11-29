@@ -37,6 +37,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     protected void initForSpecificDialect() {
     }
+    
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {

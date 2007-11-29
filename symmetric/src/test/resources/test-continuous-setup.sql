@@ -28,12 +28,13 @@ insert into sym_trigger
 values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, null, null, null, null, null, 1, 'chenson', current_timestamp, current_timestamp);
 
 insert into test_dataloader_table
-(id, string_value, string_required_value, char_value, char_required_value,
+(string_value, string_required_value, char_value, char_required_value,
     date_value, time_value, boolean_value, integer_value, decimal_value)
-values (1, 'string', 'string not null', 'char', 'char not null',
+values ('string', 'string not null', 'char', 'char not null',
     {d '2007-02-03'}, {ts '2007-01-02 03:04:05.06'}, '1', 42, 99.99);
+
 insert into test_dataloader_table
-(id, string_value, string_required_value, char_value, char_required_value,
+(string_value, string_required_value, char_value, char_required_value,
     date_value, time_value, boolean_value, integer_value, decimal_value)
-values (5, 'string', 'string not null', 'char', 'char not null',
+values ('string', 'string not null', 'char', 'char not null',
     {d '2007-02-03'}, {ts '2007-01-02 03:04:05.06'}, '1', 42, 99.99);
