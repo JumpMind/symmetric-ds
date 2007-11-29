@@ -58,8 +58,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
                 "You're a \"character\"", "Where are you?", "2007-12-31", "2007-12-31 23:59:59.0", "1", "13",
                 "9.95", UPDATE_NOT_EXISTING_ID };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
-        expectedValues[3] = translateExpectedCharString(expectedValues[3], 50);
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
     }
 
@@ -71,10 +69,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         values[2] = "two 'ticks'";
         values[3] = "One quote\"";
         values[4] = "One comma,";
-        String[] expectedValues = values.clone();
-        expectedValues[3] = translateExpectedCharString(values[3], 50);
-        expectedValues[4] = translateExpectedCharString(values[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
@@ -85,10 +80,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         values[2] = "two spaces after  ";
         values[3] = " one space before";
         values[4] = "one space after ";
-        String[] expectedValues = values.clone();
-        expectedValues[3] = translateExpectedCharString(expectedValues[3], 50);
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
@@ -96,9 +88,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         String[] values = new String[10];
         values[0] = getNextId();
         values[2] = values[4] = " ";
-        String[] expectedValues = values.clone();
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
@@ -106,21 +96,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         String[] values = new String[10];
         values[0] = getNextId();
         values[1] = values[2] = values[3] = values[4] = "";
-        String[] expectedValues = values.clone();
-        expectedValues[2] = translateExpectedString(expectedValues[2]);
-        expectedValues[3] = translateExpectedCharString(expectedValues[3], 50);
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
     public void testStringNull() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
-        String[] expectedValues = values.clone();
-        expectedValues[2] = expectedValues[4] = TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
@@ -133,10 +116,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         //values[2] = "\\a\\b\\c\\ \\1\\2\\3";
         values[3] = "Tick quote \\'\\\"";
         values[4] = "Comma quote \\,\\\"";
-        String[] expectedValues = values.clone();
-        expectedValues[3] = translateExpectedCharString(expectedValues[3], 50);
-        expectedValues[4] = translateExpectedCharString(expectedValues[4], 50);
-        testSimple(CsvConstants.INSERT, values, expectedValues);
+        testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups="continuous")
@@ -155,8 +135,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char", "char not null",
                 "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89", "i do not exist!" };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
-        expectedValues[3] = translateExpectedCharString(values[3], 50);
-        expectedValues[4] = translateExpectedCharString(values[4], 50);
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -195,8 +173,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
-        values[3] = translateExpectedCharString(values[3], 50);
-        values[4] = translateExpectedCharString(values[4], 50);
         assertTestTableEquals(values[0], values);
     }
 
