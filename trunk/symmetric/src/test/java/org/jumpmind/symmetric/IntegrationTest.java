@@ -22,12 +22,14 @@
 package org.jumpmind.symmetric;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -109,15 +111,16 @@ public class IntegrationTest {
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10",
                 "100", null, "2007-01-03" });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10",
-                "1", "STK", "110000065", "3", "3.33" });
+                1, "STK", "110000065", 3, "3.33" });
         clientEngine.push();
     }
 
     @Test(groups = "integration")
-    public void testSyncInsertCondition() {
+    public void testSyncInsertCondition() throws ParseException {
         // Should not sync when status = null
+        Date date = DateUtils.parseDate("2007-01-02", new String [] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "11",
-                "100", null, "2007-01-02" });
+                100, null, date });
         clientEngine.pull();
 
         IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) rootEngine
@@ -134,7 +137,7 @@ public class IntegrationTest {
 
         // Should sync when status = C
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12",
-                "100", "C", "2007-01-02" });
+                100, "C", date });
         clientEngine.pull();
         Assert.assertEquals(clientJdbcTemplate.queryForList(
                 selectOrderHeaderSql, new Object[] { "12" }).size(), 1,
