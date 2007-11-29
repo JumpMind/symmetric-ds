@@ -183,14 +183,11 @@ public class DbTriggerTest {
         SymmetricEngine[] engines2test = SymmetricEngineTestFactory
                 .getUnitTestableEngines();
         for (SymmetricEngine engine : engines2test) {
-            IDbDialect dbDialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
-            if (dbDialect.supportsTransactionId()) {
-                validateTransactionFunctionailty(engine);
-            }
+            validateTransactionFunctionailty(engine);
         }
     }
 
-    void validateTransactionFunctionailty(SymmetricEngine engine)
+    void validateTransactionFunctionailty(final SymmetricEngine engine)
             throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
         jdbcTemplate.execute(new ConnectionCallback() {
@@ -212,7 +209,10 @@ public class DbTriggerTest {
                 if (rs.next()) {
                     batchId = rs.getString(1);
                 }
-                Assert.assertNotNull(batchId);
+                IDbDialect dbDialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+                if (dbDialect.supportsTransactionId()) {
+                    Assert.assertNotNull(batchId);
+                }
                 stmt.close();
                 return null;
             }
