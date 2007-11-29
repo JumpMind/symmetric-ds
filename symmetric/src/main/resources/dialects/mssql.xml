@@ -22,11 +22,12 @@
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
+                <!-- TODO, We may have to make callbacks to the original table because SQL Server does not allow access to binary or clob data from a trigger -->
                 <property name="clobColumnTemplate">
-                    <value></value>
+                    <value><![CDATA[','+]]></value>
                 </property>                
                 <property name="blobColumnTemplate">
-                    <value></value>
+                    <value><![CDATA[','+]]></value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
