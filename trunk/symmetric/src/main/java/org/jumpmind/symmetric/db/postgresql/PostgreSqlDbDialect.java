@@ -48,6 +48,10 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             logger.error("Error while initializing PostgreSql.", e);
         }
     }
+    
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
 
     private URL getTransactionIdSqlUrl() {
         return getClass().getResource("/dialects/postgresql-transactionid.sql");

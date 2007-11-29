@@ -99,6 +99,7 @@ public class SqlScript {
                         st.execute(sql.toString());
                     } catch (SQLException e) {
                         if (failOnError) {
+                            logger.error(sql.toString() + " failed to execute.", e);
                             throw e;
                         } else {
                             logger.warn(e.getMessage() + ": " + sql.toString());

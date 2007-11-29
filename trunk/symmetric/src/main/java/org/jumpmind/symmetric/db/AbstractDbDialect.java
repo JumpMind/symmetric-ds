@@ -76,7 +76,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected String tablePrefix;
 
     private int streamingResultsFetchSize;
-    
+
     private Boolean supportsGetGeneratedKeys;
 
     protected AbstractDbDialect() {
@@ -96,6 +96,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(2), "15,15");
     }
     
+    protected boolean allowsNullForIdentityColumn() {
+        return true;
+    }
+
     public String getDefaultCatalog() {
         return getDefaultSchema();
     }
@@ -130,7 +134,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createInitalLoadSqlFor(Node node, Trigger config) {
         return sqlTemplate.createInitalLoadSql(node, this, config,
-                getMetaDataFor(getDefaultCatalog(), config.getSourceSchemaName(), config.getSourceTableName(), true)).trim();
+                getMetaDataFor(getDefaultCatalog(), config.getSourceSchemaName(), config.getSourceTableName(), true))
+                .trim();
     }
 
     public String createPurgeSqlFor(Node node, Trigger trig) {
@@ -139,12 +144,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String createCsvDataSql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvDataSql(trig,
-                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
+                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true),
+                whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trig, String whereClause) {
         return sqlTemplate.createCsvPrimaryKeySql(trig,
-                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true), whereClause).trim();
+                getMetaDataFor(getDefaultCatalog(), trig.getSourceSchemaName(), trig.getSourceTableName(), true),
+                whereClause).trim();
     }
 
     /**
@@ -341,27 +348,35 @@ abstract public class AbstractDbDialect implements IDbDialect {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String previousSourceSchema = trigger.getSourceSchemaName();
                 logger.info("Creating " + dml.toString() + " trigger for "
-                        + (previousSourceSchema != null ? (previousSourceSchema + ".") : "") + trigger.getSourceTableName());
+                        + (previousSourceSchema != null ? (previousSourceSchema + ".") : "")
+                        + trigger.getSourceTableName());
                 String previousCatalog = null;
                 try {
                     previousCatalog = switchSchemasForTriggerInstall(previousSourceSchema, con);
                     Statement stmt = con.createStatement();
-                    stmt.executeUpdate(createTriggerDDL(dml, trigger, audit, tablePrefix, table));
+                    String triggerSql = createTriggerDDL(dml, trigger, audit, tablePrefix, table);
+                    try {
+                        stmt.executeUpdate(triggerSql);
+                    } catch (SQLException ex) {
+                        logger.error("Failed to create trigger: " + triggerSql);
+                        throw ex;
+                    }
                     String postTriggerDml = createPostTriggerDDL(dml, trigger, audit, tablePrefix, table);
                     if (postTriggerDml != null) {
                         stmt.executeUpdate(postTriggerDml);
                     }
                     stmt.close();
+
                 } finally {
                     if (previousSourceSchema != null && !previousSourceSchema.equalsIgnoreCase(previousCatalog)) {
-                       switchSchemasForTriggerInstall(previousCatalog, con);
+                        switchSchemasForTriggerInstall(previousCatalog, con);
                     }
                 }
                 return null;
             }
         });
     }
-    
+
     /**
      * Provide the option switch a connection's schema for trigger installation.
      */
@@ -384,8 +399,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         prefixConfigDatabase(db);
         return platform.getCreateTablesSql(db, true, true);
     }
-    
-    protected boolean prefixConfigDatabase(Database targetTables)  {
+
+    protected boolean prefixConfigDatabase(Database targetTables) {
         try {
             String tblPrefix = this.tablePrefix.toLowerCase() + "_";
 
@@ -400,7 +415,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     createTables = true;
                 }
             }
-            
+
             return createTables;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
@@ -489,7 +504,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public long insertWithGeneratedKey(final String sql, final String sequenceName) {
         return insertWithGeneratedKey(sql, sequenceName, null);
     }
-    
+
     public long insertWithGeneratedKey(final String sql, final String sequenceName,
             final PreparedStatementCallback callback) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
@@ -497,7 +512,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 long key = 0;
                 PreparedStatement ps = null;
                 boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
-                if (supportsGetGeneratedKeys) {
+                if (allowsNullForIdentityColumn()) {
                     ps = conn.prepareStatement(sql, new int[] { 1 });
                 } else {
                     String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");

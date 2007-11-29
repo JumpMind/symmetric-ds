@@ -54,7 +54,8 @@ public class SymmetricEngineTestFactory {
     static final String ENGINE_2_PROPERTIES = "symmetric-mysql-engine-2.properties";
 
     static final String ORACLE_ENGINE_1_PROPERTIES = "symmetric-oracle-engine-1.properties";
-
+    
+    
     public static SymmetricEngine getMySqlTestEngine1(String engineScript) {
 
         if (mySqlEngine1 == null) {
