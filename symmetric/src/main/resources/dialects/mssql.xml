@@ -9,7 +9,7 @@
     <bean id="msSqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-              <![CDATA[ case $(tableAlias).$(columnName) when null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
+              <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
             </value>
         </constructor-arg>
     </bean>
@@ -36,7 +36,7 @@
                 <!-- TODO -->
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[case $(tableAlias).$(columnName) when null then '' else ('"' + cast($(tableAlias).$(columnName) as char) + '"') end +','+]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else ('"' + convert(varchar,$(tableAlias).$(columnName),121) + '"') end +','+]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="+"/>
@@ -58,8 +58,10 @@
                                   if (@SyncEnabled <> 0x1) begin
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
                                      (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
-                                      c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    if (@@ROWCOUNT > 0) begin 
+                                      insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                        c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    end
                                   end
                                 end                                
                                 ]]>
@@ -79,13 +81,15 @@
                                   if (@SyncEnabled <> 0x1) begin
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
                                      (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted left outer join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition));
-                                    if (@@ROWCOUNT = 1) begin
-                                      declare @OldKeys varchar(1000)
-                                      select @OldKeys=$(oldKeys) from deleted;                                      
-                                      update $(defaultSchema)$(prefixName)_data set pk_data=@OldKeys where data_id=@@IDENTITY;      
-                                    end                                     
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
-                                      c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    if (@@ROWCOUNT > 0) begin
+                                      if (@@ROWCOUNT = 1) begin
+                                        declare @OldKeys varchar(1000)
+                                        select @OldKeys=$(oldKeys) from deleted;                                      
+                                        update $(defaultSchema)$(prefixName)_data set pk_data=@OldKeys where data_id=@@IDENTITY;      
+                                      end                                     
+                                      insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                        c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    end
                                   end
                                 end                                  
                                 ]]>
@@ -105,8 +109,10 @@
                                   if (@SyncEnabled <> 0x1) begin
                                     insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time) 
                                      (select '$(targetTableName)','$(channelName)','D', $(triggerHistoryId), $(txIdExpression), $(oldKeys), current_timestamp from deleted where $(syncOnDeleteCondition));
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
-                                      c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    if (@@ROWCOUNT > 0) begin
+                                      insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
+                                        c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    end
                                   end
                                 end                                   
                                 ]]>

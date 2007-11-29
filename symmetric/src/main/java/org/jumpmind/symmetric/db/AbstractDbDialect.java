@@ -95,7 +95,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
     }
-    
+
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
@@ -516,13 +516,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     ps = conn.prepareStatement(sql, new int[] { 1 });
                 } else {
                     String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
-                    ps = conn.prepareStatement(replaceSql);
+                    if (supportsGetGeneratedKeys) {
+                        ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
+                    } else {
+                        ps = conn.prepareStatement(replaceSql);
+                    }
                 }
                 ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
                 if (callback != null) {
                     callback.doInPreparedStatement(ps);
                 }
-                ps.execute();
+                ps.executeUpdate();
 
                 if (supportsGetGeneratedKeys) {
                     ResultSet rs = ps.getGeneratedKeys();
