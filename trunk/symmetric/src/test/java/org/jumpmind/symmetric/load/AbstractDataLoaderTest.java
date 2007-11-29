@@ -91,6 +91,12 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
             results = getJdbcTemplate().queryForMap(sql, new Object[] { testTableId });
         } catch (EmptyResultDataAccessException e) {
         }
+        if (expectedValues != null) {
+            expectedValues[1] = translateExpectedString(expectedValues[1], false);
+            expectedValues[2] = translateExpectedString(expectedValues[2], true);
+            expectedValues[3] = translateExpectedCharString(expectedValues[3], 50, false);
+            expectedValues[4] = translateExpectedCharString(expectedValues[4], 50, true);
+        }
         assertEquals(TEST_COLUMNS, expectedValues, results);
     }
     
@@ -122,15 +128,17 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
         return str.toString();
     }
 
-    protected String translateExpectedString(String value) {
-        if (value != null && value.equals("") && getDbDialect().isEmptyStringNulled()) {
+    protected String translateExpectedString(String value, boolean isRequired) {
+        if (value == null && isRequired) {
+            return TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
+        } else if (value != null && value.equals("") && getDbDialect().isEmptyStringNulled()) {
             return null;
         }
         return value;
     }
 
-    protected String translateExpectedCharString(String value, int size) {
-        value = translateExpectedString(value);
+    protected String translateExpectedCharString(String value, int size, boolean isRequired) {
+        value = translateExpectedString(value, isRequired);
         if (value != null && getDbDialect().isCharSpacePadded()) {
             return StringUtils.rightPad(value, size);
         } else if (value != null && getDbDialect().isCharSpaceTrimmed()) {
