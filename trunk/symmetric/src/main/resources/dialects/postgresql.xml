@@ -15,17 +15,17 @@
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace(encode($(tableAlias).$(columnName), 'escape'),'\\','\\\\'),'"','\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace(encode($(tableAlias).$(columnName), 'escape'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
