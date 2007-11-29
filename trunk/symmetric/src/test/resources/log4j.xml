@@ -20,6 +20,12 @@
   <category name="org.springframework">
     <priority value="ERROR" />
   </category>
+  
+  <!-- Enable this to see extract output
+  <category name="org.jumpmind.symmetric.extract.csv">
+    <priority value="DEBUG" />
+  </category>
+   -->
 
   <root>
     <priority value="INFO" />
