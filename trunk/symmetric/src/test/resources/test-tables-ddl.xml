@@ -54,6 +54,7 @@
         <column name="state" type="VARCHAR" size="50" required="true" />    
         <column name="zip" type="INTEGER" />
         <column name="entry_time" type="TIMESTAMP" />
+        <column name="notes" type="CLOB"/>
     </table>
 
 </database>

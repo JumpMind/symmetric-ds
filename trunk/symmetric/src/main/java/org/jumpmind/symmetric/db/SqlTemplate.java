@@ -143,11 +143,13 @@ public class SqlTemplate {
         Column[] columns = trigger.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(newTriggerValue, columns);
         ddl = replace("columns", columnsText, ddl);
+        ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
-        ddl = replace("oldNewPrimaryKeyJoin", oldNewPrimaryKeyJoin(columns), ddl);
+        ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
+        ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin("orig", newTriggerValue, columns), ddl);
         
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
@@ -155,15 +157,56 @@ public class SqlTemplate {
 
         return ddl;
     }
+    
+    private String eval(boolean condition, String prop, String ddl) {
+        String ifStmt = "$(if:" + prop + ")";
+        String elseStmt = "$(else:" + prop + ")";
+        String endStmt = "$(end:" + prop + ")";
+        int ifIndex = ddl.indexOf(ifStmt);
+        if (ifIndex >= 0) {
+            int endIndex = ddl.indexOf(endStmt);
+            if (endIndex >=0) {                
+                String onTrue = ddl.substring(ifIndex + ifStmt.length(), endIndex);
+                String onFalse = "";
+                int elseIndex = onTrue.indexOf(elseStmt);
+                if (elseIndex >= 0) {
+                    onFalse = onTrue.substring(elseIndex + elseStmt.length());
+                    onTrue = onTrue.substring(0, elseIndex);
+                }
+                
+                if (condition) {
+                    ddl = ddl.substring(0, ifIndex) + onTrue + ddl.substring(endIndex + endStmt.length());
+                } else {
+                    ddl = ddl.substring(0, ifIndex) + onFalse + ddl.substring(endIndex + endStmt.length());
+                }
+                
+            } else {
+                throw new IllegalStateException(ifStmt + " has to have a " + endStmt);
+            }
+        }
+        return ddl;        
+    }
+    
+    private boolean containsBlobClobColumns(Column[] columns) {
+        for (Column column : columns) {
+            switch (column.getTypeCode()) {
+            case Types.CLOB:
+            case Types.BLOB:
+            case Types.BINARY:
+                return true;
+            }
+        }
+        return false;
+    }
 
-    private String oldNewPrimaryKeyJoin(Column[] columns) {
+    private String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
         for (Column column : columns) {
-            b.append(oldTriggerValue);
+            b.append(aliasOne);
             b.append(".");
             b.append(column.getName());
             b.append("=");
-            b.append(newTriggerValue);
+            b.append(aliasTwo);
             b.append(".");
             b.append(column.getName());
             if (!column.equals(columns[columns.length - 1])) {
@@ -173,7 +216,7 @@ public class SqlTemplate {
 
         return b.toString();
     }
-
+    
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultSchema) {
 

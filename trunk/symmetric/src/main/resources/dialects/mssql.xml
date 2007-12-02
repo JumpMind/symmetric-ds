@@ -24,10 +24,12 @@
                 <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
                 <!-- TODO, We may have to make callbacks to the original table because SQL Server does not allow access to binary or clob data from a trigger -->
                 <property name="clobColumnTemplate">
-                    <value><![CDATA[','+]]></value>
+                  <value>
+                    <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(cast(orig.$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
+                  </value>
                 </property>                
                 <property name="blobColumnTemplate">
-                    <value><![CDATA[','+]]></value>
+                    <value><![CDATA[''+','+]]></value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
@@ -57,8 +59,13 @@
                                   end
                                   $(syncOnIncomingBatchCondition) 
                                   if (@SyncEnabled <> 0x1) begin
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
-                                     (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));
+                                    $(if:containsBlobClobColumns)
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
+                                    $(else:containsBlobClobColumns)
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
+                                    $(end:containsBlobClobColumns)
                                     if (@@ROWCOUNT > 0) begin 
                                       insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, @@IDENTITY from $(defaultSchema)$(prefixName)_node c where 
                                         c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
@@ -80,8 +87,13 @@
                                   end
                                   $(syncOnIncomingBatchCondition) 
                                   if (@SyncEnabled <> 0x1) begin
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
-                                     (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted left outer join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition));
+                                    $(if:containsBlobClobColumns)
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
+                                    $(else:containsBlobClobColumns)
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
+                                    $(end:containsBlobClobColumns)
                                     if (@@ROWCOUNT > 0) begin
                                       if (@@ROWCOUNT = 1) begin
                                         declare @OldKeys varchar(1000)
