@@ -61,7 +61,7 @@ public class IntegrationTest {
 
     String insertOrderDetailSql = "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)";
 
-    String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time) values(?,?,?,?,?,?,?,?)";
+    String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time, notes) values(?,?,?,?,?,?,?,?,?)";
 
     @BeforeTest(groups = "integration")
     public void init() {
@@ -92,13 +92,18 @@ public class IntegrationTest {
         // now change some data that should be sync'd
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101,
                 "Charlie Brown", "1", "300 Grub Street", "New Yorl", "NY",
-                90009, new Date() });
+                90009, new Date(), "This is a test" });
         clientEngine.pull();
         Assert
                 .assertEquals(
                         clientJdbcTemplate
                                 .queryForInt("select count(*) from test_customer where customer_id=101"),
                         1, "The customer was not sync'd to the client.");
+        Assert
+        .assertEquals(
+                clientJdbcTemplate
+                        .queryForObject("select notes from test_customer where customer_id=101", String.class),
+                "This is a test", "The CLOB notes field on customer was not sync'd to the client.");        
     }
 
     @Test(groups = "integration")
@@ -175,7 +180,7 @@ public class IntegrationTest {
         nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201,
                 "Charlie Dude", "1", "300 Grub Street", "New Yorl", "NY",
-                90009, new Date() });
+                90009, new Date(), "This is a test" });
         clientEngine.pull();        
         Assert
                 .assertEquals(
