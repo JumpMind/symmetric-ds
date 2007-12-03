@@ -47,6 +47,8 @@ public interface IDbDialect {
     public String getName();
     
     public String getVersion();
+    
+    public BinaryEncoding getBinaryEncoding();
 
     public boolean doesTriggerExist(String schema, String tableName, String triggerName);
 

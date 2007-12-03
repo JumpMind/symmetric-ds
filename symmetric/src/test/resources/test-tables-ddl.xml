@@ -55,6 +55,7 @@
         <column name="zip" type="INTEGER" />
         <column name="entry_time" type="TIMESTAMP" />
         <column name="notes" type="CLOB"/>
+        <column name="icon" type="BLOB"/>
     </table>
 
 </database>
