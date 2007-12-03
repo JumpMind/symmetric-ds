@@ -53,15 +53,17 @@ public class IntegrationTest {
     JdbcTemplate clientJdbcTemplate;
 
     // TODO: move this data access somewhere else
-    String insertOrderHeaderSql = "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)";
+    static final String insertOrderHeaderSql = "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)";
 
-    String updateOrderHeaderStatusSql = "update test_order_header set status = ? where order_id = ?";
+    static final String updateOrderHeaderStatusSql = "update test_order_header set status = ? where order_id = ?";
 
-    String selectOrderHeaderSql = "select order_id, customer_id, status, deliver_date from test_order_header where order_id = ?";
+    static final String selectOrderHeaderSql = "select order_id, customer_id, status, deliver_date from test_order_header where order_id = ?";
 
-    String insertOrderDetailSql = "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)";
+    static final String insertOrderDetailSql = "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)";
 
-    String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time, notes) values(?,?,?,?,?,?,?,?,?)";
+    static final String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time, notes, icon) values(?,?,?,?,?,?,?,?,?,?)";
+    
+    static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
     @BeforeTest(groups = "integration")
     public void init() {
@@ -92,7 +94,7 @@ public class IntegrationTest {
         // now change some data that should be sync'd
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101,
                 "Charlie Brown", "1", "300 Grub Street", "New Yorl", "NY",
-                90009, new Date(), "This is a test" });
+                90009, new Date(), "This is a test", BINARY_DATA });
         clientEngine.pull();
         Assert
                 .assertEquals(
@@ -180,7 +182,7 @@ public class IntegrationTest {
         nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201,
                 "Charlie Dude", "1", "300 Grub Street", "New Yorl", "NY",
-                90009, new Date(), "This is a test" });
+                90009, new Date(), "This is a test", BINARY_DATA });
         clientEngine.pull();        
         Assert
                 .assertEquals(

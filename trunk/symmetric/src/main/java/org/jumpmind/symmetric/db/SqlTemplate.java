@@ -43,25 +43,29 @@ public class SqlTemplate {
 
     static final String INITIAL_LOAD_SQL_TEMPLATE = "initialLoadSqlTemplate";
 
-    Map<String, String> sqlTemplates;
+    private Map<String, String> sqlTemplates;
 
-    String triggerPrefix;
+    private Map<String, String> functionTemplatesToInstall;
 
-    String stringColumnTemplate;
+    private String functionInstalledSql;
 
-    String numberColumnTemplate;
+    private String triggerPrefix;
 
-    String datetimeColumnTemplate;
+    private String stringColumnTemplate;
 
-    String clobColumnTemplate;
+    private String numberColumnTemplate;
 
-    String blobColumnTemplate;
+    private String datetimeColumnTemplate;
 
-    String triggerConcatCharacter;
+    private String clobColumnTemplate;
 
-    String newTriggerValue;
+    private String blobColumnTemplate;
 
-    String oldTriggerValue;
+    private String triggerConcatCharacter;
+
+    private String newTriggerValue;
+
+    private String oldTriggerValue;
 
     public String createInitalLoadSql(Node node, IDbDialect dialect, Trigger trig, Table metaData) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
@@ -112,6 +116,25 @@ public class SqlTemplate {
         return sql;
     }
 
+    public String[] getFunctionsToInstall() {
+        if (functionTemplatesToInstall != null) {
+            return functionTemplatesToInstall.keySet().toArray(new String[functionTemplatesToInstall.size()]);
+        } else {
+            return new String[0];
+        }
+    }
+
+    public String createFunctionDDL(String name) {
+        if (functionTemplatesToInstall != null) {
+            return functionTemplatesToInstall.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * TODO Document all the 'templated' values available for building triggers.
+     */
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultSchema) {
 
@@ -150,14 +173,14 @@ public class SqlTemplate {
         ddl = replace("oldKeys", columnsText, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin("orig", newTriggerValue, columns), ddl);
-        
+
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
         ddl = replace("oldTriggerValue", oldTriggerValue, ddl);
 
         return ddl;
     }
-    
+
     private String eval(boolean condition, String prop, String ddl) {
         String ifStmt = "$(if:" + prop + ")";
         String elseStmt = "$(else:" + prop + ")";
@@ -165,7 +188,7 @@ public class SqlTemplate {
         int ifIndex = ddl.indexOf(ifStmt);
         if (ifIndex >= 0) {
             int endIndex = ddl.indexOf(endStmt);
-            if (endIndex >=0) {                
+            if (endIndex >= 0) {
                 String onTrue = ddl.substring(ifIndex + ifStmt.length(), endIndex);
                 String onFalse = "";
                 int elseIndex = onTrue.indexOf(elseStmt);
@@ -173,20 +196,20 @@ public class SqlTemplate {
                     onFalse = onTrue.substring(elseIndex + elseStmt.length());
                     onTrue = onTrue.substring(0, elseIndex);
                 }
-                
+
                 if (condition) {
                     ddl = ddl.substring(0, ifIndex) + onTrue + ddl.substring(endIndex + endStmt.length());
                 } else {
                     ddl = ddl.substring(0, ifIndex) + onFalse + ddl.substring(endIndex + endStmt.length());
                 }
-                
+
             } else {
                 throw new IllegalStateException(ifStmt + " has to have a " + endStmt);
             }
         }
-        return ddl;        
+        return ddl;
     }
-    
+
     private boolean containsBlobClobColumns(Column[] columns) {
         for (Column column : columns) {
             switch (column.getTypeCode()) {
@@ -216,7 +239,7 @@ public class SqlTemplate {
 
         return b.toString();
     }
-    
+
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultSchema) {
 
@@ -358,5 +381,29 @@ public class SqlTemplate {
 
     public void setBlobColumnTemplate(String blobColumnTemplate) {
         this.blobColumnTemplate = blobColumnTemplate;
+    }
+
+    public void setFunctionInstalledSql(String functionInstalledSql) {
+        this.functionInstalledSql = functionInstalledSql;
+    }
+
+    public void setFunctionTemplatesToInstall(Map<String, String> functionTemplatesToInstall) {
+        this.functionTemplatesToInstall = functionTemplatesToInstall;
+    }
+
+    public String getFunctionSql(String functionName) {
+        if (this.functionTemplatesToInstall != null) {
+            return this.functionTemplatesToInstall.get(functionName);
+        } else {
+            return null;
+        }
+    }
+
+    public String getFunctionInstalledSql(String functionName) {
+        if (functionInstalledSql != null) {
+            return replace("functionName", functionName, functionInstalledSql);
+        } else {
+            return null;
+        }
     }
 }

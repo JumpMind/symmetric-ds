@@ -511,6 +511,7 @@
     </bean>
 
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
+        <property name="dbDialect" ref="dbDialect"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dictionary">
             <map>

@@ -4,12 +4,13 @@
     xmlns:tx="http://www.springframework.org/schema/tx"
     xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd" default-lazy-init="true">
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd"
+    default-lazy-init="true">
 
     <bean id="msSqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-              <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
+                <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
             </value>
         </constructor-arg>
     </bean>
@@ -19,17 +20,39 @@
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
-            <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(object_name(object_id('$(functionName)')))]]>
+                    </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="fn_sym_base64_encode">
+                            <value>
+                                <![CDATA[ 
+                                create function dbo.fn_sym_base64_encode (@data varbinary(max)) returns varchar(max)
+                                  with schemabinding, returns null on null input
+                                  begin
+                                    return ( select [text()] = @data for xml path('') )
+                                  end                                
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
                 <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
                 <!-- TODO, We may have to make callbacks to the original table because SQL Server does not allow access to binary or clob data from a trigger -->
                 <property name="clobColumnTemplate">
-                  <value>
-                    <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(cast(orig.$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
-                  </value>
-                </property>                
+                    <value>
+                        <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(cast(orig.$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
+                    </value>
+                </property>
                 <property name="blobColumnTemplate">
-                    <value><![CDATA[''+','+]]></value>
+                    <value>
+                        <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode(orig.$(columnName)),'\','\\'),'"','\"') + '"' end +','+]]>
+                    </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
@@ -42,11 +65,11 @@
                         <![CDATA[case when $(tableAlias).$(columnName) is null then '' else ('"' + convert(varchar,$(tableAlias).$(columnName),121) + '"') end +','+]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value="+"/>
-                <property name="newTriggerValue" value="inserted"/>
-                <property name="oldTriggerValue" value="deleted"/>
+                <property name="triggerConcatCharacter" value="+" />
+                <property name="newTriggerValue" value="inserted" />
+                <property name="oldTriggerValue" value="deleted" />
                 <property name="sqlTemplates">
-                    <map>           
+                    <map>
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[

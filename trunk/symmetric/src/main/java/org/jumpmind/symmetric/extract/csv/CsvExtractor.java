@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
@@ -37,10 +38,13 @@ public class CsvExtractor implements IDataExtractor {
     private Map<String, IStreamDataCommand> dictionary = null;
 
     private IRuntimeConfig runtimeConfiguration;
+    
+    private IDbDialect dbDialect;
 
     public void init(BufferedWriter writer, DataExtractorContext context)
             throws IOException {
         Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration.getExternalId());
+        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
         writer.newLine();
     }
 
@@ -95,6 +99,10 @@ public class CsvExtractor implements IDataExtractor {
 
     public void setDictionary(Map<String, IStreamDataCommand> dictionary) {
         this.dictionary = dictionary;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
 }

@@ -114,7 +114,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void initConfigDb(String tablePrefix) {
         initForSpecificDialect();
-        addPrefixAndCreateTableIfNecessary(getConfigDdlDatabase());
+        addPrefixAndCreateTablesIfNecessary(getConfigDdlDatabase());
+        createRequiredFunctions();
     }
 
     final public boolean doesTriggerExist(String schema, String tableName, String triggerName) {
@@ -124,6 +125,20 @@ abstract public class AbstractDbDialect implements IDbDialect {
             logger.warn("Could not figure out if the trigger exists.  Assuming that is does not.", ex);
             return false;
         }
+    }
+
+    protected void createRequiredFunctions() {
+        String[] functions = sqlTemplate.getFunctionsToInstall();
+        for (String funcName : functions) {
+            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName)) == 0) {
+                jdbcTemplate.update(sqlTemplate.getFunctionSql(funcName));
+                logger.info("Just installed " + funcName);
+            }
+        }
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     abstract protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName);
@@ -422,7 +437,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    protected void addPrefixAndCreateTableIfNecessary(Database targetTables) {
+    protected void addPrefixAndCreateTablesIfNecessary(Database targetTables) {
         try {
             boolean createTables = prefixConfigDatabase(targetTables);
             if (createTables) {
