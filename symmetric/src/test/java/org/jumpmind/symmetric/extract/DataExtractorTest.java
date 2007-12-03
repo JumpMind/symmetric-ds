@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.AbstractTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -289,6 +290,8 @@ public class DataExtractorTest extends AbstractTest {
             writeCSV(CsvConstants.NODEID);
             writer.write(location);
             writer.newLine();
+            writeCSV(CsvConstants.BINARY);
+            writer.write(BinaryEncoding.BASE64.name());
         }
 
         void batchBegin(String batchId) throws IOException {
