@@ -309,7 +309,7 @@
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
         <property name="dbDialect" ref="dbDialect" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="jdbcTemplate" ref="dataLoaderTemplate" />
         <property name="enableFallbackInsert" value="true" />
         <property name="enableFallbackUpdate" value="true" />
         <property name="allowMissingDelete" value="true" />
