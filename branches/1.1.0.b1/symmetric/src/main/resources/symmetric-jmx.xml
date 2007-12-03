@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="assembler" ref="assembler" />
+        <property name="namingStrategy" ref="namingStrategy" />
+        <property name="autodetect" value="true" />
+        <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
+    </bean>
+
+    <bean id="jmxAttributeSource"
+        class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />
+
+    <!-- will create management interface using annotation metadata -->
+    <bean id="assembler"
+        class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+        <property name="attributeSource" ref="jmxAttributeSource" />
+    </bean>
+
+    <bean id="namingStrategy" class="org.springframework.jmx.export.naming.KeyNamingStrategy">
+        <property name="mappings">
+            <props>
+                <prop key="managementService">Symmetric:name=${symmetric.runtime.engine.name}</prop>
+            </props>
+        </property>
+        <property name="mappingLocations">
+            <value>classpath:symmetric-jmx-names.properties</value>
+        </property>
+    </bean>
+
+    <bean id="managementService"
+        class="org.jumpmind.symmetric.service.jmx.SymmetricManagementService">
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="bootstrapService" ref="bootstrapService" />
+        <property name="purgeService" ref="purgeService" />
+        <property name="dataService" ref="dataService" />
+        <property name="registrationService" ref="registrationService" />
+        <property name="properties" ref="properties" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+    </bean>
+
+</beans>
