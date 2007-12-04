@@ -21,7 +21,10 @@
 
 package org.jumpmind.symmetric.db;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -413,6 +416,35 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Database db = getConfigDdlDatabase();
         prefixConfigDatabase(db);
         return platform.getCreateTablesSql(db, true, true);
+    }
+
+    public String getCreateTableSQL(Trigger trig) {
+        Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
+        String sql = null;
+        try {
+            StringWriter buffer = new StringWriter();
+            platform.getSqlBuilder().setWriter(buffer);
+            platform.getSqlBuilder().createTable(cachedModel, table);
+            sql = buffer.toString();
+        }
+        catch(IOException e) { }
+        return sql;
+    }
+
+    public String getCreateTableXML(Trigger trig) {
+        Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
+        Database db = new Database();
+        db.addTable(table);
+        StringWriter buffer = new StringWriter();
+        DatabaseIO xmlWriter = new DatabaseIO();
+        xmlWriter.write(db, buffer);
+        return buffer.toString();
+    }
+    
+    public void createTables(String xml) {
+        StringReader reader = new StringReader(xml);
+        Database db = new DatabaseIO().read(reader);
+        platform.createTables(db, true, true);
     }
 
     protected boolean prefixConfigDatabase(Database targetTables) {

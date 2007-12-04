@@ -133,7 +133,11 @@ public class CsvLoader implements IDataLoader {
                 break;
             } else if (tokens[0].equals(CsvConstants.SQL)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                    runSql(tokens);
+                    runSql(csvReader.getRawRecord());
+                }
+            } else if (tokens[0].equals(CsvConstants.DDL)) {
+                if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                    runDdl(csvReader.getRawRecord());
                 }
             } else if (tokens[0].equals(CsvConstants.BINARY)) {
                 try {
@@ -256,10 +260,20 @@ public class CsvLoader implements IDataLoader {
         return rows;
     }
 
-    protected void runSql(String[] tokens) {
+    protected void runSql(String sql) {
         stats.incrementStatementCount();
-        logger.debug("Running SQL: " + tokens[1]);
-        jdbcTemplate.execute(tokens[1]);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Running SQL: " + sql);
+        }
+        jdbcTemplate.execute(sql);
+    }
+
+    protected void runDdl(String xml) {
+        stats.incrementStatementCount();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Running DDL: " + xml);
+        }
+        dbDialect.createTables(xml);
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {
