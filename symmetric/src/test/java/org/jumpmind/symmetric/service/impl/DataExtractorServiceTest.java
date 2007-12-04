@@ -66,7 +66,7 @@ public class DataExtractorServiceTest extends AbstractTest {
                 TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP),
                 mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(11, countLines(loadResults), "Unexpected number of lines in the csv result: "
+        Assert.assertEquals(12, countLines(loadResults), "Unexpected number of lines in the csv result: "
                 + loadResults);
         Assert.assertTrue(loadResults.contains("insert, \"CORP\",\"Central Office\""),
                 "Did not find expected insert for CORP");
@@ -86,7 +86,7 @@ public class DataExtractorServiceTest extends AbstractTest {
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
 
-        Assert.assertEquals(countLines(loadResults), 7,
+        Assert.assertEquals(countLines(loadResults), 8,
                 "Unexpected number of lines in the transport result: " + loadResults);
     }
 
