@@ -297,7 +297,7 @@ public class DataExtractorTest extends AbstractTest {
             writer.write(batchId);
             writer.newLine();
             writeCSV(CsvConstants.BINARY);
-            writer.write(BinaryEncoding.BASE64.name());
+            writer.write(BinaryEncoding.NONE.name());
             writer.newLine();            
         }
 
