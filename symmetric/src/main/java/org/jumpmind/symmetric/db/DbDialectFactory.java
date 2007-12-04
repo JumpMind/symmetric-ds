@@ -28,6 +28,7 @@ import javax.sql.DataSource;
 
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.PlatformFactory;
+import org.apache.ddlutils.platform.derby.DerbyPlatform;
 import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.oracle.Oracle10Platform;
@@ -75,6 +76,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
             dialect = (AbstractDbDialect) beanFactory.getBean("msSqlDialect");            
         } else if (pf instanceof PostgreSqlPlatform) {
         	dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
+        } else if (pf instanceof DerbyPlatform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
         } else {
             throw new DbNotSupportedException();
         }
