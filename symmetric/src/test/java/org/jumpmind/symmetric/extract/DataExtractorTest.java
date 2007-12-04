@@ -289,9 +289,9 @@ public class DataExtractorTest extends AbstractTest {
         void location(String location) throws IOException {
             writeCSV(CsvConstants.NODEID);
             writer.write(location);
-            writer.newLine();
             writeCSV(CsvConstants.BINARY);
             writer.write(BinaryEncoding.BASE64.name());
+            writer.newLine();
         }
 
         void batchBegin(String batchId) throws IOException {
