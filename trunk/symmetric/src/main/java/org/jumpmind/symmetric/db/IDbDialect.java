@@ -98,6 +98,12 @@ public interface IDbDialect {
     
     public String getCreateSymmetricDDL();
     
+    public String getCreateTableXML(Trigger trig);
+    
+    public String getCreateTableSQL(Trigger trig);
+    
+    public void createTables(String xml);
+    
     public String getSelectLastInsertIdSql(String sequenceName);
     
     public long insertWithGeneratedKey(final String sql, final String sequenceName);

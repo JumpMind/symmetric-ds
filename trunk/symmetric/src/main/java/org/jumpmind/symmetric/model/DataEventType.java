@@ -53,7 +53,12 @@ public enum DataEventType implements ICoded {
      * An event that indicates that the data payload has a sql statement that needs to be executed.
      * This is more of a remote control feature (that would have been very handy in past lives).
      */
-    SQL("S");
+    SQL("S"),
+    
+    /**
+     * An event that indicates that the data payload is a table creation.
+     */
+    DDL("DDL");
 
     private String code;
 
@@ -76,6 +81,8 @@ public enum DataEventType implements ICoded {
             return DataEventType.RELOAD;
         } else if (s.equals("S")) {
             return DataEventType.SQL;
+        } else if (s.equals("DDL")) {
+            return DataEventType.DDL;
         }
         return null;
     }    

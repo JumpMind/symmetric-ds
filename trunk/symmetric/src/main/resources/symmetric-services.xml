@@ -267,6 +267,8 @@
         scope="singleton">
         <property name="deleteFirstForReload"
             value="${symmetric.runtime.initial.load.delete.first}" />
+        <property name="createFirstForReload"
+            value="${symmetric.runtime.initial.load.create.first}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />

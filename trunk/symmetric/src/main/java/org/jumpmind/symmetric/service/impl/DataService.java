@@ -75,6 +75,8 @@ public class DataService extends AbstractService implements IDataService {
     private String insertIntoDataEventSql;
 
     private boolean deleteFirstForReload;
+    
+    private boolean createFirstForReload;
 
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
@@ -85,10 +87,20 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
-        final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        final String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
+        String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
+        createSqlEvent(targetNode, trigger, sql);
+    }
 
+    public void createSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
+        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL, sql, null,
+                history);
+        insertDataEvent(data, targetNode.getNodeId());
+    }
+
+    public void createTableEvent(final Node targetNode, final Trigger trigger, String xml) {
+        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.DDL, xml, null,
                 history);
         insertDataEvent(data, targetNode.getNodeId());
     }
@@ -140,6 +152,12 @@ public class DataService extends AbstractService implements IDataService {
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
 
+        if (createFirstForReload) {
+            for (Trigger trigger : triggers) {
+                String xml = dbDialect.getCreateTableXML(trigger);
+                createTableEvent(targetNode, trigger, xml);
+            }            
+        }
         if (deleteFirstForReload) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
@@ -286,6 +304,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setDeleteFirstForReload(boolean deleteFirstForReload) {
         this.deleteFirstForReload = deleteFirstForReload;
+    }
+
+    public void setCreateFirstForReload(boolean createFirstForReload) {
+        this.createFirstForReload = createFirstForReload;
     }
 
 }
