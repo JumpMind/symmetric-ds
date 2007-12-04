@@ -138,7 +138,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
     
     public BinaryEncoding getBinaryEncoding() {
-        return BinaryEncoding.BASE64;
+        return BinaryEncoding.NONE;
     }
 
     abstract protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName);
