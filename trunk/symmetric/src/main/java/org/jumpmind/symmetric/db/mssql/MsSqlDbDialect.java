@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.mssql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 
 /**
@@ -40,6 +41,11 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     
     protected boolean allowsNullForIdentityColumn() {
         return false;
+    }
+
+    @Override
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     @Override

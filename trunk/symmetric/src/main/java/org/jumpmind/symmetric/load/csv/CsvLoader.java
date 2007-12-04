@@ -30,6 +30,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
@@ -45,7 +46,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.csvreader.CsvReader;
 
 public class CsvLoader implements IDataLoader {
-    
+
     static final Log logger = LogFactory.getLog(CsvLoader.class);
 
     protected JdbcTemplate jdbcTemplate;
@@ -55,17 +56,17 @@ public class CsvLoader implements IDataLoader {
     protected CsvReader csvReader;
 
     protected DataLoaderContext context;
-    
+
     protected DataLoaderStatistics stats;
-    
+
     protected boolean enableFallbackInsert;
-    
+
     protected boolean enableFallbackUpdate;
-    
+
     protected boolean allowMissingDelete;
-    
+
     protected List<IDataLoaderFilter> filters;
-    
+
     protected Map<String, IColumnFilter> columnFilters;
 
     public void open(BufferedReader reader) throws IOException {
@@ -75,19 +76,20 @@ public class CsvLoader implements IDataLoader {
         stats = new DataLoaderStatistics();
     }
 
-    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters) throws IOException {
+    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters)
+            throws IOException {
         open(reader);
         this.filters = filters;
         this.columnFilters = columnFilters;
     }
-    
+
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
-            
+
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(tokens[1]);
-                stats = new DataLoaderStatistics();                
+                stats = new DataLoaderStatistics();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
@@ -96,8 +98,7 @@ public class CsvLoader implements IDataLoader {
             } else if (isMetaTokenParsed(tokens)) {
                 continue;
             } else {
-                throw new RuntimeException("Unexpected token '" + tokens[0]
-                        + "' while parsing for next batch");
+                throw new RuntimeException("Unexpected token '" + tokens[0] + "' while parsing for next batch");
             }
         }
         return false;
@@ -109,17 +110,18 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void load() throws IOException {
+        BinaryEncoding encoding = BinaryEncoding.NONE;
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
             stats.incrementLineCount();
 
             if (tokens[0].equals(CsvConstants.INSERT)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                    insert(tokens);
+                    insert(tokens, encoding);
                 }
             } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                    update(tokens);
+                    update(tokens, encoding);
                 }
             } else if (tokens[0].equals(CsvConstants.DELETE)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
@@ -133,9 +135,15 @@ public class CsvLoader implements IDataLoader {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                     runSql(tokens);
                 }
+            } else if (tokens[0].equals(CsvConstants.BINARY)) {
+                try {
+                    encoding = BinaryEncoding.valueOf(tokens[1]);
+                } catch (Exception ex) {
+                    logger.warn("Unsupported binary encoding value of " + tokens[1]);
+                }
             } else {
-                throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
-                        + stats.getLineCount() + " of batch " + context.getBatchId());
+                throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line " + stats.getLineCount()
+                        + " of batch " + context.getBatchId());
             }
         }
     }
@@ -157,11 +165,12 @@ public class CsvLoader implements IDataLoader {
     protected void setTable(String tableName) {
         context.setTableName(tableName);
         if (context.getTableTemplate() == null) {
-            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName, this.columnFilters != null ? this.columnFilters.get(tableName) : null));
+            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
+                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
     }
 
-    protected int insert(String[] tokens) {
+    protected int insert(String[] tokens, BinaryEncoding encoding) {
         stats.incrementStatementCount();
         String[] columnValues = parseColumns(tokens, 1);
         int rows = 0;
@@ -173,7 +182,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         try {
-            rows = context.getTableTemplate().insert(columnValues);
+            rows = context.getTableTemplate().insert(columnValues, encoding);
         } catch (DataIntegrityViolationException e) {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
             if (enableFallbackUpdate) {
@@ -181,19 +190,19 @@ public class CsvLoader implements IDataLoader {
                         + ArrayUtils.toString(tokens));
                 String keyValues[] = parseKeys(tokens, 1);
                 stats.incrementFallbackUpdateCount();
-                rows = context.getTableTemplate().update(columnValues, keyValues);
+                rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
                 if (rows == 0) {
                     throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                             + ArrayUtils.toString(tokens));
                 }
             } else {
-                throw e;                
+                throw e;
             }
-        }        
+        }
         return rows;
     }
 
-    protected int update(String[] tokens) {
+    protected int update(String[] tokens, BinaryEncoding encoding) {
         stats.incrementStatementCount();
         String columnValues[] = parseColumns(tokens, 1);
         String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
@@ -204,13 +213,13 @@ public class CsvLoader implements IDataLoader {
             }
         }
 
-        int rows = context.getTableTemplate().update(columnValues, keyValues);
+        int rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
         if (rows == 0) {
             if (enableFallbackInsert) {
                 logger.warn("Unable to update " + context.getTableName() + ", inserting instead: "
                         + ArrayUtils.toString(tokens));
                 stats.incrementFallbackInsertCount();
-                return context.getTableTemplate().insert(columnValues);
+                return context.getTableTemplate().insert(columnValues, encoding);
             } else {
                 throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                         + ArrayUtils.toString(tokens));
@@ -225,7 +234,7 @@ public class CsvLoader implements IDataLoader {
     protected int delete(String[] tokens) {
         stats.incrementStatementCount();
         String keyValues[] = parseKeys(tokens, 1);
-        
+
         if (filters != null) {
             for (IDataLoaderFilter filter : filters) {
                 filter.filterDelete(context, keyValues);
@@ -235,15 +244,15 @@ public class CsvLoader implements IDataLoader {
         int rows = context.getTableTemplate().delete(keyValues);
         if (rows == 0) {
             if (allowMissingDelete) {
-                logger.warn("Delete of " + context.getTableName() + " affected no rows: "
-                        + ArrayUtils.toString(tokens));
+                logger
+                        .warn("Delete of " + context.getTableName() + " affected no rows: "
+                                + ArrayUtils.toString(tokens));
                 stats.incrementMissingDeleteCount();
-            }
-            else {
+            } else {
                 throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
                         + ArrayUtils.toString(tokens));
             }
-        }        
+        }
         return rows;
     }
 
@@ -273,9 +282,8 @@ public class CsvLoader implements IDataLoader {
 
     protected String[] parseValues(String name, String[] tokens, int startIndex, int endIndex) {
         if (tokens.length < endIndex) {
-            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name
-                    + " values for " + context.getTableTemplate().getTableName() + ": "
-                    + ArrayUtils.toString(tokens));
+            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name + " values for "
+                    + context.getTableTemplate().getTableName() + ": " + ArrayUtils.toString(tokens));
         }
         return (String[]) ArrayUtils.subarray(tokens, startIndex, endIndex);
     }

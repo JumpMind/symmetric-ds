@@ -1,5 +1,5 @@
 package org.jumpmind.symmetric.db;
 
 public enum BinaryEncoding {
-    BASE64;
+    NONE, BASE64;
 }

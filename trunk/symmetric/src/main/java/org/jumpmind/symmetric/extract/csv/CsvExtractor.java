@@ -44,14 +44,15 @@ public class CsvExtractor implements IDataExtractor {
     public void init(BufferedWriter writer, DataExtractorContext context)
             throws IOException {
         Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration.getExternalId());
-        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
         writer.newLine();
     }
 
     public void begin(OutgoingBatch batch, BufferedWriter writer)
             throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());               
         writer.newLine();
+        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
+        writer.newLine();      
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer)

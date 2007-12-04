@@ -32,11 +32,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -54,8 +56,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class TableTemplate {
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    public static final String[] TIMESTAMP_PATTERNS = {
-            "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
+    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
 
     private JdbcTemplate jdbcTemplate;
 
@@ -78,11 +79,10 @@ public class TableTemplate {
     private Column[] columnMetaData;
 
     private HashMap<DmlType, StatementBuilder> statementMap;
-    
+
     private IColumnFilter columnFilter;
 
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect,
-            String tableName, IColumnFilter columnFilter) {
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.columnFilter = columnFilter;
@@ -107,8 +107,12 @@ public class TableTemplate {
     }
 
     public int insert(String[] columnValues) {
+        return insert(columnValues, BinaryEncoding.NONE);
+    }
+
+    public int insert(String[] columnValues, BinaryEncoding encoding) {
         StatementBuilder st = getStatementBuilder(DmlType.INSERT);
-        Object[] values = filterValues(columnMetaData, columnValues);
+        Object[] values = filterValues(columnMetaData, columnValues, encoding);
         if (this.columnFilter != null) {
             values = this.columnFilter.filterColumnsValues(DmlType.INSERT, values);
         }
@@ -116,9 +120,13 @@ public class TableTemplate {
     }
 
     public int update(String[] columnValues, String[] keyValues) {
+        return update(columnValues, keyValues, BinaryEncoding.NONE);
+    }
+
+    public int update(String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
         StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
-        Object[] values = ArrayUtils.addAll(filterValues(columnMetaData,
-                columnValues), filterValues(keyMetaData, keyValues));
+        Object[] values = ArrayUtils.addAll(filterValues(columnMetaData, columnValues, encoding), filterValues(
+                keyMetaData, keyValues, encoding));
         if (this.columnFilter != null) {
             values = this.columnFilter.filterColumnsValues(DmlType.UPDATE, values);
         }
@@ -127,10 +135,10 @@ public class TableTemplate {
 
     public int delete(String[] keyValues) {
         StatementBuilder st = getStatementBuilder(DmlType.DELETE);
-        Object[] values = filterValues(keyMetaData, keyValues);
+        Object[] values = filterValues(keyMetaData, keyValues, BinaryEncoding.NONE);
         if (this.columnFilter != null) {
             values = this.columnFilter.filterColumnsValues(DmlType.DELETE, values);
-        }        
+        }
         return jdbcTemplate.update(st.getSql(), values);
     }
 
@@ -141,14 +149,13 @@ public class TableTemplate {
             statementColumns = this.columnFilter.filterColumnsNames(type, statementColumns);
         }
         if (st == null) {
-            st = new StatementBuilder(type, table.getName(), existKeyNames,
-                    statementColumns);
+            st = new StatementBuilder(type, table.getName(), existKeyNames, statementColumns);
             statementMap.put(type, st);
         }
         return st;
     }
 
-    private Object[] filterValues(Column[] metaData, String[] values) {
+    private Object[] filterValues(Column[] metaData, String[] values, BinaryEncoding encoding) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -158,9 +165,8 @@ public class TableTemplate {
 
             if (column != null) {
                 int type = column.getTypeCode();
-                if ((value == null || (dbDialect.isEmptyStringNulled() && value
-                        .equals("")))
-                        && column.isRequired() && column.isOfTextType()) {
+                if ((value == null || (dbDialect.isEmptyStringNulled() && value.equals(""))) && column.isRequired()
+                        && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 } else if (value != null) {
                     if (type == Types.DATE) {
@@ -174,10 +180,14 @@ public class TableTemplate {
                     } else if (type == Types.NUMERIC || type == Types.DECIMAL) {
                         objectValue = new BigDecimal(value);
                     } else if (type == Types.BLOB || type == Types.LONGVARBINARY) {
-                        objectValue = value.getBytes();
+                        if (encoding == BinaryEncoding.NONE) {
+                            objectValue = value.getBytes();
+                        } else if (encoding == BinaryEncoding.BASE64) {
+                            objectValue = Base64.decodeBase64(value.getBytes());
+                        }
                     } else if (type == Types.TIME) {
                         objectValue = new Time(getTime(value, TIMESTAMP_PATTERNS));
-                    }                
+                    }
                 }
                 list.add(objectValue);
             }
