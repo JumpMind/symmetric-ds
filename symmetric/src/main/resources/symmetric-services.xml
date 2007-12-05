@@ -541,6 +541,9 @@
                 <entry key="S">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
                 </entry>
+                <entry key="C">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
+                </entry>
             </map>
         </property>
     </bean>

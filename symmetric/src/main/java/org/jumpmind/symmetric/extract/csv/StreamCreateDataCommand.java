@@ -7,10 +7,10 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 
-public class StreamDDLDataCommand extends AbstractStreamDataCommand {
+public class StreamCreateDataCommand extends AbstractStreamDataCommand {
 
     public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.DDL, DELIMITER, data.getRowData());
+        Util.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
         writer.newLine();
     }
 }

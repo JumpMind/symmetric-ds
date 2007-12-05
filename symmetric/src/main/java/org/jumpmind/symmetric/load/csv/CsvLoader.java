@@ -134,11 +134,11 @@ public class CsvLoader implements IDataLoader {
                 break;
             } else if (tokens[0].equals(CsvConstants.SQL)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                    runSql(csvReader.getRawRecord());
+                    runSql(tokens[1]);
                 }
-            } else if (tokens[0].equals(CsvConstants.DDL)) {
-                if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                    runDdl(csvReader.getRawRecord());
+            } else if (tokens[0].equals(CsvConstants.CREATE)) {
+                if (!context.isSkipping()) {
+                    runDdl(tokens[1]);
                 }
             } else if (tokens[0].equals(CsvConstants.BINARY)) {
                 try {
@@ -324,10 +324,11 @@ public class CsvLoader implements IDataLoader {
         if (csvReader != null) {
             csvReader.close();
         }
-        
-        Table[] tables = context.getAllTablesProcessed();
-        for (Table table : tables) {
-            dbDialect.cleanupAfterInserts(table);
+        if (context != null) {
+            Table[] tables = context.getAllTablesProcessed();
+            for (Table table : tables) {
+                dbDialect.cleanupAfterInserts(table);
+            }
         }
     }
 

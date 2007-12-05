@@ -58,7 +58,7 @@ public enum DataEventType implements ICoded {
     /**
      * An event that indicates that the data payload is a table creation.
      */
-    DDL("DDL");
+    CREATE("C");
 
     private String code;
 
@@ -81,8 +81,8 @@ public enum DataEventType implements ICoded {
             return DataEventType.RELOAD;
         } else if (s.equals("S")) {
             return DataEventType.SQL;
-        } else if (s.equals("DDL")) {
-            return DataEventType.DDL;
+        } else if (s.equals("C")) {
+            return DataEventType.CREATE;
         }
         return null;
     }    
