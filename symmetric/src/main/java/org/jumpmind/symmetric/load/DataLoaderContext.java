@@ -21,8 +21,11 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.ddlutils.model.Table;
 
 
 public class DataLoaderContext implements IDataLoaderContext {
@@ -52,6 +55,16 @@ public class DataLoaderContext implements IDataLoaderContext {
     public void setTableTemplate(TableTemplate tableTemplate) {
         this.tableTemplate = tableTemplate;
         tableTemplateMap.put(getTableName(), tableTemplate);
+    }
+    
+    public Table[] getAllTablesProcessed() {
+        Collection<TableTemplate> templates = this.tableTemplateMap.values();
+        Table[] tables = new Table[templates.size()];
+        int i = 0;
+        for (TableTemplate table : templates) {
+            tables[i++] = table.getTable();
+        }
+        return tables;
     }
     
     public String getBatchId() {

@@ -111,11 +111,11 @@
                                   $(syncOnIncomingBatchCondition) 
                                   if (@SyncEnabled <> 0x1) begin
                                     $(if:containsBlobClobColumns)
-                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
-                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition));
                                     $(else:containsBlobClobColumns)
-                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
-                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
+                                      insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
+                                       (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition));                                    
                                     $(end:containsBlobClobColumns)
                                     if (@@ROWCOUNT > 0) begin
                                       if (@@ROWCOUNT = 1) begin

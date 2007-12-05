@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.load;
 
+import org.apache.ddlutils.model.Table;
+
 public interface IDataLoaderContext {
 
     public String getBatchId();
@@ -36,5 +38,7 @@ public interface IDataLoaderContext {
     public String[] getColumnNames();
 
     public String[] getKeyNames();
+    
+    public Table[] getAllTablesProcessed();
 
 }

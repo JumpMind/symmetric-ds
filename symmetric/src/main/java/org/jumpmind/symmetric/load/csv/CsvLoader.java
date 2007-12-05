@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -155,7 +156,7 @@ public class CsvLoader implements IDataLoader {
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
         if (tokens[0].equals(CsvConstants.TABLE)) {
-            setTable(tokens[1].toLowerCase());
+            setTable(tokens[1].toLowerCase());            
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -172,6 +173,7 @@ public class CsvLoader implements IDataLoader {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
                     this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
+        dbDialect.prepareTableForInserts( context.getTableTemplate().getTable());
     }
 
     protected int insert(String[] tokens, BinaryEncoding encoding) {
@@ -315,6 +317,11 @@ public class CsvLoader implements IDataLoader {
     public void close() {
         if (csvReader != null) {
             csvReader.close();
+        }
+        
+        Table[] tables = context.getAllTablesProcessed();
+        for (Table table : tables) {
+            dbDialect.cleanupAfterInserts(table);
         }
     }
 

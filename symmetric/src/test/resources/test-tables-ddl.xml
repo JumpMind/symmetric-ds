@@ -5,8 +5,8 @@
 
     <table name="test_triggers_table">
         <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />
-        <column name="string_One_Value" type="VARCHAR" size="50"  />
-        <column name="string_Two_Value" type="VARCHAR" size="1000" />
+        <column name="string_one_value" type="VARCHAR" size="50"  />
+        <column name="string_two_value" type="VARCHAR" size="1000" />
         <column name="long_String_Value" type="LONGVARCHAR" />
         <column name="time_Value" type="TIMESTAMP" />
         <column name="date_Value" type="DATE" />
