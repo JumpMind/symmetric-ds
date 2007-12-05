@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.load;
 
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
@@ -34,12 +35,12 @@ public interface IColumnFilter {
      * column value as well.
      * @return The columnName that the data loader will use to build its dml.
      */
-    public String[] filterColumnsNames(DmlType dml, String[] columnNames);
+    public String[] filterColumnsNames(DmlType dml, Table table, String[] columnNames);
 
     /**
      * This method is always called after {@link IColumnFilter#filterColumnsNames(DmlType, String[])}.  It 
      * should perform the same filtering under the same conditions for the values as was done for the column names. 
      * @return the column values
      */
-    public Object[] filterColumnsValues(DmlType dml, Object[] columnValues);
+    public Object[] filterColumnsValues(DmlType dml, Table table, Object[] columnValues);
 }

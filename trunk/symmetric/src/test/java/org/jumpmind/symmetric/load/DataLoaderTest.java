@@ -29,6 +29,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -49,6 +50,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     public void testInsertExisting() throws Exception {
         String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
     }
 
@@ -58,6 +60,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
                 "You're a \"character\"", "Where are you?", "2007-12-31", "2007-12-31 23:59:59.0", "1", "13",
                 "9.95", UPDATE_NOT_EXISTING_ID };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
+        massageExpectectedResultsForDialect(expectedValues);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
     }
 
@@ -147,6 +150,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
+        massageExpectectedResultsForDialect(expectedValues);
         assertTestTableEquals(values[0], expectedValues);    
     }
 
@@ -173,7 +177,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
         load(out);
+        massageExpectectedResultsForDialect(values);
         assertTestTableEquals(values[0], values);
+    }
+    
+    private void massageExpectectedResultsForDialect(String[] values) {
+        if (getDbDialect() instanceof MsSqlDbDialect) {
+            values[5] = values[5] + " 00:00:00.0";
+        }
     }
 
     @Test

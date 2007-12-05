@@ -20,12 +20,18 @@
 
 package org.jumpmind.symmetric.db.mssql;
 
+import java.util.ArrayList;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -45,15 +51,49 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
+    public IColumnFilter getDatabaseColumnFilter() {
+        return new IColumnFilter () {
+            int[] indexesToRemove = null;            
+            public String[] filterColumnsNames(DmlType dml, Table table, String[] columnNames) {
+                ArrayList<String> columns = new ArrayList<String>();
+                CollectionUtils.addAll(columns, columnNames);                
+                if (dml == DmlType.UPDATE) {
+                    Column[] autoIncrementColumns = table.getAutoIncrementColumns();
+                    indexesToRemove = new int[autoIncrementColumns.length];
+                    int i = 0;
+                    for (Column column : autoIncrementColumns) {
+                        indexesToRemove[i++] = columns.indexOf(column.getName());
+                        columns.remove(column.getName());
+                    }
+                }
+                return columns.toArray(new String[columns.size()]);
+            }
+
+            public Object[] filterColumnsValues(DmlType dml, Table table, Object[] columnValues) {
+                if (dml == DmlType.UPDATE && indexesToRemove != null) {
+                    ArrayList<Object> values = new ArrayList<Object>();
+                    CollectionUtils.addAll(values, columnValues);
+                    for (int  index : indexesToRemove) {
+                        values.remove(index);
+                    }
+                    return values.toArray(new Object[values.size()]);
+                }
+                return columnValues;
+            }
+           
+        };
+    }
+
+    @Override
     public void prepareTableForInserts(Table table) {
-        if (table.getAutoIncrementColumns().length > 0) {
+        if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
         }
     }
 
     @Override    
     public void cleanupAfterInserts(Table table) {
-        if (table.getAutoIncrementColumns().length > 0) {
+        if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
         }
     }
