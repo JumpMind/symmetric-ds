@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -52,7 +53,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     private String insertIncomingBatchHistorySql;
 
     private boolean skipDuplicateBatches = true;
-
+    
+    private IDbDialect dbDialect;
+    
     public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
         try {
             return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql,
@@ -74,11 +77,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 nodeId }, new IncomingBatchHistoryMapper());
     }
 
-    public boolean acquireIncomingBatch(IncomingBatch status) {
+    public boolean acquireIncomingBatch(final IncomingBatch status) {
+        Object savepoint = dbDialect.createSavepointForFallback();
         boolean okayToProcess = true;
         try {
             insertIncomingBatch(status);
+            dbDialect.releaseSavepoint(savepoint);
         } catch (DataIntegrityViolationException e) {
+            dbDialect.rollbackToSavepoint(savepoint);
             status.setRetry(true);
             okayToProcess = updateIncomingBatch(status) > 0 || (! skipDuplicateBatches);
             if (okayToProcess) {
@@ -87,7 +93,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 logger.warn("Skipping batch " + status.getNodeBatchId());
             }
         }
-        return okayToProcess;
+        return okayToProcess;                
     }
 
     public void insertIncomingBatch(IncomingBatch status) {
@@ -162,6 +168,10 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void setFindIncomingBatchErrorsSql(String findIncomingBatchErrorsSql) {
         this.findIncomingBatchErrorsSql = findIncomingBatchErrorsSql;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
 }
