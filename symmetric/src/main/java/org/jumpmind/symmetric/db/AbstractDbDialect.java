@@ -30,6 +30,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
+import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -57,6 +59,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.transaction.TransactionStatus;
@@ -103,6 +106,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(8), "15,0");
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
+    }
+    
+    public IColumnFilter getDatabaseColumnFilter() {
+        return null;
     }
     
     public void prepareTableForInserts(Table table) {        
@@ -263,6 +270,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn((String) it.next(), true)
                     .setPrimaryKey(true))
                 ;
+            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
         }
         return table;
     }
@@ -333,6 +341,44 @@ abstract public class AbstractDbDialect implements IDbDialect {
         column.setDescription((String) values.get("REMARKS"));
         return column;
     }
+    
+    protected void determineAutoIncrementFromResultSetMetaData(Table table, final Column columnsToCheck[])
+            throws SQLException {
+        StringBuffer query;
+        if (columnsToCheck == null || columnsToCheck.length == 0)
+            return;
+        query = new StringBuffer();
+        query.append("SELECT ");
+        for (int idx = 0; idx < columnsToCheck.length; idx++) {
+            if (idx > 0)
+                query.append(",");
+            if (getPlatform().isDelimitedIdentifierModeOn())
+                query.append(platform.getPlatformInfo().getDelimiterToken());
+            query.append(columnsToCheck[idx].getName());
+            if (getPlatform().isDelimitedIdentifierModeOn())
+                query.append(platform.getPlatformInfo().getDelimiterToken());
+        }
+
+        query.append(" FROM ");
+        if (getPlatform().isDelimitedIdentifierModeOn())
+            query.append(platform.getPlatformInfo().getDelimiterToken());
+        query.append(table.getName());
+        if (getPlatform().isDelimitedIdentifierModeOn())
+            query.append(platform.getPlatformInfo().getDelimiterToken());
+        query.append(" WHERE 1 = 0");
+        final String finalQuery = query.toString();
+        jdbcTemplate.execute(new StatementCallback() {
+            public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
+                ResultSet rs = stmt.executeQuery(finalQuery);
+                ResultSetMetaData rsMetaData = rs.getMetaData();
+                for (int idx = 0; idx < columnsToCheck.length; idx++)
+                    if (rsMetaData.isAutoIncrement(idx + 1))
+                        columnsToCheck[idx].setAutoIncrement(true);
+                return null;
+            }
+        });
+    }
+    
 
     @SuppressWarnings("unchecked")
     protected Map<String, Object> readColumns(ResultSet resultSet, List columnDescriptors) throws SQLException {

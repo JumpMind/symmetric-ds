@@ -80,13 +80,12 @@ public class TableTemplate {
 
     private HashMap<DmlType, StatementBuilder> statementMap;
 
-    private IColumnFilter columnFilter;
+    private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
 
     public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
-        this.columnFilter = columnFilter;
-        // TODO should we be passing the schema in the csv?
+        this.setupColumnFilters(columnFilter, dbDialect);
         table = dbDialect.getMetaDataFor(null, null, tableName, true);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
@@ -96,6 +95,15 @@ public class TableTemplate {
                 allMetaData.put(column.getName().trim().toUpperCase(), column);
             }
         }
+    }
+    
+    private void setupColumnFilters(IColumnFilter pluginFilter, IDbDialect dbDialect) {
+        if (pluginFilter != null) {
+            this.columnFilters.add(pluginFilter);
+        }
+        if (dbDialect.getDatabaseColumnFilter() != null) {
+            this.columnFilters.add(dbDialect.getDatabaseColumnFilter());
+        }        
     }
 
     public String getTableName() {
@@ -113,8 +121,10 @@ public class TableTemplate {
     public int insert(String[] columnValues, BinaryEncoding encoding) {
         StatementBuilder st = getStatementBuilder(DmlType.INSERT);
         Object[] values = filterValues(columnMetaData, columnValues, encoding);
-        if (this.columnFilter != null) {
-            values = this.columnFilter.filterColumnsValues(DmlType.INSERT, values);
+        if (this.columnFilters != null) {
+            for (IColumnFilter columnFilter : this.columnFilters) {
+                values = columnFilter.filterColumnsValues(DmlType.INSERT, getTable() , values);    
+            }            
         }
         return jdbcTemplate.update(st.getSql(), values);
     }
@@ -127,26 +137,32 @@ public class TableTemplate {
         StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
         Object[] values = ArrayUtils.addAll(filterValues(columnMetaData, columnValues, encoding), filterValues(
                 keyMetaData, keyValues, encoding));
-        if (this.columnFilter != null) {
-            values = this.columnFilter.filterColumnsValues(DmlType.UPDATE, values);
-        }
+        if (this.columnFilters != null) {
+            for (IColumnFilter columnFilter : this.columnFilters) {
+                values = columnFilter.filterColumnsValues(DmlType.UPDATE, getTable() , values);    
+            }            
+        }        
         return jdbcTemplate.update(st.getSql(), values);
     }
 
     public int delete(String[] keyValues) {
         StatementBuilder st = getStatementBuilder(DmlType.DELETE);
         Object[] values = filterValues(keyMetaData, keyValues, BinaryEncoding.NONE);
-        if (this.columnFilter != null) {
-            values = this.columnFilter.filterColumnsValues(DmlType.DELETE, values);
-        }
+        if (this.columnFilters != null) {
+            for (IColumnFilter columnFilter : this.columnFilters) {
+                values = columnFilter.filterColumnsValues(DmlType.DELETE, getTable() , values);    
+            }            
+        } 
         return jdbcTemplate.update(st.getSql(), values);
     }
 
     private StatementBuilder getStatementBuilder(DmlType type) {
         StatementBuilder st = statementMap.get(type);
         String[] statementColumns = existColumnNames;
-        if (this.columnFilter != null) {
-            statementColumns = this.columnFilter.filterColumnsNames(type, statementColumns);
+        if (this.columnFilters != null) {
+            for (IColumnFilter columnFilter : this.columnFilters) {
+                statementColumns = columnFilter.filterColumnsNames(type, getTable() , statementColumns);
+            }            
         }
         if (st == null) {
             st = new StatementBuilder(type, table.getName(), existKeyNames, statementColumns);

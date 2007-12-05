@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db;
 
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -87,6 +88,8 @@ public interface IDbDialect {
     public void rollbackToSavepoint(Object savepoint);
     
     public void releaseSavepoint(Object savepoint);
+    
+    public IColumnFilter getDatabaseColumnFilter();
 
     /**
      * Implement this if the database has some type of cleanup functionality that needs to be 
