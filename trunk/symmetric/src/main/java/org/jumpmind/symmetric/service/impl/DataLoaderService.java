@@ -167,7 +167,7 @@ public class DataLoaderService extends AbstractService implements
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 } finally {
-                    //dbDialect.enableSyncTriggers();
+                    dbDialect.enableSyncTriggers();
                 }
             }
         });
