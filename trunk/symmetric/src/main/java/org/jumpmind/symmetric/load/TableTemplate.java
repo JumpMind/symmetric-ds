@@ -243,4 +243,8 @@ public class TableTemplate {
         return columnNames;
     }
 
+    public Table getTable() {
+        return table;
+    }
+
 }

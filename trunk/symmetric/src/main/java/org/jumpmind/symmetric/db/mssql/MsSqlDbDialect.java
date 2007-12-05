@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.mssql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -38,9 +39,23 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     protected void initForSpecificDialect() {
     }
-    
+
     protected boolean allowsNullForIdentityColumn() {
         return false;
+    }
+
+    @Override
+    public void prepareTableForInserts(Table table) {
+        if (table.getAutoIncrementColumns().length > 0) {
+            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
+        }
+    }
+
+    @Override    
+    public void cleanupAfterInserts(Table table) {
+        if (table.getAutoIncrementColumns().length > 0) {
+            jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
+        }
     }
 
     @Override
@@ -50,9 +65,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt(
-                "select count(*) from sysobjects where type = 'TR' AND name = ?"                
-                        , new Object[] { triggerName }) > 0;
+        return jdbcTemplate.queryForInt("select count(*) from sysobjects where type = 'TR' AND name = ?",
+                new Object[] { triggerName }) > 0;
     }
 
     public void disableSyncTriggers() {
@@ -120,7 +134,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
             logger.warn("Trigger does not exist");
         }
     }
-    
+
     public void removeTrigger(String schemaName, String triggerName) {
         removeTrigger(schemaName, triggerName, null);
     }

@@ -98,7 +98,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
     }
-
+    
+    public void prepareTableForInserts(Table table) {        
+    }
+    
+    public void cleanupAfterInserts(Table table) {        
+    }
+    
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }

@@ -39,6 +39,10 @@ public interface IDbDialect {
     public void removeTrigger(String schemaName, String triggerName);
     
     public void removeTrigger(String schemaName, String triggerName, String tableName);
+    
+    public void prepareTableForInserts(Table table);
+    
+    public void cleanupAfterInserts(Table table);
 
     public void initConfigDb(String tablePrefix);
 
