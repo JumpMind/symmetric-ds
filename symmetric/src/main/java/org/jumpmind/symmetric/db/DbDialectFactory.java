@@ -40,6 +40,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
@@ -83,6 +84,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         }
 
         dialect.init(pf);
+        dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
         return dialect;
     }
 

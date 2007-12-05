@@ -55,4 +55,9 @@
         <property name="propagationBehaviorName" value="PROPAGATION_REQUIRES_NEW" />
     </bean>
 
+    <bean id="currentTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="txManager" />
+        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
+    </bean>
+
 </beans>

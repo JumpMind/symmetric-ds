@@ -59,6 +59,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 abstract public class AbstractDbDialect implements IDbDialect {
 
@@ -81,7 +85,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private int streamingResultsFetchSize;
 
     private Boolean supportsGetGeneratedKeys;
-
+    
+    private TransactionTemplate transactionTemplate;
+    
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
@@ -602,6 +608,45 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
+    public Object createSavepoint() {
+        return transactionTemplate.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus transactionstatus) {
+                return transactionstatus.createSavepoint();
+            }
+        });
+    }
+
+    public Object createSavepointForFallback() {
+        if (requiresSavepointForFallback()) {
+            return createSavepoint();
+        }
+        return null;
+    }
+    
+    public void rollbackToSavepoint(final Object savepoint) {
+        if (savepoint != null) {
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
+                    transactionstatus.rollbackToSavepoint(savepoint);                    
+                }
+            });
+        }
+    }
+    
+    public void releaseSavepoint(final Object savepoint) {
+        if (savepoint != null) {
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
+                    transactionstatus.releaseSavepoint(savepoint);                    
+                }
+            });
+        }        
+    }
+
+    public boolean requiresSavepointForFallback() {
+        return false;
+    }
+
     public boolean supportsTransactionId() {
         return false;
     }
@@ -629,4 +674,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public JdbcTemplate getJdbcTemplate() {
         return jdbcTemplate;
     }
+
+    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
+        this.transactionTemplate = transactionTemplate;
+    }
+
 }

@@ -36,7 +36,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
-
+        
     protected void initForSpecificDialect() {
         try {
             if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
@@ -109,6 +109,10 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select currval('" + sequenceName + "')";
+    }
+
+    public boolean requiresSavepointForFallback() {
+        return true;
     }
 
     public boolean isCharSpacePadded() {

@@ -22,10 +22,10 @@ package org.jumpmind.symmetric.db;
 
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.DataEventType;
-import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -78,6 +78,16 @@ public interface IDbDialect {
     
     public boolean supportsTransactionId();
     
+    public boolean requiresSavepointForFallback();
+
+    public Object createSavepoint();
+
+    public Object createSavepointForFallback();
+    
+    public void rollbackToSavepoint(Object savepoint);
+    
+    public void releaseSavepoint(Object savepoint);
+
     /**
      * Implement this if the database has some type of cleanup functionality that needs to be 
      * run when dropping database objects.  An example is Oracle's 'purge recyclebin'

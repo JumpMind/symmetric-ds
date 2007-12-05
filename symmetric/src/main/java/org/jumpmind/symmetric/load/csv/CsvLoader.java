@@ -187,11 +187,17 @@ public class CsvLoader implements IDataLoader {
             }
         }
 
+        Object savepoint = null;
         try {
+            if (enableFallbackUpdate) {
+                savepoint = dbDialect.createSavepointForFallback();
+            }
             rows = context.getTableTemplate().insert(columnValues, encoding);
+            dbDialect.releaseSavepoint(savepoint);
         } catch (DataIntegrityViolationException e) {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
             if (enableFallbackUpdate) {
+                dbDialect.rollbackToSavepoint(savepoint);
                 logger.warn("Unable to insert into " + context.getTableName() + ", updating instead: "
                         + ArrayUtils.toString(tokens));
                 String keyValues[] = parseKeys(tokens, 1);
