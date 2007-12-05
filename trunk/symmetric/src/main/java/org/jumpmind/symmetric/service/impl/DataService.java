@@ -20,10 +20,8 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -36,6 +34,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -51,7 +50,6 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 
-import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 
 public class DataService extends AbstractService implements IDataService {
@@ -86,22 +84,22 @@ public class DataService extends AbstractService implements IDataService {
         insertDataEvent(data, targetNode.getNodeId());
     }
 
-    public void createPurgeEvent(final Node targetNode, final Trigger trigger) {
+    public void insertPurgeEvent(final Node targetNode, final Trigger trigger) {
         String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
-        createSqlEvent(targetNode, trigger, sql);
+        insertSqlEvent(targetNode, trigger, sql);
     }
 
-    public void createSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
+    public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL, sql, null,
-                history);
+        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL,
+                CsvUtil.escapeCsvData(sql), null, history);
         insertDataEvent(data, targetNode.getNodeId());
     }
 
-    public void createTableEvent(final Node targetNode, final Trigger trigger, String xml) {
+    public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.DDL, xml, null,
-                history);
+        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.CREATE,
+                CsvUtil.escapeCsvData(xml), null, history);
         insertDataEvent(data, targetNode.getNodeId());
     }
 
@@ -155,13 +153,13 @@ public class DataService extends AbstractService implements IDataService {
         if (createFirstForReload) {
             for (Trigger trigger : triggers) {
                 String xml = dbDialect.getCreateTableXML(trigger);
-                createTableEvent(targetNode, trigger, xml);
+                insertCreateEvent(targetNode, trigger, xml);
             }            
         }
         if (deleteFirstForReload) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
-                createPurgeEvent(targetNode, trigger);
+                insertPurgeEvent(targetNode, trigger);
             }
 
             outgoingBatchService.buildOutgoingBatches(nodeId);
@@ -220,8 +218,8 @@ public class DataService extends AbstractService implements IDataService {
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();
-        String[] columnNames = tokenizeCsvData(data.getAudit().getColumnNames());
-        String[] columnData = tokenizeCsvData(data.getRowData());
+        String[] columnNames = CsvUtil.tokenizeCsvData(data.getAudit().getColumnNames());
+        String[] columnData = CsvUtil.tokenizeCsvData(data.getRowData());
         for (int i = 0; i < columnNames.length; i++) {
             map.put(columnNames[i].toLowerCase(), columnData[i]);
         }
@@ -229,7 +227,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void setRowDataFromMap(Data data, Map<String, String> map) {
-        String[] columnNames = tokenizeCsvData(data.getAudit().getColumnNames());
+        String[] columnNames = CsvUtil.tokenizeCsvData(data.getAudit().getColumnNames());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
@@ -243,20 +241,9 @@ public class DataService extends AbstractService implements IDataService {
         data.setRowData(out.toString());
     }
 
+    @Deprecated
     public String[] tokenizeCsvData(String csvData) {
-        String[] tokens = null;
-        if (csvData != null) {
-            InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(csvData.getBytes()));
-            CsvReader csvReader = new CsvReader(reader);
-            csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
-            try {
-                if (csvReader.readRecord()) {
-                    tokens = csvReader.getValues();
-                }
-            } catch (IOException e) {
-            }
-        }
-        return tokens;
+        return CsvUtil.tokenizeCsvData(csvData);
     }
 
     public void setReloadListeners(List<IReloadListener> listeners) {

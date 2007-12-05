@@ -25,6 +25,12 @@ public interface IDataService {
 
     public void insertDataEvent(Data data, String nodeId);
 
+    public void insertPurgeEvent(Node targetNode, Trigger trigger);
+    
+    public void insertSqlEvent(Node targetNode, Trigger trigger, String sql);
+    
+    public void insertCreateEvent(Node targetNode, Trigger trigger, String xml);
+
     public Data createData(String tableName);
     
     public Data createData(String tableName, String whereClause);
