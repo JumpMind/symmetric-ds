@@ -20,7 +20,7 @@
                 </property>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="fn_sym_replace">
+                        <entry key="FN_SYM_REPLACE">
                             <value>
                                 <![CDATA[ 
                                 CREATE FUNCTION fn_sym_replace(STR VARCHAR(10000), OLD VARCHAR(10000), NEW VARCHAR(10000)) RETURNS
