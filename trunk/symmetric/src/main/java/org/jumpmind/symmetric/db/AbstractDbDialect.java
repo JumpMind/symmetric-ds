@@ -497,7 +497,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         StringWriter buffer = new StringWriter();
         DatabaseIO xmlWriter = new DatabaseIO();
         xmlWriter.write(db, buffer);
-        return buffer.toString();
+        // TODO: remove when these bugs are fixed in DdlUtils 
+        return buffer.toString().replaceAll("&apos;", "").replaceAll("default=\"empty_blob\\(\\) *\"", "");
     }
     
     public void createTables(String xml) {
