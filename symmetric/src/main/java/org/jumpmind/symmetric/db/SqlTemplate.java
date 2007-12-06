@@ -399,9 +399,11 @@ public class SqlTemplate {
         }
     }
 
-    public String getFunctionInstalledSql(String functionName) {
+    public String getFunctionInstalledSql(String schemaName, String functionName) {
         if (functionInstalledSql != null) {
-            return replace("functionName", functionName, functionInstalledSql);
+            String ddl = replace("functionName", functionName, functionInstalledSql);
+            ddl = replace("schemaName", schemaName, ddl);
+            return ddl;
         } else {
             return null;
         }

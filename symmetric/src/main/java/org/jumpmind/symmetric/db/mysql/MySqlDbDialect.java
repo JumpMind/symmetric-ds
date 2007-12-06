@@ -20,16 +20,13 @@
 
 package org.jumpmind.symmetric.db.mysql;
 
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
 
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -40,34 +37,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     protected void initForSpecificDialect() {
-        try {
-            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
-                logger
-                        .info("Creating function "
-                                + TRANSACTION_ID_FUNCTION_NAME);
-                new SqlScript(getTransactionIdSqlUrl(), getPlatform()
-                        .getDataSource(), '/').execute();
-            }
-        } catch (Exception ex) {
-            logger.error("Error while initializing MySql.", ex);
-        }
-    }
-
-    private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/dialects/mysql-transactionid.sql");
-    }
-
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        long lastModified = getTransactionIdSqlUrl().openConnection()
-                .getLastModified();
-        String checkSchema = (getDefaultSchema() != null && getDefaultSchema()
-                .length() > 0) ? " and routine_schema='" + getDefaultSchema()
-                + "'" : "";
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from information_schema.routines where created >= ? and routine_name=?"
-                                + checkSchema, new Object[] {
-                                new Date(lastModified), name }) > 0;
     }
 
     @Override
