@@ -83,7 +83,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean supportsMixedCaseNamesInCatalog() {
-        return true;
+        return false;
     }
 
     public void purge() {
