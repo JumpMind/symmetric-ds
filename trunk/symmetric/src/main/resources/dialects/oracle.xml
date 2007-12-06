@@ -13,6 +13,11 @@
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from user_source where line = 1 and type = 'FUNCTION' and name=upper('$(functionName)')]]>
+                    </value>
+                </property>                
                 <property name="stringColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"')),'"') end ||','||]]>
