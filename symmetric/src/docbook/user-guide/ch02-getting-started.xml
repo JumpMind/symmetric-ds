@@ -306,7 +306,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 <para>Add a new sale to the client database</para>
                 <para>
                     <command>
-                        insert into transaction (tran_id, store, workstation, day, seq) values
+                        insert into sale_transaction (tran_id, store, workstation, day, seq) values
                         (1000, '1', '3', '2007-11-01', 100);
                     </command>
                 </para>
