@@ -111,7 +111,7 @@ public class NodeService extends AbstractService implements INodeService {
                 node.getNodeGroupId(), node.getExternalId(),
                 node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSchemaVersion(), node.getSymmetricVersion(),
-                node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled(), node.getNodeId() }) == 1;        
+                node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0, node.getNodeId() }) == 1;        
         return updated;
     }
 
