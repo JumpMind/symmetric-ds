@@ -18,7 +18,7 @@
         </foreign-key>
     </table>
 
-    <table name="transaction">
+    <table name="sale_transaction">
         <column name="tran_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="store" type="VARCHAR" size="5" required="true" />
         <column name="workstation" type="VARCHAR" size="3" required="true" />
@@ -31,7 +31,7 @@
         <column name="item_id" type="INTEGER" required="true" />
         <column name="price" type="DECIMAL" size="10,2" required="true" />
         <column name="quantity" type="INTEGER" required="true" />
-        <foreign-key name="fk_srli_tran_id" foreignTable="transaction">
+        <foreign-key name="fk_srli_tran_id" foreignTable="sale_transaction">
             <reference local="tran_id" foreign="tran_id" />
         </foreign-key>
         <foreign-key name="fk_srli_item_id" foreignTable="item">

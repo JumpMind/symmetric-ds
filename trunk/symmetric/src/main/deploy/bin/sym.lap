@@ -11,9 +11,7 @@ janel.min.java.version=1.5
 #-verbose:class
 #-Xincgc
 #janel.trap.console.ctrl=yes
--Dcom.sun.management.jmxremote.authenticate=false 
--Dcom.sun.management.jmxremote.port=2442
--Dlog4j.configuration=file:log4j.xml
+-Dlog4j.configuration=file:../bin/log4j.xml
 #-Dself.home.test=${SELF_HOME}
 #-Dfound.exe.folder.test=${FOUND_EXE_FOLDER}
 #janel.classpath.jars.dir=..\..\Test\TestLaunch\dist
