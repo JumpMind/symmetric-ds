@@ -89,25 +89,27 @@ public class SqlScript {
             String line;
             StringBuilder sql = new StringBuilder();
 
-            while ((line = reader.readLine()) != null && ! isComment(line)) {
-                if (checkStatementEnds(line)) {
-                    sql.append(line.substring(0, line.indexOf(delimiter)));
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("query->" + sql);
-                    }
-                    try {
-                        st.execute(sql.toString());
-                    } catch (SQLException e) {
-                        if (failOnError) {
-                            logger.error(sql.toString() + " failed to execute.", e);
-                            throw e;
-                        } else {
-                            logger.warn(e.getMessage() + ": " + sql.toString());
+            while ((line = reader.readLine()) != null) {
+                if (! isComment(line)) {
+                    if (checkStatementEnds(line)) {
+                        sql.append(line.substring(0, line.indexOf(delimiter)));
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("query->" + sql);
                         }
+                        try {
+                            st.execute(sql.toString());
+                        } catch (SQLException e) {
+                            if (failOnError) {
+                                logger.error(sql.toString() + " failed to execute.", e);
+                                throw e;
+                            } else {
+                                logger.warn(e.getMessage() + ": " + sql.toString());
+                            }
+                        }
+                        sql.setLength(0);
+                    } else {
+                        sql.append(line);
                     }
-                    sql.setLength(0);
-                } else {
-                    sql.append(line);
                 }
             }
         } catch (IOException e) {
