@@ -4,7 +4,7 @@
 insert into item_selling_price (price_id, price, cost) values (1, 0.10, 0.09);
 insert into item (item_id, price_id, name) values (11000001, 1, 'Yummy Gum');
 
-insert into transaction (tran_id, store, workstation, day, seq) 
+insert into sale_transaction (tran_id, store, workstation, day, seq) 
 values (900, '1', '3', '2007-11-01', 90);
 insert into sale_return_line_item (tran_id, item_id, price, quantity)
 values (900, 11000001, 0.10, 1);
@@ -34,7 +34,7 @@ insert into sym_node_identity values ('00000');
 --
 insert into sym_channel 
 (channel_id, processing_order, max_batch_size, enabled, description)
-values('transaction', 1, 100000, 1, 'Transactional data from register and back office');
+values('sale_transaction', 1, 100000, 1, 'sale_transactional data from register and back office');
 
 insert into sym_channel 
 (channel_id, processing_order, max_batch_size, enabled, description)
@@ -53,8 +53,8 @@ values('item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp,
 
 insert into sym_trigger 
 (source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values('transaction', 'store', 'corp', 'transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
+values('sale_transaction', 'store', 'corp', 'sale_transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
 (source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
-values('sale_return_line_item', 'store', 'corp', 'transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
+values('sale_return_line_item', 'store', 'corp', 'sale_transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
