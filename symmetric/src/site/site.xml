@@ -35,10 +35,14 @@
         <menu name="Community">
             <item name="SourceForge Home" href="http://sourceforge.net/projects/symmetricds/" />
             <item name="Forums" href="http://sourceforge.net/forum/?group_id=206470" />
-            <item name="Bugs" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997724" />
-            <item name="Feature Requests" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727" />
-            <item name="Support Requests" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997725" />
-            <item name="Patches" href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997726" />
+            <item name="Bugs"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997724" />
+            <item name="Feature Requests"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727" />
+            <item name="Support Requests"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997725" />
+            <item name="Patches"
+                href="http://sourceforge.net/tracker/?group_id=206470&amp;atid=997726" />
         </menu>
 
         <menu name="Code">
