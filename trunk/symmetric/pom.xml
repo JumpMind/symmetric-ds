@@ -217,6 +217,7 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
                     <siteDirectory>${basedir}/src/site</siteDirectory>
+                    <templateFile>src/site/site.vm</templateFile>
                 </configuration>
             </plugin>
             <plugin>
