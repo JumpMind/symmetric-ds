@@ -125,29 +125,38 @@ public class ConfigurationService extends AbstractService implements
 
     public void initTriggerRowsForConfigChannel() {
         if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
-            List<String> tableNames = getRootConfigChannelTableNames();
             initSystemChannels();
             String groupId = runtimeConfiguration.getNodeGroupId();
-            List<NodeGroupLink> targets = getGroupLinksFor(groupId);
-            if (targets != null && targets.size() > 0) {
-                for (NodeGroupLink target : targets) {
-                    int initialLoadOrder = 1;
-                    for (String tableName : tableNames) {
-                        Trigger trigger = getTriggerForTarget(tableName, groupId, target.getTargetGroupId(),
-                                Constants.CHANNEL_CONFIG);
-                        if (trigger == null) {
-                            jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, groupId,
-                                    target.getTargetGroupId(), Constants.CHANNEL_CONFIG, initialLoadOrder++ });
-                        }
-                    }
-                }
-            } else {
-                logger.error("Could not find any targets for your group id of "
-                        + runtimeConfiguration.getNodeGroupId()
-                        + ".  Please validate your node group id against the setup in the database.");
-            }
+            initTriggerRowsForGroupAndTables(groupId, getRootConfigChannelTableNames(), true);
         }
     }
+    
+    private void initTriggerRowsForGroupAndTables(String groupId, List<String> tableNames, boolean initRowsForNodes) {
+        List<NodeGroupLink> targets = getGroupLinksFor(groupId);
+        if (targets != null && targets.size() > 0) {
+            for (NodeGroupLink target : targets) {
+                int initialLoadOrder = 1;
+                for (String tableName : tableNames) {
+                    Trigger trigger = getTriggerForTarget(tableName, groupId, target.getTargetGroupId(),
+                            Constants.CHANNEL_CONFIG);
+                    if (trigger == null) {
+                        jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, groupId,
+                                target.getTargetGroupId(), Constants.CHANNEL_CONFIG, initialLoadOrder++ });
+                    }
+                }
+
+                if (initRowsForNodes) {
+                    // each target node group needs to have a trigger for syncing heartbeat data back
+                    initTriggerRowsForGroupAndTables(target.getTargetGroupId(), getNodeConfigChannelTableNames(), false);
+
+                    // TODO - we need to create trigger rows in an n-tiered environment.
+                }
+            }
+        } else {
+            logger.error("Could not find any targets for your group id of " + runtimeConfiguration.getNodeGroupId()
+                    + ".  Please validate your node group id against the setup in the database.");
+        }
+    }    
 
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannelsFor(boolean failOnError) {
