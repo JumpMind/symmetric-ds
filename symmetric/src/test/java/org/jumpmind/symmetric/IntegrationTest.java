@@ -123,9 +123,10 @@ public class IntegrationTest {
     }
 
     @Test(groups = "integration", dependsOnMethods = "testSyncToClient")
-    public void testSyncToRoot() {
-        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", "100", null, "2007-01-03" });
-        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, "3.33" });
+    public void testSyncToRoot() throws ParseException {
+        Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, 3.33 });
         clientEngine.push();
     }
 
