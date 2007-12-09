@@ -195,7 +195,7 @@ public class TableTemplate {
                         objectValue = Integer.valueOf(value);
                     } else if (type == Types.NUMERIC || type == Types.DECIMAL) {
                         objectValue = new BigDecimal(value);
-                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY) {
+                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY) {
                         if (encoding == BinaryEncoding.NONE) {
                             objectValue = value.getBytes();
                         } else if (encoding == BinaryEncoding.BASE64) {
