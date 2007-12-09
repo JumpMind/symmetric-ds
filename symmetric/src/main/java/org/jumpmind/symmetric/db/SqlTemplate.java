@@ -281,12 +281,10 @@ public class SqlTemplate {
                 templateToUse = clobColumnTemplate;
                 break;
             case Types.BLOB:
-                templateToUse = blobColumnTemplate;
-                break;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
-                templateToUse = stringColumnTemplate;
+                templateToUse = blobColumnTemplate;
                 break;
             case Types.DATE:
             case Types.TIME:
