@@ -139,6 +139,7 @@ public class CsvLoader implements IDataLoader {
             } else if (tokens[0].equals(CsvConstants.CREATE)) {
                 if (!context.isSkipping()) {
                     runDdl(tokens[1]);
+                    setTable(context.getTableName(), false);
                 }
             } else if (tokens[0].equals(CsvConstants.BINARY)) {
                 try {
@@ -156,7 +157,7 @@ public class CsvLoader implements IDataLoader {
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
         if (tokens[0].equals(CsvConstants.TABLE)) {
-            setTable(tokens[1].toLowerCase());            
+            setTable(tokens[1].toLowerCase(), true);            
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -167,13 +168,13 @@ public class CsvLoader implements IDataLoader {
         return isMetaTokenParsed;
     }
 
-    protected void setTable(String tableName) {
+    protected void setTable(String tableName, boolean useCache) {
         context.setTableName(tableName);
-        if (context.getTableTemplate() == null) {
+        if (!useCache || context.getTableTemplate() == null) {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
                     this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
-        dbDialect.prepareTableForInserts( context.getTableTemplate().getTable());
+        dbDialect.prepareTableForInserts(context.getTableTemplate().getTable());
     }
 
     protected int insert(String[] tokens, BinaryEncoding encoding) {
