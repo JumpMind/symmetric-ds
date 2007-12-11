@@ -24,14 +24,13 @@ package org.jumpmind.symmetric;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Follow the Apache versioning scheme documented here:
- * http://apr.apache.org/versioning.html
+ * Follow the Apache versioning scheme documented <a href="http://apr.apache.org/versioning.html">here</a>.
  */
 final public class Version {
 
     public static final int MAJOR = 1;
 
-    public static final int MINOR = 1;
+    public static final int MINOR = 2;
 
     public static final int PATCH = 0;
 
