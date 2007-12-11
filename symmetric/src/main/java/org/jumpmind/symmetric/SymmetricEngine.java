@@ -86,9 +86,9 @@ public class SymmetricEngine {
         // Synchronizing on the class so creating multiple engines is thread safe.
         synchronized (SymmetricEngine.class) {
             System.setProperty("symmetric.override.properties.file.1",
-                    overridePropertiesResource1);
+                    overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
             System.setProperty("symmetric.override.properties.file.2",
-                    overridePropertiesResource2);
+                    overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
             this.init(createContext());
         }
     }
@@ -127,7 +127,7 @@ public class SymmetricEngine {
         purgeService = (IPurgeService) applicationContext
                 .getBean(Constants.PURGE_SERVICE);
         registerEngine();
-        logger.info("Initialized SymmetricDS version " + Version.VERSION);
+        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION);
     }
 
     /**
