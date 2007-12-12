@@ -78,30 +78,43 @@
     <section>
         <title>Oracle</title>
         <para>
-            On Oracle RAC, sequences should be ordered so data is processed in the correct order.
+            On Oracle Real Application Clusters (RAC), sequences should be ordered so data is processed 
+            in the correct order.
             To offset the performance cost of ordering, the sequences should also be cached.
+            <programlisting><![CDATA[
+alter sequence SEQ_SYM_DATA_DATA_ID cache 1000 order;
+alter sequence SEQ_SYM_OUTGOIN_BATCH_BATCH_ID cache 1000 order;
+alter sequence SEQ_SYM_OUTGOIN_IST_HISTORY_ID cache 1000 order;
+alter sequence SEQ_SYM_TRIGGER_RIGGER_HIST_ID cache 1000 order;
+alter sequence SEQ_SYM_TRIGGER_TRIGGER_ID cache 1000 order;]]></programlisting>
         </para>
     </section>
     <section>
         <title>MySQL</title>
         <para>
-            A database engine that supports transactions, such as the InnoDB engine, is required.
-            On Windows, when the MySQL installer prompts for the default storage engine, select InnoDB.
-            On Unix, the default storage engine is MyISAM.  The following line must be added to the
-            <filename>my.cnf</filename> file:
+            MySQL supports several storage engines for different table types.  SymmetricDS requires
+            a storage engine that handles transaction-safe tables.  The recommended storage engine
+            is InnoDB, which is included by default in MySQL 5.0 distributions.
+            Either select the InnoDB engine during installation or modify your server configuration.
+            To make InnoDB the default storage engine, modify your MySQL server configuration file 
+            (<filename>my.ini</filename> on Windows, <filename>my.cnf</filename> on Unix):
             <programlisting>default-storage_engine = innodb</programlisting>
+            Alternatively, you can convert tables to the InnoDB storage engine with the following
+            command:
+            <programlisting>alter table t engine = innodb;</programlisting>            
         </para>
     </section>
     <section>
         <title>PostgreSQL</title>
         <para>
             There is no transaction identifier support included with PostgreSQL 8.1.
-            We may include a library in the future that can be added to PostgreSQL to provide
+            We may include a library in the future that can be added to PostgreSQL server to provide
             the transaction identifier.
         </para>
         <para>
-            The plpgsql language handler must be installed on the database where SymmetricDS
-            is running.  The following statements should be run by the administrator on the database:
+            Before database triggers can be created by in PostgreSQL,
+            the plpgsql language handler must be installed on the database.
+            The following statements should be run by the administrator on the database:
             
             <programlisting><![CDATA[
 CREATE FUNCTION plpgsql_call_handler() RETURNS language_handler AS
@@ -112,9 +125,7 @@ CREATE FUNCTION plpgsql_validator(oid) RETURNS void AS
 
 CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
     HANDLER plpgsql_call_handler
-    VALIDATOR plpgsql_validator;
-            ]]></programlisting>
-            
+    VALIDATOR plpgsql_validator;]]></programlisting>
         </para>
     </section>
     <section>
