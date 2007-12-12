@@ -96,6 +96,10 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 administration tools provided by your database vendor. Make sure the name of the
                 databases you create match the settings in the properties files.
             </para>
+            <para>
+                See the appendix <emphasis>Database Notes</emphasis> for compatibility
+                with your specific database.
+            </para>
         </important>
         <para>
             Create and load the root node tables with sample data and the synchronization
