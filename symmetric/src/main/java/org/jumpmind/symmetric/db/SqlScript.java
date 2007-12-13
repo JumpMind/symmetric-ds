@@ -118,7 +118,7 @@ public class SqlScript {
     }
 
     private boolean checkStatementEnds(String s) {
-        return (s.indexOf(delimiter) != -1);
+        return s.trim().endsWith("" + delimiter);
     }
 
 }
