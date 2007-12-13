@@ -156,7 +156,7 @@ public class HttpTransportManager extends AbstractTransportManager implements
     private String chooseURL(Node remote) {
         if (StringUtils.isBlank(remote.getSyncURL())) {
             logger
-                    .info("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
+                    .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
             return runtimeConfiguration.getRegistrationUrl();
         } else {
             return remote.getSyncURL();
