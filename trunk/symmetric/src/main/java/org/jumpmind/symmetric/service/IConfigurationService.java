@@ -74,4 +74,7 @@ public interface IConfigurationService {
 
     public Map<Long, TriggerHistory> getHistoryRecords();
 
+    public boolean isRegistrationServer();
+    
+
 }

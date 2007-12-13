@@ -65,17 +65,17 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private ITransportManager transportManager;
 
     private IDataLoaderService dataLoaderService;
-    
+
     private IDataService dataService;
 
     private IUpgradeService upgradeService;
-    
+
     private RandomTimeSlot randomSleepTimeSlot;
 
     private boolean autoConfigureDatabase = true;
-    
+
     private boolean autoUpgrade = true;
-    
+
     private String triggerPrefix;
 
     public void init() {
@@ -88,7 +88,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         } else {
             logger.info("Symmetric is not configured to auto create the database.");
         }
-        
+
         if (upgradeService.isUpgradeNecessary()) {
             if (autoUpgrade) {
                 upgradeService.upgrade();
@@ -119,9 +119,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
                 logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForInsertTrigger(), trigger.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForDeleteTrigger(), trigger.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForUpdateTrigger(), trigger.getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForInsertTrigger(), trigger
+                        .getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForDeleteTrigger(), trigger
+                        .getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForUpdateTrigger(), trigger
+                        .getSourceTableName());
                 configurationService.inactivateTriggerHistory(history);
             } else {
                 logger.info("A trigger was inactivated that had not yet been built.  Taking no action.");
@@ -139,8 +142,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getMetaDataFor(dbDialect.getDefaultCatalog(), trigger.getSourceSchemaName(), trigger
-                        .getSourceTableName(), false);
+                Table table = dbDialect.getMetaDataFor(dbDialect.getDefaultCatalog(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false);
 
                 if (table != null) {
                     TriggerHistory latestHistoryBeforeRebuild = configurationService.getLatestHistoryRecordFor(trigger
@@ -189,7 +192,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void register() {
         boolean registered = false;
         Node node = nodeService.findIdentity();
-        if (node == null) {
+        if (node == null && !configurationService.isRegistrationServer()) {
             // If we cannot contact the server to register, we simply must wait and try again.   
             while (!registered) {
                 try {
@@ -221,7 +224,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     @Transactional
     public void heartbeat() {
         Node node = nodeService.findIdentity();
-        if (node != null && !StringUtils.isBlank(runtimeConfiguration.getRegistrationUrl())) {
+        if (node != null) {
             logger.info("Updating my node information and heartbeat time.");
             node.setHeartbeatTime(new Date());
             node.setDatabaseType(dbDialect.getName());
@@ -230,13 +233,17 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setExternalId(runtimeConfiguration.getExternalId());
             node.setNodeGroupId(runtimeConfiguration.getNodeGroupId());
             node.setSymmetricVersion(Version.VERSION);
-            node.setSyncURL(runtimeConfiguration.getMyUrl());
+            if (!StringUtils.isBlank(runtimeConfiguration.getMyUrl())) {
+                node.setSyncURL(runtimeConfiguration.getMyUrl());
+            }
             nodeService.updateNode(node);
-            dataService.insertHeartbeatEvent(node);
             logger.info("Done updating my node information and heartbeat time.");
+            if (!configurationService.isRegistrationServer()) {
+                dataService.insertHeartbeatEvent(node);
+            }
         }
     }
-    
+
     private void sleepBeforeRegistrationRetry() {
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
@@ -251,24 +258,24 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         boolean triggerExists = false;
 
-        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger
-                .getTriggerName(DataEventType.INSERT, triggerPrefix), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix), trigger
-                .getTriggerName(DataEventType.DELETE, triggerPrefix));
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger.getTriggerName(
+                DataEventType.INSERT, triggerPrefix), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix),
+                trigger.getTriggerName(DataEventType.DELETE, triggerPrefix));
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
         if (oldAudit != null) {
             oldTriggerName = oldAudit.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = oldAudit.getSourceSchemaName();
-            triggerExists = dbDialect.doesTriggerExist(oldAudit.getSourceSchemaName(), oldAudit
-                    .getSourceTableName(), oldTriggerName);
+            triggerExists = dbDialect.doesTriggerExist(oldAudit.getSourceSchemaName(), oldAudit.getSourceTableName(),
+                    oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as defined in the trigger
             // does not exist as well.
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
-            triggerExists = dbDialect.doesTriggerExist(trigger.getSourceSchemaName(), trigger
-                    .getSourceTableName(), oldTriggerName);
+            triggerExists = dbDialect.doesTriggerExist(trigger.getSourceSchemaName(), trigger.getSourceTableName(),
+                    oldTriggerName);
         }
 
         if (!triggerExists && forceRebuild) {
@@ -335,7 +342,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
-    
+
     public void setTriggerPrefix(String triggerPrefix) {
         this.triggerPrefix = triggerPrefix;
     }

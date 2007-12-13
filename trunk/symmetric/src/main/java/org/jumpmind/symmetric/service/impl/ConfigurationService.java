@@ -433,6 +433,10 @@ public class ConfigurationService extends AbstractService implements
         }
     }
 
+    public boolean isRegistrationServer() {
+        return StringUtils.isBlank(runtimeConfiguration.getRegistrationUrl());
+    }
+
     public void setTriggerHistSql(String tableSyncAuditSql) {
         this.triggerHistSql = tableSyncAuditSql;
     }
@@ -521,5 +525,7 @@ public class ConfigurationService extends AbstractService implements
     public void setActiveTriggersForReloadSql(String activeTriggersForReloadSql) {
         this.activeTriggersForReloadSql = activeTriggersForReloadSql;
     }
+    
+    
 
 }
