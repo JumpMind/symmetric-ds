@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.AbstractTest;
@@ -46,6 +47,8 @@ public class DataExtractorServiceTest extends AbstractTest {
 
     protected IDataService dataService;
 
+    private int triggerHistId;
+
     protected Node node;
 
     @BeforeTest(groups = "continuous")
@@ -56,6 +59,9 @@ public class DataExtractorServiceTest extends AbstractTest {
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Set<Long> histKeys = configurationService.getHistoryRecords().keySet();
+        Assert.assertFalse(histKeys.isEmpty());
+        triggerHistId = histKeys.iterator().next().intValue();
     }
 
     @Test(groups = "continuous")
@@ -78,7 +84,7 @@ public class DataExtractorServiceTest extends AbstractTest {
     public void testExtract() throws Exception {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
-        createDataEvent("Foo", TestConstants.TEST_AUDIT_ID, TestConstants.TEST_CHANNEL_ID,
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID,
                 DataEventType.INSERT, node.getNodeId());
 
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
