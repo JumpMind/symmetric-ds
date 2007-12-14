@@ -135,7 +135,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test(groups = "continuous")
     public void testSkippingResentBatch() throws Exception {
         String[] values = { getNextId(), "resend string", "resend string not null", "resend char",
-                "resend char not null", "2007-01-25", "2007-01-25 01:01:01.0", "0", "7", "10.10" };
+                "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7", "10.10" };
         getNextBatchId();
         for (int i = 0; i < 7; i++) {
             batchId--;
@@ -162,8 +162,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testErrorWhileSkip() throws Exception {
-        String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2", "2007-01-02",
-                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2", 
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
 
         testSimple(CsvConstants.INSERT, values, values);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
@@ -223,8 +223,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test(groups = "continuous")
     public void testErrorThenSuccessBatch() throws Exception {
         String[] values = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47",
-                "67.89" };
+                "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0", 
+                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         getNextBatchId();
         int retries = 3;
         for (int i = 0; i < retries; i++) {
@@ -257,11 +257,11 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testMultipleBatch() throws Exception {
-        String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2", "2007-01-02",
-                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2", 
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         String[] values2 = { getNextId(), "This string is too large and will cause the statement to fail",
-                "string not null2", "char2", "char not null2", "2007-01-02", "2007-02-03 04:05:06.0", "0", "47",
-                "67.89" };
+                "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0",
+                "2007-02-03 04:05:06.0", "0", "47", "67.89" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);

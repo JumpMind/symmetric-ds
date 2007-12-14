@@ -49,7 +49,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     @Test(groups="continuous")
     public void testInsertExisting() throws Exception {
         String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
     }
@@ -57,8 +57,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     @Test(groups="continuous")
     public void testUpdateNotExisting() throws Exception {
         String[] values = { UPDATE_NOT_EXISTING_ID, "it's /a/  string", "it's  -not-  null",
-                "You're a \"character\"", "Where are you?", "2007-12-31", "2007-12-31 23:59:59.0", "1", "13",
-                "9.95", UPDATE_NOT_EXISTING_ID };
+                "You're a \"character\"", "Where are you?", "2007-12-31 00:00:00.0", "2007-12-31 23:59:59.0", 
+                "1", "13", "9.95", UPDATE_NOT_EXISTING_ID };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         massageExpectectedResultsForDialect(expectedValues);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
@@ -136,7 +136,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     public void testColumnNotExisting() throws Exception {
         String[] columns = (String[]) ArrayUtils.add(TEST_COLUMNS, "Unknown_Column");
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char", "char not null",
-                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89", "i do not exist!" };
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "i do not exist!" };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -161,7 +161,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         String[] columns= { "id", "name" };
         String[] badValues = { "1", "testTableNotExisting" };
         String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char",
-                "char not null", "2007-01-02", "2007-02-03 04:05:06.0", "0", "0", "12.10"};
+                "char not null", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0", "12.10"};
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -200,7 +200,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         dataLoader.close();
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         // TODO: this used to run in 1 second; can we do some optimization?
-        Assert.assertTrue(totalSeconds <= 3.0, "DataLoader running in " + totalSeconds + " is too slow");
+        Assert.assertTrue(totalSeconds <= 4.0, "DataLoader running in " + totalSeconds + " is too slow");
     }
 
     protected void load(ByteArrayOutputStream out) throws Exception {
