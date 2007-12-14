@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.symmetric.AbstractTest;
 import org.jumpmind.symmetric.common.Constants;
@@ -37,6 +38,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.dao.DataAccessException;
@@ -50,10 +52,16 @@ public class OutgoingBatchServiceTest extends AbstractTest {
 
     private IDataService dataService;
 
+    private int triggerHistId;
+    
     @BeforeTest(groups = "continuous")
     protected void setUp() {
         batchService = (IOutgoingBatchService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
+        IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
+        Set<Long> histKeys = configService.getHistoryRecords().keySet();
+        Assert.assertFalse(histKeys.isEmpty());
+        triggerHistId = histKeys.iterator().next().intValue();
     }
 
     @Test(groups = "continuous")
@@ -61,7 +69,7 @@ public class OutgoingBatchServiceTest extends AbstractTest {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         // create a batch
-        createDataEvent("Foo", 1, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
@@ -70,9 +78,9 @@ public class OutgoingBatchServiceTest extends AbstractTest {
         Assert.assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
 
         // create another batch
-        createDataEvent("Foo", 1, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        createDataEvent("Foo", 1, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
@@ -121,7 +129,7 @@ public class OutgoingBatchServiceTest extends AbstractTest {
         Assert.assertTrue(count <= size);
 
         for (int i = 0; i < size * count; i++) {
-            createDataEvent("Foo", TestConstants.TEST_AUDIT_ID, TestConstants.TEST_CHANNEL_ID,
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID,
                     DataEventType.INSERT, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
@@ -142,9 +150,9 @@ public class OutgoingBatchServiceTest extends AbstractTest {
     public void testMultipleChannels() {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
-        createDataEvent("Foo", TestConstants.TEST_AUDIT_ID, "testchannel", DataEventType.INSERT,
+        createDataEvent("Foo", triggerHistId, "testchannel", DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        createDataEvent("Foo", TestConstants.TEST_AUDIT_ID, "config", DataEventType.INSERT,
+        createDataEvent("Foo", triggerHistId, "config", DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
 
         batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
@@ -163,7 +171,7 @@ public class OutgoingBatchServiceTest extends AbstractTest {
         Assert.assertTrue(count <= size);
 
         for (int i = 0; i < size * count; i++) {
-            createDataEvent("Foo", 1, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
