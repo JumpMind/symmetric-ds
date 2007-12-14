@@ -105,7 +105,7 @@ public class RegistrationService extends AbstractService implements
                 if (trigger != null) {
                     OutgoingBatch batch = dataExtractorService.extractInitialLoadFor(node,
                             trigger, transport);
-                    // acknowledge right away, because the acknowledgement is not build into the registration
+                    // acknowledge right away, because the acknowledgment is not build into the registration
                     // protocol.
                     acknowledgeService.ack(batch.getBatchInfoList());
                 }
