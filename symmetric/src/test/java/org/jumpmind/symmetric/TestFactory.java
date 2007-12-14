@@ -16,6 +16,7 @@ import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.TestConstants;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
@@ -30,36 +31,32 @@ public class TestFactory {
 
     @Factory
     public Object[] createTests() throws Exception {
-        Class<?>[] tests = new Class[] { DatabaseTest.class };
         Properties properties = getTestProperties();
         String[] clientDatabaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
         String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-        List<ITestable> tests2Run = new ArrayList<ITestable>();
+        List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
         for (String rootDatabaseType : rootDatabaseTypes) {
             for (String clientDatabaseType : clientDatabaseTypes) {
-                SymmetricEngine clientEngine = createEngine(writeTempPropertiesFileFor(clientDatabaseType,
-                        DatabaseRole.CLIENT, properties));
-                dropAndCreateDatabaseTables(clientEngine);
-                SymmetricEngine rootEngine = createEngine(writeTempPropertiesFileFor(rootDatabaseType,
-                        DatabaseRole.ROOT, properties));
-                dropAndCreateDatabaseTables(rootEngine);
-                for (Class<?> testClass : tests) {
-                    ITestable test = (ITestable) (testClass.newInstance());
-                    test.setClientEngine(clientEngine);
-                    test.setRootEngine(rootEngine);
-                    tests2Run.add(test);
-                }
+                final File clientFile = writeTempPropertiesFileFor(clientDatabaseType,
+                        DatabaseRole.CLIENT, properties);
+                final File rootFile = writeTempPropertiesFileFor(rootDatabaseType,
+                        DatabaseRole.ROOT, properties);
+                tests2Run.add(new IntegrationTest() {
+                    @Override
+                    File getClientFile() {
+                        return clientFile;
+                    }
+
+                    @Override
+                    File getRootFile() {
+                        return rootFile;
+                    }
+                    
+                });
             }
         }
 
         return tests2Run.toArray(new Object[tests2Run.size()]);
-    }
-
-    private SymmetricEngine createEngine(File propertiesFile) {
-        return new SymmetricEngine("file:" + propertiesFile.getAbsolutePath(), null);
-    }
-
-    private void dropAndCreateDatabaseTables(SymmetricEngine engine) {
     }
 
     private File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole, Properties properties)
@@ -81,10 +78,11 @@ public class TestFactory {
         }
 
         if (isConnectionValid(newProperties)) {
-            newProperties.setProperty("symmetric.runtime.group.id", databaseRole.name().toLowerCase());
-            newProperties.setProperty("symmetric.runtime.external.id", databaseRole == DatabaseRole.ROOT ? "CORP"
-                    : "00001");
+            newProperties.setProperty("symmetric.runtime.group.id", databaseRole == DatabaseRole.CLIENT ? TestConstants.TEST_CLIENT_NODE_GROUP : TestConstants.TEST_ROOT_NODE_GROUP);
+            newProperties.setProperty("symmetric.runtime.external.id", databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
+                    : TestConstants.TEST_CLIENT_EXTERNAL_ID);
             newProperties.setProperty("symmetric.runtime.my.url", "internal://" + databaseRole.name().toLowerCase());
+            newProperties.setProperty("symmetric.runtime.registration.url",databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name().toLowerCase()) : "");
 
             File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
             FileOutputStream os = new FileOutputStream(propertiesFile);
@@ -126,9 +124,10 @@ public class TestFactory {
             properties.load(f);
             f.close();
         } else {
-            logger.info("Could not find " + propertiesFile.getAbsolutePath() 
-                    + ". Using all of the default properties");
+            logger.info("Could not find " + propertiesFile.getAbsolutePath() + ". Using all of the default properties");
         }
         return properties;
     }
+
+
 }
