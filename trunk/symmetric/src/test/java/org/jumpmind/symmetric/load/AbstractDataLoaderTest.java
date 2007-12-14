@@ -25,6 +25,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -106,8 +110,19 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
         } else {
             Assert.assertNotNull(results, "Expected non-empty results");
             for (int i = 0; i < expected.length; i++) {
-                String result = results.get(name[i]) != null ? results.get(name[i]).toString() : null;
-                Assert.assertEquals(result, expected[i], name[i]);
+                Object resultObj = results.get(name[i]);
+                String resultValue = null;
+                if (resultObj instanceof BigDecimal && expected[i].indexOf(".") != -1) {
+                    DecimalFormat df = new DecimalFormat("#.00");
+                    resultValue = df.format(resultObj);
+                } else if (resultObj instanceof Date) { 
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+                    resultValue = df.format(resultObj);
+                } else if (resultObj != null) {
+                    resultValue = resultObj.toString();
+                }
+                
+                Assert.assertEquals(resultValue, expected[i], name[i]);
             }
         }
     }
@@ -129,7 +144,7 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
     }
 
     protected String translateExpectedString(String value, boolean isRequired) {
-        if (value == null && isRequired) {
+        if (isRequired && (value == null || (value.equals("") && getDbDialect().isEmptyStringNulled()))) {
             return TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
         } else if (value != null && value.equals("") && getDbDialect().isEmptyStringNulled()) {
             return null;
@@ -138,7 +153,9 @@ public abstract class AbstractDataLoaderTest extends AbstractTest {
     }
 
     protected String translateExpectedCharString(String value, int size, boolean isRequired) {
-        value = translateExpectedString(value, isRequired);
+        if (isRequired && value == null) {
+            value = TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
+        }
         if (value != null && getDbDialect().isCharSpacePadded()) {
             return StringUtils.rightPad(value, size);
         } else if (value != null && getDbDialect().isCharSpaceTrimmed()) {
