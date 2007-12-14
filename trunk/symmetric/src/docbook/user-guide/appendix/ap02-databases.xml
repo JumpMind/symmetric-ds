@@ -88,6 +88,9 @@ alter sequence SEQ_SYM_OUTGOIN_IST_HISTORY_ID cache 1000 order;
 alter sequence SEQ_SYM_TRIGGER_RIGGER_HIST_ID cache 1000 order;
 alter sequence SEQ_SYM_TRIGGER_TRIGGER_ID cache 1000 order;]]></programlisting>
         </para>
+        <para>
+             While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
+        </para>
     </section>
     <section>
         <title>MySQL</title>
