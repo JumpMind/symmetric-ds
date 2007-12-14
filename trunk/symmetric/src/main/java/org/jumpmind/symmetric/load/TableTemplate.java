@@ -67,17 +67,15 @@ public class TableTemplate {
     private String[] keyNames;
 
     private String[] columnNames;
-
-    private String[] existKeyNames;
-
-    private String[] existColumnNames;
-
+    
     private Map<String, Column> allMetaData;
 
     private Column[] keyMetaData;
 
     private Column[] columnMetaData;
-
+    
+    private Column[] columnKeyMetaData;
+    
     private HashMap<DmlType, StatementBuilder> statementMap;
 
     private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
@@ -120,13 +118,7 @@ public class TableTemplate {
 
     public int insert(String[] columnValues, BinaryEncoding encoding) {
         StatementBuilder st = getStatementBuilder(DmlType.INSERT);
-        Object[] values = filterValues(columnMetaData, columnValues, encoding);
-        if (this.columnFilters != null) {
-            for (IColumnFilter columnFilter : this.columnFilters) {
-                values = columnFilter.filterColumnsValues(DmlType.INSERT, getTable() , values);    
-            }            
-        }
-        return jdbcTemplate.update(st.getSql(), values);
+        return execute(st, columnValues, columnMetaData, encoding);
     }
 
     public int update(String[] columnValues, String[] keyValues) {
@@ -135,43 +127,42 @@ public class TableTemplate {
 
     public int update(String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
         StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
-        Object[] values = ArrayUtils.addAll(filterValues(columnMetaData, columnValues, encoding), filterValues(
-                keyMetaData, keyValues, encoding));
-        if (this.columnFilters != null) {
-            for (IColumnFilter columnFilter : this.columnFilters) {
-                values = columnFilter.filterColumnsValues(DmlType.UPDATE, getTable() , values);    
-            }            
-        }        
-        return jdbcTemplate.update(st.getSql(), values);
+        String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
+        return execute(st, values, columnKeyMetaData, encoding);
     }
 
     public int delete(String[] keyValues) {
         StatementBuilder st = getStatementBuilder(DmlType.DELETE);
-        Object[] values = filterValues(keyMetaData, keyValues, BinaryEncoding.NONE);
-        if (this.columnFilters != null) {
-            for (IColumnFilter columnFilter : this.columnFilters) {
-                values = columnFilter.filterColumnsValues(DmlType.DELETE, getTable() , values);    
-            }            
-        } 
-        return jdbcTemplate.update(st.getSql(), values);
+        return execute(st, keyValues, keyMetaData, BinaryEncoding.NONE);
     }
 
     private StatementBuilder getStatementBuilder(DmlType type) {
         StatementBuilder st = statementMap.get(type);
-        String[] statementColumns = existColumnNames;
-        if (this.columnFilters != null) {
-            for (IColumnFilter columnFilter : this.columnFilters) {
-                statementColumns = columnFilter.filterColumnsNames(type, getTable() , statementColumns);
-            }            
-        }
         if (st == null) {
-            st = new StatementBuilder(type, table.getName(), existKeyNames, statementColumns);
+            String[] filteredColumnNames = columnNames;
+            if (columnFilters != null) {
+                for (IColumnFilter columnFilter : columnFilters) {
+                    filteredColumnNames = columnFilter.filterColumnsNames(type, getTable(), columnNames);
+                }            
+            }
+            if (keyMetaData == null) {
+                keyMetaData = getColumnMetaData(keyNames);
+            }
+            if (columnMetaData == null) {
+                columnMetaData = getColumnMetaData(columnNames);
+            }
+            if (columnKeyMetaData == null) {
+                columnKeyMetaData = (Column[]) ArrayUtils.addAll(columnMetaData, keyMetaData);
+            }
+
+            st = new StatementBuilder(type, table.getName(), keyMetaData,
+                    getColumnMetaData(filteredColumnNames));
             statementMap.put(type, st);
         }
         return st;
     }
 
-    private Object[] filterValues(Column[] metaData, String[] values, BinaryEncoding encoding) {
+    private int execute(StatementBuilder st, String[] values, Column[] metaData, BinaryEncoding encoding) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -208,7 +199,13 @@ public class TableTemplate {
                 list.add(objectValue);
             }
         }
-        return list.toArray();
+        Object[] objectValues = list.toArray();
+        if (columnFilters != null) {
+            for (IColumnFilter columnFilter : columnFilters) {
+                objectValues = columnFilter.filterColumnsValues(st.getDmlType(), getTable(), objectValues);    
+            }            
+        }
+        return jdbcTemplate.update(st.getSql(), objectValues, st.getTypes());
     }
 
     private long getTime(String value, String[] pattern) {
@@ -221,34 +218,27 @@ public class TableTemplate {
 
     public void setKeyNames(String[] keyNames) {
         this.keyNames = keyNames;
-        keyMetaData = getColumnMetaData(keyNames);
-        existKeyNames = getExistColumnNames(keyMetaData);
-        statementMap.clear();
+        clear();
     }
 
     public void setColumnNames(String[] columnNames) {
         this.columnNames = columnNames;
-        columnMetaData = getColumnMetaData(columnNames);
-        existColumnNames = getExistColumnNames(columnMetaData);
-        statementMap.clear();
+        clear();
     }
 
+    private void clear() {
+        statementMap.clear();
+        keyMetaData = null;
+        columnMetaData = null;
+        columnKeyMetaData = null;
+    }
+    
     private Column[] getColumnMetaData(String[] names) {
         Column[] columns = new Column[names.length];
         for (int i = 0; i < names.length; i++) {
             columns[i] = allMetaData.get(names[i].trim().toUpperCase());
         }
         return columns;
-    }
-
-    private String[] getExistColumnNames(Column[] columns) {
-        List<String> list = new ArrayList<String>();
-        for (int i = 0; i < columns.length; i++) {
-            if (columns[i] != null) {
-                list.add(columns[i].getName());
-            }
-        }
-        return list.toArray(new String[list.size()]);
     }
 
     public String[] getKeyNames() {
