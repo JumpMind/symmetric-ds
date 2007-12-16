@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
@@ -44,7 +44,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class DataExtractorTest extends AbstractTest {
+public class DataExtractorTest extends AbstractDatabaseTest {
     private static final String CONTEXT_NAME = "extractorContext";
 
     private static final String TABLE_NAME = "table1";

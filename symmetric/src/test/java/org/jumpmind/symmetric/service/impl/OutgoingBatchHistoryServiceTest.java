@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -33,7 +33,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class OutgoingBatchHistoryServiceTest extends AbstractTest
+public class OutgoingBatchHistoryServiceTest extends AbstractDatabaseTest
 {
     private IOutgoingBatchHistoryService historyService;
 

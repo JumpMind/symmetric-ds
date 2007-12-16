@@ -17,20 +17,8 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.service;
 
-
-package org.jumpmind.symmetric.service.impl;
-
-import org.jumpmind.symmetric.AbstractDatabaseTest;
-import org.jumpmind.symmetric.common.Constants;
-import org.testng.annotations.Test;
-
-public class PurgeServiceTest extends AbstractDatabaseTest
-{
-    @Test(groups="continuous")
-    public void testThatPurgeExecutes()
-    {
-        PurgeService service = (PurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);        
-        service.purge();
-    }
+public enum LockAction {
+    PUSH, PULL, PURGE, HEARTBEAT, SYNCTRIGGERS, OTHER
 }

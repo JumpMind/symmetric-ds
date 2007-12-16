@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -45,7 +45,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class AcknowledgeServiceTest extends AbstractTest {
+public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     
     protected IAcknowledgeService ackService;
     

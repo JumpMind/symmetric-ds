@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -40,7 +40,7 @@ import org.testng.Assert;
 
 import com.csvreader.CsvWriter;
 
-public abstract class AbstractDataLoaderTest extends AbstractTest {
+public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected final static String TEST_TABLE = "test_dataloader_table";
     

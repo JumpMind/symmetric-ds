@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Data;
@@ -39,7 +39,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class DataExtractorServiceTest extends AbstractTest {
+public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     protected IDataExtractorService dataExtractorService;
 

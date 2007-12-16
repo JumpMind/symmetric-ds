@@ -33,4 +33,6 @@ public class TestConstants {
     public static final String TEST_CONTINUOUS_NODE_GROUP = "STORE";
     public static final String TEST_CHANNEL_ID = "testchannel";
     public static final int TEST_AUDIT_ID = 1;
+    
+    public static final String MYSQL = "mysql";
 }
