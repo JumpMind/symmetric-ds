@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import org.jumpmind.symmetric.AbstractTest;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.SqlScript;
@@ -47,7 +47,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class OutgoingBatchServiceTest extends AbstractTest {
+public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     private IOutgoingBatchService batchService;
 
     private IDataService dataService;

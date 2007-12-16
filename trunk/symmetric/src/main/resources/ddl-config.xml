@@ -114,6 +114,13 @@
         </foreign-key>
     </table>
     
+    <table name="lock">
+        <column name="lock_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="locking_server_id" type="VARCHAR" size="100" />
+        <column name="lock_time" type="TIMESTAMP" />
+    </table>    
+    
     <table name="node_channel_ctl">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="channel_id" type="VARCHAR" size="50" primaryKey="true" />

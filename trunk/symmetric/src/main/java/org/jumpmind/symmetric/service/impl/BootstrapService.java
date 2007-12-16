@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -59,6 +60,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
+    
+    private IClusterService clusterService;
 
     private INodeService nodeService;
 
@@ -77,13 +80,17 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private boolean autoUpgrade = true;
 
     private String triggerPrefix;
+    
+    private boolean initialized = false;
 
     public void init() {
+        if (!initialized) {
         this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
         if (autoConfigureDatabase) {
             logger.info("Initializing symmetric database.");
             dbDialect.initConfigDb(tablePrefix);
             populateDefautGlobalParametersIfNeeded();
+            clusterService.initLockTable();
             logger.info("Done initializing symmetric database.");
         } else {
             logger.info("Symmetric is not configured to auto create the database.");
@@ -96,6 +103,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 throw new RuntimeException("Upgrade of node is necessary.  "
                         + "Please set symmetric.auto.upgrade property to true.");
             }
+        }
+        initialized = true;
         }
     }
 
@@ -353,6 +362,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setAutoUpgrade(boolean autoUpgrade) {
         this.autoUpgrade = autoUpgrade;
+    }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
 }

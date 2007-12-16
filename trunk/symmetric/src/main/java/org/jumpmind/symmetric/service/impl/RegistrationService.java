@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -53,6 +54,8 @@ public class RegistrationService extends AbstractService implements
     private IAcknowledgeService acknowledgeService;
 
     private IConfigurationService configurationService;
+    
+    private IClusterService clusterService;
 
     private String findNodeToRegisterSql;
 
@@ -145,7 +148,8 @@ public class RegistrationService extends AbstractService implements
         jdbcTemplate.update(openRegistrationNodeSql, new Object[] { nodeId,
                 nodeGroup, externalId });
         jdbcTemplate.update(openRegistrationNodeSecuritySql, new Object[] {
-                nodeId, password });
+                nodeId, password });        
+        clusterService.initLockTableForNode(nodeService.findNode(nodeId));
     }
 
     /**
@@ -215,6 +219,10 @@ public class RegistrationService extends AbstractService implements
 
     public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
         this.acknowledgeService = acknowledgeService;
+    }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
 }

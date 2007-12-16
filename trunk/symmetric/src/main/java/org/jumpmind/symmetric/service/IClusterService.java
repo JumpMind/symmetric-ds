@@ -17,20 +17,20 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.model.Node;
 
-package org.jumpmind.symmetric.service.impl;
+public interface IClusterService {
+    
+    public void initLockTable();
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
-import org.jumpmind.symmetric.common.Constants;
-import org.testng.annotations.Test;
+    public void initLockTableForNode(Node node);
 
-public class PurgeServiceTest extends AbstractDatabaseTest
-{
-    @Test(groups="continuous")
-    public void testThatPurgeExecutes()
-    {
-        PurgeService service = (PurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);        
-        service.purge();
-    }
+    public boolean lock(LockAction action, Node node);
+    
+    public boolean lock(LockAction action);
+
+    public void unlock(LockAction action);
+    
 }
