@@ -38,7 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
 
 /**
  * Run this test to run all the tests against all the configured databases.
