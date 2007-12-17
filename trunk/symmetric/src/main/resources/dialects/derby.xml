@@ -33,12 +33,12 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),'\','\\'),'"','\"')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),'\','\\'),'"','\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[concat(concat('"',fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"'))),'"') ||','||]]>
+                        <![CDATA['"' || fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"')) || '"' ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
@@ -57,7 +57,7 @@
                 <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="sqlTemplates">
