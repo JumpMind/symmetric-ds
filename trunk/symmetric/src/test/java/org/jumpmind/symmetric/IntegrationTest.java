@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
@@ -11,7 +10,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -231,16 +229,6 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     @AfterClass()
     public void tearDown() {
-    }
-
-    @Override
-    File getClientFile() {
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(TestConstants.MYSQL, DatabaseRole.CLIENT);
-    }
-
-    @Override
-    File getRootFile() {
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(TestConstants.MYSQL, DatabaseRole.ROOT);
     }
 
 }

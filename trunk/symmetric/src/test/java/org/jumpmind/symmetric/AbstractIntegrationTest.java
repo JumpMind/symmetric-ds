@@ -1,9 +1,12 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -16,10 +19,6 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
 
     private SymmetricEngine rootEngine;
 
-    abstract File getClientFile();
-
-    abstract File getRootFile();
-    
     protected SymmetricEngine getClientEngine() {
         if (this.clientEngine == null) {
             this.clientEngine = createEngine(getClientFile());
@@ -50,4 +49,17 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.rootEngine;
     }
+    
+    File getClientFile() {
+        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
+        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.CLIENT);
+    }
+
+    File getRootFile() {
+        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+
+        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.ROOT);
+    }    
 }
