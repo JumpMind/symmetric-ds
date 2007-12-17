@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
@@ -45,7 +46,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     public void testFindNode() throws Exception {
         Node node = nodeService.findNode("00001");
         Assert.assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong node group id");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong node group id");
         Assert.assertEquals(node.getExternalId(), "00001", "Wrong external id");
         Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -90,11 +91,11 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testFindIdentity() throws Exception {
         Node node = nodeService.findIdentity();
-        Assert.assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong node group id");
-        Assert.assertEquals(node.getExternalId(), "00001", "Wrong external id");
-        Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
-        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
+        Assert.assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_ROOT_NODE_GROUP, "Wrong node group id");
+        Assert.assertEquals(node.getExternalId(), TestConstants.TEST_ROOT_EXTERNAL_ID, "Wrong external id");
+        Assert.assertEquals(node.getSyncURL().toString(), "internal://root", "Wrong syncUrl");
+        Assert.assertEquals(node.getSchemaVersion(), "?", "Wrong schemaVersion");
         Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
         Assert.assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
     }
@@ -102,29 +103,13 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testFindPullNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPull();
-        Assert.assertEquals(list.size(), 1, "Wrong number of pull nodes");
-        Node node = list.get(0);
-        Assert.assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "CORP", "Wrong node group id");
-        Assert.assertEquals(node.getExternalId(), "00000", "Wrong external id");
-        Assert.assertEquals(node.getSyncURL().toString(), "http://centraloffice:8080/sync", "Wrong syncUrl");
-        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
-        Assert.assertEquals(node.getDatabaseType(), "Oracle", "Wrong databaseType");
-        Assert.assertEquals(node.getDatabaseVersion(), "9", "Wrong databaseVersion");
+        Assert.assertEquals(list.size(), 3, "Wrong number of pull nodes");
     }
 
     @Test(groups = "continuous")
     public void testFindPushNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPushTo();
         Assert.assertEquals(list.size(), 1, "Wrong number of push nodes");
-        Node node = list.get(0);
-        Assert.assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "CORP", "Wrong node group id");
-        Assert.assertEquals(node.getExternalId(), "00000", "Wrong external id");
-        Assert.assertEquals(node.getSyncURL().toString(), "http://centraloffice:8080/sync", "Wrong syncUrl");
-        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
-        Assert.assertEquals(node.getDatabaseType(), "Oracle", "Wrong databaseType");
-        Assert.assertEquals(node.getDatabaseVersion(), "9", "Wrong databaseVersion");
     }
 
 }

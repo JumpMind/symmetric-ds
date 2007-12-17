@@ -72,11 +72,11 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP),
                 mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(12, countLines(loadResults), "Unexpected number of lines in the csv result: "
+        Assert.assertEquals(10, countLines(loadResults), "Unexpected number of lines in the csv result: "
                 + loadResults);
-        Assert.assertTrue(loadResults.contains("insert, \"CORP\",\"Central Office\""),
+        Assert.assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
                 "Did not find expected insert for CORP");
-        Assert.assertTrue(loadResults.startsWith("nodeid, 00001"),
+        Assert.assertTrue(loadResults.startsWith("nodeid, 00000"),
                 "Unexpected line at the start of the feed.");
     }
 
