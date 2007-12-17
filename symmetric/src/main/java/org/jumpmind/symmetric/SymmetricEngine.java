@@ -193,7 +193,7 @@ public class SymmetricEngine {
             started = true;
         }
     }
-
+    
     /**
      * This can be called if the push job has not been enabled.  It will perform a push
      * the same way the {@link PushJob} would have.

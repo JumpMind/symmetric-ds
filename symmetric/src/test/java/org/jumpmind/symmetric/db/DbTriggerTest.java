@@ -25,8 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.SymmetricEngine;
-import org.jumpmind.symmetric.SymmetricEngineTestFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -37,11 +37,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeTest;
+import org.testng.ITest;
 import org.testng.annotations.Test;
 
-public class DbTriggerTest {
+public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
 
     private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
@@ -49,55 +48,42 @@ public class DbTriggerTest {
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
-    
-    final static Object[] INSERT1_VALUES = new Object[] {"\\\\","\"","\"1\"",null,null,1,1,1};
+
+    final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, 1, 1, 1 };
 
     final static String INSERT2 = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values('here','here',1,null,null,1,1,1)";
-    
+
     final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
     final static String EXPECTED_INSERT2_CSV = "3,\"here\",\"here\",\"1\",,,1,1";
 
-    final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='"
-            + TEST_TRIGGERS_TABLE + "' and source_node_group_id='"
-            + TestConstants.TEST_ROOT_NODE_GROUP
-            + "' and target_node_group_id='"
-            + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='"
-            + TestConstants.TEST_CHANNEL_ID + "'";
+    final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
+            + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
+            + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
-    @BeforeTest(groups = "integration")
-    public void init() {
-        SymmetricEngineTestFactory.resetSchemasAndEngines();
+    public String getTestName() {
+        return "DbTriggerTest on " + getDatabaseName();
     }
 
     @Test(groups = "continuous")
     public void testBootstrapSchemaSync() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            testBootstrapSchemaSync(engine);
-        }
-    }
-
-    private void testBootstrapSchemaSync(SymmetricEngine engine)
-            throws Exception {
-        IBootstrapService service = (IBootstrapService) engine
-                .getApplicationContext().getBean("bootstrapService");
+        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
+                "bootstrapService");
 
         // baseline
         service.syncTriggers();
 
         // get the current number of hist rows
-        int count = getTriggerHistTableRowCount(engine);
+        int count = getTriggerHistTableRowCount(getSymmetricEngine());
 
         Thread.sleep(1000);
 
         // force the triggers to rebuild
         count = count
-                + getJdbcTemplate(engine)
+                + getJdbcTemplate(getSymmetricEngine())
                         .update(
                                 "update "
                                         + TestConstants.TEST_PREFIX
@@ -108,108 +94,69 @@ public class DbTriggerTest {
         service.syncTriggers();
 
         // check to see that we recorded the rebuilds
-        Assert.assertEquals(getTriggerHistTableRowCount(engine), count,
-                "Wrong trigger_hist row count. engine="
-                        + getDbDialect(engine).getPlatform().getName());
+        Assert.assertEquals(getTriggerHistTableRowCount(getSymmetricEngine()), count,
+                "Wrong trigger_hist row count. engine=" + getDbDialect(getSymmetricEngine()).getPlatform().getName());
     }
 
     private JdbcTemplate getJdbcTemplate(SymmetricEngine engine) {
-        return (JdbcTemplate) engine.getApplicationContext().getBean(
-                Constants.JDBC);
+        return (JdbcTemplate) engine.getApplicationContext().getBean(Constants.JDBC);
     }
 
     private IDbDialect getDbDialect(SymmetricEngine engine) {
-        return (IDbDialect) engine.getApplicationContext().getBean(
-                Constants.DB_DIALECT);
+        return (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
     }
 
     private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate(engine).queryForInt(
-                "select count(*) from " + TestConstants.TEST_PREFIX
-                        + "trigger_hist");
+        return getJdbcTemplate(engine)
+                .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testBootstrapSchemaSync")
     public void validateTestTableTriggers() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            validateTestTableTriggers(engine);
-        }
-    }
-
-    private void validateTestTableTriggers(SymmetricEngine engine)
-            throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
 
         int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
 
         assert count == 1;
-        String csvString = getNextDataRow(engine);
+        String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = false;
         match = csvString.equals(EXPECTED_INSERT1_CSV);
-        assert match : "Received " + csvString + ", Expected "
-                + EXPECTED_INSERT1_CSV;
+        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT1_CSV;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "validateTestTableTriggers")
     public void testInitialLoadSql() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            testInitialLoadSql(engine);
-        }
-    }
-
-    private void testInitialLoadSql(SymmetricEngine engine) throws Exception {
-        IConfigurationService service = (IConfigurationService) engine
-                .getApplicationContext().getBean("configurationService");
-        service.getTriggerFor(TEST_TRIGGERS_TABLE,
-                TestConstants.TEST_ROOT_NODE_GROUP);
-        String sql = getDbDialect(engine).createInitalLoadSqlFor(
-                new Node("1", null, "1.0"),
-                service.getTriggerFor(TEST_TRIGGERS_TABLE,
-                        TestConstants.TEST_ROOT_NODE_GROUP));
-        String csvString = (String) getJdbcTemplate(engine).queryForObject(sql,
-                String.class);
+        IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
+                "configurationService");
+        service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        String sql = getDbDialect(getSymmetricEngine()).createInitalLoadSqlFor(new Node("1", null, "1.0"),
+                service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
+        String csvString = (String) getJdbcTemplate(getSymmetricEngine()).queryForObject(sql, String.class);
         boolean match = false;
         match = csvString.equals(EXPECTED_INSERT1_CSV);
-        assert match : "Received " + csvString + ", Expected "
-                + EXPECTED_INSERT1_CSV;
+        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT1_CSV;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
     public void validateTransactionFunctionailty() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            validateTransactionFunctionailty(engine);
-        }
-    }
-
-    void validateTransactionFunctionailty(final SymmetricEngine engine)
-            throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException,
-                    DataAccessException {
+            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 boolean origValue = c.getAutoCommit();
                 c.setAutoCommit(false);
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("update " + TEST_TRIGGERS_TABLE
-                        + " set time_value=current_timestamp");
+                stmt.executeUpdate("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
                 stmt.executeUpdate(INSERT2);
                 c.commit();
                 c.setAutoCommit(origValue);
-                ResultSet rs = stmt
-                        .executeQuery("select transaction_id from "
-                                + TestConstants.TEST_PREFIX
-                                + "data where transaction_id is not null group by transaction_id having count(*)>1");
+                ResultSet rs = stmt.executeQuery("select transaction_id from " + TestConstants.TEST_PREFIX
+                        + "data where transaction_id is not null group by transaction_id having count(*)>1");
                 String batchId = null;
                 if (rs.next()) {
                     batchId = rs.getString(1);
                 }
-                IDbDialect dbDialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+                IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(
+                        Constants.DB_DIALECT);
                 if (dbDialect.supportsTransactionId()) {
                     Assert.assertNotNull(batchId);
                 }
@@ -221,138 +168,89 @@ public class DbTriggerTest {
 
     @Test(groups = "continuous", dependsOnMethods = "validateTransactionFunctionailty")
     public void testExcludedColumnsFunctionality() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            testExcludedColumnsFunctionality(engine);
-        }
-    }
-
-    private void testExcludedColumnsFunctionality(SymmetricEngine engine)
-            throws Exception {
-        IBootstrapService service = (IBootstrapService) engine
-                .getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
+        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
+                Constants.BOOTSTRAP_SERVICE);
         // need to wait for a second to make sure enough time has passed so the update of the config
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        Assert
-                .assertEquals(
-                        1,
-                        jdbcTemplate
-                                .update("update "
-                                        + TestConstants.TEST_PREFIX
-                                        + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
-                                        + TEST_TRIGGER_WHERE_CLAUSE));
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        Assert.assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
+                + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
+                + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
 
-        IConfigurationService configService = (IConfigurationService) engine
-                .getApplicationContext().getBean(Constants.CONFIG_SERVICE);
-        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE,
-                TestConstants.TEST_ROOT_NODE_GROUP);
-        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from "
-                + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id="
-                + trigger.getTriggerId() + " and inactive_time is null"), 1,
-                "We expected only one active record in the trigger_hist table for "
-                        + TEST_TRIGGERS_TABLE);
+        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
+                .getBean(Constants.CONFIG_SERVICE);
+        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
+                + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
+                "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
         Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
 
-        String csvString = getNextDataRow(engine);
-        Assert.assertEquals(csvString, EXPECTED_INSERT2_CSV, "Received "
-                + csvString + ", Expected " + EXPECTED_INSERT2_CSV);
+        String csvString = getNextDataRow(getSymmetricEngine());
+        Assert.assertEquals(csvString, EXPECTED_INSERT2_CSV, "Received " + csvString + ", Expected "
+                + EXPECTED_INSERT2_CSV);
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testExcludedColumnsFunctionality")
     public void testDisableTriggers() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            testDisableTriggers(engine);
-        }
-    }
-
-    private void testDisableTriggers(SymmetricEngine engine) throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        getDbDialect(engine).disableSyncTriggers();
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        getDbDialect(getSymmetricEngine()).disableSyncTriggers();
         int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
-        getDbDialect(engine).enableSyncTriggers();
+        getDbDialect(getSymmetricEngine()).enableSyncTriggers();
         assert count == 1;
-        String csvString = getNextDataRow(engine);
+        String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = false;
         match = csvString.equals(EXPECTED_INSERT2_CSV);
-        assert match : "Received " + csvString + ", Expected "
-                + EXPECTED_INSERT2_CSV;
+        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT2_CSV;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testDisableTriggers")
     public void testTargetTableNameFunctionality() throws Exception {
-        SymmetricEngine[] engines2test = SymmetricEngineTestFactory
-                .getUnitTestableEngines();
-        for (SymmetricEngine engine : engines2test) {
-            testTargetTableNameFunctionality(engine);
-        }
-    }
 
-    private void testTargetTableNameFunctionality(SymmetricEngine engine)
-            throws Exception {
-        
         final String TARGET_TABLE_NAME = "SOME_OTHER_TABLE_NAME";
-        IBootstrapService service = (IBootstrapService) engine
-                .getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
+        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
+                Constants.BOOTSTRAP_SERVICE);
         // need to wait for a second to make sure enough time has passed so the update of the trigger
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        Assert
-                .assertEquals(
-                        1,
-                        jdbcTemplate
-                                .update("update "
-                                        + TestConstants.TEST_PREFIX
-                                        + "trigger set target_table_name='"+TARGET_TABLE_NAME+"', last_updated_time=current_timestamp "
-                                        + TEST_TRIGGER_WHERE_CLAUSE));
+        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        Assert.assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
+                + "trigger set target_table_name='" + TARGET_TABLE_NAME + "', last_updated_time=current_timestamp "
+                + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
 
-        IConfigurationService configService = (IConfigurationService) engine
-                .getApplicationContext().getBean(Constants.CONFIG_SERVICE);
-        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE,
-                TestConstants.TEST_ROOT_NODE_GROUP);
-        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from "
-                + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id="
-                + trigger.getTriggerId() + " and inactive_time is null"), 1,
-                "We expected only one active record in the trigger_hist table for "
-                        + TEST_TRIGGERS_TABLE);
+        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
+                .getBean(Constants.CONFIG_SERVICE);
+        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
+                + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
+                "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
         Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
 
-        String tableName = getNextDataRowTableName(engine);
-        Assert.assertEquals(tableName, TARGET_TABLE_NAME, "Received "
-                + tableName + ", Expected " + TARGET_TABLE_NAME);
+        String tableName = getNextDataRowTableName(getSymmetricEngine());
+        Assert.assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
     }
 
     private String getNextDataRow(SymmetricEngine engine) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        return (String) jdbcTemplate.queryForObject("select row_data from "
-                + TestConstants.TEST_PREFIX
-                + "data where data_id = (select max(data_id) from "
-                + TestConstants.TEST_PREFIX + "data)", String.class);
+        return (String) jdbcTemplate
+                .queryForObject("select row_data from " + TestConstants.TEST_PREFIX
+                        + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
+                        String.class);
 
     }
-    
+
     private String getNextDataRowTableName(SymmetricEngine engine) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
-        return (String) jdbcTemplate.queryForObject("select table_name from "
-                + TestConstants.TEST_PREFIX
-                + "data where data_id = (select max(data_id) from "
-                + TestConstants.TEST_PREFIX + "data)", String.class);
-    }    
-
-    @AfterClass(groups = "integration")
-    public void tearDown() {
-        SymmetricEngineTestFactory.resetSchemasAndEngines();
+        return (String) jdbcTemplate
+                .queryForObject("select table_name from " + TestConstants.TEST_PREFIX
+                        + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
+                        String.class);
     }
 
 }

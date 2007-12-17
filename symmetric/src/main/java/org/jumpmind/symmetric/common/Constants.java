@@ -43,6 +43,8 @@ public class Constants {
     
     public static final String DATALOADER_SERVICE = "dataLoaderService";
     
+    public static final String CLUSTER_SERVICE = "clusterService";
+    
     public static final String PARAMETER_SERVICE = "parameterService";
     
     public static final String DATALOADER = "dataLoader";

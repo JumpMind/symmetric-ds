@@ -85,27 +85,29 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void init() {
         if (!initialized) {
-        this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
-        if (autoConfigureDatabase) {
-            logger.info("Initializing symmetric database.");
-            dbDialect.initConfigDb(tablePrefix);
-            populateDefautGlobalParametersIfNeeded();
-            clusterService.initLockTable();
-            logger.info("Done initializing symmetric database.");
-        } else {
-            logger.info("Symmetric is not configured to auto create the database.");
-        }
-
-        if (upgradeService.isUpgradeNecessary()) {
-            if (autoUpgrade) {
-                upgradeService.upgrade();
+            this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
+            if (autoConfigureDatabase) {
+                logger.info("Initializing symmetric database.");
+                dbDialect.initConfigDb(tablePrefix);
+                populateDefautGlobalParametersIfNeeded();                
+                logger.info("Done initializing symmetric database.");
             } else {
-                throw new RuntimeException("Upgrade of node is necessary.  "
-                        + "Please set symmetric.auto.upgrade property to true.");
+                logger.info("Symmetric is not configured to auto create the database.");
             }
+
+            if (upgradeService.isUpgradeNecessary()) {
+                if (autoUpgrade) {
+                    upgradeService.upgrade();
+                } else {
+                    throw new RuntimeException("Upgrade of node is necessary.  "
+                            + "Please set symmetric.auto.upgrade property to true.");
+                }
+            }
+            initialized = true;
         }
-        initialized = true;
-        }
+        
+        // lets do this every time init is called.
+        clusterService.initLockTable();
     }
 
     /**
