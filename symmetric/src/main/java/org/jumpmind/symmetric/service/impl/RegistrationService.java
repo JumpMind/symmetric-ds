@@ -34,9 +34,10 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
@@ -57,6 +58,8 @@ public class RegistrationService extends AbstractService implements
     
     private IClusterService clusterService;
 
+    private IDataService dataService;
+    
     private String findNodeToRegisterSql;
 
     private String registerNodeSql;
@@ -70,6 +73,8 @@ public class RegistrationService extends AbstractService implements
     private String openRegistrationNodeSecuritySql;
     
     private boolean autoRegistration;
+    
+    private boolean autoReload;
 
     /**
      * Register a node for the given domain name and domain ID if the
@@ -91,7 +96,11 @@ public class RegistrationService extends AbstractService implements
                 node.getSyncURL().toString(), node.getSchemaVersion(),
                 node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSymmetricVersion(), node.getNodeId() });
-        return writeConfiguration(node, out);
+        boolean success = writeConfiguration(node, out);
+        if (success && autoReload) {
+            dataService.reloadNode(node.getNodeId());
+        }
+        return success;
     }
 
     private String findNodeToRegister(String nodeGroupId, String externald) {
@@ -236,6 +245,14 @@ public class RegistrationService extends AbstractService implements
 
     public void setAutoRegistration(boolean autoRegistration) {
         this.autoRegistration = autoRegistration;
+    }
+
+    public void setAutoReload(boolean autoReload) {
+        this.autoReload = autoReload;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
 
 }
