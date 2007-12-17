@@ -68,15 +68,19 @@ public class RegistrationService extends AbstractService implements
     private String openRegistrationNodeSql;
 
     private String openRegistrationNodeSecuritySql;
+    
+    private boolean autoRegistration;
 
     /**
      * Register a node for the given domain name and domain ID if the
      * registration is open.
      */
     public boolean registerNode(Node node, OutputStream out) throws IOException {
-        String nodeId = (String) jdbcTemplate.queryForObject(
-                findNodeToRegisterSql, new Object[] { node.getNodeGroupId(),
-                        node.getExternalId() }, String.class);
+        String nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
+        if (nodeId == null && autoRegistration) {
+            openRegistration(node.getNodeGroupId(), node.getExternalId());
+            nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
+        }
         if (nodeId == null) {
             return false;
         }
@@ -88,6 +92,11 @@ public class RegistrationService extends AbstractService implements
                 node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSymmetricVersion(), node.getNodeId() });
         return writeConfiguration(node, out);
+    }
+
+    private String findNodeToRegister(String nodeGroupId, String externald) {
+        return (String) jdbcTemplate.queryForObject(findNodeToRegisterSql, new Object[] { nodeGroupId,
+                externald }, String.class);
     }
 
     /**
@@ -223,6 +232,10 @@ public class RegistrationService extends AbstractService implements
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+
+    public void setAutoRegistration(boolean autoRegistration) {
+        this.autoRegistration = autoRegistration;
     }
 
 }
