@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
@@ -51,13 +52,13 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         // Existing domain name and ID that is not open to register
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00001");
         Assert.assertFalse(registrationService.registerNode(node, out),
                 "Node should NOT be allowed to register");
 
         // Existing domain name but wrong ID
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("wrongId");
         Assert.assertFalse(registrationService.registerNode(node, out),
                 "Node should NOT be allowed to register");
@@ -72,7 +73,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testRegisterNode() throws Exception {
         Node node = new Node();
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00002");
         node.setSyncURL("http://localhost:8080/sync");
         node.setSchemaVersion("1");
@@ -84,7 +85,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         node = nodeService.findNode("00002");
         Assert.assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         Assert.assertEquals(node.getExternalId(), "00002", "Wrong domainId");
         Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -132,7 +133,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
 
         Node node = new Node();
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00003");
         node.setSyncURL("http://0:8080/sync");
         node.setSchemaVersion("1");
@@ -144,7 +145,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         node = nodeService.findNode("00003");
         Assert.assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         Assert.assertEquals(node.getExternalId(), "00003", "Wrong domainId");
         Assert.assertEquals(node.getSyncURL().toString(), "http://0:8080/sync", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -166,12 +167,12 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     }
 
     @Test(groups = "continuous")
-    public void testOpenRegistration() throws Exception {
-        registrationService.openRegistration("STORE", "00005");
+    public void testOpenRegistration() throws Exception {        
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00005");
 
         Node node = nodeService.findNode("00005");
         Assert.assertEquals(node.getNodeId(), "00005", "Wrong nodeId");
-        Assert.assertEquals(node.getNodeGroupId(), "STORE", "Wrong domainName");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         Assert.assertEquals(node.getExternalId(), "00005", "Wrong domainId");
         Assert.assertEquals(node.getSyncURL(), null, "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), null, "Wrong schemaVersion");
@@ -187,9 +188,9 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void testOpenRegistrationOnceAndRegisterTwice() throws Exception {
-        registrationService.openRegistration("STORE", "00006");
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00006");
         Node node = new Node();
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00006");
         node.setSyncURL("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -201,10 +202,10 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void testOpenRegistrationTwiceAndRegisterThrice() throws Exception {
-        registrationService.openRegistration("STORE", "00007");
-        registrationService.openRegistration("STORE", "00007");
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00007");
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00007");
         Node node = new Node();
-        node.setNodeGroupId("STORE");
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00007");
         node.setSyncURL("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
