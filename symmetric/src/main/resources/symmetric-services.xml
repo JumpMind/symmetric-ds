@@ -618,6 +618,7 @@
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="clusterService" ref="clusterService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />

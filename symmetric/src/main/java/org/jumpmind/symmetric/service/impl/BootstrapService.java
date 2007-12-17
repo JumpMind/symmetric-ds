@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
+import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +61,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
-    
+
     private IClusterService clusterService;
 
     private INodeService nodeService;
@@ -80,7 +81,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private boolean autoUpgrade = true;
 
     private String triggerPrefix;
-    
+
     private boolean initialized = false;
 
     public void init() {
@@ -89,7 +90,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             if (autoConfigureDatabase) {
                 logger.info("Initializing symmetric database.");
                 dbDialect.initConfigDb(tablePrefix);
-                populateDefautGlobalParametersIfNeeded();                
+                populateDefautGlobalParametersIfNeeded();
                 logger.info("Done initializing symmetric database.");
             } else {
                 logger.info("Symmetric is not configured to auto create the database.");
@@ -105,7 +106,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             }
             initialized = true;
         }
-        
+
         // lets do this every time init is called.
         clusterService.initLockTable();
     }
@@ -116,11 +117,17 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * should we auto-resync data?
      */
     public void syncTriggers() {
-        logger.info("Synchronizing triggers.");
-        configurationService.initTriggerRowsForConfigChannel();
-        removeInactiveTriggers();
-        updateOrCreateTriggers();
-        logger.info("Done synchronizing triggers.");
+        if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
+            try {
+                logger.info("Synchronizing triggers.");
+                configurationService.initTriggerRowsForConfigChannel();
+                removeInactiveTriggers();
+                updateOrCreateTriggers();
+            } finally {
+                clusterService.unlock(LockAction.SYNCTRIGGERS);
+                logger.info("Done synchronizing triggers.");
+            }
+        }
     }
 
     private void removeInactiveTriggers() {
