@@ -461,26 +461,26 @@
             <value>
                 select min(c.node_id) from ${sync.table.prefix}_node c inner join
                 ${sync.table.prefix}_node_security s on c.node_id = s.node_id where
-                s.registration_enabled = '1' and c.node_group_id = ? and c.external_id = ?
+                s.registration_enabled = 1 and c.node_group_id = ? and c.external_id = ?
             </value>
         </property>
         <property name="registerNodeSql">
             <value>
-                update ${sync.table.prefix}_node set sync_enabled = '1', sync_url = ?,
+                update ${sync.table.prefix}_node set sync_enabled = 1, sync_url = ?,
                 schema_version = ?, database_type = ?, database_version = ?, symmetric_version = ?
                 where node_id = ?
             </value>
         </property>
         <property name="registerNodeSecuritySql">
             <value>
-                update ${sync.table.prefix}_node_security set registration_enabled = '0',
+                update ${sync.table.prefix}_node_security set registration_enabled = 0,
                 registration_time = current_timestamp where node_id = ?
             </value>
         </property>
         <property name="reopenRegistrationSql">
             <value>
                 update ${sync.table.prefix}_node_security set password = ?, registration_enabled =
-                '1', registration_time = null where node_id = ?
+                1, registration_time = null where node_id = ?
             </value>
         </property>
         <property name="openRegistrationNodeSql">
@@ -492,7 +492,7 @@
         <property name="openRegistrationNodeSecuritySql">
             <value>
                 insert into ${sync.table.prefix}_node_security (node_id, password,
-                registration_enabled) values (?, ?, '1')
+                registration_enabled) values (?, ?, 1)
             </value>
         </property>
     </bean>
