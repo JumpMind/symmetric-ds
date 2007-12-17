@@ -454,6 +454,7 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />
+        <property name="autoRegistration" value ="${symmetric.auto.registration}" />
         <property name="findNodeToRegisterSql">
             <value>
                 select min(c.node_id) from ${sync.table.prefix}_node c inner join

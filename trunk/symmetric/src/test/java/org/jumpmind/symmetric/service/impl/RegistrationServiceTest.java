@@ -100,6 +100,57 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     }
 
     @Test(groups = "continuous")
+    public void testRegisterNodeAutomatic() throws Exception {
+        try {
+            ((RegistrationService) registrationService).setAutoRegistration(true);
+            doTestRegisterNodeAutomatic();
+        }
+        finally {
+            ((RegistrationService) registrationService).setAutoRegistration(false);            
+        }
+    }
+    
+    private void doTestRegisterNodeAutomatic() throws Exception{
+        Node node = new Node();
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        node.setExternalId("00008");
+        node.setSyncURL("http://localhost:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("MySQL");
+        node.setDatabaseVersion("5");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Assert.assertTrue(registrationService.registerNode(node, out),
+                "Node should be allowed to register");
+
+        node = nodeService.findNode("00008");
+        Assert.assertEquals(node.getNodeId(), "00008", "Wrong nodeId");
+        Assert.assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
+        Assert.assertEquals(node.getExternalId(), "00008", "Wrong domainId");
+        Assert.assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
+        Assert.assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
+        Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
+        Assert.assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
+
+        NodeSecurity security = nodeService.findNodeSecurity("00008");
+        Assert.assertEquals(security.getNodeId(), "00008", "Wrong nodeId");
+        Assert.assertNotSame(security.getPassword(), null, "Wrong password");
+        Assert.assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
+        Assert.assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
+        
+        // Make sure opening registration still works with auto-registration
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00009");
+        node = new Node();
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        node.setExternalId("00009");
+        node.setSyncURL("http://localhost:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("MySQL");
+        node.setDatabaseVersion("5");
+        out = new ByteArrayOutputStream();
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");        
+    }
+
+    @Test(groups = "continuous")
     public void testRegisterNodeWithResponse() throws Exception {
         registrationService.openRegistration("test-root-group", "09999");
 
