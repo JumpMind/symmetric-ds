@@ -118,6 +118,7 @@ public class MultiDatabaseTestFactory {
             }
 
         });
+     
     }
 
     protected static File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole) {

@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.springframework.beans.factory.BeanFactory;
@@ -56,6 +57,11 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
         }
         return this.engine;
     }
+    
+    protected String getDatabaseName() {
+        IDbDialect dialect = (IDbDialect)getSymmetricEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+        return dialect.getPlatform().getName();
+    }    
 
     protected BeanFactory getBeanFactory() {
         return getSymmetricEngine().getApplicationContext();

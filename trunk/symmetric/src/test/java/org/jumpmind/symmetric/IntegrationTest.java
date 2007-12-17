@@ -230,7 +230,6 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     @AfterClass()
     public void tearDown() {
-        SymmetricEngineTestFactory.resetSchemasAndEngines();
     }
 
     @Override

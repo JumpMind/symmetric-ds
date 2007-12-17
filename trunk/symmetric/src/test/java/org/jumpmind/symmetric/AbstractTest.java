@@ -50,7 +50,7 @@ abstract public class AbstractTest {
     }
 
     protected URL getResource(String resource) {
-        return SymmetricEngineTestFactory.class.getResource(resource);
+        return AbstractTest.class.getResource(resource);
     }
 
 }
