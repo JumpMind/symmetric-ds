@@ -14,15 +14,14 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 
 abstract public class AbstractTest {
-    
+
     protected SymmetricEngine createEngine(File propertiesFile) {
         return new SymmetricEngine("file:" + propertiesFile.getAbsolutePath(), null);
     }
 
-    protected void dropAndCreateDatabaseTables(SymmetricEngine engine) {
+    protected void dropAndCreateDatabaseTables(String databaseType, SymmetricEngine engine) {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
@@ -33,9 +32,10 @@ abstract public class AbstractTest {
 
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute();
 
-            // might want to come up with a slicker way to do db specific drop/create
-            if (dialect instanceof PostgreSqlDbDialect) {
-                new SqlScript(getResource(TestConstants.TEST_DROP_SEQ_SCRIPT), ds, false).execute();
+            String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
+            URL url = getResource(fileName);
+            if (url != null) {
+                new SqlScript(url, ds, false).execute();
             }
 
             platform.createTables(testDb, false, true);
