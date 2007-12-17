@@ -118,13 +118,13 @@ public class MultiDatabaseTestFactory {
                 return rootFile;
             }
         });
-        
+
         tests2Run.add(new DbTriggerTest() {
             @Override
             File getSymmetricFile() {
                 return rootFile;
             }
-        });             
+        });
     }
 
     protected static File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole) {
@@ -192,21 +192,26 @@ public class MultiDatabaseTestFactory {
         }
     }
 
-    private static Properties getTestProperties() throws IOException {
-        final String TEST_PROPERTIES_FILE = "/symmetric-test.properties";
-        Properties properties = new Properties();
+    protected static Properties getTestProperties() {
+        try {
+            final String TEST_PROPERTIES_FILE = "/symmetric-test.properties";
+            Properties properties = new Properties();
 
-        properties.load(MultiDatabaseTestFactory.class.getResourceAsStream(TEST_PROPERTIES_FILE));
-        String homeDir = System.getProperty("user.home");
-        File propertiesFile = new File(homeDir + TEST_PROPERTIES_FILE);
-        if (propertiesFile.exists()) {
-            FileInputStream f = new FileInputStream(propertiesFile);
-            properties.load(f);
-            f.close();
-        } else {
-            logger.info("Could not find " + propertiesFile.getAbsolutePath() + ". Using all of the default properties");
+            properties.load(MultiDatabaseTestFactory.class.getResourceAsStream(TEST_PROPERTIES_FILE));
+            String homeDir = System.getProperty("user.home");
+            File propertiesFile = new File(homeDir + TEST_PROPERTIES_FILE);
+            if (propertiesFile.exists()) {
+                FileInputStream f = new FileInputStream(propertiesFile);
+                properties.load(f);
+                f.close();
+            } else {
+                logger.info("Could not find " + propertiesFile.getAbsolutePath()
+                        + ". Using all of the default properties");
+            }
+            return properties;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
-        return properties;
     }
 
 }

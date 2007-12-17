@@ -23,9 +23,11 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
@@ -42,14 +44,16 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
 
     private SymmetricEngine engine;
     
-    File getSymmetricFile() {
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(TestConstants.MYSQL, DatabaseRole.ROOT);
+    File getSymmetricFile() {        
+        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(rootDatabaseTypes[0], DatabaseRole.ROOT);
     }
     
     protected SymmetricEngine getSymmetricEngine() {
         if (this.engine == null) {
             this.engine = createEngine(getSymmetricFile());
-            dropAndCreateDatabaseTables(engine);
+            dropAndCreateDatabaseTables(getDatabaseName(), engine);
             ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).init();
             new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) this.engine
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
@@ -60,7 +64,7 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     
     protected String getDatabaseName() {
         IDbDialect dialect = (IDbDialect)getSymmetricEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getPlatform().getName();
+        return dialect.getName().toLowerCase();
     }    
 
     protected BeanFactory getBeanFactory() {

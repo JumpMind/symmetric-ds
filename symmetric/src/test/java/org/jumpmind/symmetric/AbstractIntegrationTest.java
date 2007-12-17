@@ -23,26 +23,26 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
     protected SymmetricEngine getClientEngine() {
         if (this.clientEngine == null) {
             this.clientEngine = createEngine(getClientFile());
-            dropAndCreateDatabaseTables(clientEngine);
+            dropAndCreateDatabaseTables(getClientDatabaseName(), clientEngine);
         }
         return this.clientEngine;
     }
     
     protected String getRootDatabaseName() {
         IDbDialect dialect = (IDbDialect)getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getPlatform().getName();
+        return dialect.getName().toLowerCase();
     }
 
     protected String getClientDatabaseName() {
         IDbDialect dialect = (IDbDialect)getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getPlatform().getName();
+        return dialect.getName().toLowerCase();
     }
 
 
     protected SymmetricEngine getRootEngine() {
         if (this.rootEngine == null) {
             this.rootEngine = createEngine(getRootFile());
-            dropAndCreateDatabaseTables(rootEngine);
+            dropAndCreateDatabaseTables(getRootDatabaseName(), rootEngine);
             ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).init();
             new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT), (DataSource) this.rootEngine
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
