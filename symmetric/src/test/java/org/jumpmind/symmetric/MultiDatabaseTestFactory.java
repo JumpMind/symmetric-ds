@@ -42,7 +42,6 @@ import org.testng.annotations.Factory;
 /**
  * Run this test to run all the tests against all the configured databases.
  */
-
 public class MultiDatabaseTestFactory {
 
     static final Log logger = LogFactory.getLog(MultiDatabaseTestFactory.class);
