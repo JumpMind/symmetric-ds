@@ -79,7 +79,7 @@
                                   $(txIdExpression),
                                   $(columns),                                
                                   CURRENT_TIMESTAMP
-                                );
+                                )
                                 ]]>
                             </value>
                         </entry>
@@ -117,7 +117,7 @@
                                   $(oldKeys),
                                   $(columns),
                                   CURRENT_TIMESTAMP
-                                );
+                                )
                                 ]]>
                             </value>
                         </entry>
@@ -154,7 +154,7 @@
                                   $(txIdExpression),
                                   $(oldKeys),
                                   CURRENT_TIMESTAMP
-                                );
+                                )
                                 ]]>
                             </value>
                         </entry>
