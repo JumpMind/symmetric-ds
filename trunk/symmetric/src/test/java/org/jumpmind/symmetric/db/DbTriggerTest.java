@@ -40,6 +40,7 @@ import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
+@Test(sequential=true)
 public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
 
     private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";

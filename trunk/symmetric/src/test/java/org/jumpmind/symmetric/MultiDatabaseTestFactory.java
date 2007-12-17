@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
+import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.testng.annotations.Factory;
 
@@ -116,9 +117,14 @@ public class MultiDatabaseTestFactory {
             File getSymmetricFile() {
                 return rootFile;
             }
-
         });
-     
+        
+        tests2Run.add(new DbTriggerTest() {
+            @Override
+            File getSymmetricFile() {
+                return rootFile;
+            }
+        });             
     }
 
     protected static File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole) {

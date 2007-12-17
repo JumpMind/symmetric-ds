@@ -25,6 +25,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+@Test(sequential=true)
 public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     private JdbcTemplate rootJdbcTemplate;
@@ -62,7 +63,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         
     }
     
-    @Test(groups="continuous")
+    @Test(groups="continuous", timeOut=60000)
     public void testRegistration() {
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().start();
@@ -183,7 +184,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     }
 
-    @Test(groups="continuous")
+    @Test(groups="continuous", dependsOnMethods="testRegistration")
     public void testHeartbeat() throws Exception {
         long ts = System.currentTimeMillis();
         Thread.sleep(1000);

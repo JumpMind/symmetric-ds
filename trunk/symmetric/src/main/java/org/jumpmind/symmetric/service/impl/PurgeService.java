@@ -31,7 +31,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IPurgeService;
+import org.jumpmind.symmetric.service.LockAction;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -67,23 +69,33 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private TransactionTemplate transactionTemplate;
 
+    private IClusterService clusterService;
+
     @SuppressWarnings("unchecked")
     public void purge() {
-        logger.info("The purge process is about to run.");
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, -retentionInMinutes);
+        if (clusterService.lock(LockAction.PURGE)) {
+            try {
+                logger.info("The purge process is about to run.");
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.MINUTE, -retentionInMinutes);
 
-        purgeBatchesOlderThan(calendar);
-        purgeDataRows();
+                purgeBatchesOlderThan(calendar);
+                purgeDataRows();
 
-        for (String sql : otherPurgeSql) {
-            int count = jdbcTemplate.update(sql, new Object[] { calendar.getTime() });
-            if (count > 0) {
-                logger.info("Purged " + count + " rows after running: " + cleanSql(sql));
+                for (String sql : otherPurgeSql) {
+                    int count = jdbcTemplate.update(sql, new Object[] { calendar.getTime() });
+                    if (count > 0) {
+                        logger.info("Purged " + count + " rows after running: " + cleanSql(sql));
+                    }
+                }
+            } finally {
+                clusterService.unlock(LockAction.PURGE);
+                logger.info("The purge process has completed.");
             }
+            
+        } else {
+            logger.info("Could not get a lock to run a purge.");
         }
-
-        logger.info("The purge process has completed.");
     }
 
     private void purgeDataRows() {
@@ -216,6 +228,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setSelectDataIdToPurgeSql(String selectDataIdToDeleteSql) {
         this.selectDataIdToPurgeSql = selectDataIdToDeleteSql;
+    }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
 }
