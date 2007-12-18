@@ -249,7 +249,6 @@
     <bean id="dataExtractorService"
         class="org.jumpmind.symmetric.service.impl.DataExtractorService">
         <property name="outgoingBatchService" ref="outgoingBatchService" />
-        <property name="dataExtractor" ref="dataExtractor" />
         <property name="configurationService" ref="configurationService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
@@ -548,6 +547,36 @@
                 </entry>
                 <entry key="C">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="dataExtractor10" class="org.jumpmind.symmetric.extract.csv.CsvExtractor10">
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dictionary">
+            <map>
+                <entry key="I">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                </entry>
+                <entry key="U">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                </entry>
+                <entry key="D">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                </entry>
+                <entry key="V">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
+                </entry>
+                <entry key="R">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
+                        <property name="dataExtractorService" ref="dataExtractorService" />
+                        <property name="configurationService" ref="configurationService" />
+                        <property name="nodeService" ref="nodeService" />
+                    </bean>
+                </entry>
+                <entry key="S">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
                 </entry>
             </map>
         </property>

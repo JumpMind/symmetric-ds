@@ -30,39 +30,43 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.BatchType;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class DataExtractorService implements IDataExtractorService {
+public class DataExtractorService implements IDataExtractorService, BeanFactoryAware {
 
     private IOutgoingBatchService outgoingBatchService;
 
     private IConfigurationService configurationService;
 
-    private IDataExtractor dataExtractor;
-
     private IDbDialect dbDialect;
 
     private JdbcTemplate jdbcTemplate;
+
+    private BeanFactory beanFactory;
 
     private DataExtractorContext context;
 
@@ -78,6 +82,7 @@ public class DataExtractorService implements IDataExtractorService {
         try {
             BufferedWriter writer = transport.open();
             DataExtractorContext ctxCopy = context.copy();
+            IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             dataExtractor.init(writer, ctxCopy);
             dataExtractor.begin(batch, writer);
             TriggerHistory audit = new TriggerHistory(tableName, "node_id", "node_id");
@@ -89,6 +94,18 @@ public class DataExtractorService implements IDataExtractorService {
         }
     }
 
+    private IDataExtractor getDataExtractor(String version) {
+        String beanName = Constants.DATA_EXTRACTOR;
+        if (version != null) {
+            int[] versions = Version.parseVersion(version);
+            // TODO: this should be versions[1] == 0 for 1.2 release
+            if (versions[0] == 1 && versions[1] <= 1) {
+                beanName += "10";
+            }
+        }
+        return (IDataExtractor) beanFactory.getBean(beanName);
+    }
+    
     public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
@@ -108,6 +125,7 @@ public class DataExtractorService implements IDataExtractorService {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
         final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -140,7 +158,8 @@ public class DataExtractorService implements IDataExtractorService {
     }
 
     public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
-        ExtractStreamHandler handler = new ExtractStreamHandler(transport);
+        IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
+        ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
         return extract(node, handler);
     }
 
@@ -184,8 +203,8 @@ public class DataExtractorService implements IDataExtractorService {
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws Exception {
-
-        ExtractStreamHandler handler = new ExtractStreamHandler(transport);
+        IDataExtractor dataExtractor = getDataExtractor(null);
+        ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
         return extractBatchRange(handler, startBatchId, endBatchId);
     }
 
@@ -255,10 +274,6 @@ public class DataExtractorService implements IDataExtractorService {
         this.outgoingBatchService = batchBuilderService;
     }
 
-    public void setDataExtractor(IDataExtractor dataExtractor) {
-        this.dataExtractor = dataExtractor;
-    }
-
     public void setContext(DataExtractorContext context) {
         this.context = context;
     }
@@ -283,12 +298,15 @@ public class DataExtractorService implements IDataExtractorService {
 
         IOutgoingTransport transport;
 
+        IDataExtractor dataExtractor;
+        
         DataExtractorContext context;
 
         BufferedWriter writer;
 
-        ExtractStreamHandler(IOutgoingTransport transport) throws Exception {
+        ExtractStreamHandler(IDataExtractor dataExtractor, IOutgoingTransport transport) throws Exception {
             this.transport = transport;
+            this.dataExtractor = dataExtractor;
         }
 
         public void dataExtracted(Data data) throws Exception {
@@ -317,6 +335,10 @@ public class DataExtractorService implements IDataExtractorService {
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 
 }
