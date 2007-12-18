@@ -143,6 +143,20 @@ public class SqlTemplate {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + dialect.getPlatform().getName());
         }
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultSchema,
+                ddl);
+    }
+
+    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
+            String tablePrefix, Table metaData, String defaultSchema) {
+
+        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultSchema,
+                ddl);
+    }
+
+    private String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
+            TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema, String ddl) {
         ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
         ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(), ddl);
         ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName().toUpperCase()
@@ -177,10 +191,9 @@ public class SqlTemplate {
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
         ddl = replace("oldTriggerValue", oldTriggerValue, ddl);
-
         return ddl;
     }
-
+    
     private String eval(boolean condition, String prop, String ddl) {
         String ifStmt = "$(if:" + prop + ")";
         String elseStmt = "$(else:" + prop + ")";
@@ -238,20 +251,6 @@ public class SqlTemplate {
         }
 
         return b.toString();
-    }
-
-    public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
-            String tablePrefix, Table metaData, String defaultSchema) {
-
-        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        if (ddl != null) {
-            ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
-            ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
-                    .toUpperCase()
-                    + "." : "", ddl);
-            ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(), ddl);
-        }
-        return ddl;
     }
 
     private String buildColumnString(String tableAlias, Column[] columns) {
