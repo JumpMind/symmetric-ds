@@ -38,7 +38,7 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA['"' || fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"')) || '"' ||','||]]>
+                        <![CDATA['"' || fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),'\','\\'),'"','\"') || '"' ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
@@ -48,7 +48,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as varchar(50)), '')||','||]]>
+                        <![CDATA[coalesce(char($(tableAlias).$(columnName)), '')||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
@@ -57,7 +57,7 @@
                 <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || char($(tableAlias).$(columnName)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="sqlTemplates">
@@ -86,7 +86,7 @@
                         <entry key="insertPostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TRIGGER $(triggerName) 
+                                CREATE TRIGGER $(triggerName)p
                                 AFTER INSERT ON $(schemaName)$(tableName) 
                                 REFERENCING NEW AS NEW
                                 FOR EACH ROW MODE DB2SQL 
@@ -95,16 +95,16 @@
                                 select node_id, IDENTITY_VAL_LOCAL()
                                 from $(prefixName)_node c where 
                                 c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere);
+                                and c.sync_enabled = 1 $(nodeSelectWhere)
                                 ]]>
                             </value>
                         </entry>
                         <entry key="updateTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TRIGGER $(triggerName) 
+                                CREATE TRIGGER $(triggerName)
                                 AFTER UPDATE ON $(schemaName)$(tableName) 
-                                REFERENCING OLD AS OLD REFERENCING NEW AS NEW
+                                REFERENCING OLD AS OLD NEW AS NEW
                                 FOR EACH ROW MODE DB2SQL 
                                 insert into $(defaultSchema)$(prefixName)_data 
                                 (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
@@ -124,16 +124,16 @@
                         <entry key="updatePostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TRIGGER $(triggerName) 
+                                CREATE TRIGGER $(triggerName)p
                                 AFTER UPDATE ON $(schemaName)$(tableName) 
-                                REFERENCING OLD AS OLD REFERENCING NEW AS NEW
+                                REFERENCING OLD AS OLD NEW AS NEW
                                 FOR EACH ROW MODE DB2SQL 
                                 insert into $(defaultSchema)$(prefixName)_data_event 
                                 (node_id, data_id) 
                                 select node_id, IDENTITY_VAL_LOCAL()
                                 from $(prefixName)_node c where 
                                 c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere);
+                                and c.sync_enabled = 1 $(nodeSelectWhere)
                                 ]]>
                             </value>
                         </entry>
@@ -161,7 +161,7 @@
                         <entry key="deletePostTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TRIGGER $(triggerName) 
+                                CREATE TRIGGER $(triggerName)p
                                 AFTER DELETE ON $(schemaName)$(tableName) 
                                 REFERENCING OLD AS OLD
                                 FOR EACH ROW MODE DB2SQL 
@@ -170,7 +170,7 @@
                                 select node_id, IDENTITY_VAL_LOCAL()
                                 from $(prefixName)_node c where 
                                 c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere);
+                                and c.sync_enabled = 1 $(nodeSelectWhere)
                                 ]]>
                             </value>
                         </entry>
