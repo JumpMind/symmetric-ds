@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -92,10 +93,10 @@ public class RegistrationService extends AbstractService implements
         node.setNodeId(nodeId);
         jdbcTemplate.update(registerNodeSecuritySql, new Object[] { node
                 .getNodeId() });
-        jdbcTemplate.update(registerNodeSql, new Object[] {
-                node.getSyncURL().toString(), node.getSchemaVersion(),
-                node.getDatabaseType(), node.getDatabaseVersion(),
-                node.getSymmetricVersion(), node.getNodeId() });
+        jdbcTemplate.update(registerNodeSql, new Object[] { node.getSyncURL().toString(),
+                node.getSchemaVersion(), node.getDatabaseType(), node.getDatabaseVersion(),
+                node.getSymmetricVersion(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && autoReload) {
             dataService.reloadNode(node.getNodeId());
