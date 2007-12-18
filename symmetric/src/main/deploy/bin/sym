@@ -4,6 +4,14 @@
 #
 
 PRGDIR=`dirname "$0"`
+if [ "$PRGDIR" = "" ]
+then
+   PRGDIR=`echo $0 | sed 's/\/sym//g'`
+fi
+if [ "$PRGDIR" = "" ]
+then
+   PRGDIR="."
+fi
 LIBDIR=$PRGDIR/../lib
 RUNJAVA=java
 
