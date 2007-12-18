@@ -439,7 +439,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                     String postTriggerDml = createPostTriggerDDL(dml, trigger, audit, tablePrefix, table);
                     if (postTriggerDml != null) {
-                        stmt.executeUpdate(postTriggerDml);
+                        try {
+                            stmt.executeUpdate(postTriggerDml);
+                        } catch (SQLException ex) {
+                            logger.error("Failed to create post trigger: " + postTriggerDml);
+                            throw ex;
+                        }
                     }
                     stmt.close();
 
