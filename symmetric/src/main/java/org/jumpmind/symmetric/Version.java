@@ -24,7 +24,8 @@ package org.jumpmind.symmetric;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Follow the Apache versioning scheme documented <a href="http://apr.apache.org/versioning.html">here</a>.
+ * Follow the Apache versioning scheme documented <a
+ * href="http://apr.apache.org/versioning.html">here</a>.
  */
 final public class Version {
 
@@ -34,7 +35,7 @@ final public class Version {
 
     public static final int PATCH = 0;
 
-    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH;
+    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-pre";
 
     public static int[] parseVersion(String version) {
         int[] versions = new int[3];
@@ -52,7 +53,7 @@ final public class Version {
         }
         return versions;
     }
-    
+
     private static int parseVersionComponent(String versionComponent) {
         int version = 0;
         try {
@@ -62,4 +63,27 @@ final public class Version {
         return version;
     }
 
+    public static boolean isOlderMajorVersion(String version) {
+        return isOlderMajorVersion(parseVersion(version));
+    }
+
+    public static boolean isOlderMajorVersion(int[] versions) {
+        if (versions[0] < MAJOR) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isOlderMinorVersion(String version) {
+        return isOlderMinorVersion(parseVersion(version));
+    }
+
+    public static boolean isOlderMinorVersion(int[] versions) {
+        if (versions[0] < MAJOR) {
+            return true;
+        } else if (versions[0] == MAJOR && versions[1] < MINOR) {
+            return true;
+        }
+        return false;
+    }
 }
