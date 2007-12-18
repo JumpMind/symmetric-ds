@@ -231,7 +231,7 @@
         </property>
         <property name="selectOutgoingBatchRangeSql">
             <value>
-                select batch_id, node_id, channel_id, status, batch_type from
+                select batch_id, node_id, channel_id, status, batch_type, create_time from
                 ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? order by batch_id
             </value>
         </property>
