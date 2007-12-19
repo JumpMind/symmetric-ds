@@ -19,6 +19,10 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
 
     private SymmetricEngine rootEngine;
 
+    private String clientDatabaseType;
+
+    private String rootDatabaseType;
+
     protected SymmetricEngine getClientEngine() {
         if (this.clientEngine == null) {
             this.clientEngine = createEngine(getClientFile());
@@ -26,17 +30,22 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.clientEngine;
     }
-    
+
     protected String getRootDatabaseName() {
-        IDbDialect dialect = (IDbDialect)getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getName().toLowerCase();
+        if (rootDatabaseType == null) {
+            IDbDialect dialect = (IDbDialect) getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+            rootDatabaseType = dialect.getName().toLowerCase();
+        }
+        return rootDatabaseType;
     }
 
     protected String getClientDatabaseName() {
-        IDbDialect dialect = (IDbDialect)getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getName().toLowerCase();
+        if (clientDatabaseType == null) {
+            IDbDialect dialect = (IDbDialect) getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+            clientDatabaseType = dialect.getName().toLowerCase();
+        }
+        return clientDatabaseType;
     }
-
 
     protected SymmetricEngine getRootEngine() {
         if (this.rootEngine == null) {
@@ -49,7 +58,7 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.rootEngine;
     }
-    
+
     File getClientFile() {
         Properties properties = MultiDatabaseTestFactory.getTestProperties();
         String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
@@ -61,5 +70,13 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
 
         return MultiDatabaseTestFactory.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.ROOT);
-    }    
+    }
+
+    public void setClientDatabaseType(String clientDatabaseType) {
+        this.clientDatabaseType = clientDatabaseType;
+    }
+
+    public void setRootDatabaseType(String rootDatabaseType) {
+        this.rootDatabaseType = rootDatabaseType;
+    }
 }
