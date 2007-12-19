@@ -48,7 +48,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else char($(tableAlias).$(columnName)) end ||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else rtrim(char($(tableAlias).$(columnName))) end ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
