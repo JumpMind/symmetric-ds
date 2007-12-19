@@ -96,8 +96,8 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(node.getExternalId(), TestConstants.TEST_ROOT_EXTERNAL_ID, "Wrong external id");
         Assert.assertEquals(node.getSyncURL().toString(), "internal://root", "Wrong syncUrl");
         Assert.assertEquals(node.getSchemaVersion(), "?", "Wrong schemaVersion");
-        Assert.assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
-        Assert.assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
+        Assert.assertEquals(node.getDatabaseType(), getDbDialect().getName(), "Wrong databaseType");
+        Assert.assertEquals(node.getDatabaseVersion(), getDbDialect().getVersion(), "Wrong databaseVersion");
     }
 
     @Test(groups = "continuous")
