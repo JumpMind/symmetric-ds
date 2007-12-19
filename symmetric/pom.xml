@@ -166,7 +166,7 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
-                            <groups>continuous,integration</groups>
+                            <groups>continuous</groups>
                         </configuration>
                     </execution>
                 </executions>
