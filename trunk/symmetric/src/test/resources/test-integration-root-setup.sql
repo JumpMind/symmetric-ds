@@ -5,7 +5,7 @@ insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
 
-insert into sym_node values ('00000', 'test-root-group', '00000', '1', null, null, "1.2.0", null, null, current_timestamp);
+insert into sym_node values ('00000', 'test-root-group', '00000', '1', null, null, '1.2.0', null, null, current_timestamp);
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
@@ -15,7 +15,6 @@ values('test_triggers_table','test-root-group','test-node-group','testchannel', 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
 values('test_triggers_table','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, null, null, 1, 'chenson', current_timestamp,null,current_timestamp);
-
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)

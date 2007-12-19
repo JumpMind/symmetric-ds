@@ -195,29 +195,31 @@ public class SqlTemplate {
     }
     
     private String eval(boolean condition, String prop, String ddl) {
-        String ifStmt = "$(if:" + prop + ")";
-        String elseStmt = "$(else:" + prop + ")";
-        String endStmt = "$(end:" + prop + ")";
-        int ifIndex = ddl.indexOf(ifStmt);
-        if (ifIndex >= 0) {
-            int endIndex = ddl.indexOf(endStmt);
-            if (endIndex >= 0) {
-                String onTrue = ddl.substring(ifIndex + ifStmt.length(), endIndex);
-                String onFalse = "";
-                int elseIndex = onTrue.indexOf(elseStmt);
-                if (elseIndex >= 0) {
-                    onFalse = onTrue.substring(elseIndex + elseStmt.length());
-                    onTrue = onTrue.substring(0, elseIndex);
-                }
+        if (ddl != null) {
+            String ifStmt = "$(if:" + prop + ")";
+            String elseStmt = "$(else:" + prop + ")";
+            String endStmt = "$(end:" + prop + ")";
+            int ifIndex = ddl.indexOf(ifStmt);
+            if (ifIndex >= 0) {
+                int endIndex = ddl.indexOf(endStmt);
+                if (endIndex >= 0) {
+                    String onTrue = ddl.substring(ifIndex + ifStmt.length(), endIndex);
+                    String onFalse = "";
+                    int elseIndex = onTrue.indexOf(elseStmt);
+                    if (elseIndex >= 0) {
+                        onFalse = onTrue.substring(elseIndex + elseStmt.length());
+                        onTrue = onTrue.substring(0, elseIndex);
+                    }
 
-                if (condition) {
-                    ddl = ddl.substring(0, ifIndex) + onTrue + ddl.substring(endIndex + endStmt.length());
+                    if (condition) {
+                        ddl = ddl.substring(0, ifIndex) + onTrue + ddl.substring(endIndex + endStmt.length());
+                    } else {
+                        ddl = ddl.substring(0, ifIndex) + onFalse + ddl.substring(endIndex + endStmt.length());
+                    }
+
                 } else {
-                    ddl = ddl.substring(0, ifIndex) + onFalse + ddl.substring(endIndex + endStmt.length());
+                    throw new IllegalStateException(ifStmt + " has to have a " + endStmt);
                 }
-
-            } else {
-                throw new IllegalStateException(ifStmt + " has to have a " + endStmt);
             }
         }
         return ddl;

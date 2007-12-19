@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 
 /**
@@ -51,27 +52,40 @@ public class MultiDatabaseTestFactory {
         CLIENT, ROOT
     };
 
-    @Factory
-    public Object[] createTests() throws Exception {
-        List<Object> tests2Run = new ArrayList<Object>();
-        tests2Run.addAll(createDatabaseTests());
-        tests2Run.addAll(createIntegrationTests());
-        return tests2Run.toArray(new Object[tests2Run.size()]);
-    }
+    @DataProvider(name = "clientAndRootCombos")
+    public Object[][] getClientAndRootCombos() {
 
-    public List<? extends AbstractTest> createIntegrationTests() throws Exception {
         Properties properties = getTestProperties();
         String[] clientDatabaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
         String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
 
-        List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
+        Object[][] clientAndRootCombos = new Object[rootDatabaseTypes.length * clientDatabaseTypes.length][2];
+
+        int index = 0;
         for (String rootDatabaseType : rootDatabaseTypes) {
             for (String clientDatabaseType : clientDatabaseTypes) {
-                final File clientFile = writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
-                final File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-                addAbstractIntegrationTests(clientFile, rootFile, tests2Run);
+                clientAndRootCombos[index][0] = clientDatabaseType;
+                clientAndRootCombos[index++][1] = rootDatabaseType;
             }
         }
+        return clientAndRootCombos;
+
+    }
+
+    @Factory(dataProvider = "clientAndRootCombos")
+    public Object[] createTests(String clientDatabaseType, String rootDatabaseType) throws Exception {
+        List<Object> tests2Run = new ArrayList<Object>();
+        tests2Run.addAll(createDatabaseTests(rootDatabaseType));
+        tests2Run.addAll(createIntegrationTests(clientDatabaseType, rootDatabaseType));
+        return tests2Run.toArray(new Object[tests2Run.size()]);
+    }
+
+    public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType, String rootDatabaseType)
+            throws Exception {
+        List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
+        File clientFile = writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
+        File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
+        addAbstractIntegrationTests(clientFile, rootFile, tests2Run);
 
         return tests2Run;
     }
@@ -98,16 +112,10 @@ public class MultiDatabaseTestFactory {
         });
     }
 
-    public List<? extends AbstractTest> createDatabaseTests() throws Exception {
-        Properties properties = getTestProperties();
-        String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-
+    public List<? extends AbstractTest> createDatabaseTests(String rootDatabaseType) throws Exception {
         List<AbstractDatabaseTest> tests2Run = new ArrayList<AbstractDatabaseTest>();
-        for (String rootDatabaseType : rootDatabaseTypes) {
-            final File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-            addAbstractDatabaseTests(rootFile, tests2Run);
-        }
-
+        final File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
+        addAbstractDatabaseTests(rootFile, tests2Run);
         return tests2Run;
     }
 
