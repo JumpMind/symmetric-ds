@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.SymmetricEngine;
@@ -51,11 +52,14 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
             + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
 
     final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, 1, 1, 1 };
+    
+    final static int[] INSERT1_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
+        Types.TIMESTAMP, Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
     final static String INSERT2 = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
-            + "values('here','here',1,null,null,1,1,1)";
+            + "values('here','here','1',null,null,1,1,1)";
 
     final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
@@ -90,7 +94,7 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
                                         + TestConstants.TEST_PREFIX
                                         + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='"
                                         + TestConstants.TEST_ROOT_NODE_GROUP
-                                        + "' and (sync_on_update = '1' or sync_on_insert = '1' or sync_on_delete = '1')");
+                                        + "' and (sync_on_update = 1 or sync_on_insert = 1 or sync_on_delete = 1)");
 
         service.syncTriggers();
 
@@ -116,7 +120,7 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
     public void validateTestTableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
 
-        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
+        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES, INSERT1_TYPES);
 
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
@@ -199,7 +203,7 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         getDbDialect(getSymmetricEngine()).disableSyncTriggers();
-        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES);
+        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES, INSERT1_TYPES);
         getDbDialect(getSymmetricEngine()).enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
