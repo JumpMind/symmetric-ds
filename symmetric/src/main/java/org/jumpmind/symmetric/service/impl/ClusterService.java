@@ -49,15 +49,17 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     private String insertLockSql;
 
-    private boolean lockDuringPurge;
+    private boolean lockDuringPurge = false;
 
-    private boolean lockDuringPull;
+    private boolean lockDuringPull = false;
 
-    private boolean lockDuringPush;
+    private boolean lockDuringPush = false;
 
-    private boolean lockDuringHeartbeat;
+    private boolean lockDuringHeartbeat = false;
     
-    private boolean lockDuringSyncTriggers;
+    private boolean lockDuringSyncTriggers = false;
+    
+    private boolean lockDuringExtract = false;
 
     private INodeService nodeService;
 
@@ -141,6 +143,8 @@ public class ClusterService extends AbstractService implements IClusterService {
             return lockDuringHeartbeat;
         case SYNCTRIGGERS:
             return lockDuringSyncTriggers;
+        case EXTRACT:
+            return lockDuringExtract;
         case OTHER:
             return true;
         default:
@@ -186,6 +190,10 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     public void setLockDuringSyncTriggers(boolean lockDuringSyncTriggers) {
         this.lockDuringSyncTriggers = lockDuringSyncTriggers;
+    }
+
+    public void setLockDuringExtract(boolean lockDuringExtract) {
+        this.lockDuringExtract = lockDuringExtract;
     }
 
 }
