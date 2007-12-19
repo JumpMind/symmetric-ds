@@ -38,7 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Factory;
 
 /**
@@ -52,7 +51,6 @@ public class MultiDatabaseTestFactory {
         CLIENT, ROOT
     };
 
-    @DataProvider(name = "clientAndRootCombos")
     public Object[][] getClientAndRootCombos() {
 
         Properties properties = getTestProperties();
@@ -72,11 +70,15 @@ public class MultiDatabaseTestFactory {
 
     }
 
-    @Factory(dataProvider = "clientAndRootCombos")
-    public Object[] createTests(String clientDatabaseType, String rootDatabaseType) throws Exception {
+    @Factory
+    public Object[] createTests() throws Exception {
         List<Object> tests2Run = new ArrayList<Object>();
-        tests2Run.addAll(createDatabaseTests(rootDatabaseType));
-        tests2Run.addAll(createIntegrationTests(clientDatabaseType, rootDatabaseType));
+        Object[][] clientAndRootCombos = getClientAndRootCombos();
+        for (Object[] objects : clientAndRootCombos) {
+            tests2Run.addAll(createDatabaseTests(objects[1].toString()));
+            tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
+        }
+
         return tests2Run.toArray(new Object[tests2Run.size()]);
     }
 
