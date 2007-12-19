@@ -86,6 +86,14 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    public boolean supportsGetGeneratedKeys() {
+        return false;
+    }
+
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
+    
     public void purge() {
     }
 
