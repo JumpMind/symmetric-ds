@@ -21,8 +21,6 @@
 package org.jumpmind.symmetric.db.oracle;
 
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +33,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     static final Log logger = LogFactory.getLog(OracleDbDialect.class);
 
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
+    
+    static final String PACKAGE = "pack_symmetric";
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
@@ -43,11 +43,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected void initForSpecificDialect() {
         try {
-            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
+            if (!isPackageUpToDate(PACKAGE)) {
                 logger
-                        .info("Creating function "
-                                + TRANSACTION_ID_FUNCTION_NAME);
-                new SqlScript(getTransactionIdSqlUrl(), getPlatform()
+                        .info("Creating package "
+                                + PACKAGE);
+                new SqlScript(getSqlScriptUrl(), getPlatform()
                         .getDataSource(), '/').execute();
             }
         } catch (Exception ex) {
@@ -55,22 +55,15 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/dialects/oracle-transactionid.sql");
+    private URL getSqlScriptUrl() {
+        return getClass().getResource("/dialects/oracle.sql");
     }
 
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        long lastModified = getTransactionIdSqlUrl().openConnection()
-                .getLastModified();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "yyyy-MM-dd':'HH:mm:ss");
-
+    private boolean isPackageUpToDate(String name) throws Exception {
         return jdbcTemplate
                 .queryForInt(
-                        "select count(*) from all_objects where timestamp < ? and object_name= upper(?) ",
-                        new Object[] {
-                                dateFormat.format(new Date(lastModified)), name }) > 0;
+                        "select count(*) from all_objects where object_name= upper(?) ",
+                        new Object[] { name }) > 0;
     }
 
     public boolean isCharSpacePadded() {
