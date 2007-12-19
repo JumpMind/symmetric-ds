@@ -15,7 +15,7 @@
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from user_source where line = 1 and type = 'FUNCTION' and name=upper('$(functionName)')]]>
+                        <![CDATA[select count(*) from user_source where line = 1 and (type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')]]>
                     </value>
                 </property>               
                 <property name="functionTemplatesToInstall">
@@ -42,6 +42,27 @@
                                     END IF;
                                     RETURN v_clob; 
                                 END fn_sym_blob2clob;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="fn_transaction_id">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE function fn_transaction_id
+                                    return varchar is
+                                    begin
+                                       return DBMS_TRANSACTION.local_transaction_id(false);
+                                    end;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="fn_trigger_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE function fn_trigger_disabled return varchar is 
+                                  begin 
+                                     return pack_symmetric.disable_trigger;
+                                  end;
                                 ]]>
                             </value>
                         </entry>
