@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,8 +121,9 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(DataEvent dataEvent) {
-        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(), dataEvent.getNodeId(),
-                dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0});
+        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(),
+                dataEvent.getNodeId(), dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0 }, new int[] {
+                Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
     }
 
     public void insertDataEvent(Data data, List<Node> nodes) {
