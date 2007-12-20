@@ -17,20 +17,26 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.jumpmind.symmetric.service;
 
 import org.jumpmind.symmetric.model.Node;
 
-public interface IClusterService {
-    
+public interface IClusterService
+{
+
     public void initLockTable();
 
     public void initLockTableForNode(Node node);
 
+    public void initLockTable(LockAction action, String lockId);
+
     public boolean lock(LockAction action, Node node);
-    
+
     public boolean lock(LockAction action);
 
     public void unlock(LockAction action);
-    
+
+    public void unlock(final LockAction action, final Node node);
+
 }

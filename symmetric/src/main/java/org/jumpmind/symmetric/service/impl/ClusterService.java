@@ -61,8 +61,6 @@ public class ClusterService extends AbstractService implements IClusterService
 
     private boolean lockDuringSyncTriggers = false;
 
-    private boolean lockDuringExtract = false;
-
     private INodeService nodeService;
 
     public void initLockTable()
@@ -71,7 +69,6 @@ public class ClusterService extends AbstractService implements IClusterService
         initLockTableForNodes(nodeService.findNodesToPushTo());
         initLockTable(LockAction.PURGE, COMMON_LOCK_ID);
         initLockTable(LockAction.SYNCTRIGGERS, COMMON_LOCK_ID);
-        initLockTable(LockAction.EXTRACT, COMMON_LOCK_ID);
     }
 
     private void initLockTableForNodes(final List<Node> nodes)
@@ -89,7 +86,7 @@ public class ClusterService extends AbstractService implements IClusterService
         initLockTable(LockAction.HEARTBEAT, node.getNodeId());
     }
 
-    private void initLockTable(final LockAction action, final String lockId)
+    public void initLockTable(final LockAction action, final String lockId)
     {
         try
         {
@@ -166,8 +163,6 @@ public class ClusterService extends AbstractService implements IClusterService
             return lockDuringHeartbeat;
         case SYNCTRIGGERS:
             return lockDuringSyncTriggers;
-        case EXTRACT:
-            return lockDuringExtract;
         case OTHER:
             return true;
         default:
@@ -223,11 +218,6 @@ public class ClusterService extends AbstractService implements IClusterService
     public void setLockDuringSyncTriggers(final boolean lockDuringSyncTriggers)
     {
         this.lockDuringSyncTriggers = lockDuringSyncTriggers;
-    }
-
-    public void setLockDuringExtract(final boolean lockDuringExtract)
-    {
-        this.lockDuringExtract = lockDuringExtract;
     }
 
 }

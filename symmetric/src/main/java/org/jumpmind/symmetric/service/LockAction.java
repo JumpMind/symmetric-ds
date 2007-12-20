@@ -17,8 +17,10 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+
 package org.jumpmind.symmetric.service;
 
-public enum LockAction {
-    PUSH, PULL, PURGE, HEARTBEAT, SYNCTRIGGERS, EXTRACT, OTHER
+public enum LockAction
+{
+    PUSH, PULL, PURGE, HEARTBEAT, SYNCTRIGGERS, OTHER
 }
