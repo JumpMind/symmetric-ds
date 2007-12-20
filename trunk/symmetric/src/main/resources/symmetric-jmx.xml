@@ -36,6 +36,7 @@
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="purgeService" ref="purgeService" />
         <property name="dataService" ref="dataService" />
+        <property name="clusterService" ref="clusterService" />
         <property name="registrationService" ref="registrationService" />
         <property name="properties" ref="properties" />
         <property name="dataSource" ref="dataSource" />

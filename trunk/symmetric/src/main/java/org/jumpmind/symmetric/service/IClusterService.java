@@ -38,5 +38,7 @@ public interface IClusterService
     public void unlock(LockAction action);
 
     public void unlock(final LockAction action, final Node node);
+    
+    public void clearAllLocks();
 
 }

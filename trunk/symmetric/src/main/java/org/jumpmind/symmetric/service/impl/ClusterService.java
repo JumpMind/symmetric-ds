@@ -36,8 +36,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-public class ClusterService extends AbstractService implements IClusterService
-{
+public class ClusterService extends AbstractService implements IClusterService {
 
     protected static final Log logger = LogFactory.getLog(ClusterService.class);
 
@@ -50,6 +49,8 @@ public class ClusterService extends AbstractService implements IClusterService
     private String releaseLockSql;
 
     private String insertLockSql;
+    
+    private String clearAllLocksSql;
 
     private boolean lockDuringPurge = false;
 
@@ -63,96 +64,81 @@ public class ClusterService extends AbstractService implements IClusterService
 
     private INodeService nodeService;
 
-    public void initLockTable()
-    {
+    public void initLockTable() {
         initLockTableForNodes(nodeService.findNodesToPull());
         initLockTableForNodes(nodeService.findNodesToPushTo());
         initLockTable(LockAction.PURGE, COMMON_LOCK_ID);
         initLockTable(LockAction.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
-    private void initLockTableForNodes(final List<Node> nodes)
-    {
-        for (final Node node : nodes)
-        {
+    private void initLockTableForNodes(final List<Node> nodes) {
+        for (final Node node : nodes) {
             initLockTableForNode(node);
         }
     }
 
-    public void initLockTableForNode(final Node node)
-    {
+    public void initLockTableForNode(final Node node) {
         initLockTable(LockAction.PULL, node.getNodeId());
         initLockTable(LockAction.PUSH, node.getNodeId());
         initLockTable(LockAction.HEARTBEAT, node.getNodeId());
     }
 
-    public void initLockTable(final LockAction action, final String lockId)
-    {
-        try
-        {
-            jdbcTemplate.update(insertLockSql, new Object[] {lockId, action.name()});
+    public void initLockTable(final LockAction action, final String lockId) {
+        try {
+            jdbcTemplate.update(insertLockSql, new Object[] { lockId, action.name() });
             logger.debug("Inserted into the node_lock table for " + lockId + ".");
-        }
-        catch (final DataIntegrityViolationException ex)
-        {
+        } catch (final DataIntegrityViolationException ex) {
             logger.debug("Failed to insert to the node_lock table for " + lockId + ".  Must be intialized already.");
         }
     }
+    
+    public void clearAllLocks() {
+        jdbcTemplate
+        .update(clearAllLocksSql);
+    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final LockAction action, final Node node)
-    {
+    public boolean lock(final LockAction action, final Node node) {
         return lock(action, node.getNodeId());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final LockAction action)
-    {
+    public boolean lock(final LockAction action) {
         return lock(action, COMMON_LOCK_ID);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final LockAction action)
-    {
+    public void unlock(final LockAction action) {
         unlock(action, COMMON_LOCK_ID);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final LockAction action, final Node node)
-    {
+    public void unlock(final LockAction action, final Node node) {
         unlock(action, node.getNodeId());
     }
 
-    private boolean lock(final LockAction action, final String id)
-    {
-        if (isClusteringEnabled(action))
-        {
+    private boolean lock(final LockAction action, final String id) {
+        if (isClusteringEnabled(action)) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -lockTimeoutInMilliseconds);
-            return jdbcTemplate.update(aquireLockSql, new Object[] {getLockingServerId(), id, action.name(), timeout}) == 1;
-        }
-        else
-        {
+            return jdbcTemplate
+                    .update(aquireLockSql, new Object[] { getLockingServerId(), id, action.name(), timeout }) == 1;
+        } else {
             return true;
         }
     }
 
-    private String getLockingServerId()
-    {
+    private String getLockingServerId() {
         return AppUtils.getServerId();
     }
 
-    private void unlock(final LockAction action, final String id)
-    {
-        if (isClusteringEnabled(action))
-        {
-            jdbcTemplate.update(releaseLockSql, new Object[] {id, action.name(), getLockingServerId()});
+    private void unlock(final LockAction action, final String id) {
+        if (isClusteringEnabled(action)) {
+            jdbcTemplate.update(releaseLockSql, new Object[] { id, action.name(), getLockingServerId() });
         }
     }
 
-    private boolean isClusteringEnabled(final LockAction action)
-    {
-        switch (action)
-        {
+    private boolean isClusteringEnabled(final LockAction action) {
+        switch (action) {
         case PULL:
             return lockDuringPull;
         case PUSH:
@@ -170,54 +156,48 @@ public class ClusterService extends AbstractService implements IClusterService
         }
     }
 
-    public void setLockTimeoutInMilliseconds(final long lockTimeoutInMilliseconds)
-    {
+    public void setLockTimeoutInMilliseconds(final long lockTimeoutInMilliseconds) {
         this.lockTimeoutInMilliseconds = lockTimeoutInMilliseconds;
     }
 
-    public void setAquireLockSql(final String aquireLockSql)
-    {
+    public void setAquireLockSql(final String aquireLockSql) {
         this.aquireLockSql = aquireLockSql;
     }
 
-    public void setReleaseLockSql(final String releaseLockSql)
-    {
+    public void setReleaseLockSql(final String releaseLockSql) {
         this.releaseLockSql = releaseLockSql;
     }
 
-    public void setInsertLockSql(final String insertLockSql)
-    {
+    public void setInsertLockSql(final String insertLockSql) {
         this.insertLockSql = insertLockSql;
     }
 
-    public void setNodeService(final INodeService nodeService)
-    {
+    public void setNodeService(final INodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setLockDuringPurge(final boolean lockDuringPurge)
-    {
+    public void setLockDuringPurge(final boolean lockDuringPurge) {
         this.lockDuringPurge = lockDuringPurge;
     }
 
-    public void setLockDuringPull(final boolean lockDuringPull)
-    {
+    public void setLockDuringPull(final boolean lockDuringPull) {
         this.lockDuringPull = lockDuringPull;
     }
 
-    public void setLockDuringPush(final boolean lockDuringPush)
-    {
+    public void setLockDuringPush(final boolean lockDuringPush) {
         this.lockDuringPush = lockDuringPush;
     }
 
-    public void setLockDuringHeartbeat(final boolean lockDuringHeartbeat)
-    {
+    public void setLockDuringHeartbeat(final boolean lockDuringHeartbeat) {
         this.lockDuringHeartbeat = lockDuringHeartbeat;
     }
 
-    public void setLockDuringSyncTriggers(final boolean lockDuringSyncTriggers)
-    {
+    public void setLockDuringSyncTriggers(final boolean lockDuringSyncTriggers) {
         this.lockDuringSyncTriggers = lockDuringSyncTriggers;
+    }
+
+    public void setClearAllLocksSql(String clearAllLocksSql) {
+        this.clearAllLocksSql = clearAllLocksSql;
     }
 
 }
