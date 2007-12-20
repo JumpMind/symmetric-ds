@@ -628,7 +628,6 @@
         <property name="lockDuringPull" value="${symmetric.runtime.cluster.lock.during.pull}" />
         <property name="lockDuringPush" value="${symmetric.runtime.cluster.lock.during.push}" />
         <property name="lockDuringHeartbeat" value="${symmetric.runtime.cluster.lock.during.heartbeat}" />
-        <property name="lockDuringExtract" value="${symmetric.runtime.cluster.lock.during.extract}" />
         <property name="lockDuringSyncTriggers" value="${symmetric.runtime.cluster.lock.during.sync.triggers}" />
         <property name="aquireLockSql">
             <value>
