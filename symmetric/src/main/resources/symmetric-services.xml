@@ -639,6 +639,11 @@
                 update ${sync.table.prefix}_lock set lock_time=null where lock_id=? and lock_action=? and locking_server_id=?
             </value>
         </property>
+        <property name="clearAllLocksSql">
+            <value>
+                update ${sync.table.prefix}_lock set lock_time=null
+            </value>
+        </property>        
         <property name="insertLockSql">
             <value>
                 insert into ${sync.table.prefix}_lock (lock_id, lock_action) values(?,?)

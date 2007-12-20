@@ -31,6 +31,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -63,6 +64,8 @@ public class SymmetricManagementService {
     private IRegistrationService registrationService;
 
     private IDataExtractorService dataExtractorService;
+    
+    private IClusterService clusterService;
 
     private Properties properties;
 
@@ -117,6 +120,11 @@ public class SymmetricManagementService {
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public boolean isExternalIdRegistered(String nodeGroupdId, String externalId) {
         return nodeService.isExternalIdRegistered(nodeGroupdId, externalId);
+    }
+    
+    @ManagedOperation(description = "Emergency remove all locks (if left abandoned on a cluster)")
+    public void clearAllLocks() {
+        clusterService.clearAllLocks();
     }
     
     @Deprecated
@@ -249,6 +257,10 @@ public class SymmetricManagementService {
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
+    }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
 }
