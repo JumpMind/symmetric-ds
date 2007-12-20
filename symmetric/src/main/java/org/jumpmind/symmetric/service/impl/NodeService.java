@@ -24,7 +24,9 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -59,6 +61,8 @@ public class NodeService extends AbstractService implements INodeService {
     private String insertNodeChannelControlSql;
 
     private String findNodeByExternalIdSql;
+    
+    private String updateNodeSecuritySql;
 
     /**
      * Lookup a node in the database, which contains information for synching
@@ -170,6 +174,28 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
+    public boolean updateNodeSecurity(NodeSecurity security) {
+        return jdbcTemplate.update(updateNodeSecuritySql, new Object[] { security.getNodeId(),
+                security.getPassword(), security.isRegistrationEnabled() ? 1 : 0,
+                security.getRegistrationTime(), security.isInitialLoadEnabled() ? 1 : 0,
+                security.getInitialLoadTime() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
+                Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP }) == 1;
+    }
+    
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
+        if (nodeSecurity != null) {
+            nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
+            if (initialLoadEnabled) {
+                nodeSecurity.setInitialLoadTime(null);
+            } else {
+                nodeSecurity.setInitialLoadTime(new Date());
+            }
+            return updateNodeSecurity(nodeSecurity);
+        }
+        return false;
+    }
+
     class NodeRowMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             Node node = new Node();
@@ -193,6 +219,8 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setPassword(rs.getString(2));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
             nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
+            nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
+            nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
             return nodeSecurity;
         }
     }
@@ -239,6 +267,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void setFindNodeByExternalIdSql(String findNodeByExternalIdSql) {
         this.findNodeByExternalIdSql = findNodeByExternalIdSql;
+    }
+
+    public void setUpdateNodeSecuritySql(String updateNodeSecuritySql) {
+        this.updateNodeSecuritySql = updateNodeSecuritySql;
     }
 
 }

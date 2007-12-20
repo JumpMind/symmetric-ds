@@ -56,4 +56,8 @@ public interface INodeService {
     
     public boolean updateNode(Node node);
     
+    public boolean updateNodeSecurity(NodeSecurity security);
+    
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
+    
 }

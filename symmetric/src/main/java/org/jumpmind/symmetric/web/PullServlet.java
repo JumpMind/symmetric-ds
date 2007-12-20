@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -68,10 +69,14 @@ public class PullServlet extends AbstractServlet {
         nodeId = nodeId.trim();
         INodeService nodeService = getNodeService();
         try {
-            if (nodeService.isRegistrationEnabled(nodeId)) {
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+            if (nodeSecurity.isRegistrationEnabled()) {
                 IRegistrationService registrationService = getRegistrationService();
                 registrationService.registerNode(nodeService.findNode(nodeId), resp.getOutputStream());
             } else {
+                if (nodeSecurity.isInitialLoadEnabled()) {
+                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
+                }
                 IOutgoingTransport out = createOutgoingTransport(resp);
                 getDataExtractorService().extract(getNodeService().findNode(nodeId), out);
                 out.close();
