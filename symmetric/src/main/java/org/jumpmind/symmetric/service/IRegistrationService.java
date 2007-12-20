@@ -33,5 +33,7 @@ public interface IRegistrationService {
     public void openRegistration(String nodeGroupId, String externalId);
     
     public void reOpenRegistration(String nodeId);
+    
+    public boolean isAutoRegistration();
 
 }
