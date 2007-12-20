@@ -84,6 +84,13 @@ public class RegistrationService extends AbstractService implements
      * registration is open.
      */
     public boolean registerNode(Node node, OutputStream out) throws IOException {
+        if (! configurationService.isRegistrationServer()) {
+            // registration is not allowed until this node has an initial load
+            NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
+            if (security != null && security.getInitialLoadTime() == null) {
+                return false;
+            }
+        }
         String nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
         if (nodeId == null && autoRegistration) {
             openRegistration(node.getNodeGroupId(), node.getExternalId());
@@ -101,11 +108,7 @@ public class RegistrationService extends AbstractService implements
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && autoReload) {
-            // This node must have its initial load before it can send one to another node
-            NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
-            if (security != null && security.getInitialLoadTime() == null) {
-                dataService.reloadNode(node.getNodeId());
-            }
+            dataService.reloadNode(node.getNodeId());
         }
         return success;
     }
@@ -260,6 +263,10 @@ public class RegistrationService extends AbstractService implements
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
+    }
+
+    public boolean isAutoRegistration() {
+        return autoRegistration;
     }
 
 }
