@@ -26,6 +26,8 @@ public class WebConstants {
     
     public static final int REGISTRATION_NOT_OPEN = 656;
 
+    public static final int REGISTRATION_REQUIRED = 657;
+
     public static final String ACK_BATCH_NAME = "batch-";
     
     public static final String ACK_BATCH_OK = "ok";
