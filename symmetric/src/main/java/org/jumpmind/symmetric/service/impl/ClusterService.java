@@ -127,7 +127,7 @@ public class ClusterService extends AbstractService implements IClusterService
     {
         if (isClusteringEnabled(action))
         {
-            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) lockTimeoutInMilliseconds);
+            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -lockTimeoutInMilliseconds);
             return jdbcTemplate.update(aquireLockSql, new Object[] {getLockingServerId(), id, action.name(), timeout}) == 1;
         }
         else
