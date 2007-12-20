@@ -445,7 +445,7 @@
         <property name="updateNodeSecuritySql">
             <value>
                 update ${sync.table.prefix}_node_security 
-                set node_id = ?, password = ?, registration_enabled = ?, registration_time = ?,
+                set password = ?, registration_enabled = ?, registration_time = ?,
                 initial_load_enabled = ?, initial_load_time = ? where node_id = ?
             </value>
         </property>
