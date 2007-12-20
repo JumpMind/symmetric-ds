@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -81,10 +82,15 @@ public class DataLoaderService extends AbstractService implements
      * commit/error status is sent separately after the data is processed.
      */
     public void loadData(Node remote, Node local) throws IOException {
-        List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager
-                .getPullTransport(remote, local));
-        if (!transportManager.sendAcknowledgement(remote, list, local)) {
-            logger.warn(ErrorConstants.COULD_COMMINICATE_ACK);
+        try {
+            List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(
+                    remote, local));
+            if (!transportManager.sendAcknowledgement(remote, list, local)) {
+                logger.warn(ErrorConstants.COULD_COMMINICATE_ACK);
+            }
+        } catch (RegistrationRequiredException e) {
+            logger.warn("Registration was lost, attempting to re-register");
+            loadData(transportManager.getRegisterTransport(local));
         }
     }
 
@@ -117,6 +123,8 @@ public class DataLoaderService extends AbstractService implements
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());            
         } catch (RegistrationNotOpenException ex) {
             logger.warn("Registration attempt failed.  Registration was not open for the node.");
+        } catch (RegistrationRequiredException ex) {
+            throw ex;
         } catch (Exception e) {
             if (status != null) {
                 logger.error("Failed to load batch "

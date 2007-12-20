@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -61,7 +62,13 @@ public class AuthenticationFilter implements Filter
 
         if (!sc.isNodeAuthorized(nodeId, securityToken))
         {
-            ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+            IRegistrationService registrationService = (IRegistrationService) ctx
+                    .getBean(Constants.REGISTRATION_SERVICE);
+            if (registrationService.isAutoRegistration()) {
+                ((HttpServletResponse)resp).sendError(WebConstants.REGISTRATION_REQUIRED);
+            } else {
+                ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
             return;
         }
 
