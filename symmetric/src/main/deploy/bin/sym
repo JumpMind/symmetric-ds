@@ -20,4 +20,19 @@ then
    RUNJAVA="$JAVA_HOME/bin/java"
 fi
 
-exec "$RUNJAVA" -Dlog4j.configuration=file:log4j.xml -jar "$LIBDIR/symmetric-ds-1.1.0.jar" "$@"
+CLASSPATH=.
+SEP=:
+
+if uname | grep -i cygwin > /dev/null
+then
+   SEP=";"
+fi
+
+for jar in $LIBDIR/*
+do
+   CLASSPATH=${CLASSPATH}${SEP}${jar}
+done
+
+echo $CLASSPATH
+
+exec "$RUNJAVA" -Dlog4j.configuration=file:log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"
