@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="properties">
+            <props>
+                <prop key="symmetric.override.properties.file.1"></prop>
+                <prop key="symmetric.override.properties.file.2"></prop>
+            </props>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+        <!--  Allow for the (optional) override of these properties -->
+        <property name="locations">
+            <list>
+                <value>classpath:/symmetric-default.properties</value>
+                <value>classpath:/symmetric.properties</value>
+                <value>file:${user.home}/symmetric.properties</value>
+                <value>${symmetric.override.properties.file.1}</value>
+                <value>${symmetric.override.properties.file.2}</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="downloadRateKb" class="java.lang.Integer">
+     <constructor-arg value="${symmetric.http.download.rate.kb}"/>
+    </bean>
+    
+    <bean id="maxConcurrentWorkers" class="java.lang.Integer">
+     <constructor-arg value="${symmetric.http.concurrent.workers.max}"/>
+    </bean>    
+
+    <bean id="propertyPlaceholderConfigurer"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties" ref="properties" />
+        <!-- This means that any system properties set on the command line will take precendence over those set locally or in a properties file. -->
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+    </bean>
+
+    <!-- This is a list of the default global parameters which will be inserted into the parameter table upon the first deploy -->
+    <util:map id="defaultGlobalParameters">
+        <entry key="AUTO_CREATE_TRIGGERS">
+            <bean class="java.lang.Boolean">
+                <constructor-arg value="true" />
+            </bean>
+        </entry>
+    </util:map>
+
+    <!-- This the the default runtime configuration which will be used if no override is specified. -->
+    <bean name="defaultRuntimeConfiguration"
+        class="org.jumpmind.symmetric.config.PropertyRuntimeConfig">
+        <property name="registrationUrlString" value="${symmetric.runtime.registration.url}" />
+        <property name="groupId" value="${symmetric.runtime.group.id}" />
+        <property name="externalId" value="${symmetric.runtime.external.id}" />
+        <property name="myUrlString" value="${symmetric.runtime.my.url}" />
+        <property name="schemaVersion" value="${symmetric.runtime.schema.version}" />
+    </bean>
+
+    <!-- Use this to inject the runtime configuration onto classes that need it. -->
+    <bean name="runtimeConfiguration" class="org.jumpmind.symmetric.config.RuntimeConfigFactory">
+        <property name="defaultInstance" ref="defaultRuntimeConfiguration" />
+        <property name="className" value="${symmetric.runtime.configuration.class}" />
+    </bean>
+
+</beans>

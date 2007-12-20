@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="upgradeTaskMap" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="0.0" value-ref="upgrade1.0" />
+                <entry key="1.0" value-ref="upgrade1.0" />
+                <entry key="1.1" value-ref="upgrade1.1" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <!-- Upgrade version 1.0 to current version -->
+    <bean id="upgrade1.0" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <ref bean="changes1.1" />
+                <ref bean="changes1.2" />
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <!-- Upgrade version 1.1 to current version -->
+    <bean id="upgrade1.1" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <ref bean="changes1.2" />
+            </list>
+        </constructor-arg>
+    </bean>
+    
+    <!-- Changes made in version 1.1 -->
+    <bean id="changes1.1" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="sqlList">
+            <list>
+                <value>
+                    alter table ${sync.table.prefix}_trigger 
+                    add (sync_on_incoming_batch numeric(3) default 0)
+                </value>
+                <value>
+                    alter table ${sync.table.prefix}_data_event
+                    add (batched numeric(3) default 0)
+                </value>
+                <value>
+                    update ${sync.table.prefix}_data_event set batched = '1'
+                    where batch_id is not null
+                </value>
+                <value>
+                    create index idx_de_batched_nodeid on 
+                    ${sync.table.prefix}_data_event(batched, node_id)
+                </value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Changes made in version 1.2 -->
+    <bean id="changes1.2" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="sqlList">
+            <list>
+                <value>
+                    alter table ${sync.table.prefix}_node_security
+                    add (initial_load_enabled numeric(1) default 0)
+                </value>
+                <value>
+                    alter table ${sync.table.prefix}_node_security
+                    add (initial_load_time timestamp)
+                </value>
+                <value>
+                    update ${sync.table.prefix}_node_security
+                    set initial_load_time = registration_time
+                    where node_id in (select node_id from ${sync.table.prefix}_node_identity)
+                </value>
+            </list>
+        </property>
+    </bean>
+    
+</beans>
