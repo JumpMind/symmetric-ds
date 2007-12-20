@@ -69,7 +69,7 @@
                 </value>
                 <value>
                     alter table ${sync.table.prefix}_node_security
-                    add (initial_load_time timestamp)
+                    add (initial_load_time timestamp default null)
                 </value>
                 <value>
                     update ${sync.table.prefix}_node_security
