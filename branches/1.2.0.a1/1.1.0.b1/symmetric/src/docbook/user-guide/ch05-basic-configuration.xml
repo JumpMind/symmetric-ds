@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch05-basic-configuration" xmlns="http://docbook.org/ns/docbook"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Basic Configuration</title>
+    <section>
+        <title>Setting Startup Properties</title>
+        <para>
+            A SymmetricDS instance is configured at start time by a hierarchy of properties files.
+            By default, it looks for properties in the following files.
+
+            <table>
+                <title>Properties Files</title>
+                <tgroup cols="3">
+                    <colspec colwidth="115px" />
+                    <colspec colwidth="50px" />
+                    <colspec colwidth="250px" />
+                    <thead>
+                        <row>
+                            <entry>File Name</entry>
+                            <entry>Required</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                                <emphasis>default-symmetric.properties</emphasis>
+                            </entry>
+                            <entry>Y</entry>
+                            <entry>
+                                Packaged inside symmetric-ds.jar file. This file has all the default
+                                settings and along with descriptions.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>symmetric.properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user on the classpath. The first
+                                symmetric.properties found on the classpath will be used.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>symmetric.properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user in the current system user's user.home
+                                directory.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>named properties file 1</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user as a Java system property (i.e.
+                                -Dsymmetric.override.properties.file.1=file://my.properties) or in
+                                the constructor of a
+                                <literal>SymmetricEngine</literal>
+                                .
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>named properties file 2</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Provided by the end user as a Java system property (i.e.
+                                -Dsymmetric.override.properties.file.2=classpath://my.properties) or
+                                in the constructor of a
+                                <literal>SymmetricEngine</literal>
+                                .
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>Java System Properties</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                Any SymmetricDS property can be passed in as a -D property to the
+                                runtime. It will take precedence over any properties file property.
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </para>
+    </section>
+    <section>
+        <title>Basic Properties</title>
+        <para>
+            Each Node requires properties that will register it with the network and connect it to
+            the database. To give a Node its identity, the following properties are used:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.group.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The Node Group that this Node is a member of. Synchronization is specified
+                        between Node Groups, which means you only need to specify it once for
+                        multiple Nodes in the same group. For example, you might have groups of
+                        "STORE", "REGION", and "CENTRAL" that synchronize.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.external.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        The External ID for this Node has meaning to the user and provides
+                        integration into the system where it is deployed. For example, it might be a
+                        retail store number or a region number. The External ID can be used in
+                        expressions for conditional and subset data synchronization. Behind the
+                        scenes, each Node has a unique sequence number for tracking synchronization
+                        events. That makes it possible to assign the same External ID to multiple
+                        Nodes, if desired.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            When a new Node is first started, it is has no information about synchronizing. It
+            contacts the registration server in order to join the network and receive its
+            configuration. The configuration for all Nodes is stored on the registration server, and
+            the URL must be specified in the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.registration.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this Node can connect for registration to receive its
+                        configuration. The registration server is part of SymmetricDS and is enabled
+                        as part of the deployment.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            For a deployment to an application server, it is common for database connection pools
+            to be found in the Java naming directory (JNDI).  In this case, set the following property:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.jndi.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        The name of the database connection pool to use, which is registered in the JNDI
+                        directory tree of the application server. It is recommended that this DataSource is
+                        NOT transactional, because SymmetricDS will handle its own transactions.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            For a deployment where the database connection pool should be created using a JDBC driver,
+            set the following properties:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <command>db.driver</command>
+                </term>
+                <listitem>
+                    <para>
+                        The class name of the JDBC driver.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The JDBC URL used to connect to the database.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.user</command>
+                </term>
+                <listitem>
+                    <para>
+                        The database username, which is used to login, create, and update SymmetricDS tables.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.password</command>
+                </term>
+                <listitem>
+                    <para>
+                        The password for the database user.
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
+    </section>
+    <section>
+        <title>Nodes</title>
+        <para></para>
+    </section>
+</chapter>

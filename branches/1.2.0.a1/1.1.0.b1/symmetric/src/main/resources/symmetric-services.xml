@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
+    default-lazy-init="true">
+
+    <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
+        scope="singleton">
+        <property name="transport" value="${symmetric.transport.type}" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
+    </bean>
+
+    <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"
+        scope="singleton">
+        <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="transportManager" ref="transportManager" />
+        <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dataService" ref="dataService" />
+        <property name="upgradeService" ref="upgradeService" />
+        <property name="autoConfigureDatabase" value="${symmetric.auto.config.database}" />
+        <property name="autoUpgrade" value="${symmetric.auto.upgrade}" />
+    </bean>
+
+    <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
+        scope="singleton">
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="defaultGlobalParameters" ref="defaultGlobalParameters" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+    </bean>
+
+    <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="rootConfigChannelTableNames">
+            <list>
+                <value>${sync.table.prefix}_node_group</value>
+                <value>${sync.table.prefix}_node_group_link</value>
+                <value>${sync.table.prefix}_node</value>
+                <value>${sync.table.prefix}_node_security</value>
+                <value>${sync.table.prefix}_global_parameter</value>
+                <value>${sync.table.prefix}_channel</value>
+                <value>${sync.table.prefix}_node_channel_ctl</value>
+                <value>${sync.table.prefix}_trigger</value>
+            </list>
+        </property>
+        <property name="nodeConfigChannelTableNames">
+            <list>
+                <value>${sync.table.prefix}_node</value>
+            </list>
+        </property>
+        <property name="inactivateTriggerHistorySql">
+            <value>
+                update ${sync.table.prefix}_trigger_hist set inactive_time = current_timestamp where
+                trigger_hist_id=?
+            </value>
+        </property>
+        <property name="selectDataEventActionsByIdSql">
+            <value>
+                select source_node_group_id, data_event_action from
+                ${sync.table.prefix}_node_group_link where source_node_group_id = ?
+            </value>
+        </property>
+        <property name="selectChannelsSql">
+            <value>
+                select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled,
+                c.processing_order, c.max_batch_size, c.enabled from ${sync.table.prefix}_channel c
+                left outer join ${sync.table.prefix}_node_channel_ctl nc on nc.node_id in (select
+                node_id from ${sync.table.prefix}_node_identity) and c.channel_id=nc.channel_id
+                order by c.processing_order asc
+            </value>
+        </property>
+        <property name="selectGroupTriggersSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_node_group_id = ? order by
+                channel_id
+            </value>
+        </property>
+        <property name="activeTriggersForSourceNodeGroupSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_node_group_id = ? and
+                inactive_time is null
+            </value>
+        </property>
+        <property name="activeTriggersForReloadSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_node_group_id = ? and
+                target_node_group_id = ? and channel_id != ? and inactive_time is null order by
+                initial_load_order
+            </value>
+        </property>
+        <property name="inactiveTriggersForSourceNodeGroupSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger t inner join
+                ${sync.table.prefix}_trigger_hist h on t.trigger_id=h.trigger_id where
+                h.inactive_time is not null and t.source_node_group_id = ? and t.inactive_time is
+                not null
+            </value>
+        </property>
+        <property name="insertTriggerSql">
+            <value>
+                insert into ${sync.table.prefix}_trigger (source_table_name, source_node_group_id,
+                target_node_group_id, channel_id, source_schema_name, sync_on_update,
+                sync_on_insert, sync_on_delete, initial_load_order, last_updated_by,
+                last_updated_time, create_time) values (?, ?, ?, ?, null, 0, 0, 0, ?, 'system',
+                current_timestamp, current_timestamp)
+            </value>
+        </property>
+        <property name="groupsLinksForSql">
+            <value>
+                select source_node_group_id, target_node_group_id, data_event_action from
+                ${sync.table.prefix}_node_group_link where source_node_group_id = ?
+            </value>
+        </property>
+        <property name="insertChannelSql">
+            <value>
+                insert into ${sync.table.prefix}_channel values(?, ?, ?, 1, 'System-generated
+                channel. Do not remove.')
+            </value>
+        </property>
+        <property name="allTriggerHistSql">
+            <value>
+                select
+                trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+                from ${sync.table.prefix}_trigger_hist
+            </value>
+        </property>
+        <property name="latestTriggerHistSql">
+            <value>
+                select
+                trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+                from ${sync.table.prefix}_trigger_hist where trigger_hist_id = (select
+                max(trigger_hist_id) from ${sync.table.prefix}_trigger_hist where trigger_id=?)
+            </value>
+        </property>
+        <property name="triggerHistSql">
+            <value>
+                select
+                trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+                from ${sync.table.prefix}_trigger_hist where trigger_hist_id = ?
+            </value>
+        </property>
+        <property name="insertTriggerHistorySql">
+            <value>
+                insert into ${sync.table.prefix}_trigger_hist
+                (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name)
+                values(?,?,?,?,?,?,?,?,?,?,?)
+            </value>
+        </property>
+        <property name="selectTriggerSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_table_name = ? and
+                source_node_group_id = ?
+            </value>
+        </property>
+        <property name="selectTriggerTargetSql">
+            <value>
+                select * from ${sync.table.prefix}_trigger where source_table_name = ? and
+                target_node_group_id = ? and channel_id = ? and source_node_group_id = ?
+            </value>
+        </property>
+        <property name="selectTriggerByIdSql">
+            <value>select * from ${sync.table.prefix}_trigger where trigger_id = ?</value>
+        </property>
+    </bean>
+
+    <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="historyService" ref="outgoingBatchHistoryService" />
+        <property name="outgoingBatchQueryTemplate">
+            <bean class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="dataSource" />
+                <property name="queryTimeout" value="${db.sql.query.timeout.seconds}" />
+                <property name="maxRows"
+                    value="${symmetric.runtime.outgoing.batches.max.to.process}" />
+            </bean>
+        </property>
+        <property name="initialLoadStatusSql">
+            <value>
+                select status from ${sync.table.prefix}_outgoing_batch where channel_id='reload' and
+                node_id=?
+            </value>
+        </property>
+
+        <property name="selectEventsToBatchSql">
+            <value>
+                select data.transaction_id, data.data_id from ${sync.table.prefix}_data data,
+                ${sync.table.prefix}_data_event data_event where data_event.batched = '0' and
+                data_event.node_id = ? and data.channel_id=? and data.data_id = data_event.data_id
+                order by data.data_id asc
+            </value>
+        </property>
+        <property name="createBatchSql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch (batch_id, node_id, channel_id,
+                status, batch_type, create_time) values (null, ?, ?, ?, ?, current_timestamp)
+            </value>
+        </property>
+        <property name="updateBatchedEventsSql">
+            <value>
+                update ${sync.table.prefix}_data_event set batch_id = ?, batched = '1' where node_id
+                = ? and data_id = ?
+            </value>
+        </property>
+        <property name="selectOutgoingBatchSql">
+            <value>
+                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 1
+                from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status in
+                ('NE','SE') and b.channel_id not in (select distinct e.channel_id from
+                ${sync.table.prefix}_outgoing_batch e where e.status = 'ER' and e.node_id =
+                b.node_id) union select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type,
+                create_time, 2 from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and
+                b.status = 'ER' order by 7, 1
+            </value>
+        </property>
+        <property name="selectOutgoingBatchRangeSql">
+            <value>
+                select batch_id, node_id, channel_id, status, batch_type from
+                ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? order by batch_id
+            </value>
+        </property>
+        <property name="selectOutgoingBatchErrorsSql">
+            <value>
+                select batch_id, node_id, channel_id, status, batch_type, create_time from
+                ${sync.table.prefix}_outgoing_batch where status = 'ER' order by batch_id
+            </value>
+        </property>
+        <property name="changeBatchStatusSql">
+            <value>update ${sync.table.prefix}_outgoing_batch set status=? where batch_id=?</value>
+        </property>
+    </bean>
+
+    <bean id="dataExtractorService"
+        class="org.jumpmind.symmetric.service.impl.DataExtractorService">
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="dataExtractor" ref="dataExtractor" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="context" ref="extractorContext" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="selectEventDataToExtractSql">
+            <value>
+                select a.data_id, table_name, event_type, row_data, pk_data, batch_id, create_time,
+                trigger_hist_id from ${sync.table.prefix}_data a, ${sync.table.prefix}_data_event b
+                where a.data_id = b.data_id and node_id = ? and batch_id=? order by data_id asc
+            </value>
+        </property>
+    </bean>
+
+    <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService"
+        scope="singleton">
+        <property name="deleteFirstForReload"
+            value="${symmetric.runtime.initial.load.delete.first}" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="insertIntoDataSql">
+            <value>
+                insert into ${sync.table.prefix}_data (data_id, channel_id, table_name, event_type,
+                row_data, pk_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?, ?,
+                current_timestamp)
+            </value>
+        </property>
+        <property name="insertIntoDataEventSql">
+            <value>
+                insert into ${sync.table.prefix}_data_event (data_id, node_id) values(?, ?)
+            </value>
+        </property>
+    </bean>
+
+    <bean id="pushService" class="org.jumpmind.symmetric.service.impl.PushService">
+        <property name="extractor" ref="dataExtractorService" />
+        <property name="transportManager" ref="transportManager" />
+        <property name="ackService" ref="acknowledgeService" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+
+    <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService">
+        <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+
+    <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService"
+        scope="singleton">
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="transactionTemplate" ref="transactionTemplate" />
+        <property name="transportManager" ref="transportManager" />
+        <property name="incomingBatchService" ref="incomingBatchService" />
+    </bean>
+
+    <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="jdbcTemplate" ref="dataLoaderTemplate" />
+        <property name="enableFallbackInsert" value="true" />
+        <property name="enableFallbackUpdate" value="true" />
+        <property name="allowMissingDelete" value="true" />
+    </bean>
+
+    <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
+        scope="singleton">
+        <property name="skipDuplicateBatches"
+            value="${symmetric.runtime.incoming.batches.skip.duplicates}" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="findIncomingBatchSql">
+            <value>
+                select batch_id, node_id, status, create_time from
+                ${sync.table.prefix}_incoming_batch where batch_id = ? and node_id = ?
+            </value>
+        </property>
+        <property name="findIncomingBatchErrorsSql">
+            <value>
+                select batch_id, node_id, status, create_time from
+                ${sync.table.prefix}_incoming_batch where status = 'ER' order by batch_id
+            </value>
+        </property>
+        <property name="findIncomingBatchHistorySql">
+            <value>
+                select batch_id, node_id, status, start_time, end_time, failed_row_number,
+                statement_count, fallback_insert_count, fallback_update_count, missing_delete_count
+                from ${sync.table.prefix}_incoming_batch_hist where batch_id = ? and node_id = ?
+            </value>
+        </property>
+        <property name="insertIncomingBatchSql">
+            <value>
+                insert into ${sync.table.prefix}_incoming_batch (batch_id, node_id, status,
+                create_time) values (?, ?, ?, current_timestamp)
+            </value>
+        </property>
+        <property name="updateIncomingBatchSql">
+            <value>
+                update ${sync.table.prefix}_incoming_batch set status = ? where batch_id = ? and
+                node_id = ? and status = ?
+            </value>
+        </property>
+        <property name="insertIncomingBatchHistorySql">
+            <value>
+                insert into ${sync.table.prefix}_incoming_batch_hist (batch_id, node_id, status,
+                host_name, statement_count, fallback_insert_count, fallback_update_count,
+                missing_delete_count, failed_row_number, start_time, end_time) values (?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?)
+            </value>
+        </property>
+    </bean>
+
+    <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="nodeChannelControlIgnoreSql">
+            <value>
+                update ${sync.table.prefix}_node_channel_ctl set ignore_enabled=? where node_id=?
+                and channel_id=?
+            </value>
+        </property>
+        <property name="insertNodeChannelControlSql">
+            <value>
+                insert into ${sync.table.prefix}_node_channel_ctl
+                (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)
+            </value>
+        </property>
+        <property name="updateNodeSql">
+            <value>
+                update ${sync.table.prefix}_node set node_group_id=?, external_id=?,
+                database_type=?, database_version=?, schema_version=?, symmetric_version=?,
+                sync_url=?, heartbeat_time=?, sync_enabled=? where node_id = ?
+            </value>
+        </property>
+        <property name="findNodeSql">
+            <value>
+                select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node
+                where node_id = ?
+            </value>
+        </property>
+        <property name="findNodeByExternalIdSql">
+            <value>
+                select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
+                database_type, database_version, symmetric_version from ${sync.table.prefix}_node
+                where node_group_id = ? and external_id = ?
+            </value>
+        </property>
+        <property name="findNodeSecuritySql">
+            <value>
+                select node_id, password, registration_enabled, registration_time from
+                ${sync.table.prefix}_node_security where node_id = ?
+            </value>
+        </property>
+        <property name="findNodeIdentitySql">
+            <value>
+                select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_identity i on
+                c.node_id = i.node_id
+            </value>
+        </property>
+        <property name="isNodeRegisteredSql">
+            <value>
+                select count(*) from ${sync.table.prefix}_node_security s inner join
+                ${sync.table.prefix}_node n on n.node_id=s.node_id where n.node_group_id=? and
+                n.external_id=? and s.registration_time is not null and s.registration_enabled=0
+            </value>
+        </property>
+        <property name="findNodesWhoTargetMeSql">
+            <value>
+                select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+                c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and
+                d.data_event_action = ?
+            </value>
+        </property>
+        <property name="findNodesWhoITargetSql">
+            <value>
+                select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
+                c.schema_version, c.database_type, c.database_version, c.symmetric_version from
+                ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+                c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and
+                d.data_event_action = ?
+            </value>
+        </property>
+    </bean>
+
+    <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="acknowledgeService" ref="acknowledgeService" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="findNodeToRegisterSql">
+            <value>
+                select min(c.node_id) from ${sync.table.prefix}_node c inner join
+                ${sync.table.prefix}_node_security s on c.node_id = s.node_id where
+                s.registration_enabled = '1' and c.node_group_id = ? and c.external_id = ?
+            </value>
+        </property>
+        <property name="registerNodeSql">
+            <value>
+                update ${sync.table.prefix}_node c set sync_enabled = '1', sync_url = ?,
+                schema_version = ?, database_type = ?, database_version = ?, symmetric_version = ?
+                where node_id = ?
+            </value>
+        </property>
+        <property name="registerNodeSecuritySql">
+            <value>
+                update ${sync.table.prefix}_node_security set registration_enabled = '0',
+                registration_time = current_timestamp where node_id = ?
+            </value>
+        </property>
+        <property name="reopenRegistrationSql">
+            <value>
+                update ${sync.table.prefix}_node_security set password = ?, registration_enabled =
+                '1', registration_time = null where node_id = ?
+            </value>
+        </property>
+        <property name="openRegistrationNodeSql">
+            <value>
+                insert into ${sync.table.prefix}_node (node_id, node_group_id, external_id) values
+                (?, ?, ?)
+            </value>
+        </property>
+        <property name="openRegistrationNodeSecuritySql">
+            <value>
+                insert into ${sync.table.prefix}_node_security (node_id, password,
+                registration_enabled) values (?, ?, '1')
+            </value>
+        </property>
+    </bean>
+
+    <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService"
+        scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="outgoingBatchHistoryService" ref="outgoingBatchHistoryService" />
+        <property name="updateOutgoingBatchSql">
+            <value>
+                update ${sync.table.prefix}_outgoing_batch set status = ? where batch_id = ?
+            </value>
+        </property>
+        <property name="selectDataIdSql">
+            <value>
+                select a.data_id from ${sync.table.prefix}_data a, ${sync.table.prefix}_data_event b
+                where a.data_Id = b.data_Id and b.batch_id=? order by data_id asc
+            </value>
+        </property>
+    </bean>
+
+    <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext"
+        scope="prototype">
+    </bean>
+
+    <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dictionary">
+            <map>
+                <entry key="I">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                </entry>
+                <entry key="U">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                </entry>
+                <entry key="D">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                </entry>
+                <entry key="V">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
+                </entry>
+                <entry key="R">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
+                        <property name="dataExtractorService" ref="dataExtractorService" />
+                        <property name="configurationService" ref="configurationService" />
+                        <property name="nodeService" ref="nodeService" />
+                    </bean>
+                </entry>
+                <entry key="S">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="outgoingBatchHistoryService"
+        class="org.jumpmind.symmetric.service.impl.OutgoingBatchHistoryService" scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="createdSql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time,
+                data_event_count) values (?, 'NE', current_timestamp, ?)
+            </value>
+        </property>
+        <property name="errorSql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time,
+                failed_data_id) values (?, 'ER', current_timestamp, ?)
+            </value>
+        </property>
+        <property name="okSql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
+                values (?, 'OK', current_timestamp)
+            </value>
+        </property>
+        <property name="sentSql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
+                values (?, 'SE', current_timestamp)
+            </value>
+        </property>
+    </bean>
+
+    <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="upgradeTaskMap" ref="upgradeTaskMap" />
+    </bean>
+
+    <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="transactionTemplate" ref="transactionTemplate" />
+        <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
+        <property name="selectOutgoingBatchIdsToPurgeSql">
+            <value>
+                select batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
+                create_time &lt; ?
+            </value>
+        </property>
+        <property name="deleteFromOutgoingBatchHistSql">
+            <value>delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id=?</value>
+        </property>
+        <property name="deleteFromOutgoingBatchSql">
+            <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
+        </property>
+        <property name="selectEventDataIdToPurgeSql">
+            <value>select data_id from ${sync.table.prefix}_data_event where batch_id=?</value>
+        </property>
+        <property name="deleteDataEventSql">
+            <value>
+                delete from ${sync.table.prefix}_data_event where data_id=? and batch_id=?
+            </value>
+        </property>
+        <property name="selectDataIdToPurgeSql">
+            <value>
+                select data_id from ${sync.table.prefix}_data d where not exists (select 1 from
+                ${sync.table.prefix}_data_event de where d.data_id = de.data_id)
+            </value>
+        </property>
+        <property name="deleteDataSql">
+            <value>delete from ${sync.table.prefix}_data where data_id=?</value>
+        </property>
+        <property name="otherPurgeSql">
+            <list>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch_hist where batch_id in (select
+                    batch_id from ${sync.table.prefix}_incoming_batch where status='OK' and
+                    create_time &lt; ?)
+                </value>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch where status='OK' and
+                    create_time &lt; ?
+                </value>
+            </list>
+        </property>
+    </bean>
+
+</beans>

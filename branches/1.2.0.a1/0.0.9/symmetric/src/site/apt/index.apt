@@ -1,0 +1,63 @@
+ ------
+ SymmetricDS
+ ------
+ ------
+ Date
+ ------
+
+Overview
+
+ SymmetricDS is web-enabled, database independent, <data synchronization> software.
+ It uses web and database technologies to replicate tables between relational databases in near real time. 
+ The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
+ and withstand periods of network outage.
+
+ By using database triggers, SymmetricDS guarentees that data changes are captured and atomicity is preserved.
+ Support for database vendors is provided through a {{{terminology.html#DatabaseDialect}Database Dialect}},
+ with implementations for MySQL and Oracle included.
+
+ Each instance of SymmetricDS is a {{{terminology.html#Node}Node}} that contacts the registration
+ server for its configuration.
+ {{{terminology.html#NodeGroup}NodeGroups}} are groups of similar {{{terminology.html#Node}Nodes}}
+ that are configured to synchronize their data.
+ The data is categorized and placed in {{{terminology.html#Channel}Channels}} to provide control
+ and eliminate contention of active changes.
+ Synchronization can push data (trickle-back) or pull data (trickle-poll).
+ 
+ SymmetricDS can be deployed in any of the following configurations:
+ 
+    * Web application archive (WAR) deployed to an application server such as Tomcat, Jetty, or JBoss
+    
+    * Standalone service
+    
+    * Embedded in an application
+
+ SymmetricDS also allows for n-tier synchronization.  For example, a large retailer might deploy the following:
+
+    * A farm of web server nodes fronting an enterprise-class general office database
+    
+    * A handful of regional servers for synchronizing from the general office to remote geographical areas
+     
+    * 1000(s) of store server nodes using a departmental class database to sync with a regional node
+    
+    * 10(s) of POS register nodes using an embedded database to sync with a store server
+ 
+ SymmetricDS is licensed as open source software under the 
+ {{{license.html}GNU Lesser General Public License}} (LGPL).
+
+Why SymmetricDS?
+
+ SymmetricDS was built because the development team did not find a suitable open source solution that met the 
+ core requirements for keeping store databases durably synchronized in 'real-time' with a general office database.
+
+History
+ 
+ SymmetricDS was started as an open source project to document the experiences and solve the issues the development
+ team encountered when integrating a store MySQL database with a corporate Oracle database for a major retailer.
+ The software gained momentum and is now being used by that same retailer.  
+
+ 
+
+ 
+ 
+
