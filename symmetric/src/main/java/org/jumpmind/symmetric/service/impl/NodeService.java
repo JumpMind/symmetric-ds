@@ -175,11 +175,11 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {
-        return jdbcTemplate.update(updateNodeSecuritySql, new Object[] { security.getNodeId(),
-                security.getPassword(), security.isRegistrationEnabled() ? 1 : 0,
-                security.getRegistrationTime(), security.isInitialLoadEnabled() ? 1 : 0,
-                security.getInitialLoadTime() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
-                Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP }) == 1;
+        return jdbcTemplate.update(updateNodeSecuritySql,
+                new Object[] { security.getPassword(), security.isRegistrationEnabled() ? 1 : 0,
+                        security.getRegistrationTime(), security.isInitialLoadEnabled() ? 1 : 0,
+                        security.getInitialLoadTime(), security.getNodeId() }, new int[] { Types.VARCHAR,
+                        Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, }) == 1;
     }
     
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
