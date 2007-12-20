@@ -10,9 +10,9 @@ insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal:/
 insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '1.1', 'MySQL', '5.0', current_timestamp);
 insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null, '1.1', null, null, current_timestamp);
 insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '1.1', 'MySql', '4', current_timestamp);
-insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'});
-insert into sym_node_security values ('00002', 'supersecret', 1, null);
-insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'});
+insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'});
+insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null);
+insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'});
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 

@@ -13,6 +13,8 @@ public interface IDataService {
 
     public String reloadNode(String nodeId);
     
+    public void insertReloadEvent(Node targetNode);
+    
     public void insertReloadEvent(final Node targetNode, final Trigger trigger);
 
     public void insertHeartbeatEvent(Node node);

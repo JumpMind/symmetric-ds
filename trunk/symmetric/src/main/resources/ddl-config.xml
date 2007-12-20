@@ -139,6 +139,8 @@
         <column name="password" type="VARCHAR" size="50" required="true" />
         <column name="registration_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="registration_time" type="TIMESTAMP" />
+        <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="initial_load_time" type="TIMESTAMP" />
         <foreign-key name="fk_cs_node_id" foreignTable="node">
             <reference local="node_id" foreign="node_id" />
         </foreign-key>

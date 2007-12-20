@@ -35,6 +35,10 @@ public class NodeSecurity {
     
     private Date registrationTime;
 
+    private boolean initialLoadEnabled;
+    
+    private Date initialLoadTime;
+
     public String getNodeId() {
         return nodeId;
     }
@@ -65,6 +69,22 @@ public class NodeSecurity {
 
     public void setRegistrationTime(Date registrationTime) {
         this.registrationTime = registrationTime;
+    }
+
+    public boolean isInitialLoadEnabled() {
+        return initialLoadEnabled;
+    }
+
+    public void setInitialLoadEnabled(boolean initialLoadEnabled) {
+        this.initialLoadEnabled = initialLoadEnabled;
+    }
+
+    public Date getInitialLoadTime() {
+        return initialLoadTime;
+    }
+
+    public void setInitialLoadTime(Date initialLoadTime) {
+        this.initialLoadTime = initialLoadTime;
     }
     
 

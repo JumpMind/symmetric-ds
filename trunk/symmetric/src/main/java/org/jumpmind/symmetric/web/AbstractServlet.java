@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -106,6 +107,10 @@ abstract public class AbstractServlet extends HttpServlet {
     protected IDataLoaderService getDataLoaderService() {
         return (IDataLoaderService) getContext().getBean(
                 Constants.DATALOADER_SERVICE);
+    }
+
+    protected IDataService getDataService() {
+        return (IDataService) getContext().getBean(Constants.DATA_SERVICE);
     }
 
     protected INodeService getNodeService() {

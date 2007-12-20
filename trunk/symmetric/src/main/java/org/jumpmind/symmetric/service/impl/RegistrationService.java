@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -43,6 +44,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
+// TODO: NodeService already does all this DML.  Should use NodeService or move methods to there.
 public class RegistrationService extends AbstractService implements
         IRegistrationService {
 
@@ -99,7 +101,11 @@ public class RegistrationService extends AbstractService implements
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && autoReload) {
-            dataService.reloadNode(node.getNodeId());
+            // This node must have its initial load before it can send one to another node
+            NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
+            if (security != null && security.getInitialLoadTime() == null) {
+                dataService.reloadNode(node.getNodeId());
+            }
         }
         return success;
     }

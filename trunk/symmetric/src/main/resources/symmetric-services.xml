@@ -272,7 +272,6 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
-        <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
@@ -405,7 +404,8 @@
         </property>
         <property name="findNodeSecuritySql">
             <value>
-                select node_id, password, registration_enabled, registration_time from
+                select node_id, password, registration_enabled, registration_time,
+                initial_load_enabled, initial_load_time from
                 ${sync.table.prefix}_node_security where node_id = ?
             </value>
         </property>
@@ -440,6 +440,13 @@
                 ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
                 c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and
                 d.data_event_action = ?
+            </value>
+        </property>
+        <property name="updateNodeSecuritySql">
+            <value>
+                update ${sync.table.prefix}_node_security 
+                set node_id = ?, password = ?, registration_enabled = ?, registration_time = ?,
+                initial_load_enabled = ?, initial_load_time = ? where node_id = ?
             </value>
         </property>
     </bean>
@@ -639,11 +646,6 @@
                 update ${sync.table.prefix}_lock set lock_time=null where lock_id=? and lock_action=? and locking_server_id=?
             </value>
         </property>
-        <property name="clearAllLocksSql">
-            <value>
-                update ${sync.table.prefix}_lock set lock_time=null
-            </value>
-        </property>        
         <property name="insertLockSql">
             <value>
                 insert into ${sync.table.prefix}_lock (lock_id, lock_action) values(?,?)
