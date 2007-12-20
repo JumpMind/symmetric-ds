@@ -40,16 +40,23 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    @Override
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
-        return true;
+        schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
+        return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",
+                new Object[] { triggerName }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
-        throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
+        schemaName = schemaName == null ? "" : (schemaName + ".");
+        try {
+            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
+        } catch (Exception e) {
+            logger.warn("Trigger does not exist");
+        }
     }
     
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
+        removeTrigger(schemaName, triggerName);
     }
 
     public void disableSyncTriggers() {
