@@ -151,6 +151,8 @@ public class DataService extends AbstractService implements IDataService {
                 listener.beforeReload(targetNode);
             }
         }
+
+        insertNodeSecurityUpdate(targetNode);
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
 
@@ -177,6 +179,15 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
+        insertNodeSecurityUpdate(targetNode);
+    }
+
+    private void insertNodeSecurityUpdate(Node node) {
+        Data data = createData(tablePrefix + "_security", " t.node_id = '" + node.getNodeId() + "'");
+        if (data != null) {
+            data.setChannelId(Constants.CHANNEL_CONFIG);
+            insertDataEvent(data, node.getNodeId());
+        }
     }
 
     /**
