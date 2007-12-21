@@ -308,7 +308,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate()
                 && !trigger.isSyncOnDelete();
 
-        if (audit == null && (oldAudit == null || (!triggerExists && create) || isDeadTrigger)) {
+        if (audit == null && (oldAudit == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
             configurationService.insert(newTriggerHist);
             audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
