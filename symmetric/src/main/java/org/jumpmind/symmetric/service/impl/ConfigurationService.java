@@ -153,7 +153,7 @@ public class ConfigurationService extends AbstractService implements
                 }
             }
         } else {
-            logger.error("Could not find any targets for your group id of " + runtimeConfiguration.getNodeGroupId()
+            logger.warn("Could not find any targets for your group id of " + groupId
                     + ".  Please validate your node group id against the setup in the database.");
         }
     }    
