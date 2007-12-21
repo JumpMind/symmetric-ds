@@ -69,12 +69,11 @@
                 </value>
                 <value>
                     alter table ${sync.table.prefix}_node_security
-                    add (initial_load_time timestamp default null)
+                    add (initial_load_time timestamp null)
                 </value>
                 <value>
                     update ${sync.table.prefix}_node_security
                     set initial_load_time = registration_time
-                    where node_id in (select node_id from ${sync.table.prefix}_node_identity)
                 </value>
             </list>
         </property>
