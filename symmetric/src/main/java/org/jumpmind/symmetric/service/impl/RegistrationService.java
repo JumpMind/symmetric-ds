@@ -108,7 +108,11 @@ public class RegistrationService extends AbstractService implements
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && autoReload) {
-            dataService.reloadNode(node.getNodeId());
+            // only send automatic initial load once
+            NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
+            if (security != null && security.getInitialLoadTime() == null) {
+                dataService.reloadNode(node.getNodeId());
+            }
         }
         return success;
     }
