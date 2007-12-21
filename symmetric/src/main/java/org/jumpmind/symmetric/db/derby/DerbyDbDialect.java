@@ -59,6 +59,14 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         removeTrigger(schemaName, triggerName);
     }
 
+    public boolean isBlobSyncSupported() {
+        return false;
+    }
+    
+    public boolean isClobSyncSupported() {
+        return false;
+    }
+
     public void disableSyncTriggers() {
     }
 

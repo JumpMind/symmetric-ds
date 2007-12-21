@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric;
 
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
@@ -87,12 +88,18 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         getClientEngine().pull();
         Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=101"),
                 1, "The customer was not sync'd to the client.");
-        Assert.assertEquals(clientJdbcTemplate.queryForObject("select notes from test_customer where customer_id=101",
-                String.class), "This is a test", "The CLOB notes field on customer was not sync'd to the client.");
 
-        Assert.assertTrue(ArrayUtils.isEquals(clientJdbcTemplate.queryForObject(
-                "select icon from test_customer where customer_id=101", byte[].class), BINARY_DATA),
-                "The BLOB icon field on customer was not sync'd to the client.");
+        if (getRootDbDialect().isClobSyncSupported()) {
+            Assert.assertEquals(clientJdbcTemplate.queryForObject(
+                    "select notes from test_customer where customer_id=101", String.class), "This is a test",
+                    "The CLOB notes field on customer was not sync'd to the client.");
+        }
+
+        if (getRootDbDialect().isBlobSyncSupported()) {
+            Assert.assertTrue(ArrayUtils.isEquals(clientJdbcTemplate.queryForObject(
+                    "select icon from test_customer where customer_id=101", byte[].class), BINARY_DATA),
+                    "The BLOB icon field on customer was not sync'd to the client.");
+        }
 
     }
 
@@ -109,7 +116,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     protected void testSyncToRoot() throws ParseException {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
-        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date }, new int[] {Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE});
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, 3.33 });
         getClientEngine().push();
     }
@@ -117,7 +124,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     protected void testSyncInsertCondition() throws ParseException {
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2007-01-02", new String[] { "yyyy-MM-dd" });
-        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "11", 100, null, date });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "11", 100, null, date }, new int[] {Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE});
         getClientEngine().pull();
 
         IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine().getApplicationContext()
@@ -129,7 +136,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
                 "The order record was sync'd when it should not have been.");
 
         // Should sync when status = C
-        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12", 100, "C", date });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12", 100, "C", date }, new int[] {Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE});
         getClientEngine().pull();
         Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "12" }).size(), 1,
                 "The order record was not sync'd when it should have been.");

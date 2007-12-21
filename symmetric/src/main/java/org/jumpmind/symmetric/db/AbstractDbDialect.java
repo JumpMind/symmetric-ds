@@ -703,6 +703,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return false;
     }
+    
+    public boolean isBlobSyncSupported() {
+        return true;
+    }
+    
+    public boolean isClobSyncSupported() {
+        return true;
+    }
 
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
         this.sqlTemplate = sqlTemplate;
