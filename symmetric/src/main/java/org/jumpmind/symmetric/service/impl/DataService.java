@@ -185,7 +185,7 @@ public class DataService extends AbstractService implements IDataService {
     private void insertNodeSecurityUpdate(Node node) {
         Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'");
         if (data != null) {
-            data.setChannelId(Constants.CHANNEL_CONFIG);
+            data.setChannelId(Constants.CHANNEL_RELOAD);
             insertDataEvent(data, node.getNodeId());
         }
     }
