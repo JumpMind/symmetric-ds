@@ -38,12 +38,12 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA['"' || fn_sym_replace(fn_sym_replace($(tableAlias).$(columnName),'\','\\'),'"','\"') || '"' ||','||]]>
+                        <![CDATA['unsupported'||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName))||','||]]>
+                        <![CDATA['unsupported'||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
@@ -57,7 +57,7 @@
                 <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || char($(tableAlias).$(columnName)) || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || rtrim(char($(tableAlias).$(columnName))) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="sqlTemplates">

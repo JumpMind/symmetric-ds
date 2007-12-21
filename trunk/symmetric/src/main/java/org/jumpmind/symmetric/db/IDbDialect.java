@@ -119,6 +119,10 @@ public interface IDbDialect {
     
     public String getCreateTableSQL(Trigger trig);
     
+    public boolean isBlobSyncSupported();
+    
+    public boolean isClobSyncSupported();
+    
     public void createTables(String xml);
     
     public String getSelectLastInsertIdSql(String sequenceName);

@@ -26,15 +26,13 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.clientEngine;
     }
-
+    
     protected String getRootDatabaseName() {
-        IDbDialect dialect = (IDbDialect) getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getName().toLowerCase();
+        return getRootDbDialect().getName().toLowerCase();
     }
 
     protected String getClientDatabaseName() {
-        IDbDialect dialect = (IDbDialect) getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getName().toLowerCase();
+        return getClientDbDialect().getName().toLowerCase();
     }
 
     protected SymmetricEngine getRootEngine() {
@@ -48,6 +46,15 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.rootEngine;
     }
+    
+    protected IDbDialect getRootDbDialect() {
+        return (IDbDialect)getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+    }
+    
+    protected IDbDialect getClientDbDialect() {
+        return (IDbDialect)getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+    }
+    
 
     File getClientFile() {
         Properties properties = MultiDatabaseTestFactory.getTestProperties();
