@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
@@ -126,8 +127,9 @@ public class SymmetricEngine {
                 .getBean(Constants.REGISTRATION_SERVICE);
         purgeService = (IPurgeService) applicationContext
                 .getBean(Constants.PURGE_SERVICE);
+        IDbDialect dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
         registerEngine();
-        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION);
+        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION + " database="+dbDialect.getName());
     }
 
     /**
