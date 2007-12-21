@@ -5,7 +5,7 @@ insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
 
-insert into sym_node values ('00000', 'test-root-group', '00000', '1', null, null, '1.2.0', null, null, current_timestamp);
+insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '1.2.0', null, null, current_timestamp);
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
@@ -38,8 +38,8 @@ values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '
 
 insert into test_order_header
 (order_id, customer_id, status, deliver_date)
-values(1, 100, null, {d '2007-01-02'});
+values('1', 100, null, {d '2007-01-02'});
 
 insert into test_order_detail
 (order_id, line_number, item_type, item_id, quantity, price)
-values(1, 1, 'STCK', '110000055', 5, 1.29);
+values('1', 1, 'STCK', '110000055', 5, 1.29);
