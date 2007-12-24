@@ -77,9 +77,9 @@
             <value>
                 select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled,
                 c.processing_order, c.max_batch_size, c.enabled from ${sync.table.prefix}_channel c
-                left outer join ${sync.table.prefix}_node_channel_ctl nc on c.channel_id=nc.channel_id
-                where (nc.node_id is null or nc.node_id in (select node_id from ${sync.table.prefix}_node_identity))
-                order by c.processing_order asc
+                inner join ${sync.table.prefix}_node_identity n on 1 = 1
+                left outer join ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id
+                and n.node_id = nc.node_id order by c.processing_order asc
             </value>
         </property>
         <property name="selectGroupTriggersSql">
