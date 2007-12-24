@@ -64,7 +64,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     public boolean isClobSyncSupported() {
-        return false;
+        return true;
     }
 
     public void disableSyncTriggers() {
@@ -86,7 +86,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isCharSpacePadded() {
-        return true;
+        return false;
     }
 
     public boolean isCharSpaceTrimmed() {

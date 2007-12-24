@@ -61,12 +61,14 @@
                         <entry key="updateTriggerTemplate">
                             <value>
                                 <![CDATA[
+                                CREATE TRIGGER $(triggerName)_$(engineName)_$(triggerHistoryId) AFTER UPDATE ON $(tableName) FOR EACH ROW QUEUE 0 CALL "org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger"
                                 ]]>
                             </value>
                         </entry>
                         <entry key="deleteTriggerTemplate">
                             <value>
                                 <![CDATA[
+                                CREATE TRIGGER $(triggerName)_$(engineName)_$(triggerHistoryId) AFTER DELETE ON $(tableName) FOR EACH ROW QUEUE 0 CALL "org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger"
                                 ]]>
                             </value>
                         </entry>
