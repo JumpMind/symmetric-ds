@@ -45,7 +45,7 @@ public interface IConfigurationService {
 
     public void initSystemChannels();
     
-    public Map<String, DataEventAction> getDataEventActionsByGroupId(String groupId);
+    public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
     public Map<String, List<Trigger>> getTriggersByChannelFor(
             String configurationTypeId);

@@ -32,6 +32,14 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "";
+    
+    ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.TRUE;
+        }
+        
+    };
 
     protected void initForSpecificDialect() {
     }
@@ -66,11 +74,17 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean isClobSyncSupported() {
         return true;
     }
+    
+    public boolean isSyncEnabled() {
+        return syncEnabled.get();
+    }
 
     public void disableSyncTriggers() {
+        syncEnabled.set(Boolean.FALSE);
     }
 
     public void enableSyncTriggers() {
+        syncEnabled.set(Boolean.TRUE);
     }
 
     public String getSyncTriggersExpression() {

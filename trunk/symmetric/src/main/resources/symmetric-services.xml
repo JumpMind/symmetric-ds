@@ -69,8 +69,8 @@
         </property>
         <property name="selectDataEventActionsByIdSql">
             <value>
-                select source_node_group_id, data_event_action from
-                ${sync.table.prefix}_node_group_link where source_node_group_id = ?
+                select data_event_action from
+                ${sync.table.prefix}_node_group_link where source_node_group_id = ? and target_node_group_id = ?
             </value>
         </property>
         <property name="selectChannelsSql">
