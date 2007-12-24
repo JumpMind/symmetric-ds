@@ -199,16 +199,12 @@ public class ConfigurationService extends AbstractService implements
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String, DataEventAction> getDataEventActionsByGroupId(
-            String nodeGroupId) {
-        Map<String, String> results = (Map<String, String>) jdbcTemplate
-                .queryForMap(selectDataEventActionsByIdSql,
-                        new Object[] { nodeGroupId });
-        Map<String, DataEventAction> retMap = new HashMap<String, DataEventAction>();
-        for (String key : results.keySet()) {
-            retMap.put(key, DataEventAction.fromCode(results.get(key)));
-        }
-        return retMap;
+    public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId) {
+        String code = (String) jdbcTemplate
+                .queryForObject(selectDataEventActionsByIdSql,
+                        new Object[] { sourceGroupId, targetGroupId }, String.class);
+       
+        return DataEventAction.fromCode(code);
     }
 
     @SuppressWarnings("unchecked")
