@@ -72,10 +72,14 @@ public class SymmetricEngine {
     private IPurgeService purgeService;
 
     private boolean started = false;
+    
+    private IDbDialect dbDialect;
 
     private Properties properties;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
+    
+    private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
     /**
      * @param overridePropertiesResource1 Provide a Spring resource path to a properties file to be used for configuration
@@ -126,8 +130,8 @@ public class SymmetricEngine {
         registrationService = (IRegistrationService) applicationContext
                 .getBean(Constants.REGISTRATION_SERVICE);
         purgeService = (IPurgeService) applicationContext
-                .getBean(Constants.PURGE_SERVICE);
-        IDbDialect dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
+                .getBean(Constants.PURGE_SERVICE);                
+        dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
         registerEngine();
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION + " database="+dbDialect.getName());
     }
@@ -138,6 +142,7 @@ public class SymmetricEngine {
      */
     private void registerEngine() {
         registeredEnginesByUrl.put(runtimeConfig.getMyUrl(), this);
+        registeredEnginesByName.put(getEngineName(), this);
     }
 
     /**
@@ -173,6 +178,18 @@ public class SymmetricEngine {
                                 .getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
+    }
+    
+    
+    /**
+     * Get a list of configured properties for Symmetric.  Read-only.
+     */
+    public Properties getProperties() {
+        return new Properties(properties);
+    }
+    
+    public String getEngineName() {
+        return dbDialect.getEngineName();
     }
 
     /**
@@ -287,6 +304,10 @@ public class SymmetricEngine {
      */
     public static SymmetricEngine findEngineByUrl(String url) {
         return registeredEnginesByUrl.get(url);
+    }
+    
+    public static SymmetricEngine findEngineByName(String name) {
+        return registeredEnginesByName.get(name);
     }
 
 }

@@ -7,6 +7,8 @@ import java.net.URL;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
@@ -16,9 +18,20 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 
 abstract public class AbstractTest {
-
+	
+    static final Log logger = LogFactory.getLog(AbstractTest.class);
+    
     protected SymmetricEngine createEngine(File propertiesFile) {
-        return new SymmetricEngine("file:" + propertiesFile.getAbsolutePath(), null);
+        try {
+            return new SymmetricEngine("file:"
+                    + propertiesFile.getAbsolutePath(), null);
+        } catch (RuntimeException ex) {
+            logger.error(ex, ex);
+            throw ex;
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+            throw new RuntimeException(ex);
+        }
     }
 
     protected void dropAndCreateDatabaseTables(String databaseType, SymmetricEngine engine) {

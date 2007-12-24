@@ -498,5 +498,10 @@
             <artifactId>jtds</artifactId>
             <version>1.2.2</version>
         </dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.7</version>
+        </dependency>
     </dependencies>
 </project>

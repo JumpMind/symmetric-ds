@@ -18,6 +18,7 @@
     <bean id="msSqlDialect" class="org.jumpmind.symmetric.db.mssql.MsSqlDbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
