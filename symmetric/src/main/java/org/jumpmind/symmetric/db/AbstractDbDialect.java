@@ -91,6 +91,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     private TransactionTemplate transactionTemplate;
     
+    private String engineName;
+    
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
@@ -738,6 +740,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
         this.transactionTemplate = transactionTemplate;
+    }
+
+    public String getEngineName() {
+        return engineName;
+    }
+
+    public void setEngineName(String engineName) {
+        this.engineName = engineName;
     }
 
 }

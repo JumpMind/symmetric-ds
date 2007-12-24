@@ -168,6 +168,7 @@ public class MultiDatabaseTestFactory {
                 newProperties.setProperty("symmetric.runtime.registration.url",
                         databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name().toLowerCase())
                                 : "");
+                newProperties.setProperty("symmetric.runtime.engine.name", databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
                 FileOutputStream os = new FileOutputStream(propertiesFile);

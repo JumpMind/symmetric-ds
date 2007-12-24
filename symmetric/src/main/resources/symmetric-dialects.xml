@@ -12,5 +12,6 @@
     <import resource="classpath:/dialects/mysql.xml" />
     <import resource="classpath:/dialects/postgresql.xml" />
     <import resource="classpath:/dialects/derby.xml" />
+    <import resource="classpath:/dialects/hsqldb.xml" />
 
 </beans>

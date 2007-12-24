@@ -39,6 +39,11 @@ public interface IDbDialect {
     @Deprecated
     public void removeTrigger(String schemaName, String triggerName);
     
+    /**
+     * Get the name of this symmetric instance.  This can be set in symmetric.properties using the symmetric.runtime.engine.name property.
+     */
+    public String getEngineName();
+    
     public void removeTrigger(String schemaName, String triggerName, String tableName);
     
     public void prepareTableForInserts(Table table);
