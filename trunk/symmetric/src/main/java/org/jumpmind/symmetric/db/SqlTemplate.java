@@ -35,6 +35,8 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class SqlTemplate {
 
+    private static final String ORIG_TABLE_ALIAS = "orig";
+
     static final String INSERT_TRIGGER_TEMPLATE = "insertTriggerTemplate";
 
     static final String UPDATE_TRIGGER_TEMPLATE = "updateTriggerTemplate";
@@ -78,7 +80,7 @@ public class SqlTemplate {
         sql = replace("externalId", node.getExternalId(), sql);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString("t", columns);
+        String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
         return sql;
     }
@@ -99,7 +101,7 @@ public class SqlTemplate {
         sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString("t", columns);
+        String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
         return sql;
     }
@@ -111,7 +113,7 @@ public class SqlTemplate {
         sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = metaData.getPrimaryKeyColumns();
-        String columnsText = buildColumnString("t", columns);
+        String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
         return sql;
     }
@@ -177,17 +179,18 @@ public class SqlTemplate {
         ddl = replace("syncOnDeleteCondition", trigger.getSyncOnDeleteCondition(), ddl);
         ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1" : dialect
                 .getSyncTriggersExpression(), ddl);
+        ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString(newTriggerValue, columns);
+        String columnsText = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, columns);
         ddl = replace("columns", columnsText, ddl);
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        columnsText = buildColumnString(oldTriggerValue, columns);
+        columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
-        ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin("orig", newTriggerValue, columns), ddl);
+        ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
 
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
@@ -256,7 +259,7 @@ public class SqlTemplate {
         return b.toString();
     }
 
-    private String buildColumnString(String tableAlias, Column[] columns) {
+    private String buildColumnString(String origTableAlias, String tableAlias, Column[] columns) {
         String columnsText = "";
         for (Column column : columns) {
             String templateToUse = null;
@@ -319,6 +322,7 @@ public class SqlTemplate {
             columnsText = columnsText.substring(0, columnsText.length() - LAST_COMMAN_TOKEN.length());
         }
 
+        columnsText = replace("origTableAlias", origTableAlias, columnsText);
         return replace("tableAlias", tableAlias, columnsText);
 
     }

@@ -169,12 +169,23 @@ public class CsvLoader implements IDataLoader {
     }
 
     protected void setTable(String tableName, boolean useCache) {
+        
+        cleanupAfterDataLoad();
+        
         context.setTableName(tableName);
+        
         if (!useCache || context.getTableTemplate() == null) {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
-                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));
+                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));            
         }
-        dbDialect.prepareTableForInserts(context.getTableTemplate().getTable());
+        
+        dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
+    }
+    
+    protected void cleanupAfterDataLoad() {
+        if (context.getTableName() != null) {
+            dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());            
+        }
     }
 
     protected int insert(String[] tokens, BinaryEncoding encoding) {
@@ -322,15 +333,13 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void close() {
+        
+        cleanupAfterDataLoad();
+        
         if (csvReader != null) {
             csvReader.close();
         }
-        if (context != null) {
-            Table[] tables = context.getAllTablesProcessed();
-            for (Table table : tables) {
-                dbDialect.cleanupAfterInserts(table);
-            }
-        }
+
     }
 
     public IDataLoaderContext getContext() {

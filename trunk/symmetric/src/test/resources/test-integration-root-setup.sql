@@ -26,7 +26,7 @@ values('test_order_header','test-node-group','test-root-group','testchannel', 1,
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_order_header','test-root-group','test-node-group','testchannel', 1, 1, 1,'$(newTriggerValue).status = ''C''', '$(newTriggerValue).status = ''C''', null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_order_header','test-root-group','test-node-group','testchannel', 1, 1, 1,'$(newTriggerValue).status = ''C''', '$(newTriggerValue).status = ''C''', null, 't.status = ''C''', null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)

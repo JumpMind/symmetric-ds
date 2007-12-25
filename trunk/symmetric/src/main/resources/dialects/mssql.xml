@@ -44,15 +44,15 @@
                     </map>
                 </property>
                 <property name="stringColumnTemplate" ref="msSqlStringTemplate" />
-                <!-- TODO, We may have to make callbacks to the original table because SQL Server does not allow access to binary or clob data from a trigger -->
+                <!-- TODO, We may have to make callbacks to the $(origTableAlias)inal table because SQL Server does not allow access to binary or clob data from a trigger -->
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(cast(orig.$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias).$(columnName) is null then '' else '"' + replace(replace(cast($(origTableAlias).$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when orig.$(columnName) is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode(orig.$(columnName)),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias).$(columnName) is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode($(origTableAlias).$(columnName)),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
@@ -85,7 +85,7 @@
                                   if (@SyncEnabled <> 0x1) begin
                                     $(if:containsBlobClobColumns)
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
-                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
+                                       (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
                                     $(else:containsBlobClobColumns)
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time) 
                                        (select '$(targetTableName)','$(channelName)','I', $(triggerHistoryId), $(txIdExpression), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
@@ -113,7 +113,7 @@
                                   if (@SyncEnabled <> 0x1) begin
                                     $(if:containsBlobClobColumns)
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
-                                       (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join $(schemaName)$(tableName) orig on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition));
+                                       (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition));
                                     $(else:containsBlobClobColumns)
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, pk_data, create_time) 
                                        (select '$(targetTableName)','$(channelName)','U', $(triggerHistoryId), $(txIdExpression), $(columns), $(oldKeys), current_timestamp from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition));                                    

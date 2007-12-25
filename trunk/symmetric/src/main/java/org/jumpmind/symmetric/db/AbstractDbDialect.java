@@ -114,10 +114,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
     
-    public void prepareTableForInserts(Table table) {        
+    public void prepareTableForDataLoad(Table table) {        
     }
     
-    public void cleanupAfterInserts(Table table) {        
+    public void cleanupAfterDataLoad(Table table) {        
     }
     
     protected boolean allowsNullForIdentityColumn() {

@@ -80,9 +80,9 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         outgoingBatchService.insertOutgoingBatch(batch);
 
         try {
-            BufferedWriter writer = transport.open();
-            DataExtractorContext ctxCopy = context.copy();
+            BufferedWriter writer = transport.open();            
             IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
+            DataExtractorContext ctxCopy = context.copy(dataExtractor);
             dataExtractor.init(writer, ctxCopy);
             dataExtractor.begin(batch, writer);
             TriggerHistory audit = new TriggerHistory(tableName, "node_id", "node_id");
@@ -110,22 +110,21 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
-        writeInitialLoad(node, trigger, transport, batch);
+        writeInitialLoad(node, trigger, transport, batch, null);
         outgoingBatchService.markOutgoingBatchSent(batch);
         return batch;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
-
-        writeInitialLoad(node, trigger, transport, null);
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport, DataExtractorContext ctx) {
+        writeInitialLoad(node, trigger, transport, null, ctx);
     }
 
     protected void writeInitialLoad(Node node, final Trigger trigger, final IOutgoingTransport transport,
-            final OutgoingBatch batch) {
+            final OutgoingBatch batch, final DataExtractorContext ctx) {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
         final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
+        final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node.getSymmetricVersion());
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -134,8 +133,8 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
                             java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ResultSet rs = st.executeQuery();
-                    final BufferedWriter writer = transport.open();
-                    final DataExtractorContext ctxCopy = context.copy();
+                    final BufferedWriter writer = transport.open();                    
+                    final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
                     if (batch != null) {
                         dataExtractor.init(writer, ctxCopy);
                         dataExtractor.begin(batch, writer);
@@ -322,7 +321,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
         public void init() throws Exception {
             this.writer = transport.open();
-            this.context = DataExtractorService.this.context.copy();
+            this.context = DataExtractorService.this.context.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }
 

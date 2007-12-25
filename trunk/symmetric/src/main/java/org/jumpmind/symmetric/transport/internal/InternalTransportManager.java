@@ -39,10 +39,13 @@ import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -74,6 +77,12 @@ public class InternalTransportManager extends AbstractTransportManager
         runAtClient(remote.getSyncURL(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os)
                     throws Exception {
+                // TODO this is duplicated from the Pull Servlet. It should be consolidated somehow!
+                INodeService nodeService = (INodeService)factory.getBean(Constants.NODE_SERVICE);
+                NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+                if (security.isInitialLoadEnabled()) {
+                    ((IDataService)factory.getBean(Constants.DATA_SERVICE)).insertReloadEvent(local);
+                }
                 IDataExtractorService extractor = (IDataExtractorService) factory
                         .getBean(Constants.DATAEXTRACTOR_SERVICE);
                 IOutgoingTransport transport = new InternalOutgoingTransport(

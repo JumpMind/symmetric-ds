@@ -30,8 +30,10 @@ public class DataExtractorContext implements Cloneable {
     private List<String> auditRecordsWritten = new ArrayList<String>();
     private String lastTableName;
     private OutgoingBatch batch;
+    private IDataExtractor dataExtractor;
 
-    public DataExtractorContext copy() {
+    public DataExtractorContext copy(IDataExtractor extractor) {
+        this.dataExtractor = extractor;
         DataExtractorContext newVersion;
         try {
             newVersion = (DataExtractorContext)super.clone();
@@ -60,6 +62,10 @@ public class DataExtractorContext implements Cloneable {
 
     public void setBatch(OutgoingBatch batch) {
         this.batch = batch;
+    }
+
+    public IDataExtractor getDataExtractor() {
+        return dataExtractor;
     }
 
 }
