@@ -36,10 +36,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-/**
- * @author awilcox
- * 
- */
+
 public class PullServlet extends AbstractServlet {
 
     private static final Log logger = LogFactory.getLog(PullServlet.class);

@@ -45,10 +45,18 @@ public interface IDbDialect {
     public String getEngineName();
     
     public void removeTrigger(String schemaName, String triggerName, String tableName);
-    
-    public void prepareTableForInserts(Table table);
-    
-    public void cleanupAfterInserts(Table table);
+
+    /**
+     * This is called by the data loader each time the table context changes, giving the dialect an opportunity to do any pre loading work.  Only one 
+     * table is active at any one point.
+     */
+    public void prepareTableForDataLoad(Table table);
+
+    /**
+     * This is called by the data loader each time the table context changes away from a table or when the the data loader is closed, giving the dialect
+     * an opportunity to do any post loading work for the given table. 
+     */
+    public void cleanupAfterDataLoad(Table table);
 
     public void initConfigDb(String tablePrefix);
 

@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
@@ -70,6 +71,8 @@ public class SymmetricEngine {
     private IRegistrationService registrationService;
 
     private IPurgeService purgeService;
+    
+    private IDataService dataService;
 
     private boolean started = false;
     
@@ -130,7 +133,8 @@ public class SymmetricEngine {
         registrationService = (IRegistrationService) applicationContext
                 .getBean(Constants.REGISTRATION_SERVICE);
         purgeService = (IPurgeService) applicationContext
-                .getBean(Constants.PURGE_SERVICE);                
+                .getBean(Constants.PURGE_SERVICE);               
+        dataService = (IDataService)applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
         registerEngine();
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION + " database="+dbDialect.getName());
@@ -211,6 +215,13 @@ public class SymmetricEngine {
             startJobs();
             started = true;
         }
+    }
+    
+    /**
+     * Queue up an initial load or a reload to a node.
+     */
+    public void reloadNode(String nodeId) {
+        dataService.reloadNode(nodeId);
     }
     
     /**

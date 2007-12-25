@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
@@ -33,7 +34,7 @@ public interface IDataExtractorService {
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 
     public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
-            final IOutgoingTransport transport);
+            final IOutgoingTransport transport, DataExtractorContext ctx);
 
     /**
      * @return true if work was done or false if there was no work to do.

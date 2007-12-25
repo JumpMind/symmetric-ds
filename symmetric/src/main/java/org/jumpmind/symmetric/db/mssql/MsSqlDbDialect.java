@@ -85,14 +85,14 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void prepareTableForInserts(Table table) {
+    public void prepareTableForDataLoad(Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " ON");
         }
     }
 
     @Override    
-    public void cleanupAfterInserts(Table table) {
+    public void cleanupAfterDataLoad(Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
         }
