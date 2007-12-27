@@ -29,10 +29,6 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(DerbyDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "";
-
     protected void initForSpecificDialect() {
     }
 
@@ -73,17 +69,19 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers() {
+        jdbcTemplate.execute("values fn_sym_sync_triggers_set_disabled(1)");
     }
 
     public void enableSyncTriggers() {
+        jdbcTemplate.execute("values fn_sym_sync_triggers_set_disabled(0)");
     }
 
     public String getSyncTriggersExpression() {
-        return "1 = 1";
+        return "fn_sym_sync_triggers_disabled = 1";
     }
 
     public String getTransactionTriggerExpression() {
-        return "null";
+        return "fn_sym_transaction_id()";
     }
     
     public String getSelectLastInsertIdSql(String sequenceName) {

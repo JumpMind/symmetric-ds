@@ -30,6 +30,33 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="FN_SYM_TRANSACTION_ID">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_transaction_id() RETURNS
+                                varchar(100) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.getTransactionId'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_SYNC_TRIGGERS_DISABLED">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_sync_triggers_disabled() RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.isSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_SYNC_TRIGGERS_SET_DISABLED">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_sync_triggers_set_disabled(state integer) RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
                     </map>
                 </property>
                 <property name="stringColumnTemplate" >
