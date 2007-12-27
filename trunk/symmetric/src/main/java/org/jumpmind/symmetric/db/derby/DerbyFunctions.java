@@ -12,6 +12,8 @@ import org.apache.derby.impl.jdbc.EmbedConnection;
 public class DerbyFunctions {
 
     private static final String CURRENT_CONNECTION_URL = "jdbc:default:connection";
+    
+    private static final int MAX_TABLE_SIZE = 200;
 
     private static Hashtable<String, Boolean> syncDisabledTable = new Hashtable<String, Boolean>();
 
@@ -28,6 +30,9 @@ public class DerbyFunctions {
             syncDisabledTable.remove(getTransactionId());
             return 0;
         } else {
+            if (syncDisabledTable.size() >= MAX_TABLE_SIZE) {
+                clean();
+            }
             syncDisabledTable.put(getTransactionId(), Boolean.TRUE);
             return 1;
         }
