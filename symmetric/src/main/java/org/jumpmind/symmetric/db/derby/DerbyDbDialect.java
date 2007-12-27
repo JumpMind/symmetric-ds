@@ -43,7 +43,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",
-                new Object[] { triggerName }) > 0;
+                new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
@@ -51,7 +51,12 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);
         } catch (Exception e) {
-            logger.warn("Trigger does not exist");
+            logger.warn("Trigger " + triggerName + " does not exist");
+        }
+        try {
+            jdbcTemplate.update("drop trigger " + schemaName + triggerName + "p");
+        } catch (Exception e) {
+            logger.warn("Trigger " + triggerName + "p does not exist");
         }
     }
     
