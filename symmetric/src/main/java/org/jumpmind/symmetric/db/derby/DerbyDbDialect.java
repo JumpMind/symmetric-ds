@@ -77,7 +77,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "fn_sym_sync_triggers_disabled = 1";
+        return "fn_sym_sync_triggers_disabled() = 0";
     }
 
     public String getTransactionTriggerExpression() {
