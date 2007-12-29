@@ -34,7 +34,7 @@
                     ref="stringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA['unsupported'||','||]]>
+                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace(BASE64_ENCODE($(tableAlias).$(columnName)),'\','\\'),'"','\"')),'"') end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">

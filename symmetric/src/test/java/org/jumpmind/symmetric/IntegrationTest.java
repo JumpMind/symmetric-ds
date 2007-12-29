@@ -91,14 +91,15 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     }
 
     protected void initialLoad() {
+        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 301, "Linus", "1", "42 Blanket Street",
+                "Santa Claus", "IN", 90009, new Date(), "This is a test", BINARY_DATA });        
         INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean(
                 Constants.NODE_SERVICE);
         getRootEngine().reloadNode(
                 nodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                         TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId());
         getClientEngine().pull();
-
-        // TODO - need to add validation here
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0, "Initial load was not successful");
     }
 
     protected void testSyncToClient() {
