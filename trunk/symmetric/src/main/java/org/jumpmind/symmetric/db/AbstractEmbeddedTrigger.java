@@ -91,6 +91,8 @@ public abstract class AbstractEmbeddedTrigger {
     protected abstract String getEngineName();
 
     protected abstract int getTriggerHistId();
+    
+    protected abstract String getTransactionId();
 
     protected String formatRowData(Object[] oldRow, Object[] newRow) {
         if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
@@ -144,8 +146,10 @@ public abstract class AbstractEmbeddedTrigger {
     }
 
     protected Data createData(Object[] oldRow, Object[] newRow) {
-        return new Data(trigger.getChannelId(), tableName, triggerType, formatRowData(oldRow, newRow), formatPkRowData(
+        Data data = new Data(trigger.getChannelId(), tableName, triggerType, formatRowData(oldRow, newRow), formatPkRowData(
                 oldRow, newRow), triggerHistory);
+        data.setTransactionId(getTransactionId());
+        return data;
     }
 
     protected Object[] getPrimaryKeys(Object[] allValues) {
