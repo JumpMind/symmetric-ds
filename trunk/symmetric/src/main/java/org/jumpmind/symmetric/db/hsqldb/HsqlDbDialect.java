@@ -65,10 +65,10 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
             jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
             jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
         }
-    }
-
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        return true;
+        
+        if (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='BASE64_ENCODE'") == 0) {
+            jdbcTemplate.update("CREATE ALIAS BASE64_ENCODE for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"");
+        }
     }
 
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
