@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +46,10 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     String nodeSelectSql;
 
     boolean conditionalExists;
+    
+    static String transactionId;
+    
+    static long lastTransactionIdUpdate;
 
     public void fire(int type, String triggerName, String tableName, Object[] oldRow, Object[] newRow) {
         try {
@@ -60,6 +65,8 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         } catch (RuntimeException ex) {
             logger.error(ex, ex);
             throw ex;
+        } finally {
+            lastTransactionIdUpdate = System.currentTimeMillis();
         }
     }
 
@@ -77,13 +84,14 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             values = getOrderedColumnValues(oldRow);
             break;
         }
-        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, values), new RowMapper() {
-            public Object mapRow(ResultSet rs, int index) throws SQLException {
-                Node node = new Node();
-                node.setNodeId(rs.getString(1));
-                return node;
-            }
-        });
+        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, values),
+                new RowMapper() {
+                    public Object mapRow(ResultSet rs, int index) throws SQLException {
+                        Node node = new Node();
+                        node.setNodeId(rs.getString(1));
+                        return node;
+                    }
+                });
     }
 
     private boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
@@ -113,7 +121,9 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             this.initialize(getDataEventType(type), tableName);
             buildDataSelectSql();
             buildNodeSelectSql();
-            logger.info("initializing " + triggerName + " " + this.hashCode() + " for " + triggerType);
+            if (logger.isDebugEnabled()) {
+                logger.debug("initializing " + triggerName + " for " + triggerType);
+            }
         }
     }
 
@@ -243,6 +253,14 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     @Override
     protected int getTriggerHistId() {
         return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
+    }
+
+    @Override
+    protected String getTransactionId() {
+        if (System.currentTimeMillis()-lastTransactionIdUpdate > 5000) {
+            transactionId = RandomStringUtils.randomAlphanumeric(12);
+        }
+        return transactionId;
     }
 
 }

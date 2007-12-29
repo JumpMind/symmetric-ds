@@ -51,6 +51,8 @@ public class Data {
     private String tableName;
     
     private String channelId;
+    
+    private String transactionId;
 
     /**
      * This is populated by the trigger when the event happens.  It will be useful for 
@@ -145,6 +147,14 @@ public class Data {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
 }

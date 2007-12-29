@@ -37,6 +37,8 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public static String DUAL_TABLE = "DUAL";
 
+    private boolean initializeDatabase;
+
     ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -46,6 +48,17 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     };
 
     protected void initForSpecificDialect() {
+        if (initializeDatabase) {
+            jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
+            jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    jdbcTemplate.update("SHUTDOWN");
+                }
+            });
+        }
+
         Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
         if (table == null) {
             jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR)");
@@ -110,7 +123,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
     }
-    
+
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
@@ -145,5 +158,9 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public String getDefaultSchema() {
         return null;
+    }
+
+    public void setInitializeDatabase(boolean initializeDatabase) {
+        this.initializeDatabase = initializeDatabase;
     }
 }

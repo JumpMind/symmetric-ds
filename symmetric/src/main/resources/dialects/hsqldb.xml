@@ -19,6 +19,7 @@
         class="org.jumpmind.symmetric.db.hsqldb.HsqlDbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="initializeDatabase" value="${symmetric.hsqldb.initialize.db}"/>
         <property name="engineName"
             value="${symmetric.runtime.engine.name}" />
         <property name="streamingResultsFetchSize"

@@ -278,7 +278,7 @@
         <property name="insertIntoDataSql">
             <value>
                 insert into ${sync.table.prefix}_data (data_id, channel_id, table_name, event_type,
-                row_data, pk_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?, ?,
+                row_data, pk_data, trigger_hist_id, transaction_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?,
                 current_timestamp)
             </value>
         </property>
