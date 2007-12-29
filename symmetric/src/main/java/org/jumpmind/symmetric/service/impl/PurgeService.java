@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -183,7 +184,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private String cleanSql(String sql) {
-        return sql.replace('\r', ' ').replace('\n', ' ').replace("\\w+", " ").trim();
+        return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "),"\n"," "), "  ", "");
     }
 
     public void setOtherPurgeSql(String[] purgeSql) {
