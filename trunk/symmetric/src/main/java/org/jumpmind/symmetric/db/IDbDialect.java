@@ -145,4 +145,10 @@ public interface IDbDialect {
     public long insertWithGeneratedKey(final String sql, final String sequenceName,
             final PreparedStatementCallback psCallback);
     
+    /**
+     * Get the string prepended to the Symmetric configuration tables.
+     * @return
+     */
+    public String getTablePrefix();
+    
 }

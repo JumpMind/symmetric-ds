@@ -750,4 +750,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.engineName = engineName;
     }
 
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
+
 }

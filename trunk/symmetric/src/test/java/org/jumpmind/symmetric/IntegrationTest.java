@@ -67,6 +67,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             testIgnoreNodeChannel();
             testPurge();
             testHeartbeat();
+        } catch (AssertionError ex) {
+            throw ex;            
         } catch (Exception ex) {
             logger.error(ex, ex);
             Assert.fail();
@@ -118,8 +120,9 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
-            Assert.assertTrue(ArrayUtils.isEquals(clientJdbcTemplate.queryForObject(
-                    "select icon from test_customer where customer_id=101", byte[].class), BINARY_DATA),
+            byte[] data = (byte[])clientJdbcTemplate.queryForObject(
+                    "select icon from test_customer where customer_id=101", byte[].class);
+            Assert.assertTrue(ArrayUtils.isEquals(data, BINARY_DATA),
                     "The BLOB icon field on customer was not sync'd to the client.");
         }
 

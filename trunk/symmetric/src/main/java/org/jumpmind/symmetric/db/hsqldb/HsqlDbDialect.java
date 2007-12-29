@@ -22,7 +22,9 @@ package org.jumpmind.symmetric.db.hsqldb;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 
 public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -32,16 +34,24 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "";
-    
+
+    public static String DUAL_TABLE = "DUAL";
+
     ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return Boolean.TRUE;
         }
-        
+
     };
 
     protected void initForSpecificDialect() {
+        Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
+        if (table == null) {
+            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR)");
+            jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
+            jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
+        }
     }
 
     public boolean isFunctionUpToDate(String name) throws Exception {
@@ -50,7 +60,8 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where trigger_name = ?",
+        return jdbcTemplate.queryForInt(
+                "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where trigger_name = ?",
                 new Object[] { triggerName }) > 0;
     }
 
@@ -62,19 +73,19 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
             logger.warn("Trigger does not exist");
         }
     }
-    
+
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
 
     public boolean isBlobSyncSupported() {
-        return false;
+        return true;
     }
-    
+
     public boolean isClobSyncSupported() {
         return true;
     }
-    
+
     public boolean isSyncEnabled() {
         return syncEnabled.get();
     }
@@ -92,11 +103,17 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getTransactionTriggerExpression() {
+        // TODO
         return "null";
     }
-    
+
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
+    }
+    
+    @Override
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     public boolean isCharSpacePadded() {
@@ -122,7 +139,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     public void purge() {
     }
 
