@@ -68,7 +68,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             testPurge();
             testHeartbeat();
         } catch (AssertionError ex) {
-            throw ex;            
+            throw ex;
         } catch (Exception ex) {
             logger.error(ex, ex);
             Assert.fail();
@@ -97,7 +97,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
                 nodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                         TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId());
         getClientEngine().pull();
-        
+
         // TODO - need to add validation here
     }
 
@@ -120,7 +120,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
-            byte[] data = (byte[])clientJdbcTemplate.queryForObject(
+            byte[] data = (byte[]) clientJdbcTemplate.queryForObject(
                     "select icon from test_customer where customer_id=101", byte[].class);
             Assert.assertTrue(ArrayUtils.isEquals(data, BINARY_DATA),
                     "The BLOB icon field on customer was not sync'd to the client.");

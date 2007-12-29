@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.db.hsqldb;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -43,11 +44,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     String nodeSelectSql;
 
-    boolean conditionalWhereExistsForUpdate;
-
-    boolean conditionalWhereExistsForInsert;
-
-    boolean conditionalWhereExistsForDelete;
+    boolean conditionalExists;
 
     public void fire(int type, String triggerName, String tableName, Object[] oldRow, Object[] newRow) {
         try {
@@ -74,13 +71,13 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             values = getOrderedColumnValues(newRow);
             break;
         case UPDATE:
-            values = getOrderedColumnValues(ArrayUtils.add(newRow, oldRow));
+            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
             break;
         case DELETE:
             values = getOrderedColumnValues(oldRow);
             break;
         }
-        return (List<Node>) getDbDialect().getJdbcTemplate().query(nodeSelectSql, values, new RowMapper() {
+        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, values), new RowMapper() {
             public Object mapRow(ResultSet rs, int index) throws SQLException {
                 Node node = new Node();
                 node.setNodeId(rs.getString(1));
@@ -90,19 +87,24 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     private boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
-        Object[] values = null;
-        switch (triggerType) {
-        case INSERT:
-            values = getOrderedColumnValues(newRow);
-            break;
-        case UPDATE:
-            values = getOrderedColumnValues(ArrayUtils.add(newRow, oldRow));
-            break;
-        case DELETE:
-            values = getOrderedColumnValues(oldRow);
-            break;
+        if (conditionalExists) {
+            Object[] values = null;
+            switch (triggerType) {
+            case INSERT:
+                values = getOrderedColumnValues(newRow);
+                break;
+            case UPDATE:
+                values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
+                break;
+            case DELETE:
+                values = getOrderedColumnValues(oldRow);
+                break;
+            }
+            int count = getDbDialect().getJdbcTemplate().queryForInt(fillVirtualTableSql(dataSelectSql, values));
+            return count > 0;
+        } else {
+            return true;
         }
-        return getDbDialect().getJdbcTemplate().queryForInt(dataSelectSql, values) > 0;
     }
 
     private void init(int type, String triggerName, String tableName) {
@@ -139,6 +141,35 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         return b.toString();
     }
 
+    /**
+     * I wanted to do this as a preparedstatement but hsqldb doesn't seem to support it.
+     */
+    private String fillVirtualTableSql(String sql, Object[] values) {
+        StringBuilder out = new StringBuilder();
+        String[] tokens = StringUtils.split(sql, "?");
+        for (int i = 0; i < tokens.length; i++) {
+            out.append(tokens[i]);
+            if (i < values.length) {
+                Object value = values[i];
+                if (value instanceof String) {
+                    out.append("'");
+                    out.append(value);
+                    out.append("'");
+                } else if (value instanceof Number) {
+                    out.append(value);
+                } else if (value instanceof Date) {
+                    out.append("'");
+                    out.append(AbstractEmbeddedTrigger.dateFormatter.format(value));
+                    out.append("'");
+                } else {
+                    // anything else is unsupported
+                    out.append("null");
+                }
+            }
+        }
+        return out.toString();
+    }
+
     private void buildNodeSelectSql() {
         StringBuilder b = new StringBuilder("select node_id from ");
         b.append(dbDialect.getTablePrefix());
@@ -157,21 +188,21 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         switch (triggerType) {
         case INSERT:
             if (!StringUtils.isBlank(trigger.getSyncOnInsertCondition())) {
-                conditionalWhereExistsForInsert = true;
+                conditionalExists = true;
                 b.append("where ");
                 b.append(trigger.getSyncOnInsertCondition());
             }
             break;
         case UPDATE:
             if (!StringUtils.isBlank(trigger.getSyncOnUpdateCondition())) {
-                conditionalWhereExistsForUpdate = true;
+                conditionalExists = true;
                 b.append("where ");
                 b.append(trigger.getSyncOnUpdateCondition());
             }
             break;
         case DELETE:
             if (!StringUtils.isBlank(trigger.getSyncOnDeleteCondition())) {
-                conditionalWhereExistsForDelete = true;
+                conditionalExists = true;
                 b.append("where ");
                 b.append(trigger.getSyncOnDeleteCondition());
             }
@@ -188,7 +219,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     private DataEventType getDataEventType(int type) {
         switch (type) {
-
         case org.hsqldb.Trigger.INSERT_AFTER_ROW:
             return DataEventType.INSERT;
         case org.hsqldb.Trigger.UPDATE_AFTER_ROW:
