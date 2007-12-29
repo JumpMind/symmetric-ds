@@ -48,9 +48,9 @@ import org.jumpmind.symmetric.service.INodeService;
  */
 public abstract class AbstractEmbeddedTrigger {
 
-    static final Log logger = LogFactory.getLog(AbstractEmbeddedTrigger.class);
+    protected static final Log logger = LogFactory.getLog(AbstractEmbeddedTrigger.class);
 
-    static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
+    protected static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
 
     protected IDataService dataService;
 
