@@ -71,6 +71,15 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>
+                    <row>
+                        <entry>HSQLDB</entry>
+                        <entry>1.8</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>                    
                 </tbody>
             </tgroup>
         </table>
@@ -134,7 +143,17 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
     <section>
         <title>MS SQL Server</title>
         <para>
+            SQL Server was tested using the JTDS driver.
         </para>
     </section>
+    <section>
+        <title>HSQLDB</title>
+        <para>
+            HSQLDB was implemented with the intention that the database be run embedded in the same JVM process 
+            as SymmetricDS.  Instead of dynamically generating static SQL-based triggers like the other databases, HSQLDB
+            triggers are Java classes that re-use existing SymmetricDS services to read the configuration and insert data events
+            accordingly.
+        </para>
+    </section>    
 
 </appendix>
