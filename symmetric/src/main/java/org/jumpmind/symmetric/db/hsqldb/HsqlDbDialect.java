@@ -59,16 +59,26 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
             });
         }
 
+        createDummyDualTable();
+
+        if (jdbcTemplate
+                .queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='BASE64_ENCODE'") == 0) {
+            jdbcTemplate
+                    .update("CREATE ALIAS BASE64_ENCODE for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"");
+        }
+    }
+
+    /**
+     * This is for use in the java triggers so we can create a virtual table w/ old and new columns values to bump SQL expressions up against.
+     */
+    private void createDummyDualTable() {
         Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
         if (table == null) {
             jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR)");
             jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
             jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
         }
-        
-        if (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='BASE64_ENCODE'") == 0) {
-            jdbcTemplate.update("CREATE ALIAS BASE64_ENCODE for \"org.jumpmind.symmetric.db.hsqldb.HsqlDbFunctions.encodeBase64\"");
-        }
+
     }
 
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
@@ -115,9 +125,11 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "1 = 1";
     }
 
+    /**
+     * This is not used by the HSQLDB Java triggers
+     */
     public String getTransactionTriggerExpression() {
-        // TODO
-        return "null";
+        return "not used";
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {

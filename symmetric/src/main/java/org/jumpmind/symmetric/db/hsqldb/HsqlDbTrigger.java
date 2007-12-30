@@ -45,10 +45,12 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     String nodeSelectSql;
 
+    String transactionIdSql;
+
     boolean conditionalExists;
-    
+
     static String transactionId;
-    
+
     static long lastTransactionIdUpdate;
 
     public void fire(int type, String triggerName, String tableName, Object[] oldRow, Object[] newRow) {
@@ -72,19 +74,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     @SuppressWarnings("unchecked")
     protected List<Node> findTargetNodes(Object[] oldRow, Object[] newRow) {
-        Object[] values = null;
-        switch (triggerType) {
-        case INSERT:
-            values = getOrderedColumnValues(newRow);
-            break;
-        case UPDATE:
-            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
-            break;
-        case DELETE:
-            values = getOrderedColumnValues(oldRow);
-            break;
-        }
-        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, values),
+        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, oldRow, newRow),
                 new RowMapper() {
                     public Object mapRow(ResultSet rs, int index) throws SQLException {
                         Node node = new Node();
@@ -96,20 +86,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     private boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
         if (conditionalExists) {
-            Object[] values = null;
-            switch (triggerType) {
-            case INSERT:
-                values = getOrderedColumnValues(newRow);
-                break;
-            case UPDATE:
-                values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
-                break;
-            case DELETE:
-                values = getOrderedColumnValues(oldRow);
-                break;
-            }
-            int count = getDbDialect().getJdbcTemplate().queryForInt(fillVirtualTableSql(dataSelectSql, values));
-            return count > 0;
+            return getDbDialect().getJdbcTemplate().queryForInt(fillVirtualTableSql(dataSelectSql, oldRow, newRow)) > 0;
         } else {
             return true;
         }
@@ -121,6 +98,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             this.initialize(getDataEventType(type), tableName);
             buildDataSelectSql();
             buildNodeSelectSql();
+            buildTransactionIdSql();
             if (logger.isDebugEnabled()) {
                 logger.debug("initializing " + triggerName + " for " + triggerType);
             }
@@ -151,10 +129,29 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         return b.toString();
     }
 
+    private void buildTransactionIdSql() {
+        if (!StringUtils.isBlank(trigger.getTxIdExpression())) {
+            transactionIdSql = "select " + replaceOldNewTriggerTokens(trigger.getTxIdExpression()) + " from "
+                    + buildVirtualTableSql();
+        }
+    }
+
     /**
      * I wanted to do this as a preparedstatement but hsqldb doesn't seem to support it.
      */
-    private String fillVirtualTableSql(String sql, Object[] values) {
+    private String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
+        Object[] values = null;
+        switch (triggerType) {
+        case INSERT:
+            values = getOrderedColumnValues(newRow);
+            break;
+        case UPDATE:
+            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
+            break;
+        case DELETE:
+            values = getOrderedColumnValues(oldRow);
+            break;
+        }
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
         for (int i = 0; i < tokens.length; i++) {
@@ -256,11 +253,14 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     @Override
-    protected String getTransactionId() {
+    protected String getTransactionId(Object[] oldRow, Object[] newRow) {
         if (System.currentTimeMillis()-lastTransactionIdUpdate > 5000) {
             transactionId = RandomStringUtils.randomAlphanumeric(12);
         }
+        
+        if (transactionIdSql != null) {
+            transactionId =  (String)getDbDialect().getJdbcTemplate().queryForObject(fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class); 
+        }
         return transactionId;
     }
-
 }
