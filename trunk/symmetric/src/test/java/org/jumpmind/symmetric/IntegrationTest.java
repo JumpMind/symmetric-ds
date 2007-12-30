@@ -67,6 +67,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             testIgnoreNodeChannel();
             testPurge();
             testHeartbeat();
+            testVirtualTransactionId();
         } catch (AssertionError ex) {
             throw ex;
         } catch (Exception ex) {
@@ -224,6 +225,11 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
                 + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'", Timestamp.class);
         Assert.assertTrue(time != null && time.getTime() > ts,
                 "The client node was not sync'd to the root as expected.");
+    }
+    
+    protected void testVirtualTransactionId() {
+        rootJdbcTemplate.update("insert into test_very_long_table_name_1234 values(42)");              
+        Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)", String.class), "test transaction id", "The hardcoded transaction id was not found.");
     }
 
     protected void testMultipleChannels() {
