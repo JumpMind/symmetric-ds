@@ -46,7 +46,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private final static Log logger = LogFactory.getLog(PurgeService.class);
 
-    private static int NUMBER_DATA_IDS_TO_PURGE_IN_BATCH = 5000;
+    private int maxNumOfDataIdsToPurgeInTx = 5000;
 
     private IDbDialect dbDialect;
 
@@ -93,30 +93,30 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 clusterService.unlock(LockAction.PURGE);
                 logger.info("The purge process has completed.");
             }
-            
+
         } else {
             logger.info("Could not get a lock to run a purge.");
         }
     }
 
     private void purgeDataRows() {
-        transactionTemplate.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus s) {
-                int count = 0;
-                List<Integer> dataIds = null;
-                do {
-                    dataIds = getNextDataIds(selectDataIdToPurgeSql, null, NUMBER_DATA_IDS_TO_PURGE_IN_BATCH);
+        int dataIdCount = 0;
+        do {
+            dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
+                public Object doInTransaction(TransactionStatus s) {
+                    int count = 0;
+                    List<Integer> dataIds = null;
+                    dataIds = getNextDataIds(selectDataIdToPurgeSql, null, maxNumOfDataIdsToPurgeInTx);
                     for (Integer dataId : dataIds) {
                         count += jdbcTemplate.update(deleteDataSql, new Object[] { dataId });
                     }
-                } while (dataIds != null && dataIds.size() > 0);
-
-                if (count > 0) {
-                    logger.info("Purged " + count + " data rows.");
+                    if (count > 0) {
+                        logger.info("Purged " + count + " data rows.");
+                    }
+                    return dataIds.size();
                 }
-                return null;
-            }
-        });
+            });
+        } while (dataIdCount > 0);
 
     }
 
@@ -125,33 +125,34 @@ public class PurgeService extends AbstractService implements IPurgeService {
         // Iterate over batch ids and data events to access by primary key so we prevent lock escalation
         List<Integer> batchIds = jdbcTemplate.queryForList(selectOutgoingBatchIdsToPurgeSql, new Object[] { time
                 .getTime() }, Integer.class);
-        int batchCount = 0;
         int eventRowCount = 0;
+        int dataIdCount = 0;
         for (final Integer batchId : batchIds) {
-            batchCount++;
-            eventRowCount += (Integer) transactionTemplate.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus s) {
-                    jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId });
+            do {
+                dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
+                    public Object doInTransaction(TransactionStatus s) {
+                        jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId });
 
-                    int eventCount = 0;
-                    List<Integer> dataIds = null;
-                    do {
+                        int eventCount = 0;
+                        List<Integer> dataIds = null;
                         dataIds = getNextDataIds(selectEventDataIdToPurgeSql, new Object[] { batchId },
-                                NUMBER_DATA_IDS_TO_PURGE_IN_BATCH);
+                                maxNumOfDataIdsToPurgeInTx);
 
                         for (Integer dataId : dataIds) {
                             eventCount += jdbcTemplate.update(deleteDataEventSql, new Object[] { dataId, batchId });
                         }
-                    } while (dataIds != null && dataIds.size() > 0);
 
-                    jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
-                    return eventCount;
-                }
-            });
+                        jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
+                        return eventCount;
+                    }
+                });
+                eventRowCount += dataIdCount;
+            } while (dataIdCount > 0);
+
         }
 
-        if (batchCount > 0) {
-            logger.info("Purged " + batchCount + " batches and " + eventRowCount + " data_events.");
+        if (batchIds.size() > 0) {
+            logger.info("Purged " + batchIds.size() + " batches and " + eventRowCount + " data_events.");
         }
     }
 
@@ -233,6 +234,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+
+    public void setMaxNumOfDataIdsToPurgeInTx(int maxNumOfDataIdsToPurgeInTx) {
+        this.maxNumOfDataIdsToPurgeInTx = maxNumOfDataIdsToPurgeInTx;
     }
 
 }
