@@ -165,7 +165,7 @@ public class SqlTemplate {
                 + "." : "", ddl);
         ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
-        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix).toUpperCase(), ddl);
+        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);

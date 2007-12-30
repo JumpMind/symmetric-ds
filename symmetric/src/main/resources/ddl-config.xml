@@ -167,9 +167,9 @@
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0" />
-        <column name="name_for_update_trigger" type="VARCHAR" size="30" />
-        <column name="name_for_insert_trigger" type="VARCHAR" size="30" />
-        <column name="name_for_delete_trigger" type="VARCHAR" size="30" />
+        <column name="name_for_update_trigger" type="VARCHAR" size="50" />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="50" />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="50" />
         <column name="sync_on_update_condition" type="VARCHAR" size="1000" />
         <column name="sync_on_insert_condition" type="VARCHAR" size="1000" />
         <column name="sync_on_delete_condition" type="VARCHAR" size="1000" />
@@ -197,9 +197,9 @@
         <column name="trigger_id" type="INTEGER" required="true" />
         <column name="source_table_name" type="VARCHAR" default="" size="50" required="true" />
         <column name="source_schema_name" type="VARCHAR" size="50" />
-        <column name="name_for_update_trigger" type="VARCHAR" size="30" required="true" />
-        <column name="name_for_insert_trigger" type="VARCHAR" size="30" required="true" />
-        <column name="name_for_delete_trigger" type="VARCHAR" size="30" required="true" />
+        <column name="name_for_update_trigger" type="VARCHAR" size="50" required="true" />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="50" required="true" />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="50" required="true" />
         <column name="table_hash" type="BIGINT" required="true" />
         <column name="column_names" type="LONGVARCHAR" required="true" />
         <column name="pk_column_names" type="LONGVARCHAR" required="true" />

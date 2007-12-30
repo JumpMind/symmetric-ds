@@ -71,6 +71,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(AbstractDbDialect.class);
 
+    public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
+    
     protected JdbcTemplate jdbcTemplate;
 
     protected Platform platform;
@@ -122,6 +124,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     protected boolean allowsNullForIdentityColumn() {
         return true;
+    }     
+
+    /**
+     * Provide a default implementation of this method using DDLUtils, getMaxColumnNameLength()
+     */
+    public int getMaxTriggerNameLength() {
+        int max = getPlatform().getPlatformInfo().getMaxColumnNameLength();
+        return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE ? max : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
     public String getDefaultCatalog() {

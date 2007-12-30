@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 
@@ -35,6 +37,8 @@ import org.apache.ddlutils.model.Table;
  * Defines the trigger via which a table will be synchronized.
  */
 public class Trigger {
+
+    static final Log logger = LogFactory.getLog(Trigger.class);
 
     private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
 
@@ -63,7 +67,7 @@ public class Trigger {
     private boolean syncOnInsert = true;
 
     private boolean syncOnDelete = true;
-    
+
     private boolean syncOnIncomingBatch = false;
 
     private String nameForInsertTrigger;
@@ -186,28 +190,39 @@ public class Trigger {
         }
     }
 
-    public String getTriggerName(DataEventType dml, String triggerPrefix) {
+    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength) {
+        String triggerName = null;
         if (triggerPrefix == null) {
             triggerPrefix = "";
         }
         switch (dml) {
         case INSERT:
             if (nameForInsertTrigger != null) {
-                return getNameForInsertTrigger();
+                triggerName = getNameForInsertTrigger();
             }
             break;
         case UPDATE:
             if (nameForUpdateTrigger != null) {
-                return getNameForUpdateTrigger();
+                triggerName = getNameForUpdateTrigger();
             }
             break;
         case DELETE:
             if (nameForDeleteTrigger != null) {
-                return getNameForDeleteTrigger();
+                triggerName = getNameForDeleteTrigger();
             }
             break;
         }
-        return triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName();
+        if (triggerName == null) {
+            triggerName = triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName();
+        }
+
+        if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
+            triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
+            logger.warn("We just truncated the trigger name for the " + dml.name().toLowerCase() + " trigger id="+ triggerId
+                    + ".  You might want to consider manually providing a name for the trigger that is les than "
+                    + maxTriggerNameLength + " characters long.");
+        }
+        return triggerName;
     }
 
     private String getShortTableName() {
