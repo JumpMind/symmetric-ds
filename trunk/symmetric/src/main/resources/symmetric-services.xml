@@ -661,6 +661,7 @@
         <property name="dbDialect" ref="dbDialect" />
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
+        <property name="maxNumOfDataIdsToPurgeInTx" value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}"/>
         <property name="selectOutgoingBatchIdsToPurgeSql">
             <value>
                 select batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
