@@ -88,6 +88,13 @@ public interface IDbDialect {
     
     public boolean isEmptyStringNulled();
     
+    /**
+     * Get the maximum size the name of a trigger can be for the database platform.  If the generated symmetric trigger name is greater
+     * than the max trigger name, symmetric will truncate the name, then log a warning suggesting that you might want to provide your own
+     * name.
+     */
+    public int getMaxTriggerNameLength();    
+    
     public boolean supportsMixedCaseNamesInCatalog();
     
     public boolean supportsTransactionId();
