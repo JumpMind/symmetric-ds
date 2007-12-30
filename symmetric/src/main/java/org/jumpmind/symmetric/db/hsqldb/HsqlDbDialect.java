@@ -46,6 +46,8 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
 
     };
+    
+    
 
     protected void initForSpecificDialect() {
         if (initializeDatabase) {

@@ -158,4 +158,10 @@ public interface IDbDialect {
      */
     public String getTablePrefix();
     
+    /**
+     * Give access to the templating mechanism that is used for trigger creation.
+     */
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, String targetString);
+    
 }
