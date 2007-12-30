@@ -609,6 +609,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         });
     }
+    
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
+            TriggerHistory history, String targetString) {
+        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix, getMetaDataFor(getDefaultCatalog(), trigger.getSourceSchemaName(), trigger.getSourceTableName(), true), getDefaultSchema(), targetString);
+    }
 
     public boolean supportsGetGeneratedKeys() {
         if (supportsGetGeneratedKeys == null) {

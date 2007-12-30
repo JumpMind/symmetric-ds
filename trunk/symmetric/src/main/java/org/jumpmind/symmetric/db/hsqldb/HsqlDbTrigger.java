@@ -219,9 +219,13 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         this.dataSelectSql = replaceOldNewTriggerTokens(b.toString());
     }
 
-    private String replaceOldNewTriggerTokens(String b) {
-        return StringUtils.replace(StringUtils.replace(b.toString(), "$(newTriggerValue).", "t.new_"),
-                "$(oldTriggerValue).", "t.old_");
+    private String replaceOldNewTriggerTokens(String targetString) {
+        // This is a little hack to allow us to replace the not only the old/new alias's, but also the column prefix for 
+        // use in a virtual table we can match SQL expressions against.
+        targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
+        targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");
+        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");
+        return dbDialect.replaceTemplateVariables(triggerType, trigger, triggerHistory, targetString);
     }
 
     private DataEventType getDataEventType(int type) {

@@ -15,31 +15,25 @@
         </constructor-arg>
     </bean>
 
-    <bean id="hsqldbDialect"
-        class="org.jumpmind.symmetric.db.hsqldb.HsqlDbDialect"
+    <bean id="hsqldbDialect" class="org.jumpmind.symmetric.db.hsqldb.HsqlDbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
-        <property name="initializeDatabase" value="${symmetric.hsqldb.initialize.db}"/>
-        <property name="engineName"
-            value="${symmetric.runtime.engine.name}" />
-        <property name="streamingResultsFetchSize"
-            value="${db.jdbc.streaming.results.fetch.size}" />
+        <property name="initializeDatabase" value="${symmetric.hsqldb.initialize.db}" />
+        <property name="engineName" value="${symmetric.runtime.engine.name}" />
+        <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
-                <property name="triggerPrefix"
-                    value="${symmetric.runtime.trigger.prefix}" />
-                <property name="stringColumnTemplate"
-                    ref="stringTemplate" />
-                <property name="clobColumnTemplate"
-                    ref="stringTemplate" />
+                <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+                <property name="stringColumnTemplate" ref="stringTemplate" />
+                <property name="clobColumnTemplate" ref="stringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace(BASE64_ENCODE($(tableAlias).$(columnName)),'\','\\'),'"','\"')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace(BASE64_ENCODE($(tableAlias).$(columnName)),'\','\\'),'"','\"')),'"') end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                         <![CDATA[coalesce(cast($(tableAlias).$(columnName) as varchar(50)), '')||','||]]>
+                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as varchar(50)), '')||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
@@ -47,7 +41,8 @@
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
                     </value>
                 </property>
-
+                <property name="oldTriggerValue" value="t.old_" />
+                <property name="newTriggerValue" value="t.new_" />
                 <property name="triggerConcatCharacter" value="||" />
                 <property name="sqlTemplates">
 
