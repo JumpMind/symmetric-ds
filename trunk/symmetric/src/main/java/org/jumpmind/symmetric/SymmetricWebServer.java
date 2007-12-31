@@ -19,8 +19,6 @@
  */
 package org.jumpmind.symmetric;
 
-import javawebparts.filter.CompressionFilter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.web.AckServlet;
@@ -32,7 +30,6 @@ import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.FilterHolder;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
@@ -52,9 +49,6 @@ public class SymmetricWebServer {
         Context webContext = new Context(server, "/sync", Context.NO_SESSIONS);
 
         webContext.addEventListener(new SymmetricEngineContextLoaderListener());
-        FilterHolder compressionFilter = new FilterHolder(CompressionFilter.class);
-        compressionFilter.setInitParameter("compressType", "gzip_only");
-        webContext.addFilter(compressionFilter, "/*", 0);
 
         webContext.addFilter(AuthenticationFilter.class, "/pull/*", 0);
         webContext.addFilter(AuthenticationFilter.class, "/push/*", 0);
