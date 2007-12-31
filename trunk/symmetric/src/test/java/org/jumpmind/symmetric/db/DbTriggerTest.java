@@ -61,9 +61,9 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values('here','here','1',null,null,1,1,1)";
 
-    final static String EXPECTED_INSERT1_CSV = "1,\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
+    final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
-    final static String EXPECTED_INSERT2_CSV = "3,\"here\",\"here\",\"1\",,,1,1";
+    final static String EXPECTED_INSERT2_CSV_ENDSWITH = "\"here\",\"here\",\"1\",,,1,1";
 
     final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
@@ -125,8 +125,8 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = false;
-        match = csvString.equals(EXPECTED_INSERT1_CSV);
-        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT1_CSV;
+        match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
+        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "validateTestTableTriggers")
@@ -138,8 +138,8 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
         String csvString = (String) getJdbcTemplate(getSymmetricEngine()).queryForObject(sql, String.class);
         boolean match = false;
-        match = csvString.equals(EXPECTED_INSERT1_CSV);
-        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT1_CSV;
+        match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
+        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
@@ -195,9 +195,8 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
         Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
 
         String csvString = getNextDataRow(getSymmetricEngine());
-        Assert.assertEquals(csvString, EXPECTED_INSERT2_CSV, "Received " + csvString + ", Expected "
-                + EXPECTED_INSERT2_CSV);
-    }
+        boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
+        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;    }
 
     @Test(groups = "continuous", dependsOnMethods = "testExcludedColumnsFunctionality")
     public void testDisableTriggers() throws Exception {
@@ -207,9 +206,8 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
         getDbDialect(getSymmetricEngine()).enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
-        boolean match = false;
-        match = csvString.equals(EXPECTED_INSERT2_CSV);
-        assert match : "Received " + csvString + ", Expected " + EXPECTED_INSERT2_CSV;
+        boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
+        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testDisableTriggers")

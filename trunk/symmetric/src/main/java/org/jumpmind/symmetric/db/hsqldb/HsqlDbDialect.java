@@ -38,6 +38,10 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public static String DUAL_TABLE = "DUAL";
 
     private boolean initializeDatabase;
+    
+    private boolean charFieldTrimmed = false;
+
+    private static boolean hsqldbInitialized = false;
 
     ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
         @Override
@@ -46,22 +50,27 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
 
     };
-    
-    
 
     protected void initForSpecificDialect() {
         if (initializeDatabase) {
-            jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
-            jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    jdbcTemplate.update("SHUTDOWN");
-                }
-            });
+            if (!hsqldbInitialized) {
+                jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
+                jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
+                jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" true");
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                    @Override
+                    public void run() {
+                        jdbcTemplate.update("SHUTDOWN");
+                    }
+                });
+                hsqldbInitialized = true;
+            }
         }
 
         createDummyDualTable();
+        
+        charFieldTrimmed = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_PROPERTIES where property_name='sql.enforce_strict_size' and property_value='true'") == 1;
 
         if (jdbcTemplate
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='BASE64_ENCODE'") == 0) {
@@ -76,7 +85,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     private void createDummyDualTable() {
         Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
         if (table == null) {
-            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR)");
+            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
             jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
             jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
         }
@@ -144,7 +153,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isCharSpacePadded() {
-        return false;
+        return charFieldTrimmed;
     }
 
     public boolean isCharSpaceTrimmed() {
