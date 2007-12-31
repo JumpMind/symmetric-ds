@@ -182,7 +182,7 @@ public class CsvLoader implements IDataLoader {
     }
     
     protected void cleanupAfterDataLoad() {
-        if (context.getTableName() != null) {
+        if (context != null && context.getTableName() != null) {
             dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());            
         }
     }
