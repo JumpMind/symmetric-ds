@@ -117,7 +117,7 @@ public class TableTemplate {
     }
 
     public int insert(String[] columnValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(DmlType.INSERT);
+        StatementBuilder st = getStatementBuilder(DmlType.INSERT, encoding);
         return execute(st, columnValues, columnMetaData, encoding);
     }
 
@@ -126,17 +126,17 @@ public class TableTemplate {
     }
 
     public int update(String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(DmlType.UPDATE);
+        StatementBuilder st = getStatementBuilder(DmlType.UPDATE, encoding);
         String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
         return execute(st, values, columnKeyMetaData, encoding);
     }
 
     public int delete(String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(DmlType.DELETE);
+        StatementBuilder st = getStatementBuilder(DmlType.DELETE, BinaryEncoding.NONE);
         return execute(st, keyValues, keyMetaData, BinaryEncoding.NONE);
     }
 
-    private StatementBuilder getStatementBuilder(DmlType type) {
+    private StatementBuilder getStatementBuilder(DmlType type, BinaryEncoding encoding) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
             String[] filteredColumnNames = columnNames;
@@ -156,7 +156,7 @@ public class TableTemplate {
             }
 
             st = new StatementBuilder(type, table.getName(), keyMetaData,
-                    getColumnMetaData(filteredColumnNames));
+                    getColumnMetaData(filteredColumnNames), encoding);
             statementMap.put(type, st);
         }
         return st;
