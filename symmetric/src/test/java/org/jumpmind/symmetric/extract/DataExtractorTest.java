@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -296,8 +295,8 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writeCSV(CsvConstants.BATCH);
             writer.write(batchId);
             writer.newLine();
-            writeCSV(CsvConstants.BINARY);
-            writer.write(BinaryEncoding.NONE.name());
+            writeCSV(CsvConstants.BINARY);            
+            writer.write(getDbDialect().getBinaryEncoding().name());
             writer.newLine();            
         }
 

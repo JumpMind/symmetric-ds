@@ -91,7 +91,7 @@ public abstract class AbstractEmbeddedTrigger {
     protected abstract String getEngineName();
 
     protected abstract int getTriggerHistId();
-    
+
     protected abstract String getTransactionId(Object[] oldRow, Object[] newRow);
 
     protected String formatRowData(Object[] oldRow, Object[] newRow) {
@@ -130,7 +130,7 @@ public abstract class AbstractEmbeddedTrigger {
                         b.append("\"");
                     } else if (object instanceof Binary) {
                         b.append("\"");
-                        Binary d = (Binary)object;
+                        Binary d = (Binary) object;
                         b.append(new String(Base64.encodeBase64(d.getBytes())));
                         b.append("\"");
                     } else {
@@ -146,8 +146,9 @@ public abstract class AbstractEmbeddedTrigger {
     }
 
     protected Data createData(Object[] oldRow, Object[] newRow) {
-        Data data = new Data(trigger.getChannelId(), tableName, triggerType, formatRowData(oldRow, newRow), formatPkRowData(
-                oldRow, newRow), triggerHistory);
+        Data data = new Data(trigger.getChannelId(), StringUtils.isBlank(trigger.getTargetTableName()) ? tableName
+                : trigger.getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow,
+                newRow), triggerHistory);
         data.setTransactionId(getTransactionId(oldRow, newRow));
         return data;
     }
