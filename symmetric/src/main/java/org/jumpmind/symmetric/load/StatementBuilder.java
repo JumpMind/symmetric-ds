@@ -21,11 +21,13 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.sql.Types;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.ddlutils.model.Column;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 
 public class StatementBuilder {
     public enum DmlType {
@@ -51,29 +53,29 @@ public class StatementBuilder {
         dmlType = type;
     }
 
-    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns) {
+    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns, BinaryEncoding encoding) {
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
-            types = buildTypes(columns);
+            types = buildTypes(columns, encoding);
         } else if (type == DmlType.UPDATE) {
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns);
+            types = buildTypes(keys, columns, encoding);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
-            types = buildTypes(keys);
+            types = buildTypes(keys, encoding);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
         dmlType = type;
     }
 
-    protected int[] buildTypes(Column[] keys, Column[] columns) {
-        int[] columnTypes = buildTypes(columns);
-        int[] keyTypes = buildTypes(keys);
+    protected int[] buildTypes(Column[] keys, Column[] columns, BinaryEncoding encoding) {
+        int[] columnTypes = buildTypes(columns, encoding);
+        int[] keyTypes = buildTypes(keys, encoding);
         return ArrayUtils.addAll(columnTypes, keyTypes);
     }
     
-    protected int[] buildTypes(Column[] columns) {
+    protected int[] buildTypes(Column[] columns, BinaryEncoding encoding) {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -83,6 +85,9 @@ public class StatementBuilder {
         int[] types = new int[list.size()];
         int index = 0;
         for (Integer type : list) {
+            if (type == Types.BLOB && encoding == BinaryEncoding.NONE) {
+                type = Types.BINARY;
+            }
             types[index++] = type;
         }
         return types;
