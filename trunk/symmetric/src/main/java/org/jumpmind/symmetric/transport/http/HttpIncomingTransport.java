@@ -22,9 +22,7 @@ package org.jumpmind.symmetric.transport.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
@@ -34,12 +32,12 @@ import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
 
-    private HttpURLConnection conn;
+    private HttpURLConnection connection;
 
     private BufferedReader reader;
 
     public HttpIncomingTransport(HttpURLConnection connection) {
-        this.conn = connection;
+        this.connection = connection;
     }
 
     public void close() throws IOException {
@@ -51,13 +49,12 @@ public class HttpIncomingTransport implements IIncomingTransport {
     }
 
     public BufferedReader open() throws IOException {
-        if (WebConstants.REGISTRATION_NOT_OPEN == conn.getResponseCode()) {
+        if (WebConstants.REGISTRATION_NOT_OPEN == connection.getResponseCode()) {
             throw new RegistrationNotOpenException();
-        } else if (WebConstants.REGISTRATION_REQUIRED == conn.getResponseCode()) {
+        } else if (WebConstants.REGISTRATION_REQUIRED == connection.getResponseCode()) {
             throw new RegistrationRequiredException();
         } else {
-            reader = new BufferedReader(new InputStreamReader(
-                    new GZIPInputStream(conn.getInputStream()), "UTF-8"));
+            reader = HttpTransportManager.getReaderFrom(connection);
             return reader;
         }
     }
