@@ -57,6 +57,8 @@ public class ConfigurationService extends AbstractService implements
 
     private String insertChannelSql;
 
+    private String groupsLinksSql;
+    
     private String groupsLinksForSql;
 
     private String insertTriggerSql;
@@ -114,6 +116,11 @@ public class ConfigurationService extends AbstractService implements
     }
 
     @SuppressWarnings("unchecked")
+    public List<NodeGroupLink> getGroupLinks() {
+        return jdbcTemplate.query(groupsLinksSql, new DomainTargetRowMapper());
+    }
+    
+    @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinksFor(String nodeGroupId) {
         return jdbcTemplate.query(groupsLinksForSql,
                 new Object[] { nodeGroupId }, new DomainTargetRowMapper());
@@ -126,35 +133,21 @@ public class ConfigurationService extends AbstractService implements
     public void initTriggerRowsForConfigChannel() {
         if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
             initSystemChannels();
-            String groupId = runtimeConfiguration.getNodeGroupId();
-            initTriggerRowsForGroupAndTables(groupId, getRootConfigChannelTableNames(), true);
+            for (NodeGroupLink link : getGroupLinks()) {
+                initTriggerRowsForConfigChannel(link.getSourceGroupId(), link.getTargetGroupId());
+            }
         }
     }
     
-    private void initTriggerRowsForGroupAndTables(String groupId, List<String> tableNames, boolean initRowsForNodes) {
-        List<NodeGroupLink> targets = getGroupLinksFor(groupId);
-        if (targets != null && targets.size() > 0) {
-            for (NodeGroupLink target : targets) {
-                int initialLoadOrder = 1;
-                for (String tableName : tableNames) {
-                    Trigger trigger = getTriggerForTarget(tableName, groupId, target.getTargetGroupId(),
-                            Constants.CHANNEL_CONFIG);
-                    if (trigger == null) {
-                        jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, groupId,
-                                target.getTargetGroupId(), Constants.CHANNEL_CONFIG, initialLoadOrder++ });
-                    }
-                }
-
-                if (initRowsForNodes) {
-                    // each target node group needs to have a trigger for syncing heartbeat data back
-                    initTriggerRowsForGroupAndTables(target.getTargetGroupId(), getNodeConfigChannelTableNames(), false);
-
-                    // TODO - we need to create trigger rows in an n-tiered environment.
-                }
+    private void initTriggerRowsForConfigChannel(String sourceGroupId, String targetGroupId) {
+        int initialLoadOrder = 1;
+        for (String tableName : getRootConfigChannelTableNames()) {
+            Trigger trigger = getTriggerForTarget(tableName, sourceGroupId, targetGroupId,
+                    Constants.CHANNEL_CONFIG);
+            if (trigger == null) {
+                jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, sourceGroupId, targetGroupId,
+                        Constants.CHANNEL_CONFIG, initialLoadOrder++ });
             }
-        } else {
-            logger.warn("Could not find any targets for your group id of " + groupId
-                    + ".  Please validate your node group id against the setup in the database.");
         }
     }    
 
@@ -447,6 +440,10 @@ public class ConfigurationService extends AbstractService implements
 
     public void setInsertChannelSql(String insertChannelSql) {
         this.insertChannelSql = insertChannelSql;
+    }
+
+    public void setGroupsLinksSql(String groupsTargetsSql) {
+        this.groupsLinksSql = groupsTargetsSql;
     }
 
     public void setGroupsLinksForSql(String groupsTargetsForSql) {
