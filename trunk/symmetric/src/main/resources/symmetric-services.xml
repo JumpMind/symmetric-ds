@@ -118,6 +118,12 @@
                 current_timestamp, current_timestamp)
             </value>
         </property>
+        <property name="groupsLinksSql">
+            <value>
+                select source_node_group_id, target_node_group_id, data_event_action from
+                ${sync.table.prefix}_node_group_link
+            </value>
+        </property>
         <property name="groupsLinksForSql">
             <value>
                 select source_node_group_id, target_node_group_id, data_event_action from

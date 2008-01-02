@@ -35,6 +35,8 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  */
 public interface IConfigurationService {
     
+    public List<NodeGroupLink> getGroupLinks();
+    
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
     
     public List<String> getRootConfigChannelTableNames();
