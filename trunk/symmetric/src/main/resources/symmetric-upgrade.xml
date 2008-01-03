@@ -62,6 +62,7 @@
     <!-- Changes made in version 1.2 -->
     <bean id="changes1.2" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="useReplacement" value="false" />
         <property name="sqlList">
             <list>
                 <value>
