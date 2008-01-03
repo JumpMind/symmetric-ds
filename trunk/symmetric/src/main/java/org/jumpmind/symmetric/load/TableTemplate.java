@@ -63,6 +63,8 @@ public class TableTemplate {
     private IDbDialect dbDialect;
 
     private Table table;
+    
+    private String tableName;
 
     private String[] keyNames;
 
@@ -84,9 +86,17 @@ public class TableTemplate {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.setupColumnFilters(columnFilter, dbDialect);
+        this.tableName = tableName;
+        resetMetaData();
+    }
+    
+    public void resetMetaData() {
         table = dbDialect.getMetaDataFor(null, null, tableName, true);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
+        keyMetaData = null;
+        columnMetaData = null;
+        columnKeyMetaData = null;
 
         if (table != null) {
             for (Column column : table.getColumns()) {
@@ -105,7 +115,7 @@ public class TableTemplate {
     }
 
     public String getTableName() {
-        return table.getName();
+        return tableName;
     }
 
     public boolean isIgnoreThisTable() {
