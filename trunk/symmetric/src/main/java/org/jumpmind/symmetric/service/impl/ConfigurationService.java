@@ -88,6 +88,8 @@ public class ConfigurationService extends AbstractService implements
     private List<String> rootConfigChannelTableNames;
 
     private List<String> nodeConfigChannelTableNames;
+    
+    private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
     
@@ -145,8 +147,9 @@ public class ConfigurationService extends AbstractService implements
             Trigger trigger = getTriggerForTarget(tableName, sourceGroupId, targetGroupId,
                     Constants.CHANNEL_CONFIG);
             if (trigger == null) {
+                String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
                 jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, sourceGroupId, targetGroupId,
-                        Constants.CHANNEL_CONFIG, initialLoadOrder++ });
+                        Constants.CHANNEL_CONFIG, initialLoadOrder++, initialLoadSelect });
             }
         }
     }    
@@ -517,6 +520,10 @@ public class ConfigurationService extends AbstractService implements
 
     public void setActiveTriggersForReloadSql(String activeTriggersForReloadSql) {
         this.activeTriggersForReloadSql = activeTriggersForReloadSql;
+    }
+
+    public void setRootConfigChannelInitialLoadSelect(Map<String, String> rootConfigChannelInitialLoadSelect) {
+        this.rootConfigChannelInitialLoadSelect = rootConfigChannelInitialLoadSelect;
     }
     
     
