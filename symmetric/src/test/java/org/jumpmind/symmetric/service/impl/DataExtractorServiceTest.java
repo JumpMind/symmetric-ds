@@ -59,6 +59,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         Set<Long> histKeys = configurationService.getHistoryRecords().keySet();
         Assert.assertFalse(histKeys.isEmpty());
         triggerHistId = histKeys.iterator().next().intValue();
@@ -72,7 +73,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP),
                 mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(10, countLines(loadResults), "Unexpected number of lines in the csv result: "
+        Assert.assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: "
                 + loadResults);
         Assert.assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
                 "Did not find expected insert for CORP");
