@@ -138,7 +138,6 @@ public class CsvLoader implements IDataLoader {
             } else if (tokens[0].equals(CsvConstants.CREATE)) {
                 if (!context.isSkipping()) {
                     runDdl(tokens[1]);
-                    setTable(context.getTableName(), false);
                 }
             } else if (tokens[0].equals(CsvConstants.BINARY)) {
                 try {
@@ -156,7 +155,7 @@ public class CsvLoader implements IDataLoader {
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
         if (tokens[0].equals(CsvConstants.TABLE)) {
-            setTable(tokens[1].toLowerCase(), true);            
+            setTable(tokens[1].toLowerCase());            
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -167,20 +166,18 @@ public class CsvLoader implements IDataLoader {
         return isMetaTokenParsed;
     }
 
-    protected void setTable(String tableName, boolean useCache) {
-        
+    protected void setTable(String tableName) {
         cleanupAfterDataLoad();
-        
         context.setTableName(tableName);
         
-        if (!useCache || context.getTableTemplate() == null) {
+        if (context.getTableTemplate() == null) {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
                     this.columnFilters != null ? this.columnFilters.get(tableName) : null));            
         }
         
         dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
     }
-    
+
     protected void cleanupAfterDataLoad() {
         if (context != null && context.getTableName() != null) {
             dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());            
@@ -293,6 +290,8 @@ public class CsvLoader implements IDataLoader {
             logger.debug("Running DDL: " + xml);
         }
         dbDialect.createTables(xml);
+        context.getTableTemplate().resetMetaData();
+        dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {
