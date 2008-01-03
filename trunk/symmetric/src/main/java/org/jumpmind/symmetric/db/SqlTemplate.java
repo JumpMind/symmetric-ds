@@ -78,6 +78,7 @@ public class SqlTemplate {
         // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
         sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
+        sql = replace("nodeId", node.getNodeId(), sql);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString("t", "t", columns);
