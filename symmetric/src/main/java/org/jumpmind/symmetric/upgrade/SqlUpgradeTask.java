@@ -39,6 +39,8 @@ public class SqlUpgradeTask implements IUpgradeTask {
     protected boolean isUpgradeRegistrationServer = true;
     
     protected boolean isUpgradeNonRegistrationServer = true;
+    
+    protected boolean useReplacement = true;
 
     public void upgrade(int[] fromVersion) {
         for (String sql : sqlList) {
@@ -49,10 +51,12 @@ public class SqlUpgradeTask implements IUpgradeTask {
 
     public void upgrade(Node node, int[] fromVersion) {
         for (String sql : sqlList) {
+            if (useReplacement) {
+                sql = replace("groupId", node.getNodeGroupId(), sql);
+                sql = replace("externalId", node.getExternalId(), sql);
+                sql = replace("nodeId", node.getNodeId(), sql);
+            }
             logger.debug("upgrade->" + sql);
-            sql = replace("groupId", node.getNodeGroupId(), sql);
-            sql = replace("externalId", node.getExternalId(), sql);
-            sql = replace("nodeId", node.getNodeId(), sql);
             jdbcTemplate.update(sql);
         }
     }
@@ -91,6 +95,14 @@ public class SqlUpgradeTask implements IUpgradeTask {
 
     public void setUpgradeRegistrationServer(boolean isUpgradeRegistrationServer) {
         this.isUpgradeRegistrationServer = isUpgradeRegistrationServer;
+    }
+
+    public boolean getUseReplacement() {
+        return useReplacement;
+    }
+
+    public void setUseReplacement(boolean useReplacement) {
+        this.useReplacement = useReplacement;
     }
 
 }
