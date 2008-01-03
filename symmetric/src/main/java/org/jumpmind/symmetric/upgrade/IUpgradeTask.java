@@ -20,8 +20,16 @@
 
 package org.jumpmind.symmetric.upgrade;
 
+import org.jumpmind.symmetric.model.Node;
+
 public interface IUpgradeTask {
 
+    @Deprecated
     public void upgrade(int[] fromVersion);
 
+    public void upgrade(Node node, int[] fromVersion);
+
+    public boolean isUpgradeRegistrationServer();
+    
+    public boolean isUpgradeNonRegistrationServer();
 }

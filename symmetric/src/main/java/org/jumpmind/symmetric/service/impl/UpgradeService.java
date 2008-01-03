@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
@@ -56,7 +57,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
             int[] fromVersion = Version.parseVersion(node.getSymmetricVersion());
 
             if (Version.isOlderMinorVersion(node.getSymmetricVersion())) {
-                runUpgrade(fromVersion);
+                runUpgrade(node, fromVersion);
                 node.setSymmetricVersion(Version.VERSION);
                 nodeService.updateNode(node);
             }
@@ -65,14 +66,18 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         }
     }
 
-    private void runUpgrade(int[] fromVersion) {
+    private void runUpgrade(Node node, int[] fromVersion) {
         String majorMinorVersion = fromVersion[0] + "." + fromVersion[1];
         List<IUpgradeTask> upgradeTaskList = upgradeTaskMap.get(majorMinorVersion);
         logger.info("Starting upgrade from version " + majorMinorVersion + " to " + Version.MAJOR + "."
                 + Version.MINOR);
+        boolean isRegistrationServer = StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl());
         if (upgradeTaskList != null) {
             for (IUpgradeTask upgradeTask : upgradeTaskList) {
-                upgradeTask.upgrade(fromVersion);
+                if ((isRegistrationServer && upgradeTask.isUpgradeRegistrationServer())
+                        || (!isRegistrationServer && upgradeTask.isUpgradeNonRegistrationServer())) {
+                    upgradeTask.upgrade(node, fromVersion);
+                }
             }
         }
         logger.info("Completed upgrade");

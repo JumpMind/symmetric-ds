@@ -22,8 +22,10 @@ package org.jumpmind.symmetric.upgrade;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.model.Node;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SqlUpgradeTask implements IUpgradeTask {
@@ -33,6 +35,10 @@ public class SqlUpgradeTask implements IUpgradeTask {
     protected JdbcTemplate jdbcTemplate;
     
     protected List<String> sqlList;
+    
+    protected boolean isUpgradeRegistrationServer = true;
+    
+    protected boolean isUpgradeNonRegistrationServer = true;
 
     public void upgrade(int[] fromVersion) {
         for (String sql : sqlList) {
@@ -41,12 +47,50 @@ public class SqlUpgradeTask implements IUpgradeTask {
         }
     }
 
+    public void upgrade(Node node, int[] fromVersion) {
+        for (String sql : sqlList) {
+            logger.debug("upgrade->" + sql);
+            sql = replace("groupId", node.getNodeGroupId(), sql);
+            sql = replace("externalId", node.getExternalId(), sql);
+            sql = replace("nodeId", node.getNodeId(), sql);
+            jdbcTemplate.update(sql);
+        }
+    }
+
+    private String replace(String prop, String replaceWith, String sourceString) {
+        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+    }
+
     public void setJdbcTemplate(JdbcTemplate jdbc) {
         this.jdbcTemplate = jdbc;
     }
 
     public void setSqlList(List<String> sqlList) {
         this.sqlList = sqlList;
+    }
+
+    public boolean isUpgradeNonRegistrationServer() {
+        return isUpgradeNonRegistrationServer;
+    }
+
+    public boolean getUpgradeNonRegistrationServer() {
+        return isUpgradeNonRegistrationServer;
+    }
+
+    public void setUpgradeNonRegistrationServer(boolean isUpgradeNonRegistrationServer) {
+        this.isUpgradeNonRegistrationServer = isUpgradeNonRegistrationServer;
+    }
+
+    public boolean isUpgradeRegistrationServer() {
+        return isUpgradeRegistrationServer;
+    }
+
+    public boolean getUpgradeRegistrationServer() {
+        return isUpgradeRegistrationServer;
+    }
+
+    public void setUpgradeRegistrationServer(boolean isUpgradeRegistrationServer) {
+        this.isUpgradeRegistrationServer = isUpgradeRegistrationServer;
     }
 
 }
