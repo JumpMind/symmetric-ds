@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -47,7 +49,11 @@ import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.ForeignKey;
+import org.apache.ddlutils.model.Index;
+import org.apache.ddlutils.model.IndexColumn;
+import org.apache.ddlutils.model.NonUniqueIndex;
 import org.apache.ddlutils.model.Table;
+import org.apache.ddlutils.model.UniqueIndex;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.load.IColumnFilter;
@@ -278,6 +284,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             table.setSchema((String) values.get("TABLE_SCHEM"));
             table.setDescription((String) values.get("REMARKS"));
             table.addColumns(readColumns(metaData, tableName));
+            table.addIndices(readIndices(metaData, tableName));
             Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
             for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn((String) it.next(), true)
                     .setPrimaryKey(true))
@@ -426,9 +433,81 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return (String) values.get("COLUMN_NAME");
     }
 
+    @SuppressWarnings("unchecked")
+    protected List initColumnsForIndex() {
+        List result = new ArrayList();
+
+        result.add(new MetaDataColumnDescriptor("INDEX_NAME", Types.VARCHAR));
+        // we're also reading the table name so that a model reader impl can
+        // filter manually
+        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("NON_UNIQUE", Types.BIT, Boolean.TRUE));
+        result.add(new MetaDataColumnDescriptor("ORDINAL_POSITION", Types.TINYINT, new Short((short) 0)));
+        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor("TYPE", Types.TINYINT));
+
+        return result;
+    }
+    
+    protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
+        Map indices = new ListOrderedMap();
+        ResultSet indexData = null;
+
+        try {
+            indexData = metaData.getIndices(tableName, false, false);
+
+            while (indexData.next()) {
+                Map values = readColumns(indexData, initColumnsForIndex());
+
+                readIndex(metaData, values, indices);
+            }
+        } finally {
+            if (indexData != null) {
+                indexData.close();
+            }
+        }
+        return indices.values();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices)
+            throws SQLException {
+        Short indexType = (Short) values.get("TYPE");
+
+        // we're ignoring statistic indices
+        if ((indexType != null) && (indexType.shortValue() == DatabaseMetaData.tableIndexStatistic)) {
+            return;
+        }
+
+        String indexName = (String) values.get("INDEX_NAME");
+
+        if (indexName != null) {
+            Index index = (Index) knownIndices.get(indexName);
+
+            if (index == null) {
+                if (((Boolean) values.get("NON_UNIQUE")).booleanValue()) {
+                    index = new NonUniqueIndex();
+                } else {
+                    index = new UniqueIndex();
+                }
+
+                index.setName(indexName);
+                knownIndices.put(indexName, index);
+            }
+
+            IndexColumn indexColumn = new IndexColumn();
+
+            indexColumn.setName((String) values.get("COLUMN_NAME"));
+            if (values.containsKey("ORDINAL_POSITION")) {
+                indexColumn.setOrdinalPosition(((Short) values.get("ORDINAL_POSITION")).intValue());
+            }
+            index.addColumn(indexColumn);
+        }
+    }
+
     /**
-     * Create the configured trigger.  The catalog will be changed to the source schema if the source schema 
-     * is configured.
+     * Create the configured trigger. The catalog will be changed to the source
+     * schema if the source schema is configured.
      */
     public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory audit,
             final String tablePrefix, final Table table) {
