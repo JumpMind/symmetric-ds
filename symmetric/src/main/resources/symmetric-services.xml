@@ -91,7 +91,7 @@
                 </entry>
                 <entry key="${sync.table.prefix}_channel">
                     <value>
-                        channel_id in (select channel_id from ${sync.table.prefix}_trigger where source_node_group_id = '$(groupId)')
+                        channel_id in (select channel_id from ${sync.table.prefix}_trigger where source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
                     </value>
                 </entry>
                 <entry key="${sync.table.prefix}_node_channel_ctl">
@@ -101,7 +101,7 @@
                 </entry>
                 <entry key="${sync.table.prefix}_trigger">
                     <value>
-                        source_node_group_id = '$(groupId)'
+                        source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)'
                     </value>
                 </entry>
             </map>
