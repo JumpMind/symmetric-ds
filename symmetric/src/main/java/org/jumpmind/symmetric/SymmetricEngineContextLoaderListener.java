@@ -23,6 +23,8 @@ package org.jumpmind.symmetric;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -47,12 +49,22 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
 
     static final String SYMMETRIC_SPRING_LOCATION = "classpath:/symmetric.xml";
 
+    static final Log logger = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
+
     @Override
     final public void contextInitialized(ServletContextEvent event) {
-        super.contextInitialized(event);
-        ApplicationContext ctx = WebApplicationContextUtils
-                .getWebApplicationContext(event.getServletContext());
-        createConfigureAndStartEngine(ctx);
+        try {
+            super.contextInitialized(event);
+            ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(event.getServletContext());
+            createConfigureAndStartEngine(ctx);
+        } catch (Exception ex) {
+            logger.error("Failed to initialize the web server context.", ex);
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            } else {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     protected void createConfigureAndStartEngine(ApplicationContext ctx) {
@@ -64,36 +76,27 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
     protected ContextLoader createContextLoader() {
         return new ContextLoader() {
             @SuppressWarnings("unchecked")
-            protected WebApplicationContext createWebApplicationContext(
-                    ServletContext servletContext, ApplicationContext parent)
-                    throws BeansException {
+            protected WebApplicationContext createWebApplicationContext(ServletContext servletContext,
+                    ApplicationContext parent) throws BeansException {
 
                 Class contextClass = determineContextClass(servletContext);
-                if (!ConfigurableWebApplicationContext.class
-                        .isAssignableFrom(contextClass)) {
-                    throw new ApplicationContextException(
-                            "Custom context class ["
-                                    + contextClass.getName()
-                                    + "] is not of type ConfigurableWebApplicationContext");
+                if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
+                    throw new ApplicationContextException("Custom context class [" + contextClass.getName()
+                            + "] is not of type ConfigurableWebApplicationContext");
                 }
 
                 ConfigurableWebApplicationContext wac = (ConfigurableWebApplicationContext) BeanUtils
                         .instantiateClass(contextClass);
                 wac.setParent(parent);
                 wac.setServletContext(servletContext);
-                String configLocation = servletContext
-                        .getInitParameter(CONFIG_LOCATION_PARAM);
+                String configLocation = servletContext.getInitParameter(CONFIG_LOCATION_PARAM);
                 if (configLocation == null) {
                     configLocation = SYMMETRIC_SPRING_LOCATION;
                 } else if (!configLocation.contains(SYMMETRIC_SPRING_LOCATION)) {
-                    configLocation = SYMMETRIC_SPRING_LOCATION + ","
-                            + configLocation;
+                    configLocation = SYMMETRIC_SPRING_LOCATION + "," + configLocation;
                 }
-                wac
-                        .setConfigLocations(StringUtils
-                                .tokenizeToStringArray(
-                                        configLocation,
-                                        ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS));
+                wac.setConfigLocations(StringUtils.tokenizeToStringArray(configLocation,
+                        ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS));
 
                 wac.refresh();
                 return wac;
