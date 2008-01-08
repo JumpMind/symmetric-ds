@@ -127,16 +127,22 @@
         <property name="sqlList">
             <list>
                 <value>
-                    delete from ${sync.table.prefix}_node where
+                    delete from ${sync.table.prefix}_node_channel_ctl where
                     node_id != '$(nodeId)' and
-                    node_group_id not in (select source_node_group_id from ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') and
-                    node_group_id not in (select target_node_group_id from ${sync.table.prefix}_node_group_link where source_node_group_id = '$(groupId)')
+                    node_id not in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.source_node_group_id where l.target_node_group_id = '$(groupId)') and
+                    node_id not in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
                 </value>
                 <value>
                     delete from ${sync.table.prefix}_node_security where
                     node_id != '$(nodeId)' and
                     node_id not in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.source_node_group_id where l.target_node_group_id = '$(groupId)') and
                     node_id not in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
+                </value>
+                <value>
+                    delete from ${sync.table.prefix}_node where
+                    node_id != '$(nodeId)' and
+                    node_group_id not in (select source_node_group_id from ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') and
+                    node_group_id not in (select target_node_group_id from ${sync.table.prefix}_node_group_link where source_node_group_id = '$(groupId)')
                 </value>
             </list>
         </property>
