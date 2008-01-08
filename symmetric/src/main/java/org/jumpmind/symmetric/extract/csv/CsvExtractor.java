@@ -77,6 +77,10 @@ public class CsvExtractor implements IDataExtractor {
     public void preprocessTable(Data data, BufferedWriter out,
             DataExtractorContext context) throws IOException {
 
+        if (data.getAudit() == null) {
+            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName() +
+                    ": try running syncTriggers() or restarting SymmetricDS");
+        }
         String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
             Util.write(out, "table, ", data.getTableName());
