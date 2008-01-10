@@ -157,6 +157,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
             Assert.assertEquals(history.getStatementCount(), expectedCount, "Wrong statement count");
             Assert.assertEquals(history.getFallbackInsertCount(), 0, "Wrong fallback insert count");
             Assert.assertEquals(history.getFallbackUpdateCount(), 0, "Wrong fallback update count");
+            // pause to make sure we get a different start time on the incoming batch history
+            Thread.sleep(10);
         }
     }
 
