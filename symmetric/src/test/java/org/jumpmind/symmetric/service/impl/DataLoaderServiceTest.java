@@ -241,6 +241,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
             Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
             Assert.assertEquals(history.getFailedRowNumber(), 1, "Wrong failed row number");
             Assert.assertEquals(history.getStatementCount(), 1, "Wrong statement count");
+            // pause to make sure we get a different start time on the incoming batch history
+            Thread.sleep(10);
         }
 
         batchId--;
