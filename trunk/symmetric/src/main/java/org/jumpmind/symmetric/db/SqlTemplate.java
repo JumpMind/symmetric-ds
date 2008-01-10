@@ -173,6 +173,7 @@ public class SqlTemplate {
         ddl = replace("txIdExpression", trigger.getTxIdExpression() == null ? dialect.getTransactionTriggerExpression()
                 : trigger.getTxIdExpression(), ddl);
         ddl = replace("nodeSelectWhere", trigger.getNodeSelect(), ddl);
+        ddl = replace("nodeSelectWhereEscaped", replace("'", "''", trigger.getNodeSelect()), ddl);
         ddl = replace("syncOnInsertCondition", trigger.getSyncOnInsertCondition(), ddl);
         ddl = replace("syncOnUpdateCondition", trigger.getSyncOnUpdateCondition(), ddl);
         ddl = replace("syncOnDeleteCondition", trigger.getSyncOnDeleteCondition(), ddl);
