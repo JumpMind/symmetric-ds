@@ -4,7 +4,7 @@
 <database name="testdb">
 
     <table name="test_very_long_table_name_1234">
-        <column name="id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="id" type="VARCHAR" required="true" primaryKey="true" />
     </table>
     
     <table name="test_triggers_table">
