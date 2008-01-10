@@ -57,6 +57,18 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="PROC_SYM_INSERT_DATA">
+                            <value>
+                                <![CDATA[ 
+                                CREATE PROCEDURE proc_sym_insert_data(schemaName varchar(50), prefixName varchar(50),
+                                tableName varchar(50), channelName varchar(50), dmlType varchar(1), triggerHistId int,
+                                transactionId varchar(1000), targetGroupId varchar(50), nodeSelectWhere varchar(1000),
+                                pkData varchar(32672), rowData varchar(32672))
+                                PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'
+                                ]]>
+                            </value>
+                        </entry>
                     </map>
                 </property>
                 <property name="stringColumnTemplate" >
@@ -96,34 +108,16 @@
                                 CREATE TRIGGER $(triggerName) 
                                 AFTER INSERT ON $(schemaName)$(tableName) 
                                 REFERENCING NEW AS NEW
-                                FOR EACH ROW MODE DB2SQL 
-                                INSERT INTO $(defaultSchema)$(prefixName)_data 
-                                (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
-                                values(
-                                  '$(targetTableName)',
-                                  '$(channelName)',
-                                  'I',
-                                  $(triggerHistoryId),
-                                  $(txIdExpression),
-                                  $(columns),                                
-                                  CURRENT_TIMESTAMP
-                                )
-                                ]]>
-                            </value>
-                        </entry>
-                        <entry key="insertPostTriggerTemplate">
-                            <value>
-                                <![CDATA[
-                                CREATE TRIGGER $(triggerName)p
-                                AFTER INSERT ON $(schemaName)$(tableName) 
-                                REFERENCING NEW AS NEW
-                                FOR EACH ROW MODE DB2SQL 
-                                insert into $(defaultSchema)$(prefixName)_data_event 
-                                (node_id, data_id) 
-                                select node_id, IDENTITY_VAL_LOCAL()
-                                from $(prefixName)_node c where 
-                                c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere)
+                                FOR EACH ROW MODE DB2SQL
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'I', $(triggerHistoryId), 
+                                  $(txIdExpression), 
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
+                                  null,
+                                  case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end)
                                 ]]>
                             </value>
                         </entry>
@@ -134,34 +128,15 @@
                                 AFTER UPDATE ON $(schemaName)$(tableName) 
                                 REFERENCING OLD AS OLD NEW AS NEW
                                 FOR EACH ROW MODE DB2SQL 
-                                insert into $(defaultSchema)$(prefixName)_data 
-                                (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
-                                values(
-                                  '$(targetTableName)',
-                                  '$(channelName)',      
-                                  'U',
-                                  $(triggerHistoryId),
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'U', $(triggerHistoryId), 
                                   $(txIdExpression),
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
                                   $(oldKeys),
-                                  $(columns),
-                                  CURRENT_TIMESTAMP
-                                )
-                                ]]>
-                            </value>
-                        </entry>
-                        <entry key="updatePostTriggerTemplate">
-                            <value>
-                                <![CDATA[
-                                CREATE TRIGGER $(triggerName)p
-                                AFTER UPDATE ON $(schemaName)$(tableName) 
-                                REFERENCING OLD AS OLD NEW AS NEW
-                                FOR EACH ROW MODE DB2SQL 
-                                insert into $(defaultSchema)$(prefixName)_data_event 
-                                (node_id, data_id) 
-                                select node_id, IDENTITY_VAL_LOCAL()
-                                from $(prefixName)_node c where 
-                                c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere)
+                                  case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end)
                                 ]]>
                             </value>
                         </entry>
@@ -172,33 +147,15 @@
                                 AFTER DELETE ON $(schemaName)$(tableName) 
                                 REFERENCING OLD AS OLD
                                 FOR EACH ROW MODE DB2SQL 
-                                insert into $(defaultSchema)$(prefixName)_data 
-                                (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
-                                values(
-                                  '$(targetTableName)',
-                                  '$(channelName)',
-                                  'D',
-                                  $(triggerHistoryId),
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'D', $(triggerHistoryId), 
                                   $(txIdExpression),
-                                  $(oldKeys),
-                                  CURRENT_TIMESTAMP
-                                )
-                                ]]>
-                            </value>
-                        </entry>
-                        <entry key="deletePostTriggerTemplate">
-                            <value>
-                                <![CDATA[
-                                CREATE TRIGGER $(triggerName)p
-                                AFTER DELETE ON $(schemaName)$(tableName) 
-                                REFERENCING OLD AS OLD
-                                FOR EACH ROW MODE DB2SQL 
-                                insert into $(defaultSchema)$(prefixName)_data_event 
-                                (node_id, data_id) 
-                                select node_id, IDENTITY_VAL_LOCAL()
-                                from $(prefixName)_node c where 
-                                c.node_group_id = '$(targetGroupId)'
-                                and c.sync_enabled = 1 $(nodeSelectWhere)
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
+                                  case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(oldKeys)
+                                  else null end,
+                                  null)
                                 ]]>
                             </value>
                         </entry>
