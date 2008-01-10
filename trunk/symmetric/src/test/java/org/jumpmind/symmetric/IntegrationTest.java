@@ -175,7 +175,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     @SuppressWarnings("unchecked")
     protected void testSyncUpdateCondition() {
-        rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { null, "1" });
+        rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "I", "1" });
         getClientEngine().pull();
         Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "1" }).size(), 0,
                 "The order record was sync'd when it should not have been.");
