@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.ddlutils.model.Column;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 
 public class StatementBuilder {
     public enum DmlType {
@@ -53,29 +52,29 @@ public class StatementBuilder {
         dmlType = type;
     }
 
-    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns, BinaryEncoding encoding) {
+    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns, boolean isBlobOverrideToBinary) {
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
-            types = buildTypes(columns, encoding);
+            types = buildTypes(columns, isBlobOverrideToBinary);
         } else if (type == DmlType.UPDATE) {
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, encoding);
+            types = buildTypes(keys, columns, isBlobOverrideToBinary);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
-            types = buildTypes(keys, encoding);
+            types = buildTypes(keys, isBlobOverrideToBinary);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
         dmlType = type;
     }
 
-    protected int[] buildTypes(Column[] keys, Column[] columns, BinaryEncoding encoding) {
-        int[] columnTypes = buildTypes(columns, encoding);
-        int[] keyTypes = buildTypes(keys, encoding);
+    protected int[] buildTypes(Column[] keys, Column[] columns, boolean isBlobOverrideToBinary) {
+        int[] columnTypes = buildTypes(columns, isBlobOverrideToBinary);
+        int[] keyTypes = buildTypes(keys, isBlobOverrideToBinary);
         return ArrayUtils.addAll(columnTypes, keyTypes);
     }
     
-    protected int[] buildTypes(Column[] columns, BinaryEncoding encoding) {
+    protected int[] buildTypes(Column[] columns, boolean isBlobOverrideToBinary) {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -85,7 +84,7 @@ public class StatementBuilder {
         int[] types = new int[list.size()];
         int index = 0;
         for (Integer type : list) {
-            if (type == Types.BLOB && encoding == BinaryEncoding.NONE) {
+            if (type == Types.BLOB && isBlobOverrideToBinary) {
                 type = Types.BINARY;
             }
             types[index++] = type;

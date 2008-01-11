@@ -141,6 +141,8 @@ public interface IDbDialect {
     
     public boolean isBlobSyncSupported();
     
+    public boolean isBlobOverrideToBinary();
+    
     public boolean isClobSyncSupported();
     
     public void createTables(String xml);

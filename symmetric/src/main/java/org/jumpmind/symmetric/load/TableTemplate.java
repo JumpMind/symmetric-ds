@@ -166,7 +166,7 @@ public class TableTemplate {
             }
 
             st = new StatementBuilder(type, table.getName(), keyMetaData,
-                    getColumnMetaData(filteredColumnNames), encoding);
+                    getColumnMetaData(filteredColumnNames), dbDialect.isBlobOverrideToBinary());
             statementMap.put(type, st);
         }
         return st;

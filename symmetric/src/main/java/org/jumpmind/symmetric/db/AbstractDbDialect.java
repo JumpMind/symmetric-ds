@@ -180,6 +180,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
     }
+    
+    public boolean isBlobOverrideToBinary() {
+        return false;
+    }
 
     abstract protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName);
 
