@@ -242,6 +242,9 @@
                             <foCustomization>
                                 ${docbook.source}/resources/xsl/docbook-fopdf.xsl
                             </foCustomization>
+                            <postProcess>
+                                <delete file="${docbook.target}/pdf/user-guide.fo" />
+                            </postProcess>
                         </configuration>                        
                     </execution>
                     
