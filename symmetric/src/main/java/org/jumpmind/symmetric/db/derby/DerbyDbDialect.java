@@ -49,11 +49,6 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         } catch (Exception e) {
             logger.warn("Trigger " + triggerName + " does not exist");
         }
-        try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName + "p");
-        } catch (Exception e) {
-            logger.warn("Trigger " + triggerName + "p does not exist");
-        }
     }
     
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
