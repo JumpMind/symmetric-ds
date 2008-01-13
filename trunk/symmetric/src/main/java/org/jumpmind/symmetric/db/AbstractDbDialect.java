@@ -453,6 +453,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return result;
     }
     
+    @SuppressWarnings("unchecked")
     protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map indices = new ListOrderedMap();
         ResultSet indexData = null;
