@@ -197,7 +197,7 @@ public class DataService extends AbstractService implements IDataService {
      */
     public void insertHeartbeatEvent(Node node) {
         Data data = createData(tablePrefix + "_node", " t.node_id = '" + node.getNodeId() + "'");
-        if (data != null) {
+        if (data != null && data.getAudit() != null) {
             data.setChannelId(Constants.CHANNEL_CONFIG);
             insertDataEvent(data, nodeService.findNodesToPushTo());
         } else {
