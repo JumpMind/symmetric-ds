@@ -71,18 +71,21 @@ public class SqlTemplate {
 
     public String createInitalLoadSql(Node node, IDbDialect dialect, Trigger trig, Table metaData) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
+
+        Column[] columns = trig.orderColumnsForTable(metaData);
+        String columnsText = buildColumnString("t", "t", columns);
+        sql = replace("columns", columnsText, sql);
+
         sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("whereClause", trig.getInitialLoadSelect() == null ? "1=1" : trig.getInitialLoadSelect(), sql);
+        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString("t", metaData.getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
         sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
         sql = replace("nodeId", node.getNodeId(), sql);
 
-        Column[] columns = trig.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString("t", "t", columns);
-        sql = replace("columns", columnsText, sql);
         return sql;
     }
 
@@ -97,25 +100,31 @@ public class SqlTemplate {
 
     public String createCsvDataSql(Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
-        sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
+        
+        sql = replace("tableName", trig.getSourceTableName(), sql);
+        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = replace("whereClause", whereClause, sql);
+        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString("t", metaData.getPrimaryKeyColumns()), sql);
+
         return sql;
     }
 
     public String createCsvPrimaryKeySql(Trigger trig, Table metaData, String whereClause) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
-        sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
-        sql = replace("whereClause", whereClause, sql);
 
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
+
+        sql = replace("tableName", trig.getSourceTableName(), sql);
+        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = replace("whereClause", whereClause, sql);
+        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString("t", columns), sql);
+
         return sql;
     }
 
@@ -158,10 +167,7 @@ public class SqlTemplate {
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema, String ddl) {
-        ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
         ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(), ddl);
-        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName().toUpperCase()
-                + "." : "", ddl);
         ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
         ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
@@ -186,11 +192,17 @@ public class SqlTemplate {
         ddl = replace("columns", columnsText, ddl);
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
+        // some column templates need tableName and schemaName
+        ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
+        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName().toUpperCase()
+                + "." : "", ddl);
+
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
+        ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(newTriggerValue, columns), ddl);
 
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
@@ -266,6 +278,49 @@ public class SqlTemplate {
             }
         }
 
+        return b.toString();
+    }
+
+    // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
+    private String getPrimaryKeyWhereString(String alias, Column[] columns) {
+        StringBuilder b = new StringBuilder();
+        for (Column column : columns) {
+            b.append("'").append(column.getName()).append("=");
+            switch (column.getTypeCode()) {
+            case Types.BIT:
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.INTEGER:
+            case Types.BIGINT:
+            case Types.FLOAT:
+            case Types.REAL:
+            case Types.DOUBLE:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+            case Types.BOOLEAN:
+                b.append("'").append(triggerConcatCharacter);
+                b.append("rtrim(char(").append(alias).append(".").append(column.getName()).append("))");
+                b.append(triggerConcatCharacter).append("'");
+                break;
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:
+                b.append("'''").append(triggerConcatCharacter);
+                b.append(alias).append(".").append(column.getName());
+                b.append(triggerConcatCharacter).append("'''");
+                break;
+            case Types.DATE:
+            case Types.TIMESTAMP:
+                b.append("{ts '''").append(triggerConcatCharacter);
+                b.append("rtrim(char(").append(alias).append(".").append(column.getName()).append("))");
+                b.append(triggerConcatCharacter).append("'''}");
+                break;
+            }
+            if (!column.equals(columns[columns.length - 1])) {
+                b.append(" and ");
+            }
+        }
+        b.append("'");
         return b.toString();
     }
 

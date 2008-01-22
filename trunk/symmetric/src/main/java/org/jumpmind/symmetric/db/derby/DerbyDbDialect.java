@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.derby;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -56,11 +57,15 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isBlobSyncSupported() {
-        return false;
+        return true;
     }
     
     public boolean isClobSyncSupported() {
-        return false;
+        return true;
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
     }
 
     public void disableSyncTriggers() {
