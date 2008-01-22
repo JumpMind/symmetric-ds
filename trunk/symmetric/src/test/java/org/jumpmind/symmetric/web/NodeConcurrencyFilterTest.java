@@ -31,7 +31,6 @@ public class NodeConcurrencyFilterTest {
         
         other.start();        
         Thread.sleep(500);
-
         
         one.hold = false;
         three.hold = false;
@@ -77,7 +76,7 @@ public class NodeConcurrencyFilterTest {
                     public void work() throws ServletException, IOException {
                         while (hold) {
                             try {
-                                Thread.sleep(100);
+                                Thread.sleep(50);
                             } catch (InterruptedException e) {
                             }
                         }
