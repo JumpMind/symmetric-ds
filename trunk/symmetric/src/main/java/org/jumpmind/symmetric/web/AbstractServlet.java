@@ -40,42 +40,22 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
-import org.jumpmind.symmetric.transport.metered.MeteredOutputStreamOutgoingTransport;
-import org.jumpmind.symmetric.util.MeteredOutputStream;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
-    protected int getDownloadRate() {
-        return (Integer) getContext().getBean(Constants.DOWNLOAD_RATE);
-    }
-
     protected abstract Log getLogger();
 
-    protected IOutgoingTransport createOutgoingTransport(
-            HttpServletResponse resp) throws IOException {
-        int downloadRate = getDownloadRate();
-        if (downloadRate > 0) {
-            return new MeteredOutputStreamOutgoingTransport(resp
-                    .getOutputStream(), downloadRate*MeteredOutputStream.KB);
-        } else {
-            return new InternalOutgoingTransport(resp.getOutputStream());
-        }
+    protected IOutgoingTransport createOutgoingTransport(HttpServletResponse resp) throws IOException {
+        return new InternalOutgoingTransport(resp.getOutputStream());
     }
 
-    protected OutputStream createOutputStream(HttpServletResponse resp)
-            throws IOException {
-        int downloadRate = getDownloadRate();
-        if (downloadRate > 0) {
-            return new MeteredOutputStream(resp.getOutputStream(), downloadRate*MeteredOutputStream.KB);
-        } else {
-            return resp.getOutputStream();
-        }
+    protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {
+        return resp.getOutputStream();
     }
 
-    protected InputStream createInputStream(HttpServletRequest req)
-            throws IOException {
+    protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
 
         if (getLogger().isDebugEnabled()) {
@@ -100,13 +80,11 @@ abstract public class AbstractServlet extends HttpServlet {
     }
 
     protected ApplicationContext getContext() {
-        return WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 
     protected IDataLoaderService getDataLoaderService() {
-        return (IDataLoaderService) getContext().getBean(
-                Constants.DATALOADER_SERVICE);
+        return (IDataLoaderService) getContext().getBean(Constants.DATALOADER_SERVICE);
     }
 
     protected IDataService getDataService() {
@@ -122,8 +100,7 @@ abstract public class AbstractServlet extends HttpServlet {
     }
 
     protected IDataExtractorService getDataExtractorService() {
-        return (IDataExtractorService) getContext().getBean(
-                Constants.DATAEXTRACTOR_SERVICE);
+        return (IDataExtractorService) getContext().getBean(Constants.DATAEXTRACTOR_SERVICE);
     }
 
 }
