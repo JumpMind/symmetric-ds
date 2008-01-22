@@ -1,17 +1,26 @@
 package org.jumpmind.symmetric.db.derby;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Hashtable;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.derby.iapi.sql.conn.LanguageConnectionContext;
 import org.apache.derby.impl.jdbc.EmbedConnection;
 
 public class DerbyFunctions {
 
     private static final String CURRENT_CONNECTION_URL = "jdbc:default:connection";
+    
+    private static final int MAX_STRING_LENGTH = 32672;
+    
+    // Base64 will output roughly 1.37% size of input
+    private static final int MAX_BINARY_LENGTH = 23700;
     
     private static Hashtable<String, Boolean> syncDisabledTable = new Hashtable<String, Boolean>();
 
@@ -70,6 +79,40 @@ public class DerbyFunctions {
         }
     }
     
+    public static String blobToString(String columnName, String tableName, String whereClause) throws SQLException {
+        Connection conn = DriverManager.getConnection(CURRENT_CONNECTION_URL);
+        String sql = "select " + columnName + " from " + tableName + " where " + whereClause;
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        String str = null;
+        if (rs.next()) {
+            Blob blob = rs.getBlob(1);
+            if (blob != null && blob.length() > 0) {
+                str = new String(Base64.encodeBase64(blob.getBytes(1, MAX_BINARY_LENGTH)));
+            }
+        }
+        ps.close();
+        conn.close();
+        return str == null ? "" : "\"" + str + "\"";
+    }
+
+    public static String clobToString(String columnName, String tableName, String whereClause) throws SQLException {
+        Connection conn = DriverManager.getConnection(CURRENT_CONNECTION_URL);
+        String sql = "select " + columnName + " from " + tableName + " where " + whereClause;
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        String str = null;
+        if (rs.next()) {
+            Clob clob = rs.getClob(1);
+            if (clob != null && clob.length() > 0) {
+                str = clob.getSubString(1, MAX_STRING_LENGTH);
+            }
+        }
+        ps.close();
+        conn.close();
+        return str == null ? "" : "\"" + str + "\"";
+    }
+
     private static LanguageConnectionContext getLanguageConnection() throws SQLException {
         EmbedConnection conn = (EmbedConnection) DriverManager.getConnection(CURRENT_CONNECTION_URL);
         return conn.getLanguageConnection();

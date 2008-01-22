@@ -57,6 +57,26 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="FN_SYM_CLOB_TO_STRING">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_clob_to_string(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.clobToString'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_BLOB_TO_STRING">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_blob_to_string(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.blobToString'
+                                ]]>
+                            </value>
+                        </entry>
                         <entry key="PROC_SYM_INSERT_DATA">
                             <value>
                                 <![CDATA[ 
@@ -78,12 +98,12 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA['unsupported'||','||]]>
+                        <![CDATA[fn_sym_clob_to_string('$(columnName)', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA['unsupported'||','||]]>
+                        <![CDATA[fn_sym_blob_to_string('$(columnName)', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
