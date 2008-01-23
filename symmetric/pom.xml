@@ -5,7 +5,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
     <packaging>jar</packaging>
-    <version>1.2.0-pre</version>
+    <version>1.2.0-snapshot</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -245,9 +245,9 @@
                             <postProcess>
                                 <delete file="${docbook.target}/pdf/user-guide.fo" />
                             </postProcess>
-                        </configuration>                        
+                        </configuration>
                     </execution>
-                    
+
                     <execution>
                         <id>build-singlehtml-doc</id>
                         <phase>pre-site</phase>
@@ -281,9 +281,9 @@
                                     </fileset>
                                 </copy>
                             </postProcess>
-                        </configuration>                        
+                        </configuration>
                     </execution>
-                    
+
                     <execution>
                         <id>build-chunkedhtml-doc</id>
                         <phase>pre-site</phase>
@@ -317,7 +317,7 @@
                                     </fileset>
                                 </copy>
                             </postProcess>
-                        </configuration>                        
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
@@ -345,6 +345,17 @@
                             <report>issue-tracking</report>
                             <report>license</report>
                             <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changes-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>changes-report</report>
                         </reports>
                     </reportSet>
                 </reportSets>
