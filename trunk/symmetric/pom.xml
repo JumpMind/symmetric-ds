@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
@@ -13,8 +15,12 @@
         'retail store' databases and a centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</developerConnection>
+        <connection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </connection>
+        <developerConnection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </developerConnection>
         <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</url>
     </scm>
     <issueManagement>
@@ -103,6 +109,18 @@
             <id>sourceforge.net</id>
             <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs</url>
         </site>
+        <!-- use the following if you're not using a snapshot version. -->
+        <repository>
+            <id>sourceforge.net</id>
+            <name>SymmetricDS Repo</name>
+            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+        </repository>
+        <!-- use the following if you ARE using a snapshot version. -->
+        <snapshotRepository>
+            <id>sourceforge.net</id>
+            <name>SymmetricDS Repo</name>
+            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+        </snapshotRepository>
     </distributionManagement>
     <properties>
         <surefire-report-release-version>2.4</surefire-report-release-version>
