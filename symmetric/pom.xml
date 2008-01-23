@@ -328,6 +328,19 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changes-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>announcement-generate</goal>
+                        </goals>
+                        <id>announcement-generate</id>
+                    </execution>
+                </executions>
+                <configuration></configuration>
+            </plugin>
         </plugins>
     </build>
     <reporting>
