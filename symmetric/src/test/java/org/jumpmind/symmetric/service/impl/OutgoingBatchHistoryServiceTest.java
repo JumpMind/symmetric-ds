@@ -37,20 +37,17 @@ import org.testng.annotations.Test;
 public class OutgoingBatchHistoryServiceTest extends AbstractDatabaseTest
 {
     private IOutgoingBatchHistoryService historyService;
-    private PurgeService purgeService;
 
     @BeforeTest(groups="continuous")
     protected void setUp() {
         historyService = (IOutgoingBatchHistoryService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_HISTORY_SERVICE);
-        purgeService = (PurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);
         cleanSlate("sym_outgoing_batch_hist");
     }
     
     @Test(groups="continuous")
     public void test()
     {  
-        purgeService.setRetentionInMinutes(0);
-        purgeService.purge();
+        getJdbcTemplate().update("delete from sym_outgoing_batch_hist");
         
         historyService.created(1, 5);
         historyService.sent(1);
