@@ -35,7 +35,7 @@ final public class Version {
 
     public static final int PATCH = 0;
 
-    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-pre";
+    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH;
 
     public static int[] parseVersion(String version) {
         int[] versions = new int[3];

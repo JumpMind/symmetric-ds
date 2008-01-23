@@ -6,48 +6,48 @@
     </properties>
     <body>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
-            <action dev="erilong" type="add" issue="1825801">
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
                 Add support to auto create the tables that are being synced
             </action>
-            <action dev="chenson42" type="add" issue="1861088">Implement the HSQLDB Dialect</action>
-            <action dev="erilong" type="add" issue=" 1825799">
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861088">Implement the HSQLDB Dialect</action>
+            <action dev="erilong" type="add" issue=" atid=997727&amp;aid=1825799">
                 Implement the Apache Derby Dialect
             </action>
-            <action dev="chenson42" type="add" issue="1877262">
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1877262">
                 Make the concurrent worker count by servlet instead of across all servlets
             </action>
-            <action dev="chenson42" type="add" issue="1861764">
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861764">
                 Support the automatic detection of http compression
             </action>
-            <action dev="erilong" type="add" issue="1852586">
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1852586">
                 Add support for automatically sending initial load
             </action>
-            <action dev="chenson42" type="add" issue="1851161">
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1851161">
                 Add cluster support by providing a ClusterService
             </action>
-            <action dev="erilong" type="add" issue="1851159">
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1851159">
                 Add promiscuous registration mode
             </action>
-            <action dev="chenson42" type="add" issue="1849379">
-                Add curTriggerValue varirable for use in sym_trigger definitions
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1849379">
+                Add curTriggerValue variable for use in sym_trigger definitions
             </action>
-            <action dev="chenson42" type="fix" issue="1861090">
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1861090">
                 To many data events can be purged in the same transaction
             </action>
-            <action dev="chenson42" type="fix" issue="1858083">
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1858083">
                 SQL Server Initial Load broke when 'text' fields are used
             </action>
-            <action dev="erilong" type="fix" issue="1854418">
+            <action dev="erilong" type="fix" issue="atid=997724&amp;aid=1854418">
                 The JMX showBatch and writeBatchRangeToFile broken in 1.1
             </action>
-            <action dev="chenson42" type="fix" issue="1851065">Trigger name is too long ...</action>
-            <action dev="chenson42" type="fix" issue="1861090">
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1851065">Trigger name is too long ...</action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1861090">
                 To many data events can be purged in the same transaction
             </action>
-            <action dev="chenson42" type="fix" issue="1849767">
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1849767">
                 Don't output a WARN if the sync_url is null
             </action>
-            <action dev="chenson42" type="fix" issue="1849763">
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1849763">
                 Bug introduced in refactoring of SqlScript
             </action>
         </release>
