@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
     <packaging>jar</packaging>
-    <version>1.2.0-snapshot</version>
+    <version>1.2.0</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -15,13 +13,9 @@
         'retail store' databases and a centralized 'corporate' database.
     </description>
     <scm>
-        <connection>
-            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
-        </connection>
-        <developerConnection>
-            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
-        </developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.2.0</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.2.0</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.2.0</url>
     </scm>
     <issueManagement>
         <system>SourceForge</system>
@@ -111,7 +105,7 @@
         </site>
     </distributionManagement>
     <properties>
-        <surefire-report-release-version>2.4-collab-SNAPSHOT</surefire-report-release-version>
+        <surefire-report-release-version>2.4</surefire-report-release-version>
         <springframework-release-version>2.0.7</springframework-release-version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide</docbook.target>
@@ -134,7 +128,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>1.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -339,7 +333,7 @@
                         <id>announcement-generate</id>
                     </execution>
                 </executions>
-                <configuration></configuration>
+                <configuration />
             </plugin>
         </plugins>
     </build>
