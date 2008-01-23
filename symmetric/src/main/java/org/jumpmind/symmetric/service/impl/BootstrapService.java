@@ -250,7 +250,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setSchemaVersion(runtimeConfiguration.getSchemaVersion());
             node.setExternalId(runtimeConfiguration.getExternalId());
             node.setNodeGroupId(runtimeConfiguration.getNodeGroupId());
-            node.setSymmetricVersion(Version.VERSION);
+            node.setSymmetricVersion(Version.version());
             if (!StringUtils.isBlank(runtimeConfiguration.getMyUrl())) {
                 node.setSyncURL(runtimeConfiguration.getMyUrl());
             }

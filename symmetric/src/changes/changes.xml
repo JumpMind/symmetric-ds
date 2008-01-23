@@ -5,11 +5,19 @@
         <author email="chenson42@users.sourceforge.net">Chris Henson</author>
     </properties>
     <body>
+        <release version="1.3.0" date="unknown" description="a brave new frontier">
+            <action dev="chenson42" type="add">
+                Changed Version.java to reference the pom.properties version that is packaged in the
+                jar during a Maven build.
+            </action>
+        </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
                 Add support to auto create the tables that are being synced
             </action>
-            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861088">Implement the HSQLDB Dialect</action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861088">
+                Implement the HSQLDB Dialect
+            </action>
             <action dev="erilong" type="add" issue=" atid=997727&amp;aid=1825799">
                 Implement the Apache Derby Dialect
             </action>
@@ -40,7 +48,9 @@
             <action dev="erilong" type="fix" issue="atid=997724&amp;aid=1854418">
                 The JMX showBatch and writeBatchRangeToFile broken in 1.1
             </action>
-            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1851065">Trigger name is too long ...</action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1851065">
+                Trigger name is too long ...
+            </action>
             <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1861090">
                 To many data events can be purged in the same transaction
             </action>
