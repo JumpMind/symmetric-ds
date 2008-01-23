@@ -51,7 +51,7 @@ public class Node {
      */
     private String databaseType;
     
-    private String symmetricVersion = Version.VERSION;
+    private String symmetricVersion = Version.version();
 
     /**
      * Get the version of the database the node hosts.

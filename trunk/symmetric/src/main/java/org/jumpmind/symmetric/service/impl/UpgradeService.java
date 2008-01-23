@@ -58,7 +58,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
 
             if (Version.isOlderMinorVersion(node.getSymmetricVersion())) {
                 runUpgrade(node, fromVersion);
-                node.setSymmetricVersion(Version.VERSION);
+                node.setSymmetricVersion(Version.version());
                 nodeService.updateNode(node);
             }
         } else {

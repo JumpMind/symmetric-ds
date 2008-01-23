@@ -21,6 +21,10 @@
 
 package org.jumpmind.symmetric;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -29,26 +33,41 @@ import org.apache.commons.lang.StringUtils;
  */
 final public class Version {
 
-    public static final int MAJOR = 1;
+    static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(Version.class);
 
-    public static final int MINOR = 3;
+    public static final int MAJOR = 0;
 
-    public static final int PATCH = 0;
+    public static final int MINOR = 1;
 
-    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-SNAPSHOT";
+    public static final int PATCH = 2;
+
+    public static String version() {
+        InputStream is = Version.class
+                .getResourceAsStream("/META-INF/maven/org.jumpmind.symmetric/symmetric-ds/pom.properties");
+        if (is != null) {
+            Properties p = new Properties();
+            try {
+                p.load(is);
+                return p.getProperty("version");
+            } catch (IOException e) {
+                log.warn(e, e);
+            }            
+        }
+        return "development";
+    }
 
     public static int[] parseVersion(String version) {
         int[] versions = new int[3];
         if (!StringUtils.isEmpty(version)) {
             String[] splitVersion = version.split("\\.");
             if (splitVersion.length >= 3) {
-                versions[2] = parseVersionComponent(splitVersion[2]);
+                versions[PATCH] = parseVersionComponent(splitVersion[2]);
             }
             if (splitVersion.length >= 2) {
-                versions[1] = parseVersionComponent(splitVersion[1]);
+                versions[MINOR] = parseVersionComponent(splitVersion[1]);
             }
             if (splitVersion.length >= 1) {
-                versions[0] = parseVersionComponent(splitVersion[0]);
+                versions[MAJOR] = parseVersionComponent(splitVersion[0]);
             }
         }
         return versions;
@@ -68,7 +87,8 @@ final public class Version {
     }
 
     public static boolean isOlderMajorVersion(int[] versions) {
-        if (versions[0] < MAJOR) {
+        int[] softwareVersion = parseVersion(version());
+        if (versions[MAJOR] < softwareVersion[MAJOR]) {
             return true;
         }
         return false;
@@ -79,9 +99,10 @@ final public class Version {
     }
 
     public static boolean isOlderMinorVersion(int[] versions) {
-        if (versions[0] < MAJOR) {
+        int[] softwareVersion = parseVersion(version());
+        if (versions[0] < softwareVersion[MAJOR]) {
             return true;
-        } else if (versions[0] == MAJOR && versions[1] < MINOR) {
+        } else if (versions[MAJOR] == softwareVersion[MAJOR] && versions[MINOR] < softwareVersion[MINOR]) {
             return true;
         }
         return false;

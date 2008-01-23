@@ -137,7 +137,7 @@ public class SymmetricEngine {
         dataService = (IDataService)applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
         registerEngine();
-        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.VERSION + " database="+dbDialect.getName());
+        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.version() + " database="+dbDialect.getName());
     }
 
     /**
