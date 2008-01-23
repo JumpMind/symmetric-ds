@@ -85,6 +85,8 @@ public class Constants {
     
     public static final String OUTGOING_BATCH_SERVICE = "outgoingBatchService";
     
+    public static final String OUTGOING_BATCH_HISTORY_SERVICE = "outgoingBatchHistoryService";
+    
     public static final String PURGE_SERVICE = "purgeService";
     
     public static final String JDBC = "jdbcTemplate";
