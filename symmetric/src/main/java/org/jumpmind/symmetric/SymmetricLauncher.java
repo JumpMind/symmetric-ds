@@ -85,6 +85,7 @@ public class SymmetricLauncher {
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
     public static void main(String[] args) throws Exception {
+        
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {

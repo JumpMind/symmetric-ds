@@ -10,6 +10,9 @@
                 Changed Version.java to reference the pom.properties version that is packaged in the
                 jar during a Maven build.
             </action>
+            <action dev="chenson42" type="add">
+                Added a thick client configuration and administration utility application.
+            </action>            
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
