@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 
 public class NodeConcurrencyFilterTest {
 
-    @Test(groups = "continuous")
+    @Test(groups = "continuous", timeOut=120)
     public void testFilter() throws Exception {
         NodeConcurrencyFilter filter = new NodeConcurrencyFilter();
         filter.maxNumberOfConcurrentWorkers = 2;
@@ -66,6 +66,7 @@ public class NodeConcurrencyFilterTest {
         boolean success;
 
         MockWorker(NodeConcurrencyFilter filter, String path) {
+            this.setDaemon(true);
             this.filter = filter;
             this.servletPath = path;
         }
