@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -53,15 +54,19 @@ public class AdminTreeControl extends JScrollPane {
 
     private JPopupMenu rootPopup;
 
+    private JPopupMenu connectionPopup;
+
     private List<SymmetricConnection> connections = new ArrayList<SymmetricConnection>();
 
     private IAppController appController;
+
+    AbstractAction connectAction;
 
     protected AdminTreeControl(IAppController controller) throws Exception {
         this.appController = controller;
         final DefaultMutableTreeNode top = new DefaultMutableTreeNode("Connections") {
 
-            private static final long serialVersionUID = -2771265121713469390L;
+            private static final long serialVersionUID = -1L;
 
             @Override
             public boolean isLeaf() {
@@ -71,10 +76,29 @@ public class AdminTreeControl extends JScrollPane {
 
         rootPopup = new JPopupMenu();
         rootPopup.add(new JMenuItem(new AbstractAction("Add Connection") {
-            private static final long serialVersionUID = 5358595806702906706L;
+            private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
-                initSymmetricConnection(new SymmetricConnection("test connection"), top);
+                addSymmetricConnection(new SymmetricConnection("test connection"), top);
+                saveConnections(connections);
+            }
+        }));
+
+        connectAction = new AbstractAction("Connect") {
+            private static final long serialVersionUID = -1L;
+
+            public void actionPerformed(ActionEvent e) {
+            }
+
+        };
+
+        connectionPopup = new JPopupMenu();
+        connectionPopup.add(new JMenuItem(connectAction));
+        connectionPopup.add(new JMenuItem(new AbstractAction("Remove Connection") {
+            private static final long serialVersionUID = -1L;
+
+            public void actionPerformed(ActionEvent e) {
+                removeSymmetricConnection((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent());
                 saveConnections(connections);
             }
         }));
@@ -86,18 +110,24 @@ public class AdminTreeControl extends JScrollPane {
 
         List<SymmetricConnection> connections = loadConnections();
         for (SymmetricConnection c : connections) {
-            initSymmetricConnection(c, top);
+            addSymmetricConnection(c, top);
         }
 
         this.getViewport().add(tree);
     }
 
-    private void initSymmetricConnection(SymmetricConnection c, DefaultMutableTreeNode top) {
+    private void addSymmetricConnection(SymmetricConnection c, DefaultMutableTreeNode top) {
         this.connections.add(c);
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         DefaultMutableTreeNode child = new DefaultMutableTreeNode(c);
         model.insertNodeInto(child, top, top.getChildCount());
         tree.scrollPathToVisible(new TreePath(child));
+    }
+
+    private void removeSymmetricConnection(DefaultMutableTreeNode node) {
+        this.connections.remove(node.getUserObject());
+        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+        model.removeNodeFromParent(node);
     }
 
     private File getAppDir() {
@@ -146,7 +176,20 @@ public class AdminTreeControl extends JScrollPane {
 
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                rootPopup.show(e.getComponent(), e.getX(), e.getY());
+                TreePath path = tree.getSelectionPath();
+                if (path != null
+                        && ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof SymmetricConnection) {
+                    SymmetricConnection c = (SymmetricConnection) ((DefaultMutableTreeNode) path.getLastPathComponent())
+                            .getUserObject();
+                    if (c.isConnected()) {
+                        connectAction.putValue(Action.NAME, "Disconnect");
+                    } else {
+                        connectAction.putValue(Action.NAME, "Connect");
+                    }
+                    connectionPopup.show(e.getComponent(), e.getX(), e.getY());
+                } else {
+                    rootPopup.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
     }
