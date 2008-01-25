@@ -98,7 +98,7 @@ public class ConnectionDialog extends JPanel {
                 JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Apply", "Cancel" }, "Apply") == 0) {
             SymmetricConnection c = new SymmetricConnection(nameField.getText());
             c.setDriverName(driverField.getText());
-            c.setJdbcUrl(serverLabel.getText());
+            c.setJdbcUrl(serverField.getText());
             c.setUsername(userNameField.getText());
             c.setPassword(passwordField.getText());
             return c;
