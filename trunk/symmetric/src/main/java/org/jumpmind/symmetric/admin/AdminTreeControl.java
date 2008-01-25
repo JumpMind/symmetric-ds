@@ -60,9 +60,12 @@ public class AdminTreeControl extends JScrollPane {
 
     private IAppController appController;
 
+    private ConnectionDialog connectionDialog;
+
     AbstractAction connectAction;
 
     protected AdminTreeControl(IAppController controller) throws Exception {
+        this.connectionDialog = new ConnectionDialog();
         this.appController = controller;
         final DefaultMutableTreeNode top = new DefaultMutableTreeNode("Connections") {
 
@@ -79,8 +82,11 @@ public class AdminTreeControl extends JScrollPane {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
-                addSymmetricConnection(new SymmetricConnection("test connection"), top);
-                saveConnections(connections);
+                SymmetricConnection c = connectionDialog.activateConnectionDialog(appController.getFrame());
+                if (c != null) {
+                    addSymmetricConnection(c, top);
+                    saveConnections(connections);
+                }
             }
         }));
 
