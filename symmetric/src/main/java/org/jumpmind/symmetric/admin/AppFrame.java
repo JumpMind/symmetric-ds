@@ -49,4 +49,8 @@ public class AppFrame extends JFrame implements IAppController {
         logger.error(message, ex);
     }
 
+    public JFrame getFrame() {
+        return this;
+    }
+
 }

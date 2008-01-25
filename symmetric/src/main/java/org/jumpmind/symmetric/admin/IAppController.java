@@ -19,7 +19,11 @@
  */
 package org.jumpmind.symmetric.admin;
 
+import javax.swing.JFrame;
+
 public interface IAppController {
 
     public void showError(String message, Exception ex);
+    
+    public JFrame getFrame();
 }
