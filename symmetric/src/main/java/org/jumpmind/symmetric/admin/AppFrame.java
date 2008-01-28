@@ -19,7 +19,10 @@
  */
 package org.jumpmind.symmetric.admin;
 
+import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -31,6 +34,12 @@ public class AppFrame extends JFrame implements IAppController {
     static final org.apache.commons.logging.Log logger = org.apache.commons.logging.LogFactory.getLog(AppFrame.class);
 
     private static final long serialVersionUID = 8642706738637297303L;
+    
+    private CardLayout screenStack;
+    
+    private JPanel stackPanel;
+    
+    private Map<ScreenName, AbstractScreen> screens = new HashMap<ScreenName, AbstractScreen>();
 
     public AppFrame() throws Exception {
         this.setSize(800, 600);
@@ -39,10 +48,19 @@ public class AppFrame extends JFrame implements IAppController {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AdminTreeControl leftPane = new AdminTreeControl(this);
         leftPane.setMinimumSize(new Dimension(200, 50));
-        JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, new JPanel());
+        this.screenStack = new CardLayout();
+        stackPanel = new JPanel(this.screenStack);
+        InfoScreen infoScreen = new InfoScreen();
+        addScreenToPanel(infoScreen);
+        JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, stackPanel);
         splitPanel.setOneTouchExpandable(true);
         splitPanel.setDividerLocation(200);
         this.getContentPane().add(splitPanel);
+    }
+    
+    private void addScreenToPanel(AbstractScreen screen) {
+        stackPanel.add(screen, screen.getScreenName().name());
+        screens.put(screen.getScreenName(), screen);
     }
 
     public void showError(String message, Exception ex) {
@@ -51,6 +69,11 @@ public class AppFrame extends JFrame implements IAppController {
 
     public JFrame getFrame() {
         return this;
+    }
+
+    public void show(ScreenName cardName, SymmetricConnection connection) {
+        screens.get(cardName).setup(connection);
+        screenStack.show(stackPanel, cardName.name());
     }
 
 }

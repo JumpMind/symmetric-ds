@@ -46,7 +46,16 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import foxtrot.Task;
+import foxtrot.Worker;
+
 public class AdminTreeControl extends JScrollPane {
+
+    private static final String ADD_CONNECTION = "Add Connection";
+
+    private static final String REMOVE_CONNECTION = "Remove Connection";
+
+    private static final String CONNECT = "Connect";
 
     private static final long serialVersionUID = -4986503985750730049L;
 
@@ -78,7 +87,7 @@ public class AdminTreeControl extends JScrollPane {
         };
 
         rootPopup = new JPopupMenu();
-        rootPopup.add(new JMenuItem(new AbstractAction("Add Connection") {
+        rootPopup.add(new JMenuItem(new AbstractAction(ADD_CONNECTION) {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
@@ -90,17 +99,33 @@ public class AdminTreeControl extends JScrollPane {
             }
         }));
 
-        connectAction = new AbstractAction("Connect") {
+        connectAction = new AbstractAction(CONNECT) {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
+                final SymmetricConnection c = getSelectedConnection();
+                if (c != null && this.getValue(Action.NAME).equals(CONNECT)) {
+                    try {
+                    Worker.post(new Task() {
+                        public Object run() throws Exception {
+                            c.connect();
+                            return null;
+                        }
+                    });
+                    } catch (Exception ex) {
+                        appController.showError("Trouble connecting to the symmetric database.", ex);
+                    }
+                    tree.repaint();
+                } else {
+                    appController.showError("No connection was selected.", null);
+                }
             }
 
         };
 
         connectionPopup = new JPopupMenu();
         connectionPopup.add(new JMenuItem(connectAction));
-        connectionPopup.add(new JMenuItem(new AbstractAction("Remove Connection") {
+        connectionPopup.add(new JMenuItem(new AbstractAction(REMOVE_CONNECTION) {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
@@ -171,7 +196,28 @@ public class AdminTreeControl extends JScrollPane {
 
     }
 
+    private SymmetricConnection getSelectedConnection() {
+        SymmetricConnection c = null;
+
+        TreePath path = tree.getSelectionPath();
+        if (path != null
+                && ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof SymmetricConnection) {
+            c = (SymmetricConnection) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+        }
+        return c;
+    }
+
     class PopupListener extends MouseAdapter {
+        private static final String DISCONNECT = "Disconnect";
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            SymmetricConnection c = getSelectedConnection();
+            if (c != null) {
+                appController.show(ScreenName.INFO, c);
+            }
+        }
+        
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
@@ -182,15 +228,12 @@ public class AdminTreeControl extends JScrollPane {
 
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                TreePath path = tree.getSelectionPath();
-                if (path != null
-                        && ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof SymmetricConnection) {
-                    SymmetricConnection c = (SymmetricConnection) ((DefaultMutableTreeNode) path.getLastPathComponent())
-                            .getUserObject();
+                SymmetricConnection c = getSelectedConnection();
+                if (c != null) {
                     if (c.isConnected()) {
-                        connectAction.putValue(Action.NAME, "Disconnect");
+                        connectAction.putValue(Action.NAME, DISCONNECT);
                     } else {
-                        connectAction.putValue(Action.NAME, "Connect");
+                        connectAction.putValue(Action.NAME, CONNECT);
                     }
                     connectionPopup.show(e.getComponent(), e.getX(), e.getY());
                 } else {
@@ -202,12 +245,19 @@ public class AdminTreeControl extends JScrollPane {
 
     class TreeCellRenderer extends DefaultTreeCellRenderer {
 
+        private static final String IMAGES_DATABASE_ERROR_PNG = "/images/database_error.png";
+
+        private static final String IMAGES_DATABASE_PNG = "/images/database.png";
+
         private static final long serialVersionUID = 254830074017647254L;
 
         ImageIcon databaseIcon;
 
+        ImageIcon disconnectedIcon;
+
         TreeCellRenderer() {
-            databaseIcon = new ImageIcon(getClass().getResource("/images/database.png"));
+            databaseIcon = new ImageIcon(getClass().getResource(IMAGES_DATABASE_PNG));
+            disconnectedIcon = new ImageIcon(getClass().getResource(IMAGES_DATABASE_ERROR_PNG));
         }
 
         @Override
@@ -215,7 +265,12 @@ public class AdminTreeControl extends JScrollPane {
                 boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             if (((DefaultMutableTreeNode) value).getUserObject() instanceof SymmetricConnection) {
-                setIcon(databaseIcon);
+                SymmetricConnection c = (SymmetricConnection) ((DefaultMutableTreeNode) value).getUserObject();
+                if (c.isConnected()) {
+                    setIcon(databaseIcon);
+                } else {
+                    setIcon(disconnectedIcon);
+                }
             }
             return this;
         }
