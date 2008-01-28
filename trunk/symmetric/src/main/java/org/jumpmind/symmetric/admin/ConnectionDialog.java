@@ -21,13 +21,21 @@ package org.jumpmind.symmetric.admin;
 
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.MutableComboBoxModel;
 
 public class ConnectionDialog extends JPanel {
 
@@ -45,13 +53,25 @@ public class ConnectionDialog extends JPanel {
 
     JTextField passwordField;
 
-    JLabel serverLabel;
+    JLabel urlLabel;
 
-    JTextField serverField;
+    JTextField urlField;
 
     JLabel driverLabel;
 
-    JTextField driverField;
+    JComboBox driverField;
+
+    MutableComboBoxModel driverList;
+
+    final static Map<String, String> DRIVERS = new HashMap<String, String>();
+
+    static {
+        DRIVERS.put("org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:path/to/db;create=true");
+        DRIVERS.put("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/db");
+        DRIVERS.put("oracle.jdbc.driver.OracleDriver", "jdbc:oracle:db");
+        DRIVERS.put("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:path/to/db;shutdown=true");
+        DRIVERS.put("net.sourceforge.jtds.jdbc.Driver", "jdbc:jtds:sqlserver://localhost/db");
+    }
 
     public ConnectionDialog() {
         super(false);
@@ -65,40 +85,60 @@ public class ConnectionDialog extends JPanel {
         passwordLabel = new JLabel("Password: ", JLabel.RIGHT);
         passwordField = new JPasswordField("");
 
-        serverLabel = new JLabel("Database URL: ", JLabel.RIGHT);
-        serverField = new JTextField("jdbc:derby:target/derby/root;create=true");
+        urlLabel = new JLabel("Database URL: ", JLabel.RIGHT);
+        urlField = new JTextField("jdbc:derby:target/derby/root;create=true");
 
         driverLabel = new JLabel("Driver: ", JLabel.RIGHT);
-        driverField = new JTextField("org.apache.derby.jdbc.EmbeddedDriver");
+        driverList = new DefaultComboBoxModel();
+        driverField = new JComboBox(driverList);
+        driverField.setEditable(true);
+        driverField.setFont(urlField.getFont());
+        driverField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                urlField.setText(DRIVERS.get(driverField.getSelectedItem()));
+            }
+        });
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
         JPanel namePanel = new JPanel(false);
         namePanel.setLayout(new GridLayout(0, 1));
         namePanel.add(nameLabel);
+        namePanel.add(driverLabel);
+        namePanel.add(urlLabel);
         namePanel.add(userNameLabel);
         namePanel.add(passwordLabel);
-        namePanel.add(serverLabel);
-        namePanel.add(driverLabel);
 
         JPanel fieldPanel = new JPanel(false);
         fieldPanel.setLayout(new GridLayout(0, 1));
         fieldPanel.add(nameField);
+        fieldPanel.add(driverField);
+        fieldPanel.add(urlField);
         fieldPanel.add(userNameField);
         fieldPanel.add(passwordField);
-        fieldPanel.add(serverField);
-        fieldPanel.add(driverField);
 
         add(namePanel);
         add(fieldPanel);
     }
 
+    private void resetDialog() {
+        while (driverList.getSize() > 0) {
+            driverList.removeElementAt(0);
+        }
+        Set<String> drivers = DRIVERS.keySet();
+        for (String string : drivers) {
+            driverList.addElement(string);
+        }
+        driverField.setSelectedIndex(0);
+    }
+
     public SymmetricConnection activateConnectionDialog(Component parent) {
+        resetDialog();
         if (JOptionPane.showOptionDialog(parent, this, "Database Connection Info", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Apply", "Cancel" }, "Apply") == 0) {
             SymmetricConnection c = new SymmetricConnection(nameField.getText());
-            c.setDriverName(driverField.getText());
-            c.setJdbcUrl(serverField.getText());
+            c.setDriverName(driverField.getSelectedItem().toString());
+            c.setJdbcUrl(urlField.getText());
             c.setUsername(userNameField.getText());
             c.setPassword(passwordField.getText());
             return c;

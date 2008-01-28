@@ -19,13 +19,7 @@
  */
 package org.jumpmind.symmetric.admin;
 
-import javax.swing.JFrame;
+public enum ScreenName {
 
-public interface IAppController {
-
-    public void showError(String message, Exception ex);
-    
-    public JFrame getFrame();
-    
-    public void show(ScreenName cardName, SymmetricConnection connection);
+    INFO
 }

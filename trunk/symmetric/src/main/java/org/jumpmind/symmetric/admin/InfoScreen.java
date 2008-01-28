@@ -19,13 +19,27 @@
  */
 package org.jumpmind.symmetric.admin;
 
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 
-public interface IAppController {
+public class InfoScreen extends AbstractScreen {
 
-    public void showError(String message, Exception ex);
+    private static final long serialVersionUID = -6026696921425245160L;
     
-    public JFrame getFrame();
+    private JLabel nameLabel; 
     
-    public void show(ScreenName cardName, SymmetricConnection connection);
+    protected InfoScreen() {
+        nameLabel = new JLabel();
+        add(nameLabel);
+    }
+
+    public void setup(SymmetricConnection c) {
+        nameLabel.setText(c.getName());
+    }
+
+    public ScreenName getScreenName() {
+        return ScreenName.INFO;
+    }
+    
+    
+
 }
