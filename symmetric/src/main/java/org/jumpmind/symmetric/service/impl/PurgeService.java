@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -101,36 +102,45 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeDataRows() {
         int dataIdCount = 0;
+        int totalCount = 0;
+        long ts = System.currentTimeMillis();
         do {
             dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
-                public Object doInTransaction(TransactionStatus s) {
+                public Object doInTransaction(final TransactionStatus s) {
                     int count = 0;
                     List<Integer> dataIds = null;
                     dataIds = getNextDataIds(selectDataIdToPurgeSql, null, maxNumOfDataIdsToPurgeInTx);
-                    for (Integer dataId : dataIds) {
+                    for (final Integer dataId : dataIds) {
                         count += jdbcTemplate.update(deleteDataSql, new Object[] { dataId });
-                    }
-                    if (count > 0) {
-                        logger.info("Purged " + count + " data rows.");
                     }
                     return dataIds.size();
                 }
             });
+
+            totalCount += dataIdCount;
+
+            if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+                logger.info("Purged " + totalCount + " a total of data rows.");
+                ts = System.currentTimeMillis();
+            }
         } while (dataIdCount > 0);
+
+        logger.info("Purged " + totalCount + " data rows.");
 
     }
 
     @SuppressWarnings("unchecked")
-    private void purgeBatchesOlderThan(Calendar time) {
+    private void purgeBatchesOlderThan(final Calendar time) {
         // Iterate over batch ids and data events to access by primary key so we prevent lock escalation
-        List<Integer> batchIds = jdbcTemplate.queryForList(selectOutgoingBatchIdsToPurgeSql, new Object[] { time
+        final List<Integer> batchIds = jdbcTemplate.queryForList(selectOutgoingBatchIdsToPurgeSql, new Object[] { time
                 .getTime() }, Integer.class);
         int eventRowCount = 0;
         int dataIdCount = 0;
+        long ts = System.currentTimeMillis();
         for (final Integer batchId : batchIds) {
             do {
                 dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
-                    public Object doInTransaction(TransactionStatus s) {
+                    public Object doInTransaction(final TransactionStatus s) {
                         jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId });
 
                         int eventCount = 0;
@@ -138,7 +148,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         dataIds = getNextDataIds(selectEventDataIdToPurgeSql, new Object[] { batchId },
                                 maxNumOfDataIdsToPurgeInTx);
 
-                        for (Integer dataId : dataIds) {
+                        for (final Integer dataId : dataIds) {
                             eventCount += jdbcTemplate.update(deleteDataEventSql, new Object[] { dataId, batchId });
                         }
 
@@ -147,6 +157,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     }
                 });
                 eventRowCount += dataIdCount;
+
+                if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
+                    logger.info("Purged " + batchIds.size() + " a total of batches and " + eventRowCount
+                            + " data_events.");
+                    ts = System.currentTimeMillis();
+                }
             } while (dataIdCount > 0);
 
         }
@@ -185,7 +201,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private String cleanSql(String sql) {
-        return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "),"\n"," "), "  ", "");
+        return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");
     }
 
     public void setOtherPurgeSql(String[] purgeSql) {
