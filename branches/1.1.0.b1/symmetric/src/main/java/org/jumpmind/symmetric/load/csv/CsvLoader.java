@@ -45,7 +45,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.csvreader.CsvReader;
 
 public class CsvLoader implements IDataLoader {
-    
+
     static final Log logger = LogFactory.getLog(CsvLoader.class);
 
     protected JdbcTemplate jdbcTemplate;
@@ -55,39 +55,40 @@ public class CsvLoader implements IDataLoader {
     protected CsvReader csvReader;
 
     protected DataLoaderContext context;
-    
+
     protected DataLoaderStatistics stats;
-    
+
     protected boolean enableFallbackInsert;
-    
+
     protected boolean enableFallbackUpdate;
-    
+
     protected boolean allowMissingDelete;
-    
+
     protected List<IDataLoaderFilter> filters;
-    
+
     protected Map<String, IColumnFilter> columnFilters;
 
-    public void open(BufferedReader reader) throws IOException {
+    public void open(final BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
         context = new DataLoaderContext();
         stats = new DataLoaderStatistics();
     }
 
-    public void open(BufferedReader reader, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters) throws IOException {
+    public void open(final BufferedReader reader, final List<IDataLoaderFilter> filters,
+            final Map<String, IColumnFilter> columnFilters) throws IOException {
         open(reader);
         this.filters = filters;
         this.columnFilters = columnFilters;
     }
-    
+
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
-            String[] tokens = csvReader.getValues();
-            
+            final String[] tokens = csvReader.getValues();
+
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(tokens[1]);
-                stats = new DataLoaderStatistics();                
+                stats = new DataLoaderStatistics();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
@@ -96,8 +97,7 @@ public class CsvLoader implements IDataLoader {
             } else if (isMetaTokenParsed(tokens)) {
                 continue;
             } else {
-                throw new RuntimeException("Unexpected token '" + tokens[0]
-                        + "' while parsing for next batch");
+                throw new RuntimeException("Unexpected token '" + tokens[0] + "' while parsing for next batch");
             }
         }
         return false;
@@ -110,7 +110,7 @@ public class CsvLoader implements IDataLoader {
 
     public void load() throws IOException {
         while (csvReader.readRecord()) {
-            String[] tokens = csvReader.getValues();
+            final String[] tokens = csvReader.getValues();
             stats.incrementLineCount();
 
             if (tokens[0].equals(CsvConstants.INSERT)) {
@@ -134,13 +134,13 @@ public class CsvLoader implements IDataLoader {
                     runSql(tokens);
                 }
             } else {
-                throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
-                        + stats.getLineCount() + " of batch " + context.getBatchId());
+                throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line " + stats.getLineCount()
+                        + " of batch " + context.getBatchId());
             }
         }
     }
 
-    protected boolean isMetaTokenParsed(String[] tokens) {
+    protected boolean isMetaTokenParsed(final String[] tokens) {
         boolean isMetaTokenParsed = true;
         if (tokens[0].equals(CsvConstants.TABLE)) {
             setTable(tokens[1].toLowerCase());
@@ -154,32 +154,35 @@ public class CsvLoader implements IDataLoader {
         return isMetaTokenParsed;
     }
 
-    protected void setTable(String tableName) {
+    protected void setTable(final String tableName) {
         context.setTableName(tableName);
         if (context.getTableTemplate() == null) {
-            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName, this.columnFilters != null ? this.columnFilters.get(tableName) : null));
+            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
+                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
     }
 
-    protected int insert(String[] tokens) {
+    protected int insert(final String[] tokens) {
         stats.incrementStatementCount();
-        String[] columnValues = parseColumns(tokens, 1);
+        final String[] columnValues = parseColumns(tokens, 1);
         int rows = 0;
 
         if (filters != null) {
-            for (IDataLoaderFilter filter : filters) {
+            for (final IDataLoaderFilter filter : filters) {
                 filter.filterInsert(context, columnValues);
             }
         }
 
         try {
             rows = context.getTableTemplate().insert(columnValues);
-        } catch (DataIntegrityViolationException e) {
+        } catch (final DataIntegrityViolationException e) {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
             if (enableFallbackUpdate) {
-                logger.warn("Unable to insert into " + context.getTableName() + ", updating instead: "
-                        + ArrayUtils.toString(tokens));
-                String keyValues[] = parseKeys(tokens, 1);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
+                            + ArrayUtils.toString(tokens));
+                }
+                final String keyValues[] = parseKeys(tokens, 1);
                 stats.incrementFallbackUpdateCount();
                 rows = context.getTableTemplate().update(columnValues, keyValues);
                 if (rows == 0) {
@@ -187,28 +190,30 @@ public class CsvLoader implements IDataLoader {
                             + ArrayUtils.toString(tokens));
                 }
             } else {
-                throw e;                
+                throw e;
             }
-        }        
+        }
         return rows;
     }
 
-    protected int update(String[] tokens) {
+    protected int update(final String[] tokens) {
         stats.incrementStatementCount();
-        String columnValues[] = parseColumns(tokens, 1);
-        String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
+        final String columnValues[] = parseColumns(tokens, 1);
+        final String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
 
         if (filters != null) {
-            for (IDataLoaderFilter filter : filters) {
+            for (final IDataLoaderFilter filter : filters) {
                 filter.filterUpdate(context, columnValues, keyValues);
             }
         }
 
-        int rows = context.getTableTemplate().update(columnValues, keyValues);
+        final int rows = context.getTableTemplate().update(columnValues, keyValues);
         if (rows == 0) {
             if (enableFallbackInsert) {
-                logger.warn("Unable to update " + context.getTableName() + ", inserting instead: "
-                        + ArrayUtils.toString(tokens));
+                if (logger.isDebugEnabled()) {
+                    logger.warn("Unable to update " + context.getTableName() + ", inserting instead: "
+                            + ArrayUtils.toString(tokens));
+                }
                 stats.incrementFallbackInsertCount();
                 return context.getTableTemplate().insert(columnValues);
             } else {
@@ -222,66 +227,66 @@ public class CsvLoader implements IDataLoader {
         return rows;
     }
 
-    protected int delete(String[] tokens) {
+    protected int delete(final String[] tokens) {
         stats.incrementStatementCount();
-        String keyValues[] = parseKeys(tokens, 1);
-        
+        final String keyValues[] = parseKeys(tokens, 1);
+
         if (filters != null) {
-            for (IDataLoaderFilter filter : filters) {
+            for (final IDataLoaderFilter filter : filters) {
                 filter.filterDelete(context, keyValues);
             }
         }
 
-        int rows = context.getTableTemplate().delete(keyValues);
+        final int rows = context.getTableTemplate().delete(keyValues);
         if (rows == 0) {
             if (allowMissingDelete) {
-                logger.warn("Delete of " + context.getTableName() + " affected no rows: "
-                        + ArrayUtils.toString(tokens));
+                logger
+                        .warn("Delete of " + context.getTableName() + " affected no rows: "
+                                + ArrayUtils.toString(tokens));
                 stats.incrementMissingDeleteCount();
-            }
-            else {
+            } else {
                 throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
                         + ArrayUtils.toString(tokens));
             }
-        }        
+        }
         return rows;
     }
 
-    protected void runSql(String[] tokens) {
+    protected void runSql(final String[] tokens) {
         stats.incrementStatementCount();
         logger.debug("Running SQL: " + tokens[1]);
         jdbcTemplate.execute(tokens[1]);
     }
 
-    protected String[] parseKeys(String[] tokens, int startIndex) {
+    protected String[] parseKeys(final String[] tokens, final int startIndex) {
         if (context.getTableTemplate().getKeyNames() == null) {
             throw new RuntimeException("Key names were not specified for table "
                     + context.getTableTemplate().getTableName());
         }
-        int keyLength = context.getTableTemplate().getKeyNames().length;
+        final int keyLength = context.getTableTemplate().getKeyNames().length;
         return parseValues("key", tokens, startIndex, startIndex + keyLength);
     }
 
-    protected String[] parseColumns(String[] tokens, int startIndex) {
+    protected String[] parseColumns(final String[] tokens, final int startIndex) {
         if (context.getTableTemplate().getColumnNames() == null) {
             throw new RuntimeException("Column names were not specified for table "
                     + context.getTableTemplate().getTableName());
         }
-        int columnLength = context.getTableTemplate().getColumnNames().length;
+        final int columnLength = context.getTableTemplate().getColumnNames().length;
         return parseValues("column", tokens, startIndex, startIndex + columnLength);
     }
 
-    protected String[] parseValues(String name, String[] tokens, int startIndex, int endIndex) {
+    protected String[] parseValues(final String name, final String[] tokens, final int startIndex, final int endIndex) {
         if (tokens.length < endIndex) {
-            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name
-                    + " values for " + context.getTableTemplate().getTableName() + ": "
-                    + ArrayUtils.toString(tokens));
+            throw new RuntimeException("Expected to have " + (endIndex - startIndex) + " " + name + " values for "
+                    + context.getTableTemplate().getTableName() + ": " + ArrayUtils.toString(tokens));
         }
         return (String[]) ArrayUtils.subarray(tokens, startIndex, endIndex);
     }
 
+    @Override
     public IDataLoader clone() {
-        CsvLoader dataLoader = new CsvLoader();
+        final CsvLoader dataLoader = new CsvLoader();
         dataLoader.setJdbcTemplate(jdbcTemplate);
         dataLoader.setDbDialect(dbDialect);
         dataLoader.setEnableFallbackInsert(enableFallbackInsert);
@@ -308,7 +313,7 @@ public class CsvLoader implements IDataLoader {
         return allowMissingDelete;
     }
 
-    public void setAllowMissingDelete(boolean allowMissingDelete) {
+    public void setAllowMissingDelete(final boolean allowMissingDelete) {
         this.allowMissingDelete = allowMissingDelete;
     }
 
@@ -316,7 +321,7 @@ public class CsvLoader implements IDataLoader {
         return enableFallbackInsert;
     }
 
-    public void setEnableFallbackInsert(boolean enableFallbackInsert) {
+    public void setEnableFallbackInsert(final boolean enableFallbackInsert) {
         this.enableFallbackInsert = enableFallbackInsert;
     }
 
@@ -324,15 +329,15 @@ public class CsvLoader implements IDataLoader {
         return enableFallbackUpdate;
     }
 
-    public void setEnableFallbackUpdate(boolean enableFallbackUpdate) {
+    public void setEnableFallbackUpdate(final boolean enableFallbackUpdate) {
         this.enableFallbackUpdate = enableFallbackUpdate;
     }
 
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+    public void setJdbcTemplate(final JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
+    public void setDbDialect(final IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
     }
 }
