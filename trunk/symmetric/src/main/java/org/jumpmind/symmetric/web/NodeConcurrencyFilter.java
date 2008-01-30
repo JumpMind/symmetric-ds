@@ -34,6 +34,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -42,13 +43,19 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class NodeConcurrencyFilter implements Filter {
 
+    private static final int TOO_BUSY_LOG_STATEMENTS_PER_MIN = 10;
+
     final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
 
     private ServletContext context;
 
     protected int maxNumberOfConcurrentWorkers = 20;
-    
-    protected long waitTimeBetweenRetriesInMs = 1000;
+
+    protected long waitTimeBetweenRetriesInMs = 500;
+
+    private static int tooBusyCount;
+
+    private static long lastTooBusyLogTime = System.currentTimeMillis();
 
     public void destroy() {
     }
@@ -83,7 +90,15 @@ public class NodeConcurrencyFilter implements Filter {
                     changeNumberOfWorkers(servletPath, -1);
                 }
             } else if (tries == 0) {
-                logger.warn("Symmetric request was rejected because the server was too busy.");
+                tooBusyCount++;
+
+                if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
+                        * TOO_BUSY_LOG_STATEMENTS_PER_MIN
+                        && tooBusyCount > 0) {
+                    logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
+                            + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
+                    tooBusyCount = 0;
+                }
             } else {
                 tries--;
                 try {
