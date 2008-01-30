@@ -15,8 +15,11 @@
             </action>
             <action dev="chenson42" type="add">
                 Only log node concurrency rejects every 10 minutes.
-            </action>                        
-        </release>        
+            </action>
+            <action dev="chenson42" type="add">
+                Log fallback update/deletes at debug level instead of at the warn level.
+            </action>
+        </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
                 Add support to auto create the tables that are being synced
