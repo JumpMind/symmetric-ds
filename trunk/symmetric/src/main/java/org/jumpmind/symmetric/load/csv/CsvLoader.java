@@ -155,7 +155,7 @@ public class CsvLoader implements IDataLoader {
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
         if (tokens[0].equals(CsvConstants.TABLE)) {
-            setTable(tokens[1].toLowerCase());            
+            setTable(tokens[1].toLowerCase());
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -169,18 +169,18 @@ public class CsvLoader implements IDataLoader {
     protected void setTable(String tableName) {
         cleanupAfterDataLoad();
         context.setTableName(tableName);
-        
+
         if (context.getTableTemplate() == null) {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
-                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));            
+                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));
         }
-        
+
         dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
     }
 
     protected void cleanupAfterDataLoad() {
         if (context != null && context.getTableName() != null) {
-            dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());            
+            dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());
         }
     }
 
@@ -206,8 +206,10 @@ public class CsvLoader implements IDataLoader {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
             if (enableFallbackUpdate) {
                 dbDialect.rollbackToSavepoint(savepoint);
-                logger.warn("Unable to insert into " + context.getTableName() + ", updating instead: "
-                        + ArrayUtils.toString(tokens));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
+                            + ArrayUtils.toString(tokens));
+                }
                 String keyValues[] = parseKeys(tokens, 1);
                 stats.incrementFallbackUpdateCount();
                 rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
@@ -236,8 +238,10 @@ public class CsvLoader implements IDataLoader {
         int rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
         if (rows == 0) {
             if (enableFallbackInsert) {
-                logger.warn("Unable to update " + context.getTableName() + ", inserting instead: "
-                        + ArrayUtils.toString(tokens));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Unable to update " + context.getTableName() + ", inserting instead: "
+                            + ArrayUtils.toString(tokens));
+                }
                 stats.incrementFallbackInsertCount();
                 return context.getTableTemplate().insert(columnValues, encoding);
             } else {
@@ -331,9 +335,9 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void close() {
-        
+
         cleanupAfterDataLoad();
-        
+
         if (csvReader != null) {
             csvReader.close();
         }
