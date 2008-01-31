@@ -8,9 +8,11 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface IDataService {
 
+    @Transactional
     public String reloadNode(String nodeId);
     
     public void insertReloadEvent(final Node targetNode, final Trigger trigger);
