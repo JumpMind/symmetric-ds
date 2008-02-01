@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -133,7 +134,9 @@ public class DataLoaderService extends AbstractService implements
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (SocketException ex) {
-            logger.warn(ex.getMessage());            
+            logger.warn(ex.getMessage());   
+        } catch (TransportException ex) {
+            logger.warn(ex.getMessage());
         } catch (Exception e) {
             if (status != null) {
                 logger.error("Failed to load batch "
@@ -182,7 +185,7 @@ public class DataLoaderService extends AbstractService implements
                     history.setValues(dataLoader.getStatistics(), true);
                     incomingBatchService.insertIncomingBatchHistory(history);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new TransportException(e);
                 } finally {
                     dbDialect.enableSyncTriggers();
                 }

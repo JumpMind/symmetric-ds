@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.TransportException;
 
 public class PullService implements IPullService {
 
@@ -58,6 +59,8 @@ public class PullService implements IPullService {
                     logger.warn(ErrorConstants.NOT_AUTHENTICATED);
                 } catch (SocketException ex) {
                     logger.warn(ex.getMessage());
+                } catch (TransportException ex) {
+                    logger.warn(ex.getMessage());                    
                 } catch (IOException e) {
                     logger.error(e, e);
                 }
