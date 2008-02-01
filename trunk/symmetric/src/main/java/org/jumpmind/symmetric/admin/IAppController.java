@@ -27,5 +27,5 @@ public interface IAppController {
     
     public JFrame getFrame();
     
-    public void show(ScreenName cardName, SymmetricConnection connection);
+    public void show(ScreenName cardName, SymmetricDatabase connection);
 }

@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 import org.jumpmind.symmetric.SymmetricEngine;
 
-public class SymmetricConnection implements Serializable {
+public class SymmetricDatabase implements Serializable {
 
     private static final long serialVersionUID = 1306181988155432278L;
 
@@ -39,10 +39,10 @@ public class SymmetricConnection implements Serializable {
 
     private transient SymmetricEngine engine;
 
-    public SymmetricConnection() {
+    public SymmetricDatabase() {
     }
 
-    public SymmetricConnection(String name) {
+    public SymmetricDatabase(String name) {
         super();
         this.name = name;
     }
@@ -52,7 +52,7 @@ public class SymmetricConnection implements Serializable {
     }
 
     public void connect() {
-        synchronized (SymmetricConnection.class) {
+        synchronized (SymmetricDatabase.class) {
             System.setProperty("db.url", jdbcUrl);
             System.setProperty("db.driver", driverName);
             System.setProperty("db.user", username);
