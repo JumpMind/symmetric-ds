@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -53,6 +54,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new RegistrationNotOpenException();
         } else if (WebConstants.REGISTRATION_REQUIRED == connection.getResponseCode()) {
             throw new RegistrationRequiredException();
+        } else if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
+                throw new ConnectionRejectedException();             
         } else {
             reader = HttpTransportManager.getReaderFrom(connection);
             return reader;

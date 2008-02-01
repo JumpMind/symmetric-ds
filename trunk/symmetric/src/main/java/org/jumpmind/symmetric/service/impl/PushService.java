@@ -22,18 +22,21 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
@@ -143,8 +146,11 @@ public class PushService implements IPushService {
                 transport.close();
             }
         } catch (ConnectException ex) {
-            logger.warn("Server is not available at this url: "
-                    + remote.getSyncURL());
+            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + remote.getSyncURL());
+        } catch (ConnectionRejectedException ex) {
+            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+        } catch (SocketException ex) {
+            logger.warn(ex.getMessage());
         } catch (Exception e) {
             // just report the error because we want to push to other nodes
             // in our list

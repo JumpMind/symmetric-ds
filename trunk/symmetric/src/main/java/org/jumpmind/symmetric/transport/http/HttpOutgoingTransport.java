@@ -29,7 +29,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
@@ -89,6 +91,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public BufferedReader readResponse() throws IOException {
         closeWriter();
+        if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
+            throw new ConnectionRejectedException();   
+        }
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
     }
