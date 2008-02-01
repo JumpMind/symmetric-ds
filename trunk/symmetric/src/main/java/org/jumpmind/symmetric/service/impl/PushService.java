@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.TransportException;
 
 public class PushService implements IPushService {
 
@@ -151,6 +152,8 @@ public class PushService implements IPushService {
         } catch (ConnectionRejectedException ex) {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
         } catch (SocketException ex) {
+            logger.warn(ex.getMessage());
+        } catch (TransportException ex) {
             logger.warn(ex.getMessage());
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);            
