@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -58,6 +59,8 @@ public class PullService implements IPullService {
                     logger.warn(ErrorConstants.NOT_AUTHENTICATED);                    
                 } catch (SocketException ex) {
                     logger.warn(ex.getMessage());
+                } catch (SocketTimeoutException ex) {
+                    logger.warn(ex.getMessage());                                
                 } catch (IOException e) {
                     logger.error(e, e);
                 }

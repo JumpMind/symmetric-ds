@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.net.ConnectException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -152,6 +153,8 @@ public class PushService implements IPushService {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
         } catch (SocketException ex) {
             logger.warn(ex.getMessage());
+        } catch (SocketTimeoutException ex) {
+            logger.warn(ex.getMessage());            
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);                 
         } catch (Exception e) {
