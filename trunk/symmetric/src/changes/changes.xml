@@ -22,6 +22,9 @@
             <action dev="chenson42" type="add">
                 Make DataService.reloadNode(node_id) transactional.  If it isn't we run the risk of inserting only half 
                 of an initial load.
+            </action>
+            <action dev="chenson42" type="add">
+                Added an additional optional properties file that can put in the classpath to override properties values called symmetric-override.properties.
             </action>            
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
