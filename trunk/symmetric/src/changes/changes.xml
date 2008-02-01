@@ -20,6 +20,9 @@
                 Log fallback update/deletes at debug level instead of at the warn level.
             </action>
             <action dev="chenson42" type="add">
+                Don't log socket exceptions and HTTP 503 errors as stack traces, instead log as warnings.
+            </action>            
+            <action dev="chenson42" type="add">
                 Make DataService.reloadNode(node_id) transactional.  If it isn't we run the risk of inserting only half 
                 of an initial load.
             </action>
