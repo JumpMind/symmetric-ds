@@ -132,11 +132,11 @@ public class ConnectionDialog extends JPanel {
         driverField.setSelectedIndex(0);
     }
 
-    public SymmetricConnection activateConnectionDialog(Component parent) {
+    public SymmetricDatabase activateConnectionDialog(Component parent) {
         resetDialog();
         if (JOptionPane.showOptionDialog(parent, this, "Database Connection Info", JOptionPane.DEFAULT_OPTION,
                 JOptionPane.INFORMATION_MESSAGE, null, new String[] { "Apply", "Cancel" }, "Apply") == 0) {
-            SymmetricConnection c = new SymmetricConnection(nameField.getText());
+            SymmetricDatabase c = new SymmetricDatabase(nameField.getText());
             c.setDriverName(driverField.getSelectedItem().toString());
             c.setJdbcUrl(urlField.getText());
             c.setUsername(userNameField.getText());

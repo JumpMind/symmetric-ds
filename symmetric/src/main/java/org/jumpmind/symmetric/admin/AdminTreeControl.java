@@ -51,9 +51,13 @@ import foxtrot.Worker;
 
 public class AdminTreeControl extends JScrollPane {
 
-    private static final String ADD_CONNECTION = "Add Connection";
+    private static final String SYMMETRICDS_ADMIN_DIR = "/.symmetricds-admin/";
 
-    private static final String REMOVE_CONNECTION = "Remove Connection";
+    private static final String CONNECTIONS_XML = "databases.xml";
+
+    private static final String ADD_CONNECTION = "Add Database";
+
+    private static final String REMOVE_CONNECTION = "Remove Database";
 
     private static final String CONNECT = "Connect";
 
@@ -65,7 +69,7 @@ public class AdminTreeControl extends JScrollPane {
 
     private JPopupMenu connectionPopup;
 
-    private List<SymmetricConnection> connections = new ArrayList<SymmetricConnection>();
+    private List<SymmetricDatabase> connections = new ArrayList<SymmetricDatabase>();
 
     private IAppController appController;
 
@@ -76,7 +80,7 @@ public class AdminTreeControl extends JScrollPane {
     protected AdminTreeControl(IAppController controller) throws Exception {
         this.connectionDialog = new ConnectionDialog();
         this.appController = controller;
-        final DefaultMutableTreeNode top = new DefaultMutableTreeNode("Connections") {
+        final DefaultMutableTreeNode top = new DefaultMutableTreeNode("Databases") {
 
             private static final long serialVersionUID = -1L;
 
@@ -91,7 +95,7 @@ public class AdminTreeControl extends JScrollPane {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
-                SymmetricConnection c = connectionDialog.activateConnectionDialog(appController.getFrame());
+                SymmetricDatabase c = connectionDialog.activateConnectionDialog(appController.getFrame());
                 if (c != null) {
                     addSymmetricConnection(c, top);
                     saveConnections(connections);
@@ -103,7 +107,7 @@ public class AdminTreeControl extends JScrollPane {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
-                final SymmetricConnection c = getSelectedConnection();
+                final SymmetricDatabase c = getSelectedConnection();
                 if (c != null && this.getValue(Action.NAME).equals(CONNECT)) {
                     try {
                     Worker.post(new Task() {
@@ -139,15 +143,15 @@ public class AdminTreeControl extends JScrollPane {
         tree.setCellRenderer(new TreeCellRenderer());
         tree.addMouseListener(new PopupListener());
 
-        List<SymmetricConnection> connections = loadConnections();
-        for (SymmetricConnection c : connections) {
+        List<SymmetricDatabase> connections = loadConnections();
+        for (SymmetricDatabase c : connections) {
             addSymmetricConnection(c, top);
         }
 
         this.getViewport().add(tree);
     }
 
-    private void addSymmetricConnection(SymmetricConnection c, DefaultMutableTreeNode top) {
+    private void addSymmetricConnection(SymmetricDatabase c, DefaultMutableTreeNode top) {
         this.connections.add(c);
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         DefaultMutableTreeNode child = new DefaultMutableTreeNode(c);
@@ -162,7 +166,7 @@ public class AdminTreeControl extends JScrollPane {
     }
 
     private File getAppDir() {
-        File appDir = new File(System.getProperty("user.home") + "/.symmetricds/");
+        File appDir = new File(System.getProperty("user.home") + SYMMETRICDS_ADMIN_DIR);
         if (!appDir.exists()) {
             appDir.mkdirs();
         }
@@ -170,22 +174,22 @@ public class AdminTreeControl extends JScrollPane {
     }
 
     private File getConnectionsFile() {
-        return new File(getAppDir(), "connections.xml");
+        return new File(getAppDir(), CONNECTIONS_XML);
     }
 
     @SuppressWarnings("unchecked")
-    private List<SymmetricConnection> loadConnections() throws Exception {
-        List<SymmetricConnection> connections = null;
+    private List<SymmetricDatabase> loadConnections() throws Exception {
+        List<SymmetricDatabase> connections = null;
         File connectionsFile = getConnectionsFile();
         if (connectionsFile.exists()) {
             XMLDecoder d = new XMLDecoder(new BufferedInputStream(new FileInputStream(connectionsFile)));
-            connections = (List<SymmetricConnection>) d.readObject();
+            connections = (List<SymmetricDatabase>) d.readObject();
             d.close();
         }
         return connections == null ? Collections.EMPTY_LIST : connections;
     }
 
-    private void saveConnections(List<SymmetricConnection> connections) {
+    private void saveConnections(List<SymmetricDatabase> connections) {
         try {
             XMLEncoder e = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(getConnectionsFile())));
             e.writeObject(connections);
@@ -196,13 +200,13 @@ public class AdminTreeControl extends JScrollPane {
 
     }
 
-    private SymmetricConnection getSelectedConnection() {
-        SymmetricConnection c = null;
+    private SymmetricDatabase getSelectedConnection() {
+        SymmetricDatabase c = null;
 
         TreePath path = tree.getSelectionPath();
         if (path != null
-                && ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof SymmetricConnection) {
-            c = (SymmetricConnection) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+                && ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof SymmetricDatabase) {
+            c = (SymmetricDatabase) ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
         }
         return c;
     }
@@ -212,7 +216,7 @@ public class AdminTreeControl extends JScrollPane {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            SymmetricConnection c = getSelectedConnection();
+            SymmetricDatabase c = getSelectedConnection();
             if (c != null) {
                 appController.show(ScreenName.INFO, c);
             }
@@ -228,7 +232,7 @@ public class AdminTreeControl extends JScrollPane {
 
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
-                SymmetricConnection c = getSelectedConnection();
+                SymmetricDatabase c = getSelectedConnection();
                 if (c != null) {
                     if (c.isConnected()) {
                         connectAction.putValue(Action.NAME, DISCONNECT);
@@ -264,8 +268,8 @@ public class AdminTreeControl extends JScrollPane {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
                 boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-            if (((DefaultMutableTreeNode) value).getUserObject() instanceof SymmetricConnection) {
-                SymmetricConnection c = (SymmetricConnection) ((DefaultMutableTreeNode) value).getUserObject();
+            if (((DefaultMutableTreeNode) value).getUserObject() instanceof SymmetricDatabase) {
+                SymmetricDatabase c = (SymmetricDatabase) ((DefaultMutableTreeNode) value).getUserObject();
                 if (c.isConnected()) {
                     setIcon(databaseIcon);
                 } else {

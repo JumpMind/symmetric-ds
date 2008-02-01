@@ -32,7 +32,7 @@ public class InfoScreen extends AbstractScreen {
         add(nameLabel);
     }
 
-    public void setup(SymmetricConnection c) {
+    public void setup(SymmetricDatabase c) {
         nameLabel.setText(c.getName());
     }
 

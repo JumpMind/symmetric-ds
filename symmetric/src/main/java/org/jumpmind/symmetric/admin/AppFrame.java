@@ -71,7 +71,7 @@ public class AppFrame extends JFrame implements IAppController {
         return this;
     }
 
-    public void show(ScreenName cardName, SymmetricConnection connection) {
+    public void show(ScreenName cardName, SymmetricDatabase connection) {
         screens.get(cardName).setup(connection);
         screenStack.show(stackPanel, cardName.name());
     }
