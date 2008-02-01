@@ -25,6 +25,8 @@ package org.jumpmind.symmetric.web;
 public class WebConstants {
     
     public static final int REGISTRATION_NOT_OPEN = 656;
+    
+    public static final int CONNECTION_REJECTED = 503;
 
     public static final String ACK_BATCH_NAME = "batch-";
     

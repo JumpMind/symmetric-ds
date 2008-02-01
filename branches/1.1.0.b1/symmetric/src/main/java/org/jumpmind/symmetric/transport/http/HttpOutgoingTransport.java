@@ -32,7 +32,9 @@ import java.net.URL;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
@@ -92,6 +94,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public BufferedReader readResponse() throws IOException {
         closeWriter();
+        if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
+            throw new ConnectionRejectedException();   
+        }
         InputStream in = new GZIPInputStream(connection.getInputStream());
         reader = new BufferedReader(new InputStreamReader(in));
         return reader;

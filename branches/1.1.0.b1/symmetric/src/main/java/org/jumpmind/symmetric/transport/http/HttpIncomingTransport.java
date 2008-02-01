@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -52,7 +53,10 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public BufferedReader open() throws IOException {
         if (WebConstants.REGISTRATION_NOT_OPEN == conn.getResponseCode()) {
             throw new RegistrationNotOpenException();
-        } else {
+        } else if (WebConstants.CONNECTION_REJECTED == conn.getResponseCode()) {
+            throw new ConnectionRejectedException();   
+        }
+        else {
             reader = new BufferedReader(new InputStreamReader(
                     new GZIPInputStream(conn.getInputStream()), "UTF-8"));
             return reader;

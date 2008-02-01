@@ -22,15 +22,17 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 
 public class PullService implements IPullService {
 
@@ -48,7 +50,11 @@ public class PullService implements IPullService {
                 try {
                     dataLoaderService.loadData(node, nodeService.findIdentity());
                 } catch (ConnectException ex) {
-                    logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
+                    logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
+                } catch (ConnectionRejectedException ex) {
+                    logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+                } catch (SocketException ex) {
+                    logger.warn(ex.getMessage());
                 } catch (IOException e) {
                     logger.error(e, e);
                 }
