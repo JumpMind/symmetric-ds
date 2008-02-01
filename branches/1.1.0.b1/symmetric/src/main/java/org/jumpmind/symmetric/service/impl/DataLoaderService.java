@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +47,8 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.transport.AuthenticationException;
+import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -116,7 +119,13 @@ public class DataLoaderService extends AbstractService implements
         } catch (UnknownHostException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());            
         } catch (RegistrationNotOpenException ex) {
-            logger.warn("Registration attempt failed.  Registration was not open for the node.");
+            logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
+        } catch (ConnectionRejectedException ex) {
+            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+        } catch (AuthenticationException ex) {
+            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+        } catch (SocketException ex) {
+            logger.warn(ex.getMessage());   
         } catch (Exception e) {
             if (status != null) {
                 logger.error("Failed to load batch "

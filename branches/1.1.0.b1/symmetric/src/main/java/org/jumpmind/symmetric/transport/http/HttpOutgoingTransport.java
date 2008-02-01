@@ -31,7 +31,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -96,6 +99,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         closeWriter();
         if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
             throw new ConnectionRejectedException();   
+        } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
+            throw new AuthenticationException();
         }
         InputStream in = new GZIPInputStream(connection.getInputStream());
         reader = new BufferedReader(new InputStreamReader(in));

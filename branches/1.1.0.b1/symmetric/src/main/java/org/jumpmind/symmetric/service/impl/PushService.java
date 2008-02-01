@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
+import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -151,6 +152,8 @@ public class PushService implements IPushService {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
         } catch (SocketException ex) {
             logger.warn(ex.getMessage());
+        } catch (AuthenticationException ex) {
+            logger.warn(ErrorConstants.NOT_AUTHENTICATED);                 
         } catch (Exception e) {
             // just report the error because we want to push to other nodes
             // in our list

@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
+import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 
 public class PullService implements IPullService {
@@ -53,6 +54,8 @@ public class PullService implements IPullService {
                     logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
                 } catch (ConnectionRejectedException ex) {
                     logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+                } catch (AuthenticationException ex) {
+                    logger.warn(ErrorConstants.NOT_AUTHENTICATED);                    
                 } catch (SocketException ex) {
                     logger.warn(ex.getMessage());
                 } catch (IOException e) {
