@@ -21,6 +21,7 @@
                 <value>classpath:/symmetric-default.properties</value>
                 <value>classpath:/symmetric.properties</value>
                 <value>file:${user.home}/symmetric.properties</value>
+                <value>classpath:/symmetric-override.properties</value>
                 <value>${symmetric.override.properties.file.1}</value>
                 <value>${symmetric.override.properties.file.2}</value>
             </list>
