@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.admin;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -110,15 +111,17 @@ public class AdminTreeControl extends JScrollPane {
                 final SymmetricDatabase c = getSelectedConnection();
                 if (c != null && this.getValue(Action.NAME).equals(CONNECT)) {
                     try {
-                    Worker.post(new Task() {
-                        public Object run() throws Exception {
-                            c.connect();
-                            return null;
-                        }
-                    });
+                        tree.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        Worker.post(new Task() {
+                            public Object run() throws Exception {
+                                c.connect();
+                                return null;
+                            }
+                        });
                     } catch (Exception ex) {
                         appController.showError("Trouble connecting to the symmetric database.", ex);
                     }
+                    tree.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     tree.repaint();
                 } else {
                     appController.showError("No connection was selected.", null);
@@ -221,7 +224,7 @@ public class AdminTreeControl extends JScrollPane {
                 appController.show(ScreenName.INFO, c);
             }
         }
-        
+
         public void mousePressed(MouseEvent e) {
             maybeShowPopup(e);
         }
