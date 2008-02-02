@@ -157,9 +157,12 @@ public class AdminTreeControl extends JScrollPane {
     private void addSymmetricConnection(SymmetricDatabase c, DefaultMutableTreeNode top) {
         this.connections.add(c);
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-        DefaultMutableTreeNode child = new DefaultMutableTreeNode(c);
-        model.insertNodeInto(child, top, top.getChildCount());
-        tree.scrollPathToVisible(new TreePath(child));
+        DatabaseNode db = new DatabaseNode(c);
+        db.add(new ChannelNode(c));
+        db.add(new GroupNode(c));
+        db.add(new GroupLinkNode(c));
+        model.insertNodeInto(db, top, top.getChildCount());
+        tree.scrollPathToVisible(new TreePath(db));
     }
 
     private void removeSymmetricConnection(DefaultMutableTreeNode node) {
@@ -256,31 +259,120 @@ public class AdminTreeControl extends JScrollPane {
 
         private static final String IMAGES_DATABASE_PNG = "/images/database.png";
 
-        private static final long serialVersionUID = 254830074017647254L;
+        private static final String IMAGES_CHANNELS = "/images/television.png";
+
+        private static final String IMAGES_GROUPS = "/images/group.png";
+
+        private static final String IMAGES_GROUP_LINKS = "/images/group_link.png";
+
+        private static final long serialVersionUID = 1L;
 
         ImageIcon databaseIcon;
 
         ImageIcon disconnectedIcon;
 
+        ImageIcon channelIcon;
+
+        ImageIcon groupIcon;
+
+        ImageIcon groupLinkIcon;
+
         TreeCellRenderer() {
             databaseIcon = new ImageIcon(getClass().getResource(IMAGES_DATABASE_PNG));
             disconnectedIcon = new ImageIcon(getClass().getResource(IMAGES_DATABASE_ERROR_PNG));
+            channelIcon = new ImageIcon(getClass().getResource(IMAGES_CHANNELS));
+            groupIcon = new ImageIcon(getClass().getResource(IMAGES_GROUPS));
+            groupLinkIcon = new ImageIcon(getClass().getResource(IMAGES_GROUP_LINKS));
         }
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
                 boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-            if (((DefaultMutableTreeNode) value).getUserObject() instanceof SymmetricDatabase) {
+            if (value instanceof DatabaseNode) {
                 SymmetricDatabase c = (SymmetricDatabase) ((DefaultMutableTreeNode) value).getUserObject();
                 if (c.isConnected()) {
                     setIcon(databaseIcon);
                 } else {
                     setIcon(disconnectedIcon);
                 }
+            } else if (value instanceof ChannelNode) {
+                setIcon(channelIcon);
+            } else if (value instanceof GroupNode) {
+                setIcon(groupIcon);
+            } else if (value instanceof GroupLinkNode) {
+                setIcon(groupLinkIcon);
             }
             return this;
         }
+    }
+
+    class DatabaseNode extends DefaultMutableTreeNode {
+
+        private static final long serialVersionUID = 1L;
+
+        public DatabaseNode(SymmetricDatabase db) {
+            super(db);
+        }
+
+        public SymmetricDatabase getDatabase() {
+            return (SymmetricDatabase) getUserObject();
+        }
+
+    }
+
+    class ChannelNode extends DefaultMutableTreeNode {
+
+        private static final long serialVersionUID = 1L;
+
+        public ChannelNode(SymmetricDatabase db) {
+            super(db);
+        }
+
+        public SymmetricDatabase getDatabase() {
+            return (SymmetricDatabase) getUserObject();
+        }
+
+        public String toString() {
+            return "Channels";
+        }
+
+    }
+
+    class GroupNode extends DefaultMutableTreeNode {
+
+        private static final long serialVersionUID = 1L;
+
+        public GroupNode(SymmetricDatabase db) {
+            super(db);
+        }
+
+        public SymmetricDatabase getDatabase() {
+            return (SymmetricDatabase) getUserObject();
+        }
+
+        public String toString() {
+            return "Groups";
+        }
+
+    }
+
+    class GroupLinkNode extends DefaultMutableTreeNode {
+
+        private static final long serialVersionUID = 1L;
+
+        public GroupLinkNode(SymmetricDatabase db) {
+            super(db);
+        }
+
+        public SymmetricDatabase getDatabase() {
+            return (SymmetricDatabase) getUserObject();
+        }
+
+        public String toString() {
+            return "Group Links";
+        }
+
     }
 
 }
