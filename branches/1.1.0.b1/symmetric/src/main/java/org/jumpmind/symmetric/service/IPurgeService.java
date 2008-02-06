@@ -20,7 +20,12 @@
 
 package org.jumpmind.symmetric.service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 public interface IPurgeService
 {
     public void purge();
+    
+    @Transactional
+    public void purgeAllIncomingEventForNode(String nodeId);
 }

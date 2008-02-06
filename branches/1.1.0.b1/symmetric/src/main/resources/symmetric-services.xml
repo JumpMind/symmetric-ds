@@ -270,6 +270,7 @@
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="purgeService" ref="purgeService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
@@ -610,6 +611,16 @@
         <property name="deleteDataSql">
             <value>delete from ${sync.table.prefix}_data where data_id=?</value>
         </property>
+        <property name="deleteIncomingBatchesByNodeIdSql">
+            <list>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?
+                </value>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch where node_id=?
+                </value>
+            </list>
+        </property>         
         <property name="otherPurgeSql">
             <list>
                 <value>

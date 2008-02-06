@@ -50,6 +50,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private IDbDialect dbDialect;
 
     private String[] otherPurgeSql;
+    
+    private String[] deleteIncomingBatchesByNodeIdSql;
 
     private int retentionInMinutes = 7200;
 
@@ -187,6 +189,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
         });
     }
+    
+    public void purgeAllIncomingEventForNode(String nodeId) {
+        if (deleteIncomingBatchesByNodeIdSql != null)
+        for (String sql : deleteIncomingBatchesByNodeIdSql) {
+            int count = jdbcTemplate.update(sql, new Object[] { nodeId });
+            logger.info("Purged " + count + " rows for node " + nodeId + " after running: " + cleanSql(sql));
+        }
+    }
+    
 
     private String cleanSql(final String sql) {
         return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");
@@ -238,6 +249,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setMaxNumOfDataIdsToPurgeInTx(final int maxNumOfDataIdsToPurgeInTx) {
         this.maxNumOfDataIdsToPurgeInTx = maxNumOfDataIdsToPurgeInTx;
+    }
+
+    public void setDeleteIncomingBatchesByNodeIdSql(String[] deleteIncomingBatchesByNodeIdSql) {
+        this.deleteIncomingBatchesByNodeIdSql = deleteIncomingBatchesByNodeIdSql;
     }
 
 }

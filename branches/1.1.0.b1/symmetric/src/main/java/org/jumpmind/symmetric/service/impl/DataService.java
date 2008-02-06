@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -64,6 +65,8 @@ public class DataService extends AbstractService implements IDataService {
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
+    
+    private IPurgeService purgeService;
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -166,6 +169,9 @@ public class DataService extends AbstractService implements IDataService {
                 listener.afterReload(targetNode);
             }
         }
+        
+        purgeService.purgeAllIncomingEventForNode(nodeId);
+        
         return "Successfully created events to reload node " + nodeId;
     }
 
@@ -293,6 +299,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setDeleteFirstForReload(boolean deleteFirstForReload) {
         this.deleteFirstForReload = deleteFirstForReload;
+    }
+
+    public void setPurgeService(IPurgeService purgeService) {
+        this.purgeService = purgeService;
     }
 
 }
