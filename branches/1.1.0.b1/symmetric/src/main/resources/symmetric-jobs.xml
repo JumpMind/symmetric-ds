@@ -35,16 +35,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPush" />
-                    <property name="period" value="${symmetric.runtime.job.push.period.time.ms}" />
-                    <property name="timerTask">
-                        <bean class="org.jumpmind.symmetric.job.PushJob">
-                            <property name="pushService" ref="pushService" />
-                            <property name="dataSource" ref="dataSource"/>
-                        </bean>
-                    </property>
+                    <property name="timerTask" ref="pushTimerTask" />
                 </bean>
             </list>
         </property>
+    </bean>
+    
+    <bean id="pushTimerTask" class="org.jumpmind.symmetric.job.PushJob" scope="prototype">
+        <property name="pushService" ref="pushService" />
+        <property name="needsRescheduled" value="true" />
+        <property name="rescheduleDelay" value="${symmetric.runtime.job.push.period.time.ms}" />
+        <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="pullJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -53,16 +54,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPull" />
-                    <property name="period" value="${symmetric.runtime.job.pull.period.time.ms}" />
-                    <property name="timerTask">
-                        <bean class="org.jumpmind.symmetric.job.PullJob">
-                            <property name="pullService" ref="pullService" />
-                            <property name="dataSource" ref="dataSource"/>
-                        </bean>
-                    </property>
+                    <property name="timerTask" ref="pullTimerTask" />
                 </bean>
             </list>
         </property>
+    </bean>
+    
+    <bean id="pullTimerTask" class="org.jumpmind.symmetric.job.PullJob" scope="prototype">
+        <property name="pullService" ref="pullService" />
+        <property name="needsRescheduled" value="true" />
+        <property name="rescheduleDelay" value="${symmetric.runtime.job.pull.period.time.ms}" />
+        <property name="dataSource" ref="dataSource"/>
     </bean>
     
     <bean id="purgeJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
