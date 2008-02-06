@@ -50,10 +50,6 @@ public class Data {
 
     private String tableName;
     
-    private String channelId;
-    
-    private String transactionId;
-
     /**
      * This is populated by the trigger when the event happens.  It will be useful for 
      * research.
@@ -73,9 +69,8 @@ public class Data {
         this.audit = audit;
     }
 
-    public Data(String channelId, String tableName, DataEventType eventType, String rowData,
+    public Data(String tableName, DataEventType eventType, String rowData,
             String pkData, TriggerHistory audit) {
-        this.channelId = channelId;
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
@@ -139,22 +134,6 @@ public class Data {
     public void setAudit(TriggerHistory audit)
     {
         this.audit = audit;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
     }
 
 }

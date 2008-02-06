@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 
@@ -59,6 +60,8 @@ public class DataService extends AbstractService implements IDataService {
     private IConfigurationService configurationService;
 
     private INodeService nodeService;
+    
+    private IPurgeService purgeService;
 
     private String tablePrefix;
 
@@ -77,9 +80,9 @@ public class DataService extends AbstractService implements IDataService {
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.RELOAD, null, null,
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.RELOAD, null, null,
                 history);
-        insertDataEvent(data, targetNode.getNodeId());
+        insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
     public void insertPurgeEvent(final Node targetNode, final Trigger trigger) {
@@ -89,16 +92,16 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.SQL,
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL,
                 CsvUtil.escapeCsvData(sql), null, history);
-        insertDataEvent(data, targetNode.getNodeId());
+        insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.CREATE,
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE,
                 CsvUtil.escapeCsvData(xml), null, history);
-        insertDataEvent(data, targetNode.getNodeId());
+        insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
     public long insertData(final Data data) {
@@ -106,13 +109,11 @@ public class DataService extends AbstractService implements IDataService {
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
                             DataAccessException {
-                        ps.setString(1, data.getChannelId());
-                        ps.setString(2, data.getTableName());
-                        ps.setString(3, data.getEventType().getCode());
-                        ps.setString(4, data.getRowData());
-                        ps.setString(5, data.getPkData());
-                        ps.setLong(6, data.getAudit().getTriggerHistoryId());
-                        ps.setString(7, data.getTransactionId());
+                        ps.setString(1, data.getTableName());
+                        ps.setString(2, data.getEventType().getCode());
+                        ps.setString(3, data.getRowData());
+                        ps.setString(4, data.getPkData());
+                        ps.setLong(5, data.getAudit().getTriggerHistoryId());
                         return null;
                     }
                 });
@@ -120,20 +121,24 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertDataEvent(DataEvent dataEvent) {
         jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(),
-                dataEvent.getNodeId(), dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0 }, new int[] {
-                Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
+                dataEvent.getNodeId(), dataEvent.getChannelId(), dataEvent.getTransactionId(), dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0 }, new int[] {
+                Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
     }
 
-    public void insertDataEvent(Data data, List<Node> nodes) {
+    public void insertDataEvent(Data data, String channelId, List<Node> nodes) {
+        insertDataEvent(data, channelId, null, nodes);
+    }
+    
+    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes) {
         long dataId = insertData(data);
         for (Node node : nodes) {
-            insertDataEvent(new DataEvent(dataId, node.getNodeId()));
+            insertDataEvent(new DataEvent(dataId, node.getNodeId(), channelId, transactionId));
         }
-    }
+    }    
 
-    public void insertDataEvent(Data data, String nodeId) {
+    public void insertDataEvent(Data data, String channelId, String nodeId) {
         long dataId = insertData(data);
-        insertDataEvent(new DataEvent(dataId, nodeId));
+        insertDataEvent(new DataEvent(dataId, nodeId, channelId));
     }
 
     public String reloadNode(String nodeId) {
@@ -141,7 +146,7 @@ public class DataService extends AbstractService implements IDataService {
         if (targetNode == null) {
             return "Unknown node " + nodeId;
         }
-        nodeService.setInitialLoadEnabled(nodeId, true);
+        nodeService.setInitialLoadEnabled(nodeId, true);        
         return "Successfully opened initial load for node " + nodeId;        
     }
     
@@ -181,13 +186,15 @@ public class DataService extends AbstractService implements IDataService {
         }
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
         insertNodeSecurityUpdate(targetNode);
+        
+        // remove all incoming events from the node are starting a reload for.
+        purgeService.purgeAllIncomingEventForNode(targetNode.getNodeId());
     }
 
     private void insertNodeSecurityUpdate(Node node) {
         Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'");
         if (data != null) {
-            data.setChannelId(Constants.CHANNEL_RELOAD);
-            insertDataEvent(data, node.getNodeId());
+            insertDataEvent(data, Constants.CHANNEL_RELOAD, node.getNodeId());
         }
     }
 
@@ -198,8 +205,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertHeartbeatEvent(Node node) {
         Data data = createData(tablePrefix + "_node", " t.node_id = '" + node.getNodeId() + "'");
         if (data != null && data.getAudit() != null) {
-            data.setChannelId(Constants.CHANNEL_CONFIG);
-            insertDataEvent(data, nodeService.findNodesToPushTo());
+            insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
         } else {
             logger
                     .info("Not generating data/data events for node because a trigger is not created for that table yet.");
@@ -223,7 +229,7 @@ public class DataService extends AbstractService implements IDataService {
                         String.class);
             }
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-            data = new Data(Constants.CHANNEL_RELOAD, trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
+            data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData,
                     pkData, history);
         }
         return data;
@@ -304,6 +310,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setCreateFirstForReload(boolean createFirstForReload) {
         this.createFirstForReload = createFirstForReload;
+    }
+
+    public void setPurgeService(IPurgeService purgeService) {
+        this.purgeService = purgeService;
     }
 
 }

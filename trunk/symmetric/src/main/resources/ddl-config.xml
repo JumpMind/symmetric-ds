@@ -14,17 +14,12 @@
     <table name="data">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true"
             autoIncrement="true" />
-        <column name="channel_id" type="VARCHAR" size="50" />
         <column name="table_name" type="VARCHAR" size="50" required="true" />
         <column name="event_type" type="CHAR" size="1" />
         <column name="row_data" type="LONGVARCHAR" />
         <column name="pk_data" type="LONGVARCHAR" />
         <column name="trigger_hist_id" type="INTEGER" required="true" />
-        <column name="transaction_id" type="VARCHAR" size="1000" />
         <column name="create_time" type="TIMESTAMP" />
-        <foreign-key name="fk_d_channel_id" foreignTable="channel">
-            <reference local="channel_id" foreign="channel_id" />
-        </foreign-key>
         <foreign-key name="fk_d_ts_audit_id" foreignTable="trigger_hist">
             <reference local="trigger_hist_id" foreign="trigger_hist_id" />
         </foreign-key>
@@ -58,8 +53,13 @@
     <table name="data_event">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="transaction_id" type="VARCHAR" size="1000" />        
         <column name="batch_id" type="INTEGER" />
         <column name="batched" type="BOOLEANINT" size="1" required="true" default="0" />
+        <foreign-key name="fk_de_channel_id" foreignTable="channel">
+            <reference local="channel_id" foreign="channel_id" />
+        </foreign-key>        
         <foreign-key name="fk_de_data_id" foreignTable="data">
             <reference local="data_id" foreign="data_id" />
         </foreign-key>
@@ -76,7 +76,12 @@
         <index name="idx_de_batched_nodeid">
             <index-column name="batched" />
             <index-column name="node_id" />
+            <index-column name="channel_id" />
+        </index>
+        <index name="idx_de_dataid">
+            <index-column name="data_id" />
         </index>        
+                
     </table>
 
     <table name="node_group">

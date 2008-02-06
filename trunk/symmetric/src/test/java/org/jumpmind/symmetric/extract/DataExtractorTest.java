@@ -268,7 +268,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
                 + col
                 + "' , '"
                 + pk
-                + "','','','',1,'T',current_timestamp)";
+                + "','a','b','c',1,'T',current_timestamp)";
         long key = dbDialect.insertWithGeneratedKey(sql, "sym_trigger_his_ger_hist_id_seq");
         TriggerHistory audit = new TriggerHistory(TABLE_NAME, pk, col);
         audit.setTriggerHistoryId((int) key);

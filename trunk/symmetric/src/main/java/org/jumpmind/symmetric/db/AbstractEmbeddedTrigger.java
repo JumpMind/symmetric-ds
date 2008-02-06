@@ -146,10 +146,9 @@ public abstract class AbstractEmbeddedTrigger {
     }
 
     protected Data createData(Object[] oldRow, Object[] newRow) {
-        Data data = new Data(trigger.getChannelId(), StringUtils.isBlank(trigger.getTargetTableName()) ? tableName
+        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName
                 : trigger.getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow,
-                newRow), triggerHistory);
-        data.setTransactionId(getTransactionId(oldRow, newRow));
+                newRow), triggerHistory);       
         return data;
     }
 

@@ -91,18 +91,16 @@
                                 create trigger $(triggerName) after insert on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, row_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
-                                      '$(channelName)',
                                       'I',
-                                      $(triggerHistoryId),
-                                      $(txIdExpression),
+                                      $(triggerHistoryId),                                      
                                       concat($(columns)
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression)  from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end
@@ -115,20 +113,18 @@
                                 create trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, create_time)
                                     values(
                                       '$(targetTableName)',
-                                      '$(channelName)',      
                                       'U',
                                       $(triggerHistoryId),
-                                      $(txIdExpression),
                                       concat($(oldKeys)
                                        ),
                                       concat($(columns)
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end
@@ -141,18 +137,16 @@
                                 create trigger $(triggerName) after delete on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time)
                                     values(
                                       '$(targetTableName)',
-                                      '$(channelName)',
                                       'D',
                                       $(triggerHistoryId),
-                                      $(txIdExpression),
                                       concat($(oldKeys)
                                        ),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id) (select node_id, last_insert_id() from $(defaultSchema)$(prefixName)_node c where 
+                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
                                     c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
                                   end if;
                                 end

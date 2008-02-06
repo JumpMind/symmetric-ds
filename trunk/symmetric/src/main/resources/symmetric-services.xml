@@ -256,10 +256,10 @@
 
         <property name="selectEventsToBatchSql">
             <value>
-                select data.transaction_id, data.data_id from ${sync.table.prefix}_data data,
-                ${sync.table.prefix}_data_event data_event where data_event.batched = 0 and
-                data_event.node_id = ? and data.channel_id=? and data.data_id = data_event.data_id
-                order by data.data_id asc
+                select transaction_id, data_id from 
+                ${sync.table.prefix}_data_event 
+                where batched = 0 and node_id = ? and channel_id=? 
+                order by data_id asc
             </value>
         </property>
         <property name="createBatchSql">
@@ -329,19 +329,20 @@
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
+        <property name="purgeService" ref="purgeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="insertIntoDataSql">
             <value>
-                insert into ${sync.table.prefix}_data (data_id, channel_id, table_name, event_type,
-                row_data, pk_data, trigger_hist_id, transaction_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?,
+                insert into ${sync.table.prefix}_data (data_id, table_name, event_type,
+                row_data, pk_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?,
                 current_timestamp)
             </value>
         </property>
         <property name="insertIntoDataEventSql">
             <value>
-                insert into ${sync.table.prefix}_data_event (data_id, node_id, batch_id, batched)
-                values(?, ?, ?, ?)
+                insert into ${sync.table.prefix}_data_event (data_id, node_id, channel_id, transaction_id, batch_id, batched)
+                values(?, ?, ?, ?, ?, ?)
             </value>
         </property>
     </bean>
@@ -747,6 +748,16 @@
         <property name="deleteDataSql">
             <value>delete from ${sync.table.prefix}_data where data_id=?</value>
         </property>
+        <property name="deleteIncomingBatchesByNodeIdSql">
+            <list>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?
+                </value>
+                <value>
+                    delete from ${sync.table.prefix}_incoming_batch where node_id=?
+                </value>
+            </list>
+        </property>        
         <property name="otherPurgeSql">
             <list>
                 <value>

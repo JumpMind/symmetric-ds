@@ -169,6 +169,9 @@
                         </property>
                     </systemProperties>
                     <groups>continuous,integration,mysql</groups>
+                    <additionalClasspathElements>
+                      <value>${user.home}\.symmetricds\lib\ojdbc14.jar</value>
+                    </additionalClasspathElements>
                 </configuration>
                 <executions>
                     <execution>

@@ -82,7 +82,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * associated history row.
      */
     public void buildOutgoingBatches(final String nodeId) {
-        // TODO should channels be cached?
         final List<NodeChannel> channels = configurationService.getChannelsFor(true);
 
         jdbcTemplate.execute(new ConnectionCallback() {

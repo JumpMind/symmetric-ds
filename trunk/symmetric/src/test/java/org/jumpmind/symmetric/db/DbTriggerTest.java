@@ -155,7 +155,7 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
                 c.commit();
                 c.setAutoCommit(origValue);
                 ResultSet rs = stmt.executeQuery("select transaction_id from " + TestConstants.TEST_PREFIX
-                        + "data where transaction_id is not null group by transaction_id having count(*)>1");
+                        + "data_event where transaction_id is not null group by transaction_id having count(*)>1");
                 String batchId = null;
                 if (rs.next()) {
                     batchId = rs.getString(1);

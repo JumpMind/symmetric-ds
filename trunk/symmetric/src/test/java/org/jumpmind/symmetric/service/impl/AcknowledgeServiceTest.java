@@ -169,10 +169,10 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         audit.setTriggerHistoryId(TestConstants.TEST_AUDIT_ID);
         final long[] id = new long[size];
         for (int i = 0; i < size; i++) {
-            Data data = new Data(TestConstants.TEST_CHANNEL_ID, "table1", DataEventType.INSERT,
+            Data data = new Data("table1", DataEventType.INSERT,
                     "some data", "some data", audit);
             id[i] = dataService.insertData(data);
-            DataEvent dataEvent = new DataEvent(id[i], TestConstants.TEST_CLIENT_EXTERNAL_ID);
+            DataEvent dataEvent = new DataEvent(id[i], TestConstants.TEST_CLIENT_EXTERNAL_ID, TestConstants.TEST_CHANNEL_ID);
             dataEvent.setBatchId(Long.valueOf(batch.getBatchId()));
             dataEvent.setBatched(true);
             dataService.insertDataEvent(dataEvent);
