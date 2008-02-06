@@ -20,22 +20,43 @@
 
 package org.jumpmind.symmetric.job;
 
+import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanNameAware;
 
-abstract public class AbstractJob extends TimerTask {
+abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware
+{
 
     DataSource dataSource;
-    
+
+    private boolean needsRescheduled;
+
+    private long rescheduleDelay;
+
+    private BeanFactory beanFactory;
+
+    private String beanName;
+
     @Override
-    public void run() {
-        try {
+    public void run()
+    {
+        try
+        {
             doJob();
-        } catch (Throwable ex) {
+            if (isNeedsRescheduled())
+            {
+                reschedule();
+            }
+        }
+        catch (final Throwable ex)
+        {
             getLogger().error(ex, ex);
         }
     }
@@ -43,15 +64,59 @@ abstract public class AbstractJob extends TimerTask {
     abstract void doJob() throws Exception;
 
     abstract Log getLogger();
-    
-    protected void printDatabaseStats() {
-        if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource) {
-            BasicDataSource ds = (BasicDataSource)dataSource;
+
+    protected void reschedule()
+    {
+        final Timer timer = new Timer();
+        timer.schedule((TimerTask) beanFactory.getBean(beanName), getRescheduleDelay());
+        if (getLogger().isDebugEnabled())
+        {
+            getLogger().debug("Rescheduling " + beanName + " with " + getRescheduleDelay() + " ms delay.");
+        }
+    }
+
+    protected void printDatabaseStats()
+    {
+        if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource)
+        {
+            final BasicDataSource ds = (BasicDataSource) dataSource;
             getLogger().debug("There are currently " + ds.getNumActive() + " active database connections.");
         }
     }
 
-    public void setDataSource(DataSource dataSource) {
+    public void setBeanFactory(final BeanFactory beanFactory)
+    {
+        this.beanFactory = beanFactory;
+    }
+
+    public void setBeanName(final String beanName)
+    {
+        this.beanName = beanName;
+    }
+
+    public void setDataSource(final DataSource dataSource)
+    {
         this.dataSource = dataSource;
     }
+
+    public boolean isNeedsRescheduled()
+    {
+        return needsRescheduled;
+    }
+
+    public void setNeedsRescheduled(final boolean needsRescheduled)
+    {
+        this.needsRescheduled = needsRescheduled;
+    }
+
+    public void setRescheduleDelay(final long rescheduleDelay)
+    {
+        this.rescheduleDelay = rescheduleDelay;
+    }
+
+    public long getRescheduleDelay()
+    {
+        return rescheduleDelay;
+    }
+
 }
