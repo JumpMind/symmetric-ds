@@ -61,7 +61,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 Data data = createData(oldRow, newRow);
                 List<Node> nodes = findTargetNodes(oldRow, newRow);
                 if (nodes != null) {
-                    dataService.insertDataEvent(data, nodes);
+                    dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow), nodes);
                 }
             }
         } catch (RuntimeException ex) {

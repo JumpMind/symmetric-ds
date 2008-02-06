@@ -56,20 +56,18 @@ public class DerbyFunctions {
                     + schemaName
                     + prefixName
                     + "_data "
-                    + "(table_name, channel_id, event_type, trigger_hist_id, transaction_id, pk_data, row_data, create_time) "
-                    + "values (?, ?, ?, ?, ?, ?, ?, current_timestamp)";
+                    + "(table_name, event_type, trigger_hist_id, pk_data, row_data, create_time) "
+                    + "values (?, ?, ?, ?, ?, current_timestamp)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, tableName);
-            ps.setString(2, channelName);
-            ps.setString(3, dmlType);
-            ps.setLong(4, triggerHistId);
-            ps.setString(5, transactionId);
-            ps.setString(6, pkData);
-            ps.setString(7, rowData);
+            ps.setString(2, dmlType);
+            ps.setLong(3, triggerHistId);
+            ps.setString(4, pkData);
+            ps.setString(5, rowData);
             ps.executeUpdate();
             ps.close();
-            sql = "insert into " + schemaName + prefixName + "_data_event (node_id, data_id) "
-                    + "select node_id, IDENTITY_VAL_LOCAL() from " + prefixName
+            sql = "insert into " + schemaName + prefixName + "_data_event (node_id, data_id, channel_id, transaction_id) "
+                    + "select node_id, IDENTITY_VAL_LOCAL(),'"+channelName+"','"+transactionId+"' from " + prefixName
                     + "_node c where (c.node_group_id = ? and c.sync_enabled = 1) " + nodeSelectWhere;
             ps = conn.prepareStatement(sql);
             ps.setString(1, targetGroupId);

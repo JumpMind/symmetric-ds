@@ -15,8 +15,10 @@ public interface IDataService {
     @Transactional
     public String reloadNode(String nodeId);
     
+    @Transactional
     public void insertReloadEvent(Node targetNode);
     
+    @Transactional
     public void insertReloadEvent(final Node targetNode, final Trigger trigger);
 
     public void insertHeartbeatEvent(Node node);
@@ -25,9 +27,11 @@ public interface IDataService {
     
     public void insertDataEvent(DataEvent dataEvent);
 
-    public void insertDataEvent(Data data, List<Node> nodes);       
+    public void insertDataEvent(Data data, String channelId, List<Node> nodes);       
+    
+    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes);
 
-    public void insertDataEvent(Data data, String nodeId);
+    public void insertDataEvent(Data data, String channelId, String nodeId);
 
     public void insertPurgeEvent(Node targetNode, Trigger trigger);
     

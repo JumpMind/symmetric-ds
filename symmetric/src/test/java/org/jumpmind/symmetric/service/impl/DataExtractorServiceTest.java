@@ -105,7 +105,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
             String nodeId) {
         TriggerHistory audit = new TriggerHistory();
         audit.setTriggerHistoryId(auditId);
-        Data data = new Data(channelId, tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
-        dataService.insertDataEvent(data, nodeId);
+        Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
+        dataService.insertDataEvent(data, channelId, nodeId);
     }
 }

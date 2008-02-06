@@ -229,9 +229,9 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     
     protected void testVirtualTransactionId() {
         rootJdbcTemplate.update("insert into test_very_long_table_name_1234 values('42')");              
-        Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
+        Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data_event where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
         Assert.assertEquals(rootJdbcTemplate.update("delete from test_very_long_table_name_1234 where id='42'"), 1);              
-        Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
+        Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data_event where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
     }
 
     protected void testMultipleChannels() {
