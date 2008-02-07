@@ -60,9 +60,11 @@
             <map>
                 <entry key="${sync.table.prefix}_node_group">
                     <value>
-                        node_group_id = '$(groupId)' or
-                        node_group_id in (select source_node_group_id from ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') or
-                        node_group_id in (select target_node_group_id from ${sync.table.prefix}_node_group_link where source_node_group_id = '$(groupId)')
+                        node_group_id = '$(groupId)' or node_group_id in (select
+                        source_node_group_id from ${sync.table.prefix}_node_group_link where
+                        target_node_group_id = '$(groupId)') or node_group_id in (select
+                        target_node_group_id from ${sync.table.prefix}_node_group_link where
+                        source_node_group_id = '$(groupId)')
                     </value>
                 </entry>
                 <entry key="${sync.table.prefix}_node_group_link">
@@ -72,32 +74,34 @@
                 </entry>
                 <entry key="${sync.table.prefix}_node">
                     <value>
-                        node_id = '$(nodeId)' or
-                        node_group_id in (select source_node_group_id from ${sync.table.prefix}_node_group_link where target_node_group_id = '$(groupId)') or
-                        node_group_id in (select target_node_group_id from ${sync.table.prefix}_node_group_link where source_node_group_id = '$(groupId)')
+                        node_id = '$(nodeId)' or node_group_id in (select source_node_group_id from
+                        ${sync.table.prefix}_node_group_link where target_node_group_id =
+                        '$(groupId)') or node_group_id in (select target_node_group_id from
+                        ${sync.table.prefix}_node_group_link where source_node_group_id =
+                        '$(groupId)')
                     </value>
                 </entry>
                 <entry key="${sync.table.prefix}_node_security">
                     <value>
-                        node_id = '$(nodeId)' or
-                        node_id in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.source_node_group_id where l.target_node_group_id = '$(groupId)') or
-                        node_id in (select s.node_id from ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
+                        node_id = '$(nodeId)' or node_id in (select s.node_id from
+                        ${sync.table.prefix}_node s inner join ${sync.table.prefix}_node_group_link
+                        l on s.node_group_id = l.source_node_group_id where l.target_node_group_id =
+                        '$(groupId)') or node_id in (select s.node_id from ${sync.table.prefix}_node
+                        s inner join ${sync.table.prefix}_node_group_link l on s.node_group_id =
+                        l.target_node_group_id where l.source_node_group_id = '$(groupId)')
                     </value>
                 </entry>
                 <entry key="${sync.table.prefix}_global_parameter">
-                    <value>
-                        node_group_id = '$(groupId)'
-                    </value>
+                    <value>node_group_id = '$(groupId)'</value>
                 </entry>
                 <entry key="${sync.table.prefix}_channel">
                     <value>
-                        channel_id in (select channel_id from ${sync.table.prefix}_trigger where source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
+                        channel_id in (select channel_id from ${sync.table.prefix}_trigger where
+                        source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
                     </value>
                 </entry>
                 <entry key="${sync.table.prefix}_node_channel_ctl">
-                    <value>
-                        node_id = '$(nodeId)'
-                    </value>
+                    <value>node_id = '$(nodeId)'</value>
                 </entry>
                 <entry key="${sync.table.prefix}_trigger">
                     <value>
@@ -119,17 +123,17 @@
         </property>
         <property name="selectDataEventActionsByIdSql">
             <value>
-                select data_event_action from
-                ${sync.table.prefix}_node_group_link where source_node_group_id = ? and target_node_group_id = ?
+                select data_event_action from ${sync.table.prefix}_node_group_link where
+                source_node_group_id = ? and target_node_group_id = ?
             </value>
         </property>
         <property name="selectChannelsSql">
             <value>
                 select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled,
                 c.processing_order, c.max_batch_size, c.enabled from ${sync.table.prefix}_channel c
-                inner join ${sync.table.prefix}_node_identity n on 1 = 1
-                left outer join ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id
-                and n.node_id = nc.node_id order by c.processing_order asc
+                inner join ${sync.table.prefix}_node_identity n on 1 = 1 left outer join
+                ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id and
+                n.node_id = nc.node_id order by c.processing_order asc
             </value>
         </property>
         <property name="selectGroupTriggersSql">
@@ -163,9 +167,9 @@
             <value>
                 insert into ${sync.table.prefix}_trigger (source_table_name, source_node_group_id,
                 target_node_group_id, channel_id, source_schema_name, sync_on_update,
-                sync_on_insert, sync_on_delete, initial_load_order, initial_load_select, last_updated_by,
-                last_updated_time, create_time) values (?, ?, ?, ?, null, 0, 0, 0, ?, ?, 'system',
-                current_timestamp, current_timestamp)
+                sync_on_insert, sync_on_delete, initial_load_order, initial_load_select,
+                last_updated_by, last_updated_time, create_time) values (?, ?, ?, ?, null, 0, 0, 0,
+                ?, ?, 'system', current_timestamp, current_timestamp)
             </value>
         </property>
         <property name="groupsLinksSql">
@@ -256,10 +260,8 @@
 
         <property name="selectEventsToBatchSql">
             <value>
-                select transaction_id, data_id from 
-                ${sync.table.prefix}_data_event 
-                where batched = 0 and node_id = ? and channel_id=? 
-                order by data_id asc
+                select transaction_id, data_id from ${sync.table.prefix}_data_event where batched =
+                0 and node_id = ? and channel_id=? order by data_id asc
             </value>
         </property>
         <property name="createBatchSql">
@@ -270,8 +272,8 @@
         </property>
         <property name="updateBatchedEventsSql">
             <value>
-                update ${sync.table.prefix}_data_event set batch_id = ?, batched = 1 where node_id
-                = ? and data_id = ?
+                update ${sync.table.prefix}_data_event set batch_id = ?, batched = 1 where node_id =
+                ? and data_id = ?
             </value>
         </property>
         <property name="selectOutgoingBatchSql">
@@ -312,9 +314,10 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="selectEventDataToExtractSql">
             <value>
-                select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, e.batch_id, d.create_time,
-                d.trigger_hist_id from ${sync.table.prefix}_data d inner join ${sync.table.prefix}_data_event e on d.data_id = e.data_id
-                where e.node_id = ? and e.batch_id = ? order by d.data_id asc
+                select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, e.batch_id,
+                d.create_time, d.trigger_hist_id from ${sync.table.prefix}_data d inner join
+                ${sync.table.prefix}_data_event e on d.data_id = e.data_id where e.node_id = ? and
+                e.batch_id = ? order by d.data_id asc
             </value>
         </property>
     </bean>
@@ -334,15 +337,15 @@
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="insertIntoDataSql">
             <value>
-                insert into ${sync.table.prefix}_data (data_id, table_name, event_type,
-                row_data, pk_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?,
+                insert into ${sync.table.prefix}_data (data_id, table_name, event_type, row_data,
+                pk_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?,
                 current_timestamp)
             </value>
         </property>
         <property name="insertIntoDataEventSql">
             <value>
-                insert into ${sync.table.prefix}_data_event (data_id, node_id, channel_id, transaction_id, batch_id, batched)
-                values(?, ?, ?, ?, ?, ?)
+                insert into ${sync.table.prefix}_data_event (data_id, node_id, channel_id,
+                transaction_id, batch_id, batched) values(?, ?, ?, ?, ?, ?)
             </value>
         </property>
     </bean>
@@ -361,6 +364,9 @@
 
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService"
         scope="singleton">
+        <property name="numberOfStatusSendRetries" value="${symmetric.runtime.num.of.ack.retries}" />
+        <property name="timeBetweenStatusSendRetriesMs"
+            value="${symmetric.runtime.time.between.ack.retries.ms}" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="transportManager" ref="transportManager" />
@@ -462,8 +468,8 @@
         <property name="findNodeSecuritySql">
             <value>
                 select node_id, password, registration_enabled, registration_time,
-                initial_load_enabled, initial_load_time from
-                ${sync.table.prefix}_node_security where node_id = ?
+                initial_load_enabled, initial_load_time from ${sync.table.prefix}_node_security
+                where node_id = ?
             </value>
         </property>
         <property name="findNodeIdentitySql">
@@ -501,9 +507,9 @@
         </property>
         <property name="updateNodeSecuritySql">
             <value>
-                update ${sync.table.prefix}_node_security 
-                set password = ?, registration_enabled = ?, registration_time = ?,
-                initial_load_enabled = ?, initial_load_time = ? where node_id = ?
+                update ${sync.table.prefix}_node_security set password = ?, registration_enabled =
+                ?, registration_time = ?, initial_load_enabled = ?, initial_load_time = ? where
+                node_id = ?
             </value>
         </property>
     </bean>
@@ -512,14 +518,14 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
-        <property name="clusterService" ref="clusterService" />        
+        <property name="clusterService" ref="clusterService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />
         <property name="dataService" ref="dataService" />
-        <property name="autoRegistration" value ="${symmetric.auto.registration}" />
-        <property name="autoReload" value ="${symmetric.auto.reload}" />
+        <property name="autoRegistration" value="${symmetric.auto.registration}" />
+        <property name="autoReload" value="${symmetric.auto.reload}" />
         <property name="findNodeToRegisterSql">
             <value>
                 select min(c.node_id) from ${sync.table.prefix}_node c inner join
@@ -529,9 +535,9 @@
         </property>
         <property name="registerNodeSql">
             <value>
-                update ${sync.table.prefix}_node set sync_enabled = 1, sync_url = ?,
-                schema_version = ?, database_type = ?, database_version = ?, symmetric_version = ?
-                where node_id = ?
+                update ${sync.table.prefix}_node set sync_enabled = 1, sync_url = ?, schema_version
+                = ?, database_type = ?, database_version = ?, symmetric_version = ? where node_id =
+                ?
             </value>
         </property>
         <property name="registerNodeSecuritySql">
@@ -583,7 +589,7 @@
     </bean>
 
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
-        <property name="dbDialect" ref="dbDialect"/>
+        <property name="dbDialect" ref="dbDialect" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dictionary">
             <map>
@@ -682,34 +688,38 @@
         <property name="nodeService" ref="nodeService" />
         <property name="upgradeTaskMap" ref="upgradeTaskMap" />
     </bean>
-    
+
     <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
-        <property name="lockTimeoutInMilliseconds" value="${symmetric.runtime.cluster.lock.timeout.ms}" />
+        <property name="lockTimeoutInMilliseconds"
+            value="${symmetric.runtime.cluster.lock.timeout.ms}" />
         <property name="lockDuringPurge" value="${symmetric.runtime.cluster.lock.during.purge}" />
         <property name="lockDuringPull" value="${symmetric.runtime.cluster.lock.during.pull}" />
         <property name="lockDuringPush" value="${symmetric.runtime.cluster.lock.during.push}" />
-        <property name="lockDuringHeartbeat" value="${symmetric.runtime.cluster.lock.during.heartbeat}" />
-        <property name="lockDuringSyncTriggers" value="${symmetric.runtime.cluster.lock.during.sync.triggers}" />
+        <property name="lockDuringHeartbeat"
+            value="${symmetric.runtime.cluster.lock.during.heartbeat}" />
+        <property name="lockDuringSyncTriggers"
+            value="${symmetric.runtime.cluster.lock.during.sync.triggers}" />
         <property name="aquireLockSql">
             <value>
-                update ${sync.table.prefix}_lock set locking_server_id=?, lock_time=current_timestamp where lock_id=? and lock_action=? and (lock_time is null or lock_time &lt; ?)
+                update ${sync.table.prefix}_lock set locking_server_id=?,
+                lock_time=current_timestamp where lock_id=? and lock_action=? and (lock_time is null
+                or lock_time &lt; ?)
             </value>
         </property>
         <property name="releaseLockSql">
             <value>
-                update ${sync.table.prefix}_lock set lock_time=null where lock_id=? and lock_action=? and locking_server_id=?
+                update ${sync.table.prefix}_lock set lock_time=null where lock_id=? and
+                lock_action=? and locking_server_id=?
             </value>
         </property>
         <property name="insertLockSql">
-            <value>
-                insert into ${sync.table.prefix}_lock (lock_id, lock_action) values(?,?)
-            </value>
+            <value>insert into ${sync.table.prefix}_lock (lock_id, lock_action) values(?,?)</value>
         </property>
 
-    </bean>    
+    </bean>
 
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
@@ -718,7 +728,8 @@
         <property name="dbDialect" ref="dbDialect" />
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
-        <property name="maxNumOfDataIdsToPurgeInTx" value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}"/>
+        <property name="maxNumOfDataIdsToPurgeInTx"
+            value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}" />
         <property name="selectOutgoingBatchIdsToPurgeSql">
             <value>
                 select batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
@@ -750,14 +761,10 @@
         </property>
         <property name="deleteIncomingBatchesByNodeIdSql">
             <list>
-                <value>
-                    delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?
-                </value>
-                <value>
-                    delete from ${sync.table.prefix}_incoming_batch where node_id=?
-                </value>
+                <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?</value>
+                <value>delete from ${sync.table.prefix}_incoming_batch where node_id=?</value>
             </list>
-        </property>        
+        </property>
         <property name="otherPurgeSql">
             <list>
                 <value>
