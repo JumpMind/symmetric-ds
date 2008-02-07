@@ -35,7 +35,11 @@
             </action>            
             <action dev="chenson42" type="add">
                 Added the configurable number of times to attempt a 'resend' of the 'status' on a pull.
-            </action>                                                
+            </action>
+            <action dev="chenson42" type="add">
+                Added the removal of all incoming batch rows when reloading a node.  This is to prevent the loss of data should the
+                symmetric.runtime.incoming.batches.skip.duplicates property be set to true.
+            </action>                                                                                                            
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
