@@ -1,6 +1,6 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
- *   
+ *
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
@@ -50,15 +50,18 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         try
         {
             doJob();
-            if (isNeedsRescheduled())
-            {
-                reschedule();
-            }
         }
         catch (final Throwable ex)
         {
             getLogger().error(ex, ex);
         }
+        finally
+        {
+            if (isNeedsRescheduled())
+            {
+                reschedule();
+            }
+		}
     }
 
     abstract void doJob() throws Exception;
