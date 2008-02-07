@@ -49,14 +49,17 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         try
         {
             doJob();
-            if (isNeedsRescheduled())
-            {
-                reschedule();
-            }
         }
         catch (final Throwable ex)
         {
             getLogger().error(ex, ex);
+        }
+        finally
+        {
+            if (isNeedsRescheduled())
+            {
+                reschedule();
+            }
         }
     }
 
