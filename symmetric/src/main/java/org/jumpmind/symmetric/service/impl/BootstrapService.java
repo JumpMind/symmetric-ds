@@ -98,10 +98,18 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
             if (upgradeService.isUpgradeNecessary()) {
                 if (autoUpgrade) {
-                    upgradeService.upgrade();
+                    try {
+                        upgradeService.upgrade();
+                    } catch (RuntimeException ex) {
+                        logger
+                                .fatal(
+                                        "The upgrade failed. The system may be unstable.  Please resolve the problem manually.",
+                                        ex);
+                        throw ex;
+                    }
                 } else {
                     throw new RuntimeException("Upgrade of node is necessary.  "
-                            + "Please set symmetric.auto.upgrade property to true.");
+                            + "Please set symmetric.auto.upgrade property to true for an automated upgrade.");
                 }
             }
             initialized = true;
