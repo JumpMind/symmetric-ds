@@ -80,6 +80,10 @@ public class DataLoaderService extends AbstractService implements
     protected List<IDataLoaderFilter> filters;
     
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
+    
+    int numberOfStatusSendRetries = 5;
+    
+    long timeBetweenStatusSendRetriesMs = 5000;
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of
@@ -89,14 +93,48 @@ public class DataLoaderService extends AbstractService implements
         try {
             List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(
                     remote, local));
-            if (!transportManager.sendAcknowledgement(remote, list, local)) {
-                logger.warn(ErrorConstants.COULD_COMMINICATE_ACK);
-            }
+            sendAck(remote, local, list);
         } catch (RegistrationRequiredException e) {
             logger.warn("Registration was lost, attempting to re-register");
             loadData(transportManager.getRegisterTransport(local));
         }
     }
+    
+    /**
+     * Try a configured number of times to get the ACK through.
+     */
+    private void sendAck(Node remote, Node local, List<IncomingBatchHistory> list) throws IOException {
+        Exception error = null;
+        boolean sendAck = false;
+        for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
+            try {
+                sendAck = transportManager.sendAcknowledgement(remote, list, local);
+            } catch (IOException ex) {
+                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                error = ex;
+            } catch (RuntimeException ex) {
+                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                error = ex;
+            }
+            if (!sendAck) {
+                if (i < numberOfStatusSendRetries - 1) {
+                    sleep();
+                } else if (error instanceof RuntimeException) {
+                    throw (RuntimeException) error;
+                } else if (error instanceof IOException) {
+                    throw (IOException) error;
+                }
+            }
+        }
+    }
+    
+    private final void sleep() {
+        try {
+            Thread.sleep(timeBetweenStatusSendRetriesMs);
+        } catch (InterruptedException e) {
+        }
+    }
+
 
     /**
      * Load database from input stream and return a list of batch statuses. This
@@ -267,6 +305,14 @@ public class DataLoaderService extends AbstractService implements
 
     public void addColumnFilter(String tableName, IColumnFilter filter) {
         this.columnFilters.put(tableName, filter);
+    }
+
+    public void setNumberOfStatusSendRetries(int numberOfStatusSendRetries) {
+        this.numberOfStatusSendRetries = numberOfStatusSendRetries;
+    }
+
+    public void setTimeBetweenStatusSendRetriesMs(long timeBetweenStatusSendRetriesMs) {
+        this.timeBetweenStatusSendRetriesMs = timeBetweenStatusSendRetriesMs;
     }
 
 }
