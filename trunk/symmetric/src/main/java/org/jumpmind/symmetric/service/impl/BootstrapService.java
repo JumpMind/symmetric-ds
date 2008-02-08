@@ -286,7 +286,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         int maxTriggerNameLengh = dbDialect.getMaxTriggerNameLength();
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger.getTriggerName(
-                DataEventType.INSERT, triggerPrefix, maxTriggerNameLengh), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLengh),
+                DataEventType.INSERT, triggerPrefix, maxTriggerNameLengh), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLengh).toUpperCase(),
                 trigger.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLengh));
 
         String oldTriggerName = null;
