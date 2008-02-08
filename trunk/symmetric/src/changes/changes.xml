@@ -20,26 +20,35 @@
                 Log fallback update/deletes at debug level instead of at the warn level.
             </action>
             <action dev="chenson42" type="add">
-                Don't log socket exceptions and HTTP 503 errors as stack traces, instead log as warnings.
-            </action>            
-            <action dev="chenson42" type="add">
-                Make DataService.reloadNode(node_id) transactional.  If it isn't we run the risk of inserting only half 
-                of an initial load.
+                Don't log socket exceptions and HTTP 503 errors as stack traces, instead log as
+                warnings.
             </action>
             <action dev="chenson42" type="add">
-                Added an additional optional properties file that can put in the classpath to override properties values called symmetric-override.properties.
+                Make DataService.reloadNode(node_id) transactional. If it isn't we run the risk of
+                inserting only half of an initial load.
             </action>
             <action dev="chenson42" type="add">
-                Moved channel_id and transaction_id from the data table to the data_event table.  It makes it much more efficient to create batches when data is backed up
-                because you don't need to join between data and data_event.
-            </action>            
-            <action dev="chenson42" type="add">
-                Added the configurable number of times to attempt a 'resend' of the 'status' on a pull.
+                Added an additional optional properties file that can put in the classpath to
+                override properties values called symmetric-override.properties.
             </action>
             <action dev="chenson42" type="add">
-                Added the removal of all incoming batch rows when reloading a node.  This is to prevent the loss of data should the
+                Moved channel_id and transaction_id from the data table to the data_event table. It
+                makes it much more efficient to create batches when data is backed up because you
+                don't need to join between data and data_event.
+            </action>
+            <action dev="chenson42" type="add">
+                Added the configurable number of times to attempt a 'resend' of the 'status' on a
+                pull.
+            </action>
+            <action dev="chenson42" type="add">
+                Added the removal of all incoming batch rows when reloading a node. This is to
+                prevent the loss of data should the
                 symmetric.runtime.incoming.batches.skip.duplicates property be set to true.
-            </action>                                                                                                            
+            </action>
+            <action dev="kbajaj01" type="add">
+                Make the AbstractJob configurable so that it can reschedule itself.  If we do this, then
+                we get natural randomness in the push, pull cycles.
+            </action>            
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
