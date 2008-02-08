@@ -73,7 +73,7 @@
             <index-column name="batch_id" />
             <index-column name="node_id" />
         </index>        
-        <index name="idx_de_batched_nodeid">
+        <index name="idx_de_btchd_nid_cid">
             <index-column name="batched" />
             <index-column name="node_id" />
             <index-column name="channel_id" />
