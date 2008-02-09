@@ -211,17 +211,6 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.outgoing.batches.max.to.process</command>
-                </term>
-                <listitem>
-                    <para>
-                        This is the maximum number of outgoing batches that will processed in one pull or push
-                        request. [&#xA0;Default:&#xA0;60&#xA0;]
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
                     <command>symmetric.runtime.incoming.batches.skip.duplicates</command>
                 </term>
                 <listitem>

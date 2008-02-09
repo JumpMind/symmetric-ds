@@ -177,6 +177,9 @@
                   alter table ${sync.table.prefix}_data_event add (transaction_id varchar(1000))
                 </value>
                 <value>
+                  alter table ${sync.table.prefix}_channel add (max_batch_to_send numeric(5) default 60)
+                </value>                
+                <value>
                   create index idx_de_btchd_nid_cid on 
                     ${sync.table.prefix}_data_event(batched, node_id, channel_id)
                 </value>

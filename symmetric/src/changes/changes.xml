@@ -48,7 +48,11 @@
             <action dev="kbajaj01" type="add">
                 Make the AbstractJob configurable so that it can reschedule itself.  If we do this, then
                 we get natural randomness in the push, pull cycles.
-            </action>            
+            </action>
+            <action dev="chenson42" type="fix">
+                Transaction ids can be interleaved by different processes.  The batching process needs to take this into
+                account.  Also, cap the max number of batches that can be send per channel in one sweep.
+            </action>                        
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">

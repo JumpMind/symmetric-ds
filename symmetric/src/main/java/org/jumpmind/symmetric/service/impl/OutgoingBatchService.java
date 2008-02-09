@@ -24,7 +24,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +52,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     IConfigurationService configurationService;
 
+    private int batchSizePeekAhead = 100;
+
     private String selectEventsToBatchSql;
 
     private String updateBatchedEventsSql;
@@ -59,17 +63,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private String selectOutgoingBatchSql;
 
     private String selectOutgoingBatchRangeSql;
-    
+
     private String selectOutgoingBatchErrorsSql;
-    
+
     private String changeBatchStatusSql;
 
     private String initialLoadStatusSql;
-    
+
     private JdbcTemplate outgoingBatchQueryTemplate;
 
     private IOutgoingBatchHistoryService historyService;
-    
+
     private IDbDialect dbDialect;
 
     /**
@@ -81,9 +85,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * other than possibly leaving a batch row w/out data every now and then or leaving a batch w/out the
      * associated history row.
      */
-    public void buildOutgoingBatches(final String nodeId) {
-        final List<NodeChannel> channels = configurationService.getChannelsFor(true);
-
+    public void buildOutgoingBatches(final String nodeId, final List<NodeChannel> channels) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
@@ -106,8 +108,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ResultSet results = select.executeQuery();
 
                         int count = 0;
-                        boolean stopOnNextTxIdChange = false;
-                        String lastTrxId = null;
+                        boolean peekAheadMode = false;
+                        int peekAheadCountDown = batchSizePeekAhead;
+                        Set<String> transactionIds = new HashSet<String>();
 
                         OutgoingBatch newBatch = new OutgoingBatch();
                         newBatch.setBatchType(BatchType.EVENTS);
@@ -125,23 +128,30 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                             do {
                                 String trxId = results.getString(1);
-
-                                if (stopOnNextTxIdChange && (lastTrxId == null || !lastTrxId.equals(trxId))) {
-                                    break;
+                                if (trxId != null) {
+                                    transactionIds.add(trxId);
                                 }
 
-                                int dataId = results.getInt(2);
+                                if (!peekAheadMode
+                                        || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
+                                    peekAheadCountDown = batchSizePeekAhead;
 
-                                update.clearParameters();
-                                update.setLong(1, Long.valueOf(newBatch.getBatchId()));
-                                update.setString(2, nodeId);
-                                update.setLong(3, dataId);
-                                update.addBatch();
+                                    int dataId = results.getInt(2);
 
-                                count++;
+                                    update.clearParameters();
+                                    update.setLong(1, Long.valueOf(newBatch.getBatchId()));
+                                    update.setString(2, nodeId);
+                                    update.setLong(3, dataId);
+                                    update.addBatch();
+
+                                    count++;
+
+                                } else {
+                                    peekAheadCountDown--;
+                                }
 
                                 if (count > channel.getMaxBatchSize()) {
-                                    stopOnNextTxIdChange = true;
+                                    peekAheadMode = true;
                                 }
 
                                 // put this in so we don't build up too many
@@ -150,9 +160,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                     update.executeBatch();
                                 }
 
-                                lastTrxId = trxId;
-                            } while (results.next());
-                            
+                            } while (results.next() && peekAheadCountDown != 0);
+
                             historyService.created(new Integer(newBatch.getBatchId()), count);
                         }
 
@@ -180,8 +189,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private void insertOutgoingBatch(Connection conn, final OutgoingBatch outgoingBatch) throws SQLException {
         long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id_seq",
                 new PreparedStatementCallback() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
-                            DataAccessException {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
@@ -199,22 +207,22 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId, nodeId },
-                new OutgoingBatchMapper());
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId,
+                nodeId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
-        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql,
-                new Object[] { startBatchId, endBatchId }, new OutgoingBatchMapper());
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql, new Object[] {
+                startBatchId, endBatchId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
         return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(new MaxRowsStatementCreator(
-                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());        
+                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());
     }
-    
+
     public void markOutgoingBatchSent(OutgoingBatch batch) {
         setBatchStatus(batch.getBatchId(), Status.SE);
     }
@@ -229,7 +237,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } else if (status == Status.OK) {
             historyService.ok(new Integer(batchId));
         }
-
     }
 
     // TODO Unit test and probably refactor this method.
@@ -312,6 +319,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setBatchSizePeekAhead(int batchSizePeekAhead) {
+        this.batchSizePeekAhead = batchSizePeekAhead;
     }
 
 }

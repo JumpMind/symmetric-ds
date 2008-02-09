@@ -23,13 +23,14 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 
 public interface IOutgoingBatchService {
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch);
 
-    public void buildOutgoingBatches(String nodeId);
+    public void buildOutgoingBatches(String nodeId, final List<NodeChannel> channels);
 
     public List<OutgoingBatch> getOutgoingBatches(String nodeId);
 
