@@ -35,15 +35,17 @@ public class Channel {
     private int processingOrder;
 
     private int maxBatchSize;
+    
+    private int maxBatchToSend;
 
     private boolean enabled;
 
     public Channel() {
     }
 
-    public Channel(String id, int priority) {
+    public Channel(String id, int processingOrder) {
         this.id = id;
-        this.processingOrder = priority;
+        this.processingOrder = processingOrder;
     }
 
     public String getId() {
@@ -76,5 +78,13 @@ public class Channel {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public int getMaxBatchToSend() {
+        return maxBatchToSend;
+    }
+
+    public void setMaxBatchToSend(int maxBatchToSend) {
+        this.maxBatchToSend = maxBatchToSend;
     }
 }

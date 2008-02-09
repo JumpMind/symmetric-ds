@@ -101,12 +101,12 @@ public class ConfigurationService extends AbstractService implements
 
     public void initSystemChannels() {
         try {
-            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_CONFIG, 0, 100 });
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_CONFIG, 0, 100, 100 });
         } catch (DataIntegrityViolationException ex) {
             logger.debug("Channel " + Constants.CHANNEL_CONFIG + " already created.");
         }
         try {
-            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 100000 });
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 100000, 1000 });
         } catch (DataIntegrityViolationException ex) {
             logger.debug("Channel " + Constants.CHANNEL_RELOAD + " already created.");
         }
@@ -174,6 +174,7 @@ public class ConfigurationService extends AbstractService implements
                                     .setMaxBatchSize(rs
                                             .getInt(6));
                             channel.setEnabled(rs.getBoolean(7));
+                            channel.setMaxBatchToSend(rs.getInt(8));
                             return channel;
                         };
                     });

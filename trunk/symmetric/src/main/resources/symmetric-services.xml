@@ -130,7 +130,7 @@
         <property name="selectChannelsSql">
             <value>
                 select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled,
-                c.processing_order, c.max_batch_size, c.enabled from ${sync.table.prefix}_channel c
+                c.processing_order, c.max_batch_size, c.enabled, c.max_batch_to_send from ${sync.table.prefix}_channel c
                 inner join ${sync.table.prefix}_node_identity n on 1 = 1 left outer join
                 ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id and
                 n.node_id = nc.node_id order by c.processing_order asc
@@ -186,7 +186,7 @@
         </property>
         <property name="insertChannelSql">
             <value>
-                insert into ${sync.table.prefix}_channel values(?, ?, ?, 1, 'System-generated
+                insert into ${sync.table.prefix}_channel values(?, ?, ?, ?, 1, 'System-generated
                 channel. Do not remove.')
             </value>
         </property>
@@ -239,6 +239,7 @@
     <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService"
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="batchSizePeekAhead" value="${symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="configurationService" ref="configurationService" />
         <property name="historyService" ref="outgoingBatchHistoryService" />
@@ -247,8 +248,6 @@
             <bean class="org.springframework.jdbc.core.JdbcTemplate">
                 <property name="dataSource" ref="dataSource" />
                 <property name="queryTimeout" value="${db.sql.query.timeout.seconds}" />
-                <property name="maxRows"
-                    value="${symmetric.runtime.outgoing.batches.max.to.process}" />
             </bean>
         </property>
         <property name="initialLoadStatusSql">

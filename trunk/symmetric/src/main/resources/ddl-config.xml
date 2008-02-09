@@ -7,6 +7,7 @@
         <column name="channel_id" type="VARCHAR" size="50" primaryKey="true" />
         <column name="processing_order" type="INTEGER" required="true" default="1" />
         <column name="max_batch_size" type="INTEGER" required="true" default="1000" />
+        <column name="max_batch_to_send" type="INTEGER" required="true" default="60" />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="description" type="VARCHAR" size="1000" />
     </table>

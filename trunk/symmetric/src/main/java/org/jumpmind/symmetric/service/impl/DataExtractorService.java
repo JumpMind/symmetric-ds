@@ -28,6 +28,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.Version;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -80,7 +82,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         outgoingBatchService.insertOutgoingBatch(batch);
 
         try {
-            BufferedWriter writer = transport.open();            
+            BufferedWriter writer = transport.open();
             IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             DataExtractorContext ctxCopy = context.copy(dataExtractor);
             dataExtractor.init(writer, ctxCopy);
@@ -105,7 +107,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         }
         return (IDataExtractor) beanFactory.getBean(beanName);
     }
-    
+
     public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
@@ -115,7 +117,8 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         return batch;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport, DataExtractorContext ctx) {
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport,
+            DataExtractorContext ctx) {
         writeInitialLoad(node, trigger, transport, null, ctx);
     }
 
@@ -124,7 +127,8 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
         final TriggerHistory audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node.getSymmetricVersion());
+        final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
+                .getSymmetricVersion());
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -133,7 +137,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
                             java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ResultSet rs = st.executeQuery();
-                    final BufferedWriter writer = transport.open();                    
+                    final BufferedWriter writer = transport.open();
                     final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
                     if (batch != null) {
                         dataExtractor.init(writer, ctxCopy);
@@ -168,9 +172,12 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
      */
     public boolean extract(Node node, final IExtractListener handler) throws Exception {
 
-        outgoingBatchService.buildOutgoingBatches(node.getNodeId());
+        List<NodeChannel> channels = configurationService.getChannelsFor(true);
 
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
+        outgoingBatchService.buildOutgoingBatches(node.getNodeId(), channels);
+
+        List<OutgoingBatch> batches = filterMaxNumberOfOutgoingBatches(outgoingBatchService.getOutgoingBatches(node
+                .getNodeId()), channels);
 
         if (batches != null && batches.size() > 0) {
             try {
@@ -198,6 +205,28 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
             return true;
         }
         return false;
+    }
+
+    /**
+     * Filter out the maximum number of batches to send.
+     */
+    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatches(List<OutgoingBatch> batches, List<NodeChannel> channels) {
+        if (batches != null && batches.size() > 0) {
+            List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
+            for (NodeChannel channel : channels) {
+                int max = channel.getMaxBatchToSend();
+                int count = 0;
+                for (OutgoingBatch outgoingBatch : batches) {
+                    if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
+                        filtered.add(outgoingBatch);
+                        count++;
+                    }
+                }
+            }
+            return filtered;
+        } else {
+            return batches;
+        }
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
@@ -298,7 +327,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         IOutgoingTransport transport;
 
         IDataExtractor dataExtractor;
-        
+
         DataExtractorContext context;
 
         BufferedWriter writer;
