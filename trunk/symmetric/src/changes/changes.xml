@@ -45,6 +45,9 @@
                 prevent the loss of data should the
                 symmetric.runtime.incoming.batches.skip.duplicates property be set to true.
             </action>
+            <action dev="chenson42" type="add">
+                Made the purge of incoming and outgoing batches exclusive.  Also made sure if one fails, the other will still be able to run.
+            </action>                        
             <action dev="kbajaj01" type="add">
                 Make the AbstractJob configurable so that it can reschedule itself.  If we do this, then
                 we get natural randomness in the push, pull cycles.
