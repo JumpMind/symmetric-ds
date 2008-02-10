@@ -764,7 +764,7 @@
                 <value>delete from ${sync.table.prefix}_incoming_batch where node_id=?</value>
             </list>
         </property>
-        <property name="otherPurgeSql">
+        <property name="incomingPurgeSql">
             <list>
                 <value>
                     delete from ${sync.table.prefix}_incoming_batch_hist where batch_id in (select

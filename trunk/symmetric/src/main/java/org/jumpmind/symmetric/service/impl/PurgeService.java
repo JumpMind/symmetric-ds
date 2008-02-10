@@ -51,7 +51,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IDbDialect dbDialect;
 
-    private String[] otherPurgeSql;
+    private String[] incomingPurgeSql;
 
     private String[] deleteIncomingBatchesByNodeIdSql;
 
@@ -77,32 +77,62 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     @SuppressWarnings("unchecked")
     public void purge() {
-        if (clusterService.lock(LockAction.PURGE)) {
-            try {
-                logger.info("The purge process is about to run.");
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.MINUTE, -retentionInMinutes);
+        Calendar retentionCutoff = Calendar.getInstance();
+        retentionCutoff.add(Calendar.MINUTE, -retentionInMinutes);
 
-                purgeBatchesOlderThan(calendar);
-                purgeDataRows();
+        purgeIncoming(retentionCutoff);
+        purgeOutgoing(retentionCutoff);
 
-                for (String sql : otherPurgeSql) {
-                    int count = jdbcTemplate.update(sql, new Object[] { calendar.getTime() });
-                    if (count > 0) {
-                        logger.info("Purged " + count + " rows after running: " + cleanSql(sql));
-                    }
+    }
+
+    private void purgeOutgoing(Calendar retentionCutoff) {
+        try {
+            if (clusterService.lock(LockAction.PURGE_OUTGOING)) {
+                try {
+                    logger.info("The outgoing purge process is about to run.");
+
+                    purgeBatchesOlderThan(retentionCutoff);
+                    purgeDataRows();
+
+                } finally {
+                    clusterService.unlock(LockAction.PURGE_OUTGOING);
+                    logger.info("The outgoing purge process has completed.");
                 }
-            } finally {
-                clusterService.unlock(LockAction.PURGE);
-                logger.info("The purge process has completed.");
-            }
 
-        } else {
-            logger.info("Could not get a lock to run a purge.");
+            } else {
+                logger.info("Could not get a lock to run an outgoing purge.");
+            }
+        } catch (Exception ex) {
+            logger.error(ex, ex);
         }
     }
 
-    public void purgeAllIncomingEventForNode(String nodeId) {
+    private void purgeIncoming(Calendar retentionCutoff) {
+        try {
+            if (clusterService.lock(LockAction.PURGE_INCOMING)) {
+                try {
+                    logger.info("The incoming purge process is about to run.");
+
+                    for (String sql : incomingPurgeSql) {
+                        int count = jdbcTemplate.update(sql, new Object[] { retentionCutoff.getTime() });
+                        if (count > 0) {
+                            logger.info("Purged " + count + " rows after running: " + cleanSql(sql));
+                        }
+                    }
+                } finally {
+                    clusterService.unlock(LockAction.PURGE_INCOMING);
+                    logger.info("The incoming purge process has completed.");
+                }
+
+            } else {
+                logger.info("Could not get a lock to run an incoming purge.");
+            }
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
+    }
+
+    public void purgeAllIncomingEventsForNode(String nodeId) {
         if (deleteIncomingBatchesByNodeIdSql != null)
             for (String sql : deleteIncomingBatchesByNodeIdSql) {
                 int count = jdbcTemplate.update(sql, new Object[] { nodeId });
@@ -214,8 +244,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");
     }
 
-    public void setOtherPurgeSql(String[] purgeSql) {
-        this.otherPurgeSql = purgeSql;
+    public void setIncomingPurgeSql(String[] purgeSql) {
+        this.incomingPurgeSql = purgeSql;
     }
 
     public void setRetentionInMinutes(int retentionInMinutes) {
