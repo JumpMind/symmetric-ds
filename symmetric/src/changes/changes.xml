@@ -50,8 +50,8 @@
                 we get natural randomness in the push, pull cycles.
             </action>
             <action dev="chenson42" type="fix">
-                Transaction ids can be interleaved by different processes.  The batching process needs to take this into
-                account.  Also, cap the max number of batches that can be send per channel in one sweep.
+                Transaction ids can be interleaved by different processes.  The batching algorithm needs to take this into
+                account.  Also, cap the max number of batches that can be sent per channel in one sweep.
             </action>                        
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">

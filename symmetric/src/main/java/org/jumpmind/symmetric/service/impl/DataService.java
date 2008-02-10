@@ -188,7 +188,7 @@ public class DataService extends AbstractService implements IDataService {
         insertNodeSecurityUpdate(targetNode);
         
         // remove all incoming events from the node are starting a reload for.
-        purgeService.purgeAllIncomingEventForNode(targetNode.getNodeId());
+        purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
     }
 
     private void insertNodeSecurityUpdate(Node node) {

@@ -67,7 +67,8 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable() {
         initLockTableForNodes(nodeService.findNodesToPull());
         initLockTableForNodes(nodeService.findNodesToPushTo());
-        initLockTable(LockAction.PURGE, COMMON_LOCK_ID);
+        initLockTable(LockAction.PURGE_INCOMING, COMMON_LOCK_ID);
+        initLockTable(LockAction.PURGE_OUTGOING, COMMON_LOCK_ID);
         initLockTable(LockAction.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
@@ -143,7 +144,8 @@ public class ClusterService extends AbstractService implements IClusterService {
             return lockDuringPull;
         case PUSH:
             return lockDuringPush;
-        case PURGE:
+        case PURGE_INCOMING:
+        case PURGE_OUTGOING:
             return lockDuringPurge;
         case HEARTBEAT:
             return lockDuringHeartbeat;

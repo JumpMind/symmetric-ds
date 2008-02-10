@@ -32,10 +32,10 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testLock() throws Exception {
         final IClusterService service = (IClusterService) getBeanFactory().getBean(Constants.CLUSTER_SERVICE);
-        Assert.assertTrue(service.lock(LockAction.PURGE), "Could not lock for PURGE");
+        Assert.assertTrue(service.lock(LockAction.PURGE_INCOMING), "Could not lock for PURGE");
         Assert.assertEquals(countActivePurgeLocks(), 1, "Could not find the lock in the database.");
-        Assert.assertFalse(service.lock(LockAction.PURGE), "Should not have been able to lock for PURGE");
-        service.unlock(LockAction.PURGE);
+        Assert.assertFalse(service.lock(LockAction.PURGE_INCOMING), "Should not have been able to lock for PURGE");
+        service.unlock(LockAction.PURGE_INCOMING);
         Assert.assertEquals(countActivePurgeLocks(), 0, "Could not find the lock in the database.");
     }
 
@@ -63,6 +63,6 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     private int countActivePurgeLocks() {
         return getJdbcTemplate().queryForInt(
                 "select count(*) from sym_lock where lock_id=? and lock_action=? and lock_time is not null",
-                new Object[] { ClusterService.COMMON_LOCK_ID, LockAction.PURGE.name() });
+                new Object[] { ClusterService.COMMON_LOCK_ID, LockAction.PURGE_INCOMING.name() });
     }
 }

@@ -20,5 +20,5 @@
 package org.jumpmind.symmetric.service;
 
 public enum LockAction {
-    PUSH, PULL, PURGE, HEARTBEAT, SYNCTRIGGERS, OTHER
+    PUSH, PULL, PURGE_OUTGOING, PURGE_INCOMING, HEARTBEAT, SYNCTRIGGERS, OTHER
 }
