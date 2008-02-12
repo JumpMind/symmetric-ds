@@ -185,7 +185,8 @@ public class TableTemplate {
                 if ((value == null || (dbDialect.isEmptyStringNulled() && value.equals(""))) && column.isRequired()
                         && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                } else if (value != null) {
+                }
+                if (value != null) {
                     if (type == Types.DATE) {
                         objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
                     } else if (type == Types.TIMESTAMP) {
