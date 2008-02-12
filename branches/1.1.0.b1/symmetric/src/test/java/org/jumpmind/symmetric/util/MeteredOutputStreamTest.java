@@ -1,3 +1,4 @@
+package org.jumpmind.symmetric.util;
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
@@ -18,46 +19,52 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-
-package org.jumpmind.symmetric.util;
-
 import java.io.IOException;
+import java.util.Random;
 
 import org.jumpmind.symmetric.util.MeteredOutputStream;
-import org.testng.annotations.Test;
+
+
+
 
 public class MeteredOutputStreamTest
 {
 
-    @Test
-    public void basicTest() throws IOException
-    {
-        final long rate = 56 * MeteredOutputStream.KB;
-        final long configuredTime = 100;
-        
-        System.out.println("Running for " + configuredTime + " seconds.");
 
-        MeteredOutputStream out = new MeteredOutputStream(new NullOutputStream(), rate);
+    public static void main(String[] args) throws IOException
+    {
+        final long rate = 5* 1024;
+        final long count = 20;
+        final int bufferSize = 8192;
+
+        System.out.println("Running for " + (bufferSize * count) + " bytes");
+
+        MeteredOutputStream out = new MeteredOutputStream(new NullOutputStream(), rate, 8192, 1);
         long start = System.currentTimeMillis();
+        byte[] testBytes = new byte[bufferSize];
+
+        Random r = new Random();
+
+        r.nextBytes(testBytes);
 
         long i = 0;
-        for (i = 0; i < (rate * configuredTime); i++)
+        for (i = 0; i < count; i++)
         {
-            out.write(65);
-            
-            if ((i % rate) == 0) 
+            out.write(testBytes, 0, testBytes.length);
+
+            if ((i % 10) == 0)
             {
-                System.out.print('.');
+                System.out.print('#');
             }
         }
         System.out.println();
 
-        long actualTime = (System.currentTimeMillis() - start) / 1000;
+        double expectedTime = (bufferSize * count) / rate;
+        double actualTime = (System.currentTimeMillis() - start + 1) / 1000;
         System.out.println("Configured rate: " + rate);
-        System.out.println("Actual rate: " + (i / actualTime));
-        System.out.println(actualTime);
-        System.out.println(configuredTime);
-
-        assert (actualTime >= configuredTime - 2 && actualTime <= configuredTime + 2);
+        System.out.println("Actual rate: " + (i * bufferSize / actualTime));
+        System.out.println("Expected time: " + expectedTime);
+        System.out.println("Actual time: " + actualTime);
+        assert (actualTime >= expectedTime - 2 && actualTime <= expectedTime + 2);
     }
 }
