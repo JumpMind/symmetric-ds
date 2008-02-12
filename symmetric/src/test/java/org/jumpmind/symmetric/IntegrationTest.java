@@ -42,6 +42,12 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     static final String updateTestTriggerTableSql = "update test_triggers_table set string_one_value=?";
 
+    static final String insertStoreStatusSql = "insert into test_store_status (store_id, register_id, status) values(?,?,?)";
+
+    static final String updateStoreStatusSql = "update test_store_status set status = ? where store_id = ? and register_id = ?";
+
+    static final String selectStoreStatusSql = "select status from test_store_status where store_id = ? and register_id = ?";
+
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
     public String getTestName() {
@@ -64,6 +70,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             testSyncToRoot();
             testSyncInsertCondition();
             testSyncUpdateCondition();
+            testSyncUpdateWithEmptyKey();
             testIgnoreNodeChannel();
             testPurge();
             testHeartbeat();
@@ -202,6 +209,18 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void testSyncUpdateWithEmptyKey() {
+        clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
+        getClientEngine().push();
+
+        clientJdbcTemplate.update(updateStoreStatusSql, new Object[] { 2, "00001", "" });
+        getClientEngine().push();
+        
+        int status = rootJdbcTemplate.queryForInt(selectStoreStatusSql, new Object[] { "00001", "   " });
+        Assert.assertEquals(status, 2, "Wrong store status");
     }
 
     protected void testPurge() throws Exception {
