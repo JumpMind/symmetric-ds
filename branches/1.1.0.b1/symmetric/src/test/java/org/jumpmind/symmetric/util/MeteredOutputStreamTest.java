@@ -24,14 +24,14 @@ import java.util.Random;
 
 import org.jumpmind.symmetric.util.MeteredOutputStream;
 
-
+import org.testng.annotations.Test;
 
 
 public class MeteredOutputStreamTest
 {
 
-
-    public static void main(String[] args) throws IOException
+    @Test(groups = "continuous")
+    public static void testBasic() throws IOException
     {
         final long rate = 5* 1024;
         final long count = 20;
