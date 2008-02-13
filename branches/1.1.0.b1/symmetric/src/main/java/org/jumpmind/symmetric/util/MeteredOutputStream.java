@@ -12,6 +12,8 @@ import java.io.OutputStream;
  */
 public class MeteredOutputStream extends FilterOutputStream
 {
+    
+    public static final int KB = 1024;
 
     // max allowed, this will be an average over time. for small packages, it will be consume the whole bandwidth
     private long maxBps;
