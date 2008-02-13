@@ -138,6 +138,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.1-20080129.223043-7</version> 
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
