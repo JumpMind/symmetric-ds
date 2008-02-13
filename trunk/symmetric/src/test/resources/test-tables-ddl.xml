@@ -48,6 +48,12 @@
         <column name="price" type="DECIMAL" size="10,2" />        
     </table>
 
+    <table name="test_store_status">
+        <column name="store_id" type="CHAR" size="5" primaryKey="true" required="true" />
+        <column name="register_id" type="CHAR" size="3" primaryKey="true" />
+        <column name="status" type="INTEGER" />
+    </table>
+
     <table name="test_customer">
         <column name="customer_id" type="INTEGER" primaryKey="true" required="true" />
         <column name="name" type="VARCHAR" size="50" required="true" />
