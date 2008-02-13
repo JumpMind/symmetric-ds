@@ -162,7 +162,8 @@ public class TableTemplate {
                         .equals("")))
                         && column.isRequired() && column.isOfTextType()) {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                } else if (value != null && type == Types.DATE) {
+                }
+                if (value != null && type == Types.DATE) {
                     objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
                 } else if (value != null && type == Types.TIMESTAMP) {
                     objectValue = new Timestamp(getTime(value,
