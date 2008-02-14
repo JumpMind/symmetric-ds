@@ -51,7 +51,8 @@ public class AppFrame extends JFrame implements IAppController {
         this.screenStack = new CardLayout();
         stackPanel = new JPanel(this.screenStack);
         InfoScreen infoScreen = new InfoScreen();
-        addScreenToPanel(infoScreen);
+        addScreenToPanel(new BlankScreen());
+        addScreenToPanel(infoScreen);        
         JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, stackPanel);
         splitPanel.setOneTouchExpandable(true);
         splitPanel.setDividerLocation(200);

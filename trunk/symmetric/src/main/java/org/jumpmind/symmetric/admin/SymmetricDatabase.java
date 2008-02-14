@@ -74,7 +74,7 @@ public class SymmetricDatabase implements Serializable {
         this.jdbcUrl = jdbcUrl;
     }
 
-    public String getUsername() {
+    public String getUserName() {
         return username;
     }
 
