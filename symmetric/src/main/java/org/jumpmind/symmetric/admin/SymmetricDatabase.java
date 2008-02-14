@@ -55,8 +55,8 @@ public class SymmetricDatabase implements Serializable {
         synchronized (SymmetricDatabase.class) {
             System.setProperty("db.url", jdbcUrl);
             System.setProperty("db.driver", driverName);
-            System.setProperty("db.user", username);
-            System.setProperty("db.password", password);
+            System.setProperty("db.user", username == null ? "" : username);
+            System.setProperty("db.password", password == null ? "" : password);
             System.setProperty("db.pool.initial.size", "1");
             engine = new SymmetricEngine();
         }
