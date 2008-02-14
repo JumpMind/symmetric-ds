@@ -120,6 +120,12 @@ public class AdminTreeControl extends JScrollPane {
                                 return null;
                             }
                         });
+
+                        DatabaseNode db = (DatabaseNode)c;
+                        db.add(new ChannelNode(c.getSymmetricDatabase()));
+                        db.add(new GroupNode(c.getSymmetricDatabase()));
+                        db.add(new GroupLinkNode(c.getSymmetricDatabase()));
+                        tree.scrollPathToVisible(new TreePath(db));
                     } catch (Exception ex) {
                         appController.showError("Trouble connecting to the symmetric database.", ex);
                     }
@@ -132,18 +138,18 @@ public class AdminTreeControl extends JScrollPane {
 
         };
 
-
         connectionPopup = new JPopupMenu();
         connectionPopup.add(new JMenuItem(connectAction));
-        connectionPopup.add( new AbstractAction(EDIT) {
+        connectionPopup.add(new AbstractAction(EDIT) {
             private static final long serialVersionUID = -1L;
 
             public void actionPerformed(ActionEvent e) {
-                SymmetricDatabase c = connectionDialog.activateConnectionDialog(appController.getFrame(), getSelectedConnection().getSymmetricDatabase()
-                        );
+                SymmetricDatabase c = connectionDialog.activateConnectionDialog(appController.getFrame(),
+                        getSelectedConnection().getSymmetricDatabase());
                 if (c != null) {
                     tree.revalidate();
                     tree.repaint();
+                    appController.show(ScreenName.INFO, c);
                     saveConnections(connections);
                 }
             }
@@ -175,9 +181,6 @@ public class AdminTreeControl extends JScrollPane {
         this.connections.add(c);
         DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         DatabaseNode db = new DatabaseNode(c);
-        db.add(new ChannelNode(c));
-        db.add(new GroupNode(c));
-        db.add(new GroupLinkNode(c));
         model.insertNodeInto(db, top, top.getChildCount());
         tree.scrollPathToVisible(new TreePath(db));
     }

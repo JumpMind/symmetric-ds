@@ -39,6 +39,8 @@ import javax.swing.MutableComboBoxModel;
 
 public class ConnectionDialog extends JPanel {
 
+    private static final String MY_SYMMETRIC = "My Symmetric";
+
     private static final long serialVersionUID = -4325767568474807143L;
 
     JLabel nameLabel;
@@ -77,7 +79,7 @@ public class ConnectionDialog extends JPanel {
         super(false);
 
         nameLabel = new JLabel("Connection name: ", JLabel.RIGHT);
-        nameField = new JTextField("My Symmetric");
+        nameField = new JTextField(MY_SYMMETRIC);
 
         userNameLabel = new JLabel("User name: ", JLabel.RIGHT);
         userNameField = new JTextField("");
@@ -130,6 +132,7 @@ public class ConnectionDialog extends JPanel {
             driverList.addElement(string);
         }
         driverField.setSelectedIndex(0);
+        nameField.setText(MY_SYMMETRIC);
     }
 
     public SymmetricDatabase activateConnectionDialog(Component parent, SymmetricDatabase db) {
