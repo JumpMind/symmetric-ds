@@ -89,104 +89,108 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
-                PreparedStatement update = conn.prepareStatement(updateBatchedEventsSql);
+                PreparedStatement update = null;
+                try {
+                    update = conn.prepareStatement(updateBatchedEventsSql);
 
-                update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
-                for (NodeChannel channel : channels) {
+                    for (NodeChannel channel : channels) {
 
-                    if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-                    } else if (channel.isEnabled()) {
-                        // determine which transactions will be part of this batch on this channel
-                        PreparedStatement select = conn.prepareStatement(selectEventsToBatchSql);
+                        if (channel.isSuspended()) {
+                            logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
+                        } else if (channel.isEnabled()) {
+                            // determine which transactions will be part of this batch on this channel
+                            PreparedStatement select = null;
+                            ResultSet results = null;
 
-                        select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                            try {
 
-                        select.setString(1, nodeId);
-                        select.setString(2, channel.getId());
-                        ResultSet results = select.executeQuery();
+                                select = conn.prepareStatement(selectEventsToBatchSql);
 
-                        int count = 0;
-                        boolean peekAheadMode = false;
-                        int peekAheadCountDown = batchSizePeekAhead;
-                        Set<String> transactionIds = new HashSet<String>();
+                                select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
-                        OutgoingBatch newBatch = new OutgoingBatch();
-                        newBatch.setBatchType(BatchType.EVENTS);
-                        newBatch.setChannelId(channel.getId());
-                        newBatch.setNodeId(nodeId);
+                                select.setString(1, nodeId);
+                                select.setString(2, channel.getId());
+                                results = select.executeQuery();
 
-                        // node channel is setup to ignore, just mark the batch as already processed.
-                        if (channel.isIgnored()) {
-                            newBatch.setStatus(Status.OK);
+                                int count = 0;
+                                boolean peekAheadMode = false;
+                                int peekAheadCountDown = batchSizePeekAhead;
+                                Set<String> transactionIds = new HashSet<String>();
+
+                                OutgoingBatch newBatch = new OutgoingBatch();
+                                newBatch.setBatchType(BatchType.EVENTS);
+                                newBatch.setChannelId(channel.getId());
+                                newBatch.setNodeId(nodeId);
+
+                                // node channel is setup to ignore, just mark the batch as already processed.
+                                if (channel.isIgnored()) {
+                                    newBatch.setStatus(Status.OK);
+                                }
+
+                                if (results.next()) {
+
+                                    insertOutgoingBatch(newBatch);
+
+                                    do {
+                                        String trxId = results.getString(1);
+                                        if (trxId != null) {
+                                            transactionIds.add(trxId);
+                                        }
+
+                                        if (!peekAheadMode
+                                                || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
+                                            peekAheadCountDown = batchSizePeekAhead;
+
+                                            int dataId = results.getInt(2);
+
+                                            update.clearParameters();
+                                            update.setLong(1, Long.valueOf(newBatch.getBatchId()));
+                                            update.setString(2, nodeId);
+                                            update.setLong(3, dataId);
+                                            update.addBatch();
+
+                                            count++;
+
+                                        } else {
+                                            peekAheadCountDown--;
+                                        }
+
+                                        if (count > channel.getMaxBatchSize()) {
+                                            peekAheadMode = true;
+                                        }
+
+                                        // put this in so we don't build up too many
+                                        // statements to send to the server.
+                                        if (count % 10000 == 0) {
+                                            update.executeBatch();
+                                        }
+
+                                    } while (results.next() && peekAheadCountDown != 0);
+
+                                    historyService.created(new Integer(newBatch.getBatchId()), count);
+                                }
+
+                            } finally {
+
+                                JdbcUtils.closeResultSet(results);
+                                JdbcUtils.closeStatement(select);
+
+                            }
                         }
 
-                        if (results.next()) {
-
-                            insertOutgoingBatch(conn, newBatch);
-
-                            do {
-                                String trxId = results.getString(1);
-                                if (trxId != null) {
-                                    transactionIds.add(trxId);
-                                }
-
-                                if (!peekAheadMode
-                                        || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
-                                    peekAheadCountDown = batchSizePeekAhead;
-
-                                    int dataId = results.getInt(2);
-
-                                    update.clearParameters();
-                                    update.setLong(1, Long.valueOf(newBatch.getBatchId()));
-                                    update.setString(2, nodeId);
-                                    update.setLong(3, dataId);
-                                    update.addBatch();
-
-                                    count++;
-
-                                } else {
-                                    peekAheadCountDown--;
-                                }
-
-                                if (count > channel.getMaxBatchSize()) {
-                                    peekAheadMode = true;
-                                }
-
-                                // put this in so we don't build up too many
-                                // statements to send to the server.
-                                if (count % 10000 == 0) {
-                                    update.executeBatch();
-                                }
-
-                            } while (results.next() && peekAheadCountDown != 0);
-
-                            historyService.created(new Integer(newBatch.getBatchId()), count);
-                        }
-
-                        JdbcUtils.closeResultSet(results);
-                        JdbcUtils.closeStatement(select);
+                        update.executeBatch();
                     }
-                    update.executeBatch();
+                } finally {
+                    JdbcUtils.closeStatement(update);
                 }
-
-                JdbcUtils.closeStatement(update);
                 return null;
             }
         });
     }
 
-    public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                insertOutgoingBatch(conn, outgoingBatch);
-                return null;
-            }
-        });
-    }
-
-    private void insertOutgoingBatch(Connection conn, final OutgoingBatch outgoingBatch) throws SQLException {
+    public void insertOutgoingBatch(final OutgoingBatch outgoingBatch)  {
         long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id_seq",
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {

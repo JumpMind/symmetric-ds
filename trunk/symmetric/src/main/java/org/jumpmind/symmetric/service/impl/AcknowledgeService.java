@@ -18,7 +18,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Connection;
@@ -34,101 +33,88 @@ import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-public class AcknowledgeService extends AbstractService implements IAcknowledgeService
-{
+public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
     private String updateOutgoingBatchSql;
 
     private String selectDataIdSql;
-    
+
     private IOutgoingBatchHistoryService outgoingBatchHistoryService;
 
     @Transactional
-    public void ack(List<BatchInfo> batches)
-    {
-        for (final BatchInfo batch : batches)
-        {
+    public void ack(List<BatchInfo> batches) {
+        for (final BatchInfo batch : batches) {
             final Integer id = new Integer(batch.getBatchId());
             // update the outgoing_batch record
-            jdbcTemplate.execute(new ConnectionCallback()
-            {
-                public Object doInConnection(Connection conn) throws SQLException, DataAccessException
-                {
-                    PreparedStatement batchUpdate = conn.prepareStatement(updateOutgoingBatchSql);
-                    batchUpdate.setString(1, batch.isOk() ? Status.OK.name() : Status.ER.name());
-                    batchUpdate.setInt(2, id);
-                    batchUpdate.executeUpdate();
-                    return null;
+            jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                    PreparedStatement batchUpdate = null;
+                    try {
+                        batchUpdate = conn.prepareStatement(updateOutgoingBatchSql);
+                        batchUpdate.setString(1, batch.isOk() ? Status.OK.name() : Status.ER.name());
+                        batchUpdate.setInt(2, id);
+                        batchUpdate.executeUpdate();
+                        return null;
+                    } finally {
+                        JdbcUtils.closeStatement(batchUpdate);
+                    }
                 }
             });
 
             // add a record to outgoing_batch_hist indicating success
-            if (batch.isOk())
-            {
+            if (batch.isOk()) {
                 outgoingBatchHistoryService.ok(id);
             }
             // add a record to outgoing_batch_hist indicating an error
-            else
-            {
-                if (batch.getErrorLine() != BatchInfo.UNDEFINED_ERROR_LINE_NUMBER)
-                {
+            else {
+                if (batch.getErrorLine() != BatchInfo.UNDEFINED_ERROR_LINE_NUMBER) {
                     CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
 
-                    jdbcTemplate.query(selectDataIdSql, new Object[] {id},
-                        handler);
+                    jdbcTemplate.query(selectDataIdSql, new Object[] { id }, handler);
                     final long dataId = handler.getDataId();
 
                     outgoingBatchHistoryService.error(id, dataId);
-                }
-                else
-                {
+                } else {
                     outgoingBatchHistoryService.error(id, 0l);
                 }
             }
         }
     }
 
-    public void setUpdateOutgoingBatchSql(String updateOutgoingBatchSql)
-    {
+    public void setUpdateOutgoingBatchSql(String updateOutgoingBatchSql) {
         this.updateOutgoingBatchSql = updateOutgoingBatchSql;
     }
 
-    public void setSelectDataIdSql(String selectDataIdSql)
-    {
+    public void setSelectDataIdSql(String selectDataIdSql) {
         this.selectDataIdSql = selectDataIdSql;
     }
-    
-    public void setOutgoingBatchHistoryService(IOutgoingBatchHistoryService outgoingBatchHistoryService)
-    {
+
+    public void setOutgoingBatchHistoryService(IOutgoingBatchHistoryService outgoingBatchHistoryService) {
         this.outgoingBatchHistoryService = outgoingBatchHistoryService;
     }
 
-    class CallBackHandler implements RowCallbackHandler
-    {
+    class CallBackHandler implements RowCallbackHandler {
         int index = 0;
 
         long dataId = -1;
 
         long rowNumber;
 
-        CallBackHandler(long rowNumber)
-        {
+        CallBackHandler(long rowNumber) {
             this.rowNumber = rowNumber;
         }
 
-        public void processRow(ResultSet rs) throws SQLException
-        {
+        public void processRow(ResultSet rs) throws SQLException {
             index++;
 
-            if (index == rowNumber)
-            {
+            if (index == rowNumber) {
                 dataId = rs.getLong(1);
             }
         }
 
-        public long getDataId()
-        {
+        public long getDataId() {
             return dataId;
         }
     }

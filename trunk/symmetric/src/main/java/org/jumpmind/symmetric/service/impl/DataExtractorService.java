@@ -133,25 +133,30 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    PreparedStatement st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
-                    st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ResultSet rs = st.executeQuery();
-                    final BufferedWriter writer = transport.open();
-                    final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
-                    if (batch != null) {
-                        dataExtractor.init(writer, ctxCopy);
-                        dataExtractor.begin(batch, writer);
+                    PreparedStatement st = null;
+                    ResultSet rs = null;
+                    try {
+                        st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                                java.sql.ResultSet.CONCUR_READ_ONLY);
+                        st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                        rs = st.executeQuery();
+                        final BufferedWriter writer = transport.open();
+                        final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
+                        if (batch != null) {
+                            dataExtractor.init(writer, ctxCopy);
+                            dataExtractor.begin(batch, writer);
+                        }
+                        while (rs.next()) {
+                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
+                                    trigger.getSourceTableName(), null, audit), ctxCopy);
+                        }
+                        if (batch != null) {
+                            dataExtractor.commit(batch, writer);
+                        }
+                    } finally {
+                        JdbcUtils.closeResultSet(rs);
+                        JdbcUtils.closeStatement(st);
                     }
-                    while (rs.next()) {
-                        dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, trigger
-                                .getSourceTableName(), null, audit), ctxCopy);
-                    }
-                    if (batch != null) {
-                        dataExtractor.commit(batch, writer);
-                    }
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(st);
                     return null;
                 } catch (Exception e) {
                     throw new RuntimeException("Error during SQL: " + sql, e);

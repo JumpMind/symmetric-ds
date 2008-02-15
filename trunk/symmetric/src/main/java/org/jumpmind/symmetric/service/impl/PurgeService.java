@@ -220,20 +220,26 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return (List<Integer>) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 List<Integer> dataIds = new ArrayList<Integer>();
-                PreparedStatement st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                        java.sql.ResultSet.CONCUR_READ_ONLY);
-                if (args != null) {
-                    for (int i = 1; i <= args.length; i++) {
-                        st.setObject(i, args[i - 1]);
+                PreparedStatement st = null;
+                ResultSet rs = null;
+
+                try {
+                    st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    if (args != null) {
+                        for (int i = 1; i <= args.length; i++) {
+                            st.setObject(i, args[i - 1]);
+                        }
                     }
+                    st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    rs = st.executeQuery();
+                    for (int i = 0; i < 10000 && rs.next(); i++) {
+                        dataIds.add(rs.getInt(1));
+                    }
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(st);
                 }
-                st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                ResultSet rs = st.executeQuery();
-                for (int i = 0; i < 10000 && rs.next(); i++) {
-                    dataIds.add(rs.getInt(1));
-                }
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(st);
 
                 return dataIds;
             }

@@ -78,7 +78,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     static final Log logger = LogFactory.getLog(AbstractDbDialect.class);
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
-    
+
     protected JdbcTemplate jdbcTemplate;
 
     protected Platform platform;
@@ -96,11 +96,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private int streamingResultsFetchSize;
 
     private Boolean supportsGetGeneratedKeys;
-    
+
     private TransactionTemplate transactionTemplate;
-    
+
     private String engineName;
-    
+
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
@@ -117,20 +117,20 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
     }
-    
+
     public IColumnFilter getDatabaseColumnFilter() {
         return null;
     }
-    
-    public void prepareTableForDataLoad(Table table) {        
+
+    public void prepareTableForDataLoad(Table table) {
     }
-    
-    public void cleanupAfterDataLoad(Table table) {        
+
+    public void cleanupAfterDataLoad(Table table) {
     }
-    
+
     protected boolean allowsNullForIdentityColumn() {
         return true;
-    }     
+    }
 
     /**
      * Provide a default implementation of this method using DDLUtils, getMaxColumnNameLength()
@@ -176,11 +176,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         }
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
     }
-    
+
     public boolean isBlobOverrideToBinary() {
         return false;
     }
@@ -265,12 +265,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 if (!supportsMixedCaseNamesInCatalog()) {
                     tableName = _tableName.toUpperCase();
                 }
-                ResultSet tableData = metaData.getTables(tableName);
-                while (tableData != null && tableData.next()) {
-                    Map<String, Object> values = readColumns(tableData, initColumnsForTable());
-                    table = readTable(metaData, values);
+                ResultSet tableData = null;
+                try {
+                    tableData = metaData.getTables(tableName);
+                    while (tableData != null && tableData.next()) {
+                        Map<String, Object> values = readColumns(tableData, initColumnsForTable());
+                        table = readTable(metaData, values);
+                    }
+                } finally {
+                    JdbcUtils.closeResultSet(tableData);
                 }
-                JdbcUtils.closeResultSet(tableData);
                 return table;
             }
         });
@@ -364,7 +368,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         column.setDescription((String) values.get("REMARKS"));
         return column;
     }
-    
+
     protected void determineAutoIncrementFromResultSetMetaData(Table table, final Column columnsToCheck[])
             throws SQLException {
         StringBuffer query;
@@ -401,7 +405,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         });
     }
-    
 
     @SuppressWarnings("unchecked")
     protected Map<String, Object> readColumns(ResultSet resultSet, List columnDescriptors) throws SQLException {
@@ -452,7 +455,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
         return result;
     }
-    
+
     @SuppressWarnings("unchecked")
     protected Collection readIndices(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Map indices = new ListOrderedMap();
@@ -475,8 +478,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     @SuppressWarnings("unchecked")
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices)
-            throws SQLException {
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map values, Map knownIndices) throws SQLException {
         Short indexType = (Short) values.get("TYPE");
 
         // we're ignoring statistic indices
@@ -585,8 +587,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
             platform.getSqlBuilder().setWriter(buffer);
             platform.getSqlBuilder().createTable(cachedModel, table);
             sql = buffer.toString();
+        } catch (IOException e) {
         }
-        catch(IOException e) { }
         return sql;
     }
 
@@ -601,7 +603,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         // TODO: remove when these bugs are fixed in DdlUtils 
         return buffer.toString().replaceAll("&apos;", "").replaceAll("default=\"empty_blob\\(\\) *\"", "");
     }
-    
+
     public void createTables(String xml) {
         StringReader reader = new StringReader(xml);
         Database db = new DatabaseIO().read(reader);
@@ -693,10 +695,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         });
     }
-    
-    public String replaceTemplateVariables(DataEventType dml, Trigger trigger,
-            TriggerHistory history, String targetString) {
-        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix, getMetaDataFor(getDefaultCatalog(), trigger.getSourceSchemaName(), trigger.getSourceTableName(), true), getDefaultSchema(), targetString);
+
+    public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
+            String targetString) {
+        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix, getMetaDataFor(
+                getDefaultCatalog(), trigger.getSourceSchemaName(), trigger.getSourceTableName(), true),
+                getDefaultSchema(), targetString);
     }
 
     public boolean supportsGetGeneratedKeys() {
@@ -776,25 +780,25 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
         return null;
     }
-    
+
     public void rollbackToSavepoint(final Object savepoint) {
         if (savepoint != null) {
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                    transactionstatus.rollbackToSavepoint(savepoint);                    
+                    transactionstatus.rollbackToSavepoint(savepoint);
                 }
             });
         }
     }
-    
+
     public void releaseSavepoint(final Object savepoint) {
         if (savepoint != null) {
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                 protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                    transactionstatus.releaseSavepoint(savepoint);                    
+                    transactionstatus.releaseSavepoint(savepoint);
                 }
             });
-        }        
+        }
     }
 
     public boolean requiresSavepointForFallback() {
@@ -804,11 +808,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return false;
     }
-    
+
     public boolean isBlobSyncSupported() {
         return true;
     }
-    
+
     public boolean isClobSyncSupported() {
         return true;
     }
