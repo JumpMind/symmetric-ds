@@ -55,7 +55,10 @@
             <action dev="chenson42" type="fix">
                 Transaction ids can be interleaved by different processes.  The batching algorithm needs to take this into
                 account.  Also, cap the max number of batches that can be sent per channel in one sweep.
-            </action>                        
+            </action>               
+            <action dev="chenson42" type="fix">
+                We had a few places where we were not closing Statements and ResultSets.
+            </action>                                  
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
