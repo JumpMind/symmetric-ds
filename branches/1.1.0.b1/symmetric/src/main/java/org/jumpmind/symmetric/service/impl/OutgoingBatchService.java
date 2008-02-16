@@ -57,13 +57,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private String selectOutgoingBatchSql;
 
     private String selectOutgoingBatchRangeSql;
-    
+
     private String selectOutgoingBatchErrorsSql;
-    
+
     private String changeBatchStatusSql;
 
     private String initialLoadStatusSql;
-    
+
     private JdbcTemplate outgoingBatchQueryTemplate;
 
     private IOutgoingBatchHistoryService historyService;
@@ -83,83 +83,90 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                PreparedStatement update = null;
+                try {
+                    update = conn.prepareStatement(updateBatchedEventsSql);
 
-                PreparedStatement update = conn.prepareStatement(updateBatchedEventsSql);
+                    update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
-                update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    for (NodeChannel channel : channels) {
 
-                for (NodeChannel channel : channels) {
+                        if (channel.isSuspended()) {
+                            logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
+                        } else if (channel.isEnabled()) {
+                            // determine which transactions will be part of this batch on this channel
+                            PreparedStatement select = null;
+                            ResultSet results = null;
 
-                    if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-                    } else if (channel.isEnabled()) {
-                        // determine which transactions will be part of this batch on this channel
-                        PreparedStatement select = conn.prepareStatement(selectEventsToBatchSql);
+                            try {
+                                select = conn.prepareStatement(selectEventsToBatchSql);
 
-                        select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                                select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
-                        select.setString(1, nodeId);
-                        select.setString(2, channel.getId());
-                        ResultSet results = select.executeQuery();
+                                select.setString(1, nodeId);
+                                select.setString(2, channel.getId());
+                                results = select.executeQuery();
 
-                        int count = 0;
-                        boolean stopOnNextTxIdChange = false;
-                        String lastTrxId = null;
+                                int count = 0;
+                                boolean stopOnNextTxIdChange = false;
+                                String lastTrxId = null;
 
-                        OutgoingBatch newBatch = new OutgoingBatch();
-                        newBatch.setBatchType(BatchType.EVENTS);
-                        newBatch.setChannelId(channel.getId());
-                        newBatch.setNodeId(nodeId);
+                                OutgoingBatch newBatch = new OutgoingBatch();
+                                newBatch.setBatchType(BatchType.EVENTS);
+                                newBatch.setChannelId(channel.getId());
+                                newBatch.setNodeId(nodeId);
 
-                        // node channel is setup to ignore, just mark the batch as already processed.
-                        if (channel.isIgnored()) {
-                            newBatch.setStatus(Status.OK);
+                                // node channel is setup to ignore, just mark the batch as already processed.
+                                if (channel.isIgnored()) {
+                                    newBatch.setStatus(Status.OK);
+                                }
+
+                                if (results.next()) {
+
+                                    insertOutgoingBatch(conn, newBatch);
+
+                                    do {
+                                        String trxId = results.getString(1);
+
+                                        if (stopOnNextTxIdChange && (lastTrxId == null || !lastTrxId.equals(trxId))) {
+                                            break;
+                                        }
+
+                                        int dataId = results.getInt(2);
+
+                                        update.clearParameters();
+                                        update.setString(1, newBatch.getBatchId());
+                                        update.setString(2, nodeId);
+                                        update.setInt(3, dataId);
+                                        update.addBatch();
+
+                                        count++;
+
+                                        if (count > channel.getMaxBatchSize()) {
+                                            stopOnNextTxIdChange = true;
+                                        }
+
+                                        // put this in so we don't build up too many
+                                        // statements to send to the server.
+                                        if (count % 10000 == 0) {
+                                            update.executeBatch();
+                                        }
+
+                                        lastTrxId = trxId;
+                                    } while (results.next());
+
+                                    historyService.created(new Integer(newBatch.getBatchId()), count);
+                                }
+                            } finally {
+                                JdbcUtils.closeResultSet(results);
+                                JdbcUtils.closeStatement(select);
+                            }
                         }
-
-                        if (results.next()) {
-
-                            insertOutgoingBatch(conn, newBatch);
-
-                            do {
-                                String trxId = results.getString(1);
-
-                                if (stopOnNextTxIdChange && (lastTrxId == null || !lastTrxId.equals(trxId))) {
-                                    break;
-                                }
-
-                                int dataId = results.getInt(2);
-
-                                update.clearParameters();
-                                update.setString(1, newBatch.getBatchId());
-                                update.setString(2, nodeId);
-                                update.setInt(3, dataId);
-                                update.addBatch();
-
-                                count++;
-
-                                if (count > channel.getMaxBatchSize()) {
-                                    stopOnNextTxIdChange = true;
-                                }
-
-                                // put this in so we don't build up too many
-                                // statements to send to the server.
-                                if (count % 10000 == 0) {
-                                    update.executeBatch();
-                                }
-
-                                lastTrxId = trxId;
-                            } while (results.next());
-                            
-                            historyService.created(new Integer(newBatch.getBatchId()), count);
-                        }
-
-                        JdbcUtils.closeResultSet(results);
-                        JdbcUtils.closeStatement(select);
+                        update.executeBatch();
                     }
-                    update.executeBatch();
+                } finally {
+                    JdbcUtils.closeStatement(update);
                 }
-
-                JdbcUtils.closeStatement(update);
                 return null;
             }
         });
@@ -176,21 +183,27 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private void insertOutgoingBatch(Connection conn, OutgoingBatch outgoingBatch) throws SQLException {
         // TODO: move generated key retrieval to DbDialect
-        PreparedStatement insert = conn.prepareStatement(createBatchSql, new int[] { 1 });
-        insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-        insert.setString(1, outgoingBatch.getNodeId());
-        insert.setString(2, outgoingBatch.getChannelId());
-        insert.setString(3, outgoingBatch.getStatus().name());
-        insert.setString(4, outgoingBatch.getBatchType().getCode());
-        insert.execute();
-        ResultSet rs = insert.getGeneratedKeys();
-        if (rs.next()) {
-            outgoingBatch.setBatchId(rs.getString(1));
-        } else {
-            throw new RuntimeException("Unable to get batch id");
+        PreparedStatement insert = null;
+        ResultSet rs = null;
+
+        try {
+            insert = conn.prepareStatement(createBatchSql, new int[] { 1 });
+            insert.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+            insert.setString(1, outgoingBatch.getNodeId());
+            insert.setString(2, outgoingBatch.getChannelId());
+            insert.setString(3, outgoingBatch.getStatus().name());
+            insert.setString(4, outgoingBatch.getBatchType().getCode());
+            insert.execute();
+            rs = insert.getGeneratedKeys();
+            if (rs.next()) {
+                outgoingBatch.setBatchId(rs.getString(1));
+            } else {
+                throw new RuntimeException("Unable to get batch id");
+            }
+        } finally {
+            JdbcUtils.closeResultSet(rs);
+            JdbcUtils.closeStatement(insert);
         }
-        JdbcUtils.closeResultSet(rs);
-        JdbcUtils.closeStatement(insert);
     }
 
     /**
@@ -200,22 +213,22 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId, nodeId },
-                new OutgoingBatchMapper());
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId,
+                nodeId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
-        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql,
-                new Object[] { startBatchId, endBatchId }, new OutgoingBatchMapper());
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchRangeSql, new Object[] {
+                startBatchId, endBatchId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
         return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(new MaxRowsStatementCreator(
-                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());        
+                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());
     }
-    
+
     public void markOutgoingBatchSent(OutgoingBatch batch) {
         setBatchStatus(batch.getBatchId(), Status.SE);
     }

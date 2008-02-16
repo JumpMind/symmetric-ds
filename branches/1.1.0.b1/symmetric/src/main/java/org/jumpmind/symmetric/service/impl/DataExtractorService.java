@@ -35,12 +35,12 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.BatchType;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -111,11 +111,13 @@ public class DataExtractorService implements IDataExtractorService {
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                PreparedStatement st = null;
+                ResultSet rs = null;
                 try {
-                    PreparedStatement st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                    st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
                             java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ResultSet rs = st.executeQuery();
+                    rs = st.executeQuery();
                     final BufferedWriter writer = transport.open();
                     final DataExtractorContext ctxCopy = context.copy();
                     if (batch != null) {
@@ -129,11 +131,13 @@ public class DataExtractorService implements IDataExtractorService {
                     if (batch != null) {
                         dataExtractor.commit(batch, writer);
                     }
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(st);
+
                     return null;
                 } catch (Exception e) {
                     throw new RuntimeException("Error during SQL: " + sql, e);
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(st);
                 }
             }
         });
@@ -218,23 +222,28 @@ public class DataExtractorService implements IDataExtractorService {
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement ps = conn.prepareStatement(selectEventDataToExtractSql, ResultSet.TYPE_FORWARD_ONLY,
-                        ResultSet.CONCUR_READ_ONLY);
-                ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                ps.setString(1, batch.getNodeId());
-                ps.setString(2, batch.getBatchId());
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    try {
-                        handler.dataExtracted(next(rs));
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = conn.prepareStatement(selectEventDataToExtractSql, ResultSet.TYPE_FORWARD_ONLY,
+                            ResultSet.CONCUR_READ_ONLY);
+                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ps.setString(1, batch.getNodeId());
+                    ps.setString(2, batch.getBatchId());
+                    rs = ps.executeQuery();
+                    while (rs.next()) {
+                        try {
+                            handler.dataExtracted(next(rs));
+                        } catch (RuntimeException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);
                 }
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(ps);
                 return null;
             }
         });

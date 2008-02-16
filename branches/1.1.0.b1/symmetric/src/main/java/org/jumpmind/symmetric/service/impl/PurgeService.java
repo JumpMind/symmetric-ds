@@ -50,7 +50,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private IDbDialect dbDialect;
 
     private String[] otherPurgeSql;
-    
+
     private String[] deleteIncomingBatchesByNodeIdSql;
 
     private int retentionInMinutes = 7200;
@@ -170,34 +170,37 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return (List<Integer>) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(final Connection conn) throws SQLException, DataAccessException {
                 final List<Integer> dataIds = new ArrayList<Integer>();
-                final PreparedStatement st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                        java.sql.ResultSet.CONCUR_READ_ONLY);
-                if (args != null) {
-                    for (int i = 1; i <= args.length; i++) {
-                        st.setObject(i, args[i - 1]);
+                PreparedStatement st = null;
+                ResultSet rs = null;
+                try {
+                    st = conn.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    if (args != null) {
+                        for (int i = 1; i <= args.length; i++) {
+                            st.setObject(i, args[i - 1]);
+                        }
                     }
+                    st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    rs = st.executeQuery();
+                    for (int i = 0; i < 10000 && rs.next(); i++) {
+                        dataIds.add(rs.getInt(1));
+                    }
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(st);
                 }
-                st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                final ResultSet rs = st.executeQuery();
-                for (int i = 0; i < 10000 && rs.next(); i++) {
-                    dataIds.add(rs.getInt(1));
-                }
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(st);
-
                 return dataIds;
             }
         });
     }
-    
+
     public void purgeAllIncomingEventForNode(String nodeId) {
         if (deleteIncomingBatchesByNodeIdSql != null)
-        for (String sql : deleteIncomingBatchesByNodeIdSql) {
-            int count = jdbcTemplate.update(sql, new Object[] { nodeId });
-            logger.info("Purged " + count + " rows for node " + nodeId + " after running: " + cleanSql(sql));
-        }
+            for (String sql : deleteIncomingBatchesByNodeIdSql) {
+                int count = jdbcTemplate.update(sql, new Object[] { nodeId });
+                logger.info("Purged " + count + " rows for node " + nodeId + " after running: " + cleanSql(sql));
+            }
     }
-    
 
     private String cleanSql(final String sql) {
         return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");

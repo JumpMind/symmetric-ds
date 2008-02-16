@@ -189,12 +189,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 metaData.setCatalog(schema);
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
-                ResultSet tableData = metaData.getTables(tableName);
-                while (tableData != null && tableData.next()) {
-                    Map<String, Object> values = readColumns(tableData, initColumnsForTable());
-                    table = readTable(metaData, values);
+                ResultSet tableData = null;
+                try {
+                    tableData = metaData.getTables(tableName);
+                    while (tableData != null && tableData.next()) {
+                        Map<String, Object> values = readColumns(tableData, initColumnsForTable());
+                        table = readTable(metaData, values);
+                    }
+                } finally {
+                    JdbcUtils.closeResultSet(tableData);
                 }
-                JdbcUtils.closeResultSet(tableData);
                 return table;
             }
         });
@@ -330,8 +334,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String catalog = trigger.getSourceSchemaName();
-                logger.info("Creating " + dml.toString() + " trigger for "
-                        + (catalog != null ? (catalog + ".") : "") + trigger.getSourceTableName());
+                logger.info("Creating " + dml.toString() + " trigger for " + (catalog != null ? (catalog + ".") : "")
+                        + trigger.getSourceTableName());
                 String previousCatalog = con.getCatalog();
                 try {
                     if (catalog != null) {
@@ -354,14 +358,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
             Table table) {
         return sqlTemplate.createTriggerDDL(this, dml, config, audit, tablePrefix, table, getDefaultSchema());
     }
-    
+
     public String getCreateSymmetricDDL() {
         Database db = getConfigDdlDatabase();
         prefixConfigDatabase(db);
         return platform.getCreateTablesSql(db, true, true);
     }
-    
-    protected boolean prefixConfigDatabase(Database targetTables)  {
+
+    protected boolean prefixConfigDatabase(Database targetTables) {
         try {
             String tblPrefix = this.tablePrefix.toLowerCase() + "_";
 
@@ -376,7 +380,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     createTables = true;
                 }
             }
-            
+
             return createTables;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);

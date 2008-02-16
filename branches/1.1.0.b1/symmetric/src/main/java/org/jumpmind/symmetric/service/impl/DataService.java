@@ -102,20 +102,25 @@ public class DataService extends AbstractService implements IDataService {
     public long insertData(final Data data) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                PreparedStatement ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
-                ps.setString(1, data.getChannelId());
-                ps.setString(2, data.getTableName());
-                ps.setString(3, data.getEventType().getCode());
-                ps.setString(4, data.getRowData());
-                ps.setString(5, data.getPkData());
-                ps.setLong(6, data.getAudit().getTriggerHistoryId());
-                ps.execute();
-                ResultSet rs = ps.getGeneratedKeys();
-                rs.next();
-                long dataId = rs.getLong(1);
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(ps);
-                return dataId;
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    c.prepareStatement(insertIntoDataSql, new int[] { 1 });
+                    ps.setString(1, data.getChannelId());
+                    ps.setString(2, data.getTableName());
+                    ps.setString(3, data.getEventType().getCode());
+                    ps.setString(4, data.getRowData());
+                    ps.setString(5, data.getPkData());
+                    ps.setLong(6, data.getAudit().getTriggerHistoryId());
+                    ps.execute();
+                    rs = ps.getGeneratedKeys();
+                    rs.next();
+                    return rs.getLong(1);                
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);                    
+                }
+                
             }
         });
     }
