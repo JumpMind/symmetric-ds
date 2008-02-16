@@ -105,7 +105,7 @@ public class DataService extends AbstractService implements IDataService {
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    c.prepareStatement(insertIntoDataSql, new int[] { 1 });
+                    ps = c.prepareStatement(insertIntoDataSql, new int[] { 1 });
                     ps.setString(1, data.getChannelId());
                     ps.setString(2, data.getTableName());
                     ps.setString(3, data.getEventType().getCode());
