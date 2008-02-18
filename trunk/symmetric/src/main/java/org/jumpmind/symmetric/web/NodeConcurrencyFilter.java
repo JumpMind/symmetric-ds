@@ -89,21 +89,23 @@ public class NodeConcurrencyFilter implements Filter {
                 } finally {
                     changeNumberOfWorkers(servletPath, -1);
                 }
-            } else if (tries == 0) {
-                tooBusyCount++;
-
-                if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
-                        * TOO_BUSY_LOG_STATEMENTS_PER_MIN
-                        && tooBusyCount > 0) {
-                    logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
-                            + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
-                    tooBusyCount = 0;
-                }
             } else {
-                tries--;
-                try {
-                    Thread.sleep(waitTimeBetweenRetriesInMs);
-                } catch (InterruptedException ex) {
+                if (--tries == 0) {
+                    tooBusyCount++;
+
+                    if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
+                            * TOO_BUSY_LOG_STATEMENTS_PER_MIN
+                            && tooBusyCount > 0) {
+                        logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
+                                + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
+                        lastTooBusyLogTime = System.currentTimeMillis();
+                        tooBusyCount = 0;
+                    }
+                } else {
+                    try {
+                        Thread.sleep(waitTimeBetweenRetriesInMs);
+                    } catch (InterruptedException ex) {
+                    }
                 }
             }
         } while (numberOfWorkers >= maxNumberOfConcurrentWorkers && tries > 0);
