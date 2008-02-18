@@ -64,7 +64,7 @@ public class NodeConcurrencyFilter implements Filter {
 
     public void doFilter(final ServletRequest req, final ServletResponse resp, final FilterChain chain)
             throws IOException, ServletException {
-        final String servletPath = ((HttpServletRequest) req).getServletPath();
+        String servletPath = ((HttpServletRequest) req).getServletPath();
         if (!doWork(servletPath, new IWorker() {
             public void work() throws ServletException, IOException {
                 chain.doFilter(req, resp);
@@ -75,7 +75,7 @@ public class NodeConcurrencyFilter implements Filter {
 
     }
 
-    protected boolean doWork(final String servletPath, final IWorker worker) throws ServletException, IOException {
+    protected boolean doWork(String servletPath, IWorker worker) throws ServletException, IOException {
         boolean didWork = false;
         int tries = 5;
         int numberOfWorkers;
@@ -89,39 +89,41 @@ public class NodeConcurrencyFilter implements Filter {
                 } finally {
                     changeNumberOfWorkers(servletPath, -1);
                 }
-            } else if (tries == 0) {
-                tooBusyCount++;
-
-                if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
-                        * TOO_BUSY_LOG_STATEMENTS_PER_MIN
-                        && tooBusyCount > 0) {
-                    logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
-                            + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
-                    tooBusyCount = 0;
-                }
             } else {
-                tries--;
-                try {
-                    Thread.sleep(waitTimeBetweenRetriesInMs);
-                } catch (final InterruptedException ex) {
+                if (--tries == 0) {
+                    tooBusyCount++;
+
+                    if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
+                            * TOO_BUSY_LOG_STATEMENTS_PER_MIN
+                            && tooBusyCount > 0) {
+                        logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
+                                + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
+                        lastTooBusyLogTime = System.currentTimeMillis();
+                        tooBusyCount = 0;
+                    }
+                } else {
+                    try {
+                        Thread.sleep(waitTimeBetweenRetriesInMs);
+                    } catch (InterruptedException ex) {
+                    }
                 }
             }
         } while (numberOfWorkers >= maxNumberOfConcurrentWorkers && tries > 0);
         return didWork;
     }
 
-    private int getNumberOfWorkers(final String servletPath) {
-        final Integer number = numberOfWorkersByServlet.get(servletPath);
+    private int getNumberOfWorkers(String servletPath) {
+        Integer number = numberOfWorkersByServlet.get(servletPath);
         return number == null ? 0 : number;
     }
 
-    synchronized private void changeNumberOfWorkers(final String servletPath, final int delta) {
+    synchronized private void changeNumberOfWorkers(String servletPath, int delta) {
         numberOfWorkersByServlet.put(servletPath, getNumberOfWorkers(servletPath) + delta);
     }
 
-    public void init(final FilterConfig config) throws ServletException {
+    public void init(FilterConfig config) throws ServletException {
         context = config.getServletContext();
-        final ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
+        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
         maxNumberOfConcurrentWorkers = (Integer) ctx.getBean(Constants.MAX_CONCURRENT_WORKERS);
     }
 
