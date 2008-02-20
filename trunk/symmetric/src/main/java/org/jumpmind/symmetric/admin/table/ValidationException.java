@@ -17,13 +17,10 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.admin;
+package org.jumpmind.symmetric.admin.table;
 
-import javax.swing.JPanel;
+public class ValidationException extends Exception {
 
-abstract public class AbstractScreen extends JPanel {
+    private static final long serialVersionUID = -6099894819319037410L;
 
-    abstract public void setup(SymmetricDatabase c);
-    
-    abstract public ScreenName getScreenName();
 }

@@ -26,7 +26,6 @@ import java.awt.Dimension;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 public class InfoScreen extends AbstractScreen {
@@ -44,7 +43,6 @@ public class InfoScreen extends AbstractScreen {
     JPanel databaseInfoPanel;
 
     protected InfoScreen() {
-        setBorder(new EmptyBorder(15, 15, 15, 15));
         BoxLayout l = new BoxLayout(this, BoxLayout.Y_AXIS);
         this.setLayout(l);
 
