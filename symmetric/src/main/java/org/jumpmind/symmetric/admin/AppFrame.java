@@ -28,6 +28,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.border.EmptyBorder;
 
 public class AppFrame extends JFrame implements IAppController {
 
@@ -50,8 +51,10 @@ public class AppFrame extends JFrame implements IAppController {
         leftPane.setMinimumSize(new Dimension(200, 50));
         this.screenStack = new CardLayout();
         stackPanel = new JPanel(this.screenStack);
+        stackPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
         InfoScreen infoScreen = new InfoScreen();
         addScreenToPanel(new BlankScreen());
+        addScreenToPanel(new ChannelEditScreen());
         addScreenToPanel(infoScreen);        
         JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, stackPanel);
         splitPanel.setOneTouchExpandable(true);

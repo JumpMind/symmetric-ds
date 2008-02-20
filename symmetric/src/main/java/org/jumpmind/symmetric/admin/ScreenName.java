@@ -21,5 +21,5 @@ package org.jumpmind.symmetric.admin;
 
 public enum ScreenName {
 
-    BLANK, INFO
+    BLANK, INFO, CHANNELS
 }

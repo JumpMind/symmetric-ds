@@ -40,7 +40,7 @@ public class Channel {
 
     private boolean enabled;
 
-    public Channel() {
+    public Channel() {        
     }
 
     public Channel(String id, int processingOrder) {

@@ -121,7 +121,7 @@ public class AdminTreeControl extends JScrollPane {
                             }
                         });
 
-                        DatabaseNode db = (DatabaseNode)c;
+                        DatabaseNode db = (DatabaseNode) c;
                         db.add(new ChannelNode(c.getSymmetricDatabase()));
                         db.add(new GroupNode(c.getSymmetricDatabase()));
                         db.add(new GroupLinkNode(c.getSymmetricDatabase()));
@@ -243,6 +243,8 @@ public class AdminTreeControl extends JScrollPane {
             AbstractNode d = getSelectedConnection();
             if (d instanceof DatabaseNode) {
                 appController.show(ScreenName.INFO, d.getSymmetricDatabase());
+            } else if (d instanceof ChannelNode) {
+                appController.show(ScreenName.CHANNELS, d.getSymmetricDatabase());
             } else {
                 appController.show(ScreenName.BLANK, null);
             }
