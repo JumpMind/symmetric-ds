@@ -101,10 +101,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local);
             } catch (IOException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
                 error = ex;
             }
             if (!sendAck) {
@@ -157,13 +157,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
-        } catch (SocketException ex) {
-            logger.warn(ex.getMessage());
-        } catch (TransportException ex) {
-            logger.warn(ex.getMessage());
         } catch (Exception e) {
             if (status != null) {
-                logger.error("Failed to load batch " + status.getNodeBatchId(), e);
+                if (e instanceof SocketException || e instanceof TransportException) {
+                    logger.warn(e.getMessage());
+                } else {
+                    logger.error("Failed to load batch " + status.getNodeBatchId(), e);
+                }
                 history.setValues(dataLoader.getStatistics(), false);
                 handleBatchError(status, history);
             } else {
