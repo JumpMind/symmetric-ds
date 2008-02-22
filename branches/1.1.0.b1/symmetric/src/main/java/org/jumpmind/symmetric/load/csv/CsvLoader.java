@@ -104,8 +104,12 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void skip() throws IOException {
-        context.setSkipping(true);
-        load();
+        try {
+            context.setSkipping(true);
+            load();
+        } finally {
+            context.setSkipping(false);
+        }
     }
 
     public void load() throws IOException {
