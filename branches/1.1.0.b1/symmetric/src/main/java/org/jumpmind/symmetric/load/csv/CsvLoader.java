@@ -104,12 +104,9 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void skip() throws IOException {
-        try {
-            context.setSkipping(true);
-            load();
-        } finally {
-            context.setSkipping(false);
-        }
+        context.setSkipping(true);
+        load();
+        // skipping is reset when a new batch_id is set
     }
 
     public void load() throws IOException {
