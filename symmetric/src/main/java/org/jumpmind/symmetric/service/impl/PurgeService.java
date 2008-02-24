@@ -176,6 +176,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 .getTime() }, Integer.class);
         int eventRowCount = 0;
         int dataIdCount = 0;
+        int batchesPurged = 0;
         long ts = System.currentTimeMillis();
         for (final Integer batchId : batchIds) {
             do {
@@ -199,12 +200,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 eventRowCount += dataIdCount;
 
                 if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
-                    logger.info("Purged " + batchIds.size() + " a total of batches and " + eventRowCount
+                    logger.info("Purged " + batchesPurged + " out of " + batchIds.size() + " total and " + eventRowCount
                             + " data_events.");
                     ts = System.currentTimeMillis();
                 }
             } while (dataIdCount > 0);
-
+            batchesPurged++;
         }
 
         if (batchIds.size() > 0) {
