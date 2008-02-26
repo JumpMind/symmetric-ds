@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
@@ -63,7 +64,7 @@ public class SymmetricLauncher {
     private static final String OPTION_DUMP_BATCH = "dump-batch";
 
     private static final String OPTION_OPEN_REGISTRATION = "open-registration";
-    
+
     private static final String OPTION_RELOAD_NODE = "reload-node";
 
     private static final String OPTION_AUTO_CREATE = "auto-create";
@@ -71,6 +72,8 @@ public class SymmetricLauncher {
     private static final String OPTION_PORT_SERVER = "port";
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
+
+    private static final String OPTION_PURGE = "purge";
 
     private static final String OPTION_RUN_DDL_XML = "run-ddl";
 
@@ -81,11 +84,11 @@ public class SymmetricLauncher {
     private static final String OPTION_PROPERTIES_FILE = "properties";
 
     private static final String OPTION_START_SERVER = "server";
-    
+
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
     public static void main(String[] args) throws Exception {
-        
+
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
@@ -110,11 +113,17 @@ public class SymmetricLauncher {
                     throw new ParseException("Could not find the properties file specified: "
                             + line.getOptionValue(OPTION_PROPERTIES_FILE));
                 }
-                
+
             }
 
             if (line.hasOption(OPTION_DDL_GEN)) {
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
+                return;
+            }
+
+            if (line.hasOption(OPTION_PURGE)) {
+                ((IPurgeService) new SymmetricEngine().getApplicationContext().getBean(Constants.PURGE_SERVICE))
+                        .purge();
                 return;
             }
 
@@ -152,12 +161,12 @@ public class SymmetricLauncher {
                 runSql(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
                 return;
             }
-            
+
             if (line.hasOption(OPTION_LOAD_BATCH)) {
                 loadBatch(new SymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
             }
 
-            if (line.hasOption(OPTION_START_SERVER)) {    
+            if (line.hasOption(OPTION_START_SERVER)) {
                 testConnection();
                 new SymmetricWebServer().start(serverPort);
                 return;
@@ -169,12 +178,15 @@ public class SymmetricLauncher {
             System.err.println(exp.getMessage());
             printHelp(options);
         } catch (Exception ex) {
-            System.err.println("-----------------------------------------------------------------------------------------------");
-            System.err.println("  An exception occurred.  Please see the following for details: ");            
-            System.err.println("-----------------------------------------------------------------------------------------------");
-            
+            System.err
+                    .println("-----------------------------------------------------------------------------------------------");
+            System.err.println("  An exception occurred.  Please see the following for details: ");
+            System.err
+                    .println("-----------------------------------------------------------------------------------------------");
+
             ExceptionUtils.printRootCauseStackTrace(ex, System.err);
-            System.err.println("-----------------------------------------------------------------------------------------------");            
+            System.err
+                    .println("-----------------------------------------------------------------------------------------------");
             printHelp(options);
         }
     }
@@ -182,11 +194,11 @@ public class SymmetricLauncher {
     private static void printHelp(Options options) {
         new HelpFormatter().printHelp("sym", options);
     }
-    
-    
+
     private static void testConnection() throws Exception {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {"classpath:/symmetric-properties.xml","classpath:/symmetric-database.xml"});
-        BasicDataSource ds = (BasicDataSource)ctx.getBean(Constants.DATA_SOURCE);        
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
+                "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
+        BasicDataSource ds = (BasicDataSource) ctx.getBean(Constants.DATA_SOURCE);
         Connection c = ds.getConnection();
         c.close();
         ds.close();
@@ -206,6 +218,7 @@ public class SymmetricLauncher {
                         OPTION_PROPERTIES_FILE,
                         true,
                         "Takes an argument with the path to the properties file that will drive symmetric.  If this is not provided, symmetric will use defaults, then override with the first symmetric.properties in your classpath, then override with symmetric.properties values in your user.home directory.");
+        options.addOption("X", OPTION_PURGE, false, "Will simply run the purge process against the currently configured database.");
         options
                 .addOption("g", OPTION_PROPERTIES_GEN, true,
                         "Takes an argument with the path to a file which all the default overrideable properties will be written.");
@@ -221,13 +234,11 @@ public class SymmetricLauncher {
         options
                 .addOption("R", OPTION_OPEN_REGISTRATION, true,
                         "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
-        options
-                .addOption("l", OPTION_RELOAD_NODE, true,
-                        "Send an initial load of data to reload the passed in node id.");
+        options.addOption("l", OPTION_RELOAD_NODE, true,
+                "Send an initial load of data to reload the passed in node id.");
         options.addOption("d", OPTION_DUMP_BATCH, true,
                 "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
-        options.addOption("b", OPTION_LOAD_BATCH, true,
-        "Load the CSV contents of the specfied file.");
+        options.addOption("b", OPTION_LOAD_BATCH, true, "Load the CSV contents of the specfied file.");
 
         return options;
     }
@@ -239,9 +250,10 @@ public class SymmetricLauncher {
         dataExtractorService.extractBatchRange(transport, batchId, batchId);
         transport.close();
     }
-    
+
     private static void loadBatch(SymmetricEngine engine, String fileName) throws Exception {
-        IDataLoaderService service = (IDataLoaderService)engine.getApplicationContext().getBean(Constants.DATALOADER_SERVICE);
+        IDataLoaderService service = (IDataLoaderService) engine.getApplicationContext().getBean(
+                Constants.DATALOADER_SERVICE);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
             FileInputStream in = new FileInputStream(file);
@@ -269,8 +281,7 @@ public class SymmetricLauncher {
     }
 
     private static String reloadNode(SymmetricEngine engine, String argument) {
-        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(
-                Constants.DATA_SERVICE);
+        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(Constants.DATA_SERVICE);
         return dataService.reloadNode(argument);
     }
 
