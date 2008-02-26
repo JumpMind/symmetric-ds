@@ -731,7 +731,7 @@
             value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}" />
         <property name="selectOutgoingBatchIdsToPurgeSql">
             <value>
-                select batch_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
+                select batch_id, node_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
                 create_time &lt; ?
             </value>
         </property>
@@ -739,15 +739,10 @@
             <value>delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id=?</value>
         </property>
         <property name="deleteFromOutgoingBatchSql">
-            <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
+            <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=? and node_id=?</value>
         </property>
-        <property name="selectEventDataIdToPurgeSql">
-            <value>select data_id from ${sync.table.prefix}_data_event where batch_id=?</value>
-        </property>
-        <property name="deleteDataEventSql">
-            <value>
-                delete from ${sync.table.prefix}_data_event where data_id=? and batch_id=?
-            </value>
+        <property name="deleteFromEventDataIdSql">
+            <value>delete from ${sync.table.prefix}_data_event where batch_id=? and node_id=?</value>
         </property>
         <property name="selectDataIdToPurgeSql">
             <value>

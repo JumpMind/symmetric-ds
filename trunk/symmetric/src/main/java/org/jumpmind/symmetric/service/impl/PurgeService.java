@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -63,9 +64,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private String deleteFromOutgoingBatchSql;
 
-    private String selectEventDataIdToPurgeSql;
-
-    private String deleteDataEventSql;
+    private String deleteFromEventDataIdSql;
 
     private String selectDataIdToPurgeSql;
 
@@ -172,36 +171,33 @@ public class PurgeService extends AbstractService implements IPurgeService {
     @SuppressWarnings("unchecked")
     private void purgeBatchesOlderThan(final Calendar time) {
         // Iterate over batch ids and data events to access by primary key so we prevent lock escalation
-        final List<Integer> batchIds = jdbcTemplate.queryForList(selectOutgoingBatchIdsToPurgeSql, new Object[] { time
-                .getTime() }, Integer.class);
+        final List<BatchForNode> batchIds = jdbcTemplate.query(selectOutgoingBatchIdsToPurgeSql, new Object[] { time
+                .getTime() }, new RowMapper() {
+            public Object mapRow(ResultSet rs, int row) throws SQLException {
+                return new BatchForNode(rs.getInt(1), rs.getString(2));
+            }
+        });
         int eventRowCount = 0;
         int dataIdCount = 0;
         int batchesPurged = 0;
         long ts = System.currentTimeMillis();
-        for (final Integer batchId : batchIds) {
+        for (final BatchForNode batchNode : batchIds) {
             do {
                 dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
                     public Object doInTransaction(final TransactionStatus s) {
-                        jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId });
+                        jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchNode.batchId });
 
-                        int eventCount = 0;
-                        List<Integer> dataIds = null;
-                        dataIds = getNextDataIds(selectEventDataIdToPurgeSql, new Object[] { batchId },
-                                maxNumOfDataIdsToPurgeInTx);
+                        int eventCount = jdbcTemplate.update(deleteFromEventDataIdSql, new Object[] { batchNode.batchId, batchNode.nodeId });
 
-                        for (final Integer dataId : dataIds) {
-                            eventCount += jdbcTemplate.update(deleteDataEventSql, new Object[] { dataId, batchId });
-                        }
-
-                        jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
+                        jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchNode.batchId, batchNode.nodeId });
                         return eventCount;
                     }
                 });
                 eventRowCount += dataIdCount;
 
                 if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
-                    logger.info("Purged " + batchesPurged + " out of " + batchIds.size() + " total and " + eventRowCount
-                            + " data_events.");
+                    logger.info("Purged " + batchesPurged + " out of " + batchIds.size() + " total and "
+                            + eventRowCount + " data_events.");
                     ts = System.currentTimeMillis();
                 }
             } while (dataIdCount > 0);
@@ -275,12 +271,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.deleteFromOutgoingBatchSql = deleteFromOutgoingBatchSql;
     }
 
-    public void setSelectEventDataIdToPurgeSql(String selectDataIdToPurgeSql) {
-        this.selectEventDataIdToPurgeSql = selectDataIdToPurgeSql;
-    }
-
-    public void setDeleteDataEventSql(String deleteDataEventSql) {
-        this.deleteDataEventSql = deleteDataEventSql;
+    public void setDeleteFromEventDataIdSql(String selectDataIdToPurgeSql) {
+        this.deleteFromEventDataIdSql = selectDataIdToPurgeSql;
     }
 
     public void setDeleteDataSql(String deleteDataSql) {
@@ -305,6 +297,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setDeleteIncomingBatchesByNodeIdSql(String[] deleteIncomingBatchesByNodeIdSql) {
         this.deleteIncomingBatchesByNodeIdSql = deleteIncomingBatchesByNodeIdSql;
+    }
+
+    class BatchForNode {
+
+        int batchId;
+
+        String nodeId;
+
+        public BatchForNode(int batchId, String nodeId) {
+            super();
+            this.batchId = batchId;
+            this.nodeId = nodeId;
+        }
     }
 
 }
