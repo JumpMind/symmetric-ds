@@ -206,9 +206,6 @@
         <property name="sqlList">
             <list>
                 <value>
-                  alter table ${sync.table.prefix}_data drop foreign key fk_d_channel_id
-                </value>            
-                <value>
                   alter table ${sync.table.prefix}_data drop column channel_id
                 </value>                
                 <value>
