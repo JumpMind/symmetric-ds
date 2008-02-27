@@ -753,6 +753,9 @@
         <property name="deleteDataSql">
             <value>delete from ${sync.table.prefix}_data where data_id=?</value>
         </property>
+        <property name="selectIncomingBatchOrderByCreateTimeSql">
+        <value>select batch_id, node_id, status, create_time from sym_incoming_batch order by create_time asc</value>
+        </property>
         <property name="deleteIncomingBatchesByNodeIdSql">
             <list>
                 <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?</value>
@@ -762,13 +765,10 @@
         <property name="incomingPurgeSql">
             <list>
                 <value>
-                    delete from ${sync.table.prefix}_incoming_batch_hist where batch_id in (select
-                    batch_id from ${sync.table.prefix}_incoming_batch where status='OK' and
-                    create_time &lt; ?)
+                    delete from ${sync.table.prefix}_incoming_batch_hist where batch_id=? and node_id=?
                 </value>
                 <value>
-                    delete from ${sync.table.prefix}_incoming_batch where status='OK' and
-                    create_time &lt; ?
+                    delete from ${sync.table.prefix}_incoming_batch where batch_id=? and node_id=?
                 </value>
             </list>
         </property>
