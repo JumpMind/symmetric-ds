@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -70,6 +71,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private String deleteDataSql;
 
+    private String selectIncomingBatchOrderByCreateTimeSql;
+
     private TransactionTemplate transactionTemplate;
 
     private IClusterService clusterService;
@@ -106,18 +109,55 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
-    private void purgeIncoming(Calendar retentionCutoff) {
+    private void purgeIncoming(final Calendar retentionCutoff) {
         try {
             if (clusterService.lock(LockAction.PURGE_INCOMING)) {
                 try {
                     logger.info("The incoming purge process is about to run.");
 
-                    for (String sql : incomingPurgeSql) {
-                        int count = jdbcTemplate.update(sql, new Object[] { retentionCutoff.getTime() });
-                        if (count > 0) {
-                            logger.info("Purged " + count + " rows after running: " + cleanSql(sql));
+                    jdbcTemplate.execute(new ConnectionCallback() {
+                        public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                            List<Integer> dataIds = new ArrayList<Integer>();
+                            PreparedStatement st = null;
+                            ResultSet rs = null;
+
+                            try {
+                                long ts = System.currentTimeMillis();
+                                st = conn.prepareStatement(selectIncomingBatchOrderByCreateTimeSql,
+                                        java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+                                st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                                rs = st.executeQuery();
+                                int totalRowsPurged = 0;
+                                while (rs.next()) {
+                                    int batchId = rs.getInt(1);
+                                    String nodeId = rs.getString(2);
+                                    String status = rs.getString(3);
+                                    Date createTime = rs.getTimestamp(4);
+                                    if (createTime.after(retentionCutoff.getTime())) {
+                                        logger.info("Done purging incoming.  Purged " + totalRowsPurged + " total batch and hist rows up through " + createTime);
+                                        break;
+                                    }
+                                    if ("OK".equals(status)) {
+                                        for (String sql : incomingPurgeSql) {
+                                            totalRowsPurged += jdbcTemplate.update(sql,
+                                                    new Object[] { batchId, nodeId });
+                                        }
+                                    }
+                                    
+                                    if (totalRowsPurged > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+                                        logger.info("Purged " + totalRowsPurged + " total incoming batch and hist rows up through " + createTime);
+                                        ts = System.currentTimeMillis();
+                                    }
+                                }
+                            } finally {
+                                JdbcUtils.closeResultSet(rs);
+                                JdbcUtils.closeStatement(st);
+                            }
+
+                            return dataIds;
                         }
-                    }
+                    });
+
                 } finally {
                     clusterService.unlock(LockAction.PURGE_INCOMING);
                     logger.info("The incoming purge process has completed.");
@@ -187,9 +227,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     public Object doInTransaction(final TransactionStatus s) {
                         jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchNode.batchId });
 
-                        int eventCount = jdbcTemplate.update(deleteFromEventDataIdSql, new Object[] { batchNode.batchId, batchNode.nodeId });
+                        int eventCount = jdbcTemplate.update(deleteFromEventDataIdSql, new Object[] {
+                                batchNode.batchId, batchNode.nodeId });
 
-                        jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchNode.batchId, batchNode.nodeId });
+                        jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchNode.batchId,
+                                batchNode.nodeId });
                         return eventCount;
                     }
                 });
@@ -310,6 +352,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
             this.batchId = batchId;
             this.nodeId = nodeId;
         }
+    }
+
+    public void setSelectIncomingBatchOrderByCreateTimeSql(String selectIncomingBatchOrderByCreateTimeSql) {
+        this.selectIncomingBatchOrderByCreateTimeSql = selectIncomingBatchOrderByCreateTimeSql;
     }
 
 }
