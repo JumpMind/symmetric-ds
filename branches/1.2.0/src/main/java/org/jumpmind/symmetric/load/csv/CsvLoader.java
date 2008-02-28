@@ -72,6 +72,7 @@ public class CsvLoader implements IDataLoader {
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+        csvReader.setSafetySwitch(false);
         context = new DataLoaderContext();
         stats = new DataLoaderStatistics();
     }
