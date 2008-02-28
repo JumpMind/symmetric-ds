@@ -59,6 +59,16 @@
             <action dev="chenson42" type="fix">
                 We had a few places where we were not closing Statements and ResultSets.
             </action>                                  
+            <action dev="erilong" type="fix" issue="aid=1891508&amp;atid=997724">
+                Fixed integrity violation when updating a primary key with an empty value
+                between database systems that handle char padding differently
+            </action>                                  
+            <action dev="erilong" type="fix" issue="aid=1903641&amp;atid=997724">
+                Fixed SafetySwitch error when parsing large columns
+            </action>                                  
+            <action dev="erilong" type="fix" issue="aid=1903635&amp;atid=997724">
+                Fixed cross schema trigger creation for PostgreSQL
+            </action>                                  
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
