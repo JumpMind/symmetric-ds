@@ -385,6 +385,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         query.append(" FROM ");
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
+        if (table.getSchema() != null && ! table.getSchema().trim().equals("")) {
+            query.append(table.getSchema() + ".");
+        }
         query.append(table.getName());
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
