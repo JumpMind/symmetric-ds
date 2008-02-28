@@ -72,6 +72,7 @@ public class CsvLoader implements IDataLoader {
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
         csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+        csvReader.setSafetySwitch(false);
         context = new DataLoaderContext();
         stats = new DataLoaderStatistics();
     }
@@ -219,6 +220,7 @@ public class CsvLoader implements IDataLoader {
                             + ArrayUtils.toString(tokens));
                 }
             } else {
+                // TODO: log the PK information as an ERROR level.
                 throw e;
             }
         }
@@ -246,6 +248,7 @@ public class CsvLoader implements IDataLoader {
                 stats.incrementFallbackInsertCount();
                 return context.getTableTemplate().insert(columnValues, encoding);
             } else {
+                // TODO: log the PK information as an ERROR level.
                 throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                         + ArrayUtils.toString(tokens));
             }

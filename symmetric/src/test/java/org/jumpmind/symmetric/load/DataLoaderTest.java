@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -185,7 +186,26 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
         massageExpectectedResultsForDialect(values);
         assertTestTableEquals(values[0], values);
     }
-    
+
+    @Test(groups="continuous")
+    public void testLargeColumn() throws Exception {
+        String tableName = "UnknownTable";
+        String[] keys = { "id" };
+        String[] columns= { "id", "name" };
+        String[] values = { "1", new RandomDataImpl().nextSecureHexString(110000) };
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writeTable(writer, tableName, keys, columns);
+        String nextBatchId = getNextBatchId();
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(values, true);
+        writer.close();
+        load(out);
+    }
+
     private void massageExpectectedResultsForDialect(String[] values) {
         if (getDbDialect() instanceof MsSqlDbDialect) {
             values[5] = values[5] + " 00:00:00.0";
