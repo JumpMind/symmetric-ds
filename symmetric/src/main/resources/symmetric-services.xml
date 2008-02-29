@@ -754,7 +754,7 @@
         </property>        
         <property name="deleteFromDataSql">
             <value>
-                 delete from ${sync.table.prefix}_data where data_id not in (select data_id from ${sync.table.prefix}_data_event where data_id  &lt; ?) and data_id &lt; ?
+                 delete from ${sync.table.prefix}_data where data_id not in (select data_id from ${sync.table.prefix}_data_event where data_id &gt;= ? and data_id  &lt;= ?) and data_id &gt;= ? and data_id &lt;= ?
             </value>
         </property>
         <property name="selectIncomingBatchOrderByCreateTimeSql">

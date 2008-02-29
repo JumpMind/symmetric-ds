@@ -114,7 +114,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private void purgeOutgoingBatchHistory(Calendar retentionCutoff) {
-        logger.info("Purging outgoing batch history");
+        logger.info("About to purge outgoing batch history.");
         int[] minMax = (int[]) jdbcTemplate.queryForObject(selectOutgoingBatchHistoryRangeSql,
                 new Object[] { retentionCutoff.getTime() }, new RowMapper() {
                     public Object mapRow(ResultSet rs, int row) throws SQLException {
@@ -216,23 +216,25 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private void purgeDataRows() {
-
+        logger.info("About to purge data rows.");
         int minDataId = jdbcTemplate.queryForInt(selectMinDataIdSql);
+        int maxDataId = minDataId + maxNumOfDataIdsToPurgeInTx;
         int deletedCount = 0;
         long ts = System.currentTimeMillis();
         int totalCount = 0;
 
         do {
-            minDataId += maxNumOfDataIdsToPurgeInTx;
-            deletedCount = jdbcTemplate.update(deleteFromDataSql, new Object[] { minDataId, minDataId });
+            deletedCount = jdbcTemplate.update(deleteFromDataSql, new Object[] { minDataId, maxDataId, minDataId, maxDataId });
             totalCount += deletedCount;            
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                logger.info("Purged " + totalCount + " a total of data rows.");
+                logger.info("Purged " + totalCount + " total of data rows so far.");
                 ts = System.currentTimeMillis();
             }
+            minDataId += maxNumOfDataIdsToPurgeInTx;
+            maxDataId += maxNumOfDataIdsToPurgeInTx;
         } while (deletedCount > 0);
 
-        logger.info("Purged " + totalCount + " data rows.");
+        logger.info("Done purging " + totalCount + " data rows.");
 
     }
 
@@ -279,7 +281,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         batchesPurged++;
                     }
 
-                    logger.info("Purged a total of " + batchesPurged + " batches and " + eventRowCount
+                    logger.info("Done purging a total of " + batchesPurged + " batches and " + eventRowCount
                             + " data_events.");
                 } finally {
                     JdbcUtils.closeResultSet(rs);
