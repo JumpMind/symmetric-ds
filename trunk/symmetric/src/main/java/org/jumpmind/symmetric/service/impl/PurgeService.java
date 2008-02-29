@@ -42,9 +42,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 public class PurgeService extends AbstractService implements IPurgeService {
 
@@ -75,8 +72,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private String selectIncomingBatchOrderByCreateTimeSql;
 
     private String selectOutgoingBatchHistoryRangeSql;
-
-    private TransactionTemplate transactionTemplate;
 
     private IClusterService clusterService;
 
@@ -130,13 +125,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 currentHistoryId = currentHistoryId + maxNumOfDataIdsToPurgeInTx > max ? max : currentHistoryId
                         + maxNumOfDataIdsToPurgeInTx;
                 totalCount += jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { currentHistoryId });
-                
+
                 if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                     logger.info("Purged " + totalCount + " a total of outgoing batch history rows so far.");
                     ts = System.currentTimeMillis();
                 }
             }
-            
+
             logger.info("Finished purging " + totalCount + " outgoing batch history rows.");
 
         }
@@ -224,10 +219,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int totalCount = 0;
 
         do {
-            deletedCount = jdbcTemplate.update(deleteFromDataSql, new Object[] { minDataId, maxDataId, minDataId, maxDataId });
-            totalCount += deletedCount;            
+            deletedCount = jdbcTemplate.update(deleteFromDataSql, new Object[] { minDataId, maxDataId, minDataId,
+                    maxDataId });
+            totalCount += deletedCount;
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                logger.info("Purged " + totalCount + " total of data rows so far.");
+                logger.info("Purged a total of " + totalCount + " data rows so far.");
                 ts = System.currentTimeMillis();
             }
             minDataId += maxNumOfDataIdsToPurgeInTx;
@@ -245,7 +241,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 PreparedStatement st = null;
                 ResultSet rs = null;
                 int eventRowCount = 0;
-                int dataIdCount = 0;
                 int batchesPurged = 0;
                 long ts = System.currentTimeMillis();
 
@@ -259,29 +254,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         final int batchId = rs.getInt(1);
                         final String nodeId = rs.getString(2);
 
-                        do {
-                            dataIdCount = (Integer) transactionTemplate.execute(new TransactionCallback() {
-                                public Object doInTransaction(final TransactionStatus s) {
-                                    int eventCount = jdbcTemplate.update(deleteFromEventDataIdSql, new Object[] {
-                                            batchId, nodeId });
+                        eventRowCount += jdbcTemplate
+                                .update(deleteFromEventDataIdSql, new Object[] { batchId, nodeId });
+                        batchesPurged += jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
 
-                                    jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
-                                    return eventCount;
-                                }
-                            });
-                            eventRowCount += dataIdCount;
+                        if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
+                            logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
+                                    + " data_events so far.");
+                            ts = System.currentTimeMillis();
+                        }
 
-                            if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
-                                logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
-                                        + " data_events so far.");
-                                ts = System.currentTimeMillis();
-                            }
-                        } while (dataIdCount > 0);
-
-                        batchesPurged++;
                     }
 
-                    logger.info("Done purging a total of " + batchesPurged + " batches and " + eventRowCount
+                    logger.info("Purged a total of " + batchesPurged + " batches and " + eventRowCount
                             + " data_events.");
                 } finally {
                     JdbcUtils.closeResultSet(rs);
@@ -322,10 +307,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setDeleteFromEventDataIdSql(String selectDataIdToPurgeSql) {
         this.deleteFromEventDataIdSql = selectDataIdToPurgeSql;
-    }
-
-    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
-        this.transactionTemplate = transactionTemplate;
     }
 
     public void setDeleteFromDataSql(String selectDataIdToDeleteSql) {
