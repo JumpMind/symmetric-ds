@@ -114,6 +114,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private void purgeOutgoingBatchHistory(Calendar retentionCutoff) {
+        logger.info("Purging outgoing batch history");
         int[] minMax = (int[]) jdbcTemplate.queryForObject(selectOutgoingBatchHistoryRangeSql,
                 new Object[] { retentionCutoff.getTime() }, new RowMapper() {
                     public Object mapRow(ResultSet rs, int row) throws SQLException {
@@ -123,11 +124,21 @@ public class PurgeService extends AbstractService implements IPurgeService {
         if (minMax != null) {
             int currentHistoryId = minMax[0];
             int max = minMax[1];
+            long ts = System.currentTimeMillis();
+            int totalCount = 0;
             while (currentHistoryId < max) {
                 currentHistoryId = currentHistoryId + maxNumOfDataIdsToPurgeInTx > max ? max : currentHistoryId
                         + maxNumOfDataIdsToPurgeInTx;
-                jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { currentHistoryId });
+                totalCount += jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { currentHistoryId });
+                
+                if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+                    logger.info("Purged " + totalCount + " a total of outgoing batch history rows so far.");
+                    ts = System.currentTimeMillis();
+                }
             }
+            
+            logger.info("Finished purging " + totalCount + " outgoing batch history rows.");
+
         }
     }
 
