@@ -725,7 +725,6 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="clusterService" ref="clusterService" />
         <property name="dbDialect" ref="dbDialect" />
-        <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
         <property name="maxNumOfDataIdsToPurgeInTx"
             value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}" />
