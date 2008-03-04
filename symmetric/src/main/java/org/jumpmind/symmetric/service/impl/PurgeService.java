@@ -68,6 +68,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private String deleteFromDataSql;
 
     private String selectMinDataIdSql;
+    
+    private String selectMaxDataIdSql;
 
     private String selectIncomingBatchOrderByCreateTimeSql;
 
@@ -93,7 +95,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
                     purgeBatchesOlderThan(retentionCutoff);
                     purgeOutgoingBatchHistory(retentionCutoff);
-                    purgeDataRows();
+                    purgeDataRows(retentionCutoff);
 
                 } finally {
                     clusterService.unlock(LockAction.PURGE_OUTGOING);
@@ -210,9 +212,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
     }
 
-    private void purgeDataRows() {
+    private void purgeDataRows(final Calendar time) {
         logger.info("About to purge data rows.");
         int minDataId = jdbcTemplate.queryForInt(selectMinDataIdSql);
+        int purgeUpToDataId = jdbcTemplate.queryForInt(selectMaxDataIdSql, new Object[] { time.getTime()});
         int maxDataId = minDataId + maxNumOfDataIdsToPurgeInTx;
         int deletedCount = 0;
         long ts = System.currentTimeMillis();
@@ -228,7 +231,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
             minDataId += maxNumOfDataIdsToPurgeInTx;
             maxDataId += maxNumOfDataIdsToPurgeInTx;
-        } while (deletedCount > 0);
+        } while (maxDataId <= purgeUpToDataId);
 
         logger.info("Done purging " + totalCount + " data rows.");
 
@@ -335,6 +338,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setSelectMinDataIdSql(String selectMinDataIdSql) {
         this.selectMinDataIdSql = selectMinDataIdSql;
+    }
+
+    public void setSelectMaxDataIdSql(String selectMaxDataIdSql) {
+        this.selectMaxDataIdSql = selectMaxDataIdSql;
     }
 
 }
