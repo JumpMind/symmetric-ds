@@ -167,7 +167,7 @@ public class SqlTemplate {
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema, String ddl) {
-        ddl = replace("targetTableName", trigger.getDefaultTargetTableName().toUpperCase(), ddl);
+        ddl = replace("targetTableName", trigger.getDefaultTargetTableName(), ddl);
         ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
         ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
@@ -193,8 +193,8 @@ public class SqlTemplate {
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
-        ddl = replace("tableName", trigger.getSourceTableName().toUpperCase(), ddl);
-        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName().toUpperCase()
+        ddl = replace("tableName", trigger.getSourceTableName(), ddl);
+        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
                 + "." : "", ddl);
 
         columns = metaData.getPrimaryKeyColumns();
