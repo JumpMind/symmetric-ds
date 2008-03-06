@@ -195,6 +195,14 @@ public class SymmetricManagementService {
         return dataService.reloadNode(nodeId);
     }
 
+    @ManagedOperation(description = "Send a delete and reload of a table to a node.")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+            @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
+    public String reloadTable(String nodeId, String tableName) {
+        return dataService.reloadTable(nodeId, tableName);
+    }
+    
     @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
     public String showBatch(String batchId) throws Exception {

@@ -198,6 +198,30 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public String reloadTable(String nodeId, String tableName) {
+        Node sourceNode = nodeService.findIdentity();        
+        Node targetNode = nodeService.findNode(nodeId);
+        if (targetNode == null) {
+            return "Unknown node " + nodeId;
+        }
+
+        Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        if (trigger == null) {
+            return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
+        }
+
+        if (createFirstForReload) {
+            String xml = dbDialect.getCreateTableXML(trigger);
+            insertCreateEvent(targetNode, trigger, xml);
+        } else {
+            insertPurgeEvent(targetNode, trigger);
+        }
+
+        insertReloadEvent(targetNode, trigger);
+        
+        return "Successfully created event to reload table " + tableName + " for node " + targetNode.getNodeId();
+    }
+
     /**
      * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
      * @param node
