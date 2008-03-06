@@ -108,8 +108,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
         jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { Long.valueOf(history.getBatchId()),
-                history.getNodeId(), history.getStatus().toString(), history.getHostName(),
-                history.getStatementCount(), history.getFallbackInsertCount(),
+                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
+                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
+                history.getByteCount(), history.getStatementCount(), history.getFallbackInsertCount(),
                 history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
                 history.getFailedRowNumber(), history.getStartTime(), history.getEndTime() });
     }
@@ -134,10 +135,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             history.setStartTime(rs.getTime(4));
             history.setEndTime(rs.getTime(5));
             history.setFailedRowNumber(rs.getLong(6));
-            history.setStatementCount(rs.getLong(7));
-            history.setFallbackInsertCount(rs.getLong(8));
-            history.setFallbackUpdateCount(rs.getLong(9));
-            history.setMissingDeleteCount(rs.getLong(10));
+            history.setByteCount(rs.getLong(7));
+            history.setNetworkMillis(rs.getLong(8));
+            history.setFilterMillis(rs.getLong(9));
+            history.setDatabaseMillis(rs.getLong(10));
+            history.setStatementCount(rs.getLong(11));
+            history.setFallbackInsertCount(rs.getLong(12));
+            history.setFallbackUpdateCount(rs.getLong(13));
+            history.setMissingDeleteCount(rs.getLong(14));
             return history;
         }
     }

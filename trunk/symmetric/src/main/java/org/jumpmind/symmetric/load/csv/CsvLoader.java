@@ -87,6 +87,7 @@ public class CsvLoader implements IDataLoader {
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
+            stats.incrementByteCount(csvReader.getRawRecord().length());
 
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(tokens[1]);
@@ -116,6 +117,7 @@ public class CsvLoader implements IDataLoader {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
             stats.incrementLineCount();
+            stats.incrementByteCount(csvReader.getRawRecord().length());
 
             if (tokens[0].equals(CsvConstants.INSERT)) {
                 if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
@@ -192,13 +194,16 @@ public class CsvLoader implements IDataLoader {
         int rows = 0;
 
         if (filters != null) {
+            stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
                 filter.filterInsert(context, columnValues);
             }
+            stats.incrementFilterMillis(stats.endTimer());
         }
 
         Object savepoint = null;
         try {
+            stats.startTimer();
             if (enableFallbackUpdate) {
                 savepoint = dbDialect.createSavepointForFallback();
             }
@@ -223,6 +228,8 @@ public class CsvLoader implements IDataLoader {
                 // TODO: log the PK information as an ERROR level.
                 throw e;
             }
+        } finally {
+            stats.incrementDatabaseMillis(stats.endTimer());
         }
         return rows;
     }
@@ -233,11 +240,14 @@ public class CsvLoader implements IDataLoader {
         String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
 
         if (filters != null) {
+            stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
                 filter.filterUpdate(context, columnValues, keyValues);
             }
+            stats.incrementFilterMillis(stats.endTimer());
         }
 
+        stats.startTimer();
         int rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
         if (rows == 0) {
             if (enableFallbackInsert) {
@@ -246,9 +256,10 @@ public class CsvLoader implements IDataLoader {
                             + ArrayUtils.toString(tokens));
                 }
                 stats.incrementFallbackInsertCount();
-                return context.getTableTemplate().insert(columnValues, encoding);
+                rows = context.getTableTemplate().insert(columnValues, encoding);
             } else {
                 // TODO: log the PK information as an ERROR level.
+                stats.incrementDatabaseMillis(stats.endTimer());
                 throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                         + ArrayUtils.toString(tokens));
             }
@@ -256,6 +267,7 @@ public class CsvLoader implements IDataLoader {
             logger.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
                     + ArrayUtils.toString(tokens));
         }
+        stats.incrementDatabaseMillis(stats.endTimer());
         return rows;
     }
 
@@ -264,12 +276,16 @@ public class CsvLoader implements IDataLoader {
         String keyValues[] = parseKeys(tokens, 1);
 
         if (filters != null) {
+            stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
                 filter.filterDelete(context, keyValues);
             }
+            stats.incrementFilterMillis(stats.endTimer());
         }
 
+        stats.startTimer();
         int rows = context.getTableTemplate().delete(keyValues);
+        stats.incrementDatabaseMillis(stats.endTimer());
         if (rows == 0) {
             if (allowMissingDelete) {
                 logger

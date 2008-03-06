@@ -126,6 +126,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertNotNull(history.getStartTime(), "Start time cannot be null");
         Assert.assertNotNull(history.getEndTime(), "End time cannot be null");
         Assert.assertEquals(history.getFailedRowNumber(), 8, "Wrong failed row number");
+        Assert.assertEquals(history.getByteCount(), 290, "Wrong byte count");
         Assert.assertEquals(history.getStatementCount(), 8, "Wrong statement count");
         Assert.assertEquals(history.getFallbackInsertCount(), 1, "Wrong fallback insert count");
         Assert.assertEquals(history.getFallbackUpdateCount(), 2, "Wrong fallback update count");

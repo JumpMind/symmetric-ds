@@ -27,6 +27,14 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     private Date startTime;
     
+    private long networkMillis;
+    
+    private long filterMillis;
+
+    private long databaseMillis;
+    
+    private long byteCount;
+    
     private long lineCount;
     
     private long statementCount;
@@ -36,6 +44,8 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
     private long fallbackUpdateCount;
     
     private long missingDeleteCount;
+    
+    private long timerMillis;
 
     public DataLoaderStatistics() {
         this.startTime = new Date();
@@ -60,7 +70,31 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
     public long incrementStatementCount() {
         return ++statementCount;
     }
+    
+    public void incrementNetworkMillis(long millis) {
+        networkMillis += millis;
+    }
 
+    public void incrementFilterMillis(long millis) {
+        filterMillis += millis;
+    }
+
+    public void incrementDatabaseMillis(long millis) {
+        databaseMillis += millis;
+    }
+
+    public void incrementByteCount(long count) {
+        byteCount += count;
+    }
+
+    public void startTimer() {
+        timerMillis = System.currentTimeMillis();
+    }
+    
+    public long endTimer() {
+        return System.currentTimeMillis() - timerMillis;
+    }
+    
     public long getFallbackInsertCount() {
         return fallbackInsertCount;
     }
@@ -107,6 +141,38 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     public void setMissingDeleteCount(long missingDeleteCount) {
         this.missingDeleteCount = missingDeleteCount;
+    }
+
+    public long getDatabaseMillis() {
+        return databaseMillis;
+    }
+
+    public void setDatabaseMillis(long databaseMillis) {
+        this.databaseMillis = databaseMillis;
+    }
+
+    public long getFilterMillis() {
+        return filterMillis;
+    }
+
+    public void setFilterMillis(long filterMillis) {
+        this.filterMillis = filterMillis;
+    }
+
+    public long getNetworkMillis() {
+        return networkMillis;
+    }
+
+    public void setNetworkMillis(long networkMillis) {
+        this.networkMillis = networkMillis;
+    }
+
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void setByteCount(long byteCount) {
+        this.byteCount = byteCount;
     }
 
 }

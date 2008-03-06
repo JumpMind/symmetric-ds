@@ -241,8 +241,12 @@
         <column name="status" type="CHAR" size="2" />
         <column name="start_time" type="TIMESTAMP" />
         <column name="end_time" type="TIMESTAMP" />
+        <column name="network_millis" type="INTEGER" />
+        <column name="filter_millis" type="INTEGER" />
+        <column name="database_millis" type="INTEGER" />
         <column name="host_name" type="VARCHAR" size="50" />
         <column name="failed_row_number" type="INTEGER" />
+        <column name="byte_count" type="INTEGER" />
         <column name="statement_count" type="INTEGER" />
         <column name="fallback_insert_count" type="INTEGER" />
         <column name="fallback_update_count" type="INTEGER" />
