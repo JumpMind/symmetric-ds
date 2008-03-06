@@ -45,6 +45,14 @@ public class IncomingBatchHistory implements Serializable {
 
     private static String hostName;
 
+    private long byteCount;
+
+    private long networkMillis;
+    
+    private long filterMillis;
+
+    private long databaseMillis;
+
     private long statementCount;
 
     private long fallbackInsertCount;
@@ -80,6 +88,10 @@ public class IncomingBatchHistory implements Serializable {
     }
     
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
+        byteCount = statistics.getByteCount();
+        networkMillis = statistics.getNetworkMillis();
+        filterMillis = statistics.getFilterMillis();
+        databaseMillis = statistics.getDatabaseMillis();
         statementCount = statistics.getStatementCount();
         fallbackInsertCount = statistics.getFallbackInsertCount();
         fallbackUpdateCount = statistics.getFallbackUpdateCount();
@@ -177,6 +189,38 @@ public class IncomingBatchHistory implements Serializable {
 
     public void setMissingDeleteCount(long missingDeleteCount) {
         this.missingDeleteCount = missingDeleteCount;
+    }
+
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void setByteCount(long byteCount) {
+        this.byteCount = byteCount;
+    }
+
+    public long getDatabaseMillis() {
+        return databaseMillis;
+    }
+
+    public void setDatabaseMillis(long databaseMillis) {
+        this.databaseMillis = databaseMillis;
+    }
+
+    public long getFilterMillis() {
+        return filterMillis;
+    }
+
+    public void setFilterMillis(long filterMillis) {
+        this.filterMillis = filterMillis;
+    }
+
+    public long getNetworkMillis() {
+        return networkMillis;
+    }
+
+    public void setNetworkMillis(long networkMillis) {
+        this.networkMillis = networkMillis;
     }
 
 }
