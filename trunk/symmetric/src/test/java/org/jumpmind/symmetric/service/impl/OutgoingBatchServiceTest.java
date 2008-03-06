@@ -25,13 +25,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
-import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -49,17 +51,23 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
+
     private IOutgoingBatchService batchService;
 
     private IDataService dataService;
 
+    private IAcknowledgeService ackService;
+
+    private IConfigurationService configService;
+
     private int triggerHistId;
-    
+
     @BeforeTest(groups = "continuous")
     protected void setUp() {
+        ackService = (IAcknowledgeService) getBeanFactory().getBean(Constants.ACKNOWLEDGE_SERVICE);
         batchService = (IOutgoingBatchService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
-        IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
+        configService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
         Set<Long> histKeys = configService.getHistoryRecords().keySet();
         Assert.assertFalse(histKeys.isEmpty());
         triggerHistId = histKeys.iterator().next().intValue();
@@ -67,7 +75,6 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void test() {
-        IConfigurationService configService = (IConfigurationService)getBeanFactory().getBean(Constants.CONFIG_SERVICE);
         List<NodeChannel> channels = configService.getChannelsFor(true);
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
@@ -125,9 +132,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void testBatchBoundary() {
-        IConfigurationService configService = (IConfigurationService)getBeanFactory().getBean(Constants.CONFIG_SERVICE);
         List<NodeChannel> channels = configService.getChannelsFor(true);
-        
+
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         int size = 50;
@@ -135,8 +141,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertTrue(count <= size);
 
         for (int i = 0; i < size * count; i++) {
-            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID,
-                    DataEventType.INSERT, TestConstants.TEST_CLIENT_EXTERNAL_ID);
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                    TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
         for (int i = 0; i < count; i++) {
@@ -154,9 +160,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void testMultipleChannels() {
-        IConfigurationService configService = (IConfigurationService)getBeanFactory().getBean(Constants.CONFIG_SERVICE);
         List<NodeChannel> channels = configService.getChannelsFor(true);
-        
+
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         createDataEvent("Foo", triggerHistId, "testchannel", DataEventType.INSERT,
@@ -189,6 +194,51 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(list.size(), 0);
     }
 
+    @Test(groups = "continuous")
+    public void testErrorChannel() {
+        IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(
+                Constants.CONFIG_SERVICE);
+        List<NodeChannel> channels = configService.getChannelsFor(true);
+
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        // Create data events for two different channels
+        createDataEvent("TestTable1", triggerHistId, "testchannel", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        // Build the batch, make sure this event gets its own batch
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+
+        createDataEvent("TestTable1", triggerHistId, "testchannel", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        createDataEvent("TestTable2", triggerHistId, "config", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        // Build the batches, which should be one for each channel
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+
+        // Make sure we got three batches
+        List<OutgoingBatch> batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Assert.assertNotNull(batches);
+        Assert.assertEquals(batches.size(), 3);
+        String firstBatchId = batches.get(0).getBatchId();
+        String secondBatchId = batches.get(1).getBatchId();
+
+        // Ack the first batch as an error, leaving the others as new
+        ArrayList<BatchInfo> ackList = new ArrayList<BatchInfo>();
+        ackList.add(new BatchInfo(firstBatchId, 1));
+        ackService.ack(ackList);
+
+        // Get the batches again. The error channel batches should be last
+        batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Assert.assertNotNull(batches);
+        Assert.assertEquals(batches.size(), 3);
+        Assert.assertEquals(batches.get(1).getBatchId(), firstBatchId,
+                "Channel in error should have batches last - missing error batch");
+        Assert.assertEquals(batches.get(2).getBatchId(), secondBatchId,
+                "Channel in error should have batches last - missing new batch");
+    }
+
     protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type,
             String nodeId) {
         TriggerHistory audit = new TriggerHistory();
@@ -208,10 +258,6 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                 return rs.getInt(1);
             }
         });
-    }
-
-    protected void executeSql(String file) {
-        new SqlScript(getClass().getResource(file), getDataSource(), false).execute();
     }
 
 }

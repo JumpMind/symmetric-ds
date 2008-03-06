@@ -211,8 +211,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId,
-                nodeId }, new OutgoingBatchMapper());
+        return (List<OutgoingBatch>) outgoingBatchQueryTemplate.query(selectOutgoingBatchSql,
+                new Object[] { nodeId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")

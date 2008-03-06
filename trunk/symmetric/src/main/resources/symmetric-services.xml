@@ -277,13 +277,11 @@
         </property>
         <property name="selectOutgoingBatchSql">
             <value>
-                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, create_time, 1
-                from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and b.status in
-                ('NE','SE') and b.channel_id not in (select distinct e.channel_id from
-                ${sync.table.prefix}_outgoing_batch e where e.status = 'ER' and e.node_id =
-                b.node_id) union select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type,
-                create_time, 2 from ${sync.table.prefix}_outgoing_batch b where b.node_id = ? and
-                b.status = 'ER' order by 7, 1
+                select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, b.create_time
+                from ${sync.table.prefix}_outgoing_batch b left join (select node_id, channel_id
+                from ${sync.table.prefix}_outgoing_batch where status = 'ER') e on e.node_id =
+                b.node_id and e.channel_id = b.channel_id where b.node_id = ? and b.status in ('NE',
+                'SE', 'ER') order by case when e.channel_id is null then 1 else 2 end, b.batch_id
             </value>
         </property>
         <property name="selectOutgoingBatchRangeSql">
