@@ -192,7 +192,7 @@
                   alter table ${sync.table.prefix}_incoming_batch_hist add (database_millis numeric(22))
                 </value>                
                 <value>
-                  create idx_ob_node_id_status on ${sync.table.prefix}_outgoing_batch (node_id, status);
+                  create index idx_ob_node_id_status on ${sync.table.prefix}_outgoing_batch (node_id, status);
                 </value>                
             </list>
         </property>
