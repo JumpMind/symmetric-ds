@@ -39,6 +39,10 @@
         <column name="batch_type" type="CHAR" size="2" required="true" default="EV" />
         <column name="status" type="CHAR" size="2" />
         <column name="create_time" type="TIMESTAMP" />
+        <index name="idx_ob_node_id_status">
+            <index-column name="node_id" />
+            <index-column name="status" />
+        </index>        
     </table>
 
     <table name="outgoing_batch_hist">
