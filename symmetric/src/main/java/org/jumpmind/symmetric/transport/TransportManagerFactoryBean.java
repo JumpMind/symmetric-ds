@@ -40,9 +40,11 @@ public class TransportManagerFactoryBean implements FactoryBean {
     
     private int httpTimeout;
     
+    private boolean useCompression;
+    
     public Object getObject() throws Exception {
         if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
-            return new HttpTransportManager(runtimeConfiguration, nodeService, httpTimeout);
+            return new HttpTransportManager(runtimeConfiguration, nodeService, httpTimeout, useCompression);
         } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(runtimeConfiguration);
         } else {
@@ -74,6 +76,10 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     public void setHttpTimeout(int httpTimeout) {
         this.httpTimeout = httpTimeout;
+    }
+
+    public void setUseCompression(boolean useCompression) {
+        this.useCompression = useCompression;
     }
 
 }

@@ -57,11 +57,15 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     private INodeService nodeService;
 
     private int httpTimeout;
+    
+    private boolean useCompression;
 
-    public HttpTransportManager(IRuntimeConfig config, INodeService nodeService, int httpTimeout) {
+    public HttpTransportManager(IRuntimeConfig config, INodeService nodeService, int httpTimeout,
+            boolean useCompression) {
         this.runtimeConfiguration = config;
         this.nodeService = nodeService;
         this.httpTimeout = httpTimeout;
+        this.useCompression = useCompression;
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
@@ -105,7 +109,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException {
         URL url = new URL(buildURL("push", remote, local));
-        return new HttpOutgoingTransport(url, httpTimeout);
+        return new HttpOutgoingTransport(url, httpTimeout, useCompression);
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
@@ -181,10 +185,6 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append("=");
         sb.append(nodeId);
         return sb.toString();
-    }
-
-    public void setHttpTimeout(int httpTimeout) {
-        this.httpTimeout = httpTimeout;
     }
 
 }
