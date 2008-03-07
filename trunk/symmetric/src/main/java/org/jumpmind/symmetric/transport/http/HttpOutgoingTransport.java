@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,10 +48,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     HttpURLConnection connection;
     
     int httpTimeout;
+    
+    boolean useCompression;
 
-    public HttpOutgoingTransport(URL url, int httpTimeout) {
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression) {
         this.url = url;
         this.httpTimeout = httpTimeout;
+        this.useCompression = useCompression;
     }
 
     public void close() throws IOException {
@@ -86,7 +90,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setReadTimeout(httpTimeout);
         connection.setRequestMethod("PUT");
         connection.setRequestProperty("accept-encoding", "gzip");
+        if (useCompression) {
+            connection.addRequestProperty("Content-Type", "gzip");
+        }
         OutputStream out = connection.getOutputStream();
+        if (useCompression) {
+            out = new GZIPOutputStream(out);
+        }
         OutputStreamWriter wout = new OutputStreamWriter(out, "UTF-8");
         writer = new BufferedWriter(wout);
         return writer;

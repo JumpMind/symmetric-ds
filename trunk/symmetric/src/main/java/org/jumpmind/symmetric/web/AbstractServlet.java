@@ -25,7 +25,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.zip.GZIPInputStream;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -57,10 +59,18 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
-
+        String contentType = req.getHeader("Content-Type");
+        boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
+        
         if (getLogger().isDebugEnabled()) {
             StringBuilder b = new StringBuilder();
-            BufferedReader reader = req.getReader();
+            BufferedReader reader = null;
+            if (useCompression) {
+                getLogger().debug("Received compressed stream");
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(req.getInputStream())));
+            } else {
+                reader = req.getReader();
+            }
             String line = null;
             do {
                 line = reader.readLine();
@@ -74,6 +84,9 @@ abstract public class AbstractServlet extends HttpServlet {
             is = new ByteArrayInputStream(b.toString().getBytes());
         } else {
             is = req.getInputStream();
+            if (useCompression) {
+                is = new GZIPInputStream(is);
+            }
         }
 
         return is;
