@@ -180,10 +180,6 @@
                   alter table ${sync.table.prefix}_channel add (max_batch_to_send numeric(5) default 60)
                 </value>                
                 <value>
-                  create index idx_de_btchd_nid_cid on 
-                    ${sync.table.prefix}_data_event(batched, node_id, channel_id)
-                </value>
-                <value>
                   alter table ${sync.table.prefix}_incoming_batch_hist add (byte_count numeric(22))
                 </value>                
                 <value>
