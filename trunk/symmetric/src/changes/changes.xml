@@ -69,6 +69,18 @@
             <action dev="erilong" type="fix" issue="aid=1903635&amp;atid=997724">
                 Fixed cross schema trigger creation for PostgreSQL
             </action>                                  
+            <action dev="erilong" type="add" issue="aid=1903649&amp;&atid=997727">
+                reloadTable() JMX function to delete and reload a table for a node
+            </action>                                  
+            <action dev="erilong" type="add" issue="aid=190874&amp;&atid=997727">
+                Timings for network, filter, and database on incoming batches.
+            </action>                                  
+            <action dev="erilong" type="fix" issue="aid=1907627&amp;atid=997724">
+                Case sensitive schema and table names on MySQL for Unix
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1907658&amp;atid=997724">
+                Extract can send batches out of order when channel is in error
+            </action>
         </release>
         <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
             <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
