@@ -68,4 +68,14 @@
         <column name="icon" type="BLOB"/>
     </table>
 
+    <table name="TEST_ALL_CAPS">
+        <column name="ALL_CAPS_ID" type="INTEGER" primaryKey="true" required="true" />
+        <column name="NAME" type="VARCHAR" size="50" required="true" />
+	</table>
+
+    <table name="Test_Mixed_Case">
+        <column name="Mixed_Case_Id" type="INTEGER" primaryKey="true" required="true" />
+        <column name="Name" type="VARCHAR" size="50" required="true" />
+	</table>
+	
 </database>
