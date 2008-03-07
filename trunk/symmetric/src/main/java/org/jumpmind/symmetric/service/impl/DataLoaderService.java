@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -173,8 +172,8 @@ public class DataLoaderService extends AbstractService implements
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Exception e) {
             if (status != null) {
-                if (e instanceof SocketException || e instanceof TransportException) {
-                    logger.warn(e.getMessage());
+                if (e instanceof IOException || e instanceof TransportException) {
+                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                 }
@@ -182,7 +181,7 @@ public class DataLoaderService extends AbstractService implements
                 handleBatchError(status, history);
             } else {
                 if (e instanceof IOException) {
-                    logger.error("Failed while reading batch.", e);
+                    logger.error("Failed while reading batch because: " + e.getMessage());
                 } else {
                     logger.error("Failed while parsing batch.", e);
                 }
