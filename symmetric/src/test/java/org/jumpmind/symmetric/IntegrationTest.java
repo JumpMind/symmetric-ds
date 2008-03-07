@@ -71,6 +71,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             testSyncInsertCondition();
             testSyncUpdateCondition();
             testSyncUpdateWithEmptyKey();
+            testCaseSensitiveTableNames();
             testIgnoreNodeChannel();
             testPurge();
             testHeartbeat();
@@ -251,6 +252,17 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data_event where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
         Assert.assertEquals(rootJdbcTemplate.update("delete from test_very_long_table_name_1234 where id='42'"), 1);              
         Assert.assertEquals(rootJdbcTemplate.queryForObject("select transaction_id from sym_data_event where data_id in (select max(data_id) from sym_data)", String.class), "42", "The hardcoded transaction id was not found.");
+    }
+    
+    protected void testCaseSensitiveTableNames() {
+        rootJdbcTemplate.update("insert into TEST_ALL_CAPS values(1, 'HELLO')");
+        getClientEngine().pull();
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from TEST_ALL_CAPS where ALL_CAPS_ID = 1"),
+                1, "Table name in all caps was not synced");
+        rootJdbcTemplate.update("insert into Test_Mixed_Case values(1, 'Hello')");
+        getClientEngine().pull();
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"),
+                1, "Table name in mixed case was not synced");
     }
 
     protected void testMultipleChannels() {
