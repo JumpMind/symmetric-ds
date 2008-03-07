@@ -54,18 +54,14 @@ public class PushService implements IPushService {
 
     private INodeService nodeService;
 
-    public void setExtractor(IDataExtractorService extractor) {
-        this.extractor = extractor;
-    }
-
     public void pushData() {
         List<Node> nodes = nodeService.findNodesToPushTo();
         if (nodes != null && nodes.size() > 0) {
-            info("Push requested");
+            logger.info("Push requested");
             for (Node node : nodes) {
                 pushToNode(node);
             }
-            info("Push request completed");
+            logger.info("Push request completed");
         }        
     }
 
@@ -103,18 +99,6 @@ public class PushService implements IPushService {
         }
     }
 
-    public void setTransportManager(ITransportManager tm) {
-        this.transportManager = tm;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setAckService(IAcknowledgeService ackService) {
-        this.ackService = ackService;
-    }
-
     private void pushToNode(Node remote) {
         try {
             IOutgoingWithResponseTransport transport = transportManager
@@ -126,7 +110,7 @@ public class PushService implements IPushService {
                     return;
                 }
 
-                debug("Just pushed data, about to read the response.");
+                logger.debug("Just pushed data, about to read the response.");
 
                 BufferedReader reader = transport.readResponse();
                 ParameterParser parser = new ParameterParser(reader.readLine());
@@ -164,26 +148,19 @@ public class PushService implements IPushService {
         }
     }
 
-    private void info(String... s) {
-        if (logger.isInfoEnabled()) {
-            StringBuilder msg = new StringBuilder();
-            for (String string : s) {
-                msg.append(string);
-                msg.append(" ");
-            }
-            logger.info(msg);
-        }
+    public void setExtractor(IDataExtractorService extractor) {
+        this.extractor = extractor;
     }
 
-    private void debug(String... s) {
-        if (logger.isDebugEnabled()) {
-            StringBuilder msg = new StringBuilder();
-            for (String string : s) {
-                msg.append(string);
-                msg.append(" ");
-            }
-            logger.debug(msg);
-        }
+    public void setTransportManager(ITransportManager tm) {
+        this.transportManager = tm;
     }
 
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setAckService(IAcknowledgeService ackService) {
+        this.ackService = ackService;
+    }
 }
