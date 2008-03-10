@@ -152,10 +152,16 @@
                 <para>Oracle version 8.1.7 and above</para>
             </listitem>
             <listitem>
+                <para>PostgreSQL version 8.2.5 and above</para>
+            </listitem>            
+            <listitem>
                 <para>Sql Server 2005</para>
             </listitem>
             <listitem>
-                <para>PostgreSQL version 8.2.5 and above</para>
+                <para>HSQLDB 1.8</para>
+            </listitem>            
+            <listitem>
+                <para>Apache Derby 10.3.2.1 and above</para>
             </listitem>            
         </itemizedlist>
     </section>
