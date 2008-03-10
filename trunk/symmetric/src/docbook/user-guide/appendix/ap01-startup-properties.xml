@@ -189,6 +189,39 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>symmetric.auto.upgrade</command>
+                </term>
+                <listitem>
+                    <para>
+                        If this is true, when symmetric starts up it will try to upgrade tables to latest version.
+                        [&#xA0;Default:&#xA0;true&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.auto.registration</command>
+                </term>
+                <listitem>
+                    <para>
+                        If this is true, registration is opened automatically for nodes requesting it.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.auto.reload</command>
+                </term>
+                <listitem>
+                    <para>
+                        If this is true, a reload is automatically sent to nodes when they register.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
                     <command>symmetric.http.download.rate.kb</command>
                 </term>
                 <listitem>
@@ -211,6 +244,19 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size</command>
+                </term>
+                <listitem>
+                    <para>
+                        This is the maximum number of events that will be peeked at to look for additional transaction rows after
+                        the max batch size is reached.  The more concurrency in your db and the longer the transaction takes the 
+                        bigger this value might have to be. 
+                        [&#xA0;Default:&#xA0;100&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
                     <command>symmetric.runtime.incoming.batches.skip.duplicates</command>
                 </term>
                 <listitem>
@@ -228,6 +274,30 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>symmetric.runtime.num.of.ack.retries</command>
+                </term>
+                <listitem>
+                    <para>
+                        This is the number of times we will attempt to send an ACK back to the remote node
+                        when pulling and loading data.
+                        [&#xA0;Default:&#xA0;5&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.time.between.ack.retries.ms</command>
+                </term>
+                <listitem>
+                    <para>
+                        This is the amount of time to wait between trying to send an ACK back to the remote node
+                        when pulling and loading data.
+                        [&#xA0;Default:&#xA0;5000&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
                     <command>symmetric.runtime.engine.name</command>
                 </term>
                 <listitem>
@@ -235,6 +305,84 @@
                         This is the engine name. This should be set if you have more than one engine running
                         in the same JVM. It is used to name the JMX management bean.
                         [&#xA0;Default:&#xA0;Default&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>runtime.symmetric.cluster.server.id</command>
+                </term>
+                <listitem>
+                    <para>
+                        Set this if you want to give your server a unique name to be used to identify which server did what action.  Typically useful when running in 
+                        a clustered environment.  This is currently used by the ClusterService when locking for a node.
+                        [&#xA0;Default:&#xA0;&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.timeout.ms</command>
+                </term>
+                <listitem>
+                    <para>
+                        Time limit of lock before it is considered abandoned and can be broken.
+                        [&#xA0;Default:&#xA0;1800000&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.during.purge</command>
+                </term>
+                <listitem>
+                    <para>
+                        Indicate if the purge job is clustered and requires a lock before running.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.during.pull</command>
+                </term>
+                <listitem>
+                    <para>
+                        Indicate if the pull job is clustered and requires a lock before running.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.during.push</command>
+                </term>
+                <listitem>
+                    <para>
+                        Indicate if the push job is clustered and requires a lock before running.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.during.heartbeat</command>
+                </term>
+                <listitem>
+                    <para>
+                        Indicate if the heartbeat job is clustered and requires a lock before running.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.cluster.lock.during.sync.triggers</command>
+                </term>
+                <listitem>
+                    <para>
+                        Indicate if the sync triggers job is clustered and requires a lock before running.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
                     </para>
                 </listitem>
             </varlistentry>
@@ -262,12 +410,12 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.trigger.prefix</command>
+                    <command>symmetric.runtime.initial.load.create.first</command>
                 </term>
                 <listitem>
                     <para>
-                        Set this if the trigger names need to be prefixed. This is useful when running two
-                        symmetric instances against the same database. [&#xA0;Default:&#xA0;]
+                        Set this if tables (and their indexes) should be created prior to an initial load.
+                        [&#xA0;Default:&#xA0;false&#xA0;]
                     </para>
                 </listitem>
             </varlistentry>
@@ -279,6 +427,19 @@
                     <para>
                         Sets both the connection and read timeout on the internal HttpUrlConnection.
                         [&#xA0;Default:&#xA0;600000s&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>            
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.http.compression</command>
+                </term>
+                <listitem>
+                    <para>
+                        Whether or not to use compression over HTTP connections.
+                        Currently, this setting only affects the push connection of the source node.
+                        Compression on a pull is enabled using a filter in the web.xml for the PullServlet.
+                        [&#xA0;Default:&#xA0;true&#xA0;]
                     </para>
                 </listitem>
             </varlistentry>            
@@ -475,6 +636,18 @@
                     <para>
                         Specify the transport type. Supported values currently include: http, internal.
                         [&#xA0;Default:&#xA0;http&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.hsqldb.initialize.db</command>
+                </term>
+                <listitem>
+                    <para>
+                        If using the HsqlDbDialect, this property indicates whether Symmetric should setup the embedded database properties or if an
+                        external application will be doing so.
+                        [&#xA0;Default:&#xA0;true&#xA0;]
                     </para>
                 </listitem>
             </varlistentry>
