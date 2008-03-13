@@ -131,8 +131,7 @@ public class ChannelEditScreen extends AbstractScreen {
     
     @Override
     public void setup(SymmetricDatabase c) {
-        // TODO Auto-generated method stub
-        
+        tableModel.setup(c);
     }
 
     public void highlightLastRow(int row) {

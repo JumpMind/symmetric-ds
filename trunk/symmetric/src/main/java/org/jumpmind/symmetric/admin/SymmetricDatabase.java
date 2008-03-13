@@ -20,8 +20,13 @@
 package org.jumpmind.symmetric.admin;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.service.IConfigurationService;
 
 public class SymmetricDatabase implements Serializable {
 
@@ -59,6 +64,15 @@ public class SymmetricDatabase implements Serializable {
             System.setProperty("db.password", password == null ? "" : password);
             System.setProperty("db.pool.initial.size", "1");
             engine = new SymmetricEngine();
+        }
+    }
+    
+    public List<NodeChannel> getChannels() {
+        if (engine != null) {
+            IConfigurationService configService = (IConfigurationService)engine.getApplicationContext().getBean(Constants.CONFIG_SERVICE);
+            return configService.getChannelsFor(true);
+        } else {
+            return new ArrayList<NodeChannel>(0);
         }
     }
     

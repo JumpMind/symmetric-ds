@@ -24,7 +24,9 @@ import java.util.List;
 
 import javax.swing.table.TableCellEditor;
 
+import org.jumpmind.symmetric.admin.SymmetricDatabase;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.NodeChannel;
 
 public class ChannelTableModel extends ModelObjectTableModel<Channel> {
 
@@ -136,16 +138,21 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
         return 5;
     }
 
-    List<Channel> list = null;
-
     @Override
     List<Channel> getRows() {
         if (list == null) {
             list = new ArrayList<Channel>();
-            list.add(new Channel("test", 10));
         }
-
         return list;
+    }
+
+    @Override
+    public void setup(SymmetricDatabase db) {
+        List<NodeChannel> nc = db.getChannels();
+        list = new ArrayList<Channel>(nc.size());
+        for (NodeChannel nodeChannel : nc) {
+            list.add(nodeChannel);
+        }
     }
 
     @Override
@@ -164,4 +171,5 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
         this.list.add(newChannel);
         return newChannel;
     }
+
 }
