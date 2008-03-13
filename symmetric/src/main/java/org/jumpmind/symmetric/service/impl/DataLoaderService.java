@@ -159,7 +159,7 @@ public class DataLoaderService extends AbstractService implements
                 status = null;
             }
         } catch (RegistrationRequiredException ex) {
-            throw ex;                        
+            throw ex;
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
         } catch (UnknownHostException ex) {

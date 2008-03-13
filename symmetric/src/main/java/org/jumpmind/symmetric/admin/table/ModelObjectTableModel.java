@@ -27,6 +27,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 
+import org.jumpmind.symmetric.admin.SymmetricDatabase;
 import org.jumpmind.symmetric.model.Channel;
 
 abstract public class ModelObjectTableModel<T> extends AbstractTableModel implements ListSelectionListener {
@@ -34,9 +35,13 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
     private static final long serialVersionUID = -2191025297337306895L;
 
     int selectedRow = 0;
+    
+    protected List<T> list;
 
     public ModelObjectTableModel() {
     }
+    
+    abstract public void setup(SymmetricDatabase db);
 
     public void valueChanged(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
