@@ -51,6 +51,7 @@
                 href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
             <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
             <item name="Developing with Eclipse" href="eclipse.html" />
+            <item name="Maven Repository" href="maven.html" />
             <item name="Browsable Source Code" href="/jxr.html" />
             <item name="Todo List" href="/taglist.html" />
         </menu>
