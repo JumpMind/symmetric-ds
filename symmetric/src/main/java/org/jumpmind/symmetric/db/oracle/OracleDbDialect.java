@@ -62,7 +62,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     private boolean isPackageUpToDate(String name) throws Exception {
         return jdbcTemplate
                 .queryForInt(
-                        "select count(*) from all_objects where object_name= upper(?) ",
+                        "select count(*) from user_objects where object_name= upper(?) ",
                         new Object[] { name }) > 0;
     }
 
