@@ -9,6 +9,9 @@
       <action dev="chenson42" type="add">
         Added a thick client configuration and administration utility application.
       </action>
+      <action dev="chenson42" type="add">
+        Upgrade to Spring Framework 2.5.1.
+      </action>      
       <action dev="chenson42" type="fix" issue="aid=1914242&amp;atid=997724">
         The oracle dialect should select from user_objects vs. all_objects to determine if the
         package variable has been installed.
