@@ -152,7 +152,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     abstract protected void initForSpecificDialect();
 
-    public void initConfigDb(String tablePrefix) {
+    public void initConfigDb() {
         initForSpecificDialect();
         addPrefixAndCreateTablesIfNecessary(getConfigDdlDatabase());
         createRequiredFunctions();
@@ -612,6 +612,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Database db = new DatabaseIO().read(reader);
         platform.createTables(db, true, true);
     }
+    
+    public boolean doesDatabaseNeedConfigured() {
+        return prefixConfigDatabase(getConfigDdlDatabase());
+    }
 
     protected boolean prefixConfigDatabase(Database targetTables) {
         try {
@@ -675,6 +679,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
             String prefixedName = tablePrefix + key.getForeignTableName().toLowerCase();
             key.setForeignTableName(prefixedName);
+            key.setName(tablePrefix + key.getName());
         }
     }
 
