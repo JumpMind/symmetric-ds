@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,13 +37,14 @@ import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.testng.annotations.Factory;
+import org.testng.Assert;
 
 /**
  * Run this test to run all the tests against all the configured databases.
  */
 public class MultiDatabaseTestFactory {
 
-    static final Log logger = LogFactory.getLog(MultiDatabaseTestFactory.class);
+    private static final Log logger = LogFactory.getLog(MultiDatabaseTestFactory.class);
 
     enum DatabaseRole {
         CLIENT, ROOT
