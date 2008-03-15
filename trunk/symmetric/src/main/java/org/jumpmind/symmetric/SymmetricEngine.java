@@ -76,6 +76,8 @@ public class SymmetricEngine {
 
     private boolean started = false;
     
+    private boolean starting = false;
+    
     private IDbDialect dbDialect;
 
     private Properties properties;
@@ -200,7 +202,8 @@ public class SymmetricEngine {
      * Must be called to start symmetric.
      */
     public synchronized void start() {
-        if (!started) {
+        if (!starting) {
+        	starting = true;
             bootstrapService.init();
             Node node = nodeService.findIdentity();
             if (node != null) {
@@ -311,6 +314,15 @@ public class SymmetricEngine {
 	}
 	
     /**
+     * Check to see if this node is starting.
+     * @return true if the node is starting
+     */
+
+	public boolean isStarting() {
+		return starting;
+	}
+	
+    /**
      * Expose access to the Spring context.  This is for advanced use only.
      * @return
      */
@@ -328,6 +340,7 @@ public class SymmetricEngine {
     public static SymmetricEngine findEngineByName(String name) {
         return registeredEnginesByName.get(name);
     }
+
 
 
 
