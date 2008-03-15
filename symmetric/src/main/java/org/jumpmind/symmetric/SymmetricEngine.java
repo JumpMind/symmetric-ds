@@ -303,6 +303,14 @@ public class SymmetricEngine {
     }
 
     /**
+     * Check to see if this node has been started.
+     * @return true if the node is started
+     */
+	public boolean isStarted() {
+		return started;
+	}
+	
+    /**
      * Expose access to the Spring context.  This is for advanced use only.
      * @return
      */
@@ -320,5 +328,7 @@ public class SymmetricEngine {
     public static SymmetricEngine findEngineByName(String name) {
         return registeredEnginesByName.get(name);
     }
+
+
 
 }
