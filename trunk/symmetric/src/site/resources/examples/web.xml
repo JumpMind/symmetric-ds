@@ -1,127 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE web-app
-      PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-      "http://java.sun.com/dtd/web-app_2_3.dtd">
-<web-app>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
 
-    <display-name>sync</display-name>
+	<display-name>sync</display-name>
 
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <!-- Optionally specify other spring xml files that are loaded in the same context -->
-        <param-value>classpath:additional-spring.xml</param-value>
-    </context-param>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!-- Optionally specify other spring xml files that are loaded in the same context -->
+		<param-value>classpath:additional-spring.xml</param-value>
+	</context-param>
 
-    <servlet>
-        <servlet-name>push</servlet-name>
-        <servlet-class>org.jumpmind.symmetric.web.PushServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+	<filter>
+		<filter-name>NodeConcurrencyFilter</filter-name>
+		<filter-class>
+			org.jumpmind.symmetric.web.NodeConcurrencyFilter
+		</filter-class>
+	</filter>
 
-    <servlet>
-        <servlet-name>pull</servlet-name>
-        <servlet-class>org.jumpmind.symmetric.web.PullServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+	<filter>
+		<filter-name>AuthenticationFilter</filter-name>
+		<filter-class>
+			org.jumpmind.symmetric.web.AuthenticationFilter
+		</filter-class>
+	</filter>
 
-    <servlet>
-        <servlet-name>registration</servlet-name>
-        <servlet-class>org.jumpmind.symmetric.web.RegistrationServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+	<filter>
+		<filter-name>CompressionFilter</filter-name>
+		<filter-class>
+			javawebparts.filter.CompressionFilter
+		</filter-class>
+		<init-param>
+			<param-name>compressType</param-name>
+			<param-value>gzip_only</param-value>
+		</init-param>
+	</filter>
 
-    <servlet>
-        <servlet-name>ack</servlet-name>
-        <servlet-class>org.jumpmind.symmetric.web.AckServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+	<filter-mapping>
+		<filter-name>CompressionFilter</filter-name>
+		<servlet-name>pull</servlet-name>
+	</filter-mapping>
 
-    <filter>
-        <filter-name>NodeConcurrencyFilter</filter-name>
-        <filter-class>org.jumpmind.symmetric.web.NodeConcurrencyFilter</filter-class>
-    </filter>
+	<filter-mapping>
+		<filter-name>CompressionFilter</filter-name>
+		<servlet-name>push</servlet-name>
+	</filter-mapping>
 
-    <filter>
-        <filter-name>AuthenticationFilter</filter-name>
-        <filter-class>org.jumpmind.symmetric.web.AuthenticationFilter</filter-class>
-    </filter>
+	<filter-mapping>
+		<filter-name>CompressionFilter</filter-name>
+		<servlet-name>registration</servlet-name>
+	</filter-mapping>
 
-    <filter>
-        <filter-name>CompressionFilter</filter-name>
-        <filter-class>javawebparts.filter.CompressionFilter</filter-class>
-        <init-param>
-            <param-name>compressType</param-name>
-            <param-value>gzip_only</param-value>
-        </init-param>
-    </filter>
+	<filter-mapping>
+		<filter-name>NodeConcurrencyFilter</filter-name>
+		<servlet-name>push</servlet-name>
+	</filter-mapping>
 
-    <filter-mapping>
-        <filter-name>CompressionFilter</filter-name>
-        <servlet-name>pull</servlet-name>
-    </filter-mapping>
+	<filter-mapping>
+		<filter-name>NodeConcurrencyFilter</filter-name>
+		<servlet-name>pull</servlet-name>
+	</filter-mapping>
 
-    <filter-mapping>
-        <filter-name>CompressionFilter</filter-name>
-        <servlet-name>push</servlet-name>
-    </filter-mapping>
+	<filter-mapping>
+		<filter-name>NodeConcurrencyFilter</filter-name>
+		<servlet-name>ack</servlet-name>
+	</filter-mapping>
 
-    <filter-mapping>
-        <filter-name>CompressionFilter</filter-name>
-        <servlet-name>registration</servlet-name>
-    </filter-mapping>
+	<filter-mapping>
+		<filter-name>AuthenticationFilter</filter-name>
+		<servlet-name>push</servlet-name>
+	</filter-mapping>
 
-    <filter-mapping>
-        <filter-name>NodeConcurrencyFilter</filter-name>
-        <servlet-name>push</servlet-name>
-    </filter-mapping>
+	<filter-mapping>
+		<filter-name>AuthenticationFilter</filter-name>
+		<servlet-name>ack</servlet-name>
+	</filter-mapping>
 
-    <filter-mapping>
-        <filter-name>NodeConcurrencyFilter</filter-name>
-        <servlet-name>pull</servlet-name>
-    </filter-mapping>
+	<filter-mapping>
+		<filter-name>AuthenticationFilter</filter-name>
+		<servlet-name>pull</servlet-name>
+	</filter-mapping>
+	
+	<listener>
+		<listener-class>
+			org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
+		</listener-class>
+	</listener>
+	
+	<servlet>
+		<servlet-name>push</servlet-name>
+		<servlet-class>
+			org.jumpmind.symmetric.web.PushServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-    <filter-mapping>
-        <filter-name>NodeConcurrencyFilter</filter-name>
-        <servlet-name>ack</servlet-name>
-    </filter-mapping>
+	<servlet>
+		<servlet-name>pull</servlet-name>
+		<servlet-class>
+			org.jumpmind.symmetric.web.PullServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-    <filter-mapping>
-        <filter-name>AuthenticationFilter</filter-name>
-        <servlet-name>push</servlet-name>
-    </filter-mapping>
+	<servlet>
+		<servlet-name>registration</servlet-name>
+		<servlet-class>
+			org.jumpmind.symmetric.web.RegistrationServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-    <filter-mapping>
-        <filter-name>AuthenticationFilter</filter-name>
-        <servlet-name>ack</servlet-name>
-    </filter-mapping>
+	<servlet>
+		<servlet-name>ack</servlet-name>
+		<servlet-class>
+			org.jumpmind.symmetric.web.AckServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-    <filter-mapping>
-        <filter-name>AuthenticationFilter</filter-name>
-        <servlet-name>pull</servlet-name>
-    </filter-mapping>
+	<servlet-mapping>
+		<servlet-name>push</servlet-name>
+		<url-pattern>/push/*</url-pattern>
+	</servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>push</servlet-name>
-        <url-pattern>/push/*</url-pattern>
-    </servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>ack</servlet-name>
+		<url-pattern>/ack/*</url-pattern>
+	</servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>ack</servlet-name>
-        <url-pattern>/ack/*</url-pattern>
-    </servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>pull</servlet-name>
+		<url-pattern>/pull/*</url-pattern>
+	</servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>pull</servlet-name>
-        <url-pattern>/pull/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>registration</servlet-name>
-        <url-pattern>/registration/*</url-pattern>
-    </servlet-mapping>
-
-    <listener>
-        <listener-class>org.jumpmind.symmetric.SymmetricEngineContextLoaderListener</listener-class>
-    </listener>
+	<servlet-mapping>
+		<servlet-name>registration</servlet-name>
+		<url-pattern>/registration/*</url-pattern>
+	</servlet-mapping>
 
 </web-app>
