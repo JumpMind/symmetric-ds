@@ -487,6 +487,21 @@
 			<artifactId>spring-web</artifactId>
 			<version>${springframework-release-version}</version>
 		</dependency>	
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${springframework-release-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${springframework-release-version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${springframework-release-version}</version>
+		</dependency>			
 		<!-- DDLUtils -->
 		<dependency>
 			<groupId>org.apache.ddlutils</groupId>
