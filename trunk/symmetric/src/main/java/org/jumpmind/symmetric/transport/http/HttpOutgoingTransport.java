@@ -35,21 +35,20 @@ import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
-import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
-    URL url;
+	private URL url;
 
-    BufferedWriter writer;
+	private BufferedWriter writer;
 
-    BufferedReader reader;
+	private BufferedReader reader;
 
-    HttpURLConnection connection;
+	private HttpURLConnection connection;
     
-    int httpTimeout;
+	private int httpTimeout;
     
-    boolean useCompression;
+	private boolean useCompression;
 
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression) {
         this.url = url;
@@ -104,7 +103,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public BufferedReader readResponse() throws IOException {
         closeWriter();
-        if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
+        if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == connection.getResponseCode()) {
             throw new ConnectionRejectedException();   
         } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
             throw new AuthenticationException();

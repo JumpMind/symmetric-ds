@@ -59,7 +59,7 @@ public class PushServlet extends AbstractServlet {
             logger
                     .error("Error while processing pushed data for " + nodeId,
                             ex);
-            resp.sendError(501);
+            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
         }
 
         if (logger.isDebugEnabled()) {
