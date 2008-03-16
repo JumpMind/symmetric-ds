@@ -33,6 +33,6 @@ do
    CLASSPATH=${CLASSPATH}${SEP}${jar}
 done
 
-echo $CLASSPATH
+#echo $CLASSPATH
 
 exec "$RUNJAVA" -Dlog4j.configuration=file:log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"
