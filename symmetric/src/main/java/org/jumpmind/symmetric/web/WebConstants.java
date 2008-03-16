@@ -28,8 +28,6 @@ public class WebConstants {
 
     public static final int REGISTRATION_REQUIRED = 657;
     
-    public static final int CONNECTION_REJECTED = 503;
-
     public static final String ACK_BATCH_NAME = "batch-";
     
     public static final String ACK_BATCH_OK = "ok";

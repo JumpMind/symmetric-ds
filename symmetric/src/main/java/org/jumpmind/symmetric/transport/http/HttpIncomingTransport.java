@@ -57,7 +57,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new RegistrationNotOpenException();
         } else if (WebConstants.REGISTRATION_REQUIRED == connection.getResponseCode()) {
             throw new RegistrationRequiredException();
-        } else if (WebConstants.CONNECTION_REJECTED == connection.getResponseCode()) {
+        } else if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == connection.getResponseCode()) {
                 throw new ConnectionRejectedException();
         } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
             throw new AuthenticationException();                            

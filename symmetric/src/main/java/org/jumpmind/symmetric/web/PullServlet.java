@@ -82,7 +82,7 @@ public class PullServlet extends AbstractServlet {
             logger.warn("Socket error while procesing pull data for " + nodeId + ". " + ex.getMessage());            
         } catch (Exception ex) {
             logger.error("Error while pulling data for " + nodeId, ex);
-            resp.sendError(501);
+            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
         }
     }
 

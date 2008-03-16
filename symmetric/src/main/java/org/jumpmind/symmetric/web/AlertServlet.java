@@ -31,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -59,7 +60,7 @@ public class AlertServlet extends AbstractServlet {
     
     private static final int MAX_ERRORS = 1000;
     
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final FastDateFormat formatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -107,7 +108,6 @@ public class AlertServlet extends AbstractServlet {
     }
 
     private String formatDate(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT);
         return formatter.format(date);
     }
     
