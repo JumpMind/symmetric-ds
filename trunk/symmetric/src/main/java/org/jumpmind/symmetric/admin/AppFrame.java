@@ -31,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
 public class AppFrame extends JFrame implements IAppController {
@@ -39,11 +38,11 @@ public class AppFrame extends JFrame implements IAppController {
     static final org.apache.commons.logging.Log logger = org.apache.commons.logging.LogFactory.getLog(AppFrame.class);
 
     private static final long serialVersionUID = 8642706738637297303L;
-    
+
     private CardLayout screenStack;
-    
+
     private JPanel stackPanel;
-    
+
     private Map<ScreenName, AbstractScreen> screens = new HashMap<ScreenName, AbstractScreen>();
 
     public AppFrame() throws Exception {
@@ -59,13 +58,13 @@ public class AppFrame extends JFrame implements IAppController {
         InfoScreen infoScreen = new InfoScreen();
         addScreenToPanel(new BlankScreen());
         addScreenToPanel(new ChannelEditScreen());
-        addScreenToPanel(infoScreen);        
+        addScreenToPanel(infoScreen);
         JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, stackPanel);
         splitPanel.setOneTouchExpandable(true);
         splitPanel.setDividerLocation(200);
         this.getContentPane().add(splitPanel);
     }
-    
+
     private void addScreenToPanel(AbstractScreen screen) {
         stackPanel.add(screen, screen.getScreenName().name());
         screens.put(screen.getScreenName(), screen);
@@ -74,7 +73,7 @@ public class AppFrame extends JFrame implements IAppController {
     public void showError(String message, Exception ex) {
         JTextArea m = new JTextArea(10, 50);
         m.setLineWrap(true);
-        m.setText(message);        
+        m.setText(message);
         JOptionPane.showMessageDialog(this, new JScrollPane(m), "", JOptionPane.ERROR_MESSAGE);
         logger.error(message, ex);
     }

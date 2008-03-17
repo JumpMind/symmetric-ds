@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.admin;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
@@ -47,11 +46,11 @@ public class SymmetricDatabase implements Serializable {
     private String password;
 
     private String driverName;
-    
+
     private String tablePrefix = "sym";
-    
+
     private transient SymmetricEngine engine;
-    
+
     private transient IAppController controller;
 
     public SymmetricDatabase() {
@@ -69,33 +68,35 @@ public class SymmetricDatabase implements Serializable {
     public boolean connect(IAppController c) {
         this.controller = c;
         try {
-        synchronized (SymmetricDatabase.class) {
-            System.setProperty(PropertiesConstants.DBPOOL_URL, jdbcUrl);
-            System.setProperty(PropertiesConstants.DBPOOL_DRIVER, driverName);
-            System.setProperty(PropertiesConstants.DBPOOL_USER, username == null ? "" : username);
-            System.setProperty(PropertiesConstants.DBPOOL_URL, password == null ? "" : password);
-            System.setProperty(PropertiesConstants.DBPOOL_INITIAL_SIZE, "1");
-            System.setProperty(PropertiesConstants.RUNTIME_CONFIG_TABLE_PREFIX, tablePrefix);
-            System.setProperty(PropertiesConstants.START_HEARTBEAT_JOB, Boolean.toString(false));
-            System.setProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB, Boolean.toString(false));
-            System.setProperty(PropertiesConstants.START_PUSH_JOB, Boolean.toString(false));
-            System.setProperty(PropertiesConstants.START_PURGE_JOB, Boolean.toString(false));
-            System.setProperty(PropertiesConstants.START_PULL_JOB, Boolean.toString(false));
-            engine = new SymmetricEngine(new ActivityListenerSupport() {
-                @Override
-                public boolean createConfigurationTables(IDbDialect dbDialect) {
-                    if (dbDialect.doesDatabaseNeedConfigured()) {
-                        if (
-                        JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(controller.getFrame(), "Configuration tables need to be created.  Is it OK to proceed?", "Create Tables?", JOptionPane.YES_NO_OPTION)) {
-                            throw new RuntimeException("SymmetricDS is not configured.  Please configure the database before connecting.");
+            synchronized (SymmetricDatabase.class) {
+                System.setProperty(PropertiesConstants.DBPOOL_URL, jdbcUrl);
+                System.setProperty(PropertiesConstants.DBPOOL_DRIVER, driverName);
+                System.setProperty(PropertiesConstants.DBPOOL_USER, username == null ? "" : username);
+                System.setProperty(PropertiesConstants.DBPOOL_PASSWORD, password == null ? "" : password);
+                System.setProperty(PropertiesConstants.DBPOOL_INITIAL_SIZE, "1");
+                System.setProperty(PropertiesConstants.RUNTIME_CONFIG_TABLE_PREFIX, tablePrefix);
+                System.setProperty(PropertiesConstants.START_HEARTBEAT_JOB, Boolean.toString(false));
+                System.setProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB, Boolean.toString(false));
+                System.setProperty(PropertiesConstants.START_PUSH_JOB, Boolean.toString(false));
+                System.setProperty(PropertiesConstants.START_PURGE_JOB, Boolean.toString(false));
+                System.setProperty(PropertiesConstants.START_PULL_JOB, Boolean.toString(false));
+                engine = new SymmetricEngine(new ActivityListenerSupport() {
+                    @Override
+                    public boolean createConfigurationTables(IDbDialect dbDialect) {
+                        if (dbDialect.doesDatabaseNeedConfigured()) {
+                            if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(controller.getFrame(),
+                                    "Configuration tables need to be created.  Is it OK to proceed?", "Create Tables?",
+                                    JOptionPane.YES_NO_OPTION)) {
+                                throw new RuntimeException(
+                                        "SymmetricDS is not configured.  Please configure the database before connecting.");
+                            }
                         }
+                        return true;
                     }
-                    return true;
-                }
-            });
-            engine.start();
-            return true;
-        }
+                });
+                engine.start();
+                return true;
+            }
         } catch (Exception ex) {
             engine = null;
             controller.showError(ex.getMessage(), ex);
