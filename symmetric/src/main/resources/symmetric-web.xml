@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<bean id="authenticationFilter"
+		class="org.jumpmind.symmetric.web.AuthenticationFilter">
+		<property name="regexPattern" value="^/(ack|pull|push)(/*)|$" />
+	</bean>
+
+	<bean id="nodeConcurrencyFilter"
+		class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
+		<property name="regexPattern" value="^/(ack|pull|push)(/*)|$" />
+	</bean>
+
+	<bean id="compressionFilter"
+		class="org.jumpmind.symmetric.web.CompressionFilter">
+		<property name="regexPattern" value="^/(registration|pull|push)(/*)|$" />
+		<property name="disabled" value="true" />
+		<property name="compressType" value="gzip_only" />
+	</bean>
+	
+	<bean id="throttleFilter"
+		class="org.jumpmind.symmetric.web.ThrottleFilter">
+		<property name="regexPattern" value="^/(pull|push)(/*)|$" />
+		<property name="disabled" value="true" />
+	</bean>
+</beans>

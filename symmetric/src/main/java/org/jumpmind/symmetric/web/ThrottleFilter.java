@@ -3,14 +3,13 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 
 /*
@@ -66,16 +65,16 @@ import org.apache.log4j.Logger;
  * 
  */
 
-public class ThrottleFilter implements Filter
+public class ThrottleFilter extends AbstractFilter
 {
 
     private static Logger logger = Logger.getLogger(ThrottleFilter.class);
 
     private long maxBps;
 
-    private long threshold = DEFFAULT_THRESHOLD;
+    private long threshold;
 
-    private long checkPoint = DEFAULT_CHECK_POINT;
+    private long checkPoint;
 
     // default threshold before throttling in number of bytes
     private static final long DEFFAULT_THRESHOLD = 8192L;
@@ -83,20 +82,13 @@ public class ThrottleFilter implements Filter
     // default frequency to recalculation rate in number of bytes
     private static final long DEFAULT_CHECK_POINT = 1024L;
 
-    protected FilterConfig config;
-
-    public void destroy()
-    {
-
-    }
-
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
     throws IOException, ServletException
     {
         ThrottledResponseWrapper wrapper = new ThrottledResponseWrapper((HttpServletResponse) response);
-        wrapper.setCheckPoint(checkPoint);
+        wrapper.setCheckPoint((Long)ObjectUtils.defaultIfNull(checkPoint, DEFAULT_CHECK_POINT));
         wrapper.setMaxBps(maxBps);
-        wrapper.setThreshold(threshold);
+        wrapper.setThreshold((Long)ObjectUtils.defaultIfNull(threshold, DEFFAULT_THRESHOLD));
         if (logger.isDebugEnabled())
         {
             logger.debug("Before hit servlet");
@@ -109,38 +101,16 @@ public class ThrottleFilter implements Filter
         }
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException
-    {
-        this.config = filterConfig;
-        String maxBpsStr = filterConfig.getInitParameter("maxBps");
-        String thresholdStr = filterConfig.getInitParameter("threshold");
-        String checkPointStr = filterConfig.getInitParameter("checkPoint");
+	public void setMaxBps(Long maxBps) {
+		this.maxBps = maxBps;
+	}
 
-        try
-        {
-            if (maxBpsStr != null)
-            {
-                maxBps = Long.parseLong(maxBpsStr);
-            }
-            else
-            {
-                new ServletException("Invalid configuration value for maxBps: " + maxBps);
-            }
+	public void setThreshold(Long threshold) {
+		this.threshold = threshold;
+	}
 
-            if (thresholdStr != null)
-            {
-                threshold = Long.parseLong(thresholdStr);
-            }
-
-            if (checkPointStr != null)
-            {
-                checkPoint = Long.parseLong(checkPointStr);
-            }
-        }
-        catch (NumberFormatException e)
-        {
-            throw new ServletException("Invalid configuration value", e);
-        }
-    }
+	public void setCheckPoint(Long checkPoint) {
+		this.checkPoint = checkPoint;
+	}
 
 }

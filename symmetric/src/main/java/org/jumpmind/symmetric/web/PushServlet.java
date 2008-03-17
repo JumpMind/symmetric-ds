@@ -39,7 +39,7 @@ public class PushServlet extends AbstractServlet {
     private static final Log logger = LogFactory.getLog(PushServlet.class);
 
     @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+    protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
         String nodeId = req.getParameter(WebConstants.NODE_ID);
@@ -54,12 +54,12 @@ public class PushServlet extends AbstractServlet {
             getDataLoaderService().loadData(is, out);
             out.flush();
         } catch (SocketException ex) {
-            logger.warn("Socket error while procesing pushed data for " + nodeId + ". " + ex.getMessage());
+            logger.warn("Socket error while processing pushed data for " + nodeId + ". " + ex.getMessage());
         } catch (Exception ex) {
             logger
                     .error("Error while processing pushed data for " + nodeId,
                             ex);
-            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
+            sendError(resp, HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
         }
 
         if (logger.isDebugEnabled()) {

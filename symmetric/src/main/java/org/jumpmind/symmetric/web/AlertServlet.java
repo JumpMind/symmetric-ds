@@ -22,7 +22,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,7 +62,7 @@ public class AlertServlet extends AbstractServlet {
     private static final FastDateFormat formatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         SyndFeed feed = new SyndFeedImpl();
         feed.setFeedType("rss_2.0");
         feed.setTitle("SymmetricDS Alerts");
@@ -94,6 +93,7 @@ public class AlertServlet extends AbstractServlet {
             out.output(feed, resp.getWriter());
         } catch (FeedException e) {
             logger.error("Unable to generate RSS alert feed", e);
+            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to generate RSS alert feed");
         }
     }
     

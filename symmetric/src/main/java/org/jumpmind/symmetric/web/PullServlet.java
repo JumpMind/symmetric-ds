@@ -33,7 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 
@@ -44,22 +43,22 @@ public class PullServlet extends AbstractServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doPost(req, resp);
+    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        handlePost(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
 
         String nodeId = req.getParameter(WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Pull request received from " + nodeId);
+            logger.debug(String.format("Pull request received from %s", nodeId));
         }
 
         if (StringUtils.isBlank(nodeId)) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
             return;
         }
 
@@ -67,26 +66,36 @@ public class PullServlet extends AbstractServlet {
         INodeService nodeService = getNodeService();
         try {
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-            if (nodeSecurity.isRegistrationEnabled()) {
-                IRegistrationService registrationService = getRegistrationService();
-                registrationService.registerNode(nodeService.findNode(nodeId), resp.getOutputStream());
+            if (nodeSecurity != null) {
+	            if (nodeSecurity.isRegistrationEnabled()) {
+	                getRegistrationService().registerNode(nodeService.findNode(nodeId), resp.getOutputStream());
+	            } else {
+	                if (nodeSecurity.isInitialLoadEnabled()) {
+	                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
+	                }
+	                IOutgoingTransport out = createOutgoingTransport(resp);
+	                getDataExtractorService().extract(getNodeService().findNode(nodeId), out);
+	                out.close();
+	            }
             } else {
-                if (nodeSecurity.isInitialLoadEnabled()) {
-                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
-                }
-                IOutgoingTransport out = createOutgoingTransport(resp);
-                getDataExtractorService().extract(getNodeService().findNode(nodeId), out);
-                out.close();
+            	if (logger.isWarnEnabled()) {
+            		logger.warn(String.format("Node %s does not exist.", nodeId));
+            	}
             }
+            
         } catch (SocketException ex) {
-            logger.warn("Socket error while procesing pull data for " + nodeId + ". " + ex.getMessage());            
+        	if (logger.isWarnEnabled()) {
+        		logger.warn(String.format("Socket error while procesing pull data for %s.", nodeId), ex);
+        	}
         } catch (Exception ex) {
-            logger.error("Error while pulling data for " + nodeId, ex);
-            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
+        	if (logger.isErrorEnabled()) {
+        		logger.error(String.format("Error while pulling data for %s", nodeId), ex);
+        	}
+            sendError(resp, HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
         }
     }
 
-    @Override
+	@Override
     protected Log getLogger() {
         return logger;
     }

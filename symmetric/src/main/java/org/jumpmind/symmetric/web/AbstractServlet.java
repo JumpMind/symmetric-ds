@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,73 +48,286 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
-    protected abstract Log getLogger();
+	protected abstract Log getLogger();
 
-    protected IOutgoingTransport createOutgoingTransport(HttpServletResponse resp) throws IOException {
-        return new InternalOutgoingTransport(resp.getOutputStream());
-    }
+	protected IOutgoingTransport createOutgoingTransport(
+			HttpServletResponse resp) throws IOException {
+		return new InternalOutgoingTransport(resp.getOutputStream());
+	}
 
-    protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {
-        return resp.getOutputStream();
-    }
+	protected OutputStream createOutputStream(HttpServletResponse resp)
+			throws IOException {
+		return resp.getOutputStream();
+	}
 
-    protected InputStream createInputStream(HttpServletRequest req) throws IOException {
-        InputStream is = null;
-        String contentType = req.getHeader("Content-Type");
-        boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
-        
-        if (getLogger().isDebugEnabled()) {
-            StringBuilder b = new StringBuilder();
-            BufferedReader reader = null;
-            if (useCompression) {
-                getLogger().debug("Received compressed stream");
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(req.getInputStream())));
-            } else {
-                reader = req.getReader();
-            }
-            String line = null;
-            do {
-                line = reader.readLine();
-                if (line != null) {
-                    b.append(line);
-                    b.append("\n");
-                }
-            } while (line != null);
+	protected InputStream createInputStream(HttpServletRequest req)
+			throws IOException {
+		InputStream is = null;
+		String contentType = req.getHeader("Content-Type");
+		boolean useCompression = contentType != null
+				&& contentType.equalsIgnoreCase("gzip");
 
-            getLogger().debug("Received: \n" + b);
-            is = new ByteArrayInputStream(b.toString().getBytes());
-        } else {
-            is = req.getInputStream();
-            if (useCompression) {
-                is = new GZIPInputStream(is);
-            }
-        }
+		if (getLogger().isDebugEnabled()) {
+			StringBuilder b = new StringBuilder();
+			BufferedReader reader = null;
+			if (useCompression) {
+				getLogger().debug("Received compressed stream");
+				reader = new BufferedReader(new InputStreamReader(
+						new GZIPInputStream(req.getInputStream())));
+			} else {
+				reader = req.getReader();
+			}
+			String line = null;
+			do {
+				line = reader.readLine();
+				if (line != null) {
+					b.append(line);
+					b.append("\n");
+				}
+			} while (line != null);
 
-        return is;
-    }
+			getLogger().debug("Received: \n" + b);
+			is = new ByteArrayInputStream(b.toString().getBytes());
+		} else {
+			is = req.getInputStream();
+			if (useCompression) {
+				is = new GZIPInputStream(is);
+			}
+		}
 
-    protected ApplicationContext getContext() {
-        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-    }
+		return is;
+	}
 
-    protected IDataLoaderService getDataLoaderService() {
-        return (IDataLoaderService) getContext().getBean(Constants.DATALOADER_SERVICE);
-    }
+	protected ApplicationContext getContext() {
+		return WebApplicationContextUtils
+				.getWebApplicationContext(getServletContext());
+	}
 
-    protected IDataService getDataService() {
-        return (IDataService) getContext().getBean(Constants.DATA_SERVICE);
-    }
+	protected IDataLoaderService getDataLoaderService() {
+		return (IDataLoaderService) getContext().getBean(
+				Constants.DATALOADER_SERVICE);
+	}
 
-    protected INodeService getNodeService() {
-        return (INodeService) getContext().getBean(Constants.NODE_SERVICE);
-    }
+	protected IDataService getDataService() {
+		return (IDataService) getContext().getBean(Constants.DATA_SERVICE);
+	}
 
-    protected IRegistrationService getRegistrationService() {
-        return (IRegistrationService) getContext().getBean(Constants.REGISTRATION_SERVICE);
-    }
+	protected INodeService getNodeService() {
+		return (INodeService) getContext().getBean(Constants.NODE_SERVICE);
+	}
 
-    protected IDataExtractorService getDataExtractorService() {
-        return (IDataExtractorService) getContext().getBean(Constants.DATAEXTRACTOR_SERVICE);
-    }
+	protected IRegistrationService getRegistrationService() {
+		return (IRegistrationService) getContext().getBean(
+				Constants.REGISTRATION_SERVICE);
+	}
 
+	protected IDataExtractorService getDataExtractorService() {
+		return (IDataExtractorService) getContext().getBean(
+				Constants.DATAEXTRACTOR_SERVICE);
+	}
+
+	@Override
+	protected final void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handleGet(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on GET method", e);
+			}
+			if (!resp.isCommitted()) {
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a GET should be idempotent and
+	 * safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected final void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handlePost(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on POST method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. See
+	 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected final void doPut(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handlePut(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on PUT method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a PUT should be idempotent.
+	 * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected final void doDelete(HttpServletRequest req,
+			HttpServletResponse resp) throws ServletException, IOException {
+		try {
+			handleDelete(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on DELETE method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a DELETE should be idempotent.
+	 * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 */
+	protected void handleDelete(HttpServletRequest req, HttpServletResponse resp) {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handleHead(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on HEAD method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a HEAD should be idempotent
+	 * and safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 */
+	protected void handleHead(HttpServletRequest req, HttpServletResponse resp) {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handleOptions(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on OPTIONS method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a OPTIONS should be idempotent
+	 * and safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 */
+	protected void handleOptions(HttpServletRequest req,
+			HttpServletResponse resp) {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	@Override
+	protected void doTrace(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		try {
+			handleTrace(req, resp);
+		} catch (Exception e) {
+			if (getLogger().isWarnEnabled()) {
+				getLogger().warn("uncaught exception on TRACE method", e);
+			}
+			sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Override me to do real work. Remember that a TRACE should be idempotent.
+	 * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
+	 * 
+	 * @param req
+	 * @param resp
+	 */
+	protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) {
+		resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+	}
+
+	/**
+	 * Because you can't send an error when the response is already committed, this
+	 * helps to avoid unnecessary errors in the logs. 
+	 * @param resp
+	 * @param statusCode
+	 * @throws IOException
+	 */
+	protected void sendError(HttpServletResponse resp, int statusCode) throws IOException {
+		sendError(resp, statusCode, null);
+	}
+	
+	/**
+	 * Because you can't send an error when the response is already committed, this
+	 * helps to avoid unnecessary errors in the logs. 
+	 * @param resp
+	 * @param statusCode
+	 * @param message a message to put in the body of the response
+	 * @throws IOException
+	 */
+	protected void sendError(HttpServletResponse resp, int statusCode, String message) throws IOException {
+		if (!resp.isCommitted()) {
+			resp.sendError(statusCode, message);
+		}
+	}
 }
