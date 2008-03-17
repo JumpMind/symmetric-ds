@@ -26,8 +26,12 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
 public class AppFrame extends JFrame implements IAppController {
@@ -68,6 +72,10 @@ public class AppFrame extends JFrame implements IAppController {
     }
 
     public void showError(String message, Exception ex) {
+        JTextArea m = new JTextArea(10, 50);
+        m.setLineWrap(true);
+        m.setText(message);        
+        JOptionPane.showMessageDialog(this, new JScrollPane(m), "", JOptionPane.ERROR_MESSAGE);
         logger.error(message, ex);
     }
 

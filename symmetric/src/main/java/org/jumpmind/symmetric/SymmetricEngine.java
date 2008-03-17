@@ -99,7 +99,7 @@ public class SymmetricEngine {
                     overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
             System.setProperty("symmetric.override.properties.file.2",
                     overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
-            this.init(createContext());
+            this.init(createContext(), null);
         }
     }
 
@@ -107,22 +107,26 @@ public class SymmetricEngine {
      * Create a symmetric node
      */
     public SymmetricEngine() {
-        init(createContext());
+        init(createContext(), null);
     }
+    
+    public SymmetricEngine(IActivityListener activityListener) {
+        init(createContext(), activityListener);
+    }    
 
     /**
      * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
      * @param ctx A Spring framework context
      */
     protected SymmetricEngine(ApplicationContext ctx) {
-        init(ctx);
+        init(ctx, null);
     }
 
     private ApplicationContext createContext() {
         return new ClassPathXmlApplicationContext("classpath:/symmetric.xml");
     }
 
-    private void init(ApplicationContext applicationContext) {
+    private void init(ApplicationContext applicationContext, IActivityListener activityListener) {
         this.applicationContext = applicationContext;
         properties = (Properties) applicationContext
                 .getBean(Constants.PROPERTIES);
@@ -137,9 +141,16 @@ public class SymmetricEngine {
         purgeService = (IPurgeService) applicationContext
                 .getBean(Constants.PURGE_SERVICE);               
         dataService = (IDataService)applicationContext.getBean(Constants.DATA_SERVICE);
-        dbDialect = (IDbDialect)applicationContext.getBean(Constants.DB_DIALECT);
+        dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
+        registerActivityListener(activityListener);
         registerEngine();
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.version() + " database="+dbDialect.getName());
+    }
+    
+    private void registerActivityListener(IActivityListener listener) {
+        if (listener != null) {
+            bootstrapService.setActivityListener(listener);
+        }
     }
 
     /**

@@ -57,8 +57,14 @@ public interface IDbDialect {
      * an opportunity to do any post loading work for the given table. 
      */
     public void cleanupAfterDataLoad(Table table);
+    
+    /**
+     * Check to see if  the database is configured for symmetric already, or if it needs configured.
+     * @return true if configuration tables need to be created.
+     */
+    public boolean doesDatabaseNeedConfigured();
 
-    public void initConfigDb(String tablePrefix);
+    public void initConfigDb();
 
     public Platform getPlatform();
     

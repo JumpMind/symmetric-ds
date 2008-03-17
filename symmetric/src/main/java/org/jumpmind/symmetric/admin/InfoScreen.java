@@ -36,6 +36,8 @@ public class InfoScreen extends AbstractScreen {
 
     private JLabel databaseName;
     
+    private JLabel tablePrefix;
+    
     private JLabel userName;
     
     private JLabel driverName;
@@ -50,7 +52,7 @@ public class InfoScreen extends AbstractScreen {
         databaseInfoPanel.setMinimumSize(new Dimension(500, 100));
         databaseInfoPanel.setBorder(new TitledBorder("Server Info"));
 
-        double size[][] = { { 5, 100, TableLayout.FILL }, { 5, 20, 20, 20, 20, 5 } };
+        double size[][] = { { 5, 100, TableLayout.FILL }, { 5, 20, 20, 20, 20, 20, 5 } };
 
         TableLayout layout = new TableLayout(size);
         databaseInfoPanel.setLayout(layout);
@@ -62,21 +64,26 @@ public class InfoScreen extends AbstractScreen {
         databaseName = new JLabel();
         databaseName.setEnabled(false);
         databaseInfoPanel.add(databaseName, "2,1");
+        
+        databaseInfoPanel.add(new JLabel("Table Prefix: "), "1,2");
+        tablePrefix = new JLabel();
+        tablePrefix.setEnabled(false);
+        databaseInfoPanel.add(tablePrefix, "2,2");
 
-        databaseInfoPanel.add(new JLabel("Jdbc Url: "), "1,2");
+        databaseInfoPanel.add(new JLabel("Jdbc Url: "), "1,3");
         jdbcUrl = new JLabel();
         jdbcUrl.setEnabled(false);
-        databaseInfoPanel.add(jdbcUrl, "2,2");
+        databaseInfoPanel.add(jdbcUrl, "2,3");
         
-        databaseInfoPanel.add(new JLabel("Driver Name: "), "1,3");
+        databaseInfoPanel.add(new JLabel("Driver Name: "), "1,4");
         driverName = new JLabel();
         driverName.setEnabled(false);
-        databaseInfoPanel.add(driverName, "2,3");
+        databaseInfoPanel.add(driverName, "2,4");
         
-        databaseInfoPanel.add(new JLabel("User Name: "), "1,4");
+        databaseInfoPanel.add(new JLabel("User Name: "), "1,5");
         userName = new JLabel();
         userName.setEnabled(false);
-        databaseInfoPanel.add(userName, "2,4");
+        databaseInfoPanel.add(userName, "2,5");
 
         JPanel bottomStrut = new JPanel();
         bottomStrut.setPreferredSize(new Dimension(100, 500));
@@ -89,6 +96,7 @@ public class InfoScreen extends AbstractScreen {
         driverName.setText(c.getDriverName());
         databaseName.setText(c.getName());
         userName.setText(c.getUserName());
+        tablePrefix.setText(c.getTablePrefix());
         this.repaint();
     }
 

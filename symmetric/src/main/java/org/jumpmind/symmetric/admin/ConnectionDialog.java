@@ -39,6 +39,8 @@ import javax.swing.MutableComboBoxModel;
 
 public class ConnectionDialog extends JPanel {
 
+    private static final String DEFAULT_TABLE_PREFIX = "sym";
+
     private static final String MY_SYMMETRIC = "My Symmetric";
 
     private static final long serialVersionUID = -4325767568474807143L;
@@ -54,6 +56,10 @@ public class ConnectionDialog extends JPanel {
     JLabel passwordLabel;
 
     JTextField passwordField;
+    
+    JLabel tablePrefixLabel;
+    
+    JTextField tablePrefixField;
 
     JLabel urlLabel;
 
@@ -80,6 +86,9 @@ public class ConnectionDialog extends JPanel {
 
         nameLabel = new JLabel("Connection name: ", JLabel.RIGHT);
         nameField = new JTextField(MY_SYMMETRIC);
+        
+        tablePrefixLabel = new JLabel("SymmmetricDS table prefix:", JLabel.RIGHT);
+        tablePrefixField = new JTextField(DEFAULT_TABLE_PREFIX);
 
         userNameLabel = new JLabel("User name: ", JLabel.RIGHT);
         userNameField = new JTextField("");
@@ -106,6 +115,7 @@ public class ConnectionDialog extends JPanel {
         JPanel namePanel = new JPanel(false);
         namePanel.setLayout(new GridLayout(0, 1));
         namePanel.add(nameLabel);
+        namePanel.add(tablePrefixLabel);
         namePanel.add(driverLabel);
         namePanel.add(urlLabel);
         namePanel.add(userNameLabel);
@@ -114,6 +124,7 @@ public class ConnectionDialog extends JPanel {
         JPanel fieldPanel = new JPanel(false);
         fieldPanel.setLayout(new GridLayout(0, 1));
         fieldPanel.add(nameField);
+        fieldPanel.add(tablePrefixField);
         fieldPanel.add(driverField);
         fieldPanel.add(urlField);
         fieldPanel.add(userNameField);
@@ -133,6 +144,7 @@ public class ConnectionDialog extends JPanel {
         }
         driverField.setSelectedIndex(0);
         nameField.setText(MY_SYMMETRIC);
+        tablePrefixField.setText(DEFAULT_TABLE_PREFIX);
     }
 
     public SymmetricDatabase activateConnectionDialog(Component parent, SymmetricDatabase db) {
