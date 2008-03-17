@@ -619,13 +619,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected boolean prefixConfigDatabase(Database targetTables) {
         try {
-            String tblPrefix = this.tablePrefix.toLowerCase() + "_";
+            String tblPrefix = this.tablePrefix + "_";
 
             Table[] tables = targetTables.getTables();
 
             boolean createTables = false;
             for (Table table : tables) {
-                table.setName(tblPrefix + table.getName().toLowerCase());
+                table.setName(tblPrefix + table.getName());
                 fixForeignKeys(table, tblPrefix, false);
 
                 if (getMetaDataFor(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
@@ -677,7 +677,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 key = (ForeignKey) key.clone();
                 table.addForeignKey(key);
             }
-            String prefixedName = tablePrefix + key.getForeignTableName().toLowerCase();
+            String prefixedName = tablePrefix + key.getForeignTableName();
             key.setForeignTableName(prefixedName);
             key.setName(tablePrefix + key.getName());
         }
