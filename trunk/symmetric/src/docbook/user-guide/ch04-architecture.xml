@@ -94,73 +94,15 @@
 	</context-param>
 
 	<filter>
-		<filter-name>NodeConcurrencyFilter</filter-name>
+		<filter-name>SymmetricFilter</filter-name>
 		<filter-class>
-			org.jumpmind.symmetric.web.NodeConcurrencyFilter
+			org.jumpmind.symmetric.web.Symmetric
 		</filter-class>
 	</filter>
 
-	<filter>
-		<filter-name>AuthenticationFilter</filter-name>
-		<filter-class>
-			org.jumpmind.symmetric.web.AuthenticationFilter
-		</filter-class>
-	</filter>
-
-	<filter>
-		<filter-name>CompressionFilter</filter-name>
-		<filter-class>
-			javawebparts.filter.CompressionFilter
-		</filter-class>
-		<init-param>
-			<param-name>compressType</param-name>
-			<param-value>gzip_only</param-value>
-		</init-param>
-	</filter>
-
 	<filter-mapping>
-		<filter-name>CompressionFilter</filter-name>
-		<servlet-name>pull</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CompressionFilter</filter-name>
-		<servlet-name>push</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CompressionFilter</filter-name>
-		<servlet-name>registration</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>NodeConcurrencyFilter</filter-name>
-		<servlet-name>push</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>NodeConcurrencyFilter</filter-name>
-		<servlet-name>pull</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>NodeConcurrencyFilter</filter-name>
-		<servlet-name>ack</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<servlet-name>push</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<servlet-name>ack</servlet-name>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>AuthenticationFilter</filter-name>
-		<servlet-name>pull</servlet-name>
+		<filter-name>SymmetricFilter</filter-name>
+		<servlet-name>/*</servlet-name>
 	</filter-mapping>
 	
 	<listener>

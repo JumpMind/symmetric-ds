@@ -24,10 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -37,17 +34,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.Constants;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
-public class NodeConcurrencyFilter implements Filter {
+public class NodeConcurrencyFilter extends AbstractFilter {
 
     private static final int TOO_BUSY_LOG_STATEMENTS_PER_MIN = 10;
 
     final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
-
-    private ServletContext context;
 
     protected int maxNumberOfConcurrentWorkers = 20;
 
@@ -56,9 +48,6 @@ public class NodeConcurrencyFilter implements Filter {
     private static int tooBusyCount;
 
     private static long lastTooBusyLogTime = System.currentTimeMillis();
-
-    public void destroy() {
-    }
 
     static Map<String, Integer> numberOfWorkersByServlet = new HashMap<String, Integer>();
 
@@ -70,7 +59,7 @@ public class NodeConcurrencyFilter implements Filter {
                 chain.doFilter(req, resp);
             }
         })) {
-            ((HttpServletResponse) resp).sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
 
     }
@@ -121,14 +110,12 @@ public class NodeConcurrencyFilter implements Filter {
         numberOfWorkersByServlet.put(servletPath, getNumberOfWorkers(servletPath) + delta);
     }
 
-    public void init(FilterConfig config) throws ServletException {
-        context = config.getServletContext();
-        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
-        maxNumberOfConcurrentWorkers = (Integer) ctx.getBean(Constants.MAX_CONCURRENT_WORKERS);
-    }
-
     interface IWorker {
         public void work() throws ServletException, IOException;
     }
+
+	public void setMaxNumberOfConcurrentWorkers(int maxNumberOfConcurrentWorkers) {
+		this.maxNumberOfConcurrentWorkers = maxNumberOfConcurrentWorkers;
+	}
 
 }

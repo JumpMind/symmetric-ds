@@ -26,23 +26,26 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-public class AckServlet extends HttpServlet {
+public class AckServlet extends AbstractServlet {
 
     private static final long serialVersionUID = 1L;
 
+    protected static final Log logger = LogFactory.getLog(AckServlet.class);
+
     @SuppressWarnings("unchecked")
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Map parameters = req.getParameterMap();
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
@@ -93,5 +96,10 @@ public class AckServlet extends HttpServlet {
                     + webParameter);
         }
     }
+
+	@Override
+	protected Log getLogger() {
+		return logger;
+	}
 
 }

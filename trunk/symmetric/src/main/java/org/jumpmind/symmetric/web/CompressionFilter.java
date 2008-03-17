@@ -1,0 +1,83 @@
+package org.jumpmind.symmetric.web;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.collections.iterators.EnumerationIterator;
+
+public class CompressionFilter extends AbstractFilter {
+
+	private javawebparts.filter.CompressionFilter delegate;
+	private String compressType;
+
+	public void doFilter(ServletRequest request, ServletResponse response,
+			FilterChain chain) throws IOException, ServletException {
+		if (delegate != null) {
+			delegate.doFilter(request, response, chain);
+		}
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+		if (delegate != null) {
+			delegate.destroy();
+		}
+	}
+
+	@Override
+	public void init(final FilterConfig filterConfig) throws ServletException {
+		super.init(filterConfig);
+		delegate = new javawebparts.filter.CompressionFilter();
+
+		delegate.init(new CompressionFilterConfig(filterConfig));
+	}
+
+	public void setCompressType(String compressType) {
+		this.compressType = compressType;
+	}
+
+	private final class CompressionFilterConfig implements FilterConfig {
+		private final FilterConfig filterConfig;
+		private final List<String> initParameterNames;
+
+		@SuppressWarnings("unchecked")
+		private CompressionFilterConfig(FilterConfig filterConfig) {
+			this.filterConfig = filterConfig;
+			initParameterNames = IteratorUtils.toList(new EnumerationIterator(
+					filterConfig.getInitParameterNames()));
+			if (compressType != null) {
+				initParameterNames.add(compressType);
+			}
+		}
+
+		public String getFilterName() {
+			return filterConfig.getFilterName();
+		}
+
+		public String getInitParameter(String name) {
+			if (compressType != null && "compressType".equals(name)) {
+				return compressType;
+			}
+			return filterConfig.getInitParameter(name);
+		}
+
+		public Enumeration<?> getInitParameterNames() {
+			return Collections.enumeration(initParameterNames);
+		}
+
+		public ServletContext getServletContext() {
+			return filterConfig.getServletContext();
+		}
+	}
+}

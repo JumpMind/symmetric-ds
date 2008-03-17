@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,18 +33,17 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
-public class RegistrationServlet extends HttpServlet {
+public class RegistrationServlet extends AbstractServlet {
 
     private static final long serialVersionUID = 1L;
     
     protected static final Log logger = LogFactory.getLog(RegistrationServlet.class);
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
-        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+        ApplicationContext ctx = getContext();
         IRegistrationService service = (IRegistrationService) ctx.getBean(Constants.REGISTRATION_SERVICE);
         Node node = new Node();
         node.setNodeGroupId(req.getParameter(WebConstants.NODE_GROUP_ID));
@@ -59,9 +57,16 @@ public class RegistrationServlet extends HttpServlet {
         node.setDatabaseType(req.getParameter(WebConstants.DATABASE_TYPE));
         node.setDatabaseVersion(req.getParameter(WebConstants.DATABASE_VERSION));
         if (!service.registerNode(node, resp.getOutputStream())) {
-            logger.warn(node + " was not allowed to register.");
-            resp.sendError(WebConstants.REGISTRATION_NOT_OPEN);
+        	if (logger.isWarnEnabled()) {
+        		logger.warn(String.format("%s was not allowed to register.", node));
+        	}
+            sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.", node));
         }
     }
+
+	@Override
+	protected Log getLogger() {
+		return logger;
+	}
 
 }

@@ -90,7 +90,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setRequestMethod("PUT");
         connection.setRequestProperty("accept-encoding", "gzip");
         if (useCompression) {
-            connection.addRequestProperty("Content-Type", "gzip");
+            connection.addRequestProperty("Content-Type", "gzip"); //application/x-gzip?
         }
         OutputStream out = connection.getOutputStream();
         if (useCompression) {

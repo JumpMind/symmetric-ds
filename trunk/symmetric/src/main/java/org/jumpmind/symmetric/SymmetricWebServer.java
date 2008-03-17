@@ -22,10 +22,10 @@ package org.jumpmind.symmetric;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.web.AckServlet;
-import org.jumpmind.symmetric.web.AuthenticationFilter;
 import org.jumpmind.symmetric.web.PullServlet;
 import org.jumpmind.symmetric.web.PushServlet;
 import org.jumpmind.symmetric.web.RegistrationServlet;
+import org.jumpmind.symmetric.web.SymmetricFilter;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
@@ -50,9 +50,7 @@ public class SymmetricWebServer {
 
         webContext.addEventListener(new SymmetricEngineContextLoaderListener());
 
-        webContext.addFilter(AuthenticationFilter.class, "/pull/*", 0);
-        webContext.addFilter(AuthenticationFilter.class, "/push/*", 0);
-        webContext.addFilter(AuthenticationFilter.class, "/ack/*", 0);
+        webContext.addFilter(SymmetricFilter.class, "/*", 0);
 
         webContext.addServlet(PullServlet.class, "/pull/*");
 

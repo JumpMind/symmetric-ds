@@ -22,42 +22,38 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
-public class AuthenticationFilter implements Filter
+/**
+ * This better be the first filter that executes !
+ * TODO: if this thing fails, should it prevent further processing of the request?
+ *
+ */
+public class AuthenticationFilter extends AbstractFilter
 {
-    private ServletContext context;
-
-    public void destroy()
-    {
-    }
-
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
         throws IOException, ServletException
     {
         String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
         String nodeId = req.getParameter(WebConstants.NODE_ID);
 
-        if (securityToken == null || nodeId == null)
+        if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId))
         {
-            ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+            sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
+        ApplicationContext ctx = getContext();
         INodeService sc = (INodeService) ctx.getBean(Constants.NODE_SERVICE);
 
         if (!sc.isNodeAuthorized(nodeId, securityToken))
@@ -65,19 +61,13 @@ public class AuthenticationFilter implements Filter
             IRegistrationService registrationService = (IRegistrationService) ctx
                     .getBean(Constants.REGISTRATION_SERVICE);
             if (registrationService.isAutoRegistration()) {
-                ((HttpServletResponse)resp).sendError(WebConstants.REGISTRATION_REQUIRED);
+            	sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             } else {
-                ((HttpServletResponse)resp).sendError(HttpServletResponse.SC_FORBIDDEN);
+                sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             }
             return;
         }
 
         chain.doFilter(req, resp);
     }
-
-    public void init(FilterConfig config) throws ServletException
-    {
-        context = config.getServletContext();
-    }
-
 }
