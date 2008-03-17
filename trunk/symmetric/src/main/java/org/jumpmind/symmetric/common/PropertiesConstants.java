@@ -27,4 +27,13 @@ public class PropertiesConstants {
     public final static String START_PURGE_JOB = "symmetric.runtime.start.purge.job";
     public final static String START_HEARTBEAT_JOB = "symmetric.runtime.start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "symmetric.runtime.start.synctriggers.job";
+    
+    
+    public final static String DBPOOL_URL = "db.url";
+    public final static String DBPOOL_DRIVER ="db.driver";
+    public final static String DBPOOL_USER = "db.user";
+    public final static String DBPOOL_PASSWORD = "db.password";
+    public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
+    
+    public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 }

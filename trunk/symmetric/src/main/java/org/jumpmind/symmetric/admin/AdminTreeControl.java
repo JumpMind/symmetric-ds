@@ -114,18 +114,17 @@ public class AdminTreeControl extends JScrollPane {
                 if (c != null && this.getValue(Action.NAME).equals(CONNECT)) {
                     try {
                         tree.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        Worker.post(new Task() {
+                        if ((Boolean) Worker.post(new Task() {
                             public Object run() throws Exception {
-                                c.getSymmetricDatabase().connect();
-                                return null;
+                                return c.getSymmetricDatabase().connect(appController);
                             }
-                        });
-
-                        DatabaseNode db = (DatabaseNode) c;
-                        db.add(new ChannelNode(c.getSymmetricDatabase()));
-                        db.add(new GroupNode(c.getSymmetricDatabase()));
-                        db.add(new GroupLinkNode(c.getSymmetricDatabase()));
-                        tree.scrollPathToVisible(new TreePath(db));
+                        })) {
+                            DatabaseNode db = (DatabaseNode) c;
+                            db.add(new ChannelNode(c.getSymmetricDatabase()));
+                            db.add(new GroupNode(c.getSymmetricDatabase()));
+                            db.add(new GroupLinkNode(c.getSymmetricDatabase()));
+                            tree.scrollPathToVisible(new TreePath(db));
+                        }
                     } catch (Exception ex) {
                         appController.showError("Trouble connecting to the symmetric database.", ex);
                     }
