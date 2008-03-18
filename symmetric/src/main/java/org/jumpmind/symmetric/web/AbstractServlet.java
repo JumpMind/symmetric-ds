@@ -168,7 +168,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -202,7 +202,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -236,7 +236,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -270,7 +270,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleDelete(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -304,7 +304,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleHead(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -337,7 +337,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleOptions(HttpServletRequest req,
             HttpServletResponse resp) throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -371,7 +371,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleTrace(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     /**
@@ -382,9 +382,9 @@ abstract public class AbstractServlet extends HttpServlet {
      * @param statusCode
      * @throws IOException
      */
-    protected void sendError(HttpServletResponse resp, int statusCode)
+    protected boolean sendError(HttpServletResponse resp, int statusCode)
             throws IOException {
-        sendError(resp, statusCode, null);
+        return ServletUtils.sendError(resp, statusCode);
     }
 
     /**
@@ -397,10 +397,8 @@ abstract public class AbstractServlet extends HttpServlet {
      *            a message to put in the body of the response
      * @throws IOException
      */
-    protected void sendError(HttpServletResponse resp, int statusCode,
+    protected boolean sendError(HttpServletResponse resp, int statusCode,
             String message) throws IOException {
-        if (!resp.isCommitted()) {
-            resp.sendError(statusCode, message);
-        }
+        return ServletUtils.sendError(resp, statusCode, message);
     }
 }
