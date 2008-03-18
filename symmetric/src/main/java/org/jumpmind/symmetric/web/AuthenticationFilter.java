@@ -30,10 +30,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
-import org.springframework.context.ApplicationContext;
 
 /**
  * This better be the first filter that executes ! TODO: if this thing fails,
@@ -51,13 +47,8 @@ public class AuthenticationFilter extends AbstractFilter {
             return;
         }
 
-        ApplicationContext ctx = getContext();
-        INodeService sc = (INodeService) ctx.getBean(Constants.NODE_SERVICE);
-
-        if (!sc.isNodeAuthorized(nodeId, securityToken)) {
-            IRegistrationService registrationService = (IRegistrationService) ctx
-                    .getBean(Constants.REGISTRATION_SERVICE);
-            if (registrationService.isAutoRegistration()) {
+        if (!getNodeService().isNodeAuthorized(nodeId, securityToken)) {
+            if (getRegistrationService().isAutoRegistration()) {
                 sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             } else {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN);

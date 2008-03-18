@@ -36,6 +36,30 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * 
+ * Configured within symmetric-web.xml
+ * 
+ * <pre>
+ *  &lt;bean id=&quot;nodeConcurrencyFilter&quot;
+ *  class=&quot;org.jumpmind.symmetric.web.NodeConcurrencyFilter&quot;&gt;
+ *    &lt;property name=&quot;regexPattern&quot; value=&quot;string&quot; /&gt;
+ *    &lt;property name=&quot;regexPatterns&quot;&gt;
+ *      &lt;list&gt;
+ *        &lt;value value=&quot;string&quot;/&gt;
+ *      &lt;list/&gt;
+ *    &lt;property/&gt;
+ *    &lt;property name=&quot;uriPattern&quot; value=&quot;string&quot; /&gt;
+ *    &lt;property name=&quot;uriPatterns&quot;&gt;
+ *      &lt;list&gt;
+ *        &lt;value value=&quot;string&quot;/&gt;
+ *      &lt;list/&gt;
+ *    &lt;property/&gt;
+ *    &lt;property name=&quot;disabled&quot; value=&quot;boolean&quot; /&gt;
+ *    &lt;property name=&quot;maxNumberOfConcurrentWorkers&quot; value=&quot;int&quot; /&gt;
+ *  &lt;/bean&gt;
+ * </pre>
+ */
 public class NodeConcurrencyFilter extends AbstractFilter {
 
     private static final int TOO_BUSY_LOG_STATEMENTS_PER_MIN = 10;

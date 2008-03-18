@@ -32,42 +32,42 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 
-/*
+/**
  * 
- * <?xml version="1.0" encoding="UTF-8"?> <web-app id="WebApp_ID" version="2.4"
- * xmlns="http://java.sun.com/xml/ns/j2ee"
- * xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- * xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
- * http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"> <display-name> testFilter</display-name>
- * <servlet> <description> </description> <display-name> TestServlet</display-name>
- * <servlet-name>TestServlet</servlet-name> <servlet-class>
- * org.jumpmind.symmetric.web.TestServlet</servlet-class> </servlet>
- * <servlet-mapping> <servlet-name>TestServlet</servlet-name>
- * <url-pattern>/TestServlet</url-pattern> </servlet-mapping>
- * <welcome-file-list> <welcome-file>index.html</welcome-file>
- * <welcome-file>index.htm</welcome-file> <welcome-file>index.jsp</welcome-file>
- * <welcome-file>default.html</welcome-file> <welcome-file>default.htm</welcome-file>
- * <welcome-file>default.jsp</welcome-file> </welcome-file-list> <filter>
- * <filter-name>ThrottleFilter</filter-name>
- * <filter-class>org.jumpmind.symmetric.web.ThrottleFilter</filter-class>
- * <init-param> <param-name>maxBps</param-name> <param-value>10240</param-value>
- * </init-param> <init-param> <param-name>threshold</param-name>
- * <param-value>8192</param-value> </init-param> <init-param>
- * <param-name>checkPoint</param-name> <param-value>4096</param-value>
- * </init-param> </filter> <filter-mapping> <filter-name>ThrottleFilter</filter-name>
- * <url-pattern>/TestServlet</url-pattern> </filter-mapping> </web-app>
+ * Configured within symmetric-web.xml
  * 
+ * <pre>
+ *  &lt;bean id=&quot;throttleFilter&quot;
+ *  class=&quot;org.jumpmind.symmetric.web.ThrottleFilter&quot;&gt;
+ *    &lt;property name=&quot;regexPattern&quot; value=&quot;string&quot; /&gt;
+ *    &lt;property name=&quot;regexPatterns&quot;&gt;
+ *      &lt;list&gt;
+ *        &lt;value value=&quot;string&quot;/&gt;
+ *      &lt;list/&gt;
+ *    &lt;property/&gt;
+ *    &lt;property name=&quot;uriPattern&quot; value=&quot;string&quot; /&gt;
+ *    &lt;property name=&quot;uriPatterns&quot;&gt;
+ *      &lt;list&gt;
+ *        &lt;value value=&quot;string&quot;/&gt;
+ *      &lt;list/&gt;
+ *    &lt;property/&gt;
+ *    &lt;property name=&quot;disabled&quot; value=&quot;boolean&quot; /&gt;
+ *    &lt;property name=&quot;maxBps&quot; value=&quot;long&quot; /&gt;
+ *    &lt;property name=&quot;threshold&quot; value=&quot;long&quot; /&gt;
+ *    &lt;property name=&quot;checkPoint&quot; value=&quot;long&quot; /&gt;
+ *  &lt;/bean&gt;
+ * </pre>
  */
 
 public class ThrottleFilter extends AbstractFilter {
 
     private static Logger logger = Logger.getLogger(ThrottleFilter.class);
 
-    private long maxBps;
+    private Long maxBps;
 
-    private long threshold;
+    private Long threshold;
 
-    private long checkPoint;
+    private Long checkPoint;
 
     // default threshold before throttling in number of bytes
     private static final long DEFFAULT_THRESHOLD = 8192L;
@@ -81,7 +81,7 @@ public class ThrottleFilter extends AbstractFilter {
                 (HttpServletResponse) response);
         wrapper.setCheckPoint((Long) ObjectUtils.defaultIfNull(checkPoint,
                 DEFAULT_CHECK_POINT));
-        wrapper.setMaxBps(maxBps);
+        wrapper.setMaxBps((Long) ObjectUtils.defaultIfNull(maxBps, 0L));
         wrapper.setThreshold((Long) ObjectUtils.defaultIfNull(threshold,
                 DEFFAULT_THRESHOLD));
         if (logger.isDebugEnabled()) {

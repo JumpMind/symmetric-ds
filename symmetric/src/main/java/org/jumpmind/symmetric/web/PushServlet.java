@@ -42,7 +42,7 @@ public class PushServlet extends AbstractServlet {
     protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String nodeId = req.getParameter(WebConstants.NODE_ID);
+        String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
             logger
