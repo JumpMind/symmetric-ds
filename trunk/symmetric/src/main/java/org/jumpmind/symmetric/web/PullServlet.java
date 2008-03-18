@@ -23,6 +23,8 @@
 
 package org.jumpmind.symmetric.web;
 
+import java.io.OutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,7 +51,7 @@ public class PullServlet extends AbstractServlet {
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
 
-        String nodeId = req.getParameter(WebConstants.NODE_ID);
+        String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
             logger
@@ -62,20 +64,19 @@ public class PullServlet extends AbstractServlet {
                     "Node must be specified");
             return;
         }
-
-        nodeId = nodeId.trim();
+        OutputStream outputStream = createOutputStream(resp);
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
                 getRegistrationService().registerNode(
-                        nodeService.findNode(nodeId), resp.getOutputStream());
+                        nodeService.findNode(nodeId), outputStream);
             } else {
                 if (nodeSecurity.isInitialLoadEnabled()) {
                     getDataService().insertReloadEvent(
                             nodeService.findNode(nodeId));
                 }
-                IOutgoingTransport out = createOutgoingTransport(resp);
+                IOutgoingTransport out = createOutgoingTransport(outputStream);
                 getDataExtractorService().extract(nodeService.findNode(nodeId),
                         out);
                 out.close();

@@ -28,12 +28,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IRegistrationService;
-import org.springframework.context.ApplicationContext;
 
 public class RegistrationServlet extends AbstractServlet {
 
@@ -45,24 +43,10 @@ public class RegistrationServlet extends AbstractServlet {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        ApplicationContext ctx = getContext();
-        IRegistrationService service = (IRegistrationService) ctx
-                .getBean(Constants.REGISTRATION_SERVICE);
-        Node node = new Node();
-        node.setNodeGroupId(req.getParameter(WebConstants.NODE_GROUP_ID));
-        node.setSymmetricVersion(req
-                .getParameter(WebConstants.SYMMETRIC_VERSION));
-        node.setExternalId(req.getParameter(WebConstants.EXTERNAL_ID));
-        String syncUrlString = req.getParameter(WebConstants.SYNC_URL);
-        if (syncUrlString != null && !syncUrlString.trim().equals("")) {
-            node.setSyncURL(syncUrlString);
-        }
-        node.setSchemaVersion(req.getParameter(WebConstants.SCHEMA_VERSION));
-        node.setDatabaseType(req.getParameter(WebConstants.DATABASE_TYPE));
-        node
-                .setDatabaseVersion(req
-                        .getParameter(WebConstants.DATABASE_VERSION));
-        if (!service.registerNode(node, resp.getOutputStream())) {
+        Node node = transform(req);
+
+        if (!getRegistrationService()
+                .registerNode(node, resp.getOutputStream())) {
             if (logger.isWarnEnabled()) {
                 logger.warn(String.format("%s was not allowed to register.",
                         node));
@@ -70,6 +54,24 @@ public class RegistrationServlet extends AbstractServlet {
             sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format(
                     "%s was not allowed to register.", node));
         }
+    }
+
+    private Node transform(HttpServletRequest req) {
+        Node node = new Node();
+        node.setNodeGroupId(getParameter(req, WebConstants.NODE_GROUP_ID));
+        node.setSymmetricVersion(getParameter(req,
+                WebConstants.SYMMETRIC_VERSION));
+        node.setExternalId(getParameter(req, WebConstants.EXTERNAL_ID));
+        String syncUrlString = getParameter(req, WebConstants.SYNC_URL);
+        if (StringUtils.isNotBlank(syncUrlString)) {
+            node.setSyncURL(syncUrlString);
+        }
+        node.setSchemaVersion(getParameter(req, WebConstants.SCHEMA_VERSION));
+        node.setDatabaseType(getParameter(req, WebConstants.DATABASE_TYPE));
+        node
+                .setDatabaseVersion(getParameter(req,
+                        WebConstants.DATABASE_VERSION));
+        return node;
     }
 
     @Override

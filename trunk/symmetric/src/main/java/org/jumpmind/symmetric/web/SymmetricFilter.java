@@ -41,6 +41,22 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 /**
  * This filter allows us simplify the configuration of symmetric by defining
  * filters directly within spring configuration files.
+ * 
+ * Configured within symmetric-web.xml
+ * 
+ * <pre>
+ *  &lt;filter&gt;
+ *    &lt;filter-name&gt;SymmetricFilter&lt;/filter-name&gt;
+ *    &lt;filter-class&gt;
+ *      org.jumpmind.symmetric.web.SymmetricFilter
+ *    &lt;/filter-class&gt;
+ *  &lt;/filter&gt;
+ * 
+ *  &lt;filter-mapping&gt;
+ *    &lt;filter-name&gt;SymmetricFilter&lt;/filter-name&gt;
+ *    &lt;url-pattern&gt;*&lt;/url-pattern&gt;
+ *  &lt;/filter-mapping&gt;
+ * </pre>
  */
 public class SymmetricFilter implements Filter {
 

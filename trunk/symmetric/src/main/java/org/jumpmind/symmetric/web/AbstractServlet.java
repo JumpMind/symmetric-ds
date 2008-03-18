@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -54,8 +55,13 @@ abstract public class AbstractServlet extends HttpServlet {
     protected abstract Log getLogger();
 
     protected IOutgoingTransport createOutgoingTransport(
+            OutputStream outputStream) throws IOException {
+        return new InternalOutgoingTransport(outputStream);
+    }
+
+    protected IOutgoingTransport createOutgoingTransport(
             HttpServletResponse resp) throws IOException {
-        return new InternalOutgoingTransport(resp.getOutputStream());
+        return createOutgoingTransport(createOutputStream(resp));
     }
 
     protected OutputStream createOutputStream(HttpServletResponse resp)
@@ -80,6 +86,7 @@ abstract public class AbstractServlet extends HttpServlet {
             } else {
                 reader = req.getReader();
             }
+
             String line = null;
             do {
                 line = reader.readLine();
@@ -400,5 +407,30 @@ abstract public class AbstractServlet extends HttpServlet {
     protected boolean sendError(HttpServletResponse resp, int statusCode,
             String message) throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
+    }
+
+    /**
+     * Returns the parameter with that name, trimmed to null
+     * 
+     * @param request
+     * @param name
+     * @return
+     */
+    protected String getParameter(HttpServletRequest request, String name) {
+        return StringUtils.trimToNull(request.getParameter(name));
+    }
+
+    /**
+     * Returns the parameter with that name, trimmed to null. If the trimmed
+     * string is null, defaults to the defaultValue.
+     * 
+     * @param request
+     * @param name
+     * @return
+     */
+    protected String getParameter(HttpServletRequest request, String name,
+            String defaultValue) {
+        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request
+                .getParameter(name)), defaultValue);
     }
 }

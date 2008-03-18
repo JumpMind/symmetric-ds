@@ -36,6 +36,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -80,11 +87,6 @@ public abstract class AbstractFilter implements Filter {
 
     public void destroy() {
 
-    }
-
-    protected ApplicationContext getContext() {
-        return WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
     }
 
     public void setDisabled(boolean disabled) {
@@ -196,5 +198,38 @@ public abstract class AbstractFilter implements Filter {
     protected boolean sendError(ServletResponse resp, int statusCode,
             String message) throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
+    }
+
+    protected ApplicationContext getContext() {
+        return WebApplicationContextUtils
+                .getWebApplicationContext(getServletContext());
+    }
+
+    protected IDataLoaderService getDataLoaderService() {
+        return (IDataLoaderService) getContext().getBean(
+                Constants.DATALOADER_SERVICE);
+    }
+
+    protected IDataService getDataService() {
+        return (IDataService) getContext().getBean(Constants.DATA_SERVICE);
+    }
+
+    protected INodeService getNodeService() {
+        return (INodeService) getContext().getBean(Constants.NODE_SERVICE);
+    }
+
+    protected IRegistrationService getRegistrationService() {
+        return (IRegistrationService) getContext().getBean(
+                Constants.REGISTRATION_SERVICE);
+    }
+
+    protected IDataExtractorService getDataExtractorService() {
+        return (IDataExtractorService) getContext().getBean(
+                Constants.DATAEXTRACTOR_SERVICE);
+    }
+
+    protected IAcknowledgeService getAcknowledgeService() {
+        return (IAcknowledgeService) getContext().getBean(
+                Constants.ACKNOWLEDGE_SERVICE);
     }
 }
