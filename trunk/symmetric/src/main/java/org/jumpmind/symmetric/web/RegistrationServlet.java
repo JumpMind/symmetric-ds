@@ -23,6 +23,8 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -45,8 +47,10 @@ public class RegistrationServlet extends AbstractServlet {
             throws ServletException, IOException {
         Node node = transform(req);
 
-        if (!getRegistrationService()
-                .registerNode(node, resp.getOutputStream())) {
+        InputStream inputStream = createInputStream(req);
+        OutputStream outputStream = createOutputStream(resp);
+        if (!new RegistrationResourceHandler(getApplicationContext(),
+                inputStream, outputStream).registerNode(node)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(String.format("%s was not allowed to register.",
                         node));

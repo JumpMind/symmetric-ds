@@ -30,6 +30,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
  * This better be the first filter that executes ! TODO: if this thing fails,
@@ -37,6 +39,9 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public class AuthenticationFilter extends AbstractFilter {
+    private INodeService nodeService;
+    private IRegistrationService registrationService;
+
     public void doFilter(ServletRequest req, ServletResponse resp,
             FilterChain chain) throws IOException, ServletException {
         String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
@@ -47,8 +52,8 @@ public class AuthenticationFilter extends AbstractFilter {
             return;
         }
 
-        if (!getNodeService().isNodeAuthorized(nodeId, securityToken)) {
-            if (getRegistrationService().isAutoRegistration()) {
+        if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
+            if (registrationService.isAutoRegistration()) {
                 sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             } else {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN);
@@ -57,5 +62,13 @@ public class AuthenticationFilter extends AbstractFilter {
         }
 
         chain.doFilter(req, resp);
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 }

@@ -77,7 +77,8 @@ public class AckServlet extends AbstractServlet {
                 }
             }
         }
-        getAcknowledgeService().ack(batches);
+        new AckResourceHandler(this.getApplicationContext(), req
+                .getInputStream(), resp.getOutputStream()).ack(batches);
     }
 
     private String getBatchIdFrom(String webParameter) {
