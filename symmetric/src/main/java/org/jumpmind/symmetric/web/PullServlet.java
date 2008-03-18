@@ -2,7 +2,9 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Eric Long <erilong@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
+ *               
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,10 +23,6 @@
 
 package org.jumpmind.symmetric.web;
 
-import java.io.IOException;
-import java.net.SocketException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,7 +33,6 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
-
 public class PullServlet extends AbstractServlet {
 
     private static final Log logger = LogFactory.getLog(PullServlet.class);
@@ -43,59 +40,58 @@ public class PullServlet extends AbstractServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void handleGet(HttpServletRequest req, HttpServletResponse resp)
+            throws Exception {
         handlePost(req, resp);
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
+            throws Exception {
 
         String nodeId = req.getParameter(WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Pull request received from %s", nodeId));
+            logger
+                    .debug(String.format("Pull request received from %s",
+                            nodeId));
         }
 
         if (StringUtils.isBlank(nodeId)) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
+                    "Node must be specified");
             return;
         }
 
         nodeId = nodeId.trim();
         INodeService nodeService = getNodeService();
-        try {
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-            if (nodeSecurity != null) {
-	            if (nodeSecurity.isRegistrationEnabled()) {
-	                getRegistrationService().registerNode(nodeService.findNode(nodeId), resp.getOutputStream());
-	            } else {
-	                if (nodeSecurity.isInitialLoadEnabled()) {
-	                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
-	                }
-	                IOutgoingTransport out = createOutgoingTransport(resp);
-	                getDataExtractorService().extract(getNodeService().findNode(nodeId), out);
-	                out.close();
-	            }
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+        if (nodeSecurity != null) {
+            if (nodeSecurity.isRegistrationEnabled()) {
+                getRegistrationService().registerNode(
+                        nodeService.findNode(nodeId), resp.getOutputStream());
             } else {
-            	if (logger.isWarnEnabled()) {
-            		logger.warn(String.format("Node %s does not exist.", nodeId));
-            	}
+                if (nodeSecurity.isInitialLoadEnabled()) {
+                    getDataService().insertReloadEvent(
+                            nodeService.findNode(nodeId));
+                }
+                IOutgoingTransport out = createOutgoingTransport(resp);
+                getDataExtractorService().extract(nodeService.findNode(nodeId),
+                        out);
+                out.close();
             }
-            
-        } catch (SocketException ex) {
-        	if (logger.isWarnEnabled()) {
-        		logger.warn(String.format("Socket error while procesing pull data for %s.", nodeId), ex);
-        	}
-        } catch (Exception ex) {
-        	if (logger.isErrorEnabled()) {
-        		logger.error(String.format("Error while pulling data for %s", nodeId), ex);
-        	}
-            sendError(resp, HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn(String.format("Node %s does not exist.", nodeId));
+            }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(String
+                    .format("Done with Pull request from %s", nodeId));
         }
     }
 
-	@Override
+    @Override
     protected Log getLogger() {
         return logger;
     }

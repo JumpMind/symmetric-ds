@@ -2,7 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Keith Naas <keithnaas@users.sourceforge.net>
+ *               Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,88 +44,91 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class SymmetricFilter implements Filter {
 
-	private static final Log logger = LogFactory.getLog(SymmetricFilter.class);
+    private static final Log logger = LogFactory.getLog(SymmetricFilter.class);
 
-	private ServletContext servletContext;
+    private ServletContext servletContext;
 
-	private List<Filter> filters;
+    private List<Filter> filters;
 
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
-		new SymmetricFilterChain(chain).doFilter(request, response);
-	}
+    public void doFilter(ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        new SymmetricFilterChain(chain).doFilter(request, response);
+    }
 
-	public void init(FilterConfig filterConfig) throws ServletException {
-		servletContext = filterConfig.getServletContext();
-		filters = new ArrayList<Filter>();
-		@SuppressWarnings("unchecked")
-		final Map<String, Filter> filterBeans = getContext().getBeansOfType(
-				Filter.class);
-		// they will need to be sorted somehow, right now its just the order
-		// they appear in the spring file
-		for (final Map.Entry<String, Filter> filterEntry : filterBeans
-				.entrySet()) {
-			if (logger.isInfoEnabled()) {
-				logger.info(String.format("Initializing filter %s", filterEntry
-						.getKey()));
-			}
-			final Filter filter = filterEntry.getValue();
-			filter.init(filterConfig);
-			filters.add(filter);
-		}
-	}
+    public void init(FilterConfig filterConfig) throws ServletException {
+        servletContext = filterConfig.getServletContext();
+        filters = new ArrayList<Filter>();
+        @SuppressWarnings("unchecked")
+        final Map<String, Filter> filterBeans = getContext().getBeansOfType(
+                Filter.class);
+        // they will need to be sorted somehow, right now its just the order
+        // they appear in the spring file
+        for (final Map.Entry<String, Filter> filterEntry : filterBeans
+                .entrySet()) {
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("Initializing filter %s", filterEntry
+                        .getKey()));
+            }
+            final Filter filter = filterEntry.getValue();
+            filter.init(filterConfig);
+            filters.add(filter);
+        }
+    }
 
-	public void destroy() {
-		for (final Filter filter : filters) {
-			filter.destroy();
-		}
+    public void destroy() {
+        for (final Filter filter : filters) {
+            filter.destroy();
+        }
 
-	}
+    }
 
-	protected ApplicationContext getContext() {
-		return WebApplicationContextUtils
-				.getWebApplicationContext(getServletContext());
-	}
+    protected ApplicationContext getContext() {
+        return WebApplicationContextUtils
+                .getWebApplicationContext(getServletContext());
+    }
 
-	public ServletContext getServletContext() {
-		return servletContext;
-	}
+    public ServletContext getServletContext() {
+        return servletContext;
+    }
 
-	/**
-	 * The chain will visit each filter in turn. When done, it will pass along
-	 * to the original chain.
-	 * The chain skips disabled filters.  I'm wondering if this should be moved to the
-	 * {@link SymmetricFilter#init(FilterConfig)}.
-	 * @author Keith
-	 * 
-	 */
-	private class SymmetricFilterChain implements FilterChain {
+    /**
+     * The chain will visit each filter in turn. When done, it will pass along
+     * to the original chain. The chain skips disabled filters. I'm wondering if
+     * this should be moved to the {@link SymmetricFilter#init(FilterConfig)}.
+     * 
+     * @author Keith
+     * 
+     */
+    private class SymmetricFilterChain implements FilterChain {
 
-		private FilterChain chain;
-		private int index;
+        private FilterChain chain;
+        private int index;
 
-		public SymmetricFilterChain(FilterChain chain) {
-			this.chain = chain;
-			index = 0;
-		}
+        public SymmetricFilterChain(FilterChain chain) {
+            this.chain = chain;
+            index = 0;
+        }
 
-		public void doFilter(ServletRequest request, ServletResponse response)
-				throws IOException, ServletException {
-			if (index < filters.size()) {
-				final Filter filter = filters.get(index++);
-				if (filter instanceof AbstractFilter) {
-					final AbstractFilter builtinFilter = (AbstractFilter) filter;
-					if (!builtinFilter.isDisabled()
-							&& builtinFilter.matches(request)) {
-						builtinFilter.doFilter(request, response, chain);
-					}
-				} else {
-					filter.doFilter(request, response, chain);
-				}
-			} else {
-				chain.doFilter(request, response);
-			}
-		}
-	}
+        public void doFilter(ServletRequest request, ServletResponse response)
+                throws IOException, ServletException {
+            // TODO: check to make sure its not an error status code!
+            if (!response.isCommitted()) {
+                if (index < filters.size()) {
+                    final Filter filter = filters.get(index++);
+                    if (filter instanceof AbstractFilter) {
+                        final AbstractFilter builtinFilter = (AbstractFilter) filter;
+                        if (!builtinFilter.isDisabled()
+                                && builtinFilter.matches(request)) {
+                            builtinFilter.doFilter(request, response, chain);
+                        }
+                    } else {
+                        filter.doFilter(request, response, chain);
+                    }
+                } else {
+                    chain.doFilter(request, response);
+                }
+            }
+        }
+    }
 
 }

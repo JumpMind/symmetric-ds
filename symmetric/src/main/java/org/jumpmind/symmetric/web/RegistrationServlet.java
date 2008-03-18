@@ -2,7 +2,8 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Eric Long <erilong@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,36 +38,43 @@ import org.springframework.context.ApplicationContext;
 public class RegistrationServlet extends AbstractServlet {
 
     private static final long serialVersionUID = 1L;
-    
-    protected static final Log logger = LogFactory.getLog(RegistrationServlet.class);
+
+    protected static final Log logger = LogFactory
+            .getLog(RegistrationServlet.class);
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         ApplicationContext ctx = getContext();
-        IRegistrationService service = (IRegistrationService) ctx.getBean(Constants.REGISTRATION_SERVICE);
+        IRegistrationService service = (IRegistrationService) ctx
+                .getBean(Constants.REGISTRATION_SERVICE);
         Node node = new Node();
         node.setNodeGroupId(req.getParameter(WebConstants.NODE_GROUP_ID));
-        node.setSymmetricVersion(req.getParameter(WebConstants.SYMMETRIC_VERSION));
+        node.setSymmetricVersion(req
+                .getParameter(WebConstants.SYMMETRIC_VERSION));
         node.setExternalId(req.getParameter(WebConstants.EXTERNAL_ID));
         String syncUrlString = req.getParameter(WebConstants.SYNC_URL);
-        if (syncUrlString != null && ! syncUrlString.trim().equals("")) {
+        if (syncUrlString != null && !syncUrlString.trim().equals("")) {
             node.setSyncURL(syncUrlString);
         }
         node.setSchemaVersion(req.getParameter(WebConstants.SCHEMA_VERSION));
         node.setDatabaseType(req.getParameter(WebConstants.DATABASE_TYPE));
-        node.setDatabaseVersion(req.getParameter(WebConstants.DATABASE_VERSION));
+        node
+                .setDatabaseVersion(req
+                        .getParameter(WebConstants.DATABASE_VERSION));
         if (!service.registerNode(node, resp.getOutputStream())) {
-        	if (logger.isWarnEnabled()) {
-        		logger.warn(String.format("%s was not allowed to register.", node));
-        	}
-            sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.", node));
+            if (logger.isWarnEnabled()) {
+                logger.warn(String.format("%s was not allowed to register.",
+                        node));
+            }
+            sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format(
+                    "%s was not allowed to register.", node));
         }
     }
 
-	@Override
-	protected Log getLogger() {
-		return logger;
-	}
+    @Override
+    protected Log getLogger() {
+        return logger;
+    }
 
 }

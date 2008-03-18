@@ -1,8 +1,9 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- *
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -22,6 +23,7 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,13 +31,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class AckServlet extends AbstractServlet {
 
@@ -52,24 +53,21 @@ public class AckServlet extends AbstractServlet {
 
         // TODO: acks should be saved in order received
         for (Object batch : parameters.keySet()) {
-            String batchId = batch.toString();
+            String batchId = ObjectUtils.toString(batch, "");
             if (batchId.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                Object value = parameters.get(batch);
                 String status = "";
-                if (value instanceof String) {
-                    status = (String) value;
-                } else if (value instanceof String[]) {
-                    String[] array = (String[]) value;
-                    if (array.length > 0) {
-                        status = array[0];
-                    }
+                final Iterator iterator = IteratorUtils.getIterator(parameters
+                        .get(batch));
+                if (iterator.hasNext()) {
+                    status = StringUtils.trimToEmpty(ObjectUtils.toString(
+                            iterator.next(), null));
                 }
 
-                if (status.trim().equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
+                if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
                     batches.add(new BatchInfo(getBatchIdFrom(batchId)));
                 } else {
                     try {
-                        int lineNumber = Integer.parseInt(status.trim());
+                        int lineNumber = Integer.parseInt(status);
                         batches.add(new BatchInfo(getBatchIdFrom(batchId),
                                 lineNumber));
                     } catch (NumberFormatException ex) {
@@ -79,12 +77,7 @@ public class AckServlet extends AbstractServlet {
                 }
             }
         }
-
-        ApplicationContext ctx = WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
-        IAcknowledgeService service = (IAcknowledgeService) ctx
-                .getBean(Constants.ACKNOWLEDGE_SERVICE);
-        service.ack(batches);
+        getAcknowledgeService().ack(batches);
     }
 
     private String getBatchIdFrom(String webParameter) {
@@ -97,9 +90,9 @@ public class AckServlet extends AbstractServlet {
         }
     }
 
-	@Override
-	protected Log getLogger() {
-		return logger;
-	}
+    @Override
+    protected Log getLogger() {
+        return logger;
+    }
 
 }
