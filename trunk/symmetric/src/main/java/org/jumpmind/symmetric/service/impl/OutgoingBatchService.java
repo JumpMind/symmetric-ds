@@ -33,9 +33,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
@@ -50,7 +51,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     final static Log logger = LogFactory.getLog(OutgoingBatchService.class);
 
-    IConfigurationService configurationService;
+    private INodeService nodeService;
 
     private int batchSizePeekAhead = 100;
 
@@ -72,7 +73,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private JdbcTemplate outgoingBatchQueryTemplate;
 
-    private IOutgoingBatchHistoryService historyService;
+    private IOutgoingBatchHistoryService historyService;    
 
     private IDbDialect dbDialect;
 
@@ -243,25 +244,27 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
     }
 
-    // TODO Unit test and probably refactor this method.
+    // TODO Should this move to DataService?
     @SuppressWarnings("unchecked")
     public boolean isInitialLoadComplete(String nodeId) {
-        boolean returnValue = false;
+
+        NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+        if (security != null && security.isInitialLoadEnabled()) {
+            return false;
+        }
+        
         List<String> statuses = (List<String>) jdbcTemplate.queryForList(initialLoadStatusSql, new Object[] { nodeId },
                 String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
+        
         for (String status : statuses) {
-            if (Status.ER.name().equals(status)) {
-                throw new RuntimeException("The initial load errored out for " + nodeId);
-            } else if (Status.OK.name().equals(status)) {
-                returnValue = true;
-            } else {
+            if (!Status.OK.name().equals(status)) {
                 return false;
             }
         }
-        return returnValue;
+        return true;
     }
 
     class OutgoingBatchMapper implements RowMapper {
@@ -275,10 +278,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batch.setCreateTime(rs.getTimestamp(6));
             return batch;
         }
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
     }
 
     public void setCreateBatchSql(String createBatchSql) {
@@ -327,6 +326,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setBatchSizePeekAhead(int batchSizePeekAhead) {
         this.batchSizePeekAhead = batchSizePeekAhead;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }
