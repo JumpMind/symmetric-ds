@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,20 +36,17 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.context.ApplicationContext;
 
 /**
- * This better be the first filter that executes !
- * TODO: if this thing fails, should it prevent further processing of the request?
- *
+ * This better be the first filter that executes ! TODO: if this thing fails,
+ * should it prevent further processing of the request?
+ * 
  */
-public class AuthenticationFilter extends AbstractFilter
-{
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-        throws IOException, ServletException
-    {
+public class AuthenticationFilter extends AbstractFilter {
+    public void doFilter(ServletRequest req, ServletResponse resp,
+            FilterChain chain) throws IOException, ServletException {
         String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
         String nodeId = req.getParameter(WebConstants.NODE_ID);
 
-        if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId))
-        {
+        if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -56,12 +54,11 @@ public class AuthenticationFilter extends AbstractFilter
         ApplicationContext ctx = getContext();
         INodeService sc = (INodeService) ctx.getBean(Constants.NODE_SERVICE);
 
-        if (!sc.isNodeAuthorized(nodeId, securityToken))
-        {
+        if (!sc.isNodeAuthorized(nodeId, securityToken)) {
             IRegistrationService registrationService = (IRegistrationService) ctx
                     .getBean(Constants.REGISTRATION_SERVICE);
             if (registrationService.isAutoRegistration()) {
-            	sendError(resp, WebConstants.REGISTRATION_REQUIRED);
+                sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             } else {
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             }

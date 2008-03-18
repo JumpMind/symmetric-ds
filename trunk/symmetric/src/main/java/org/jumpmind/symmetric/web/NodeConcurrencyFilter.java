@@ -1,7 +1,8 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,8 +52,8 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     static Map<String, Integer> numberOfWorkersByServlet = new HashMap<String, Integer>();
 
-    public void doFilter(final ServletRequest req, final ServletResponse resp, final FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(final ServletRequest req, final ServletResponse resp,
+            final FilterChain chain) throws IOException, ServletException {
         String servletPath = ((HttpServletRequest) req).getServletPath();
         if (!doWork(servletPath, new IWorker() {
             public void work() throws ServletException, IOException {
@@ -64,7 +65,8 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     }
 
-    protected boolean doWork(String servletPath, IWorker worker) throws ServletException, IOException {
+    protected boolean doWork(String servletPath, IWorker worker)
+            throws ServletException, IOException {
         boolean didWork = false;
         int tries = 5;
         int numberOfWorkers;
@@ -85,8 +87,11 @@ public class NodeConcurrencyFilter extends AbstractFilter {
                     if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
                             * TOO_BUSY_LOG_STATEMENTS_PER_MIN
                             && tooBusyCount > 0) {
-                        logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
-                                + TOO_BUSY_LOG_STATEMENTS_PER_MIN + " minutes because the server was too busy.");
+                        logger
+                                .warn(tooBusyCount
+                                        + " symmetric requests were rejected in the last "
+                                        + TOO_BUSY_LOG_STATEMENTS_PER_MIN
+                                        + " minutes because the server was too busy.");
                         lastTooBusyLogTime = System.currentTimeMillis();
                         tooBusyCount = 0;
                     }
@@ -106,16 +111,18 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         return number == null ? 0 : number;
     }
 
-    synchronized private void changeNumberOfWorkers(String servletPath, int delta) {
-        numberOfWorkersByServlet.put(servletPath, getNumberOfWorkers(servletPath) + delta);
+    synchronized private void changeNumberOfWorkers(String servletPath,
+            int delta) {
+        numberOfWorkersByServlet.put(servletPath,
+                getNumberOfWorkers(servletPath) + delta);
     }
 
     interface IWorker {
         public void work() throws ServletException, IOException;
     }
 
-	public void setMaxNumberOfConcurrentWorkers(int maxNumberOfConcurrentWorkers) {
-		this.maxNumberOfConcurrentWorkers = maxNumberOfConcurrentWorkers;
-	}
+    public void setMaxNumberOfConcurrentWorkers(int maxNumberOfConcurrentWorkers) {
+        this.maxNumberOfConcurrentWorkers = maxNumberOfConcurrentWorkers;
+    }
 
 }

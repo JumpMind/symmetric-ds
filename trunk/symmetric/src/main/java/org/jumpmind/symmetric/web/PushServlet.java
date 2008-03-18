@@ -1,8 +1,9 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- *               Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
+ *               Andrew Wilcox <andrewbwilcox@users.sourceforge.net>,
+ *               Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +25,6 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -43,28 +43,21 @@ public class PushServlet extends AbstractServlet {
             throws ServletException, IOException {
 
         String nodeId = req.getParameter(WebConstants.NODE_ID);
-        
-        if (logger.isDebugEnabled()) {
-            logger.debug("Push request received from " + nodeId);
-        }
 
-        try {
-            InputStream is = createInputStream(req);
-            OutputStream out = createOutputStream(resp);
-            getDataLoaderService().loadData(is, out);
-            out.flush();
-        } catch (SocketException ex) {
-            logger.warn("Socket error while processing pushed data for " + nodeId + ". " + ex.getMessage());
-        } catch (Exception ex) {
+        if (logger.isDebugEnabled()) {
             logger
-                    .error("Error while processing pushed data for " + nodeId,
-                            ex);
-            sendError(resp, HttpServletResponse.SC_NOT_IMPLEMENTED); // SC_INTERNAL_SERVER_ERROR?
+                    .debug(String.format("Push request received from %s",
+                            nodeId));
         }
 
+        InputStream is = createInputStream(req);
+        OutputStream out = createOutputStream(resp);
+        getDataLoaderService().loadData(is, out);
+        out.flush();
+
         if (logger.isDebugEnabled()) {
-            logger.debug("Done with push request from "
-                    + req.getParameter(WebConstants.NODE_ID));
+            logger.debug(String
+                    .format("Done with Push request from %s", nodeId));
         }
     }
 
