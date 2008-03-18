@@ -21,6 +21,10 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
@@ -29,127 +33,168 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * All symmetric filters (other than {@link SymmetricFilter}) should extend this class.
- * It it managed by Spring.   
+ * All symmetric filters (other than {@link SymmetricFilter}) should extend
+ * this class. It it managed by Spring.
  */
 public abstract class AbstractFilter implements Filter {
 
-	private ServletContext servletContext;
+    private ServletContext servletContext;
 
-	private boolean disabled;
+    private boolean disabled;
 
-	private String uriPattern;
+    private String[] uriPatterns;
 
-	private String regexPattern;
+    private String[] regexPatterns;
 
-	public void init(FilterConfig filterConfig) throws ServletException {
-		servletContext = filterConfig.getServletContext();
-	}
+    private Pattern[] compiledRegexPatterns;
 
-	protected ServletContext getServletContext() {
-		return servletContext;
-	}
+    public void init(FilterConfig filterConfig) throws ServletException {
+        servletContext = filterConfig.getServletContext();
+        compiledRegexPatterns = compileRegexPatterns();
+    }
 
-	public void destroy() {
+    private Pattern[] compileRegexPatterns() {
+        final List<Pattern> compiledRegexPatterns;
+        if (!ArrayUtils.isEmpty(regexPatterns)) {
+            compiledRegexPatterns = new ArrayList<Pattern>(regexPatterns.length);
+            for (String regexPattern : regexPatterns) {
+                compiledRegexPatterns.add(Pattern.compile(regexPattern));
+            }
+        } else {
+            compiledRegexPatterns = Collections.emptyList();
+        }
+        return compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns
+                .size()]);
+    }
 
-	}
+    protected ServletContext getServletContext() {
+        return servletContext;
+    }
 
-	protected ApplicationContext getContext() {
-		return WebApplicationContextUtils
-				.getWebApplicationContext(getServletContext());
-	}
+    public void destroy() {
 
-	public void setDisabled(boolean disabled) {
-		this.disabled = disabled;
-	}
+    }
 
-	public void setUriPattern(String uriPattern) {
-		this.uriPattern = uriPattern;
-	}
+    protected ApplicationContext getContext() {
+        return WebApplicationContextUtils
+                .getWebApplicationContext(getServletContext());
+    }
 
-	public boolean isDisabled() {
-		return disabled;
-	}
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
 
-	/**
-	 * Returns true if the request path matches the uriPattern on this filter.
-	 * 
-	 * @param request
-	 * @return
-	 */
-	public boolean matches(ServletRequest request) {
-		boolean retVal = true;
-		if (request instanceof HttpServletRequest) {
-			final HttpServletRequest httpRequest = (HttpServletRequest) request;
-			if (uriPattern != null) {
-			    retVal = matchesUriPattern(httpRequest.getServletPath());
-			} else if (regexPattern != null) {
-			    retVal = matchesRegexPattern(httpRequest.getServletPath());
-			}
-		}
-		return retVal;
-	}
+    public void setUriPattern(String uriPattern) {
+        this.uriPatterns = new String[] { uriPattern };
+    }
 
-	private boolean matchesRegexPattern(String servletPath) {
-		return servletPath.matches(regexPattern);
-	}
+    public void setUriPatterns(String[] uriPatterns) {
+        this.uriPatterns = uriPatterns;
+    }
 
-	private boolean matchesUriPattern(String servletPath) {
-		boolean retVal = false;
-		String path = StringUtils.defaultIfEmpty(servletPath, "/");
-		final String pattern = StringUtils.defaultIfEmpty(uriPattern, "/");
-		if ("/".equals(pattern) || "/*".equals(pattern)
-				|| pattern.equals(path)) {
-			retVal = true;
-		} else {
-			final String[] patternParts = StringUtils.split(pattern, "/");
-			final String[] pathParts = StringUtils.split(path, "/");
-			for (int i = 0; i < patternParts.length && i < pathParts.length
-					&& retVal; i++) {
-				final String patternPart = patternParts[i];
-				retVal = "*".equals(patternPart)
-						|| patternPart.equals(pathParts[i]);
-			}
-		}
-		return retVal;
-	}
+    public void setRegexPattern(String regexPattern) {
+        this.regexPatterns = new String[] { regexPattern };
+    }
 
-	public void setRegexPattern(String regexPattern) {
-		this.regexPattern = regexPattern;
-	}
+    public void setRegexPatterns(String[] regexPatterns) {
+        this.regexPatterns = regexPatterns;
+    }
 
-	/**
-	 * Because you can't send an error when the response is already committed, this
-	 * helps to avoid unnecessary errors in the logs. 
-	 * @param resp
-	 * @param statusCode
-	 * @throws IOException
-	 */
-	protected void sendError(ServletResponse resp, int statusCode) throws IOException {
-		sendError(resp, statusCode, null);
-	}
-	
-	/**
-	 * Because you can't send an error when the response is already committed, this
-	 * helps to avoid unnecessary errors in the logs. 
-	 * TODO: if a filter fails, should it call reset() on the response to clear the
-	 * headers?
-	 * @param resp
-	 * @param statusCode
-	 * @param message a message to put in the body of the response
-	 * @throws IOException
-	 */
-	protected void sendError(ServletResponse resp, int statusCode, String message) throws IOException {
-	    
-		if (!resp.isCommitted()) {
-			((HttpServletResponse)resp).sendError(statusCode, message);
-		}
-	}
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    /**
+     * Returns true if the request path matches the uriPattern on this filter.
+     * 
+     * @param request
+     * @return
+     */
+    public boolean matches(ServletRequest request) {
+        boolean retVal = true;
+        if (request instanceof HttpServletRequest) {
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            if (!ArrayUtils.isEmpty(uriPatterns)) {
+                retVal = matchesUriPatterns(httpRequest.getServletPath());
+            } else if (!ArrayUtils.isEmpty(compiledRegexPatterns)) {
+                retVal = matchesRegexPatterns(httpRequest.getServletPath());
+            }
+        }
+        return retVal;
+    }
+
+    private boolean matchesRegexPatterns(String servletPath) {
+        boolean retVal = false;
+        for (int i = 0; !retVal && i < compiledRegexPatterns.length; i++) {
+            retVal = matchesRegexPattern(servletPath, compiledRegexPatterns[i]);
+        }
+        return retVal;
+    }
+
+    private boolean matchesRegexPattern(String servletPath,
+            Pattern compiledRegexPattern) {
+        return compiledRegexPattern.matcher(servletPath).matches();
+    }
+
+    private boolean matchesUriPatterns(String servletPath) {
+        boolean retVal = false;
+        for (int i = 0; !retVal && i < uriPatterns.length; i++) {
+            retVal = matchesUriPattern(servletPath, uriPatterns[i]);
+        }
+        return retVal;
+    }
+
+    private boolean matchesUriPattern(String servletPath, String uriPattern) {
+        boolean retVal = false;
+        String path = StringUtils.defaultIfEmpty(servletPath, "/");
+        final String pattern = StringUtils.defaultIfEmpty(uriPattern, "/");
+        if ("/".equals(pattern) || "/*".equals(pattern) || pattern.equals(path)) {
+            retVal = true;
+        } else {
+            final String[] patternParts = StringUtils.split(pattern, "/");
+            final String[] pathParts = StringUtils.split(path, "/");
+            for (int i = 0; i < patternParts.length && i < pathParts.length
+                    && retVal; i++) {
+                final String patternPart = patternParts[i];
+                retVal = "*".equals(patternPart)
+                        || patternPart.equals(pathParts[i]);
+            }
+        }
+        return retVal;
+    }
+
+    /**
+     * Because you can't send an error when the response is already committed,
+     * this helps to avoid unnecessary errors in the logs.
+     * 
+     * @param resp
+     * @param statusCode
+     * @throws IOException
+     */
+    protected boolean sendError(ServletResponse resp, int statusCode)
+            throws IOException {
+        return ServletUtils.sendError(resp, statusCode);
+    }
+
+    /**
+     * Because you can't send an error when the response is already committed,
+     * this helps to avoid unnecessary errors in the logs.
+     * 
+     * @param resp
+     * @param statusCode
+     * @param message
+     *            a message to put in the body of the response
+     * @throws IOException
+     */
+    protected boolean sendError(ServletResponse resp, int statusCode,
+            String message) throws IOException {
+        return ServletUtils.sendError(resp, statusCode, message);
+    }
 }
