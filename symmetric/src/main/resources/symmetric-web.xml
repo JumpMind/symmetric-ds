@@ -6,6 +6,8 @@
 	<bean id="authenticationFilter"
 		class="org.jumpmind.symmetric.web.AuthenticationFilter">
 		<property name="regexPattern" value="^/(ack|pull|push)(/*)|$" />
+        <property name="nodeService" ref="nodeService"/>
+        <property name="registrationService" ref="registrationService"/>
 	</bean>
 
 	<bean id="nodeConcurrencyFilter"
