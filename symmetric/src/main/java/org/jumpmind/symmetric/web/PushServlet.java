@@ -50,10 +50,13 @@ public class PushServlet extends AbstractServlet {
                             nodeId));
         }
 
-        InputStream is = createInputStream(req);
-        OutputStream out = createOutputStream(resp);
-        getDataLoaderService().loadData(is, out);
-        out.flush();
+        InputStream inputStream = createInputStream(req);
+        OutputStream outputStream = createOutputStream(resp);
+
+        new PushResourceHandler(this.getApplicationContext(), inputStream,
+                outputStream).push();
+
+        outputStream.flush(); // TODO: why is this necessary?
 
         if (logger.isDebugEnabled()) {
             logger.debug(String

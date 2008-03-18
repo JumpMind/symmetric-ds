@@ -38,31 +38,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IDataExtractorService;
-import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
     protected abstract Log getLogger();
-
-    protected IOutgoingTransport createOutgoingTransport(
-            OutputStream outputStream) throws IOException {
-        return new InternalOutgoingTransport(outputStream);
-    }
-
-    protected IOutgoingTransport createOutgoingTransport(
-            HttpServletResponse resp) throws IOException {
-        return createOutgoingTransport(createOutputStream(resp));
-    }
 
     protected OutputStream createOutputStream(HttpServletResponse resp)
             throws IOException {
@@ -108,37 +89,9 @@ abstract public class AbstractServlet extends HttpServlet {
         return is;
     }
 
-    protected ApplicationContext getContext() {
+    protected ApplicationContext getApplicationContext() {
         return WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
-    }
-
-    protected IDataLoaderService getDataLoaderService() {
-        return (IDataLoaderService) getContext().getBean(
-                Constants.DATALOADER_SERVICE);
-    }
-
-    protected IDataService getDataService() {
-        return (IDataService) getContext().getBean(Constants.DATA_SERVICE);
-    }
-
-    protected INodeService getNodeService() {
-        return (INodeService) getContext().getBean(Constants.NODE_SERVICE);
-    }
-
-    protected IRegistrationService getRegistrationService() {
-        return (IRegistrationService) getContext().getBean(
-                Constants.REGISTRATION_SERVICE);
-    }
-
-    protected IDataExtractorService getDataExtractorService() {
-        return (IDataExtractorService) getContext().getBean(
-                Constants.DATAEXTRACTOR_SERVICE);
-    }
-
-    protected IAcknowledgeService getAcknowledgeService() {
-        return (IAcknowledgeService) getContext().getBean(
-                Constants.ACKNOWLEDGE_SERVICE);
     }
 
     @Override

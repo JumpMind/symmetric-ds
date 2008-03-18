@@ -23,6 +23,7 @@
 
 package org.jumpmind.symmetric.web;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,9 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class PullServlet extends AbstractServlet {
 
@@ -64,28 +62,11 @@ public class PullServlet extends AbstractServlet {
                     "Node must be specified");
             return;
         }
+        InputStream inputStream = createInputStream(req);
         OutputStream outputStream = createOutputStream(resp);
-        INodeService nodeService = getNodeService();
-        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-        if (nodeSecurity != null) {
-            if (nodeSecurity.isRegistrationEnabled()) {
-                getRegistrationService().registerNode(
-                        nodeService.findNode(nodeId), outputStream);
-            } else {
-                if (nodeSecurity.isInitialLoadEnabled()) {
-                    getDataService().insertReloadEvent(
-                            nodeService.findNode(nodeId));
-                }
-                IOutgoingTransport out = createOutgoingTransport(outputStream);
-                getDataExtractorService().extract(nodeService.findNode(nodeId),
-                        out);
-                out.close();
-            }
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn(String.format("Node %s does not exist.", nodeId));
-            }
-        }
+        new PullResourceHandler(getApplicationContext(), inputStream,
+                outputStream).pull(nodeId);
+
         if (logger.isDebugEnabled()) {
             logger.debug(String
                     .format("Done with Pull request from %s", nodeId));

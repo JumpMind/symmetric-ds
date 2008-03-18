@@ -113,13 +113,13 @@ public class AlertServlet extends AbstractServlet {
     }
 
     private List<IncomingBatch> findIncomingBatchErrors() {
-        IIncomingBatchService incomingBatchService = (IIncomingBatchService) getContext()
+        IIncomingBatchService incomingBatchService = (IIncomingBatchService) getApplicationContext()
                 .getBean(Constants.INCOMING_BATCH_SERVICE);
         return incomingBatchService.findIncomingBatchErrors(MAX_ERRORS);
     }
 
     private List<OutgoingBatch> findOutgoingBatchErrors() {
-        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getContext()
+        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getApplicationContext()
                 .getBean(Constants.OUTGOING_BATCH_SERVICE);
         return outgoingBatchService.getOutgoingBatcheErrors(MAX_ERRORS);
     }
