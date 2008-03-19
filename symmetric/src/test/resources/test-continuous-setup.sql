@@ -1,5 +1,5 @@
 insert into sym_channel values('testchannel', 1, 50, 50, 1, null);
-insert into sym_channel values('config', 1, 50, 50, 1, null);
+insert into sym_channel values('config', 0, 50, 50, 1, null);
 insert into sym_node_group values ('symmetric','a group representing symmetric configuration');
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
