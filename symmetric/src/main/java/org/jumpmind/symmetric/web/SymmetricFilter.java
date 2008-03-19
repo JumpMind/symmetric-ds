@@ -136,6 +136,8 @@ public class SymmetricFilter implements Filter {
                         if (!builtinFilter.isDisabled()
                                 && builtinFilter.matches(request)) {
                             builtinFilter.doFilter(request, response, chain);
+                        } else {
+                            this.doFilter(request, response);
                         }
                     } else {
                         filter.doFilter(request, response, chain);

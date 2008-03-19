@@ -21,7 +21,7 @@
 
     <filter-mapping>
         <filter-name>SymmetricFilter</filter-name>
-        <url-pattern>*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
     
 	<listener>
@@ -31,55 +31,16 @@
 	</listener>
 	
 	<servlet>
-		<servlet-name>push</servlet-name>
+		<servlet-name>SymmetricServlet</servlet-name>
 		<servlet-class>
-			org.jumpmind.symmetric.web.PushServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>pull</servlet-name>
-		<servlet-class>
-			org.jumpmind.symmetric.web.PullServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>registration</servlet-name>
-		<servlet-class>
-			org.jumpmind.symmetric.web.RegistrationServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>ack</servlet-name>
-		<servlet-class>
-			org.jumpmind.symmetric.web.AckServlet
+			org.jumpmind.symmetric.web.SymmetricServlet
 		</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>push</servlet-name>
-		<url-pattern>/push/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>ack</servlet-name>
-		<url-pattern>/ack/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>pull</servlet-name>
-		<url-pattern>/pull/*</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>registration</servlet-name>
-		<url-pattern>/registration/*</url-pattern>
+		<servlet-name>SymmetricServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
 </web-app>

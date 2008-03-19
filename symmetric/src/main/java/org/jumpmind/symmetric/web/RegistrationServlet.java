@@ -23,7 +23,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.ServletException;
@@ -34,8 +33,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.transport.RegistrationResourceHandler;
 
-public class RegistrationServlet extends AbstractServlet {
+public class RegistrationServlet extends
+        AbstractTransportResourceServlet<RegistrationResourceHandler> {
 
     private static final long serialVersionUID = 1L;
 
@@ -47,10 +48,8 @@ public class RegistrationServlet extends AbstractServlet {
             throws ServletException, IOException {
         Node node = transform(req);
 
-        InputStream inputStream = createInputStream(req);
         OutputStream outputStream = createOutputStream(resp);
-        if (!new RegistrationResourceHandler(getApplicationContext(),
-                inputStream, outputStream).registerNode(node)) {
+        if (!getTransportResourceHandler().registerNode(node, outputStream)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(String.format("%s was not allowed to register.",
                         node));

@@ -37,8 +37,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.transport.AckResourceHandler;
 
-public class AckServlet extends AbstractServlet {
+public class AckServlet extends
+        AbstractTransportResourceServlet<AckResourceHandler> {
 
     private static final long serialVersionUID = 1L;
 
@@ -77,8 +79,7 @@ public class AckServlet extends AbstractServlet {
                 }
             }
         }
-        new AckResourceHandler(this.getApplicationContext(), req
-                .getInputStream(), resp.getOutputStream()).ack(batches);
+        getTransportResourceHandler().ack(batches);
     }
 
     private String getBatchIdFrom(String webParameter) {
@@ -95,5 +96,4 @@ public class AckServlet extends AbstractServlet {
     protected Log getLogger() {
         return logger;
     }
-
 }

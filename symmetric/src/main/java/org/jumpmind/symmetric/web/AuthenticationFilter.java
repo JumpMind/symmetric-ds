@@ -30,17 +30,16 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.AuthenticationResourceHandler;
+import org.jumpmind.symmetric.transport.AuthenticationResourceHandler.AuthenticationStatus;
 
 /**
  * This better be the first filter that executes ! TODO: if this thing fails,
  * should it prevent further processing of the request?
  * 
  */
-public class AuthenticationFilter extends AbstractFilter {
-    private INodeService nodeService;
-    private IRegistrationService registrationService;
+public class AuthenticationFilter extends
+        AbstractTransportFilter<AuthenticationResourceHandler> {
 
     public void doFilter(ServletRequest req, ServletResponse resp,
             FilterChain chain) throws IOException, ServletException {
@@ -52,23 +51,14 @@ public class AuthenticationFilter extends AbstractFilter {
             return;
         }
 
-        if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
-            if (registrationService.isAutoRegistration()) {
-                sendError(resp, WebConstants.REGISTRATION_REQUIRED);
-            } else {
-                sendError(resp, HttpServletResponse.SC_FORBIDDEN);
-            }
-            return;
+        final AuthenticationStatus status = getTransportResourceHandler()
+                .status(nodeId, securityToken);
+        if (AuthenticationStatus.FORBIDDEN.equals(status)) {
+            sendError(resp, HttpServletResponse.SC_FORBIDDEN);
+        } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
+            sendError(resp, WebConstants.REGISTRATION_REQUIRED);
+        } else if (AuthenticationStatus.ACCEPTED.equals(status)) {
+            chain.doFilter(req, resp);
         }
-
-        chain.doFilter(req, resp);
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
     }
 }

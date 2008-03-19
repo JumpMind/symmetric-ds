@@ -53,15 +53,17 @@ public class HttpIncomingTransport implements IIncomingTransport {
     }
 
     public BufferedReader open() throws IOException {
-        if (WebConstants.REGISTRATION_NOT_OPEN == connection.getResponseCode()) {
+
+        switch (connection.getResponseCode()) {
+        case WebConstants.REGISTRATION_NOT_OPEN:
             throw new RegistrationNotOpenException();
-        } else if (WebConstants.REGISTRATION_REQUIRED == connection.getResponseCode()) {
+        case WebConstants.REGISTRATION_REQUIRED:
             throw new RegistrationRequiredException();
-        } else if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == connection.getResponseCode()) {
-                throw new ConnectionRejectedException();
-        } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
-            throw new AuthenticationException();                            
-        } else {
+        case HttpServletResponse.SC_SERVICE_UNAVAILABLE:
+            throw new ConnectionRejectedException();
+        case HttpServletResponse.SC_FORBIDDEN:
+            throw new AuthenticationException();
+        default:
             reader = HttpTransportManager.getReaderFrom(connection);
             return reader;
         }

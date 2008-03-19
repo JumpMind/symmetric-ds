@@ -1,30 +1,127 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
-	<bean id="authenticationFilter"
-		class="org.jumpmind.symmetric.web.AuthenticationFilter">
-		<property name="regexPattern" value="^/(ack|pull|push)(/*)|$" />
-        <property name="nodeService" ref="nodeService"/>
-        <property name="registrationService" ref="registrationService"/>
-	</bean>
+    <bean id="pullResourceHandler"
+        class="org.jumpmind.symmetric.transport.PullResourceHandler">
+        <property name="nodeService" ref="nodeService" />
+        <property name="registrationService" ref="registrationService" />
+    </bean>
 
-	<bean id="nodeConcurrencyFilter"
-		class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
-		<property name="regexPattern" value="^/(ack|pull|push)(/*)|$" />
-	</bean>
+    <bean id="pushResourceHandler"
+        class="org.jumpmind.symmetric.transport.PushResourceHandler">
+        <property name="dataLoaderService" ref="dataLoaderService" />
+    </bean>
 
-	<bean id="compressionFilter"
-		class="org.jumpmind.symmetric.web.CompressionFilter">
-		<property name="regexPattern" value="^/(registration|pull|push)(/*)|$" />
-		<property name="disabled" value="true" />
-		<property name="compressType" value="gzip_only" />
-	</bean>
-	
-	<bean id="throttleFilter"
-		class="org.jumpmind.symmetric.web.ThrottleFilter">
-		<property name="regexPattern" value="^/(pull|push)(/*)|$" />
-		<property name="disabled" value="true" />
-	</bean>
+    <bean id="registrationResourceHandler"
+        class="org.jumpmind.symmetric.transport.RegistrationResourceHandler">
+        <property name="registrationService" ref="registrationService" />
+    </bean>
+
+    <bean id="ackResourceHandler"
+        class="org.jumpmind.symmetric.transport.AckResourceHandler">
+        <property name="acknowledgeService" ref="acknowledgeService" />
+    </bean>
+
+    <bean id="alertResourceHandler"
+        class="org.jumpmind.symmetric.transport.AlertResourceHandler">
+        <property name="incomingBatchService"
+            ref="incomingBatchService" />
+        <property name="outgoingBatchService"
+            ref="outgoingBatchService" />
+    </bean>
+
+    <bean id="authenticationResourceHandler"
+        class="org.jumpmind.symmetric.transport.AuthenticationResourceHandler">
+        <property name="registrationService" ref="registrationService" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+    
+    <bean id="authenticationFilter"
+        class="org.jumpmind.symmetric.web.AuthenticationFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/ack/*</value>
+            </list>
+        </property>
+        <property name="transportResourceHandler"
+            ref="authenticationResourceHandler" />
+    </bean>
+
+    <bean id="nodeConcurrencyFilter"
+        class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/ack/*</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="compressionFilter"
+        class="org.jumpmind.symmetric.web.CompressionFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/registration/*</value>
+            </list>
+        </property>
+        <property name="disabled"
+            value="${symmetric.web.compression.disabled}" />
+        <property name="compressType"
+            value="${symmetric.web.compression.type}" />
+    </bean>
+
+    <bean id="throttleFilter"
+        class="org.jumpmind.symmetric.web.ThrottleFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+            </list>
+        </property>
+
+        <property name="disabled" value="true" />
+    </bean>
+
+    <bean id="pullServlet"
+        class="org.jumpmind.symmetric.web.PullServlet">
+        <property name="uriPattern" value="/pull/*" />
+        <property name="transportResourceHandler"
+            ref="pullResourceHandler" />
+    </bean>
+
+    <bean id="pushServlet"
+        class="org.jumpmind.symmetric.web.PushServlet">
+        <property name="uriPattern" value="/push/*" />
+        <property name="transportResourceHandler"
+            ref="pushResourceHandler" />
+    </bean>
+
+    <bean id="registrationServlet"
+        class="org.jumpmind.symmetric.web.RegistrationServlet">
+        <property name="uriPattern" value="/registration/*" />
+        <property name="transportResourceHandler"
+            ref="registrationResourceHandler" />
+    </bean>
+
+    <bean id="ackServlet"
+        class="org.jumpmind.symmetric.web.AckServlet">
+        <property name="uriPattern" value="/ack/*" />
+        <property name="transportResourceHandler"
+            ref="ackResourceHandler" />
+    </bean>
+
+    <bean id="alertServlet"
+        class="org.jumpmind.symmetric.web.AlertServlet">
+        <property name="uriPattern" value="/alert/*" />
+        <property name="transportResourceHandler"
+            ref="alertResourceHandler" />
+    </bean>
+
 </beans>

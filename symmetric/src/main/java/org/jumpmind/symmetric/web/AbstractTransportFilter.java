@@ -1,9 +1,7 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Eric Long <erilong@users.sourceforge.net>,
- *               Keith Naas <knaas@users.sourceforge.net>
+ * Copyright (C) Keith Naas <knaas@users.sourceforge.net>
  *               
  *
  * This library is free software; you can redistribute it and/or
@@ -22,20 +20,26 @@
  */
 package org.jumpmind.symmetric.web;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.jumpmind.symmetric.transport.ITransportResource;
+import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 
-import org.jumpmind.symmetric.model.Node;
-import org.springframework.context.ApplicationContext;
+/**
+ * This is a filter that is used by a transport.
+ * 
+ * 
+ * @param <T>
+ */
+public abstract class AbstractTransportFilter<T extends ITransportResourceHandler>
+        extends AbstractFilter implements ITransportResource<T> {
 
-public class RegistrationResourceHandler extends ResourceHandler {
-    public RegistrationResourceHandler(ApplicationContext context,
-            InputStream inputStream, OutputStream outputStream) {
-        super(context, inputStream, outputStream);
+    private T transportResourceHandler;
+
+    public void setTransportResourceHandler(T transportResourceHandler) {
+        this.transportResourceHandler = transportResourceHandler;
     }
 
-    public boolean registerNode(Node node) throws IOException {
-        return getRegistrationService().registerNode(node, outputStream);
+    public T getTransportResourceHandler() {
+        return transportResourceHandler;
     }
+
 }
