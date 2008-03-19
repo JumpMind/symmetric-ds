@@ -24,6 +24,10 @@ import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
+import org.apache.commons.logging.Log;
+import org.jumpmind.symmetric.transport.ITransportResource;
+import org.springframework.beans.BeanUtils;
+
 /**
  * All symmetric filters (other than {@link SymmetricFilter}) should extend
  * this class. It it managed by Spring.
@@ -33,8 +37,22 @@ import javax.servlet.ServletException;
 public abstract class AbstractFilter extends ServletResourceTemplate implements
         Filter {
 
+    protected abstract Log getLogger();
+    
     public void init(FilterConfig filterConfig) throws ServletException {
         init(filterConfig.getServletContext());
+        if (isContainerCompatible() && !this.isSpringManaged()) {
+            final IServletResource springBean = getSpringBean();
+            if (this != springBean) { // this != is deliberate!
+                if (getLogger().isInfoEnabled()) {
+                    getLogger().info(String.format("Initializing filter %s",
+                        springBean.getClass().getSimpleName()));
+                }
+                BeanUtils.copyProperties(springBean, this, IServletResource.class);
+                BeanUtils.copyProperties(springBean, this, ITransportResource.class);
+                BeanUtils.copyProperties(springBean, this, this.getClass());
+                this.refresh();
+            }
+        } 
     }
-
 }

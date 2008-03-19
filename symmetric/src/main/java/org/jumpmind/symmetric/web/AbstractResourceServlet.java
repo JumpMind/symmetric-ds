@@ -20,10 +20,16 @@
  */
 package org.jumpmind.symmetric.web;
 
+import java.util.Iterator;
+
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
+import org.jumpmind.symmetric.transport.ITransportResource;
 import org.jumpmind.symmetric.transport.ITransportResourceHandler;
+import org.springframework.beans.BeanUtils;
 
 /**
  * @since 1.4.0
@@ -34,12 +40,30 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
         extends AbstractServlet implements IServletResource {
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
 
+    /**
+     * Returns true if this should be container compatible
+     * @return
+     */
+    public boolean isContainerCompatible() {
+        return false;
+    }
+    
     public void destroy() {
         servletResourceTemplate.destroy();
     }
 
     public boolean isDisabled() {
         return servletResourceTemplate.isDisabled();
+    }
+
+    public String[] getRegexPatterns()
+    {
+        return servletResourceTemplate.getRegexPatterns();
+    }
+
+    public String[] getUriPatterns()
+    {
+        return servletResourceTemplate.getUriPatterns();
     }
 
     public boolean matches(ServletRequest request) {
@@ -70,8 +94,54 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
         return servletResourceTemplate.toString();
     }
 
+    @Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        servletResourceTemplate.init(getServletContext());
+        if (isContainerCompatible() && !this.isSpringManaged()) {
+            final IServletResource springBean = getSpringBean();
+            if (this != springBean) { // this != is deliberate!
+                if (getLogger().isInfoEnabled()) {
+                    getLogger().info(String.format("Initializing servlet %s",
+                        springBean.getClass().getSimpleName()));
+                }            
+                BeanUtils.copyProperties(springBean, this, IServletResource.class);
+                BeanUtils.copyProperties(springBean, this, ITransportResource.class);
+                BeanUtils.copyProperties(springBean, this, this.getClass());
+                
+                this.refresh();
+            }
+        } 
+    }
+    
+    /**
+     * Returns true if this is a spring managed resource.
+     * @return
+     */
+    public boolean isSpringManaged() {
+        return getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+    }
+
+    /**
+     * Returns true if this is a container managed resource.
+     * @return
+     */
+    public IServletResource getSpringBean() {
+        IServletResource retVal = this;
+        if (!isSpringManaged()) {
+            Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
+            if (iterator.hasNext()) {
+                retVal = (IServletResource)iterator.next();
+            }
+        }
+        return retVal;
+    }
+
     public void init(ServletContext servletContext) {
         servletResourceTemplate.init(servletContext);
     }
 
+    public void refresh() {
+        servletResourceTemplate.refresh();
+    }
 }

@@ -46,6 +46,12 @@ public class AlertServlet extends
     private static final Log logger = LogFactory.getLog(AlertServlet.class);
 
     @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+    
+    @Override
     public void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException, FeedException {
 

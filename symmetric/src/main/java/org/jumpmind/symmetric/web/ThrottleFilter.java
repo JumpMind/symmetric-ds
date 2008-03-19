@@ -30,7 +30,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -61,7 +62,7 @@ import org.apache.log4j.Logger;
 
 public class ThrottleFilter extends AbstractFilter {
 
-    private static Logger logger = Logger.getLogger(ThrottleFilter.class);
+    private final static Log logger = LogFactory.getLog(ThrottleFilter.class);
 
     private Long maxBps;
 
@@ -70,11 +71,17 @@ public class ThrottleFilter extends AbstractFilter {
     private Long checkPoint;
 
     // default threshold before throttling in number of bytes
-    private static final long DEFFAULT_THRESHOLD = 8192L;
+    private static final long DEFAULT_THRESHOLD = 8192L;
 
     // default frequency to recalculation rate in number of bytes
     private static final long DEFAULT_CHECK_POINT = 1024L;
 
+    @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+    
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
         ThrottledResponseWrapper wrapper = new ThrottledResponseWrapper(
@@ -83,7 +90,7 @@ public class ThrottleFilter extends AbstractFilter {
                 DEFAULT_CHECK_POINT));
         wrapper.setMaxBps((Long) ObjectUtils.defaultIfNull(maxBps, 0L));
         wrapper.setThreshold((Long) ObjectUtils.defaultIfNull(threshold,
-                DEFFAULT_THRESHOLD));
+                DEFAULT_THRESHOLD));
         if (logger.isDebugEnabled()) {
             logger.debug("Before hit servlet");
         }
@@ -104,6 +111,27 @@ public class ThrottleFilter extends AbstractFilter {
 
     public void setCheckPoint(Long checkPoint) {
         this.checkPoint = checkPoint;
+    }
+
+    public Long getMaxBps()
+    {
+        return maxBps;
+    }
+
+    public Long getThreshold()
+    {
+        return threshold;
+    }
+
+    public Long getCheckPoint()
+    {
+        return checkPoint;
+    }
+    
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
     }
 
 }

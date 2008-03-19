@@ -41,6 +41,12 @@ public class PushServlet extends
     private static final Log logger = LogFactory.getLog(PushServlet.class);
 
     @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+
+    @Override
     protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

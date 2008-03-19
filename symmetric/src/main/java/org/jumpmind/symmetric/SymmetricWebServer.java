@@ -55,7 +55,7 @@ public class SymmetricWebServer {
         ServletHolder servletHolder = new ServletHolder(SymmetricServlet.class);
         servletHolder.setInitOrder(0);
         webContext.addServlet(servletHolder, "/*");
-
+        
         server.addHandler(webContext);
 
         logger.info("About to start SymmetricDS web server on port " + port);

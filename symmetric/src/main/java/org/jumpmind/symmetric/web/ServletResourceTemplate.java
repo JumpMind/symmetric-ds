@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -50,10 +51,14 @@ public class ServletResourceTemplate implements IServletResource {
 
     public void init(ServletContext servletContext) {
         this.servletContext = servletContext;
-        this.compiledRegexPatterns = compileRegexPatterns();
+        compileRegexPatterns();
     }
 
-    protected Pattern[] compileRegexPatterns() {
+    public void refresh() {
+        compileRegexPatterns();
+    }
+    
+    protected void compileRegexPatterns() {
         final List<Pattern> compiledRegexPatterns;
         if (!ArrayUtils.isEmpty(regexPatterns)) {
             compiledRegexPatterns = new ArrayList<Pattern>(regexPatterns.length);
@@ -63,7 +68,7 @@ public class ServletResourceTemplate implements IServletResource {
         } else {
             compiledRegexPatterns = Collections.emptyList();
         }
-        return compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns
+        this.compiledRegexPatterns = compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns
                 .size()]);
     }
 
@@ -91,6 +96,15 @@ public class ServletResourceTemplate implements IServletResource {
         return disabled;
     }
 
+    public String[] getUriPatterns()
+    {
+        return uriPatterns;
+    }
+
+    public String[] getRegexPatterns()
+    {
+        return regexPatterns;
+    }
     protected boolean matchesRegexPatterns(String uri) {
         boolean retVal = false;
         for (int i = 0; !retVal && i < compiledRegexPatterns.length; i++) {
@@ -205,5 +219,43 @@ public class ServletResourceTemplate implements IServletResource {
         return WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
     }
+    
+    /**
+     * Returns true if this is a spring managed resource.
+     * @return
+     */
+    public boolean isSpringManaged() {
+        return getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+    }
 
+    /**
+     * Returns true if this is a container managed resource.
+     * @return
+     */
+    public IServletResource getSpringBean() {
+        IServletResource retVal = this;
+        if (!isSpringManaged()) {
+            Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
+            if (iterator.hasNext()) {
+                retVal = (IServletResource)iterator.next();
+            }
+        }
+        return retVal;
+    }
+
+    /**
+     * Returns true if this should be container compatible
+     * @return
+     */
+    public boolean isContainerCompatible()
+    {
+        return false;
+    }
+
+
+
+    protected void setServletContext(ServletContext servletContext)
+    {
+        this.servletContext = servletContext;
+    }
 }
