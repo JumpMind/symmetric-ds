@@ -1,9 +1,7 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Eric Long <erilong@users.sourceforge.net>,
- *               Keith Naas <knaas@users.sourceforge.net>
+ * Copyright (C) Keith Naas <knaas@users.sourceforge.net>
  *               
  *
  * This library is free software; you can redistribute it and/or
@@ -20,22 +18,20 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.transport;
 
-package org.jumpmind.symmetric.web;
+/**
+ * This marks a resource that is used by a transport. For instance for a
+ * traditional application server, various HttpServlets might extends this. For
+ * an alternative transport, a different technology would likely extend it.
+ * 
+ * 
+ * @param <T>
+ */
+public interface ITransportResource<T extends ITransportResourceHandler> {
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+    public abstract void setTransportResourceHandler(T transportResourceHandler);
 
-import org.springframework.context.ApplicationContext;
+    public abstract T getTransportResourceHandler();
 
-public class PushResourceHandler extends ResourceHandler {
-    public PushResourceHandler(ApplicationContext context,
-            InputStream inputStream, OutputStream outputStream) {
-        super(context, inputStream, outputStream);
-    }
-
-    public void push() throws IOException {
-        getDataLoaderService().loadData(inputStream, outputStream);
-    }
 }

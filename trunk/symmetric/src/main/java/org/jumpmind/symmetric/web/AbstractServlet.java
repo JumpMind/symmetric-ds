@@ -89,7 +89,7 @@ abstract public class AbstractServlet extends HttpServlet {
         return is;
     }
 
-    protected ApplicationContext getApplicationContext() {
+    protected ApplicationContext getDefaultApplicationContext() {
         return WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
     }
@@ -128,7 +128,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -162,7 +162,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -196,7 +196,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -264,7 +264,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleHead(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -297,7 +297,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleOptions(HttpServletRequest req,
             HttpServletResponse resp) throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
@@ -331,7 +331,7 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleTrace(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     /**

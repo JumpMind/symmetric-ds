@@ -21,23 +21,23 @@ package org.jumpmind.symmetric;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.web.AckServlet;
-import org.jumpmind.symmetric.web.PullServlet;
-import org.jumpmind.symmetric.web.PushServlet;
-import org.jumpmind.symmetric.web.RegistrationServlet;
 import org.jumpmind.symmetric.web.SymmetricFilter;
+import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.Context;
+import org.mortbay.jetty.servlet.ServletHolder;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
+ * 
  * @see SymmetricLauncher#main(String[])
  */
 public class SymmetricWebServer {
-    
-    protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
+
+    protected static final Log logger = LogFactory
+            .getLog(SymmetricWebServer.class);
 
     public void start(int port) throws Exception {
 
@@ -52,13 +52,9 @@ public class SymmetricWebServer {
 
         webContext.addFilter(SymmetricFilter.class, "/*", 0);
 
-        webContext.addServlet(PullServlet.class, "/pull/*");
-
-        webContext.addServlet(PushServlet.class, "/push/*");
-
-        webContext.addServlet(AckServlet.class, "/ack/*");
-
-        webContext.addServlet(RegistrationServlet.class, "/registration/*");
+        ServletHolder servletHolder = new ServletHolder(SymmetricServlet.class);
+        servletHolder.setInitOrder(0);
+        webContext.addServlet(servletHolder, "/*");
 
         server.addHandler(webContext);
 

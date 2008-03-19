@@ -32,8 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.transport.PushResourceHandler;
 
-public class PushServlet extends AbstractServlet {
+public class PushServlet extends
+        AbstractTransportResourceServlet<PushResourceHandler> {
     private static final long serialVersionUID = 1L;
 
     private static final Log logger = LogFactory.getLog(PushServlet.class);
@@ -53,8 +55,7 @@ public class PushServlet extends AbstractServlet {
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = createOutputStream(resp);
 
-        new PushResourceHandler(this.getApplicationContext(), inputStream,
-                outputStream).push();
+        getTransportResourceHandler().push(inputStream, outputStream);
 
         outputStream.flush(); // TODO: why is this necessary?
 

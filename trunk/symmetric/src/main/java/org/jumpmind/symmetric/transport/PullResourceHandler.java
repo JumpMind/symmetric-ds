@@ -21,28 +21,31 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.web;
+package org.jumpmind.symmetric.transport;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.springframework.context.ApplicationContext;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
-public class PullResourceHandler extends ResourceHandler {
+public class PullResourceHandler extends AbstractTransportResourceHandler {
     private static final Log logger = LogFactory
             .getLog(PullResourceHandler.class);
 
-    public PullResourceHandler(ApplicationContext context,
-            InputStream inputStream, OutputStream outputStream) {
-        super(context, inputStream, outputStream);
-    }
+    private INodeService nodeService;
 
-    public void pull(String nodeId) throws Exception {
+    private IDataService dataService;
+
+    private IDataExtractorService dataExtractorService;
+
+    private IRegistrationService registrationService;
+
+    public void pull(String nodeId, OutputStream outputStream) throws Exception {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {
@@ -64,5 +67,38 @@ public class PullResourceHandler extends ResourceHandler {
                 logger.warn(String.format("Node %s does not exist.", nodeId));
             }
         }
+    }
+
+    private INodeService getNodeService() {
+        return nodeService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    private IRegistrationService getRegistrationService() {
+        return registrationService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
+
+    private IDataService getDataService() {
+        return dataService;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
+    }
+
+    private IDataExtractorService getDataExtractorService() {
+        return dataExtractorService;
+    }
+
+    public void setDataExtractorService(
+            IDataExtractorService dataExtractorService) {
+        this.dataExtractorService = dataExtractorService;
     }
 }

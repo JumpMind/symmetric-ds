@@ -23,7 +23,6 @@
 
 package org.jumpmind.symmetric.web;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,8 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.transport.PullResourceHandler;
 
-public class PullServlet extends AbstractServlet {
+public class PullServlet extends
+        AbstractTransportResourceServlet<PullResourceHandler> {
 
     private static final Log logger = LogFactory.getLog(PullServlet.class);
 
@@ -62,10 +63,8 @@ public class PullServlet extends AbstractServlet {
                     "Node must be specified");
             return;
         }
-        InputStream inputStream = createInputStream(req);
         OutputStream outputStream = createOutputStream(resp);
-        new PullResourceHandler(getApplicationContext(), inputStream,
-                outputStream).pull(nodeId);
+        getTransportResourceHandler().pull(nodeId, outputStream);
 
         if (logger.isDebugEnabled()) {
             logger.debug(String

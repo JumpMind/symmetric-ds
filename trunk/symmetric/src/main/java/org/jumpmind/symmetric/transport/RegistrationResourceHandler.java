@@ -20,24 +20,27 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-package org.jumpmind.symmetric.web;
+package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 
-import org.jumpmind.symmetric.model.BatchInfo;
-import org.springframework.context.ApplicationContext;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
-public class AckResourceHandler extends ResourceHandler {
-    public AckResourceHandler(ApplicationContext context,
-            InputStream inputStream, OutputStream outputStream) {
-        super(context, inputStream, outputStream);
+public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
+    private IRegistrationService registrationService;
+
+    public boolean registerNode(Node node, OutputStream outputStream)
+            throws IOException {
+        return getRegistrationService().registerNode(node, outputStream);
     }
 
-    public void ack(List<BatchInfo> batches) throws IOException {
-        getAcknowledgeService().ack(batches);
+    private IRegistrationService getRegistrationService() {
+        return registrationService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 }
