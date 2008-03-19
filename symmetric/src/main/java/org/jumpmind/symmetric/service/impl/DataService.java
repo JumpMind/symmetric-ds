@@ -38,15 +38,18 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -62,6 +65,8 @@ public class DataService extends AbstractService implements IDataService {
     private INodeService nodeService;
     
     private IPurgeService purgeService;
+    
+    private IOutgoingBatchService outgoingBatchService;
 
     private String tablePrefix;
 
@@ -166,6 +171,11 @@ public class DataService extends AbstractService implements IDataService {
             for (Trigger trigger : triggers) {
                 String xml = dbDialect.getCreateTableXML(trigger);
                 insertCreateEvent(targetNode, trigger, xml);
+                OutgoingBatch newBatch = new OutgoingBatch();
+                newBatch.setBatchType(BatchType.INITIAL_LOAD);
+                newBatch.setChannelId(trigger.getChannelId());
+                newBatch.setNodeId(targetNode.getNodeId());
+                outgoingBatchService.insertOutgoingBatch(newBatch);
             }            
         }
         if (deleteFirstForReload) {
@@ -338,6 +348,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setPurgeService(IPurgeService purgeService) {
         this.purgeService = purgeService;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
     }
 
 }
