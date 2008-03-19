@@ -42,7 +42,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * This filter allows us simplify the configuration of symmetric by defining
  * filters directly within spring configuration files.
  * 
- * Configured within symmetric-web.xml
+ * Configured within web.xml
  * 
  * <pre>
  *  &lt;filter&gt;
@@ -57,6 +57,9 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  *    &lt;url-pattern&gt;*&lt;/url-pattern&gt;
  *  &lt;/filter-mapping&gt;
  * </pre>
+ * 
+ * @since 1.4.0
+ * 
  */
 public class SymmetricFilter implements Filter {
 

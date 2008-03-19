@@ -28,6 +28,8 @@ import org.jumpmind.symmetric.transport.ITransportResourceHandler;
  * 
  * 
  * @param <T>
+ * @since 1.4.0
+ * 
  */
 public abstract class AbstractTransportResourceServlet<T extends ITransportResourceHandler>
         extends AbstractResourceServlet<T> implements ITransportResource<T> {

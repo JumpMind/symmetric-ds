@@ -25,6 +25,11 @@ import javax.servlet.ServletRequest;
 
 import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 
+/**
+ * @since 1.4.0
+ * 
+ * @param <T>
+ */
 public abstract class AbstractResourceServlet<T extends ITransportResourceHandler>
         extends AbstractServlet implements IServletResource {
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
