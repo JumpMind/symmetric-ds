@@ -39,7 +39,23 @@ import org.apache.commons.logging.LogFactory;
  * The SymmetricServlet manages all of the other servlets. This allows for
  * easier configuration since spring manages the individual servlets.
  * 
+ * Configured within web.xml
  * 
+ * <pre>
+ *  &lt;servlet&gt;
+ *    &lt;servlet-name&gt;SymmetricServlet&lt;/filter-name&gt;
+ *    &lt;servlet-class&gt;
+ *      org.jumpmind.symmetric.web.SymmetricServlet
+ *    &lt;/servlet-class&gt;
+ *  &lt;/servlet&gt;
+ * 
+ *  &lt;servlet-mapping&gt;
+ *    &lt;servlet-name&gt;SymmetricServlet&lt;/servlet-name&gt;
+ *    &lt;url-pattern&gt;*&lt;/url-pattern&gt;
+ *  &lt;/servlet-mapping&gt;
+ * </pre>
+ * 
+ * @since 1.4.0
  */
 public class SymmetricServlet extends AbstractServlet {
 

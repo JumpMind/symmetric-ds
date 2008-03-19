@@ -27,6 +27,8 @@ import javax.servlet.ServletException;
 /**
  * All symmetric filters (other than {@link SymmetricFilter}) should extend
  * this class. It it managed by Spring.
+ * 
+ * @since 1.4.0
  */
 public abstract class AbstractFilter extends ServletResourceTemplate implements
         Filter {
