@@ -30,6 +30,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.AuthenticationResourceHandler;
 import org.jumpmind.symmetric.transport.AuthenticationResourceHandler.AuthenticationStatus;
 
@@ -40,6 +42,14 @@ import org.jumpmind.symmetric.transport.AuthenticationResourceHandler.Authentica
  */
 public class AuthenticationFilter extends
         AbstractTransportFilter<AuthenticationResourceHandler> {
+
+    private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
+  
+    @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
 
     public void doFilter(ServletRequest req, ServletResponse resp,
             FilterChain chain) throws IOException, ServletException {
@@ -60,5 +70,11 @@ public class AuthenticationFilter extends
         } else if (AuthenticationStatus.ACCEPTED.equals(status)) {
             chain.doFilter(req, resp);
         }
+    }
+
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
     }
 }

@@ -44,6 +44,12 @@ public class RegistrationServlet extends
             .getLog(RegistrationServlet.class);
 
     @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+
+    @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Node node = transform(req);

@@ -46,6 +46,13 @@ public class AckServlet extends
 
     protected static final Log logger = LogFactory.getLog(AckServlet.class);
 
+
+    @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp)

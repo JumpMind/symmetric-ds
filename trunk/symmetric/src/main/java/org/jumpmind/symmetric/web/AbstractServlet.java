@@ -45,6 +45,8 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected abstract Log getLogger();
 
+    
+    
     protected OutputStream createOutputStream(HttpServletResponse resp)
             throws IOException {
         return resp.getOutputStream();
@@ -93,7 +95,7 @@ abstract public class AbstractServlet extends HttpServlet {
         return WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
     }
-
+    
     @Override
     protected final void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

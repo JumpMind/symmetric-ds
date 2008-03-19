@@ -67,6 +67,36 @@ public class Constants {
     
     public static final String PULL_SERVICE = "pullService";
     
+    public static final String ACK_RESOURCE_HANDLER = "ackResourceHandler";
+    
+    public static final String ALERT_RESOURCE_HANDLER = "alertResourceHandler";
+    
+    public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
+    
+    public static final String PULL_RESOURCE_HANDLER = "pullResourceHandler";
+    
+    public static final String PUSH_RESOURCE_HANDLER = "pushResourceHandler";
+    
+    public static final String REGISTRATION_RESOURCE_HANDLER = "registrationResourceHandler";
+    
+    public static final String ACK_SERVLET = "ackResourceHandler";
+    
+    public static final String ALERT_SERVLET = "alertResourceHandler";
+    
+    public static final String PULL_SERVLET = "pullResourceServlet";
+    
+    public static final String PUSH_SERVLET = "pushResourceServlet";
+    
+    public static final String REGISTRATION_SERVLET = "registrationServlet";
+    
+    public static final String AUTHENTICATION_FILTER = "authenticationFilter";
+
+    public static final String THROTTLE_FILTER = "throttleFilter";
+    
+    public static final String COMPRESSION_FILTER = "compressionFilter";
+
+    public static final String NODE_CONCURRENCY_FILTER = "nodeConcurrencyFilter";
+
     public static final String RUNTIME_CONFIG = "runtimeConfiguration";
     
     public static final String DB_DIALECT = "dbDialect";

@@ -41,6 +41,12 @@ public class PullServlet extends
     private static final long serialVersionUID = 1L;
 
     @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+
+    @Override
     public void handleGet(HttpServletRequest req, HttpServletResponse resp)
             throws Exception {
         handlePost(req, resp);

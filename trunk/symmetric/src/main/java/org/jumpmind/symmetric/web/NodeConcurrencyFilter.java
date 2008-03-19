@@ -64,7 +64,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     private static final int TOO_BUSY_LOG_STATEMENTS_PER_MIN = 10;
 
-    final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
+    private final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
 
     protected int maxNumberOfConcurrentWorkers = 20;
 
@@ -76,6 +76,12 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     static Map<String, Integer> numberOfWorkersByServlet = new HashMap<String, Integer>();
 
+    @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+    
     public void doFilter(final ServletRequest req, final ServletResponse resp,
             final FilterChain chain) throws IOException, ServletException {
         String servletPath = ((HttpServletRequest) req).getServletPath();
@@ -149,4 +155,9 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         this.maxNumberOfConcurrentWorkers = maxNumberOfConcurrentWorkers;
     }
 
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
+    }
 }

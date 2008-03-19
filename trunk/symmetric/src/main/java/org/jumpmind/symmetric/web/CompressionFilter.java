@@ -34,6 +34,8 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.collections.iterators.EnumerationIterator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -60,10 +62,17 @@ import org.apache.commons.collections.iterators.EnumerationIterator;
  * </pre>
  */
 public class CompressionFilter extends AbstractFilter {
+    private static final Log logger = LogFactory.getLog(CompressionFilter.class);
 
     private javawebparts.filter.CompressionFilter delegate;
     private String compressType;
 
+    @Override
+    public boolean isContainerCompatible()
+    {
+        return true;
+    }
+    
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
         if (delegate != null) {
@@ -91,6 +100,12 @@ public class CompressionFilter extends AbstractFilter {
         this.compressType = compressType;
     }
 
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
+    }
+    
     private final class CompressionFilterConfig implements FilterConfig {
         private final FilterConfig filterConfig;
         private final List<String> initParameterNames;
