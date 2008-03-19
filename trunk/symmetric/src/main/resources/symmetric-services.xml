@@ -330,6 +330,7 @@
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="purgeService" ref="purgeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
