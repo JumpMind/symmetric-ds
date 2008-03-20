@@ -39,13 +39,13 @@ public class SymmetricMessageReceiverTestCase extends
 
 	public MessageReceiver getMessageReceiver() throws Exception {
 		Mock mockService = new Mock(Service.class);
-		mockService.expectAndReturn("getResponseTransformer", null);
+		mockService.expectAndReturn("getResponseRouter", null);
 		return new SymmetricMessageReceiver(endpoint.getConnector(),
 				(Service) mockService.proxy(), endpoint);
 	}
 
 	public InboundEndpoint getEndpoint() throws Exception {
-	    EndpointBuilder builder = new EndpointURIEndpointBuilder("symmetric:http://localhost:1234", muleContext);
+	    EndpointBuilder builder = new EndpointURIEndpointBuilder("symmetric://test", muleContext);
         if (connector == null)
         {
             throw new InitialisationException(MessageFactory.createStaticMessage("Connector has not been initialized."), null);
