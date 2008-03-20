@@ -4,6 +4,34 @@
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Basic Configuration</title>
+    <para>
+        To get an instance of SymmetricDS running, it needs to be given an identity and know how
+        to connect to the database it will manage.  A basic way to specify this is to place properties
+        in the symmetric.properties file.  After connecting to the database, the Node reads its
+        configuration and current status.  If the configuration tables are missing, they are created
+        automatically, unless that feature is disabled.  A basic configuration describes the
+        following:
+            <itemizedlist>
+                <listitem>
+                    <para>Node Groups - each Node belongs to a group</para>
+                </listitem>
+                <listitem>
+                    <para>Node Group Links - two Nodes Groups are linked together for synchronization</para>
+                </listitem>
+                <listitem>
+                    <para>Nodes - each instance of Symmetric has an identity</para>
+                </listitem>
+                <listitem>
+                    <para>Channels - data is categorized to synchronize independently</para>
+                </listitem>
+                <listitem>
+                    <para>Triggers - specify which changes in the database are captured</para>
+                </listitem>
+            </itemizedlist>
+        During initialization, the Triggers are verified against the database, and database triggers
+        are installed on tables that require data changes to be captured.  The PullJob and PushJob
+        begin running as required to synchronize changes with other Nodes.
+    </para>
     <section>
         <title>Setting Startup Properties</title>
         <para>
@@ -26,12 +54,12 @@
                     <tbody>
                         <row>
                             <entry>
-                                <emphasis>default-symmetric.properties</emphasis>
+                                <emphasis>symmetric-default.properties</emphasis>
                             </entry>
                             <entry>Y</entry>
                             <entry>
                                 Packaged inside symmetric-ds.jar file. This file has all the default
-                                settings and along with descriptions.
+                                settings along with descriptions.
                             </entry>
                         </row>
                         <row>
@@ -93,13 +121,16 @@
                     </tbody>
                 </tgroup>
             </table>
+            
+            Also see the appendix on <emphasis>Startup Properties</emphasis> to see all the possible
+            properties and their defaults.
         </para>
     </section>
     <section>
         <title>Basic Properties</title>
         <para>
-            Each Node requires properties that will register it with the network and connect it to
-            the database. To give a Node its identity, the following properties are used:
+            Each Node requires properties that will connect it to the database and register
+            it with a parent Node.  To give a Node its identity, the following properties are used:
         </para>
         <variablelist>
             <varlistentry>
@@ -218,7 +249,63 @@
         </variablelist>
     </section>
     <section>
+        <title>Node Groups</title>
+        <para>
+            Each Node must belong to a Node Group, a collection of one or more Nodes.
+            A common use of Node Groups is to describe a level in a hierarchy of data synchronization.
+            For example, at a retail store chain, there might be a few Nodes that belong to "corp", which
+            sync with hundreds of Nodes that belong to "store", which sync with thousands of Nodes that 
+            belong to "register".
+        </para>
+        <para>
+            The following SQL statements would create Node Groups for "corp" and "store". 
+
+            <programlisting>
+<![CDATA[insert into sym_node_group (node_group_id, description)
+values ('store', 'A retail store node');
+
+insert into sym_node_group (node_group_id, description)
+values ('corp', 'A corporate node');]]></programlisting>
+        </para>
+    </section>
+    <section>
+        <title>Node Group Links</title>
+        <para>
+            To establish synchronization between Nodes, two Node Groups are linked together.  The direction
+            of synchronization is determined by specifying a source and target Node Group.
+            If synchronization should occur in both directions, then two links can be created in opposite
+            directions.  The target Node Group can receive data changes by either push or pull methods.
+            A push method causes the source Node Group to connect to the target, while a pull method
+            causes it to wait for the target to connect to it.
+        </para>
+        <para>
+            The following SQL statements links the "corp" and "store" Node Groups for synchronization.
+            It configures the "store" Nodes to push their data changes to the "corp" Nodes,
+            and the "corp" Nodes to send changes to "store" Nodes by waiting for a pull.
+            
+            <programlisting>
+<![CDATA[insert into sym_node_group_link
+(source_node_group, target_node_group, data_event_action)
+values ('store', 'corp', 'P');
+
+insert into sym_node_group_link
+(source_node_group, target_node_group, data_event_action)
+values ('corp', 'store', 'W');]]></programlisting>
+        </para>
+    </section>
+    <section>
         <title>Nodes</title>
-        <para></para>
+        <para>
+        </para>
+    </section>
+    <section>
+        <title>Channels</title>
+        <para>
+        </para>
+    </section>
+    <section>
+        <title>Triggers</title>
+        <para>
+        </para>
     </section>
 </chapter>
