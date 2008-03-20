@@ -10,22 +10,26 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
-import org.jumpmind.symmetric.SymmetricEngine;
+import java.util.List;
+
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IExtractListener;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
 import org.mule.api.lifecycle.LifecycleException;
 import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
 import org.mule.config.i18n.CoreMessages;
-import org.mule.transport.AbstractMessageReceiver;
 import org.mule.transport.ConnectException;
+import org.mule.transport.TransactedPollingMessageReceiver;
 
 /**
  * <code>SymmetricMessageReceiver</code> TODO document
  */
-public class SymmetricMessageReceiver extends AbstractMessageReceiver {
+public class SymmetricMessageReceiver extends TransactedPollingMessageReceiver {
 
-    private SymmetricEngine engine;
+    private SimpleSymmetricEngine engine;
 
     /*
      * For general guidelines on writing transports see
@@ -35,13 +39,15 @@ public class SymmetricMessageReceiver extends AbstractMessageReceiver {
     public SymmetricMessageReceiver(Connector connector, Service service,
             InboundEndpoint endpoint) throws CreateException {
         super(connector, service, endpoint);
+        this.setFrequency(((SymmetricConnector) connector).getPollingFrequency());
+        this.setReceiveMessagesInTransaction(false);
     }
 
     public void doConnect() throws ConnectException {
 
         disposing.set(false);
 
-        engine = new SymmetricEngine();
+        engine = new SimpleSymmetricEngine();
     }
 
     public void doDisconnect() throws ConnectException {
@@ -74,6 +80,48 @@ public class SymmetricMessageReceiver extends AbstractMessageReceiver {
 
     public void doDispose() {
         engine = null;
+    }
+
+    @Override
+    protected List getMessages() throws Exception
+    {
+        if (engine != null) {
+            engine.extract(new IExtractListener() {
+
+                public void dataExtracted(Data data) throws Exception
+                {
+                    
+                }
+
+                public void done() throws Exception
+                {
+                    
+                }
+
+                public void endBatch(OutgoingBatch outgoingbatch) throws Exception
+                {
+                    
+                }
+
+                public void init() throws Exception
+                {
+                    
+                }
+
+                public void startBatch(OutgoingBatch outgoingbatch) throws Exception
+                {
+                    
+                }
+            });
+        }
+        return null;
+    }
+
+    @Override
+    protected void processMessage(Object message) throws Exception
+    {
+        // TODO Auto-generated method stub
+        
     }
 
 }
