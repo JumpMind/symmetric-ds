@@ -7,10 +7,10 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.transport.symmetric.config;
+package org.jumpmind.mule.transport.symmetric.config;
 
+import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
-import org.mule.transport.symmetric.SymmetricConnector;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 

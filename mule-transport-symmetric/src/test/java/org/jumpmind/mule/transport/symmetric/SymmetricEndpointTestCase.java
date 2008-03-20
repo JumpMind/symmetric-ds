@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.symmetric;
+package org.jumpmind.mule.transport.symmetric;
 
 import org.mule.tck.AbstractMuleTestCase;
 
