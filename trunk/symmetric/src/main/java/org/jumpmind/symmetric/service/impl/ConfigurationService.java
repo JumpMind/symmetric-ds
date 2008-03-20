@@ -106,7 +106,7 @@ public class ConfigurationService extends AbstractService implements
             logger.debug("Channel " + Constants.CHANNEL_CONFIG + " already created.");
         }
         try {
-            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 100000, 1000 });
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 1, 10 });
         } catch (DataIntegrityViolationException ex) {
             logger.debug("Channel " + Constants.CHANNEL_RELOAD + " already created.");
         }

@@ -249,7 +249,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public boolean isInitialLoadComplete(String nodeId) {
 
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-        if (security != null && security.isInitialLoadEnabled()) {
+        if (security == null || security.isInitialLoadEnabled()) {
             return false;
         }
         
