@@ -7,9 +7,9 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.jumpmind.mule.transport.symmetric;
 
-import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
 import org.mule.tck.FunctionalTestCase;
 
 /**
@@ -17,9 +17,16 @@ import org.mule.tck.FunctionalTestCase;
  */
 public class SymmetricNamespaceHandlerTestCase extends FunctionalTestCase
 {
+
+    @Override
+    protected boolean isExcluded()
+    {
+        return true;
+    }
+
     protected String getConfigResources()
     {
-        //TODO You'll need to edit this file to configure the properties specific to your transport
+        // TODO You'll need to edit this file to configure the properties specific to your transport
         return "symmetric-namespace-config.xml";
     }
 
@@ -30,8 +37,7 @@ public class SymmetricNamespaceHandlerTestCase extends FunctionalTestCase
         assertTrue(c.isConnected());
         assertTrue(c.isStarted());
 
-        //TODO Assert specific properties are configured correctly
-
+        // TODO Assert specific properties are configured correctly
 
     }
 }

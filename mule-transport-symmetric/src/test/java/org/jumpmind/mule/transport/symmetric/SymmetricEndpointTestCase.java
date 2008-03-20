@@ -10,31 +10,32 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
-
 
 public class SymmetricEndpointTestCase extends AbstractMuleTestCase
 {
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
-
     public void testValidEndpointURI() throws Exception
     {
-        // TODO test creating and asserting Endpoint values eg
-
-        /*
-        EndpointURI url = new MuleEndpointURI("tcp://localhost:7856");
-        assertEquals("tcp", url.getScheme());
-        assertEquals("tcp://localhost:7856", url.getAddress());
+        EndpointURI url = new MuleEndpointURI("symmetric://test:1022");
+        assertEquals("symmetric://test:1022", url.getUri().toASCIIString());
+        assertEquals("symmetric", url.getScheme());
         assertNull(url.getEndpointName());
-        assertEquals(7856, url.getPort());
-        assertEquals("localhost", url.getHost());
-        assertEquals("tcp://localhost:7856", url.getAddress());
+        assertEquals(1022, url.getPort());
+        assertEquals("test", url.getHost());
         assertEquals(0, url.getParams().size());
-        */
 
-        throw new UnsupportedOperationException("testValidEndpointURI");
+        url = new MuleEndpointURI("symmetric://test:1022?x=y");
+        assertEquals("symmetric://test:1022?x=y", url.getUri().toASCIIString());
+        assertEquals("symmetric", url.getScheme());
+        assertNull(url.getEndpointName());
+        assertEquals(1022, url.getPort());
+        assertEquals("test", url.getHost());
+        assertEquals(1, url.getParams().size());
+        // assertTrue(url.getParams().contains("x"));
+        // assertEquals("y", url.getParams().get("x"));
     }
 
 }

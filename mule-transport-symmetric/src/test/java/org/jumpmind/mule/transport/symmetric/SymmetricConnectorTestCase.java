@@ -18,20 +18,10 @@ import org.mule.transport.AbstractConnectorTestCase;
 
 public class SymmetricConnectorTestCase extends AbstractConnectorTestCase {
 
-    /*
-     * For general guidelines on writing transports see
-     * http://mule.mulesource.org/display/MULE/Writing+Transports
-     */
-
     public Connector createConnector() throws Exception {
-        /*
-         * IMPLEMENTATION NOTE: Create and initialise an instance of your
-         * connector here. Do not actually call the connect method.
-         */
 
         SymmetricConnector c = new SymmetricConnector();
         c.setName("Test");
-        // TODO Set any additional properties on the connector here
         return c;
     }
 
@@ -48,5 +38,24 @@ public class SymmetricConnectorTestCase extends AbstractConnectorTestCase {
         // TODO test setting and retrieving any custom properties on the
         // Connector as necessary
     }
+
+    @Override
+    public void testConnectorMessageAdapter() throws Exception
+    {
+        Connector connector = getConnector();
+        assertNotNull(connector);
+        //org.mule.api.transport.MessageAdapter adapter = connector.getMessageAdapter(getValidMessage());
+    }
+
+    @Override
+    public void testConnectorMessageRequesterFactory() throws Exception
+    {
+        Connector connector = getConnector();
+        assertNotNull(connector);
+        //org.mule.api.transport.MessageRequesterFactory factory = connector.getRequesterFactory();
+    }
+
+    
+    
 
 }

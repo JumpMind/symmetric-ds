@@ -10,7 +10,6 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
-import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.tck.AbstractMuleTestCase;
 
@@ -28,14 +27,12 @@ public class SymmetricConnectorFactoryTestCase extends AbstractMuleTestCase
         assertNotNull(endpoint);
         assertNotNull(endpoint.getConnector());
         assertTrue(endpoint.getConnector() instanceof SymmetricConnector);
-        assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
+        assertEquals(getEndpointURI(), endpoint.getEndpointURI().getUri().toASCIIString());
     }
     
     public String getEndpointURI() 
     {
-        // TODO return a valid endpoint URI string for your transport
-        // i.e. tcp://localhost:1234
-        throw new UnsupportedOperationException("getEndpointURI");
+        return "symmetric://test";
     }
 
 }
