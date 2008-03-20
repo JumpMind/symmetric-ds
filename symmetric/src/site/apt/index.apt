@@ -14,7 +14,7 @@ Overview
 
  By using database triggers, SymmetricDS guarantees that data changes are captured and atomicity is preserved.
  Support for database vendors is provided through a Database Dialect layer,
- with implementations for MySQL, Oracle, SQL Server and PostgreSQL included.
+ with implementations for MySQL, Oracle, SQL Server, PostgreSQL, HSQLDB, and Apache Derby included.
 
 [images/n-tier-sync.gif]
  
