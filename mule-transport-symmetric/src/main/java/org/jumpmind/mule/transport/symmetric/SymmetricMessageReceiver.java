@@ -11,7 +11,7 @@
 package org.jumpmind.mule.transport.symmetric;
 
 import org.jumpmind.symmetric.SymmetricEngine;
-import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
 import org.mule.api.lifecycle.LifecycleException;
 import org.mule.api.service.Service;
@@ -33,7 +33,7 @@ public class SymmetricMessageReceiver extends AbstractMessageReceiver {
      */
 
     public SymmetricMessageReceiver(Connector connector, Service service,
-            ImmutableEndpoint endpoint) throws CreateException {
+            InboundEndpoint endpoint) throws CreateException {
         super(connector, service, endpoint);
     }
 
