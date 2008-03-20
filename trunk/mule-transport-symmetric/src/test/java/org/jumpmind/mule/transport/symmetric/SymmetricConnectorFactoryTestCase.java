@@ -8,8 +8,9 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.symmetric;
+package org.jumpmind.mule.transport.symmetric;
 
+import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.tck.AbstractMuleTestCase;
 

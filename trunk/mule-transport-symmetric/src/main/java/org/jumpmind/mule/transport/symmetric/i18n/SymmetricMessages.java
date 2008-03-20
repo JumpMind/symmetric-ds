@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.symmetric.i18n;
+package org.jumpmind.mule.transport.symmetric.i18n;
 
 import org.mule.config.i18n.MessageFactory;
 

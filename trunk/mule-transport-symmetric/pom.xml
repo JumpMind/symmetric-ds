@@ -13,7 +13,7 @@
 	<description></description>
 
 	<properties>
-		<mule.version>2.0.0-RC2</mule.version>
+		<mule.version>2.0.0-RC3</mule.version>
 		<symmetric.version>1.4.0-SNAPSHOT</symmetric.version>
 	</properties>
 
@@ -125,11 +125,6 @@
 		<dependency>
 			<groupId>org.mule</groupId>
 			<artifactId>mule-core</artifactId>
-			<version>${mule.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.transports</groupId>
-			<artifactId>mule-transport-http</artifactId>
 			<version>${mule.version}</version>
 		</dependency>
 		<dependency>

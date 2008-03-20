@@ -8,8 +8,10 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.symmetric;
+package org.jumpmind.mule.transport.symmetric;
 
+import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
+import org.jumpmind.mule.transport.symmetric.SymmetricMessageReceiver;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.service.Service;
 import org.mule.api.transport.MessageReceiver;
