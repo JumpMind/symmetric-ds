@@ -10,12 +10,11 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
-import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.mule.api.transport.Connector;
-import org.mule.tck.providers.AbstractConnectorTestCase;
+import org.mule.transport.AbstractConnectorTestCase;
 
 public class SymmetricConnectorTestCase extends AbstractConnectorTestCase {
 

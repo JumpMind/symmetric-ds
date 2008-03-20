@@ -10,24 +10,32 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
-import org.jumpmind.mule.transport.symmetric.SymmetricConnector;
-import org.jumpmind.mule.transport.symmetric.SymmetricMessageReceiver;
-import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.EndpointBuilder;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.service.Service;
 import org.mule.api.transport.MessageReceiver;
-import org.mule.endpoint.InboundEndpoint;
-import org.mule.endpoint.MuleEndpointURI;
-import org.mule.tck.providers.AbstractMessageReceiverTestCase;
+import org.mule.config.i18n.MessageFactory;
+import org.mule.endpoint.EndpointURIEndpointBuilder;
+import org.mule.transport.AbstractMessageReceiverTestCase;
 
 import com.mockobjects.dynamic.Mock;
 
 public class SymmetricMessageReceiverTestCase extends
 		AbstractMessageReceiverTestCase {
 
-	/*
-	 * For general guidelines on writing transports see
-	 * http://mule.mulesource.org/display/MULE/Writing+Transports
-	 */
+    private SymmetricConnector connector;
+
+    protected void doSetUp() throws Exception
+    {
+        connector = new SymmetricConnector();
+        connector.setName("TestConnector");
+
+        connector.setMuleContext(muleContext);
+        muleContext.getRegistry().registerConnector(connector);
+        
+        super.doSetUp();
+    }
 
 	public MessageReceiver getMessageReceiver() throws Exception {
 		Mock mockService = new Mock(Service.class);
@@ -37,10 +45,14 @@ public class SymmetricMessageReceiverTestCase extends
 	}
 
 	public InboundEndpoint getEndpoint() throws Exception {
-		InboundEndpoint endpoint = new InboundEndpoint();
-		endpoint.setEndpointURI(new MuleEndpointURI("symmetric:http://localhost:1234"));
-		endpoint.setConnector(new SymmetricConnector());
-		return endpoint;
+	    EndpointBuilder builder = new EndpointURIEndpointBuilder("symmetric:http://localhost:1234", muleContext);
+        if (connector == null)
+        {
+            throw new InitialisationException(MessageFactory.createStaticMessage("Connector has not been initialized."), null);
+        }
+        builder.setConnector(connector);
+        endpoint = muleContext.getRegistry().lookupEndpointFactory().getInboundEndpoint(builder);
+        return endpoint;
 	}
 
 }

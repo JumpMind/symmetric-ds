@@ -41,6 +41,14 @@
 					<optimize>true</optimize>
 				</configuration>
 			</plugin>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                    <useProjectReferences>false</useProjectReferences>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 

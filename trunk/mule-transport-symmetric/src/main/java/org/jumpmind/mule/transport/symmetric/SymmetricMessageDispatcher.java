@@ -12,7 +12,7 @@ package org.jumpmind.mule.transport.symmetric;
 
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
-import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.endpoint.OutboundEndpoint;
 import org.mule.transport.AbstractMessageDispatcher;
 
 
@@ -22,7 +22,7 @@ import org.mule.transport.AbstractMessageDispatcher;
 public class SymmetricMessageDispatcher extends AbstractMessageDispatcher
 {
 
-    public SymmetricMessageDispatcher(ImmutableEndpoint endpoint)
+    public SymmetricMessageDispatcher(OutboundEndpoint endpoint)
     {
         super(endpoint);
 
