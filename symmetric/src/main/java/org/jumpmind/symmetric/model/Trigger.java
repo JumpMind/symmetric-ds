@@ -235,7 +235,9 @@ public class Trigger {
         char previousChar = ' ';
         for (int i = 0; i < seq.length(); i++) {
             char c = seq.charAt(i);
-            if (i == 0 || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u')) {
+            if (i == 0
+                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o'
+                            || c == 'u' || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
                 shortName.append(c);
             }
             previousChar = c;
