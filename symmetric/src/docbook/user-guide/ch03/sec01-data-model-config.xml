@@ -213,6 +213,22 @@
                             <entry></entry>
                             <entry>The timestamp when this node was registered.</entry>
                         </row>
+                        <row>
+                            <entry>initial_load_enabled</entry>
+                            <entry>booleanint</entry>
+                            <entry>N</entry>
+                            <entry></entry>
+                            <entry>0</entry>
+                            <entry>Indicates whether an initial load will be sent to this node.</entry>
+                        </row>
+                        <row>
+                            <entry>initial_load_time</entry>
+                            <entry>timestamp</entry>
+                            <entry>Y</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>The timestamp when this node started the initial load.</entry>
+                        </row>
                     </tbody>
                 </tgroup>
             </table>
