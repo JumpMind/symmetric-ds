@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -44,8 +45,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
-public class ConfigurationService extends AbstractService implements
-        IConfigurationService {
+public class ConfigurationService extends AbstractService implements IConfigurationService {
 
     final static Log logger = LogFactory.getLog(ConfigurationService.class);
 
@@ -57,14 +57,18 @@ public class ConfigurationService extends AbstractService implements
 
     private String insertChannelSql;
 
+    private String deleteChannelSql;
+
+    private String updateChannelSql;
+
     private String groupsLinksSql;
-    
+
     private String groupsLinksForSql;
 
     private String insertTriggerSql;
 
     private String selectTriggerSql;
-    
+
     private String selectTriggerByIdSql;
 
     private String selectTriggerTargetSql;
@@ -80,7 +84,7 @@ public class ConfigurationService extends AbstractService implements
     private String inactivateTriggerHistorySql;
 
     private String activeTriggersForSourceNodeGroupSql;
-    
+
     private String activeTriggersForReloadSql;
 
     private String inactiveTriggersForSourceNodeGroupSql;
@@ -88,11 +92,11 @@ public class ConfigurationService extends AbstractService implements
     private List<String> rootConfigChannelTableNames;
 
     private List<String> nodeConfigChannelTableNames;
-    
+
     private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
-    
+
     /**
      * Cache the history for performance.  History never changes and does not grow big so this should
      * be OK.
@@ -113,23 +117,34 @@ public class ConfigurationService extends AbstractService implements
     }
 
     public void inactivateTriggerHistory(TriggerHistory history) {
-        jdbcTemplate.update(inactivateTriggerHistorySql, new Object[] { history
-                .getTriggerHistoryId() });
+        jdbcTemplate.update(inactivateTriggerHistorySql, new Object[] { history.getTriggerHistoryId() });
     }
 
     @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinks() {
         return jdbcTemplate.query(groupsLinksSql, new DomainTargetRowMapper());
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinksFor(String nodeGroupId) {
-        return jdbcTemplate.query(groupsLinksForSql,
-                new Object[] { nodeGroupId }, new DomainTargetRowMapper());
+        return jdbcTemplate.query(groupsLinksForSql, new Object[] { nodeGroupId }, new DomainTargetRowMapper());
     }
 
     public List<String> getRootConfigChannelTableNames() {
         return rootConfigChannelTableNames;
+    }
+
+    public void saveChannel(Channel channel) {
+        if (0 == jdbcTemplate.update(updateChannelSql, new Object[] { channel.getProcessingOrder(),
+                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
+                channel.getId() })) {
+            jdbcTemplate.update(insertChannelSql, new Object[] { channel.getId(), channel.getProcessingOrder(),
+                    channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0 });
+        }
+    }
+
+    public void deleteChannel(Channel channel) {
+        jdbcTemplate.update(deleteChannelSql, new Object[] { channel.getId() });
     }
 
     public void initTriggerRowsForConfigChannel() {
@@ -140,44 +155,36 @@ public class ConfigurationService extends AbstractService implements
             }
         }
     }
-    
+
     private void initTriggerRowsForConfigChannel(String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
         for (String tableName : getRootConfigChannelTableNames()) {
-            Trigger trigger = getTriggerForTarget(tableName, sourceGroupId, targetGroupId,
-                    Constants.CHANNEL_CONFIG);
+            Trigger trigger = getTriggerForTarget(tableName, sourceGroupId, targetGroupId, Constants.CHANNEL_CONFIG);
             if (trigger == null) {
                 String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
                 jdbcTemplate.update(insertTriggerSql, new Object[] { tableName, sourceGroupId, targetGroupId,
                         Constants.CHANNEL_CONFIG, initialLoadOrder++, initialLoadSelect });
             }
         }
-    }    
+    }
 
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannelsFor(boolean failOnError) {
         try {
-            return jdbcTemplate.query(selectChannelsSql,
-                    new Object[] { }, new RowMapper() {
-                        public Object mapRow(java.sql.ResultSet rs, int arg1)
-                                throws java.sql.SQLException {
-                            NodeChannel channel = new NodeChannel();
-                            channel.setId(rs.getString(1));
-                            channel.setNodeId(rs.getString(2));
-                            channel.setIgnored(isSet(rs
-                                    .getObject(3)));
-                            channel.setSuspended(isSet(rs
-                                    .getObject(4)));
-                            channel.setProcessingOrder(rs
-                                    .getInt(5));
-                            channel
-                                    .setMaxBatchSize(rs
-                                            .getInt(6));
-                            channel.setEnabled(rs.getBoolean(7));
-                            channel.setMaxBatchToSend(rs.getInt(8));
-                            return channel;
-                        };
-                    });
+            return jdbcTemplate.query(selectChannelsSql, new Object[] {}, new RowMapper() {
+                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                    NodeChannel channel = new NodeChannel();
+                    channel.setId(rs.getString(1));
+                    channel.setNodeId(rs.getString(2));
+                    channel.setIgnored(isSet(rs.getObject(3)));
+                    channel.setSuspended(isSet(rs.getObject(4)));
+                    channel.setProcessingOrder(rs.getInt(5));
+                    channel.setMaxBatchSize(rs.getInt(6));
+                    channel.setEnabled(rs.getBoolean(7));
+                    channel.setMaxBatchToSend(rs.getInt(8));
+                    return channel;
+                };
+            });
         } catch (RuntimeException ex) {
             if (failOnError) {
                 throw ex;
@@ -197,18 +204,16 @@ public class ConfigurationService extends AbstractService implements
 
     @SuppressWarnings("unchecked")
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId) {
-        String code = (String) jdbcTemplate
-                .queryForObject(selectDataEventActionsByIdSql,
-                        new Object[] { sourceGroupId, targetGroupId }, String.class);
-       
+        String code = (String) jdbcTemplate.queryForObject(selectDataEventActionsByIdSql, new Object[] { sourceGroupId,
+                targetGroupId }, String.class);
+
         return DataEventAction.fromCode(code);
     }
 
     @SuppressWarnings("unchecked")
     public Trigger getTriggerFor(String table, String sourceNodeGroupId) {
-        List<Trigger> configs = (List<Trigger>) jdbcTemplate.query(
-                selectTriggerSql, new Object[] { table, sourceNodeGroupId },
-                new TriggerMapper());
+        List<Trigger> configs = (List<Trigger>) jdbcTemplate.query(selectTriggerSql, new Object[] { table,
+                sourceNodeGroupId }, new TriggerMapper());
         if (configs.size() > 0) {
             return configs.get(0);
         } else {
@@ -217,34 +222,27 @@ public class ConfigurationService extends AbstractService implements
     }
 
     @SuppressWarnings("unchecked")
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(
-            String sourceNodeGroupId) {
-        return (List<Trigger>) jdbcTemplate.query(
-                activeTriggersForSourceNodeGroupSql,
+    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {
+        return (List<Trigger>) jdbcTemplate.query(activeTriggersForSourceNodeGroupSql,
                 new Object[] { sourceNodeGroupId }, new TriggerMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId) {
-        return (List<Trigger>) jdbcTemplate.query(activeTriggersForReloadSql, new Object[] {
-                sourceNodeGroupId, targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerMapper());
+        return (List<Trigger>) jdbcTemplate.query(activeTriggersForReloadSql, new Object[] { sourceNodeGroupId,
+                targetNodeGroupId, Constants.CHANNEL_CONFIG }, new TriggerMapper());
     }
 
     @SuppressWarnings("unchecked")
-    public List<Trigger> getInactiveTriggersForSourceNodeGroup(
-            String sourceNodeGroupId) {
-        return (List<Trigger>) jdbcTemplate.query(
-                inactiveTriggersForSourceNodeGroupSql,
+    public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {
+        return (List<Trigger>) jdbcTemplate.query(inactiveTriggersForSourceNodeGroupSql,
                 new Object[] { sourceNodeGroupId }, new TriggerMapper());
     }
 
     @SuppressWarnings("unchecked")
-    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId,
-            String targetNodeGroupId, String channel) {
-        List<Trigger> configs = (List<Trigger>) jdbcTemplate.query(
-                selectTriggerTargetSql, new Object[] { table,
-                        targetNodeGroupId, channel, sourceNodeGroupId },
-                new TriggerMapper());
+    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel) {
+        List<Trigger> configs = (List<Trigger>) jdbcTemplate.query(selectTriggerTargetSql, new Object[] { table,
+                targetNodeGroupId, channel, sourceNodeGroupId }, new TriggerMapper());
         if (configs.size() > 0) {
             return configs.get(0);
         } else {
@@ -254,8 +252,8 @@ public class ConfigurationService extends AbstractService implements
 
     @SuppressWarnings("unchecked")
     public Trigger getTriggerById(int triggerId) {
-        List<Trigger> triggers = (List<Trigger>) jdbcTemplate.query(selectTriggerByIdSql,
-                new Object[] { triggerId }, new TriggerMapper());
+        List<Trigger> triggers = (List<Trigger>) jdbcTemplate.query(selectTriggerByIdSql, new Object[] { triggerId },
+                new TriggerMapper());
         if (triggers.size() > 0) {
             return triggers.get(0);
         } else {
@@ -265,41 +263,33 @@ public class ConfigurationService extends AbstractService implements
 
     public Map<String, List<Trigger>> getTriggersByChannelFor(String nodeGroupId) {
         final Map<String, List<Trigger>> retMap = new HashMap<String, List<Trigger>>();
-        jdbcTemplate.query(selectGroupTriggersSql,
-                new Object[] { nodeGroupId }, new TriggerMapper() {
-                    public Object mapRow(java.sql.ResultSet rs, int arg1)
-                            throws java.sql.SQLException {
-                        Trigger config = (Trigger) super.mapRow(rs, arg1);
-                        List<Trigger> list = retMap.get(config.getChannelId());
-                        if (list == null) {
-                            list = new ArrayList<Trigger>();
-                            retMap.put(config.getChannelId(), list);
-                        }
-                        list.add(config);
-                        return config;
-                    };
-                });
+        jdbcTemplate.query(selectGroupTriggersSql, new Object[] { nodeGroupId }, new TriggerMapper() {
+            public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                Trigger config = (Trigger) super.mapRow(rs, arg1);
+                List<Trigger> list = retMap.get(config.getChannelId());
+                if (list == null) {
+                    list = new ArrayList<Trigger>();
+                    retMap.put(config.getChannelId(), list);
+                }
+                list.add(config);
+                return config;
+            };
+        });
         return retMap;
     }
 
     public void insert(TriggerHistory newHistRecord) {
-        jdbcTemplate.update(insertTriggerHistorySql, new Object[] {
-                newHistRecord.getTriggerId(),
-                newHistRecord.getSourceTableName(),
-                newHistRecord.getTableHash(), newHistRecord.getCreateTime(),
-                newHistRecord.getColumnNames(),
-                newHistRecord.getPkColumnNames(),
-                newHistRecord.getLastTriggerBuildReason().getCode(),
-                newHistRecord.getNameForDeleteTrigger(),
-                newHistRecord.getNameForInsertTrigger(),
-                newHistRecord.getNameForUpdateTrigger(),
+        jdbcTemplate.update(insertTriggerHistorySql, new Object[] { newHistRecord.getTriggerId(),
+                newHistRecord.getSourceTableName(), newHistRecord.getTableHash(), newHistRecord.getCreateTime(),
+                newHistRecord.getColumnNames(), newHistRecord.getPkColumnNames(),
+                newHistRecord.getLastTriggerBuildReason().getCode(), newHistRecord.getNameForDeleteTrigger(),
+                newHistRecord.getNameForInsertTrigger(), newHistRecord.getNameForUpdateTrigger(),
                 newHistRecord.getSourceSchemaName() });
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
-        jdbcTemplate.query(this.allTriggerHistSql, new TriggerHistoryMapper(
-                retMap));
+        jdbcTemplate.query(this.allTriggerHistSql, new TriggerHistoryMapper(retMap));
         return retMap;
     }
 
@@ -307,8 +297,8 @@ public class ConfigurationService extends AbstractService implements
         TriggerHistory history = historyMap.get(auditId);
         if (history == null) {
             try {
-                history = (TriggerHistory) jdbcTemplate.queryForObject(this.triggerHistSql,
-                        new Object[] { auditId }, new TriggerHistoryMapper());
+                history = (TriggerHistory) jdbcTemplate.queryForObject(this.triggerHistSql, new Object[] { auditId },
+                        new TriggerHistoryMapper());
                 historyMap.put(auditId, history);
             } catch (EmptyResultDataAccessException ex) {
             }
@@ -318,8 +308,7 @@ public class ConfigurationService extends AbstractService implements
 
     public TriggerHistory getLatestHistoryRecordFor(int triggerId) {
         try {
-            return (TriggerHistory) jdbcTemplate.queryForObject(
-                    this.latestTriggerHistSql, new Object[] { triggerId },
+            return (TriggerHistory) jdbcTemplate.queryForObject(this.latestTriggerHistSql, new Object[] { triggerId },
                     new TriggerHistoryMapper());
         } catch (EmptyResultDataAccessException ex) {
             return null;
@@ -331,8 +320,7 @@ public class ConfigurationService extends AbstractService implements
             NodeGroupLink node_groupTarget = new NodeGroupLink();
             node_groupTarget.setSourceGroupId(rs.getString(1));
             node_groupTarget.setTargetGroupId(rs.getString(2));
-            node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs
-                    .getString(3)));
+            node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs.getString(3)));
             return node_groupTarget;
         }
     }
@@ -356,8 +344,7 @@ public class ConfigurationService extends AbstractService implements
             hist.setCreateTime(rs.getTimestamp(5));
             hist.setPkColumnNames(rs.getString(6));
             hist.setColumnNames(rs.getString(7));
-            hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs
-                    .getString(8)));
+            hist.setLastTriggerBuildReason(TriggerReBuildReason.fromCode(rs.getString(8)));
             hist.setNameForDeleteTrigger(rs.getString(9));
             hist.setNameForInsertTrigger(rs.getString(10));
             hist.setNameForUpdateTrigger(rs.getString(11));
@@ -370,8 +357,7 @@ public class ConfigurationService extends AbstractService implements
     }
 
     class TriggerMapper implements RowMapper {
-        public Object mapRow(java.sql.ResultSet rs, int arg1)
-                throws java.sql.SQLException {
+        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
             Trigger trig = new Trigger();
             trig.setTriggerId(rs.getInt("trigger_id"));
             trig.setChannelId(rs.getString("channel_id"));
@@ -383,15 +369,11 @@ public class ConfigurationService extends AbstractService implements
             trig.setSyncOnUpdate(rs.getBoolean("sync_on_update"));
             trig.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
             trig.setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
-            trig.setNameForDeleteTrigger(rs
-                    .getString("name_for_delete_trigger"));
-            trig.setNameForInsertTrigger(rs
-                    .getString("name_for_insert_trigger"));
-            trig.setNameForUpdateTrigger(rs
-                    .getString("name_for_update_trigger"));
+            trig.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
+            trig.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
+            trig.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
             String schema = rs.getString("source_schema_name");
-            trig.setSourceSchemaName(schema == null ? dbDialect
-                    .getDefaultSchema() : schema);
+            trig.setSourceSchemaName(schema == null ? dbDialect.getDefaultSchema() : schema);
             trig.setTargetGroupId(rs.getString("target_node_group_id"));
             trig.setExcludedColumnNames(rs.getString("excluded_column_names"));
             String condition = rs.getString("sync_on_insert_condition");
@@ -458,8 +440,7 @@ public class ConfigurationService extends AbstractService implements
         this.insertTriggerSql = insertTableSyncConfigSql;
     }
 
-    public void setRootConfigChannelTableNames(
-            List<String> configChannelTableNames) {
+    public void setRootConfigChannelTableNames(List<String> configChannelTableNames) {
         this.rootConfigChannelTableNames = configChannelTableNames;
     }
 
@@ -479,8 +460,7 @@ public class ConfigurationService extends AbstractService implements
         this.selectChannelsSql = selectChannelsSql;
     }
 
-    public void setSelectDataEventActionsByIdSql(
-            String selectDataEventActionsByIdSql) {
+    public void setSelectDataEventActionsByIdSql(String selectDataEventActionsByIdSql) {
         this.selectDataEventActionsByIdSql = selectDataEventActionsByIdSql;
     }
 
@@ -488,13 +468,11 @@ public class ConfigurationService extends AbstractService implements
         this.insertTriggerHistorySql = insertTriggerHistorySql;
     }
 
-    public void setActiveTriggersForSourceNodeGroupSql(
-            String activeTriggersForSourceNodeGroupSql) {
+    public void setActiveTriggersForSourceNodeGroupSql(String activeTriggersForSourceNodeGroupSql) {
         this.activeTriggersForSourceNodeGroupSql = activeTriggersForSourceNodeGroupSql;
     }
 
-    public void setInactiveTriggersForSourceNodeGroupSql(
-            String inactiveTriggersForSourceNodeGroupSql) {
+    public void setInactiveTriggersForSourceNodeGroupSql(String inactiveTriggersForSourceNodeGroupSql) {
         this.inactiveTriggersForSourceNodeGroupSql = inactiveTriggersForSourceNodeGroupSql;
     }
 
@@ -506,8 +484,7 @@ public class ConfigurationService extends AbstractService implements
         this.dbDialect = dbDialect;
     }
 
-    public void setNodeConfigChannelTableNames(
-            List<String> nodeConfigChannelTableNames) {
+    public void setNodeConfigChannelTableNames(List<String> nodeConfigChannelTableNames) {
         this.nodeConfigChannelTableNames = nodeConfigChannelTableNames;
     }
 
@@ -526,7 +503,13 @@ public class ConfigurationService extends AbstractService implements
     public void setRootConfigChannelInitialLoadSelect(Map<String, String> rootConfigChannelInitialLoadSelect) {
         this.rootConfigChannelInitialLoadSelect = rootConfigChannelInitialLoadSelect;
     }
-    
-    
+
+    public void setDeleteChannelSql(String deleteChannelSql) {
+        this.deleteChannelSql = deleteChannelSql;
+    }
+
+    public void setUpdateChannelSql(String updateChannelSql) {
+        this.updateChannelSql = updateChannelSql;
+    }
 
 }

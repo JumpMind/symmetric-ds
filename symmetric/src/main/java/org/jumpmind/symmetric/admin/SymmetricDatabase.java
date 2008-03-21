@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IConfigurationService;
 
@@ -75,11 +76,6 @@ public class SymmetricDatabase implements Serializable {
                 System.setProperty(PropertiesConstants.DBPOOL_PASSWORD, password == null ? "" : password);
                 System.setProperty(PropertiesConstants.DBPOOL_INITIAL_SIZE, "1");
                 System.setProperty(PropertiesConstants.RUNTIME_CONFIG_TABLE_PREFIX, tablePrefix);
-                System.setProperty(PropertiesConstants.START_HEARTBEAT_JOB, Boolean.toString(false));
-                System.setProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB, Boolean.toString(false));
-                System.setProperty(PropertiesConstants.START_PUSH_JOB, Boolean.toString(false));
-                System.setProperty(PropertiesConstants.START_PURGE_JOB, Boolean.toString(false));
-                System.setProperty(PropertiesConstants.START_PULL_JOB, Boolean.toString(false));
                 engine = new SymmetricEngine(new ActivityListenerSupport() {
                     @Override
                     public boolean createConfigurationTables(IDbDialect dbDialect) {
@@ -94,7 +90,7 @@ public class SymmetricDatabase implements Serializable {
                         return true;
                     }
                 });
-                engine.start();
+                engine.setup();
                 return true;
             }
         } catch (Exception ex) {
@@ -103,11 +99,15 @@ public class SymmetricDatabase implements Serializable {
             return false;
         }
     }
+    
+    private IConfigurationService getConfigurationService() {
+        return (IConfigurationService) engine.getApplicationContext().getBean(
+                Constants.CONFIG_SERVICE);
+    }
 
     public List<NodeChannel> getChannels() {
         if (engine != null) {
-            IConfigurationService configService = (IConfigurationService) engine.getApplicationContext().getBean(
-                    Constants.CONFIG_SERVICE);
+            IConfigurationService configService = getConfigurationService();
             return configService.getChannelsFor(true);
         } else {
             return new ArrayList<NodeChannel>(0);
@@ -120,6 +120,14 @@ public class SymmetricDatabase implements Serializable {
 
     public boolean isConnected() {
         return engine != null;
+    }
+    
+    public void save(Channel c) {
+        getConfigurationService().saveChannel(c);
+    }
+    
+    public void delete(Channel c) {
+        getConfigurationService().deleteChannel(c);
     }
 
     public void setJdbcUrl(String jdbcUrl) {

@@ -313,7 +313,7 @@ public class SymmetricLauncher {
         IBootstrapService bootstrapService = (IBootstrapService) engine.getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
         bootstrapService.setAutoConfigureDatabase(true);
-        bootstrapService.init();
+        bootstrapService.setupDatabase();
     }
 
     private static void runDdlXml(SymmetricEngine engine, String fileName) throws FileNotFoundException {

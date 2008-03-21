@@ -21,16 +21,12 @@ package org.jumpmind.symmetric.admin;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -58,7 +54,7 @@ public class ChannelEditScreen extends AbstractScreen {
     int selectedRow = 0;
 
     public ChannelEditScreen() {
-        
+
         tableModel = new ChannelTableModel();
         tableModel.addTableModelListener(new ChannelEditScreen.InteractiveTableModelListener());
         table = new JTable();
@@ -85,7 +81,6 @@ public class ChannelEditScreen extends AbstractScreen {
                 if (!e.getValueIsAdjusting()) {
                     int oldRow = selectedRow;
                     selectedRow = table.getSelectedRow();
-                    System.out.println("selection changed to " + selectedRow);
                     try {
                         tableModel.save();
                     } catch (ValidationException e1) {
@@ -107,8 +102,8 @@ public class ChannelEditScreen extends AbstractScreen {
             }
         }
 
-        setLayout(new BorderLayout(5,5));
-        
+        setLayout(new BorderLayout(5, 5));
+
         JPanel instructionsPanel = new JPanel();
         // TODO from resource bundle
         instructionsPanel.setBorder(new TitledBorder("Channels"));
@@ -119,19 +114,21 @@ public class ChannelEditScreen extends AbstractScreen {
         // TODO resource bundle
         area.setText("Channels are ...");
         instructionsPanel.add(area, BorderLayout.CENTER);
-        
+
         add(instructionsPanel, BorderLayout.NORTH);
         add(scroller, BorderLayout.CENTER);
     }
-    
+
     @Override
     public ScreenName getScreenName() {
         return ScreenName.CHANNELS;
     }
-    
+
     @Override
     public void setup(SymmetricDatabase c) {
         tableModel.setup(c);
+        this.table.revalidate();
+        this.table.repaint();
     }
 
     public void highlightLastRow(int row) {
@@ -157,7 +154,8 @@ public class ChannelEditScreen extends AbstractScreen {
                 boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if (column == interactiveColumn && hasFocus) {
-                if ((ChannelEditScreen.this.tableModel.getRowCount() - 1) == row && !ChannelEditScreen.this.tableModel.hasEmptyRow()) {
+                if ((ChannelEditScreen.this.tableModel.getRowCount() - 1) == row
+                        && !ChannelEditScreen.this.tableModel.hasEmptyRow()) {
                     ChannelEditScreen.this.tableModel.addEmptyRow();
                 }
 
@@ -173,27 +171,10 @@ public class ChannelEditScreen extends AbstractScreen {
             if (evt.getType() == TableModelEvent.UPDATE) {
                 int column = evt.getColumn();
                 int row = evt.getFirstRow();
-                System.out.println("row: " + row + " column: " + column);
                 table.setColumnSelectionInterval(column + 1, column + 1);
                 table.setRowSelectionInterval(row, row);
             }
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            JFrame frame = new JFrame("Interactive Form");
-            frame.addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent evt) {
-                    System.exit(0);
-                }
-            });
-            frame.getContentPane().add(new ChannelEditScreen());
-            frame.pack();
-            frame.setVisible(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -35,24 +35,23 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
     private static final long serialVersionUID = -2191025297337306895L;
 
     int selectedRow = 0;
-    
+
     protected List<T> list;
 
     public ModelObjectTableModel() {
     }
-    
+
     abstract public void setup(SymmetricDatabase db);
 
     public void valueChanged(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
-            DefaultListSelectionModel model = (DefaultListSelectionModel)e.getSource();
+            DefaultListSelectionModel model = (DefaultListSelectionModel) e.getSource();
             selectedRow = model.getMinSelectionIndex();
-            System.out.println(selectedRow + " is selected.");
         }
     }
 
     abstract public String getColumnName(int column);
-    
+
     public boolean isCellEditable(int row, int column) {
         if (row == selectedRow) {
             return true;
@@ -60,7 +59,7 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
             return false;
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     abstract public Class getColumnClass(int column);
 
@@ -69,7 +68,7 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
     abstract public TableCellEditor getCellEditorForColumn(int column);
 
     abstract public Object getValueAt(int row, int column);
-    
+
     abstract List<T> getRows();
 
     public void setValueAt(Object value, int row, int column) {
@@ -77,12 +76,12 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
         setColumnValue(column, rows.get(row), value);
         fireTableCellUpdated(row, column);
     }
-    
+
     abstract void setColumnValue(int index, T object, Object value);
-    
+
     abstract int getNumberOfColumns();
-    
-    abstract T newRow();
+
+    abstract boolean newRow();
 
     public int getRowCount() {
         return getRows().size();
@@ -103,9 +102,13 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
             return false;
     }
 
-    public void addEmptyRow() {
-        newRow();
-        int index = getRowCount() - 1;
-        fireTableRowsInserted(index, index);
+    public boolean addEmptyRow() {
+        if (newRow()) {
+            int index = getRowCount() - 1;
+            fireTableRowsInserted(index, index);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

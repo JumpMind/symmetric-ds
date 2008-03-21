@@ -39,7 +39,7 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         if (this.rootEngine == null) {
             this.rootEngine = createEngine(getRootFile());
             dropAndCreateDatabaseTables(getRootDatabaseName(), rootEngine);
-            ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).init();
+            ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).setupDatabase();
             new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT), (DataSource) this.rootEngine
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             this.rootEngine.start();

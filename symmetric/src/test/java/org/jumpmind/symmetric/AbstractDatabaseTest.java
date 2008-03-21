@@ -54,7 +54,7 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
         if (this.engine == null) {
             this.engine = createEngine(getSymmetricFile());
             dropAndCreateDatabaseTables(getDatabaseName(), engine);
-            ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).init();
+            ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).setupDatabase();
             new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) this.engine
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             this.engine.start();

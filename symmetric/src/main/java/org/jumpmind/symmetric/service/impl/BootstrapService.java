@@ -87,7 +87,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     
     private IActivityListener activityListener = null;
 
-    public void init() {
+    public void setupDatabase() {
         if (!initialized) {
             this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
             if (isAutoConfigurable()) {

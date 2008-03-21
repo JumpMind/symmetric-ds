@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
@@ -57,8 +58,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SymmetricEngine {
 
-    protected static final Log logger = LogFactory
-            .getLog(SymmetricEngine.class);
+    protected static final Log logger = LogFactory.getLog(SymmetricEngine.class);
 
     private ApplicationContext applicationContext;
 
@@ -71,34 +71,35 @@ public class SymmetricEngine {
     private IRegistrationService registrationService;
 
     private IPurgeService purgeService;
-    
+
     private IDataService dataService;
 
     private boolean started = false;
-    
+
     private boolean starting = false;
-    
+
+    private boolean setup = false;
+
     private IDbDialect dbDialect;
 
     private Properties properties;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
-    
+
     private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
     /**
      * @param overridePropertiesResource1 Provide a Spring resource path to a properties file to be used for configuration
      * @param overridePropertiesResource2 Provide a Spring resource path to a properties file to be used for configuration
      */
-    public SymmetricEngine(String overridePropertiesResource1,
-            String overridePropertiesResource2) {
+    public SymmetricEngine(String overridePropertiesResource1, String overridePropertiesResource2) {
         // Setting system properties is probably not the best way to accomplish this setup.
         // Synchronizing on the class so creating multiple engines is thread safe.
         synchronized (SymmetricEngine.class) {
-            System.setProperty("symmetric.override.properties.file.1",
-                    overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
-            System.setProperty("symmetric.override.properties.file.2",
-                    overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
+            System.setProperty("symmetric.override.properties.file.1", overridePropertiesResource1 == null ? ""
+                    : overridePropertiesResource1);
+            System.setProperty("symmetric.override.properties.file.2", overridePropertiesResource2 == null ? ""
+                    : overridePropertiesResource2);
             this.init(createContext(), null);
         }
     }
@@ -109,10 +110,10 @@ public class SymmetricEngine {
     public SymmetricEngine() {
         init(createContext(), null);
     }
-    
+
     public SymmetricEngine(IActivityListener activityListener) {
         init(createContext(), activityListener);
-    }    
+    }
 
     /**
      * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
@@ -128,25 +129,20 @@ public class SymmetricEngine {
 
     private void init(ApplicationContext applicationContext, IActivityListener activityListener) {
         this.applicationContext = applicationContext;
-        properties = (Properties) applicationContext
-                .getBean(Constants.PROPERTIES);
-        bootstrapService = (IBootstrapService) applicationContext
-                .getBean(Constants.BOOTSTRAP_SERVICE);
-        runtimeConfig = (IRuntimeConfig) applicationContext
-                .getBean(Constants.RUNTIME_CONFIG);
-        nodeService = (INodeService) applicationContext
-                .getBean(Constants.NODE_SERVICE);
-        registrationService = (IRegistrationService) applicationContext
-                .getBean(Constants.REGISTRATION_SERVICE);
-        purgeService = (IPurgeService) applicationContext
-                .getBean(Constants.PURGE_SERVICE);               
-        dataService = (IDataService)applicationContext.getBean(Constants.DATA_SERVICE);
+        properties = (Properties) applicationContext.getBean(Constants.PROPERTIES);
+        bootstrapService = (IBootstrapService) applicationContext.getBean(Constants.BOOTSTRAP_SERVICE);
+        runtimeConfig = (IRuntimeConfig) applicationContext.getBean(Constants.RUNTIME_CONFIG);
+        nodeService = (INodeService) applicationContext.getBean(Constants.NODE_SERVICE);
+        registrationService = (IRegistrationService) applicationContext.getBean(Constants.REGISTRATION_SERVICE);
+        purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
+        dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
         registerActivityListener(activityListener);
         registerEngine();
-        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.version() + " database="+dbDialect.getName());
+        logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
+                + Version.version() + " database=" + dbDialect.getName());
     }
-    
+
     private void registerActivityListener(IActivityListener listener) {
         if (listener != null) {
             bootstrapService.setActivityListener(listener);
@@ -166,47 +162,46 @@ public class SymmetricEngine {
      * Start the jobs if they are configured to be started in symmetric.properties
      */
     private void startJobs() {
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
             applicationContext.getBean(Constants.PUSH_JOB_TIMER);
         }
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
             applicationContext.getBean(Constants.PULL_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
             applicationContext.getBean(Constants.PURGE_JOB_TIMER);
         }
 
-        if (Boolean.TRUE
-                .toString()
-                .equalsIgnoreCase(
-                        properties
-                                .getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
             applicationContext.getBean(Constants.HEARTBEAT_JOB_TIMER);
         }
 
-        if (Boolean.TRUE
-                .toString()
-                .equalsIgnoreCase(
-                        properties
-                                .getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
+        if (Boolean.TRUE.toString()
+                .equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
     }
-    
-    
+
     /**
      * Get a list of configured properties for Symmetric.  Read-only.
      */
     public Properties getProperties() {
         return new Properties(properties);
     }
-    
+
     public String getEngineName() {
         return dbDialect.getEngineName();
+    }
+
+    /**
+     * Will setup the symmetric tables, if not already setup and if the engine is configured to do so.
+     */
+    public synchronized void setup() {
+        if (!setup) {
+            bootstrapService.setupDatabase();
+            setup = true;
+        }
     }
 
     /**
@@ -214,15 +209,15 @@ public class SymmetricEngine {
      */
     public synchronized void start() {
         if (!starting) {
-        	starting = true;
-            bootstrapService.init();
+            starting = true;
+            setup();
             Node node = nodeService.findIdentity();
             if (node != null) {
-                logger.info("Starting registered node [group=" + node.getNodeGroupId() +
-                        ", id=" + node.getNodeId() + ", externalId=" + node.getExternalId() + "]");
+                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
+                        + ", externalId=" + node.getExternalId() + "]");
             } else {
-                logger.info("Starting unregistered node [group=" + runtimeConfig.getNodeGroupId() +
-                        ", externalId=" + runtimeConfig.getExternalId() + "]");
+                logger.info("Starting unregistered node [group=" + runtimeConfig.getNodeGroupId() + ", externalId="
+                        + runtimeConfig.getExternalId() + "]");
             }
             bootstrapService.register();
             bootstrapService.syncTriggers();
@@ -230,27 +225,24 @@ public class SymmetricEngine {
             started = true;
         }
     }
-    
+
     /**
      * Queue up an initial load or a reload to a node.
      */
     public void reloadNode(String nodeId) {
         dataService.reloadNode(nodeId);
     }
-    
+
     /**
      * This can be called if the push job has not been enabled.  It will perform a push
      * the same way the {@link PushJob} would have.
      * @see IPushService#pushData()
      */
     public void push() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
-            ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE))
-                    .pushData();
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+            ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
         } else {
-            throw new UnsupportedOperationException(
-                    "Cannot actuate a push if it is already scheduled.");
+            throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
         }
     }
 
@@ -268,13 +260,10 @@ public class SymmetricEngine {
      * @see IPullService#pullData()
      */
     public void pull() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
-            ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE))
-                    .pullData();
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+            ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
         } else {
-            throw new UnsupportedOperationException(
-                    "Cannot actuate a push if it is already scheduled.");
+            throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
         }
     }
 
@@ -283,12 +272,10 @@ public class SymmetricEngine {
      * @see IPurgeService#purge()
      */
     public void purge() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
             purgeService.purge();
         } else {
-            throw new UnsupportedOperationException(
-                    "Cannot actuate a purge if it is already scheduled.");
+            throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");
         }
     }
 
@@ -320,19 +307,19 @@ public class SymmetricEngine {
      * Check to see if this node has been started.
      * @return true if the node is started
      */
-	public boolean isStarted() {
-		return started;
-	}
-	
+    public boolean isStarted() {
+        return started;
+    }
+
     /**
      * Check to see if this node is starting.
      * @return true if the node is starting
      */
 
-	public boolean isStarting() {
-		return starting;
-	}
-	
+    public boolean isStarting() {
+        return starting;
+    }
+
     /**
      * Expose access to the Spring context.  This is for advanced use only.
      * @return
@@ -347,12 +334,9 @@ public class SymmetricEngine {
     public static SymmetricEngine findEngineByUrl(String url) {
         return registeredEnginesByUrl.get(url);
     }
-    
+
     public static SymmetricEngine findEngineByName(String name) {
         return registeredEnginesByName.get(name);
     }
-
-
-
 
 }

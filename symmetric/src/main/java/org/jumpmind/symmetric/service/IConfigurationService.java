@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -46,6 +47,10 @@ public interface IConfigurationService {
     public void initTriggerRowsForConfigChannel();
 
     public void initSystemChannels();
+    
+    public void saveChannel(Channel channel);
+    
+    public void deleteChannel(Channel channel);
     
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
