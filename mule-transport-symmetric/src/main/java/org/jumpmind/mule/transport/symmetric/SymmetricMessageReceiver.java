@@ -10,24 +10,27 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IExtractListener;
+import org.mule.DefaultMuleMessage;
+import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
 import org.mule.api.lifecycle.LifecycleException;
 import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
 import org.mule.config.i18n.CoreMessages;
+import org.mule.transport.AbstractPollingMessageReceiver;
 import org.mule.transport.ConnectException;
-import org.mule.transport.TransactedPollingMessageReceiver;
 
 /**
  * <code>SymmetricMessageReceiver</code> TODO document
  */
-public class SymmetricMessageReceiver extends TransactedPollingMessageReceiver {
+public class SymmetricMessageReceiver extends AbstractPollingMessageReceiver {
 
     private SimpleSymmetricEngine engine;
 
@@ -40,7 +43,6 @@ public class SymmetricMessageReceiver extends TransactedPollingMessageReceiver {
             InboundEndpoint endpoint) throws CreateException {
         super(connector, service, endpoint);
         this.setFrequency(((SymmetricConnector) connector).getPollingFrequency());
-        this.setReceiveMessagesInTransaction(false);
     }
 
     public void doConnect() throws ConnectException {
@@ -83,45 +85,49 @@ public class SymmetricMessageReceiver extends TransactedPollingMessageReceiver {
     }
 
     @Override
-    protected List getMessages() throws Exception
+    public void poll() throws Exception
     {
-        if (engine != null) {
-            engine.extract(new IExtractListener() {
+        engine.extract(new IExtractListener() {
 
-                public void dataExtracted(Data data) throws Exception
-                {
-                    
-                }
+            private List<Data> datum;
+            
+            public void dataExtracted(Data data) throws Exception
+            {
+                datum.add(data);
+            }
 
-                public void done() throws Exception
-                {
-                    
-                }
+            public void done() throws Exception
+            {
+                
+            }
 
-                public void endBatch(OutgoingBatch outgoingbatch) throws Exception
-                {
-                    
-                }
+            public void endBatch(OutgoingBatch outgoingbatch) throws Exception
+            {
+                final Object payload = connector.getMessageAdapter(datum).getPayload();
+                MuleMessage message = new DefaultMuleMessage(payload);
+                message.setProperty("symmetric.batchId", outgoingbatch.getBatchId());
+                message.setProperty("symmetric.batchType", outgoingbatch.getBatchType());
+                message.setProperty("symmetric.channelId", outgoingbatch.getChannelId());
+                message.setProperty("symmetric.createTime", outgoingbatch.getCreateTime());
+                message.setProperty("symmetric.nodeBatchId", outgoingbatch.getNodeBatchId());
+                message.setProperty("symmetric.nodeId", outgoingbatch.getNodeId());
+                message.setProperty("symmetric.status", outgoingbatch.getStatus());
+                message.setProperty("symmetric.batchInfoList", outgoingbatch.getBatchInfoList());
+                routeMessage(message, endpoint.isSynchronous());
+                engine.acknowledge(outgoingbatch.getBatchInfoList());
+            }
 
-                public void init() throws Exception
-                {
-                    
-                }
+            public void init() throws Exception
+            {
+                
+            }
 
-                public void startBatch(OutgoingBatch outgoingbatch) throws Exception
-                {
-                    
-                }
-            });
-        }
-        return null;
+            public void startBatch(OutgoingBatch outgoingbatch) throws Exception
+            {
+                datum = new ArrayList<Data>();
+            }
+        });
     }
 
-    @Override
-    protected void processMessage(Object message) throws Exception
-    {
-        // TODO Auto-generated method stub
-        
-    }
 
 }

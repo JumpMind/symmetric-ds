@@ -20,6 +20,7 @@
 
 package org.jumpmind.mule.transport.symmetric;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -32,7 +33,9 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -75,6 +78,8 @@ public class SimpleSymmetricEngine {
 
     private IDataExtractorService dataExtractorService;
 
+    private IAcknowledgeService acknowledgeService;
+
     private boolean started = false;
     
     private boolean starting = false;
@@ -108,6 +113,7 @@ public class SimpleSymmetricEngine {
                 .getBean(Constants.PURGE_SERVICE);               
         dataService = (IDataService)applicationContext.getBean(Constants.DATA_SERVICE);
         dataExtractorService = (IDataExtractorService)applicationContext.getBean(Constants.DATAEXTRACTOR_SERVICE);
+        acknowledgeService = (IAcknowledgeService)applicationContext.getBean(Constants.ACKNOWLEDGE_SERVICE);
          dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version=" + Version.version() + " database="+dbDialect.getName());
     }
@@ -238,15 +244,21 @@ public class SimpleSymmetricEngine {
         return applicationContext;
     }
     
-    public void extract(IExtractListener extractListener) 
+    public boolean extract(IExtractListener extractListener) 
     {
         try
         {
-            dataExtractorService.extract(nodeService.findIdentity(), extractListener);
+            return dataExtractorService.extract(nodeService.findIdentity(), extractListener);
         }
+        // why is extract throwing an Exception?
         catch (Exception e)
         {
             throw new IllegalStateException(e);
         }
+    }
+
+    public void acknowledge(List<BatchInfo> batches) 
+    {
+        acknowledgeService.ack(batches);
     }
 }
