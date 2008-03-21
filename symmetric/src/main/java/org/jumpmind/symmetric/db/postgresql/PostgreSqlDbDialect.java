@@ -64,7 +64,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 : "";
         return jdbcTemplate.queryForInt(
                 "select count(*) from information_schema.routines where created >= ? and routine_name = ?"
-                        + checkSchema, new Object[] { new Date(lastModified), name }) > 0;
+                        + checkSchema, new Object[] { new Date(lastModified), name.toLowerCase() }) > 0;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 + schema + "'" : "";
         return jdbcTemplate.queryForInt(
                         "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                                + checkSchema, new Object[] { triggerName, tableName }) > 0;
+                                + checkSchema, new Object[] { triggerName.toLowerCase(), tableName.toLowerCase() }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
