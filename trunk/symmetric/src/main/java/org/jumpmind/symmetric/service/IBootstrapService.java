@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.IActivityListener;
  */
 public interface IBootstrapService {
 
-    public void init();
+    public void setupDatabase();
 
     public void syncTriggers();
 

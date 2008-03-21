@@ -113,7 +113,7 @@ public class AdminTreeControl extends JScrollPane {
                 final AbstractNode c = getSelectedConnection();
                 if (c != null && this.getValue(Action.NAME).equals(CONNECT)) {
                     try {
-                        tree.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        appController.getFrame().setCursor(new Cursor(Cursor.WAIT_CURSOR));
                         if ((Boolean) Worker.post(new Task() {
                             public Object run() throws Exception {
                                 return c.getSymmetricDatabase().connect(appController);
@@ -128,7 +128,7 @@ public class AdminTreeControl extends JScrollPane {
                     } catch (Exception ex) {
                         appController.showError("Trouble connecting to the symmetric database.", ex);
                     }
-                    tree.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    appController.getFrame().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     tree.repaint();
                 } else {
                     appController.showError("No connection was selected.", null);

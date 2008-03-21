@@ -128,15 +128,6 @@
                 source_node_group_id = ? and target_node_group_id = ?
             </value>
         </property>
-        <property name="selectChannelsSql">
-            <value>
-                select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled,
-                c.processing_order, c.max_batch_size, c.enabled, c.max_batch_to_send from ${sync.table.prefix}_channel c
-                inner join ${sync.table.prefix}_node_identity n on 1 = 1 left outer join
-                ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id and
-                n.node_id = nc.node_id order by c.processing_order asc
-            </value>
-        </property>
         <property name="selectGroupTriggersSql">
             <value>
                 select * from ${sync.table.prefix}_trigger where source_node_group_id = ? order by
@@ -185,10 +176,29 @@
                 ${sync.table.prefix}_node_group_link where source_node_group_id = ?
             </value>
         </property>
+        <property name="selectChannelsSql">
+            <value>
+                select c.channel_id, n.node_id, nc.ignore_enabled, nc.suspend_enabled,
+                c.processing_order, c.max_batch_size, c.enabled, c.max_batch_to_send from ${sync.table.prefix}_channel c
+                inner join ${sync.table.prefix}_node_identity n on 1 = 1 left outer join
+                ${sync.table.prefix}_node_channel_ctl nc on c.channel_id = nc.channel_id and
+                n.node_id = nc.node_id order by c.processing_order asc, c.channel_id
+            </value>
+        </property>
+        
         <property name="insertChannelSql">
             <value>
-                insert into ${sync.table.prefix}_channel values(?, ?, ?, ?, 1, 'System-generated
-                channel. Do not remove.')
+                insert into ${sync.table.prefix}_channel values(?, ?, ?, ?, ?, null)
+            </value>
+        </property>
+        <property name="updateChannelSql">
+            <value>
+                update ${sync.table.prefix}_channel set processing_order=?, max_batch_size=?, max_batch_to_send=?, enabled=? where channel_id=?
+            </value>
+        </property>
+        <property name="deleteChannelSql">
+            <value>
+                delete from ${sync.table.prefix}_channel where channel_id=?
             </value>
         </property>
         <property name="allTriggerHistSql">

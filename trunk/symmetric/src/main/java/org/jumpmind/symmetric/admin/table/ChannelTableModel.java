@@ -20,10 +20,14 @@
 package org.jumpmind.symmetric.admin.table;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.table.TableCellEditor;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.admin.SymmetricDatabase;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -32,7 +36,9 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
 
     private static final long serialVersionUID = -5154253989768004844L;
 
-    transient List<Channel> dirtyList = new ArrayList<Channel>();
+    transient Set<Channel> dirtyList = new HashSet<Channel>();
+
+    transient SymmetricDatabase database = null;
 
     @Override
     public String getColumnName(int index) {
@@ -94,26 +100,27 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
     }
 
     @Override
-    void setColumnValue(int index, Channel object, Object value) {
-        if (object != null) {
-
-            this.dirtyList.add(object);
+    void setColumnValue(int index, Channel c, Object value) {
+        if (c != null) {
+            this.dirtyList.add(c);
 
             switch (index) {
             case 0:
-                object.setId((String) value);
+                if (!list.contains(c)) {
+                    c.setId((String) value);
+                }
                 break;
             case 1:
-                object.setProcessingOrder((Integer) value);
+                c.setProcessingOrder((Integer) value);
                 break;
             case 2:
-                object.setMaxBatchSize((Integer) value);
+                c.setMaxBatchSize((Integer) value);
                 break;
             case 3:
-                object.setMaxBatchToSend((Integer) value);
+                c.setMaxBatchToSend((Integer) value);
                 break;
             case 4:
-                object.setEnabled((Boolean) value);
+                c.setEnabled((Boolean) value);
                 break;
             }
         }
@@ -140,14 +147,25 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
 
     @Override
     List<Channel> getRows() {
-        if (list == null) {
-            list = new ArrayList<Channel>();
+        List<Channel> all = new ArrayList<Channel>();
+        if (list != null) {
+            all.addAll(list);
         }
-        return list;
+
+        if (dirtyList != null) {
+            List<Channel> newList = new ArrayList<Channel>();
+            newList.addAll(dirtyList);
+            if (list != null) {
+                newList.removeAll(list);
+            }
+            all.addAll(newList);
+        }
+        return all;
     }
 
     @Override
     public void setup(SymmetricDatabase db) {
+        this.database = db;
         List<NodeChannel> nc = db.getChannels();
         list = new ArrayList<Channel>(nc.size());
         for (NodeChannel nodeChannel : nc) {
@@ -157,19 +175,26 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
 
     @Override
     public void save() throws ValidationException {
-        System.out.println("saved " + dirtyList.size() + " objects ");
         if (dirtyList.size() > 0) {
-            dirtyList.clear();
-            throw new ValidationException();
+            for (Iterator<Channel> i = dirtyList.iterator(); i.hasNext();) {
+                Channel c = i.next();
+                if (!StringUtils.isBlank(c.getId())) {
+                    database.save(c);
+                    if (!list.contains(c)) {
+                        list.add(c);
+                    }
+                    i.remove();
+                }
+            }
+
         }
-        dirtyList.clear();
     }
 
     @Override
-    Channel newRow() {
-        Channel newChannel = new Channel();
-        this.list.add(newChannel);
-        return newChannel;
+    boolean newRow() {
+            Channel newChannel = new Channel();
+            this.dirtyList.add(newChannel);
+            return true;
     }
 
 }
