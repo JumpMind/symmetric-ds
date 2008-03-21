@@ -21,11 +21,12 @@ import org.mule.transport.AbstractMessageDispatcher;
  */
 public class SymmetricMessageDispatcher extends AbstractMessageDispatcher
 {
+    protected final SymmetricConnector connector;
 
     public SymmetricMessageDispatcher(OutboundEndpoint endpoint)
     {
         super(endpoint);
-
+        this.connector = (SymmetricConnector) endpoint.getConnector();
     }
 
     public void doConnect() throws Exception
