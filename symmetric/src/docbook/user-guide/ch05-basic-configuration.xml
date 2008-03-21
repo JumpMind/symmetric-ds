@@ -273,8 +273,8 @@ values ('corp', 'A corporate node');]]></programlisting>
         <para>
             To establish synchronization between Nodes, two Node Groups are linked together.  The direction
             of synchronization is determined by specifying a source and target Node Group.
-            If synchronization should occur in both directions, then two links can be created in opposite
-            directions.  The target Node Group can receive data changes by either push or pull methods.
+            If synchronization should occur in both directions, then two links are created in opposite
+            directions.  The target Node Group receives data changes by either push or pull methods.
             A push method causes the source Node Group to connect to the target, while a pull method
             causes it to wait for the target to connect to it.
         </para>
@@ -296,6 +296,21 @@ values ('corp', 'store', 'W');]]></programlisting>
     <section>
         <title>Nodes</title>
         <para>
+            Each instance of SymmetricDS is a Node that can be uniquely identified. 
+            The Node has a unique identifier used by the system, and the user provides an external identifier
+            for context in the local system.  For most common use, the two identifiers are the same.
+            The registration process generates and sends the identity and password to the Node, along
+            its synchronization configuration.  The top-level registration server must
+            have its identity provided by the user since it has no parent to contact.
+        </para>
+        <para>
+            The following SQL statements setup a top-level registration server as a Node identified
+            as "00000" in the "corp" Node Group.
+            <programlisting>
+<![CDATA[insert into sym_node (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
+values ('00000', 'corp', '00000', 1, '1.3.0');
+
+insert into sym_node_identity values ('00000');]]></programlisting>
         </para>
     </section>
     <section>
