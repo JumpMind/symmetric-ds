@@ -141,7 +141,7 @@
 
     <table name="node_security">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="password" type="VARCHAR" size="50" required="true" />
+        <column name="node_password" type="VARCHAR" size="50" required="true" />
         <column name="registration_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="registration_time" type="TIMESTAMP" required="false" />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0" />
