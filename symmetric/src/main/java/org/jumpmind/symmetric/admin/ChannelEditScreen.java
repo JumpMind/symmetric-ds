@@ -21,8 +21,14 @@ package org.jumpmind.symmetric.admin;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -38,7 +44,6 @@ import javax.swing.table.TableColumn;
 
 import org.jumpmind.symmetric.admin.table.ChannelTableModel;
 import org.jumpmind.symmetric.admin.table.ModelObjectTableModel;
-import org.jumpmind.symmetric.admin.table.ValidationException;
 import org.jumpmind.symmetric.model.Channel;
 
 public class ChannelEditScreen extends AbstractScreen {
@@ -51,10 +56,14 @@ public class ChannelEditScreen extends AbstractScreen {
 
     protected ModelObjectTableModel<Channel> tableModel;
 
+    private JPopupMenu rowPopup;
+
     int selectedRow = 0;
 
-    public ChannelEditScreen() {
+    IAppController appController;
 
+    public ChannelEditScreen(IAppController controller) {
+        this.appController = controller;
         tableModel = new ChannelTableModel();
         tableModel.addTableModelListener(new ChannelEditScreen.InteractiveTableModelListener());
         table = new JTable();
@@ -63,6 +72,24 @@ public class ChannelEditScreen extends AbstractScreen {
         if (!tableModel.hasEmptyRow()) {
             tableModel.addEmptyRow();
         }
+
+        rowPopup = new JPopupMenu();
+        // TODO resource bundle
+        rowPopup.add(new JMenuItem(new AbstractAction("Delete") {
+            private static final long serialVersionUID = -1L;
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    tableModel.delete();
+                    table.revalidate();
+                    table.repaint();
+                } catch (Exception e1) {
+                    appController.showError(e1.getMessage(), e1);
+                }
+            }
+        }));
+
+        table.addMouseListener(new PopupListener());
 
         scroller = new javax.swing.JScrollPane(table);
         table.setPreferredScrollableViewportSize(new java.awt.Dimension(500, 300));
@@ -83,8 +110,9 @@ public class ChannelEditScreen extends AbstractScreen {
                     selectedRow = table.getSelectedRow();
                     try {
                         tableModel.save();
-                    } catch (ValidationException e1) {
+                    } catch (Exception e1) {
                         table.getSelectionModel().setSelectionInterval(oldRow, oldRow);
+                        appController.showError(e1.getMessage(), e1);
                     }
                     if (!ChannelEditScreen.this.tableModel.hasEmptyRow()) {
                         ChannelEditScreen.this.tableModel.addEmptyRow();
@@ -173,6 +201,23 @@ public class ChannelEditScreen extends AbstractScreen {
                 int row = evt.getFirstRow();
                 table.setColumnSelectionInterval(column + 1, column + 1);
                 table.setRowSelectionInterval(row, row);
+            }
+        }
+    }
+
+    class PopupListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                rowPopup.show(e.getComponent(), e.getX(), e.getY());
             }
         }
     }

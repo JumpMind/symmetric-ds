@@ -64,6 +64,8 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
     abstract public Class getColumnClass(int column);
 
     abstract public void save() throws ValidationException;
+    
+    abstract public void delete() throws ValidationException;
 
     abstract public TableCellEditor getCellEditorForColumn(int column);
 

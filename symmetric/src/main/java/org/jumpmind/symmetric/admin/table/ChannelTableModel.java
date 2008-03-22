@@ -172,6 +172,14 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
             list.add(nodeChannel);
         }
     }
+    
+    @Override
+    public void delete() throws ValidationException {
+        if (selectedRow < list.size()) {
+            database.delete(list.get(selectedRow));
+            list.remove(selectedRow);
+        }
+    }
 
     @Override
     public void save() throws ValidationException {
