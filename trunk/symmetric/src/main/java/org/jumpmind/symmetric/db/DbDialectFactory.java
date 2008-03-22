@@ -30,6 +30,7 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.PlatformFactory;
 import org.apache.ddlutils.platform.derby.DerbyPlatform;
 import org.apache.ddlutils.platform.hsqldb.HsqlDbPlatform;
+import org.apache.ddlutils.platform.firebird.FirebirdPlatform;
 import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.oracle.Oracle10Platform;
@@ -82,6 +83,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
             dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
         } else if (pf instanceof HsqlDbPlatform) {
         	dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
+        } else if (pf instanceof FirebirdPlatform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("firebirdDialect");
         } else {
             throw new DbNotSupportedException();
         }
