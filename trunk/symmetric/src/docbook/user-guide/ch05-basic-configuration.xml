@@ -300,12 +300,13 @@ values ('corp', 'store', 'W');]]></programlisting>
             The Node has a unique identifier used by the system, and the user provides an external identifier
             for context in the local system.  For most common use, the two identifiers are the same.
             The registration process generates and sends the identity and password to the Node, along
-            its synchronization configuration.  The top-level registration server must
+            with its synchronization configuration.  The top-level registration server must
             have its identity provided by the user since it has no parent to contact.
         </para>
         <para>
             The following SQL statements setup a top-level registration server as a Node identified
             as "00000" in the "corp" Node Group.
+            
             <programlisting>
 <![CDATA[insert into sym_node (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
 values ('00000', 'corp', '00000', 1, '1.3.0');
@@ -316,11 +317,48 @@ insert into sym_node_identity values ('00000');]]></programlisting>
     <section>
         <title>Channels</title>
         <para>
+            Data changes in the database are captured in the order that they occur, which is preserved
+            when synchronizing to other Nodes.  Some data may need priority for synchronization despite
+            the normal order of events.  Channels provide a higher-level processing order of data, a limit on the
+            amount of data, and isolation from errors in other channels.  By categorizing data into
+            channels and assigning them to Triggers, the user gains more control and visibility into
+            the flow of data.
+        </para>
+        <para>
+            The following SQL statements setup channels for a retail store.  An "item" channel includes
+            data for items and their prices, while a "sale_transaction" channel includes data for ringing
+            sales at a register. 
+            
+            <programlisting>
+<![CDATA[insert into sym_channel 
+(channel_id, processing_order, max_batch_size, enabled, description)
+values('item', 10, 100000, 1, 'Item and pricing data');
+
+insert into sym_channel 
+(channel_id, processing_order, max_batch_size, enabled, description)
+values('sale_transaction', 1, 100000, 1, 'retail sale transactions from register');]]></programlisting>
         </para>
     </section>
     <section>
         <title>Triggers</title>
         <para>
+            At the heart of SymmetricDS are Triggers that define what data to capture.  Nodes in the source
+            Node Group will capture changes for a table and send them to a target Node Group.
+            Changes can include inserts, updates, or deletes to the table, and it is even possible to filter
+            data by a conditional expression.  An entry in Trigger results in a database trigger
+            being installed on the table.  Whenever the Trigger entry is updated, the last_updated_time
+            should be updated to indicate that the database trigger should also be updated.
+        </para>
+        <para>
+            The following SQL statement defines a Trigger that will capture data for a table named "item"
+            whenever data is inserted, updated, or deleted.  Data will be captured on Nodes in the "corp"
+            Node Group and sent to Nodes in the "store" Node Group.            
+            <programlisting>
+<![CDATA[insert into sym_trigger 
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, 
+initial_load_order, last_updated_by, last_updated_time, create_time)
+values('item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp, current_timestamp);
+]]></programlisting>
         </para>
     </section>
 </chapter>
