@@ -188,7 +188,8 @@
         
         <property name="insertChannelSql">
             <value>
-                insert into ${sync.table.prefix}_channel values(?, ?, ?, ?, ?, null)
+                insert into ${sync.table.prefix}_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, enabled,
+                description) values (?, ?, ?, ?, 1, null)
             </value>
         </property>
         <property name="updateChannelSql">
@@ -478,7 +479,7 @@
         </property>
         <property name="findNodeSecuritySql">
             <value>
-                select node_id, password, registration_enabled, registration_time,
+                select node_id, node_password, registration_enabled, registration_time,
                 initial_load_enabled, initial_load_time from ${sync.table.prefix}_node_security
                 where node_id = ?
             </value>
@@ -518,7 +519,7 @@
         </property>
         <property name="updateNodeSecuritySql">
             <value>
-                update ${sync.table.prefix}_node_security set password = ?, registration_enabled =
+                update ${sync.table.prefix}_node_security set node_password = ?, registration_enabled =
                 ?, registration_time = ?, initial_load_enabled = ?, initial_load_time = ? where
                 node_id = ?
             </value>
@@ -559,7 +560,7 @@
         </property>
         <property name="reopenRegistrationSql">
             <value>
-                update ${sync.table.prefix}_node_security set password = ?, registration_enabled =
+                update ${sync.table.prefix}_node_security set node_password = ?, registration_enabled =
                 1, registration_time = null where node_id = ?
             </value>
         </property>
@@ -571,7 +572,7 @@
         </property>
         <property name="openRegistrationNodeSecuritySql">
             <value>
-                insert into ${sync.table.prefix}_node_security (node_id, password,
+                insert into ${sync.table.prefix}_node_security (node_id, node_password,
                 registration_enabled) values (?, ?, 1)
             </value>
         </property>
