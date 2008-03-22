@@ -57,7 +57,7 @@ public class AppFrame extends JFrame implements IAppController {
         stackPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
         InfoScreen infoScreen = new InfoScreen();
         addScreenToPanel(new BlankScreen());
-        addScreenToPanel(new ChannelEditScreen());
+        addScreenToPanel(new ChannelEditScreen(this));
         addScreenToPanel(infoScreen);
         JSplitPane splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPane, stackPanel);
         splitPanel.setOneTouchExpandable(true);
