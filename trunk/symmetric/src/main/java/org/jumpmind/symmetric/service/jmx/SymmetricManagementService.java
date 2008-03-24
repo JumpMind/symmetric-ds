@@ -213,6 +213,15 @@ public class SymmetricManagementService {
         return dataService.reloadTable(nodeId, tableName);
     }
     
+    @ManagedOperation(description = "Send a delete and reload of a table to a node.")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+            @ManagedOperationParameter(name = "tableName", description = "The table name to reload."),
+            @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.")})
+    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
+        return dataService.reloadTable(nodeId, tableName, overrideInitialLoadSelect);
+    }
+    
     @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
     public String showBatch(String batchId) throws Exception {
