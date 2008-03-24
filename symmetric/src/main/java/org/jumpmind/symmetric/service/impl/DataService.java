@@ -82,10 +82,16 @@ public class DataService extends AbstractService implements IDataService {
     private boolean createFirstForReload;
 
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
+        insertReloadEvent(targetNode, trigger, null);
+    }
+
+    public void insertReloadEvent(final Node targetNode, final Trigger trigger,
+            final String overrideInitialLoadSelect) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.RELOAD, null, null,
-                history);
+        // initial_load_select for table can be overridden by populating the row_data
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect,
+                null, history);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
@@ -236,6 +242,10 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     public String reloadTable(String nodeId, String tableName) {
+        return reloadTable(nodeId, tableName, null);
+    }
+
+    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
         Node sourceNode = nodeService.findIdentity();        
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
@@ -246,15 +256,15 @@ public class DataService extends AbstractService implements IDataService {
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
-
+        
         if (createFirstForReload) {
             String xml = dbDialect.getCreateTableXML(trigger);
             insertCreateEvent(targetNode, trigger, xml);
-        } else {
+        } else if (deleteFirstForReload) {
             insertPurgeEvent(targetNode, trigger);
         }
 
-        insertReloadEvent(targetNode, trigger);
+        insertReloadEvent(targetNode, trigger, overrideInitialLoadSelect);
         
         return "Successfully created event to reload table " + tableName + " for node " + targetNode.getNodeId();
     }

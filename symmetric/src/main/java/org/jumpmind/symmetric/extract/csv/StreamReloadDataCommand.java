@@ -43,6 +43,10 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
         Trigger trigger = configurationService.getTriggerById(data.getAudit().getTriggerId());
+        // The initial_load_select can be overridden
+        if (data.getRowData() != null) {
+            trigger.setInitialLoadSelect(data.getRowData());
+        }
         Node node = nodeService.findNode(context.getBatch().getNodeId());
         dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, new InternalOutgoingTransport(out), context);
         out.flush();
