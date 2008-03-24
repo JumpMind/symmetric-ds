@@ -355,9 +355,12 @@ values('sale_transaction', 1, 100000, 1, 'retail sale transactions from register
             Node Group and sent to Nodes in the "store" Node Group.            
             <programlisting>
 <![CDATA[insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, 
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+sync_on_insert, sync_on_update, sync_on_delete, 
 initial_load_order, last_updated_by, last_updated_time, create_time)
-values('item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp, current_timestamp);
+values('item', 'corp', 'store', 'item', 
+1, 1, 1, 
+105, 'demo', current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>
     </section>
