@@ -219,6 +219,22 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public String sendSQL(String nodeId, String tableName, String sql) {
+        Node sourceNode = nodeService.findIdentity();        
+        Node targetNode = nodeService.findNode(nodeId);
+        if (targetNode == null) {
+            return "Unknown node " + nodeId;
+        }
+
+        Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        if (trigger == null) {
+            return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
+        }
+
+        insertSqlEvent(targetNode, trigger, sql);
+        return "Successfully create SQL event for node " + targetNode.getNodeId();
+    }
+    
     public String reloadTable(String nodeId, String tableName) {
         Node sourceNode = nodeService.findIdentity();        
         Node targetNode = nodeService.findNode(nodeId);
