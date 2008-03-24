@@ -9,7 +9,36 @@
     <title>Advanced Configuration</title>
     <section>
         <title>Dead Triggers</title>
-        <para></para>
+        <para>
+            Normally a Trigger is specified to capture data changes to a table and send them to
+            a target Node Group.  A dead Trigger is one that does not capture data changes.
+            In other words, the sync_on_insert, sync_on_update, and sync_on_delete properties
+            for the Trigger are all set to false.  Because the Trigger is specified, it will
+            be included in the initial load of data for target Nodes.
+        </para>
+        <para>
+            A dead Trigger might be used to load a read-only lookup table.  It could be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions, they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
+        <para>
+            The following SQL statement sets up a non-syncing dead Trigger that sends
+            the sale_transaction table to the "store" Node Group from the "corp" Node Group during
+            an initial load.
+            <programlisting>
+<![CDATA[insert into sym_trigger 
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+sync_on_insert, sync_on_update, sync_on_delete, 
+initial_load_order, last_updated_by, last_updated_time, create_time)
+values('sale_transaction', 'corp', 'store', 'sale_transaction', 
+0, 0, 0, 
+105, 'demo', current_timestamp, current_timestamp);]]></programlisting>
+        </para>
     </section>
     <section>
         <title>Auto Creation</title>
