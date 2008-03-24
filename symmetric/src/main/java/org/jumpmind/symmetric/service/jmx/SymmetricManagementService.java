@@ -195,6 +195,16 @@ public class SymmetricManagementService {
         return dataService.reloadNode(nodeId);
     }
 
+    @ManagedOperation(description = "Send a SQL event to a node.")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to sent the event to."),
+            @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
+            @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.")})
+
+    public String sendSQL(String nodeId, String tableName, String sql) {
+        return dataService.sendSQL(nodeId, tableName, sql);
+    }
+    
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),

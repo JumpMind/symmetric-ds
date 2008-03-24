@@ -19,6 +19,9 @@ public interface IDataService {
     public String reloadTable(String nodeId, String tableName);
     
     @Transactional
+    public String sendSQL(String nodeId, String tableName, String sql);
+    
+    @Transactional
     public void insertReloadEvent(Node targetNode);
     
     @Transactional
