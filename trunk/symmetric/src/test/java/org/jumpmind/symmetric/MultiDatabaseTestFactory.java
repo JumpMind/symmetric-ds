@@ -197,7 +197,7 @@ public class MultiDatabaseTestFactory {
             return true;
         } catch (Exception ex) {
             logger.error("Could not connect to the test database using the url: " + properties.getProperty("db.url")
-                    + ".  " + ex.getMessage());
+                    + ".  ", ex);
             return false;
         }
     }
