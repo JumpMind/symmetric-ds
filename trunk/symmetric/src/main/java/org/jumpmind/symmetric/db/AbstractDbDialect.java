@@ -381,7 +381,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 query.append(",");
             if (getPlatform().isDelimitedIdentifierModeOn())
                 query.append(platform.getPlatformInfo().getDelimiterToken());
-            query.append(columnsToCheck[idx].getName());
+            query.append("t.").append(columnsToCheck[idx].getName());
             if (getPlatform().isDelimitedIdentifierModeOn())
                 query.append(platform.getPlatformInfo().getDelimiterToken());
         }
@@ -395,7 +395,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         query.append(table.getName());
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
-        query.append(" WHERE 1 = 0");
+        query.append(" t WHERE 1 = 0");
         final String finalQuery = query.toString();
         jdbcTemplate.execute(new StatementCallback() {
             public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
