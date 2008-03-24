@@ -392,10 +392,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (table.getSchema() != null && ! table.getSchema().trim().equals("")) {
             query.append(table.getSchema() + ".");
         }
-        query.append(table.getName()).append(" t");
+        query.append(table.getName());
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
-        query.append(" WHERE 1 = 0");
+        query.append(" t WHERE 1 = 0");
         final String finalQuery = query.toString();
         jdbcTemplate.execute(new StatementCallback() {
             public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
