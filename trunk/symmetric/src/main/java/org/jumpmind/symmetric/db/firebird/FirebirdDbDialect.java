@@ -127,7 +127,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getName() {
-        return getName().substring(0, 49);
+        return super.getName().substring(0, 49);
     }
     
     public String getDefaultSchema() {
