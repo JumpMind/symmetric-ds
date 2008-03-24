@@ -381,7 +381,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 query.append(",");
             if (getPlatform().isDelimitedIdentifierModeOn())
                 query.append(platform.getPlatformInfo().getDelimiterToken());
-            query.append(columnsToCheck[idx].getName());
+            query.append("t.").append(columnsToCheck[idx].getName());
             if (getPlatform().isDelimitedIdentifierModeOn())
                 query.append(platform.getPlatformInfo().getDelimiterToken());
         }
@@ -392,7 +392,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (table.getSchema() != null && ! table.getSchema().trim().equals("")) {
             query.append(table.getSchema() + ".");
         }
-        query.append(table.getName());
+        query.append(table.getName()).append(" t");
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
         query.append(" WHERE 1 = 0");
