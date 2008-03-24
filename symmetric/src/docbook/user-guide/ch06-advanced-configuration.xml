@@ -41,8 +41,92 @@ values('sale_transaction', 'corp', 'store', 'sale_transaction',
         </para>
     </section>
     <section>
-        <title>Auto Creation</title>
-        <para></para>
+        <title>Filtering and Rerouting</title>
+        <para>
+            Data can be filtered as it is loaded into the target database or when
+            it is extracted from the source database.
+        </para>
+        <section>
+            <title>IDataLoaderFilter</title>
+            <para>
+                As data is loaded into the target database, a filter can change the
+                data in a column or save it somewhere else.  One possible use might be to
+                route credit card data to a secure database and blank it out as it loads 
+                into less-restricted reporting database.
+            </para>
+            <para>
+                A class implementing the IDataLoaderFilter interface is given to the
+                DataLoaderService in order to receive callbacks when data is inserted,
+                updated, or deleted.
+                
+                <programlisting><![CDATA[public MyFilter implements IDataLoaderFilter {
+    protected IDataLoaderService dataLoaderService; 
+ 
+    public void init() { 
+        dataLoaderService.addDataLoaderFilter(this); 
+    } 
+ 
+    public void filterInsert(IDataLoaderContext context,
+        String[] columnValues) {
+    }
+    
+    public void filterUpdate(IDataLoaderContext context, 
+        String[] columnValues, String[] keyValues) {
+    }
+    
+    public void filterDelete(IDataLoaderContext context, 
+        String[] keyValues) {
+    }
+
+    public void setDataLoaderService(IDataLoaderService dataLoaderService) { 
+        this.dataLoaderService = dataLoaderService; 
+    } 
+}]]></programlisting>
+            </para>
+            <para>
+                The filter class is specified as a Spring-managed bean so that it can
+                get a reference to the DataLoaderService.  A custom Spring XML file
+                is specified as the following.
+                
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?> 
+<beans xmlns="http://www.springframework.org/schema/beans" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.springframework.org/schema/beans 
+http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"> 
+ 
+    <bean id="myFilter" class="com.mydomain.MyFilter" 
+            scope="singleton" init-method="init"> 
+        <property name="dataLoaderService" ref="dataLoaderService" /> 
+    </bean> 
+</beans>]]></programlisting>
+            </para>
+            <para>
+                To include the custom Spring XML file during the initialization
+                of SymmetricDS, list the filename in the web.xml as a context
+                parameter:
+                
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+      PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+      "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+    ...
+    <context-param> 
+        <param-name>contextConfigLocation</param-name> 
+        <param-value>classpath:my-spring.xml</param-value> 
+    </context-param> 
+    ...
+</web-app>]]></programlisting>
+            </para>
+        </section>
+        <section>
+            <title>IColumnFilter</title>
+            <para></para>
+        </section>
+        <section>
+            <title>IExtractorListener</title>
+            <para></para>
+        </section>
     </section>
     <section>
         <title>Secure Transport</title>
