@@ -192,7 +192,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch)  {
-        long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id_seq",
+        long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id",
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());

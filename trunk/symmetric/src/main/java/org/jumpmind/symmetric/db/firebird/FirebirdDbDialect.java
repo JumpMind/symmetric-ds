@@ -99,8 +99,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     public String getSelectLastInsertIdSql(String sequenceName) {
-        //return "select currval('" + sequenceName + "')";
-        return null;
+        return "select gen_id(gen_" + sequenceName + ", 1) from rdb$database";
     }
 
     public boolean isCharSpacePadded() {
@@ -120,7 +119,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     protected boolean allowsNullForIdentityColumn() {
-        return true;
+        return false;
     }
 
     public void purge() {
