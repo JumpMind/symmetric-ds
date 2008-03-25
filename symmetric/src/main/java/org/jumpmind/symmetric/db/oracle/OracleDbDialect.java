@@ -104,7 +104,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select " + sequenceName + ".currval from dual')";
+        return "select " + sequenceName + "_seq.currval from dual')";
     }
 
     @Override

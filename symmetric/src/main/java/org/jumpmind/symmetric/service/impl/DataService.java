@@ -115,7 +115,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long insertData(final Data data) {
-        return dbDialect.insertWithGeneratedKey(insertIntoDataSql, "sym_data_data_id_seq",
+        return dbDialect.insertWithGeneratedKey(insertIntoDataSql, "sym_data_data_id",
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
                             DataAccessException {

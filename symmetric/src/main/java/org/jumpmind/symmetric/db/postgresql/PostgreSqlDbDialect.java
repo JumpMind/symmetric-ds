@@ -108,7 +108,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
     
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select currval('" + sequenceName + "')";
+        return "select currval('" + sequenceName + "_seq')";
     }
 
     public boolean requiresSavepointForFallback() {
