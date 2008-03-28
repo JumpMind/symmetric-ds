@@ -120,4 +120,14 @@ public class MockDataService implements IDataService {
         return null;
     }
 
+    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String sendSQL(String nodeId, String tableName, String sql) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
