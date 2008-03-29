@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.admin;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
@@ -32,6 +33,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+
+import org.springframework.context.support.ResourceBundleMessageSource;
 
 public class AppFrame extends JFrame implements IAppController {
 
@@ -45,9 +48,12 @@ public class AppFrame extends JFrame implements IAppController {
 
     private Map<ScreenName, AbstractScreen> screens = new HashMap<ScreenName, AbstractScreen>();
 
+    private ResourceBundleMessageSource messages;
+
     public AppFrame() throws Exception {
+        setupResourceBundle();
         this.setSize(800, 600);
-        this.setTitle("SymmetricDS Administration Console");
+        this.setTitle(getMessage("frame.title.name"));
         this.setIconImage(new ImageIcon(getClass().getResource("/images/application_view_tile.png")).getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AdminTreeControl leftPane = new AdminTreeControl(this);
@@ -63,6 +69,11 @@ public class AppFrame extends JFrame implements IAppController {
         splitPanel.setOneTouchExpandable(true);
         splitPanel.setDividerLocation(200);
         this.getContentPane().add(splitPanel);
+    }
+
+    private void setupResourceBundle() {
+        messages = new ResourceBundleMessageSource();
+        messages.setBasename("symmetric-adminapp-messages");
     }
 
     private void addScreenToPanel(AbstractScreen screen) {
@@ -87,4 +98,11 @@ public class AppFrame extends JFrame implements IAppController {
         screenStack.show(stackPanel, cardName.name());
     }
 
+    public String getMessage(String code) {
+        return getMessage(code, null);
+    }
+
+    public String getMessage(String code, String[] args) {
+        return messages.getMessage(code, args, Locale.getDefault());
+    }
 }

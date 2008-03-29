@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -41,9 +43,11 @@ import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
-@Test(sequential=true)
+@Test(sequential = true)
 public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
 
+    static final Log logger = LogFactory.getLog(DbTriggerTest.class);
+    
     private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
     final static String INSERT1 = "insert into "
@@ -52,9 +56,9 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
             + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
 
     final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, 1, 1, 1 };
-    
-    final static int[] INSERT1_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
-        Types.TIMESTAMP, Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
+
+    final static int[] INSERT1_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+            Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
     final static String INSERT2 = "insert into "
             + TEST_TRIGGERS_TABLE
@@ -70,7 +74,12 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
     public String getTestName() {
-        return "DbTriggerTest on " + getDatabaseName();
+        try {
+            return "DbTriggerTest on " + getDatabaseName();
+        } catch (RuntimeException ex) {
+            logger.fatal(ex,ex);
+            throw ex;
+        }
     }
 
     @Test(groups = "continuous")
@@ -196,7 +205,8 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
 
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;    }
+        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
+    }
 
     @Test(groups = "continuous", dependsOnMethods = "testExcludedColumnsFunctionality")
     public void testDisableTriggers() throws Exception {

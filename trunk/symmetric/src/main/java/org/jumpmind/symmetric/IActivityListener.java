@@ -21,25 +21,28 @@ package org.jumpmind.symmetric;
 
 import org.jumpmind.symmetric.db.IDbDialect;
 
-
 /**
- * This interface allows the SymmetricDS end user interact with the SymmetricDS engine in response to
+ * This interface allows the SymmetricDS end user to interact with the SymmetricDS engine in response to
  * events within the system.
  */
 public interface IActivityListener {
 
     public boolean createConfigurationTables(IDbDialect dbDialect);
-    
+
     public boolean upgradeNeeded(String oldVersion, String newVersion);
-    
+
     public void tablesCreated();
+
     public void registered();
+
     public void loaded();
-    
+
     public void registrationOpened(String nodeId);
+
     public void nodeRegistered(String nodeId);
-    
+
     public void dataBatchReceived(DataEvent event);
+
     public void dataBatchSent(DataEvent event);
-    
+
 }

@@ -47,6 +47,13 @@ public class Channel {
         this.id = id;
         this.processingOrder = processingOrder;
     }
+    
+    public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled) {
+        this(id, processingOrder);
+        this.maxBatchSize = maxBatchSize;
+        this.maxBatchToSend = maxBatchToSend;
+        this.enabled = enabled;
+    }
 
     public String getId() {
         return id;
