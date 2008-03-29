@@ -5,9 +5,22 @@
     <author email="chenson42@users.sourceforge.net">Chris Henson</author>
   </properties>
   <body>
-    <release version="1.4.0" date="unknown" description="Lets add some polish">
-      <action dev="chenson42" type="add">
-        Added a thick client configuration and administration utility application.
+    <release version="1.3.1" date="2008-03-29" description="a brave new frontier, patched">
+      <action dev="erilong" type="fix" issue="aid=1924351&amp;atid=997724">
+        Queries need to alias columns on PostgreSQL in case reserved words like "limit"
+        are used as a column name.  Fixes synchronization for Adempiere.
+      </action>
+      <action dev="erilong" type="fix" issue="aid=1922524&amp;atid=997724">
+        Fixed the PostgreSQL dialect to query for existence of triggers correctly, which
+        was causing it to try creating them on every startup.
+      </action>
+      <action dev="erilong" type="fix" issue="aid=1913260&amp;atid=997724">
+        Fixed the population of the failed_data_id on sym_outgoing_batch_hist, which was always
+        zero. It should link to the sym_data.
+      </action>
+      <action dev="chenson42" type="fix" issue="aid=1914242&amp;atid=997724">
+        The oracle dialect should select from user_objects vs. all_objects to determine if the
+        package variable has been installed.
       </action>
     </release>
     <release version="1.3.0" date="2008-03-12" description="a brave new frontier">
