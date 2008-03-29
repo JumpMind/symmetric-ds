@@ -45,8 +45,6 @@ public interface IConfigurationService {
     public List<String> getNodeConfigChannelTableNames();
     
     public void initTriggerRowsForConfigChannel();
-
-    public void initSystemChannels();
     
     public void saveChannel(Channel channel);
     

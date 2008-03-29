@@ -19,7 +19,10 @@
  */
 package org.jumpmind.symmetric.admin.table;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -32,16 +35,23 @@ import org.jumpmind.symmetric.model.Channel;
 
 abstract public class ModelObjectTableModel<T> extends AbstractTableModel implements ListSelectionListener {
 
-    private static final long serialVersionUID = -2191025297337306895L;
+    protected int selectedRow = 0;
 
-    int selectedRow = 0;
+    protected transient List<T> list;
 
-    protected List<T> list;
+    protected transient Set<T> dirtyList = new HashSet<T>();
+
+    protected transient SymmetricDatabase database;
 
     public ModelObjectTableModel() {
     }
 
-    abstract public void setup(SymmetricDatabase db);
+    final public void setup(SymmetricDatabase db) {
+        this.database = db;
+        postSetup();
+    }
+
+    abstract protected void postSetup();
 
     public void valueChanged(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
@@ -63,11 +73,41 @@ abstract public class ModelObjectTableModel<T> extends AbstractTableModel implem
     @SuppressWarnings("unchecked")
     abstract public Class getColumnClass(int column);
 
-    abstract public void save() throws ValidationException;
-    
-    abstract public void delete() throws ValidationException;
+    public void save() {
+        if (dirtyList.size() > 0) {
+            for (Iterator<T> i = dirtyList.iterator(); i.hasNext();) {
+                T c = i.next();
+                if (isRowSaveable(c)) {
+                    saveRow(c);
+                    if (!list.contains(c)) {
+                        list.add(c);
+                    }
+                    i.remove();
+                }
+            }
+        }
+    }
 
-    abstract public TableCellEditor getCellEditorForColumn(int column);
+    abstract protected boolean isRowSaveable(T rowObject);
+
+    abstract protected void saveRow(T rowObject);
+
+    public void delete() {
+        if (selectedRow < list.size()) {
+            deleteRow(list.get(selectedRow));
+            list.remove(selectedRow);
+        }
+    }
+
+    abstract protected void deleteRow(T rowObject);
+
+    /**
+     * This method is an optional override.  Use it to specify table cell editors
+     * for the current model.
+     */
+    public TableCellEditor getCellEditorForColumn(int column) {
+        return null;
+    }
 
     abstract public Object getValueAt(int row, int column);
 

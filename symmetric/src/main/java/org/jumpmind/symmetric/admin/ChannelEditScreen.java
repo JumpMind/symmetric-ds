@@ -134,13 +134,11 @@ public class ChannelEditScreen extends AbstractScreen {
 
         JPanel instructionsPanel = new JPanel();
         // TODO from resource bundle
-        instructionsPanel.setBorder(new TitledBorder("Channels"));
+        instructionsPanel.setBorder(new TitledBorder(appController.getMessage("channels.name")));
         instructionsPanel.setLayout(new BorderLayout());
-        JTextArea area = new JTextArea();
+        JTextArea area = new JTextArea(appController.getMessage("channels.description", new String[] {"\n"}), 3, 50);        
         area.setEditable(false);
         area.setOpaque(false);
-        // TODO resource bundle
-        area.setText("Channels are ...");
         instructionsPanel.add(area, BorderLayout.CENTER);
 
         add(instructionsPanel, BorderLayout.NORTH);

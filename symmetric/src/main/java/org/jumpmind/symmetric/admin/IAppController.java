@@ -28,4 +28,8 @@ public interface IAppController {
     public JFrame getFrame();
     
     public void show(ScreenName cardName, SymmetricDatabase connection);
+    
+    public String getMessage(String code, String[] args);
+    
+    public String getMessage(String code);
 }

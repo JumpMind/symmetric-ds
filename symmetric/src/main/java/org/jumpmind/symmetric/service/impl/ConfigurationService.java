@@ -103,14 +103,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
-    public void initSystemChannels() {
+    protected void initSystemChannels() {
         try {
-            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_CONFIG, 0, 100, 100 });
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_CONFIG, 0, 100, 100, 1 });
         } catch (DataIntegrityViolationException ex) {
             logger.debug("Channel " + Constants.CHANNEL_CONFIG + " already created.");
         }
         try {
-            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 1, 10 });
+            jdbcTemplate.update(insertChannelSql, new Object[] { Constants.CHANNEL_RELOAD, 1, 1, 10, 1 });
         } catch (DataIntegrityViolationException ex) {
             logger.debug("Channel " + Constants.CHANNEL_RELOAD + " already created.");
         }

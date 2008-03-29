@@ -20,25 +20,15 @@
 package org.jumpmind.symmetric.admin.table;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
-import javax.swing.table.TableCellEditor;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.admin.SymmetricDatabase;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
 
 public class ChannelTableModel extends ModelObjectTableModel<Channel> {
 
     private static final long serialVersionUID = -5154253989768004844L;
-
-    transient Set<Channel> dirtyList = new HashSet<Channel>();
-
-    transient SymmetricDatabase database = null;
 
     @Override
     public String getColumnName(int index) {
@@ -128,19 +118,6 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
     }
 
     @Override
-    public TableCellEditor getCellEditorForColumn(int column) {
-        switch (column) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        }
-
-        return null;
-    }
-
-    @Override
     int getNumberOfColumns() {
         return 5;
     }
@@ -164,45 +141,34 @@ public class ChannelTableModel extends ModelObjectTableModel<Channel> {
     }
 
     @Override
-    public void setup(SymmetricDatabase db) {
-        this.database = db;
-        List<NodeChannel> nc = db.getChannels();
+    protected void postSetup() {
+        List<NodeChannel> nc = this.database.getChannels();
         list = new ArrayList<Channel>(nc.size());
         for (NodeChannel nodeChannel : nc) {
             list.add(nodeChannel);
         }
     }
-    
+
     @Override
-    public void delete() throws ValidationException {
-        if (selectedRow < list.size()) {
-            database.delete(list.get(selectedRow));
-            list.remove(selectedRow);
-        }
+    protected void deleteRow(Channel channel) {
+        database.delete(channel);
     }
 
     @Override
-    public void save() throws ValidationException {
-        if (dirtyList.size() > 0) {
-            for (Iterator<Channel> i = dirtyList.iterator(); i.hasNext();) {
-                Channel c = i.next();
-                if (!StringUtils.isBlank(c.getId())) {
-                    database.save(c);
-                    if (!list.contains(c)) {
-                        list.add(c);
-                    }
-                    i.remove();
-                }
-            }
+    protected boolean isRowSaveable(Channel rowObject) {
+        return !StringUtils.isBlank(rowObject.getId());
+    }
 
-        }
+    @Override
+    protected void saveRow(Channel rowObject) {
+        database.save(rowObject);
     }
 
     @Override
     boolean newRow() {
-            Channel newChannel = new Channel();
-            this.dirtyList.add(newChannel);
-            return true;
+        Channel newChannel = new Channel();
+        this.dirtyList.add(newChannel);
+        return true;
     }
 
 }
