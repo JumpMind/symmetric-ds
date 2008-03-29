@@ -189,7 +189,7 @@
         <property name="insertChannelSql">
             <value>
                 insert into ${sync.table.prefix}_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, enabled,
-                description) values (?, ?, ?, ?, 1, null)
+                description) values (?, ?, ?, ?, ?, null)
             </value>
         </property>
         <property name="updateChannelSql">
