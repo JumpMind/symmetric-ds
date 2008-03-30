@@ -63,9 +63,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void okTest() {
         cleanSlate();
-        ArrayList<BatchInfo> list = new ArrayList<BatchInfo>();
-        list.add(new BatchInfo("1"));
-        ackService.ack(list);
+        ackService.ack(new BatchInfo("1"));
 
         List<OutgoingBatchHistory> history = getOutgoingBatchHistory("1");
         Assert.assertEquals(history.size(), 1);
@@ -120,10 +118,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     }
 
     protected void errorTestCore(String batchId, int errorLine, long expectedResults) {
-        ArrayList<BatchInfo> list = new ArrayList<BatchInfo>();
-        list.add(new BatchInfo(batchId, errorLine));
-        ackService.ack(list);
-
+        ackService.ack(new BatchInfo(batchId, errorLine));
         List<OutgoingBatchHistory> history = getOutgoingBatchHistory(batchId);
         Assert.assertEquals(history.size(), 1);
         OutgoingBatchHistory hist = history.get(0);

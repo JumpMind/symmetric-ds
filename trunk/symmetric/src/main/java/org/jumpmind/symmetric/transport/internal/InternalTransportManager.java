@@ -57,8 +57,7 @@ import org.springframework.beans.factory.BeanFactory;
 /**
  * Coordinates interaction between two symmetric engines in the same JVM.
  */
-public class InternalTransportManager extends AbstractTransportManager
-        implements ITransportManager {
+public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
     static final Log logger = LogFactory.getLog(InternalTransportManager.class);
 
@@ -69,24 +68,21 @@ public class InternalTransportManager extends AbstractTransportManager
         this.runtimeConfiguration = config;
     }
 
-    public IIncomingTransport getPullTransport(final Node remote, final Node local)
-            throws IOException {
+    public IIncomingTransport getPullTransport(final Node remote, final Node local) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(remote.getSyncURL(), null, respOs, new IClientRunnable() {
-            public void run(BeanFactory factory, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // TODO this is duplicated from the Pull Servlet. It should be consolidated somehow!
-                INodeService nodeService = (INodeService)factory.getBean(Constants.NODE_SERVICE);
+                INodeService nodeService = (INodeService) factory.getBean(Constants.NODE_SERVICE);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 if (security.isInitialLoadEnabled()) {
-                    ((IDataService)factory.getBean(Constants.DATA_SERVICE)).insertReloadEvent(local);
+                    ((IDataService) factory.getBean(Constants.DATA_SERVICE)).insertReloadEvent(local);
                 }
                 IDataExtractorService extractor = (IDataExtractorService) factory
                         .getBean(Constants.DATAEXTRACTOR_SERVICE);
-                IOutgoingTransport transport = new InternalOutgoingTransport(
-                        respOs);
+                IOutgoingTransport transport = new InternalOutgoingTransport(respOs);
                 extractor.extract(local, transport);
                 transport.close();
             }
@@ -94,8 +90,7 @@ public class InternalTransportManager extends AbstractTransportManager
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local)
-            throws IOException {
+    public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local) throws IOException {
 
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
@@ -104,56 +99,47 @@ public class InternalTransportManager extends AbstractTransportManager
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(remote.getSyncURL(), pushIs, respOs, new IClientRunnable() {
-            public void run(BeanFactory factory, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
-                IDataLoaderService service = (IDataLoaderService) factory
-                        .getBean(Constants.DATALOADER_SERVICE);
+                IDataLoaderService service = (IDataLoaderService) factory.getBean(Constants.DATALOADER_SERVICE);
                 service.loadData(pushIs, respOs);
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }
 
-    public IIncomingTransport getRegisterTransport(final Node client)
-            throws IOException {
+    public IIncomingTransport getRegisterTransport(final Node client) throws IOException {
 
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(runtimeConfiguration.getRegistrationUrl(), null, respOs,
-                new IClientRunnable() {
-                    public void run(BeanFactory factory, InputStream is,
-                            OutputStream os) throws Exception {
-                        // This should be basically what the registration servlet does ...
-                        IRegistrationService service = (IRegistrationService) factory
-                                .getBean(Constants.REGISTRATION_SERVICE);
-                        service.registerNode(client, os);
-                    }
-                });
+        runAtClient(runtimeConfiguration.getRegistrationUrl(), null, respOs, new IClientRunnable() {
+            public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
+                // This should be basically what the registration servlet does ...
+                IRegistrationService service = (IRegistrationService) factory.getBean(Constants.REGISTRATION_SERVICE);
+                service.registerNode(client, os);
+            }
+        });
         return new InternalIncomingTransport(respIs);
     }
 
-    public boolean sendAcknowledgement(Node remote,
-            List<IncomingBatchHistory> list, Node local) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
         try {
             if (list != null && list.size() > 0) {
-                SymmetricEngine remoteEngine = getTargetEngine(remote
-                        .getSyncURL());
+                SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
                 List<BatchInfo> batches = new ArrayList<BatchInfo>();
                 for (IncomingBatchHistory loadStatus : list) {
-                    if (loadStatus.getStatus() == Status.OK
-                            || loadStatus.getStatus() == Status.SK) {
+                    if (loadStatus.getStatus() == Status.OK || loadStatus.getStatus() == Status.SK) {
                         batches.add(new BatchInfo(loadStatus.getBatchId()));
                     } else {
-                        batches.add(new BatchInfo(loadStatus.getBatchId(),
-                                loadStatus.getFailedRowNumber()));
+                        batches.add(new BatchInfo(loadStatus.getBatchId(), loadStatus.getFailedRowNumber()));
                     }
                 }
-                IAcknowledgeService service = (IAcknowledgeService) remoteEngine
-                        .getApplicationContext().getBean(
-                                Constants.ACKNOWLEDGE_SERVICE);
-                service.ack(batches);
+                IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(
+                        Constants.ACKNOWLEDGE_SERVICE);
+                for (BatchInfo batchInfo : batches) {
+                    service.ack(batchInfo);
+                }
 
             }
             return true;
@@ -163,16 +149,15 @@ public class InternalTransportManager extends AbstractTransportManager
         }
     }
 
-    public void writeAcknowledgement(OutputStream out,
-            List<IncomingBatchHistory> list) throws IOException {
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
         String data = getAcknowledgementData(list);
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
         pw.println(data);
         pw.close();
     }
 
-    private void runAtClient(final String url, final InputStream is,
-            final OutputStream os, final IClientRunnable runnable) {
+    private void runAtClient(final String url, final InputStream is, final OutputStream os,
+            final IClientRunnable runnable) {
         new Thread() {
             public void run() {
                 try {
@@ -191,17 +176,14 @@ public class InternalTransportManager extends AbstractTransportManager
     private SymmetricEngine getTargetEngine(String url) {
         SymmetricEngine engine = SymmetricEngine.findEngineByUrl(url);
         if (engine == null) {
-            throw new NullPointerException(
-                    "Could not find the engine reference for the following url: "
-                            + url);
+            throw new NullPointerException("Could not find the engine reference for the following url: " + url);
         } else {
             return engine;
         }
     }
 
     interface IClientRunnable {
-        public void run(BeanFactory factory, InputStream is, OutputStream os)
-                throws Exception;
+        public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception;
     }
 
 }
