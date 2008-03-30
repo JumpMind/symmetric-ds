@@ -57,15 +57,17 @@ import org.apache.commons.logging.LogFactory;
  *      &lt;list/&gt;
  *    &lt;property/&gt;
  *    &lt;property name=&quot;disabled&quot; value=&quot;boolean&quot; /&gt;
- *    &lt;property name=&quot;compressType&quot; value=&quot;string&quot; /&gt;
+ *    &lt;property name=&quot;compressionThreshold&quot; value=&quot;int&quot; /&gt;
  *  &lt;/bean&gt;
  * </pre>
  */
 public class CompressionFilter extends AbstractFilter {
+    
     private static final Log logger = LogFactory.getLog(CompressionFilter.class);
 
-    private javawebparts.filter.CompressionFilter delegate;
-    private String compressType;
+    private org.jumpmind.symmetric.web.compression.CompressionFilter delegate;
+
+    protected int compressionThreshold;
 
     @Override
     public boolean isContainerCompatible()
@@ -91,13 +93,9 @@ public class CompressionFilter extends AbstractFilter {
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
         super.init(filterConfig);
-        delegate = new javawebparts.filter.CompressionFilter();
+        delegate = new org.jumpmind.symmetric.web.compression.CompressionFilter();
 
         delegate.init(new CompressionFilterConfig(filterConfig));
-    }
-
-    public void setCompressType(String compressType) {
-        this.compressType = compressType;
     }
 
     @Override
@@ -115,8 +113,8 @@ public class CompressionFilter extends AbstractFilter {
             this.filterConfig = filterConfig;
             initParameterNames = IteratorUtils.toList(new EnumerationIterator(
                     filterConfig.getInitParameterNames()));
-            if (compressType != null) {
-                initParameterNames.add(compressType);
+            if (compressionThreshold > 0) {
+                initParameterNames.add("compressionThreshold");
             }
         }
 
@@ -125,8 +123,8 @@ public class CompressionFilter extends AbstractFilter {
         }
 
         public String getInitParameter(String name) {
-            if (compressType != null && "compressType".equals(name)) {
-                return compressType;
+            if (compressionThreshold > 0 && "compressionThreshold".equals(name)) {
+                return Integer.toString(compressionThreshold);
             }
             return filterConfig.getInitParameter(name);
         }
@@ -138,5 +136,9 @@ public class CompressionFilter extends AbstractFilter {
         public ServletContext getServletContext() {
             return filterConfig.getServletContext();
         }
+    }
+
+    public void setCompressionThreshold(int compressionThreshold) {
+        this.compressionThreshold = compressionThreshold;
     }
 }
