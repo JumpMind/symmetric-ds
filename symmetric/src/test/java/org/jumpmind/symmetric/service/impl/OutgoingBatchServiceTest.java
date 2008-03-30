@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -226,9 +225,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         String thirdBatchId = batches.get(2).getBatchId();
         
         // Ack the first batch as an error, leaving the others as new
-        ArrayList<BatchInfo> ackList = new ArrayList<BatchInfo>();
-        ackList.add(new BatchInfo(firstBatchId, 1));
-        ackService.ack(ackList);
+        ackService.ack(new BatchInfo(firstBatchId, 1));
 
         // Get the batches again. The error channel batches should be last
         batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);

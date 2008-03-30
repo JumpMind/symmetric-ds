@@ -127,7 +127,10 @@ public class PushService implements IPushService {
                     batchInfo = parser.nextBatch();
                 }
 
-                ackService.ack(batches);
+                for (BatchInfo batch : batches) {
+                    ackService.ack(batch);    
+                }
+                
             } finally {
                 transport.close();
             }

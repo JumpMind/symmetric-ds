@@ -142,7 +142,7 @@ public class RegistrationService extends AbstractService implements
                             trigger, transport);
                     // acknowledge right away, because the acknowledgment is not build into the registration
                     // protocol.
-                    acknowledgeService.ack(batch.getBatchInfoList());
+                    acknowledgeService.ack(batch.getBatchInfo());
                 }
             }
             dataExtractorService.extractNodeIdentityFor(node, transport);
