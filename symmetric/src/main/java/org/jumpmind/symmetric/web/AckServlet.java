@@ -81,7 +81,7 @@ public class AckServlet extends
                     batches.add(new BatchInfo(getBatchIdFrom(batchId)));
                 } else {
                     try {
-                        int lineNumber = Integer.parseInt(status);
+                        int lineNumber = Integer.parseInt(status.trim());
                         batches.add(new BatchInfo(getBatchIdFrom(batchId),
                                 lineNumber));
                     } catch (NumberFormatException ex) {
