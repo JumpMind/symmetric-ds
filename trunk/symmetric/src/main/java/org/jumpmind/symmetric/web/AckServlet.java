@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -41,6 +44,8 @@ import org.jumpmind.symmetric.transport.AckResourceHandler;
 
 public class AckServlet extends
         AbstractTransportResourceServlet<AckResourceHandler> {
+
+    private static final BatchIdComparator BATCH_ID_COMPARATOR = new BatchIdComparator();
 
     private static final long serialVersionUID = 1L;
 
@@ -86,6 +91,7 @@ public class AckServlet extends
                 }
             }
         }
+        Collections.sort(batches, BATCH_ID_COMPARATOR);
         getTransportResourceHandler().ack(batches);
     }
 
@@ -96,6 +102,23 @@ public class AckServlet extends
         } else {
             throw new IllegalStateException("Invalid batch parameter "
                     + webParameter);
+        }
+    }
+
+    private static class BatchIdComparator implements Comparator<BatchInfo> {
+        public int compare(final BatchInfo batchInfo1, final BatchInfo batchInfo2) {
+            final CompareToBuilder retVal = new CompareToBuilder();
+            if (batchInfo1 != null && StringUtils.isNotBlank(batchInfo1.getBatchId())
+                    && StringUtils.isNumeric(batchInfo1.getBatchId()) && batchInfo2 != null
+                    && StringUtils.isNotBlank(batchInfo2.getBatchId())
+                    && StringUtils.isNumeric(batchInfo2.getBatchId())) {
+                final Integer batchId1 = Integer.parseInt(batchInfo1.getBatchId());
+                final Integer batchId2 = Integer.parseInt(batchInfo2.getBatchId());
+                retVal.append(batchId1, batchId2);
+            } else {
+                retVal.append(batchInfo1.getBatchId(), batchInfo2.getBatchId());
+            }
+            return retVal.toComparison();
         }
     }
 
