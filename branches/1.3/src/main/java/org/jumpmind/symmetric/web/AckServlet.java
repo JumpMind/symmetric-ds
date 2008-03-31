@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -37,26 +41,26 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class AckServlet extends HttpServlet {
+    private static final BatchIdComparator BATCH_ID_COMPARATOR = new BatchIdComparator();
 
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+    protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
             throws ServletException, IOException {
-        Map parameters = req.getParameterMap();
-        List<BatchInfo> batches = new ArrayList<BatchInfo>();
+        final Map parameters = req.getParameterMap();
+        final List<BatchInfo> batches = new ArrayList<BatchInfo>();
 
-        // TODO: acks should be saved in order received
-        for (Object batch : parameters.keySet()) {
-            String batchId = batch.toString();
+        for (final Object batch : parameters.keySet()) {
+            final String batchId = batch.toString();
             if (batchId.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                Object value = parameters.get(batch);
+                final Object value = parameters.get(batch);
                 String status = "";
                 if (value instanceof String) {
                     status = (String) value;
                 } else if (value instanceof String[]) {
-                    String[] array = (String[]) value;
+                    final String[] array = (String[]) value;
                     if (array.length > 0) {
                         status = array[0];
                     }
@@ -66,10 +70,9 @@ public class AckServlet extends HttpServlet {
                     batches.add(new BatchInfo(getBatchIdFrom(batchId)));
                 } else {
                     try {
-                        int lineNumber = Integer.parseInt(status.trim());
-                        batches.add(new BatchInfo(getBatchIdFrom(batchId),
-                                lineNumber));
-                    } catch (NumberFormatException ex) {
+                        final int lineNumber = Integer.parseInt(status.trim());
+                        batches.add(new BatchInfo(getBatchIdFrom(batchId), lineNumber));
+                    } catch (final NumberFormatException ex) {
                         batches.add(new BatchInfo(getBatchIdFrom(batchId),
                                 BatchInfo.UNDEFINED_ERROR_LINE_NUMBER));
                     }
@@ -77,21 +80,36 @@ public class AckServlet extends HttpServlet {
             }
         }
 
-        ApplicationContext ctx = WebApplicationContextUtils
+        final ApplicationContext ctx = WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());
-        IAcknowledgeService service = (IAcknowledgeService) ctx
-                .getBean(Constants.ACKNOWLEDGE_SERVICE);
+        final IAcknowledgeService service = (IAcknowledgeService) ctx.getBean(Constants.ACKNOWLEDGE_SERVICE);
+        Collections.sort(batches, BATCH_ID_COMPARATOR);
         service.ack(batches);
     }
 
-    private String getBatchIdFrom(String webParameter) {
-        int index = WebConstants.ACK_BATCH_NAME.length();
+    private String getBatchIdFrom(final String webParameter) {
+        final int index = WebConstants.ACK_BATCH_NAME.length();
         if (index >= 0) {
             return webParameter.substring(index);
         } else {
-            throw new IllegalStateException("Invalid batch parameter "
-                    + webParameter);
+            throw new IllegalStateException("Invalid batch parameter " + webParameter);
         }
     }
 
+    private static class BatchIdComparator implements Comparator<BatchInfo> {
+        public int compare(final BatchInfo batchInfo1, final BatchInfo batchInfo2) {
+            final CompareToBuilder retVal = new CompareToBuilder();
+            if (batchInfo1 != null && StringUtils.isNotBlank(batchInfo1.getBatchId())
+                    && StringUtils.isNumeric(batchInfo1.getBatchId()) && batchInfo2 != null
+                    && StringUtils.isNotBlank(batchInfo2.getBatchId())
+                    && StringUtils.isNumeric(batchInfo2.getBatchId())) {
+                final Integer batchId1 = Integer.parseInt(batchInfo1.getBatchId());
+                final Integer batchId2 = Integer.parseInt(batchInfo2.getBatchId());
+                retVal.append(batchId1, batchId2);
+            } else {
+                retVal.append(batchInfo1.getBatchId(), batchInfo2.getBatchId());
+            }
+            return retVal.toComparison();
+        }
+    }
 }
