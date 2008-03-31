@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -41,6 +42,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     private String selectDataIdSql;
 
     private IOutgoingBatchHistoryService outgoingBatchHistoryService;
+
+    public void ack(final List<BatchInfo> batches) {
+        for (BatchInfo batch : batches) {
+            ack(batch);    
+        }
+    }
 
     @Transactional
     public void ack(final BatchInfo batch) {

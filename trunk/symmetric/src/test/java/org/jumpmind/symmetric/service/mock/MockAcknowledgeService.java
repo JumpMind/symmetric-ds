@@ -22,10 +22,16 @@
  */
 package org.jumpmind.symmetric.service.mock;
 
+import java.util.List;
+
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 
 public class MockAcknowledgeService implements IAcknowledgeService {
+
+    public void ack(List<BatchInfo> batches) {
+        
+    }
 
     public void ack(BatchInfo batch) {
 
