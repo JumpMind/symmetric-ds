@@ -65,7 +65,6 @@ public class AckServlet extends
         Map parameters = req.getParameterMap();
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
 
-        // TODO: acks should be saved in order received
         for (Object batch : parameters.keySet()) {
             String batchId = ObjectUtils.toString(batch, "");
             if (batchId.startsWith(WebConstants.ACK_BATCH_NAME)) {
