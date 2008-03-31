@@ -42,11 +42,13 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -76,6 +78,8 @@ public class DataService extends AbstractService implements IDataService {
     private boolean deleteFirstForReload;
     
     private boolean createFirstForReload;
+    
+    private IOutgoingBatchService outgoingBatchService;
 
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
@@ -166,17 +170,20 @@ public class DataService extends AbstractService implements IDataService {
             for (Trigger trigger : triggers) {
                 String xml = dbDialect.getCreateTableXML(trigger);
                 insertCreateEvent(targetNode, trigger, xml);
+                buildReloadBatches(targetNode.getNodeId());
             }            
         }
         if (deleteFirstForReload) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
                 insertPurgeEvent(targetNode, trigger);
+                buildReloadBatches(targetNode.getNodeId());
             }
         }
 
         for (Trigger trigger : triggers) {
             insertReloadEvent(targetNode, trigger);
+            buildReloadBatches(targetNode.getNodeId());
         }
 
         if (listeners != null) {
@@ -189,6 +196,18 @@ public class DataService extends AbstractService implements IDataService {
         
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
+    }
+    
+    /**
+     * This should be called after a reload event is inserted so there is a one to one between 
+     * data events and reload batches.
+     */
+    private void buildReloadBatches(String nodeId) {
+        NodeChannel channel = new NodeChannel();
+        channel.setId(Constants.CHANNEL_RELOAD);
+        channel.setEnabled(true);
+        outgoingBatchService.buildOutgoingBatches(nodeId, channel);
+
     }
 
     private void insertNodeSecurityUpdate(Node node) {
@@ -338,6 +357,11 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setPurgeService(IPurgeService purgeService) {
         this.purgeService = purgeService;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService)
+    {
+        this.outgoingBatchService = outgoingBatchService;
     }
 
 }

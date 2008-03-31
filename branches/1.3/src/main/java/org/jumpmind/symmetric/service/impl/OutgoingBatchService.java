@@ -45,6 +45,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
@@ -85,7 +86,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * other than possibly leaving a batch row w/out data every now and then or leaving a batch w/out the
      * associated history row.
      */
+    @Transactional
+    @Deprecated
     public void buildOutgoingBatches(final String nodeId, final List<NodeChannel> channels) {
+        for (NodeChannel nodeChannel : channels)  {
+            buildOutgoingBatches(nodeId, nodeChannel);
+        }
+    }
+    
+    @Transactional
+    public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
+        
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
@@ -94,8 +105,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     update = conn.prepareStatement(updateBatchedEventsSql);
 
                     update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-
-                    for (NodeChannel channel : channels) {
 
                         if (channel.isSuspended()) {
                             logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
@@ -178,7 +187,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 JdbcUtils.closeStatement(select);
 
                             }
-                        }
 
                         update.executeBatch();
                     }

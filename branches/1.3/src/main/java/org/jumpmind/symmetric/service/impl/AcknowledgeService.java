@@ -43,42 +43,47 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IOutgoingBatchHistoryService outgoingBatchHistoryService;
 
+    @Deprecated
+    public void ack(final List<BatchInfo> batches) {
+        for (BatchInfo batch : batches) {
+            ack(batch);    
+        }
+    }
+    
     @Transactional
-    public void ack(List<BatchInfo> batches) {
-        for (final BatchInfo batch : batches) {
-            final Integer id = new Integer(batch.getBatchId());
-            // update the outgoing_batch record
-            jdbcTemplate.execute(new ConnectionCallback() {
-                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                    PreparedStatement batchUpdate = null;
-                    try {
-                        batchUpdate = conn.prepareStatement(updateOutgoingBatchSql);
-                        batchUpdate.setString(1, batch.isOk() ? Status.OK.name() : Status.ER.name());
-                        batchUpdate.setInt(2, id);
-                        batchUpdate.executeUpdate();
-                        return null;
-                    } finally {
-                        JdbcUtils.closeStatement(batchUpdate);
-                    }
+    public void ack(final BatchInfo batch) {
+        final Integer id = new Integer(batch.getBatchId());
+        // update the outgoing_batch record
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                PreparedStatement batchUpdate = null;
+                try {
+                    batchUpdate = conn.prepareStatement(updateOutgoingBatchSql);
+                    batchUpdate.setString(1, batch.isOk() ? Status.OK.name() : Status.ER.name());
+                    batchUpdate.setInt(2, id);
+                    batchUpdate.executeUpdate();
+                    return null;
+                } finally {
+                    JdbcUtils.closeStatement(batchUpdate);
                 }
-            });
-
-            // add a record to outgoing_batch_hist indicating success
-            if (batch.isOk()) {
-                outgoingBatchHistoryService.ok(id);
             }
-            // add a record to outgoing_batch_hist indicating an error
-            else {
-                if (batch.getErrorLine() != BatchInfo.UNDEFINED_ERROR_LINE_NUMBER) {
-                    CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
+        });
 
-                    jdbcTemplate.query(selectDataIdSql, new Object[] { id }, handler);
-                    final long dataId = handler.getDataId();
+        // add a record to outgoing_batch_hist indicating success
+        if (batch.isOk()) {
+            outgoingBatchHistoryService.ok(id);
+        }
+        // add a record to outgoing_batch_hist indicating an error
+        else {
+            if (batch.getErrorLine() != BatchInfo.UNDEFINED_ERROR_LINE_NUMBER) {
+                CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
 
-                    outgoingBatchHistoryService.error(id, dataId);
-                } else {
-                    outgoingBatchHistoryService.error(id, 0l);
-                }
+                jdbcTemplate.query(selectDataIdSql, new Object[] { id }, handler);
+                final long dataId = handler.getDataId();
+
+                outgoingBatchHistoryService.error(id, dataId);
+            } else {
+                outgoingBatchHistoryService.error(id, 0l);
             }
         }
     }
