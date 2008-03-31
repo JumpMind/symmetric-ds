@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 public interface IOutgoingBatchService {
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch);
 
+    @Deprecated
     public void buildOutgoingBatches(String nodeId, final List<NodeChannel> channels);
     
     public void buildOutgoingBatches(final String nodeId, final NodeChannel channel);

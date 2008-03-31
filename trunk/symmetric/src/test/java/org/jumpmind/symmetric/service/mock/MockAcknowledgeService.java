@@ -34,7 +34,6 @@ public class MockAcknowledgeService implements IAcknowledgeService {
     }
 
     public void ack(BatchInfo batch) {
-
     }
 
 }
