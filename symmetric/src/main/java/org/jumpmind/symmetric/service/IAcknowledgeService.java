@@ -26,7 +26,9 @@ import org.jumpmind.symmetric.model.BatchInfo;
 
 public interface IAcknowledgeService
 {
-    public void ack(List<BatchInfo> batches);
-    
+      
     public void ack(BatchInfo batch);
+    
+    @Deprecated
+    public void ack(List<BatchInfo> batches);
 }

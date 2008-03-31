@@ -88,6 +88,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * associated history row.
      */
     @Transactional
+    @Deprecated
     public void buildOutgoingBatches(final String nodeId, final List<NodeChannel> channels) {
         for (NodeChannel nodeChannel : channels) {
             buildOutgoingBatches(nodeId, nodeChannel);
