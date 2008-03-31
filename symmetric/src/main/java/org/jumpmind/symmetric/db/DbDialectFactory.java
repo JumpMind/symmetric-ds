@@ -50,6 +50,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private BeanFactory beanFactory;
 
+    private boolean createFirstForReload;
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -91,6 +93,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
         dialect.init(pf);
         dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
+        dialect.setCreateFirstForReload(createFirstForReload);
         return dialect;
     }
 
@@ -126,6 +129,10 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     public void setBeanFactory(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
+    }
+
+    public void setCreateFirstForReload(boolean createFirstForReload) {
+        this.createFirstForReload = createFirstForReload;
     }
 
 }

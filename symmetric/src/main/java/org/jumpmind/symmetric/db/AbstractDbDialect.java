@@ -100,6 +100,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private TransactionTemplate transactionTemplate;
 
     private String engineName;
+    
+    private boolean createFirstForReload;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -292,7 +294,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
             table.setSchema((String) values.get("TABLE_SCHEM"));
             table.setDescription((String) values.get("REMARKS"));
             table.addColumns(readColumns(metaData, tableName));
-            table.addIndices(readIndices(metaData, tableName));
+            if (createFirstForReload) {
+                table.addIndices(readIndices(metaData, tableName));
+            }
             Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
             for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn((String) it.next(), true)
                     .setPrimaryKey(true))
@@ -863,6 +867,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String getTablePrefix() {
         return tablePrefix;
+    }
+
+    public void setCreateFirstForReload(boolean createFirstForReload) {
+        this.createFirstForReload = createFirstForReload;
     }
 
 }
