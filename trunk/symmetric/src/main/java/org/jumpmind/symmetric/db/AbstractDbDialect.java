@@ -100,7 +100,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private TransactionTemplate transactionTemplate;
 
     private String engineName;
-    
+
     private boolean createFirstForReload;
 
     protected AbstractDbDialect() {
@@ -393,7 +393,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         query.append(" FROM ");
         if (getPlatform().isDelimitedIdentifierModeOn())
             query.append(platform.getPlatformInfo().getDelimiterToken());
-        if (table.getSchema() != null && ! table.getSchema().trim().equals("")) {
+        if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
             query.append(table.getSchema() + ".");
         }
         query.append(table.getName());
@@ -616,7 +616,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         Database db = new DatabaseIO().read(reader);
         platform.createTables(db, true, true);
     }
-    
+
     public boolean doesDatabaseNeedConfigured() {
         return prefixConfigDatabase(getConfigDdlDatabase());
     }
@@ -738,41 +738,55 @@ abstract public class AbstractDbDialect implements IDbDialect {
             final PreparedStatementCallback callback) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+
                 long key = 0;
                 PreparedStatement ps = null;
-                boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
-                if (allowsNullForIdentityColumn()) {
-                    ps = conn.prepareStatement(sql, new int[] { 1 });
-                } else {
-                    String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
-                    if (supportsGetGeneratedKeys) {
-                        ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
+                try {
+                    boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
+                    if (allowsNullForIdentityColumn()) {
+                        ps = conn.prepareStatement(sql, new int[] { 1 });
                     } else {
-                        ps = conn.prepareStatement(replaceSql);
+                        String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
+                        if (supportsGetGeneratedKeys) {
+                            ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
+                        } else {
+                            ps = conn.prepareStatement(replaceSql);
+                        }
                     }
-                }
-                ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-                if (callback != null) {
-                    callback.doInPreparedStatement(ps);
-                }
-                ps.executeUpdate();
+                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    if (callback != null) {
+                        callback.doInPreparedStatement(ps);
+                    }
+                    
+                    ps.executeUpdate();
 
-                if (supportsGetGeneratedKeys) {
-                    ResultSet rs = ps.getGeneratedKeys();
-                    if (rs.next()) {
-                        key = rs.getLong(1);
+                    if (supportsGetGeneratedKeys) {
+                        ResultSet rs = null;
+                        try {
+                            rs = ps.getGeneratedKeys();
+                            if (rs.next()) {
+                                key = rs.getLong(1);
+                            }
+                        } finally {
+                            JdbcUtils.closeResultSet(rs);
+                        }
+                    } else {
+                        Statement st = null;
+                        ResultSet rs = null;
+                        try {
+                            st = conn.createStatement();
+                            rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
+                            if (rs.next()) {
+                                key = rs.getLong(1);
+                            }
+                        } finally {
+                            JdbcUtils.closeResultSet(rs);
+                            JdbcUtils.closeStatement(st);
+                        }
                     }
-                    JdbcUtils.closeResultSet(rs);
-                } else {
-                    Statement st = conn.createStatement();
-                    ResultSet rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
-                    if (rs.next()) {
-                        key = rs.getLong(1);
-                    }
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(st);
+                } finally {
+                    JdbcUtils.closeStatement(ps);
                 }
-                JdbcUtils.closeStatement(ps);
                 return key;
             }
         });
