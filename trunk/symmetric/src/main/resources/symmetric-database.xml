@@ -44,6 +44,8 @@
 
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="dataSource" ref="dataSource" />
+        <property name="createFirstForReload"
+            value="${symmetric.runtime.initial.load.create.first}" />
     </bean>
 
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
