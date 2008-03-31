@@ -179,7 +179,9 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
         List<NodeChannel> channels = configurationService.getChannelsFor(true);
 
-        outgoingBatchService.buildOutgoingBatches(node.getNodeId(), channels);
+        for (NodeChannel nodeChannel : channels) {
+            outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);    
+        }
 
         List<OutgoingBatch> batches = filterMaxNumberOfOutgoingBatches(outgoingBatchService.getOutgoingBatches(node
                 .getNodeId()), channels);

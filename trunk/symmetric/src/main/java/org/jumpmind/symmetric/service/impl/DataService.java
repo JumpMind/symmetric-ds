@@ -209,12 +209,10 @@ public class DataService extends AbstractService implements IDataService {
      * data events and reload batches.
      */
     private void buildReloadBatches(String nodeId) {
-        List<NodeChannel> channels = new ArrayList<NodeChannel>(1);
         NodeChannel channel = new NodeChannel();
         channel.setId(Constants.CHANNEL_RELOAD);
         channel.setEnabled(true);
-        channels.add(channel);
-        outgoingBatchService.buildOutgoingBatches(nodeId, channels);
+        outgoingBatchService.buildOutgoingBatches(nodeId, channel);
 
     }
 
