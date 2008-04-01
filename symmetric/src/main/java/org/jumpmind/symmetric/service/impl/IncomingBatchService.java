@@ -53,13 +53,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     private String insertIncomingBatchHistorySql;
 
     private boolean skipDuplicateBatches = true;
-    
+
     private IDbDialect dbDialect;
-    
+
     public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
         try {
-            return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql,
-                    new Object[] { batchId, nodeId }, new IncomingBatchMapper());
+            return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql, new Object[] { batchId,
+                    nodeId }, new IncomingBatchMapper());
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -68,13 +68,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     @SuppressWarnings("unchecked")
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                findIncomingBatchErrorsSql, maxRows), new IncomingBatchMapper());        
+                findIncomingBatchErrorsSql, maxRows), new IncomingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId) {
-        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] { batchId,
-                nodeId }, new IncomingBatchHistoryMapper());
+        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] {
+                batchId, nodeId }, new IncomingBatchHistoryMapper());
     }
 
     public boolean acquireIncomingBatch(final IncomingBatch status) {
@@ -86,14 +86,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } catch (DataIntegrityViolationException e) {
             dbDialect.rollbackToSavepoint(savepoint);
             status.setRetry(true);
-            okayToProcess = updateIncomingBatch(status) > 0 || (! skipDuplicateBatches);
+            okayToProcess = updateIncomingBatch(status) > 0 || (!skipDuplicateBatches);
             if (okayToProcess) {
                 logger.warn("Retrying batch " + status.getNodeBatchId());
             } else {
                 logger.warn("Skipping batch " + status.getNodeBatchId());
             }
         }
-        return okayToProcess;                
+        return okayToProcess;
     }
 
     public void insertIncomingBatch(IncomingBatch status) {
