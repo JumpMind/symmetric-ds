@@ -60,11 +60,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class DataLoaderService extends AbstractService implements
-        IDataLoaderService, BeanFactoryAware {
+public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
 
-    protected static final Log logger = LogFactory
-            .getLog(DataLoaderService.class);
+    protected static final Log logger = LogFactory.getLog(DataLoaderService.class);
 
     protected IDbDialect dbDialect;
 
@@ -77,16 +75,16 @@ public class DataLoaderService extends AbstractService implements
     protected BeanFactory beanFactory;
 
     protected List<IDataLoaderFilter> filters;
-    
+
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
-    
+
     int numberOfStatusSendRetries = 5;
-    
+
     long timeBetweenStatusSendRetriesMs = 5000;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of
-     * commit/error status is sent separately after the data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately
+     * after the data is processed.
      */
     public void loadData(Node remote, Node local) throws IOException {
         try {
@@ -98,7 +96,7 @@ public class DataLoaderService extends AbstractService implements
             loadData(transportManager.getRegisterTransport(local));
         }
     }
-    
+
     /**
      * Try a configured number of times to get the ACK through.
      */
@@ -109,10 +107,10 @@ public class DataLoaderService extends AbstractService implements
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local);
             } catch (IOException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i+1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
                 error = ex;
             }
             if (!sendAck) {
@@ -126,7 +124,7 @@ public class DataLoaderService extends AbstractService implements
             }
         }
     }
-    
+
     private final void sleep() {
         try {
             Thread.sleep(timeBetweenStatusSendRetriesMs);
@@ -134,18 +132,14 @@ public class DataLoaderService extends AbstractService implements
         }
     }
 
-
     /**
-     * Load database from input stream and return a list of batch statuses. This
-     * is used for a pull request that responds with data, and the
-     * acknowledgment is sent later.
+     * Load database from input stream and return a list of batch statuses. This is used for a pull request
+     * that responds with data, and the acknowledgment is sent later.
      * 
      * @param in
      */
-    protected List<IncomingBatchHistory> loadDataAndReturnBatches(
-            IIncomingTransport transport) {
-        IDataLoader dataLoader = (IDataLoader) beanFactory
-                .getBean(Constants.DATALOADER);
+    protected List<IncomingBatchHistory> loadDataAndReturnBatches(IIncomingTransport transport) {
+        IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
         List<IncomingBatchHistory> list = new ArrayList<IncomingBatchHistory>();
         IncomingBatch status = null;
         IncomingBatchHistory history = null;
@@ -163,7 +157,8 @@ public class DataLoaderService extends AbstractService implements
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
         } catch (UnknownHostException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());            
+            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of "
+                    + ex.getMessage());
         } catch (RegistrationNotOpenException ex) {
             logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
         } catch (ConnectionRejectedException ex) {
@@ -173,7 +168,8 @@ public class DataLoaderService extends AbstractService implements
         } catch (Exception e) {
             if (status != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
-                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
+                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: "
+                            + e.getMessage());
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                 }
@@ -205,11 +201,10 @@ public class DataLoaderService extends AbstractService implements
         return !inError;
     }
 
-    protected void loadBatch(final IDataLoader dataLoader,
-            final IncomingBatch status, final IncomingBatchHistory history) {
+    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status,
+            final IncomingBatchHistory history) {
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            public void doInTransactionWithoutResult(
-                    TransactionStatus transactionstatus) {
+            public void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
                 try {
                     dbDialect.disableSyncTriggers();
                     if (incomingBatchService.acquireIncomingBatch(status)) {
@@ -229,30 +224,26 @@ public class DataLoaderService extends AbstractService implements
         });
     }
 
-    protected void handleBatchError(final IncomingBatch status,
-            final IncomingBatchHistory history) {
+    protected void handleBatchError(final IncomingBatch status, final IncomingBatchHistory history) {
         try {
             if (!status.isRetry()) {
                 status.setStatus(IncomingBatch.Status.ER);
                 incomingBatchService.insertIncomingBatch(status);
             }
         } catch (Exception e) {
-            logger.error("Failed to record status of batch "
-                    + status.getNodeBatchId());
+            logger.error("Failed to record status of batch " + status.getNodeBatchId());
         }
         try {
             history.setStatus(IncomingBatchHistory.Status.ER);
             incomingBatchService.insertIncomingBatchHistory(history);
         } catch (Exception e) {
-            logger.error("Failed to record history of batch "
-                    + status.getNodeBatchId());
+            logger.error("Failed to record history of batch " + status.getNodeBatchId());
         }
     }
 
     /**
-     * Load database from input stream and write acknowledgment to output
-     * stream. This is used for a "push" request with a response of an
-     * acknowledgment.
+     * Load database from input stream and write acknowledgment to output stream. This is used for a "push"
+     * request with a response of an acknowledgment.
      * 
      * @param in
      * @param out
@@ -260,8 +251,7 @@ public class DataLoaderService extends AbstractService implements
      */
     @SuppressWarnings("unchecked")
     public void loadData(InputStream in, OutputStream out) throws IOException {
-        List<IncomingBatchHistory> list = loadDataAndReturnBatches(new InternalIncomingTransport(
-                in));
+        List<IncomingBatchHistory> list = loadDataAndReturnBatches(new InternalIncomingTransport(in));
         transportManager.writeAcknowledgement(out, list);
     }
 
@@ -288,8 +278,7 @@ public class DataLoaderService extends AbstractService implements
         this.transactionTemplate = transactionTemplate;
     }
 
-    public void setIncomingBatchService(
-            IIncomingBatchService incomingBatchService) {
+    public void setIncomingBatchService(IIncomingBatchService incomingBatchService) {
         this.incomingBatchService = incomingBatchService;
     }
 
