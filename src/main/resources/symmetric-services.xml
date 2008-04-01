@@ -243,6 +243,7 @@
         <property name="batchSizePeekAhead" value="${symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="configurationService" ref="configurationService" />
+        <property name="nodeService" ref="nodeService" />
         <property name="historyService" ref="outgoingBatchHistoryService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="outgoingBatchQueryTemplate">
