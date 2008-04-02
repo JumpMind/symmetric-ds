@@ -72,7 +72,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>update {old key value...},{new column value...}</command>
+                    <command>update {new column value...},{old key value...}</command>
                 </term>
                 <listitem>
                     <para>
@@ -104,7 +104,7 @@ columns, item_id, price_id, name
 insert, 110000055, 55, "Soft Drink"
 delete, 110000001
 table, item_selling_price
-update, 55, 55, 0.75, 0.65]]>
+update, 55, 0.75, 0.65, 55]]>
         </programlisting>
     </example>
 </appendix>
