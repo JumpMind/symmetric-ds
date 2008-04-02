@@ -103,6 +103,8 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
             // TODO: this should be versions[1] == 0 for 1.2 release
             if (versions[0] == 1 && versions[1] <= 1) {
                 beanName += "10";
+            } else if (versions[0] == 1 && versions[1] <= 3) {
+                beanName += "13";
             }
         }
         return (IDataExtractor) beanFactory.getBean(beanName);
