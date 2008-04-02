@@ -2,8 +2,8 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- * Copyright (C) Andrew Wilcox <andrewbwilcox@users.sourceforge.net>,
- *               Eric Long <erilong@users.sourceforge.net>
+ * Copyright (C) Andrew Wilcox <andrewbwilcox@users.sourceforge.net>
+ * Copyright (C) Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,19 +28,22 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
-public class CsvExtractor10 implements IDataExtractor {
+public class CsvExtractor13 implements IDataExtractor {
 
     private Map<String, IStreamDataCommand> dictionary = null;
 
     private IRuntimeConfig runtimeConfiguration;
+    
+    private IDbDialect dbDialect;
 
     private String tablePrefix;
-
+    
     public void init(BufferedWriter writer, DataExtractorContext context)
             throws IOException {
         Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration.getExternalId());
@@ -51,6 +54,8 @@ public class CsvExtractor10 implements IDataExtractor {
             throws IOException {
         Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());               
         writer.newLine();
+        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
+        writer.newLine();      
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer)
@@ -75,6 +80,10 @@ public class CsvExtractor10 implements IDataExtractor {
     public void preprocessTable(Data data, BufferedWriter out,
             DataExtractorContext context) throws IOException {
 
+        if (data.getAudit() == null) {
+            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName() +
+                    ": try running syncTriggers() or restarting SymmetricDS");
+        }
         String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
             Util.write(out, "table, ", data.getTableName());
@@ -104,6 +113,10 @@ public class CsvExtractor10 implements IDataExtractor {
 
     public void setDictionary(Map<String, IStreamDataCommand> dictionary) {
         this.dictionary = dictionary;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
     public void setTablePrefix(String tablePrefix) {
