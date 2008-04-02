@@ -634,7 +634,7 @@
         </property>
     </bean>
 
-    <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor13">
+    <bean id="dataExtractor13" class="org.jumpmind.symmetric.extract.csv.CsvExtractor13">
         <property name="dbDialect" ref="dbDialect" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
