@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -172,6 +174,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             + e.getMessage());
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
+                }
+                if (e instanceof NestedRuntimeException) {
+                    NestedRuntimeException ne = (NestedRuntimeException) e;
+                    if (ne.getRootCause() instanceof SQLException) {
+                        SQLException se = (SQLException) ne.getRootCause();
+                        history.setSqlState(se.getSQLState());
+                        history.setSqlCode(se.getErrorCode());
+                        history.setSqlMessage(se.getMessage());
+                    }
                 }
                 history.setValues(dataLoader.getStatistics(), false);
                 handleBatchError(status, history);

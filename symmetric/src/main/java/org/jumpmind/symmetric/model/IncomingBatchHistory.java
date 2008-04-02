@@ -67,6 +67,12 @@ public class IncomingBatchHistory implements Serializable {
 
     private Date endTime;
 
+    private String sqlState;
+    
+    private int sqlCode;
+    
+    private String sqlMessage;
+
     static {
         InetAddress address = null;
         try {
@@ -221,6 +227,30 @@ public class IncomingBatchHistory implements Serializable {
 
     public void setNetworkMillis(long networkMillis) {
         this.networkMillis = networkMillis;
+    }
+
+    public int getSqlCode() {
+        return sqlCode;
+    }
+
+    public void setSqlCode(int sqlCode) {
+        this.sqlCode = sqlCode;
+    }
+
+    public String getSqlMessage() {
+        return sqlMessage;
+    }
+
+    public void setSqlMessage(String sqlMessage) {
+        this.sqlMessage = sqlMessage;
+    }
+
+    public String getSqlState() {
+        return sqlState;
+    }
+
+    public void setSqlState(String sqlState) {
+        this.sqlState = sqlState;
     }
 
 }

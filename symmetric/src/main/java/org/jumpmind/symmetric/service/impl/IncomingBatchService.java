@@ -112,7 +112,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
                 history.getByteCount(), history.getStatementCount(), history.getFallbackInsertCount(),
                 history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
-                history.getFailedRowNumber(), history.getStartTime(), history.getEndTime() });
+                history.getFailedRowNumber(), history.getStartTime(), history.getEndTime(),
+                history.getSqlState(), history.getSqlCode(), history.getSqlMessage() });
     }
 
     class IncomingBatchMapper implements RowMapper {
@@ -143,6 +144,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             history.setFallbackInsertCount(rs.getLong(12));
             history.setFallbackUpdateCount(rs.getLong(13));
             history.setMissingDeleteCount(rs.getLong(14));
+            history.setSqlState(rs.getString(15));
+            history.setSqlCode(rs.getInt(16));
+            history.setSqlMessage(rs.getString(17));
             return history;
         }
     }

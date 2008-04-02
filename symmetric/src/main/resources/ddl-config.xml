@@ -250,6 +250,9 @@
         <column name="fallback_insert_count" type="INTEGER" />
         <column name="fallback_update_count" type="INTEGER" />
         <column name="missing_delete_count" type="INTEGER" />
+        <column name="sql_state" type="VARCHAR" size="10" />
+        <column name="sql_code" type="INTEGER" />
+        <column name="sql_message" type="VARCHAR" size="50" />
         <index name="idx_incoming_batch_hist">
             <index-column name="batch_id" />
             <index-column name="node_id" />
