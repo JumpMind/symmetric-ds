@@ -87,12 +87,10 @@ public class CompressionResponseStream extends ServletOutputStream {
      * any further output data to throw an IOException.
      */
     public void close() throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("close() @ CompressionResponseStream");
+        
+        if (closed) {
+            return;
         }
-        if (closed)
-            throw new IOException("This output stream has already been closed");
 
         if (gzipstream != null) {
             gzipstream.close();
@@ -109,12 +107,8 @@ public class CompressionResponseStream extends ServletOutputStream {
      * response to be committed.
      */
     public void flush() throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("flush() @ CompressionResponseStream");
-        }
         if (closed) {
-            throw new IOException("Cannot flush a closed output stream");
+            return;
         }
 
         if (gzipstream != null) {
@@ -131,12 +125,9 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(int b) throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("write " + b + " in CompressionResponseStream ");
+        if (closed) {
+            return;
         }
-        if (closed)
-            throw new IOException("Cannot write to a closed output stream");
 
         write(new byte[] {(byte)b});
 
@@ -151,9 +142,7 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(byte b[]) throws IOException {
-
         write(b, 0, b.length);
-
     }
 
     /**
@@ -167,28 +156,19 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(byte b[], int off, int len) throws IOException {
-        if (closed)
-            throw new IOException("Cannot write to a closed output stream");
-
-        if (len == 0)
+        if (closed || len == 0) {
             return;
+        }
 
-        // write direct to gzip
         writeToGZip(b, off, len);
     }
 
     public void writeToGZip(byte b[], int off, int len) throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("writeToGZip, len = " + len);
-        }
         if (gzipstream == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("new GZIPOutputStream");
-            }
             if (response.isCommitted()) {
-                if (logger.isDebugEnabled())
+                if (logger.isDebugEnabled()) {
                     logger.debug("Response already committed. Using original output stream");
+                }
                 gzipstream = output;
             } else {
                 response.addHeader("Content-Encoding", "gzip");
@@ -205,9 +185,7 @@ public class CompressionResponseStream extends ServletOutputStream {
      * Has this response stream been closed?
      */
     public boolean closed() {
-
-        return (this.closed);
-
+        return this.closed;
     }
 
 }
