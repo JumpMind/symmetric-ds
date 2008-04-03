@@ -60,6 +60,8 @@ public class Node {
 
     private boolean syncEnabled;
     
+    private String timezoneOffset;
+    
     private Date heartbeatTime = new Date();
 
     public Node() {
@@ -162,5 +164,13 @@ public class Node {
 
     public void setHeartbeatTime(Date heartbeatTime) {
         this.heartbeatTime = heartbeatTime;
+    }
+
+    public String getTimezoneOffset() {
+        return timezoneOffset;
+    }
+
+    public void setTimezoneOffset(String timezoneOffset) {
+        this.timezoneOffset = timezoneOffset;
     }
 }

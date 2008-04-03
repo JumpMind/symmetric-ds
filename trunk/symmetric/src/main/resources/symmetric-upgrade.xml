@@ -249,6 +249,10 @@
                     add (node_password varchar(50))
                 </value>
                 <value>                
+                    alter table ${sync.table.prefix}_node 
+                    add (timezone_offset varchar(6))
+                </value>                
+                <value>                
                     update ${sync.table.prefix}_node_security set node_password = password
                 </value>
                 <value>                

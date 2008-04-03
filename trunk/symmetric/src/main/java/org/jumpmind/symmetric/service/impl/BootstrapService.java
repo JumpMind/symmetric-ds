@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -260,6 +261,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (node != null) {
             logger.info("Updating my node information and heartbeat time.");
             node.setHeartbeatTime(new Date());
+            node.setTimezoneOffset(AppUtils.getTimezoneOffset());
             node.setDatabaseType(dbDialect.getName());
             node.setDatabaseVersion(dbDialect.getVersion());
             node.setSchemaVersion(runtimeConfiguration.getSchemaVersion());

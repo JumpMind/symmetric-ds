@@ -460,7 +460,7 @@
             <value>
                 update ${sync.table.prefix}_node set node_group_id=?, external_id=?,
                 database_type=?, database_version=?, schema_version=?, symmetric_version=?,
-                sync_url=?, heartbeat_time=?, sync_enabled=? where node_id = ?
+                sync_url=?, heartbeat_time=?, sync_enabled=?, timezone_offset=? where node_id = ?
             </value>
         </property>
         <property name="findNodeSql">

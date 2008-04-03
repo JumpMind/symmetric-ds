@@ -6,9 +6,13 @@
   </properties>
   <body>
     <release version="1.4.0" date="unknown" description="Lets add some polish">
+     
+      <action dev="chenson42" type="add" issue="aid=1874255&amp;atid=997727">
+        Record the timezone in sym_node for reporting purposes
+      </action>
       <action dev="chenson42" type="add">
         Added a thick client configuration and administration utility application.
-      </action>
+      </action>      
       <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.1.</action>
       <action dev="knaas" type="add">
         Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
