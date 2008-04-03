@@ -43,20 +43,6 @@ public class CompressionResponseStream extends ServletOutputStream {
     static final Log logger = LogFactory.getLog(CompressionResponseStream.class);
 
     /**
-     * Construct a servlet output stream associated with the specified Response.
-     *
-     * @param response The associated response
-     */
-    public CompressionResponseStream(HttpServletResponse response) throws IOException {
-
-        super();
-        closed = false;
-        this.response = response;
-        this.output = response.getOutputStream();
-
-    }
-
-    /**
      * The underlying gzip output stream to which we should write data.
      */
     protected OutputStream gzipstream = null;
@@ -67,20 +53,21 @@ public class CompressionResponseStream extends ServletOutputStream {
     protected boolean closed = false;
 
     /**
-     * The content length past which we will not write, or -1 if there is
-     * no defined content length.
-     */
-    protected int length = -1;
-
-    /**
      * The response with which this servlet output stream is associated.
      */
     protected HttpServletResponse response = null;
 
     /**
-     * The underlying servlet output stream to which we should write data.
+     * Construct a servlet output stream associated with the specified Response.
+     *
+     * @param response The associated response
      */
-    protected ServletOutputStream output = null;
+    public CompressionResponseStream(HttpServletResponse response) throws IOException {
+        this.closed = false;
+        this.response = response;
+        response.addHeader("Content-Encoding", "gzip");
+        gzipstream = new GZIPOutputStream(response.getOutputStream());
+    }
 
     /**
      * Close this output stream, causing any buffered data to be flushed and
@@ -97,7 +84,6 @@ public class CompressionResponseStream extends ServletOutputStream {
             gzipstream = null;
         } 
         
-        output.close();
         closed = true;
 
     }
@@ -160,26 +146,8 @@ public class CompressionResponseStream extends ServletOutputStream {
             return;
         }
 
-        writeToGZip(b, off, len);
-    }
-
-    public void writeToGZip(byte b[], int off, int len) throws IOException {
-        if (gzipstream == null) {
-            if (response.isCommitted()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Response already committed. Using original output stream");
-                }
-                gzipstream = output;
-            } else {
-                response.addHeader("Content-Encoding", "gzip");
-                gzipstream = new GZIPOutputStream(output);
-            }
-        }
         gzipstream.write(b, off, len);
-
     }
-
-    // -------------------------------------------------------- Package Methods
 
     /**
      * Has this response stream been closed?
