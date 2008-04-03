@@ -114,6 +114,7 @@
         <column name="database_type" type="VARCHAR" size="50" />
         <column name="database_version" type="VARCHAR" size="50" />
         <column name="heartbeat_time" type="TIMESTAMP" />
+        <column name="timezone_offset" type="VARCHAR" size="6" />
         <foreign-key name="fk_c_node_group_id" foreignTable="node_group">
             <reference local="node_group_id" foreign="node_group_id" />
         </foreign-key>

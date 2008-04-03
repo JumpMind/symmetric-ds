@@ -20,12 +20,16 @@
 package org.jumpmind.symmetric.util;
 
 import java.net.InetAddress;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 
 public class AppUtils {
 
     private static String serverId;
+
+    private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
 
     /**
      * Get a unique identifier that represents the JVM instance this server is currently running in.
@@ -34,6 +38,7 @@ public class AppUtils {
         if (StringUtils.isBlank(serverId)) {
             serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
             if (StringUtils.isBlank(serverId)) {
+                // JBoss uses this system property to identify a server in a cluster
                 serverId = System.getProperty("bind.address", null);
                 if (StringUtils.isBlank(serverId)) {
                     try {
@@ -45,5 +50,23 @@ public class AppUtils {
             }
         }
         return serverId;
+    }
+
+    /**
+     * This method will return the timezone in RFC822 format.
+     * </p>
+     * The format ("-+HH:MM") has advantages over the older timezone codes ("AAA"). The difference of 5 
+     * hours from GMT is obvious with "-05:00" but only implied with "EST". There is no ambiguity 
+     * saying "-06:00", but you don't know if "CST" means Central Standard Time ("-06:00") or China 
+     * Standard Time ("+08:00"). The timezone codes need to be loaded on the system, and definitions are 
+     * not standardized between systems. Therefore, to remain agnostic to operating systems and databases, 
+     * the RFC822 format is the best choice.
+     */
+    public static String getTimezoneOffset() {
+        String tz = timezoneFormatter.format(new Date());
+        if (tz != null && tz.length() == 5) {
+            return tz.substring(0, 3) + ":" + tz.substring(3, 5);
+        }
+        return null;
     }
 }
