@@ -21,19 +21,13 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.collections.iterators.EnumerationIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,8 +61,6 @@ public class CompressionFilter extends AbstractFilter {
 
     private org.jumpmind.symmetric.web.compression.CompressionFilter delegate;
 
-    protected int compressionThreshold;
-
     @Override
     public boolean isContainerCompatible()
     {
@@ -95,7 +87,7 @@ public class CompressionFilter extends AbstractFilter {
         super.init(filterConfig);
         delegate = new org.jumpmind.symmetric.web.compression.CompressionFilter();
 
-        delegate.init(new CompressionFilterConfig(filterConfig));
+        delegate.init(filterConfig);
     }
 
     @Override
@@ -103,42 +95,5 @@ public class CompressionFilter extends AbstractFilter {
     {
         return logger;
     }
-    
-    private final class CompressionFilterConfig implements FilterConfig {
-        private final FilterConfig filterConfig;
-        private final List<String> initParameterNames;
 
-        @SuppressWarnings("unchecked")
-        private CompressionFilterConfig(FilterConfig filterConfig) {
-            this.filterConfig = filterConfig;
-            initParameterNames = IteratorUtils.toList(new EnumerationIterator(
-                    filterConfig.getInitParameterNames()));
-            if (compressionThreshold > 0) {
-                initParameterNames.add("compressionThreshold");
-            }
-        }
-
-        public String getFilterName() {
-            return filterConfig.getFilterName();
-        }
-
-        public String getInitParameter(String name) {
-            if (compressionThreshold > 0 && "compressionThreshold".equals(name)) {
-                return Integer.toString(compressionThreshold);
-            }
-            return filterConfig.getInitParameter(name);
-        }
-
-        public Enumeration<?> getInitParameterNames() {
-            return Collections.enumeration(initParameterNames);
-        }
-
-        public ServletContext getServletContext() {
-            return filterConfig.getServletContext();
-        }
-    }
-
-    public void setCompressionThreshold(int compressionThreshold) {
-        this.compressionThreshold = compressionThreshold;
-    }
 }
