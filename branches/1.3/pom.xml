@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
     <packaging>jar</packaging>
-    <version>1.3.3-SNAPSHOT</version>
+    <version>1.3.2</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
