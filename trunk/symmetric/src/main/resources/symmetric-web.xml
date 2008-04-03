@@ -73,8 +73,6 @@
         </property>
         <property name="disabled"
             value="${symmetric.web.compression.disabled}" />
-        <property name="compressionThreshold"
-            value="${symmetric.web.compression.threshhold.bytes}" />
     </bean>
 
     <bean id="throttleFilter"

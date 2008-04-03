@@ -57,22 +57,6 @@ public class CompressionResponseStream extends ServletOutputStream {
     }
 
     /**
-     * The threshold number which decides to compress or not.
-     * Users can configure in web.xml to set it to fit their needs.
-     */
-    protected int compressionThreshold = 0;
-
-    /**
-     * The buffer through which all of our output bytes are passed.
-     */
-    protected byte[] buffer = null;
-
-    /**
-     * The number of data bytes currently in the buffer.
-     */
-    protected int bufferCount = 0;
-
-    /**
      * The underlying gzip output stream to which we should write data.
      */
     protected OutputStream gzipstream = null;
@@ -94,44 +78,25 @@ public class CompressionResponseStream extends ServletOutputStream {
     protected HttpServletResponse response = null;
 
     /**
-     * The underlying servket output stream to which we should write data.
+     * The underlying servlet output stream to which we should write data.
      */
     protected ServletOutputStream output = null;
-
-    /**
-     * Set the compressionThreshold number and create buffer for this size
-     */
-    protected void setBuffer(int threshold) {
-        compressionThreshold = threshold;
-        buffer = new byte[compressionThreshold];
-        if (logger.isDebugEnabled()) {
-            logger.debug("buffer is set to " + compressionThreshold);
-        }
-    }
 
     /**
      * Close this output stream, causing any buffered data to be flushed and
      * any further output data to throw an IOException.
      */
     public void close() throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("close() @ CompressionResponseStream");
+        
+        if (closed) {
+            return;
         }
-        if (closed)
-            throw new IOException("This output stream has already been closed");
 
         if (gzipstream != null) {
-            flushToGZip();
             gzipstream.close();
             gzipstream = null;
-        } else {
-            if (bufferCount > 0) {
-                output.write(buffer, 0, bufferCount);
-                bufferCount = 0;
-            }
-        }
-
+        } 
+        
         output.close();
         closed = true;
 
@@ -142,31 +107,12 @@ public class CompressionResponseStream extends ServletOutputStream {
      * response to be committed.
      */
     public void flush() throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("flush() @ CompressionResponseStream");
-        }
         if (closed) {
-            throw new IOException("Cannot flush a closed output stream");
+            return;
         }
 
         if (gzipstream != null) {
             gzipstream.flush();
-        }
-
-    }
-
-    public void flushToGZip() throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("flushToGZip() @ CompressionResponseStream");
-        }
-        if (bufferCount > 0) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("flushing out to GZipStream, bufferCount = " + bufferCount);
-            }
-            writeToGZip(buffer, 0, bufferCount);
-            bufferCount = 0;
         }
 
     }
@@ -179,18 +125,11 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(int b) throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("write " + b + " in CompressionResponseStream ");
-        }
-        if (closed)
-            throw new IOException("Cannot write to a closed output stream");
-
-        if (bufferCount >= buffer.length) {
-            flushToGZip();
+        if (closed) {
+            return;
         }
 
-        buffer[bufferCount++] = (byte) b;
+        write(new byte[] {(byte)b});
 
     }
 
@@ -203,9 +142,7 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(byte b[]) throws IOException {
-
         write(b, 0, b.length);
-
     }
 
     /**
@@ -219,50 +156,19 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @exception IOException if an input/output error occurs
      */
     public void write(byte b[], int off, int len) throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("write, bufferCount = " + bufferCount + " len = " + len + " off = " + off);
-        }
-
-        if (closed)
-            throw new IOException("Cannot write to a closed output stream");
-
-        if (len == 0)
-            return;
-
-        // Can we write into buffer ?
-        if (len <= (buffer.length - bufferCount)) {
-            System.arraycopy(b, off, buffer, bufferCount, len);
-            bufferCount += len;
+        if (closed || len == 0) {
             return;
         }
 
-        // There is not enough space in buffer. Flush it ...
-        flushToGZip();
-
-        // ... and try again. Note, that bufferCount = 0 here !
-        if (len <= (buffer.length - bufferCount)) {
-            System.arraycopy(b, off, buffer, bufferCount, len);
-            bufferCount += len;
-            return;
-        }
-
-        // write direct to gzip
         writeToGZip(b, off, len);
     }
 
     public void writeToGZip(byte b[], int off, int len) throws IOException {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("writeToGZip, len = " + len);
-        }
         if (gzipstream == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("new GZIPOutputStream");
-            }
             if (response.isCommitted()) {
-                if (logger.isDebugEnabled())
+                if (logger.isDebugEnabled()) {
                     logger.debug("Response already committed. Using original output stream");
+                }
                 gzipstream = output;
             } else {
                 response.addHeader("Content-Encoding", "gzip");
@@ -279,9 +185,7 @@ public class CompressionResponseStream extends ServletOutputStream {
      * Has this response stream been closed?
      */
     public boolean closed() {
-
-        return (this.closed);
-
+        return this.closed;
     }
 
 }

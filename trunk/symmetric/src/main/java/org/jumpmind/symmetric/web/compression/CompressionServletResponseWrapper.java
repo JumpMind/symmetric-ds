@@ -83,11 +83,6 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     protected PrintWriter writer = null;
 
     /**
-     * The threshold number to compress
-     */
-    protected int threshold = 0;
-
-    /**
      * Content type
      */
     protected String contentType = null;
@@ -106,16 +101,6 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     }
 
     /**
-     * Set threshold number
-     */
-    public void setCompressionThreshold(int threshold) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setCompressionThreshold to " + threshold);
-        }
-        this.threshold = threshold;
-    }
-
-    /**
     * Create and return a ServletOutputStream to write the content
     * associated with this Response.
     *
@@ -127,8 +112,6 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         }
 
         CompressionResponseStream stream = new CompressionResponseStream(origResponse);
-        stream.setBuffer(threshold);
-
         return stream;
 
     }
