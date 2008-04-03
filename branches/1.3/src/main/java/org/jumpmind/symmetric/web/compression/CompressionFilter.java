@@ -46,7 +46,7 @@ import org.apache.commons.logging.LogFactory;
  */
 
 public class CompressionFilter implements Filter {
-    
+
     static final Log logger = LogFactory.getLog(CompressionFilter.class);
 
     /**
@@ -54,16 +54,6 @@ public class CompressionFilter implements Filter {
      * is null, this filter instance is not currently configured.
      */
     private FilterConfig config = null;
-
-    /**
-     * Minimal reasonable threshold
-     */
-    private final int minThreshold = 128;
-
-    /**
-     * The threshold number to compress
-     */
-    protected int compressionThreshold;
 
     /**
      * Place this filter into service.
@@ -74,26 +64,6 @@ public class CompressionFilter implements Filter {
     public void init(FilterConfig filterConfig) {
 
         config = filterConfig;
-        if (filterConfig != null) {
-            String str = filterConfig.getInitParameter("compressionThreshold");
-            if (str != null) {
-                compressionThreshold = Integer.parseInt(str);
-                if (compressionThreshold != 0 && compressionThreshold < minThreshold) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("compressionThreshold should be either 0 - no compression or >= "
-                                + minThreshold);
-                        logger.debug("compressionThreshold set to " + minThreshold);
-                    }
-                    compressionThreshold = minThreshold;
-                }
-            } else {
-                compressionThreshold = 0;
-            }
-
-        } else {
-            compressionThreshold = 0;
-        }
-
     }
 
     /**
@@ -123,19 +93,11 @@ public class CompressionFilter implements Filter {
      **/
 
     @SuppressWarnings("unchecked")
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
         if (logger.isDebugEnabled()) {
             logger.debug("@doFilter");
-        }
-
-        if (compressionThreshold == 0) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("doFilter gets called, but compressionTreshold is set to 0 - no compression");
-            }
-            chain.doFilter(request, response);
-            return;
         }
 
         boolean supportCompression = false;
@@ -180,7 +142,6 @@ public class CompressionFilter implements Filter {
             if (response instanceof HttpServletResponse) {
                 CompressionServletResponseWrapper wrappedResponse = new CompressionServletResponseWrapper(
                         (HttpServletResponse) response);
-                wrappedResponse.setCompressionThreshold(compressionThreshold);
                 if (logger.isDebugEnabled()) {
                     logger.debug("doFilter gets called with compression");
                 }
