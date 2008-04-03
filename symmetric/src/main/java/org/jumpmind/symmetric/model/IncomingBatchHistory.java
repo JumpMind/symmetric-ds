@@ -22,16 +22,17 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.util.AppUtils;
 
 public class IncomingBatchHistory implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static String thisHostName;
 
     public enum Status {
         OK, ER, SK;
@@ -43,7 +44,7 @@ public class IncomingBatchHistory implements Serializable {
 
     private Status status;
 
-    private static String hostName;
+    private String hostName;
 
     private long byteCount;
 
@@ -74,16 +75,11 @@ public class IncomingBatchHistory implements Serializable {
     private String sqlMessage;
 
     static {
-        InetAddress address = null;
-        try {
-            address = InetAddress.getLocalHost();
-            hostName = address.getHostName();
-        } catch (UnknownHostException e) {
-            hostName = "UNKNOWN";
-        }
+        thisHostName = AppUtils.getServerId();
     }
 
     public IncomingBatchHistory() {
+        this.hostName = thisHostName;
     }
 
     public IncomingBatchHistory(IDataLoaderContext context) {
@@ -91,6 +87,7 @@ public class IncomingBatchHistory implements Serializable {
         nodeId = context.getNodeId();
         status = Status.OK;
         startTime = new Date();
+        this.hostName = thisHostName;
     }
     
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
@@ -165,6 +162,10 @@ public class IncomingBatchHistory implements Serializable {
         return hostName;
     }
 
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+    
     public String getNodeId() {
         return nodeId;
     }
