@@ -337,7 +337,7 @@
                             <entry>W</entry>
                             <entry>
                                 The notification scheme used to send data changes to the target node
-                                group. (P = Push, W = Wait for Pull, X = Extract Listener)
+                                group. (P = Push, W = Wait for Pull)
                             </entry>
                         </row>
                     </tbody>
