@@ -24,11 +24,10 @@ import org.jumpmind.symmetric.util.ICoded;
 
 /**
  * Identifies the action to take when the event watcher sees events in the event table.
- * @author chenson
  */
 public enum DataEventAction implements ICoded {
 
-    NOTIFY("N"), PUSH("P"), WAIT_FOR_POLL("W"), EXTRACT_LISTENER("X");
+    PUSH("P"), WAIT_FOR_POLL("W");
 
     private String code;
 
@@ -42,9 +41,7 @@ public enum DataEventAction implements ICoded {
 
     public static DataEventAction fromCode(String code) {
         if (code != null && code.length() > 0) {
-            if (NOTIFY.code.equals(code)) {
-                return NOTIFY;
-            } else if (PUSH.code.equals(code)) {
+            if (PUSH.code.equals(code)) {
                 return PUSH;
             } else if (WAIT_FOR_POLL.code.equals(code)) {
                 return WAIT_FOR_POLL;
