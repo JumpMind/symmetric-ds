@@ -35,11 +35,11 @@ final public class Version {
 
     static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(Version.class);
 
-    public static final int MAJOR = 0;
+    private static final int MAJOR = 0;
 
-    public static final int MINOR = 1;
+    private static final int MINOR = 1;
 
-    public static final int PATCH = 2;
+    private static final int PATCH = 2;
 
     public static String version() {
         InputStream is = Version.class
