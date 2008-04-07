@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Map;
+
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -28,6 +30,8 @@ abstract class AbstractService {
     protected IRuntimeConfig runtimeConfiguration;
 
     protected JdbcTemplate jdbcTemplate;
+    
+    private Map<String, String> sql;
 
     public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
         this.runtimeConfiguration = runtimeConfiguration;
@@ -37,4 +41,12 @@ abstract class AbstractService {
         this.jdbcTemplate = jdbc;
     }
 
+    public void setSql(Map<String, String> sql) {
+        this.sql = sql;
+    }
+    
+    public String getSql(String key) {
+        return sql.get(key);
+    }
+    
 }
