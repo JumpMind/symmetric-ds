@@ -13,6 +13,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
         <property name="useCompression" value="${symmetric.runtime.http.compression}" />
+        <proeprty name="httpSslVerifiedServerNames" value="${symmetric.runtime.https.verified.server.names}" />
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"

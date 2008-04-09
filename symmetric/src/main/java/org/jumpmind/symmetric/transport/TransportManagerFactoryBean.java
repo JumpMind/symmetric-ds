@@ -20,6 +20,11 @@
 
 package org.jumpmind.symmetric.transport;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -33,23 +38,37 @@ public class TransportManagerFactoryBean implements FactoryBean {
     private static final String TRANSPORT_INTERNAL = "internal";
 
     private IRuntimeConfig runtimeConfiguration;
-    
+
     private INodeService nodeService;
 
     private String transport;
-    
+
     private int httpTimeout;
-    
+
     private boolean useCompression;
-    
+
+    private String httpSslVerifiedServerNames;
+
     public Object getObject() throws Exception {
         if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
+            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                public boolean verify(String s, SSLSession sslsession) {
+                    if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                        String[] names = httpSslVerifiedServerNames.split(",");
+                        for (String string : names) {
+                            if (s != null && s.equals(string.trim())) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            });
             return new HttpTransportManager(runtimeConfiguration, nodeService, httpTimeout, useCompression);
         } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(runtimeConfiguration);
         } else {
-            throw new IllegalStateException("An invalid transport type of "
-                    + transport + " was specified.");
+            throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");
         }
     }
 
@@ -69,8 +88,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
         this.transport = transport;
     }
 
-    public void setNodeService(INodeService nodeService)
-    {
+    public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -80,6 +98,10 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     public void setUseCompression(boolean useCompression) {
         this.useCompression = useCompression;
+    }
+
+    public void setHttpSslVerifiedServerNames(String httpSslVerifiedServerNames) {
+        this.httpSslVerifiedServerNames = httpSslVerifiedServerNames;
     }
 
 }

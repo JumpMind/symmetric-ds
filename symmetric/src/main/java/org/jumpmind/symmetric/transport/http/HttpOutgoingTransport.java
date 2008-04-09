@@ -38,17 +38,17 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
-	private URL url;
+    private URL url;
 
-	private BufferedWriter writer;
+    private BufferedWriter writer;
 
-	private BufferedReader reader;
+    private BufferedReader reader;
 
-	private HttpURLConnection connection;
-    
-	private int httpTimeout;
-    
-	private boolean useCompression;
+    private HttpURLConnection connection;
+
+    private int httpTimeout;
+
+    private boolean useCompression;
 
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression) {
         this.url = url;
@@ -104,7 +104,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     public BufferedReader readResponse() throws IOException {
         closeWriter();
         if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == connection.getResponseCode()) {
-            throw new ConnectionRejectedException();   
+            throw new ConnectionRejectedException();
         } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
             throw new AuthenticationException();
         }
