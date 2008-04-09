@@ -9,6 +9,9 @@
       <action dev="chenson42" type="add" issue="aid=1874255&amp;atid=997727">
         Record the timezone in sym_node for reporting purposes
       </action>
+      <action dev="chenson42" type="add" issue="aid=1938886&amp;atid=997727">
+        Add configuration setting for https HostnameVerifier
+      </action>      
       <action dev="chenson42" type="add" issue="aid=1825808&amp;atid=997727">
         Added a thick client configuration and administration utility application.
       </action>      
