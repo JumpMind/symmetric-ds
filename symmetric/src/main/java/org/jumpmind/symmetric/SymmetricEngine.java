@@ -181,6 +181,12 @@ public class SymmetricEngine {
                 .equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
+        
+        if (Boolean.TRUE.toString()
+                .equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_STATISTIC_FLUSH_JOB))) {
+            applicationContext.getBean(Constants.STATISTIC_FLUSH_JOB_TIMER);
+        }
+       
     }
 
     /**

@@ -48,6 +48,8 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -77,6 +79,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected BeanFactory beanFactory;
 
     protected List<IDataLoaderFilter> filters;
+    
+    protected IStatisticManager statisticManager;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
 
@@ -193,10 +197,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     logger.error("Failed while parsing batch.", e);
                 }
             }
-        } finally {
+        } finally {            
             dataLoader.close();
+            recordStatistics(list);
         }
         return list;
+    }
+    
+    private void recordStatistics(List<IncomingBatchHistory> list) {
+        if (list != null) {
+            statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).add(list.size());
+            for (IncomingBatchHistory incomingBatchHistory : list) {
+                statisticManager.getStatistic(StatisticName.INCOMING_ROW_COUNT).add(incomingBatchHistory.getStatementCount());
+            }            
+        }
     }
 
     public boolean loadData(IIncomingTransport transport) {
@@ -311,6 +325,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void setTimeBetweenStatusSendRetriesMs(long timeBetweenStatusSendRetriesMs) {
         this.timeBetweenStatusSendRetriesMs = timeBetweenStatusSendRetriesMs;
+    }
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 
 }

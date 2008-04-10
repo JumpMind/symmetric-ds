@@ -27,7 +27,7 @@ public class PropertiesConstants {
     public final static String START_PURGE_JOB = "symmetric.runtime.start.purge.job";
     public final static String START_HEARTBEAT_JOB = "symmetric.runtime.start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "symmetric.runtime.start.synctriggers.job";
-    
+    public final static String START_STATISTIC_FLUSH_JOB = "symmetric.runtime.start.stat.flush.job";
     
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER ="db.driver";
