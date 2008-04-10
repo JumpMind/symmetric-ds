@@ -222,7 +222,7 @@ public class CsvLoader implements IDataLoader {
                 rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
                 if (rows == 0) {
                     throw new RuntimeException("Unable to update " + context.getTableName() + ": "
-                            + ArrayUtils.toString(tokens));
+                            + ArrayUtils.toString(tokens), e);
                 }
             } else {
                 // TODO: log the PK information as an ERROR level.
