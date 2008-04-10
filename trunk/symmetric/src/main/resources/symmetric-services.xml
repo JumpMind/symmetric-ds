@@ -5,6 +5,19 @@
     default-lazy-init="true" default-autowire="byName">
     
     <import resource="classpath:/sql/ConfigurationService-sql.xml"/>
+    <import resource="classpath:/sql/StatisticService-sql.xml"/>    
+    
+    <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
+        <property name="sql" ref="statisticServiceSql"/>
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />        
+    </bean>
+    
+    <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager" init-method="init">
+        <property name="statisticService" ref="statisticService"/>
+        <property name="nodeService" ref="nodeService"/>
+    </bean>
+    
 
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
         scope="singleton">
@@ -13,7 +26,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
         <property name="useCompression" value="${symmetric.runtime.http.compression}" />
-        <proeprty name="httpSslVerifiedServerNames" value="${symmetric.runtime.https.verified.server.names}" />
+        <property name="httpSslVerifiedServerNames" value="${symmetric.runtime.https.verified.server.names}" />
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"
@@ -197,6 +210,7 @@
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
+        <property name="statisticManager" ref="statisticManager" />
     </bean>
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
@@ -620,7 +634,7 @@
             <value>
                  select max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?
             </value>
-        </property>                        
+        </property>
         <property name="deleteFromDataSql">
             <value>
                  delete from ${sync.table.prefix}_data where data_id not in (select data_id from ${sync.table.prefix}_data_event where data_id &gt;= ? and data_id  &lt;= ?) and data_id &gt;= ? and data_id &lt;= ?
@@ -646,5 +660,6 @@
             </list>
         </property>
     </bean>
+    
 
 </beans>

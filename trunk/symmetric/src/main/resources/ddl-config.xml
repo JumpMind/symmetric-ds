@@ -261,12 +261,17 @@
     </table>
 
     <table name="statistic">
-        <column name="node_id" type="VARCHAR" size="50" primaryKey="true" />
-        <column name="host_name" type="VARCHAR" size="50" primaryKey="true" />
-        <column name="statistic_name" type="VARCHAR" size="50" primaryKey="true" />
-        <column name="capture_time" type="TIMESTAMP" primaryKey="true" />
-        <column name="decimal_value" type="DECIMAL" />
-        <column name="period_value" type="DECIMAL" />
+        <column name="node_id" type="VARCHAR" size="50" />
+        <column name="host_name" type="VARCHAR" size="50" />
+        <column name="statistic_name" type="VARCHAR" size="50" />
+        <column name="statistic_total" type="DECIMAL" />
+        <column name="statistic_count" type="BIGINT" />
+        <column name="capture_start_time" type="TIMESTAMP" />
+        <column name="capture_end_time" type="TIMESTAMP" />
+        <index name="idx_statistic">
+            <index-column name="node_id" />
+            <index-column name="statistic_name" />
+        </index>
     </table>
 
 </database>

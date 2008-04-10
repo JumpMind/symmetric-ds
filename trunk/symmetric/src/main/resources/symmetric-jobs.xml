@@ -84,6 +84,23 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         </property>
     </bean>
     
+    <bean id="statisticFlushJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <!-- Random wait before start to stagger load -->
+                    <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
+                    <property name="period" value="${symmetric.runtime.job.stat.flush.period.time.ms}" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
+                            <property name="statisticManager" ref="statisticManager" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>    
+    
     <bean id="syncTriggersJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
         <property name="scheduledTimerTasks">
             <list>

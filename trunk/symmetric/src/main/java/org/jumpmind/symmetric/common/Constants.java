@@ -71,6 +71,8 @@ public class Constants {
     
     public static final String ALERT_RESOURCE_HANDLER = "alertResourceHandler";
     
+    public static final String STATISTIC_MANAGER = "statisticManager";
+    
     public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
     
     public static final String PULL_RESOURCE_HANDLER = "pullResourceHandler";
@@ -110,6 +112,8 @@ public class Constants {
     public static final String HEARTBEAT_JOB_TIMER = "heartbeatJobTimer";
     
     public static final String SYNC_TRIGGERS_JOB_TIMER = "syncTriggersJobTimer";
+    
+    public static final String STATISTIC_FLUSH_JOB_TIMER = "statisticFlushJobTimer";
     
     public static final String DATA_EXTRACTOR = "dataExtractor";
     

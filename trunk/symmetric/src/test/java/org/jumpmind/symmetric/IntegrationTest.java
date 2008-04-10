@@ -16,6 +16,7 @@ import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
@@ -97,6 +98,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().start();
         Assert.assertTrue(getClientEngine().isRegistered(), "The client did not register.");
+        IStatisticManager statMgr = (IStatisticManager)getClientEngine().getApplicationContext().getBean(Constants.STATISTIC_MANAGER);
+        statMgr.flush();
     }
 
     protected void initialLoad() {
