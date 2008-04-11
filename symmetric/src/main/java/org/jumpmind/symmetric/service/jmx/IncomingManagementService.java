@@ -22,18 +22,22 @@ package org.jumpmind.symmetric.service.jmx;
 import java.math.BigDecimal;
 
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for incoming synchronization")
 public class IncomingManagementService {
 
     IStatisticManager statisticManager;
-
+    
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
     
+    @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node")
     public BigDecimal getDatabaseMsPerRow() {
-        
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getAverageValue();
     }
+
 }
