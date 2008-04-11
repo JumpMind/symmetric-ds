@@ -23,6 +23,9 @@
         <property name="mappings">
             <props>
                 <prop key="managementService">Symmetric:name=${symmetric.runtime.engine.name}</prop>
+                <prop key="incomingManagementService">org.jumpmind.symmetric.${symmetric.runtime.engine.name}:name=Incoming</prop>
+                <prop key="outgoingManagementService">org.jumpmind.symmetric.${symmetric.runtime.engine.name}:name=Outgoing</prop>
+                <prop key="nodeManagementService">org.jumpmind.symmetric.${symmetric.runtime.engine.name}:name=Node</prop>                
             </props>
         </property>
         <property name="mappingLocations">
@@ -44,5 +47,9 @@
         <property name="nodeService" ref="nodeService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
     </bean>
+    
+    <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService"/>
+    <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService"/>
+    <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService"/>
 
 </beans>

@@ -18,7 +18,6 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-
 package org.jumpmind.symmetric.service.jmx;
 
 import java.io.ByteArrayOutputStream;
@@ -46,7 +45,7 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
-@ManagedResource(description = "The management interface for symmetric")
+@ManagedResource(description = "The management interface for SymmetricDS")
 public class SymmetricManagementService {
 
     private IRuntimeConfig runtimeConfiguration;

@@ -1,3 +1,22 @@
+/*
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
@@ -15,11 +34,13 @@ public class StatisticManager implements IStatisticManager {
     INodeService nodeService;
 
     IStatisticService statisticService;
-    
+
     synchronized public void init() {
-        refresh(new Date());
-    }    
-    
+        if (statistics == null) {
+            refresh(new Date());
+        }
+    }
+
     synchronized public void flush() {
         Date captureEndTime = new Date();
         if (statistics != null) {
@@ -27,12 +48,12 @@ public class StatisticManager implements IStatisticManager {
         }
         refresh(captureEndTime);
     }
-    
+
     synchronized protected void refresh(Date lastCaptureEndTime) {
         if (statistics == null) {
             statistics = new HashMap<StatisticName, Statistic>();
         }
-        
+
         statistics.clear();
 
         Node node = nodeService.findIdentity();
@@ -48,6 +69,7 @@ public class StatisticManager implements IStatisticManager {
     }
 
     public Statistic getStatistic(StatisticName name) {
+        this.init();
         return statistics.get(name);
     }
 
