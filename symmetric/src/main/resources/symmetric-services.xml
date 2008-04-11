@@ -13,11 +13,10 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />        
     </bean>
     
-    <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager" init-method="init">
+    <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
         <property name="statisticService" ref="statisticService"/>
         <property name="nodeService" ref="nodeService"/>
-    </bean>
-    
+    </bean>    
 
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
         scope="singleton">

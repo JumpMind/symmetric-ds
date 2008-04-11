@@ -17,25 +17,11 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.service.impl;
+package org.jumpmind.symmetric.service.jmx;
 
-import java.util.Collection;
-import java.util.Date;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
-import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.symmetric.statistic.Statistic;
-import org.jumpmind.symmetric.util.AppUtils;
-
-public class StatisticService extends AbstractService implements IStatisticService {
-
-    public void save(Collection<Statistic> stats, Date captureEndTime) {
-        if (stats != null) {
-            for (Statistic statistic : stats) {
-                jdbcTemplate.update(getSql("insertStatisticSql"), new Object[] { statistic.getNodeId(),
-                        AppUtils.getServerId(), statistic.getName().name(), statistic.getCaptureStartTimeMs(),
-                        captureEndTime, statistic.getTotal(), statistic.getCount() });
-            }
-        }
-    }
+@ManagedResource(description = "The management interface for outgoing synchronization")
+public class OutgoingManagementService {
 
 }

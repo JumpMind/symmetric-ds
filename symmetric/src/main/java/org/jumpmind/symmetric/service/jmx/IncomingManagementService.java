@@ -17,25 +17,23 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.service.impl;
+package org.jumpmind.symmetric.service.jmx;
 
-import java.util.Collection;
-import java.util.Date;
+import java.math.BigDecimal;
 
-import org.jumpmind.symmetric.service.IStatisticService;
-import org.jumpmind.symmetric.statistic.Statistic;
-import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
-public class StatisticService extends AbstractService implements IStatisticService {
+@ManagedResource(description = "The management interface for incoming synchronization")
+public class IncomingManagementService {
 
-    public void save(Collection<Statistic> stats, Date captureEndTime) {
-        if (stats != null) {
-            for (Statistic statistic : stats) {
-                jdbcTemplate.update(getSql("insertStatisticSql"), new Object[] { statistic.getNodeId(),
-                        AppUtils.getServerId(), statistic.getName().name(), statistic.getCaptureStartTimeMs(),
-                        captureEndTime, statistic.getTotal(), statistic.getCount() });
-            }
-        }
+    IStatisticManager statisticManager;
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
-
+    
+    public BigDecimal getDatabaseMsPerRow() {
+        
+    }
 }
