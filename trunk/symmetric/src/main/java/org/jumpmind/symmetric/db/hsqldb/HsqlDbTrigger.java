@@ -220,7 +220,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     private String replaceOldNewTriggerTokens(String targetString) {
-        // This is a little hack to allow us to replace the not only the old/new alias's, but also the column prefix for 
+        // This is a little hack to allow us to replace not only the old/new alias's, but also the column prefix for 
         // use in a virtual table we can match SQL expressions against.
         targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
         targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");

@@ -39,7 +39,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     static final String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time, notes, icon) values(?,?,?,?,?,?,?,?,?,?)";
 
-    static final String insertTestTriggerTableSql = "insert into test_triggers_table (id, string_one_value, string_two_value) values(?, ?,?)";
+    static final String insertTestTriggerTableSql = "insert into test_triggers_table (id, string_one_value, string_two_value) values(?,?,?)";
 
     static final String updateTestTriggerTableSql = "update test_triggers_table set string_one_value=?";
 
