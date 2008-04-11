@@ -159,7 +159,7 @@ public abstract class AbstractEmbeddedTrigger {
         }
         Object[] keyValues = new Object[keys.length];
         for (int i = 0; i < keys.length; i++) {
-            keyValues[i] = table.getColumnIndex(keys[i]);
+            keyValues[i] = allValues[table.getColumnIndex(keys[i])];
         }
         return keyValues;
     }

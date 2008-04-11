@@ -150,7 +150,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
                         }
                         while (rs.next()) {
                             dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
-                                    trigger.getSourceTableName(), null, audit), ctxCopy);
+                                    audit.getSourceTableName(), null, audit), ctxCopy);
                         }
                         if (batch != null) {
                             dataExtractor.commit(batch, writer);

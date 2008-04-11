@@ -90,7 +90,7 @@ public class DataService extends AbstractService implements IDataService {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
         // initial_load_select for table can be overridden by populating the row_data
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect,
+        Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect,
                 null, history);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
