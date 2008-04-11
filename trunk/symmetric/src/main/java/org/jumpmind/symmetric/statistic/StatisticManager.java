@@ -57,20 +57,22 @@ public class StatisticManager implements IStatisticManager {
         statistics.clear();
 
         Node node = nodeService.findIdentity();
-
+        String nodeId = "Unknown";
         if (node != null) {
-            String nodeId = node.getNodeId();
-            StatisticName[] all = StatisticName.values();
-            for (StatisticName statisticName : all) {
-                statistics.put(statisticName, new Statistic(statisticName, nodeId,
-                        lastCaptureEndTime == null ? new Date() : lastCaptureEndTime));
-            }
+            nodeId = node.getNodeId();
         }
+        
+        StatisticName[] all = StatisticName.values();
+        for (StatisticName statisticName : all) {
+            statistics.put(statisticName, new Statistic(statisticName, nodeId,
+                    lastCaptureEndTime == null ? new Date() : lastCaptureEndTime));
+        }
+
     }
 
-    public Statistic getStatistic(StatisticName name) {
+    public Statistic getStatistic(StatisticName statisticName) {
         this.init();
-        return statistics.get(name);
+        return statistics.get(statisticName);
     }
 
     public void setNodeService(INodeService nodeService) {

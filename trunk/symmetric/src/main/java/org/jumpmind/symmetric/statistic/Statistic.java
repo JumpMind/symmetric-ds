@@ -77,17 +77,17 @@ public class Statistic {
         add(v,1);
     }
 
-    public void add(long v, int count) {
+    public void add(long v, long count) {
         this.total = this.total.add(new BigDecimal(v));
         this.count += this.count;
     }
 
-    public void add(int v, int count) {
+    public void add(int v, long count) {
         this.total = this.total.add(new BigDecimal(v));
         this.count += this.count;
     }
 
-    public void add(BigDecimal v, int count) {
+    public void add(BigDecimal v, long count) {
         this.total = this.total.add(v);
         this.count += this.count;
     }

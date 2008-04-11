@@ -208,7 +208,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         if (list != null) {
             statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).add(list.size());
             for (IncomingBatchHistory incomingBatchHistory : list) {
-                statisticManager.getStatistic(StatisticName.INCOMING_ROW_COUNT).add(incomingBatchHistory.getStatementCount());
+                statisticManager.getStatistic(StatisticName.INCOMING_ROW_COUNT).add(incomingBatchHistory.getStatementCount()); 
+                statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).add(incomingBatchHistory.getDatabaseMillis(), incomingBatchHistory.getStatementCount());
             }            
         }
     }
