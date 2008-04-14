@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -107,13 +108,22 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { Long.valueOf(history.getBatchId()),
-                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
-                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
-                history.getByteCount(), history.getStatementCount(), history.getFallbackInsertCount(),
-                history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
-                history.getFailedRowNumber(), history.getStartTime(), history.getEndTime(),
-                history.getSqlState(), history.getSqlCode(), history.getSqlMessage() });
+        try {
+            jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] {
+                    Long.valueOf(history.getBatchId()), history.getNodeId(), history.getStatus().toString(),
+                    history.getNetworkMillis(), history.getFilterMillis(), history.getDatabaseMillis(),
+                    history.getHostName(), history.getByteCount(), history.getStatementCount(),
+                    history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
+                    history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
+                    history.getEndTime(), history.getSqlState(), history.getSqlCode(),
+                    history.getSqlMessage() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR,
+                    Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
+                    Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP,
+                    Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
+        } catch (RuntimeException ex) {
+            logger.error(ex, ex);
+            throw ex;
+        }
     }
 
     class IncomingBatchMapper implements RowMapper {
