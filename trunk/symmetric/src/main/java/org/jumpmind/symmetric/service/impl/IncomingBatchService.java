@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -116,7 +117,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
                     history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
                     history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                    history.getSqlMessage() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR,
+                    StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR,
                     Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
                     Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP,
                     Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR });

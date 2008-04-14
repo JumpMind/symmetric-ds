@@ -180,9 +180,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                 }
                 if (e instanceof NestedRuntimeException) {
+                    SQLException se = null;
                     NestedRuntimeException ne = (NestedRuntimeException) e;
-                    if (ne.getRootCause() instanceof SQLException) {
-                        SQLException se = (SQLException) ne.getRootCause();
+                    if (ne.getCause() instanceof SQLException) {
+                        se = (SQLException)ne.getCause();
+                    } else if (ne.getRootCause() instanceof SQLException) {
+                        se = (SQLException) ne.getRootCause();
+                    }
+                    
+                    if (se != null) {
                         history.setSqlState(se.getSQLState());
                         history.setSqlCode(se.getErrorCode());
                         history.setSqlMessage(se.getMessage());
