@@ -181,7 +181,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertEquals(history.getFallbackUpdateCount(), 0, "Wrong fallback update count");
         Assert.assertEquals(history.getMissingDeleteCount(), 0, "Wrong missing delete count");
         Assert.assertNotNull(history.getSqlState(), "Sql state should not be null");
-        Assert.assertTrue(history.getSqlCode() > 0, "Sql code should not be zero");
+        Assert.assertTrue(history.getSqlCode() != 0, "Sql code should not be zero");
         Assert.assertNotNull(history.getSqlMessage(), "Sql message should not be null");
     }
 
