@@ -223,20 +223,22 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(batches.size(), 3);
         String firstBatchId = batches.get(0).getBatchId();
         String secondBatchId = batches.get(1).getBatchId();
-
+        String thirdBatchId = batches.get(2).getBatchId();
+        
         // Ack the first batch as an error, leaving the others as new
-        ArrayList<BatchInfo> ackList = new ArrayList<BatchInfo>();
-        ackList.add(new BatchInfo(firstBatchId, 1));
-        ackService.ack(ackList);
+        ackService.ack(new BatchInfo(firstBatchId, 1));
 
         // Get the batches again. The error channel batches should be last
         batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertNotNull(batches);
         Assert.assertEquals(batches.size(), 3);
+        Assert.assertEquals(batches.get(0).getBatchId(), secondBatchId,
+        "Channel in error should have batches last - missing new batch");        
         Assert.assertEquals(batches.get(1).getBatchId(), firstBatchId,
                 "Channel in error should have batches last - missing error batch");
-        Assert.assertEquals(batches.get(2).getBatchId(), secondBatchId,
+        Assert.assertEquals(batches.get(2).getBatchId(), thirdBatchId,
                 "Channel in error should have batches last - missing new batch");
+        
     }
 
     protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type,
