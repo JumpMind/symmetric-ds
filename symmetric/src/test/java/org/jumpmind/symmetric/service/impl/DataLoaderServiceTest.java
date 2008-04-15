@@ -132,6 +132,52 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertEquals(history.getFallbackUpdateCount(), 2, "Wrong fallback update count");
         Assert.assertEquals(history.getMissingDeleteCount(), 3, "Wrong missing delete count");
     }
+    
+    @Test(groups = "continuous")
+    public void testUpdateCollision() throws Exception {
+        String[] updateValues = new String[11];
+        // pick an id we won't hit
+        updateValues[10] = "699996";
+        updateValues[0] = "1";
+        updateValues[2] = updateValues[4] = "required string";
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+        
+        String nextBatchId = getNextBatchId();
+        
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+
+        // Update becomes fallback insert
+        writer.write(CsvConstants.UPDATE);
+        writer.writeRecord(updateValues, true);
+
+        writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
+        writer.close();
+        load(out);
+        
+        List<IncomingBatchHistory> list = incomingBatchService.findIncomingBatchHistory(batchId + "",
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Assert.assertEquals(list.size(), 1, "Wrong number of history");
+        
+        load(out);
+
+        IncomingBatchHistory history = list.get(0);
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+        
+        list = incomingBatchService.findIncomingBatchHistory(batchId + "",
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Assert.assertEquals(list.size(), 2, "Wrong number of history");
+
+        history = list.get(0);
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+        
+        history = list.get(1);
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+
+    }
 
     @Test(groups = "continuous")
     public void testSqlStatistics() throws Exception {
