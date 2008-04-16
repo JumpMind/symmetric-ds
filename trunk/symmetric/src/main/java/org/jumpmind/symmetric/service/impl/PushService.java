@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class PushService implements IPushService {
 
@@ -90,7 +91,7 @@ public class PushService implements IPushService {
 
             String status = tokenizer.nextToken();
 
-            if (status.equalsIgnoreCase(BatchInfo.OK)) {
+            if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
                 return new BatchInfo(batchId);
             } else {
                 int line = Integer.parseInt(status);

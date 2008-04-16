@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
@@ -62,6 +63,13 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     public void setBatchStatus(String batchId, Status status) {
 
+    }
+
+    public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId) {
+        return null;
+    }
+
+    public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
     }
 
 }

@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,84 +21,95 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchHistoryService;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
-    private String updateOutgoingBatchSql;
+
+    private IOutgoingBatchService outgoingBatchService;
 
     private String selectDataIdSql;
-
-    private IOutgoingBatchHistoryService outgoingBatchHistoryService;
 
     @Deprecated
     public void ack(final List<BatchInfo> batches) {
         for (BatchInfo batch : batches) {
-            ack(batch);    
+            ack(batch);
         }
     }
 
     @Transactional
     public void ack(final BatchInfo batch) {
-        final Integer id = new Integer(batch.getBatchId());
-        // update the outgoing_batch record
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement batchUpdate = null;
-                try {
-                    batchUpdate = conn.prepareStatement(updateOutgoingBatchSql);
-                    batchUpdate.setString(1, batch.isOk() ? Status.OK.name() : Status.ER.name());
-                    batchUpdate.setInt(2, id);
-                    batchUpdate.executeUpdate();
-                    return null;
-                } finally {
-                    JdbcUtils.closeStatement(batchUpdate);
+        OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+        outgoingBatchService.setBatchStatus(batch.getBatchId(), batch.isOk() ? Status.OK : Status.ER);
+
+        if (!batch.isOk() && batch.getErrorLine() != 0) {
+            CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
+            jdbcTemplate.query(selectDataIdSql, new Object[] { history.getBatchId() }, handler);
+            history.setFailedDataId(handler.getDataId());
+        }
+
+        history.setEndTime(new Date());
+        outgoingBatchService.insertOutgoingBatchHistory(history);
+    }
+    
+    public List<BatchInfo> getBatchInfo(Map<String, Object> parameters) {
+        List<BatchInfo> batches = new ArrayList<BatchInfo>();
+        for (String parameterName : parameters.keySet()) {
+            if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
+                String batchId = parameterName.substring(WebConstants.ACK_BATCH_NAME.length());
+                BatchInfo batchInfo = new BatchInfo(batchId);
+                batchInfo.setNodeId(getParameter(parameters, WebConstants.NODE_ID));
+                batchInfo.setNetworkMillis(getParameterAsNumber(parameters, WebConstants.ACK_NETWORK_MILLIS));
+                batchInfo.setFilterMillis(getParameterAsNumber(parameters, WebConstants.ACK_FILTER_MILLIS));
+                batchInfo.setDatabaseMillis(getParameterAsNumber(parameters, WebConstants.ACK_DATABASE_MILLIS));
+                batchInfo.setByteCount(getParameterAsNumber(parameters, WebConstants.ACK_BYTE_COUNT));
+                String status = getParameter(parameters, parameterName, "");
+                batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
+
+                if (!batchInfo.isOk()) {
+                    batchInfo.setErrorLine(NumberUtils.toLong(status));
+                    batchInfo.setSqlState(getParameter(parameters, WebConstants.ACK_SQL_STATE));
+                    batchInfo.setSqlCode((int) getParameterAsNumber(parameters, WebConstants.ACK_SQL_CODE));
+                    batchInfo.setSqlMessage(getParameter(parameters, WebConstants.ACK_SQL_MESSAGE));
                 }
-            }
-        });
-
-        // add a record to outgoing_batch_hist indicating success
-        if (batch.isOk()) {
-            outgoingBatchHistoryService.ok(id);
-        }
-        // add a record to outgoing_batch_hist indicating an error
-        else {
-            if (batch.getErrorLine() != BatchInfo.UNDEFINED_ERROR_LINE_NUMBER) {
-                CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-
-                jdbcTemplate.query(selectDataIdSql, new Object[] { id }, handler);
-                final long dataId = handler.getDataId();
-
-                outgoingBatchHistoryService.error(id, dataId);
-            } else {
-                outgoingBatchHistoryService.error(id, 0l);
+                batches.add(batchInfo);
             }
         }
+        return batches;
+    }
+    
+    private long getParameterAsNumber(Map<String, Object> parameters, String parameterName) {
+        return NumberUtils.toLong(getParameter(parameters, parameterName));
     }
 
-    public void setUpdateOutgoingBatchSql(String updateOutgoingBatchSql) {
-        this.updateOutgoingBatchSql = updateOutgoingBatchSql;
+    private String getParameter(Map<String, Object> parameters, String parameterName, String defaultValue) {
+        String value = getParameter(parameters, parameterName);
+        return value == null ? defaultValue : value;
     }
-
-    public void setSelectDataIdSql(String selectDataIdSql) {
-        this.selectDataIdSql = selectDataIdSql;
-    }
-
-    public void setOutgoingBatchHistoryService(IOutgoingBatchHistoryService outgoingBatchHistoryService) {
-        this.outgoingBatchHistoryService = outgoingBatchHistoryService;
+    
+    private String getParameter(Map<String, Object> parameters, String parameterName) {
+        Object value = parameters.get(parameterName);
+        if (value instanceof String[]) {
+            String[] arrayValue = (String[]) value;
+            if (arrayValue.length > 0) {
+                value = arrayValue[0];
+            }
+        }
+        return (String) value;
     }
 
     class CallBackHandler implements RowCallbackHandler {
@@ -112,9 +124,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
 
         public void processRow(ResultSet rs) throws SQLException {
-            index++;
-
-            if (index == rowNumber) {
+            if (++index == rowNumber) {
                 dataId = rs.getLong(1);
             }
         }
@@ -124,4 +134,11 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
     }
 
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
+    }
+
+    public void setSelectDataIdSql(String selectDataIdSql) {
+        this.selectDataIdSql = selectDataIdSql;
+    }
 }

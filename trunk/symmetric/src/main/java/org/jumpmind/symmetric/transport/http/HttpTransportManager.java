@@ -70,14 +70,14 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
         if (list != null && list.size() > 0) {
-            String data = getAcknowledgementData(list);
+            String data = getAcknowledgementData(list) + "\n" + getExtendedAcknowledgementData(list);
             return sendMessage("ack", remote, local, data);
         }
         return true;
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
-        writeMessage(out, getAcknowledgementData(list));
+        writeMessage(out, getAcknowledgementData(list) + "\n" + getExtendedAcknowledgementData(list));
     }
 
     public boolean sendMessage(String action, Node remote, Node local, String data) throws IOException {
@@ -113,8 +113,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
-        StringBuilder builder = append(new StringBuilder(runtimeConfiguration.getRegistrationUrl() + "/registration?"),
-                WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
+        StringBuilder builder = new StringBuilder(runtimeConfiguration.getRegistrationUrl() + "/registration?");
+        append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
         append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
         append(builder, WebConstants.SYNC_URL, node.getSyncURL());
         append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());

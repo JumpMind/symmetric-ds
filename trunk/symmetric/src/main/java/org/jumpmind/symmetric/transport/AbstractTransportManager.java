@@ -31,36 +31,48 @@ import org.jumpmind.symmetric.web.WebConstants;
 abstract public class AbstractTransportManager {
 
     protected static final String ENCODING = "UTF-8";
-    
-    protected String getAcknowledgementData(List<IncomingBatchHistory> list)
-            throws IOException {
-        StringBuilder builder = null;
-        for (IncomingBatchHistory loadStatus : list) {
+
+    protected String getAcknowledgementData(List<IncomingBatchHistory> list) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        for (IncomingBatchHistory status : list) {
             Object value = null;
-            if (loadStatus.getStatus() == Status.OK
-                    || loadStatus.getStatus() == Status.SK) {
+            if (status.getStatus() == Status.OK || status.getStatus() == Status.SK) {
                 value = WebConstants.ACK_BATCH_OK;
             } else {
-                value = loadStatus.getFailedRowNumber();
+                value = status.getFailedRowNumber();
             }
-            builder = append(builder, WebConstants.ACK_BATCH_NAME
-                    + loadStatus.getBatchId(), value);
+            append(builder, WebConstants.ACK_BATCH_NAME + status.getBatchId(), value);
         }
-        return builder != null ? builder.toString() : "";
+        return builder.toString();
     }
-    
-    protected StringBuilder append(StringBuilder builder, String name,
-            Object value) throws IOException {
-        if (builder == null) {
-            builder = new StringBuilder();
-        } else {
+
+    protected String getExtendedAcknowledgementData(List<IncomingBatchHistory> list) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        for (IncomingBatchHistory status : list) {
+            String batchId = status.getBatchId();
+            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, status.getNetworkMillis());
+            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, status.getFilterMillis());
+            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, status.getDatabaseMillis());
+            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, status.getByteCount());
+
+            if (status.getStatus() == Status.ER) {
+                append(builder, WebConstants.ACK_SQL_STATE + batchId, status.getSqlState());
+                append(builder, WebConstants.ACK_SQL_CODE + batchId, status.getSqlCode());
+                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, status.getSqlMessage());
+            }
+        }
+        return builder.toString();
+    }
+
+    protected void append(StringBuilder builder, String name, Object value) throws IOException {
+        int len = builder.length();
+        if (len > 0 && builder.charAt(len - 1) != '?') {
             builder.append("&");
         }
         if (value == null) {
             value = "";
         }
-        return builder.append(name).append("=").append(
-                URLEncoder.encode(value.toString(), ENCODING));
+        builder.append(name).append("=").append(URLEncoder.encode(value.toString(), ENCODING));
     }
-    
+
 }

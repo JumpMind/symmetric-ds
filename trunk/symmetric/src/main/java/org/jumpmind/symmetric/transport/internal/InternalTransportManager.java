@@ -128,12 +128,22 @@ public class InternalTransportManager extends AbstractTransportManager implement
             if (list != null && list.size() > 0) {
                 SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
                 List<BatchInfo> batches = new ArrayList<BatchInfo>();
-                for (IncomingBatchHistory loadStatus : list) {
-                    if (loadStatus.getStatus() == Status.OK || loadStatus.getStatus() == Status.SK) {
-                        batches.add(new BatchInfo(loadStatus.getBatchId()));
+                for (IncomingBatchHistory status : list) {
+                    BatchInfo batchInfo = null;
+                    if (status.getStatus() == Status.OK || status.getStatus() == Status.SK) {
+                        batchInfo = new BatchInfo(status.getBatchId());
                     } else {
-                        batches.add(new BatchInfo(loadStatus.getBatchId(), loadStatus.getFailedRowNumber()));
+                        batchInfo = new BatchInfo(status.getBatchId(), status.getFailedRowNumber());
+                        batchInfo.setSqlState(status.getSqlState());
+                        batchInfo.setSqlCode(status.getSqlCode());
+                        batchInfo.setSqlMessage(status.getSqlMessage());
                     }
+                    batchInfo.setNodeId(status.getNodeId());
+                    batchInfo.setNetworkMillis(status.getNetworkMillis());
+                    batchInfo.setFilterMillis(status.getFilterMillis());
+                    batchInfo.setDatabaseMillis(status.getDatabaseMillis());
+                    batchInfo.setByteCount(status.getByteCount());
+                    batches.add(batchInfo);
                 }
                 IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(
                         Constants.ACKNOWLEDGE_SERVICE);
@@ -150,9 +160,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
-        String data = getAcknowledgementData(list);
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
-        pw.println(data);
+        pw.println(getAcknowledgementData(list));
+        pw.println(getExtendedAcknowledgementData(list));
         pw.close();
     }
 

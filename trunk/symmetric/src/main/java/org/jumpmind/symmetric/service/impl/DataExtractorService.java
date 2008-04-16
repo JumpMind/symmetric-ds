@@ -24,11 +24,11 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.Version;
@@ -42,9 +42,9 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
@@ -114,8 +114,11 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
+        OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
         writeInitialLoad(node, trigger, transport, batch, null);
-        outgoingBatchService.markOutgoingBatchSent(batch);
+        history.setStatus(OutgoingBatchHistory.Status.SE);
+        history.setEndTime(new Date());
+        outgoingBatchService.insertOutgoingBatchHistory(history);
         return batch;
     }
 
@@ -192,21 +195,13 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
-                    try {
-                        handler.startBatch(batch);
-                        selectEventDataToExtract(handler, batch);
-                        handler.endBatch(batch);
-
-                        // At this point, we've already sent the data to the node, so if
-                        // updating the batch to 'sent' fails, all this means is that the batch
-                        // will be sent to the node again. This is expected to happen so
-                        // infrequently, that the inefficiencies associated with re-sending a batch
-                        // are negligible.
-                        outgoingBatchService.markOutgoingBatchSent(batch);
-                    } catch (Exception ex) {
-                        outgoingBatchService.setBatchStatus(batch.getBatchId(), Status.ER);
-                        throw ex;
-                    }
+                    OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+                    handler.startBatch(batch);
+                    selectEventDataToExtract(handler, batch);
+                    handler.endBatch(batch);
+                    history.setStatus(OutgoingBatchHistory.Status.SE);
+                    history.setEndTime(new Date());
+                    outgoingBatchService.insertOutgoingBatchHistory(history);
                 }
             } finally {
                 handler.done();
@@ -254,14 +249,9 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
-                    try {
-                        handler.startBatch(batch);
-                        selectEventDataToExtract(handler, batch);
-                        handler.endBatch(batch);
-                    } catch (Exception ex) {
-                        outgoingBatchService.setBatchStatus(batch.getBatchId(), Status.ER);
-                        throw ex;
-                    }
+                    handler.startBatch(batch);
+                    selectEventDataToExtract(handler, batch);
+                    handler.endBatch(batch);
                 }
             } finally {
                 handler.done();

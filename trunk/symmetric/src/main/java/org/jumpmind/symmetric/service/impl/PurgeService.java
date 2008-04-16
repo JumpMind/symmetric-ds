@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
 public class PurgeService extends AbstractService implements IPurgeService {
@@ -73,8 +72,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private String selectIncomingBatchOrderByCreateTimeSql;
 
-    private String selectOutgoingBatchHistoryRangeSql;
-
     private IClusterService clusterService;
 
     @SuppressWarnings("unchecked")
@@ -94,7 +91,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     logger.info("The outgoing purge process is about to run.");
 
                     purgeBatchesOlderThan(retentionCutoff);
-                    purgeOutgoingBatchHistory(retentionCutoff);
                     purgeDataRows(retentionCutoff);
 
                 } finally {
@@ -107,35 +103,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
         } catch (Exception ex) {
             logger.error(ex, ex);
-        }
-    }
-
-    private void purgeOutgoingBatchHistory(Calendar retentionCutoff) {
-        logger.info("About to purge outgoing batch history.");
-        int[] minMax = (int[]) jdbcTemplate.queryForObject(selectOutgoingBatchHistoryRangeSql,
-                new Object[] { retentionCutoff.getTime() }, new RowMapper() {
-                    public Object mapRow(ResultSet rs, int row) throws SQLException {
-                        return new int[] { rs.getInt(1), rs.getInt(2) };
-                    }
-                });
-        if (minMax != null) {
-            int currentHistoryId = minMax[0];
-            int max = minMax[1];
-            long ts = System.currentTimeMillis();
-            int totalCount = 0;
-            while (currentHistoryId < max) {
-                currentHistoryId = currentHistoryId + maxNumOfDataIdsToPurgeInTx > max ? max : currentHistoryId
-                        + maxNumOfDataIdsToPurgeInTx;
-                totalCount += jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { currentHistoryId });
-
-                if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                    logger.info("Purged " + totalCount + " a total of outgoing batch history rows so far.");
-                    ts = System.currentTimeMillis();
-                }
-            }
-
-            logger.info("Finished purging " + totalCount + " outgoing batch history rows.");
-
         }
     }
 
@@ -260,7 +227,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         eventRowCount += jdbcTemplate
                                 .update(deleteFromEventDataIdSql, new Object[] { batchId, nodeId });
                         batchesPurged += jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
-
+                        jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId, nodeId });
+                        
                         if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
                             logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
                                     + " data_events so far.");
@@ -330,10 +298,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public void setSelectIncomingBatchOrderByCreateTimeSql(String selectIncomingBatchOrderByCreateTimeSql) {
         this.selectIncomingBatchOrderByCreateTimeSql = selectIncomingBatchOrderByCreateTimeSql;
-    }
-
-    public void setSelectOutgoingBatchHistoryRangeSql(String selectOutgoingBatchHistoryRangeSql) {
-        this.selectOutgoingBatchHistoryRangeSql = selectOutgoingBatchHistoryRangeSql;
     }
 
     public void setSelectMinDataIdSql(String selectMinDataIdSql) {
