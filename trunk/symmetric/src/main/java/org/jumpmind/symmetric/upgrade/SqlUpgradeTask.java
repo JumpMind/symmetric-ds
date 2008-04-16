@@ -24,31 +24,60 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 
 public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 
     private static final Log logger = LogFactory.getLog(SqlUpgradeTask.class);
-    
+
+    protected IDbDialect dbDialect;
+
+    protected String dialectName;
+
     protected List<String> sqlList;
-    
+
+    protected boolean ignoreFailure;
+
     public void upgrade(int[] fromVersion) {
         for (String sql : sqlList) {
-            logger.debug("upgrade->" + sql);
+            logger.warn("Upgrade: " + sql);
             jdbcTemplate.update(sql);
         }
     }
 
     public void upgrade(Node node, int[] fromVersion) {
-        for (String sql : sqlList) {
-            sql = prepareSql(node, sql);
-            logger.debug("upgrade->" + sql);
-            jdbcTemplate.update(sql);
+        if (dialectName == null || (dbDialect != null && dbDialect.getName().equalsIgnoreCase((dialectName)))) {
+            for (String sql : sqlList) {
+                sql = prepareSql(node, sql);
+                logger.warn("Upgrade: " + sql);
+                if (ignoreFailure) {
+                    try {
+                        jdbcTemplate.update(sql);
+                    } catch (Exception e) {
+                        logger.warn("Ignoring failure of last upgrade statement: " + e.getMessage());
+                    }
+                } else {
+                    jdbcTemplate.update(sql);
+                }
+            }
         }
     }
 
     public void setSqlList(List<String> sqlList) {
         this.sqlList = sqlList;
+    }
+
+    public void setIgnoreFailure(boolean ignoreFailure) {
+        this.ignoreFailure = ignoreFailure;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
+    }
+
+    public void setDialectName(String dialectName) {
+        this.dialectName = dialectName;
     }
 
 }

@@ -23,17 +23,24 @@ package org.jumpmind.symmetric.upgrade;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
+
+    private static final Log logger = LogFactory.getLog(SqlDrivenUpgradeTask.class);
 
     protected String driverSql;
 
     protected String updateSql;
 
     public void upgrade(final Node node, int[] fromVersion) {        
-        jdbcTemplate.query(prepareSql(node, driverSql), new RowCallbackHandler() {
+        String sql = prepareSql(node, driverSql);
+        logger.warn("Upgrade for each: " + sql);
+        logger.warn("Upgrade do: " + updateSql);
+        jdbcTemplate.query(sql, new RowCallbackHandler() {
             public void processRow(ResultSet rs) throws SQLException {
                 int count = rs.getMetaData().getColumnCount();
                 Object[] params = new Object[count];
