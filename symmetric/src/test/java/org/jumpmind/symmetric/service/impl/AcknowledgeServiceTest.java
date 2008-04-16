@@ -129,7 +129,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
     @SuppressWarnings("unchecked")
     protected List<OutgoingBatchHistory> getOutgoingBatchHistory(String batchId) {
-        final String sql = "select batch_id, status, data_event_count, event_time, "
+        final String sql = "select batch_id, status, data_event_count, start_time, "
                 + "failed_data_id from " + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
         final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
         getJdbcTemplate().query(sql, new Object[] { batchId }, new RowMapper() {
@@ -139,7 +139,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
                 item.setStatus(OutgoingBatchHistory.Status.valueOf(rs
                         .getString(2)));
                 item.setDataEventCount(rs.getLong(3));
-                item.setEventTime(rs.getTimestamp(4));
+                item.setStartTime(rs.getTimestamp(4));
                 item.setFailedDataId(rs.getLong(5));
                 list.add(item);
                 return null;

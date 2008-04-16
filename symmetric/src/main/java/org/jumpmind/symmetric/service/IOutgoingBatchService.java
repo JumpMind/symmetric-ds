@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 
 public interface IOutgoingBatchService {
@@ -41,9 +42,15 @@ public interface IOutgoingBatchService {
 
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows);
     
+    @Deprecated
     public void markOutgoingBatchSent(OutgoingBatch batch);
 
     public void setBatchStatus(String batchId, Status status);
 
     public boolean isInitialLoadComplete(String nodeId);
+    
+    public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId);
+    
+    public void insertOutgoingBatchHistory(OutgoingBatchHistory history);
+
 }

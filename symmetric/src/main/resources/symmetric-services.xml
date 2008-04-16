@@ -82,21 +82,13 @@
         <property name="batchSizePeekAhead" value="${symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="nodeService" ref="nodeService" />
-        <property name="historyService" ref="outgoingBatchHistoryService" />
         <property name="dbDialect" ref="dbDialect" />
-        <property name="outgoingBatchQueryTemplate">
-            <bean class="org.springframework.jdbc.core.JdbcTemplate">
-                <property name="dataSource" ref="dataSource" />
-                <property name="queryTimeout" value="${db.sql.query.timeout.seconds}" />
-            </bean>
-        </property>
         <property name="initialLoadStatusSql">
             <value>
                 select status from ${sync.table.prefix}_outgoing_batch where channel_id='reload' and
                 node_id=?
             </value>
         </property>
-
         <property name="selectEventsToBatchSql">
             <value>
                 select transaction_id, data_id from ${sync.table.prefix}_data_event where batched =
@@ -138,6 +130,22 @@
         </property>
         <property name="changeBatchStatusSql">
             <value>update ${sync.table.prefix}_outgoing_batch set status=? where batch_id=?</value>
+        </property>
+        <property name="findOutgoingBatchHistorySql">
+            <value>
+                select batch_id, node_id, status, network_millis, filter_millis, database_millis,
+                host_name, byte_count, data_event_count, failed_data_id, start_time, end_time,
+                sql_state, sql_code, sql_message from ${sync.table.prefix}_outgoing_batch_hist where
+                batch_id = ? and node_id = ? order by start_time
+            </value>
+        </property>
+        <property name="insertOutgoingBatchHistorySql">
+            <value>
+                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, node_id, status,
+                network_millis, filter_millis, database_millis, host_name, byte_count,
+                data_event_count, failed_data_id, start_time, end_time, sql_state, sql_code,
+                sql_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            </value>
         </property>
     </bean>
 
@@ -411,16 +419,11 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
-        <property name="outgoingBatchHistoryService" ref="outgoingBatchHistoryService" />
-        <property name="updateOutgoingBatchSql">
-            <value>
-                update ${sync.table.prefix}_outgoing_batch set status = ? where batch_id = ?
-            </value>
-        </property>
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="selectDataIdSql">
             <value>
-                select a.data_id from ${sync.table.prefix}_data a, ${sync.table.prefix}_data_event b
-                where a.data_Id = b.data_Id and b.batch_id=? order by data_id asc
+                select data_id from ${sync.table.prefix}_data_event b where batch_id = ? order by
+                data_id
             </value>
         </property>
     </bean>
@@ -529,36 +532,6 @@
         </property>
     </bean>
 
-    <bean id="outgoingBatchHistoryService"
-        class="org.jumpmind.symmetric.service.impl.OutgoingBatchHistoryService" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
-        <property name="createdSql">
-            <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time,
-                data_event_count) values (?, 'NE', current_timestamp, ?)
-            </value>
-        </property>
-        <property name="errorSql">
-            <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time,
-                failed_data_id) values (?, 'ER', current_timestamp, ?)
-            </value>
-        </property>
-        <property name="okSql">
-            <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
-                values (?, 'OK', current_timestamp)
-            </value>
-        </property>
-        <property name="sentSql">
-            <value>
-                insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, status, event_time)
-                values (?, 'SE', current_timestamp)
-            </value>
-        </property>
-    </bean>
-
     <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
@@ -613,16 +586,13 @@
             </value>
         </property>
         <property name="deleteFromOutgoingBatchHistSql">
-            <value>delete from ${sync.table.prefix}_outgoing_batch_hist where history_id &lt;= ?</value>
+            <value>delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id = ? and node_id = ?</value>
         </property>
         <property name="deleteFromOutgoingBatchSql">
             <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
         </property>
         <property name="deleteFromEventDataIdSql">
             <value>delete from ${sync.table.prefix}_data_event where batch_id=? and node_id=?</value>
-        </property>
-        <property name="selectOutgoingBatchHistoryRangeSql">
-            <value>select min(history_id),max(history_id) from ${sync.table.prefix}_outgoing_batch_hist where event_time &lt; ?</value>
         </property>
         <property name="selectMinDataIdSql">
             <value>

@@ -1,8 +1,9 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>,
- *               Keith Naas <knaas@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Keith Naas <knaas@users.sourceforge.net>
+ * Copyright (C) Eric Long <erilong@user.sourceforge.net>
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,25 +26,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.AckResourceHandler;
 
-public class AckServlet extends
-        AbstractTransportResourceServlet<AckResourceHandler> {
+public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> {
 
     private static final BatchIdComparator BATCH_ID_COMPARATOR = new BatchIdComparator();
 
@@ -51,73 +47,52 @@ public class AckServlet extends
 
     protected static final Log logger = LogFactory.getLog(AckServlet.class);
 
-
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        Map parameters = req.getParameterMap();
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+            IOException {
+
+        Enumeration enumeration = req.getParameterNames();
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
 
-        for (Object batch : parameters.keySet()) {
-            String batchId = ObjectUtils.toString(batch, "");
-            if (batchId.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                String status = "";
-                final Iterator iterator = IteratorUtils.getIterator(parameters
-                        .get(batch));
-                if (iterator.hasNext()) {
-                    status = StringUtils.trimToEmpty(ObjectUtils.toString(
-                            iterator.next(), null));
-                }
+        while (enumeration.hasMoreElements()) {
+            String parameterName = (String) enumeration.nextElement();
 
-                if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
-                    batches.add(new BatchInfo(getBatchIdFrom(batchId)));
-                } else {
-                    try {
-                        int lineNumber = Integer.parseInt(status.trim());
-                        batches.add(new BatchInfo(getBatchIdFrom(batchId),
-                                lineNumber));
-                    } catch (NumberFormatException ex) {
-                        batches.add(new BatchInfo(getBatchIdFrom(batchId),
-                                BatchInfo.UNDEFINED_ERROR_LINE_NUMBER));
-                    }
+            if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
+                String batchId = parameterName.substring(WebConstants.ACK_BATCH_NAME.length());
+                BatchInfo batchInfo = new BatchInfo(batchId);
+                batchInfo.setNodeId(getParameter(req, WebConstants.NODE_ID));
+                batchInfo.setNetworkMillis(getParameterAsNumber(req, WebConstants.ACK_NETWORK_MILLIS));
+                batchInfo.setFilterMillis(getParameterAsNumber(req, WebConstants.ACK_FILTER_MILLIS));
+                batchInfo.setDatabaseMillis(getParameterAsNumber(req, WebConstants.ACK_DATABASE_MILLIS));
+                batchInfo.setByteCount(getParameterAsNumber(req, WebConstants.ACK_BYTE_COUNT));
+                String status = getParameter(req, parameterName, "");
+                batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
+
+                if (!batchInfo.isOk()) {
+                    batchInfo.setErrorLine(NumberUtils.toLong(status));
+                    batchInfo.setSqlState(getParameter(req, WebConstants.ACK_SQL_STATE));
+                    batchInfo.setSqlCode((int) getParameterAsNumber(req, WebConstants.ACK_SQL_CODE));
+                    batchInfo.setSqlMessage(getParameter(req, WebConstants.ACK_SQL_MESSAGE));
                 }
+                batches.add(batchInfo);
             }
         }
+
         Collections.sort(batches, BATCH_ID_COMPARATOR);
         getTransportResourceHandler().ack(batches);
     }
 
-    private String getBatchIdFrom(String webParameter) {
-        int index = WebConstants.ACK_BATCH_NAME.length();
-        if (index >= 0) {
-            return webParameter.substring(index);
-        } else {
-            throw new IllegalStateException("Invalid batch parameter "
-                    + webParameter);
-        }
-    }
-
     private static class BatchIdComparator implements Comparator<BatchInfo> {
-        public int compare(final BatchInfo batchInfo1, final BatchInfo batchInfo2) {
-            final CompareToBuilder retVal = new CompareToBuilder();
-            if (batchInfo1 != null && StringUtils.isNotBlank(batchInfo1.getBatchId())
-                    && StringUtils.isNumeric(batchInfo1.getBatchId()) && batchInfo2 != null
-                    && StringUtils.isNotBlank(batchInfo2.getBatchId())
-                    && StringUtils.isNumeric(batchInfo2.getBatchId())) {
-                final Integer batchId1 = Integer.parseInt(batchInfo1.getBatchId());
-                final Integer batchId2 = Integer.parseInt(batchInfo2.getBatchId());
-                retVal.append(batchId1, batchId2);
-            } else {
-                retVal.append(batchInfo1.getBatchId(), batchInfo2.getBatchId());
-            }
-            return retVal.toComparison();
+        public int compare(BatchInfo batchInfo1, BatchInfo batchInfo2) {
+            Long batchId1 = NumberUtils.toLong(batchInfo1.getBatchId());
+            Long batchId2 = NumberUtils.toLong(batchInfo1.getBatchId());
+            return batchId1.compareTo(batchId2);
         }
     }
 

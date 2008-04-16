@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -388,4 +389,9 @@ abstract public class AbstractServlet extends HttpServlet {
         return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request
                 .getParameter(name)), defaultValue);
     }
+    
+    protected long getParameterAsNumber(HttpServletRequest request, String name) {
+        return NumberUtils.toLong(StringUtils.trimToNull(request.getParameter(name)));
+    }
+
 }

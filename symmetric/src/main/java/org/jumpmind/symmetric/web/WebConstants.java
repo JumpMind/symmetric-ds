@@ -31,6 +31,20 @@ public class WebConstants {
     public static final String ACK_BATCH_NAME = "batch-";
 
     public static final String ACK_BATCH_OK = "ok";
+    
+    public static final String ACK_NETWORK_MILLIS = "network-";
+    
+    public static final String ACK_FILTER_MILLIS = "filter-";
+    
+    public static final String ACK_DATABASE_MILLIS = "database-";
+    
+    public static final String ACK_BYTE_COUNT = "byteCount-";
+    
+    public static final String ACK_SQL_STATE = "sqlState-";
+    
+    public static final String ACK_SQL_CODE = "sqlCode-";
+    
+    public static final String ACK_SQL_MESSAGE = "sqlMessage-";
 
     public static final String NODE_ID = "nodeId";
 
