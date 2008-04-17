@@ -92,15 +92,21 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately
      * after the data is processed.
      */
-    public void loadData(Node remote, Node local) throws IOException {
+    public boolean loadData(Node remote, Node local) throws IOException {
+        boolean wasWorkDone = false;
         try {
             List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(
                     remote, local));
-            sendAck(remote, local, list);
+            if (list.size() > 0) {
+                sendAck(remote, local, list);
+                wasWorkDone = true;
+            }
         } catch (RegistrationRequiredException e) {
             logger.warn("Registration was lost, attempting to re-register");
             loadData(transportManager.getRegisterTransport(local));
+            wasWorkDone = true;
         }
+        return wasWorkDone;
     }
 
     /**
