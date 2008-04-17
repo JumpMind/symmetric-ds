@@ -35,9 +35,14 @@ public class IncomingManagementService {
         this.statisticManager = statisticManager;
     }
     
-    @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node")
-    public BigDecimal getDatabaseMsPerRow() {
+    @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node since the last time statistics were flushed")
+    public BigDecimal getDatabaseMsPerRowSinceLastFlush() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getAverageValue();
     }
-
+    
+    @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node for the lifetime of the server")
+    public BigDecimal getDatabaseMsPerRowForLifetime() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getLifetimeAverageValue();
+    }    
+    
 }

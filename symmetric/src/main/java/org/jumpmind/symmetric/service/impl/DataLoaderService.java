@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -59,7 +60,6 @@ import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.NestedRuntimeException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -79,7 +79,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected BeanFactory beanFactory;
 
     protected List<IDataLoaderFilter> filters;
-    
+
     protected IStatisticManager statisticManager;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
@@ -127,7 +127,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
             if (!sendAck) {
                 if (i < numberOfStatusSendRetries - 1) {
-                    sleep();
+                    sleepBetweenFailedAcks();
                 } else if (error instanceof RuntimeException) {
                     throw (RuntimeException) error;
                 } else if (error instanceof IOException) {
@@ -137,7 +137,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    private final void sleep() {
+    private final void sleepBetweenFailedAcks() {
         try {
             Thread.sleep(timeBetweenStatusSendRetriesMs);
         } catch (InterruptedException e) {
@@ -168,13 +168,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw ex;
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
+            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (UnknownHostException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of "
                     + ex.getMessage());
+            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (RegistrationNotOpenException ex) {
             logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
         } catch (ConnectionRejectedException ex) {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Exception e) {
@@ -182,22 +185,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: "
                             + e.getMessage());
+                    statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
-                }
-                if (e instanceof NestedRuntimeException) {
-                    SQLException se = null;
-                    NestedRuntimeException ne = (NestedRuntimeException) e;
-                    if (ne.getCause() instanceof SQLException) {
-                        se = (SQLException)ne.getCause();
-                    } else if (ne.getRootCause() instanceof SQLException) {
-                        se = (SQLException) ne.getRootCause();
-                    }
-                    
+                    SQLException se = unwrapSqlException(e);
                     if (se != null) {
+                        statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT)
+                                .increment();
                         history.setSqlState(se.getSQLState());
                         history.setSqlCode(se.getErrorCode());
                         history.setSqlMessage(se.getMessage());
+                    } else {
+                        statisticManager.getStatistic(StatisticName.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }
                 history.setValues(dataLoader.getStatistics(), false);
@@ -209,20 +208,35 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     logger.error("Failed while parsing batch.", e);
                 }
             }
-        } finally {            
+        } finally {
             dataLoader.close();
             recordStatistics(list);
         }
         return list;
     }
-    
+
+    @SuppressWarnings("unchecked")
+    private SQLException unwrapSqlException(Exception e) {
+        List<Throwable> exs = ExceptionUtils.getThrowableList(e);
+        for (Throwable throwable : exs) {
+            if (throwable instanceof SQLException) {
+                return (SQLException) throwable;
+            }
+        }
+        return null;
+    }
+
     private void recordStatistics(List<IncomingBatchHistory> list) {
         if (list != null) {
             statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).add(list.size());
             for (IncomingBatchHistory incomingBatchHistory : list) {
-                statisticManager.getStatistic(StatisticName.INCOMING_ROW_COUNT).add(incomingBatchHistory.getStatementCount()); 
-                statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).add(incomingBatchHistory.getDatabaseMillis(), incomingBatchHistory.getStatementCount());
-            }            
+                statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).add(
+                        incomingBatchHistory.getDatabaseMillis(), incomingBatchHistory.getStatementCount());
+                statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).increment();
+                if (IncomingBatchHistory.Status.SK.equals(incomingBatchHistory.getStatus())) {
+                    statisticManager.getStatistic(StatisticName.INCOMING_SKIP_BATCH_COUNT).increment();
+                }
+            }
         }
     }
 
