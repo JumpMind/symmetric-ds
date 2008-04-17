@@ -27,7 +27,6 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -37,10 +36,9 @@ import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -127,24 +125,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
         try {
             if (list != null && list.size() > 0) {
                 SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
-                List<BatchInfo> batches = new ArrayList<BatchInfo>();
-                for (IncomingBatchHistory status : list) {
-                    BatchInfo batchInfo = null;
-                    if (status.getStatus() == Status.OK || status.getStatus() == Status.SK) {
-                        batchInfo = new BatchInfo(status.getBatchId());
-                    } else {
-                        batchInfo = new BatchInfo(status.getBatchId(), status.getFailedRowNumber());
-                        batchInfo.setSqlState(status.getSqlState());
-                        batchInfo.setSqlCode(status.getSqlCode());
-                        batchInfo.setSqlMessage(status.getSqlMessage());
-                    }
-                    batchInfo.setNodeId(status.getNodeId());
-                    batchInfo.setNetworkMillis(status.getNetworkMillis());
-                    batchInfo.setFilterMillis(status.getFilterMillis());
-                    batchInfo.setDatabaseMillis(status.getDatabaseMillis());
-                    batchInfo.setByteCount(status.getByteCount());
-                    batches.add(batchInfo);
-                }
+                
+                String ackData = getAcknowledgementData(list);
+                List<BatchInfo> batches = readAcknowledgement(ackData);
                 IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(
                         Constants.ACKNOWLEDGE_SERVICE);
                 for (BatchInfo batchInfo : batches) {
@@ -162,7 +145,6 @@ public class InternalTransportManager extends AbstractTransportManager implement
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
         pw.println(getAcknowledgementData(list));
-        pw.println(getExtendedAcknowledgementData(list));
         pw.close();
     }
 

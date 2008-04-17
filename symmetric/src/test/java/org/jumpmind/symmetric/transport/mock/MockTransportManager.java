@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.transport.mock;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -76,6 +78,18 @@ public class MockTransportManager implements ITransportManager {
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
         return incomingTransport;
+    }
+
+    public List<BatchInfo> readAcknowledgement(String parameterString) throws IOException {
+        return null;
+    }
+
+    public List<BatchInfo> readAcknowledgement(Map<String, Object> parameters) {
+        return null;
+    }
+
+    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
+        return null;
     }
 
 }

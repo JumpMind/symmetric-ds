@@ -32,6 +32,8 @@ public class WebConstants {
 
     public static final String ACK_BATCH_OK = "ok";
     
+    public static final String ACK_NODE_ID = "nodeId-";
+
     public static final String ACK_NETWORK_MILLIS = "network-";
     
     public static final String ACK_FILTER_MILLIS = "filter-";
