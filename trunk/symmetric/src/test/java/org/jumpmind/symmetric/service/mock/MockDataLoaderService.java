@@ -42,8 +42,8 @@ public class MockDataLoaderService implements IDataLoaderService {
 
     }
 
-    public void loadData(Node remote, Node local) throws IOException {
-
+    public boolean loadData(Node remote, Node local) throws IOException {
+        return true;
     }
 
     public boolean loadData(IIncomingTransport reader) {
