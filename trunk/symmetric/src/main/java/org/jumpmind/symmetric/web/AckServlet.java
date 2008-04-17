@@ -23,10 +23,8 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -38,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.AckResourceHandler;
+import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 
 public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> {
 
@@ -57,35 +56,14 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
 
-        Enumeration enumeration = req.getParameterNames();
-        List<BatchInfo> batches = new ArrayList<BatchInfo>();
-
-        while (enumeration.hasMoreElements()) {
-            String parameterName = (String) enumeration.nextElement();
-
-            if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                String batchId = parameterName.substring(WebConstants.ACK_BATCH_NAME.length());
-                BatchInfo batchInfo = new BatchInfo(batchId);
-                batchInfo.setNodeId(getParameter(req, WebConstants.NODE_ID));
-                batchInfo.setNetworkMillis(getParameterAsNumber(req, WebConstants.ACK_NETWORK_MILLIS));
-                batchInfo.setFilterMillis(getParameterAsNumber(req, WebConstants.ACK_FILTER_MILLIS));
-                batchInfo.setDatabaseMillis(getParameterAsNumber(req, WebConstants.ACK_DATABASE_MILLIS));
-                batchInfo.setByteCount(getParameterAsNumber(req, WebConstants.ACK_BYTE_COUNT));
-                String status = getParameter(req, parameterName, "");
-                batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
-
-                if (!batchInfo.isOk()) {
-                    batchInfo.setErrorLine(NumberUtils.toLong(status));
-                    batchInfo.setSqlState(getParameter(req, WebConstants.ACK_SQL_STATE));
-                    batchInfo.setSqlCode((int) getParameterAsNumber(req, WebConstants.ACK_SQL_CODE));
-                    batchInfo.setSqlMessage(getParameter(req, WebConstants.ACK_SQL_MESSAGE));
-                }
-                batches.add(batchInfo);
-            }
+        AckResourceHandler ackService = getTransportResourceHandler();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Reading ack: " + req.getParameterMap());
         }
-
+        // TODO: fix this; the servlets need to participate in the transport API
+        List<BatchInfo> batches = new InternalTransportManager(null).readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
-        getTransportResourceHandler().ack(batches);
+        ackService.ack(batches);
     }
 
     private static class BatchIdComparator implements Comparator<BatchInfo> {

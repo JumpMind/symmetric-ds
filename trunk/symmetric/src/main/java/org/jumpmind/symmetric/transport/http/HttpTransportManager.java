@@ -70,14 +70,14 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
         if (list != null && list.size() > 0) {
-            String data = getAcknowledgementData(list) + "\n" + getExtendedAcknowledgementData(list);
+            String data = getAcknowledgementData(list);
             return sendMessage("ack", remote, local, data);
         }
         return true;
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
-        writeMessage(out, getAcknowledgementData(list) + "\n" + getExtendedAcknowledgementData(list));
+        writeMessage(out, getAcknowledgementData(list));
     }
 
     public boolean sendMessage(String action, Node remote, Node local, String data) throws IOException {

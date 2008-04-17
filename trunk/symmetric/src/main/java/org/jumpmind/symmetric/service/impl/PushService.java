@@ -23,9 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.net.ConnectException;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +39,6 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
-import org.jumpmind.symmetric.web.WebConstants;
 
 public class PushService implements IPushService {
 
@@ -59,82 +56,45 @@ public class PushService implements IPushService {
         List<Node> nodes = nodeService.findNodesToPushTo();
         if (nodes != null && nodes.size() > 0) {
             logger.info("Push requested");
+            boolean success = false;
             for (Node node : nodes) {
-                pushToNode(node);
+                success = pushToNode(node);
             }
-            logger.info("Push request completed");
-        }        
-    }
-
-    class ParameterParser {
-        private StringTokenizer tokenizer;
-
-        ParameterParser(String string) {
-            tokenizer = new StringTokenizer(string, "&;=");
-        }
-
-        BatchInfo nextBatch() {
-            if (!tokenizer.hasMoreTokens()) {
-                return null;
-            }
-
-            String s = tokenizer.nextToken();
-            String[] elements = s.split("-");
-            assert (elements.length == 2);
-            assert (elements[0].equalsIgnoreCase("batch"));
-            String batchId = elements[1];
-
-            if (!tokenizer.hasMoreTokens()) {
-                throw new RuntimeException("Batch ack for batch " + batchId
-                        + " doesn't have a status.");
-            }
-
-            String status = tokenizer.nextToken();
-
-            if (status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK)) {
-                return new BatchInfo(batchId);
-            } else {
-                int line = Integer.parseInt(status);
-                return new BatchInfo(batchId, line);
+            if (success) {
+                logger.info("Push completed");
             }
         }
     }
 
-    private void pushToNode(Node remote) {
+    private boolean pushToNode(Node remote) {
+        IOutgoingWithResponseTransport transport = null;
+        boolean success = false;
         try {
-            IOutgoingWithResponseTransport transport = transportManager
-                    .getPushTransport(remote, nodeService.findIdentity());
+            transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
 
-            try {
-
-                if (!extractor.extract(remote, transport)) {
-                    return;
-                }
-
-                logger.debug("Just pushed data, about to read the response.");
+            if (extractor.extract(remote, transport)) {
+                logger.info("Push data sent");
 
                 BufferedReader reader = transport.readResponse();
-                ParameterParser parser = new ParameterParser(reader.readLine());
+                String ackString = reader.readLine();
+                String ackExtendedString = reader.readLine();
 
-                List<BatchInfo> batches = new ArrayList<BatchInfo>();
-                BatchInfo batchInfo = parser.nextBatch();
-                while (batchInfo != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Reading ack: " + ackString);
+                    logger.debug("Reading extended ack: " + ackExtendedString);
+                }
+
+                List<BatchInfo> batches = transportManager.readAcknowledgement(ackString, ackExtendedString);
+
+                for (BatchInfo batchInfo : batches) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Ack -- Batch: " + batchInfo.getBatchId()
-                                + " outcome: "
+                        logger.debug("Saving ack: " + batchInfo.getBatchId() + ", "
                                 + (batchInfo.isOk() ? "OK" : "error"));
                     }
-                    batches.add(batchInfo);
-                    batchInfo = parser.nextBatch();
+                    ackService.ack(batchInfo);
                 }
-
-                for (BatchInfo batch : batches) {
-                    ackService.ack(batch);    
-                }
-                
-            } finally {
-                transport.close();
             }
+            success = true;
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + remote.getSyncURL());
         } catch (ConnectionRejectedException ex) {
@@ -144,12 +104,18 @@ public class PushService implements IPushService {
         } catch (TransportException ex) {
             logger.warn(ex.getMessage());
         } catch (AuthenticationException ex) {
-            logger.warn(ErrorConstants.NOT_AUTHENTICATED);            
+            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Exception e) {
             // just report the error because we want to push to other nodes
             // in our list
             logger.error(e, e);
+        } finally {
+            try {
+                transport.close();
+            } catch (Exception e) {
+            }
         }
+        return success;
     }
 
     public void setExtractor(IDataExtractorService extractor) {

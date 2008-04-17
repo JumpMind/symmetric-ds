@@ -23,18 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,52 +60,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
         history.setEndTime(new Date());
         outgoingBatchService.insertOutgoingBatchHistory(history);
-    }
-    
-    public List<BatchInfo> getBatchInfo(Map<String, Object> parameters) {
-        List<BatchInfo> batches = new ArrayList<BatchInfo>();
-        for (String parameterName : parameters.keySet()) {
-            if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                String batchId = parameterName.substring(WebConstants.ACK_BATCH_NAME.length());
-                BatchInfo batchInfo = new BatchInfo(batchId);
-                batchInfo.setNodeId(getParameter(parameters, WebConstants.NODE_ID));
-                batchInfo.setNetworkMillis(getParameterAsNumber(parameters, WebConstants.ACK_NETWORK_MILLIS));
-                batchInfo.setFilterMillis(getParameterAsNumber(parameters, WebConstants.ACK_FILTER_MILLIS));
-                batchInfo.setDatabaseMillis(getParameterAsNumber(parameters, WebConstants.ACK_DATABASE_MILLIS));
-                batchInfo.setByteCount(getParameterAsNumber(parameters, WebConstants.ACK_BYTE_COUNT));
-                String status = getParameter(parameters, parameterName, "");
-                batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
-
-                if (!batchInfo.isOk()) {
-                    batchInfo.setErrorLine(NumberUtils.toLong(status));
-                    batchInfo.setSqlState(getParameter(parameters, WebConstants.ACK_SQL_STATE));
-                    batchInfo.setSqlCode((int) getParameterAsNumber(parameters, WebConstants.ACK_SQL_CODE));
-                    batchInfo.setSqlMessage(getParameter(parameters, WebConstants.ACK_SQL_MESSAGE));
-                }
-                batches.add(batchInfo);
-            }
-        }
-        return batches;
-    }
-    
-    private long getParameterAsNumber(Map<String, Object> parameters, String parameterName) {
-        return NumberUtils.toLong(getParameter(parameters, parameterName));
-    }
-
-    private String getParameter(Map<String, Object> parameters, String parameterName, String defaultValue) {
-        String value = getParameter(parameters, parameterName);
-        return value == null ? defaultValue : value;
-    }
-    
-    private String getParameter(Map<String, Object> parameters, String parameterName) {
-        Object value = parameters.get(parameterName);
-        if (value instanceof String[]) {
-            String[] arrayValue = (String[]) value;
-            if (arrayValue.length > 0) {
-                value = arrayValue[0];
-            }
-        }
-        return (String) value;
     }
 
     class CallBackHandler implements RowCallbackHandler {
