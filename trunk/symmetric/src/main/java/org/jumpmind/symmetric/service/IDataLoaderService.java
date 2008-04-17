@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface IDataLoaderService {
 
     @Transactional
-    public void loadData(Node remote, Node local) throws IOException;
+    public boolean loadData(Node remote, Node local) throws IOException;
 
     @Transactional
     public boolean loadData(IIncomingTransport reader);

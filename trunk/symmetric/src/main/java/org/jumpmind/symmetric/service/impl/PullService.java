@@ -50,7 +50,10 @@ public class PullService implements IPullService {
             logger.info("Pull requested");
             for (Node node : nodes) {
                 try {
-                    dataLoaderService.loadData(node, nodeService.findIdentity());
+                    if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
+                        logger.info("Pull data received");
+                    }
+                    logger.info("Pull completed");
                 } catch (ConnectException ex) {
                     logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
                 } catch (ConnectionRejectedException ex) {
@@ -65,7 +68,6 @@ public class PullService implements IPullService {
                     logger.error(e, e);
                 }
             }
-            logger.info("Pull completed");
         }
     }
 
