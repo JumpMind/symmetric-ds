@@ -8,6 +8,24 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
     <section>
+        <title>Initial Load</title>
+        <para>
+            There are variables you can use when specifying the initial_load_select SQL for
+            a Trigger that will be replaced at runtime:
+        </para> 
+        <itemizedlist>
+            <listitem>
+                <para>$(nodeId) - the node ID of the target node </para>
+            </listitem>
+            <listitem>
+                <para>$(groupId) - the node group ID of the target node  </para>
+            </listitem>
+            <listitem>
+                <para>$(externalId) - the external ID of the target node </para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
         <title>Dead Triggers</title>
         <para>
             Normally a Trigger is specified to capture data changes to a table and send them to

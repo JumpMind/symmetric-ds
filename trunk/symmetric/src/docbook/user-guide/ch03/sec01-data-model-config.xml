@@ -708,7 +708,8 @@
                             <entry></entry>
                             <entry>
                                 Specify a where-clause for an initial load of this table. The table
-                                is aliased as "t".
+                                is aliased as "t".  Replacement variables are $(nodeId),
+                                $(groupId), and $(externalId).
                             </entry>
                         </row>
                         <row>
