@@ -59,26 +59,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private int batchSizePeekAhead = 100;
 
-    private String selectEventsToBatchSql;
-
-    private String updateBatchedEventsSql;
-
-    private String createBatchSql;
-
-    private String selectOutgoingBatchSql;
-
-    private String selectOutgoingBatchRangeSql;
-
-    private String selectOutgoingBatchErrorsSql;
-
-    private String changeBatchStatusSql;
-
-    private String initialLoadStatusSql;
-
-    private String findOutgoingBatchHistorySql;
-
-    private String insertOutgoingBatchHistorySql;
-
     private IDbDialect dbDialect;
 
     /**
@@ -103,7 +83,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                 PreparedStatement update = null;
                 try {
-                    update = conn.prepareStatement(updateBatchedEventsSql);
+                    update = conn.prepareStatement(getSql("updateBatchedEventsSql"));
 
                     update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
@@ -116,7 +96,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                         try {
 
-                            select = conn.prepareStatement(selectEventsToBatchSql);
+                            select = conn.prepareStatement(getSql("selectEventsToBatchSql"));
 
                             select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
@@ -211,7 +191,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
-        long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id",
+        long batchId = dbDialect.insertWithGeneratedKey(getSql("createBatchSql"), "sym_outgoing_batch_batch_id",
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
                             DataAccessException {
@@ -232,20 +212,20 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchSql, new Object[] { nodeId },
+        return (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"), new Object[] { nodeId },
                 new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(selectOutgoingBatchRangeSql, new Object[] {
+        return (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] {
                 startBatchId, endBatchId }, new OutgoingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
         return (List<OutgoingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                selectOutgoingBatchErrorsSql, maxRows), new OutgoingBatchMapper());
+                getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper());
     }
 
     // Moving away from SENT status to reduce updates to outgoing_batch table
@@ -256,7 +236,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Deprecated
     public void setBatchStatus(String batchId, Status status) {
-        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(), new Long(batchId) });
+        jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), new Long(batchId) });
     }
 
     // TODO Should this move to DataService?
@@ -268,7 +248,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             return false;
         }
 
-        List<String> statuses = (List<String>) jdbcTemplate.queryForList(initialLoadStatusSql,
+        List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"),
                 new Object[] { nodeId }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
@@ -283,7 +263,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
-        jdbcTemplate.update(insertOutgoingBatchHistorySql, new Object[] { history.getBatchId(),
+        jdbcTemplate.update(getSql("insertOutgoingBatchHistorySql"), new Object[] { history.getBatchId(),
                 history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
                 history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
                 history.getByteCount(), history.getDataEventCount(), history.getFailedDataId(),
@@ -296,7 +276,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @SuppressWarnings("unchecked")
     public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId) {
-        return (List<OutgoingBatchHistory>) jdbcTemplate.query(findOutgoingBatchHistorySql, new Object[] {
+        return (List<OutgoingBatchHistory>) jdbcTemplate.query(getSql("findOutgoingBatchHistorySql"), new Object[] {
                 batchId, nodeId }, new OutgoingBatchHistoryMapper());
     }
 
@@ -333,46 +313,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             history.setSqlMessage(rs.getString(15));
             return history;
         }
-    }
-
-    public void setInsertOutgoingBatchHistorySql(String insertOutgoingBatchHistorySql) {
-        this.insertOutgoingBatchHistorySql = insertOutgoingBatchHistorySql;
-    }
-
-    public void setFindOutgoingBatchHistorySql(String findOutgoingBatchHistorySql) {
-        this.findOutgoingBatchHistorySql = findOutgoingBatchHistorySql;
-    }
-
-    public void setCreateBatchSql(String createBatchSql) {
-        this.createBatchSql = createBatchSql;
-    }
-
-    public void setSelectEventsToBatchSql(String selectEventsToBatchSql) {
-        this.selectEventsToBatchSql = selectEventsToBatchSql;
-    }
-
-    public void setUpdateBatchedEventsSql(String updateBatchedEventsSql) {
-        this.updateBatchedEventsSql = updateBatchedEventsSql;
-    }
-
-    public void setSelectOutgoingBatchSql(String selectOutgoingBatch) {
-        this.selectOutgoingBatchSql = selectOutgoingBatch;
-    }
-
-    public void setChangeBatchStatusSql(String markBatchSentSql) {
-        this.changeBatchStatusSql = markBatchSentSql;
-    }
-
-    public void setInitialLoadStatusSql(String initialLoadStatusSql) {
-        this.initialLoadStatusSql = initialLoadStatusSql;
-    }
-
-    public void setSelectOutgoingBatchRangeSql(String selectOutgoingBatchRangeSql) {
-        this.selectOutgoingBatchRangeSql = selectOutgoingBatchRangeSql;
-    }
-
-    public void setSelectOutgoingBatchErrorsSql(String selectOutgoingBatchErrorsSql) {
-        this.selectOutgoingBatchErrorsSql = selectOutgoingBatchErrorsSql;
     }
 
     public void setDbDialect(IDbDialect dbDialect) {

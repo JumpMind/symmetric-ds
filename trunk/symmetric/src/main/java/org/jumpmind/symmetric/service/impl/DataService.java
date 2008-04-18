@@ -73,10 +73,6 @@ public class DataService extends AbstractService implements IDataService {
 
     private List<IReloadListener> listeners;
 
-    private String insertIntoDataSql;
-
-    private String insertIntoDataEventSql;
-
     private boolean deleteFirstForReload;
     
     private boolean createFirstForReload;
@@ -115,7 +111,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long insertData(final Data data) {
-        return dbDialect.insertWithGeneratedKey(insertIntoDataSql, "sym_data_data_id",
+        return dbDialect.insertWithGeneratedKey(getSql("insertIntoDataSql"), "sym_data_data_id",
                 new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
                             DataAccessException {
@@ -130,7 +126,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(DataEvent dataEvent) {
-        jdbcTemplate.update(insertIntoDataEventSql, new Object[] { dataEvent.getDataId(),
+        jdbcTemplate.update(getSql("insertIntoDataEventSql"), new Object[] { dataEvent.getDataId(),
                 dataEvent.getNodeId(), dataEvent.getChannelId(), dataEvent.getTransactionId(), dataEvent.getBatchId(), dataEvent.isBatched() ? 1 : 0 }, new int[] {
                 Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER });
     }
@@ -351,14 +347,6 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
-    }
-
-    public void setInsertIntoDataEventSql(String insertIntoDataEventSql) {
-        this.insertIntoDataEventSql = insertIntoDataEventSql;
-    }
-
-    public void setInsertIntoDataSql(String insertIntoDataSql) {
-        this.insertIntoDataSql = insertIntoDataSql;
     }
 
     public void setNodeService(INodeService nodeService) {

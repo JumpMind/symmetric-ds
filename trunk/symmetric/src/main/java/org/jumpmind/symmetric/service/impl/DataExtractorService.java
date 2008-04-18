@@ -55,10 +55,9 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class DataExtractorService implements IDataExtractorService, BeanFactoryAware {
+public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -66,15 +65,11 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
 
     private IDbDialect dbDialect;
 
-    private JdbcTemplate jdbcTemplate;
-
     private BeanFactory beanFactory;
 
     private DataExtractorContext context;
 
     private String tablePrefix;
-
-    private String selectEventDataToExtractSql;
 
     public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
         String tableName = tablePrefix + "_node_identity";
@@ -264,7 +259,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement ps = conn.prepareStatement(selectEventDataToExtractSql, ResultSet.TYPE_FORWARD_ONLY,
+                PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"), ResultSet.TYPE_FORWARD_ONLY,
                         ResultSet.CONCUR_READ_ONLY);
                 ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                 ps.setString(1, batch.getNodeId());
@@ -309,16 +304,8 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
         this.dbDialect = dialect;
     }
 
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
-    }
-
-    public void setSelectEventDataToExtractSql(String selectEventDataToExtractSql) {
-        this.selectEventDataToExtractSql = selectEventDataToExtractSql;
     }
 
     class ExtractStreamHandler implements IExtractListener {
