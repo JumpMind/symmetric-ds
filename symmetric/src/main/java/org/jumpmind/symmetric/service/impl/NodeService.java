@@ -42,50 +42,28 @@ public class NodeService extends AbstractService implements INodeService {
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
 
-    private String findNodeSql;
-
-    private String findNodeSecuritySql;
-
-    private String findNodeIdentitySql;
-
-    private String findNodesWhoTargetMeSql;
-
-    private String findNodesWhoITargetSql;
-
-    private String updateNodeSql;
-
-    private String isNodeRegisteredSql;
-
-    private String nodeChannelControlIgnoreSql;
-
-    private String insertNodeChannelControlSql;
-
-    private String findNodeByExternalIdSql;
-    
-    private String updateNodeSecuritySql;
-
     /**
-     * Lookup a node in the database, which contains information for synching
+     * Lookup a node in the database, which contains information for syncing
      * with it.
      */
     @SuppressWarnings("unchecked")
     public Node findNode(String id) {
-        List<Node> list = jdbcTemplate.query(findNodeSql, new Object[] { id }, new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(getSql("findNodeSql"), new Object[] { id }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
     @SuppressWarnings("unchecked")
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
-        List<Node> list = jdbcTemplate.query(findNodeByExternalIdSql, new Object[] { nodeGroupId, externalId },
+        List<Node> list = jdbcTemplate.query(getSql("findNodeByExternalIdSql"), new Object[] { nodeGroupId, externalId },
                 new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
     public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String nodeGroupId, String externalId) {
         Node node = findNodeByExternalId(nodeGroupId, externalId);
-        if (jdbcTemplate.update(nodeChannelControlIgnoreSql, new Object[] { enabled ? 1 : 0, node.getNodeId(),
+        if (jdbcTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] { enabled ? 1 : 0, node.getNodeId(),
                 channelId }) == 0) {
-            jdbcTemplate.update(insertNodeChannelControlSql, new Object[] { node.getNodeId(), channelId,
+            jdbcTemplate.update(getSql("insertNodeChannelControlSql"), new Object[] { node.getNodeId(), channelId,
                     enabled ? 1 : 0, 0 });
         }
     }
@@ -104,13 +82,13 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String id) {
-        List<NodeSecurity> list = jdbcTemplate.query(findNodeSecuritySql, new Object[] { id },
+        List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { id },
                 new NodeSecurityRowMapper());
         return (NodeSecurity) getFirstEntry(list);
     }
 
     public boolean updateNode(Node node) {
-        boolean updated = jdbcTemplate.update(updateNodeSql, new Object[] { node.getNodeGroupId(),
+        boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
                 node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
                 node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(), 
                 node.getNodeId() }) == 1;
@@ -140,7 +118,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public Node findIdentity() {
-        List<Node> list = jdbcTemplate.query(findNodeIdentitySql, new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(getSql("findNodeIdentitySql"), new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
@@ -156,7 +134,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findSourceNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(findNodesWhoTargetMeSql, new Object[] { node.getNodeGroupId(),
+            return jdbcTemplate.query(getSql("findNodesWhoTargetMeSql"), new Object[] { node.getNodeGroupId(),
                     eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
@@ -167,7 +145,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findTargetNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(findNodesWhoITargetSql, new Object[] { node.getNodeGroupId(),
+            return jdbcTemplate.query(getSql("findNodesWhoITargetSql"), new Object[] { node.getNodeGroupId(),
                     eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
@@ -175,7 +153,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {
-        return jdbcTemplate.update(updateNodeSecuritySql,
+        return jdbcTemplate.update(getSql("updateNodeSecuritySql"),
                 new Object[] { security.getPassword(), security.isRegistrationEnabled() ? 1 : 0,
                         security.getRegistrationTime(), security.isInitialLoadEnabled() ? 1 : 0,
                         security.getInitialLoadTime(), security.getNodeId() }, new int[] { Types.VARCHAR,
@@ -226,51 +204,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
-        return jdbcTemplate.queryForInt(isNodeRegisteredSql, new Object[] { nodeGroupId, externalId }) > 0;
-    }
-
-    public void setFindNodeSecuritySql(String findNodeSecuritySql) {
-        this.findNodeSecuritySql = findNodeSecuritySql;
-    }
-
-    public void setFindNodeSql(String findNodeSql) {
-        this.findNodeSql = findNodeSql;
-    }
-
-    public void setFindNodeIdentitySql(String findNodeIdentitySql) {
-        this.findNodeIdentitySql = findNodeIdentitySql;
-    }
-
-    public void setFindNodesWhoITargetSql(String findNodesWhoITargetSql) {
-        this.findNodesWhoITargetSql = findNodesWhoITargetSql;
-    }
-
-    public void setFindNodesWhoTargetMeSql(String findNodesWhoTargetMeSql) {
-        this.findNodesWhoTargetMeSql = findNodesWhoTargetMeSql;
-    }
-
-    public void setUpdateNodeSql(String updateNodeSql) {
-        this.updateNodeSql = updateNodeSql;
-    }
-
-    public void setIsNodeRegisteredSql(String isNodeRegisteredSql) {
-        this.isNodeRegisteredSql = isNodeRegisteredSql;
-    }
-
-    public void setNodeChannelControlIgnoreSql(String nodeChannelControlIgnoreSql) {
-        this.nodeChannelControlIgnoreSql = nodeChannelControlIgnoreSql;
-    }
-
-    public void setInsertNodeChannelControlSql(String insertNodeChannelControlSql) {
-        this.insertNodeChannelControlSql = insertNodeChannelControlSql;
-    }
-
-    public void setFindNodeByExternalIdSql(String findNodeByExternalIdSql) {
-        this.findNodeByExternalIdSql = findNodeByExternalIdSql;
-    }
-
-    public void setUpdateNodeSecuritySql(String updateNodeSecuritySql) {
-        this.updateNodeSecuritySql = updateNodeSecuritySql;
+        return jdbcTemplate.queryForInt(getSql("isNodeRegisteredSql"), new Object[] { nodeGroupId, externalId }) > 0;
     }
 
 }

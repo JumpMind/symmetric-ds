@@ -42,25 +42,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     private static final Log logger = LogFactory.getLog(IncomingBatchService.class);
 
-    private String findIncomingBatchSql;
-
-    private String findIncomingBatchErrorsSql;
-
-    private String findIncomingBatchHistorySql;
-
-    private String insertIncomingBatchSql;
-
-    private String updateIncomingBatchSql;
-
-    private String insertIncomingBatchHistorySql;
-
     private boolean skipDuplicateBatches = true;
 
     private IDbDialect dbDialect;
 
     public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
         try {
-            return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql, new Object[] { batchId,
+            return (IncomingBatch) jdbcTemplate.queryForObject(getSql("findIncomingBatchSql"), new Object[] { batchId,
                     nodeId }, new IncomingBatchMapper());
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -70,12 +58,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     @SuppressWarnings("unchecked")
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                findIncomingBatchErrorsSql, maxRows), new IncomingBatchMapper());
+                getSql("findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId) {
-        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] {
+        return (List<IncomingBatchHistory>) jdbcTemplate.query(getSql("findIncomingBatchHistorySql"), new Object[] {
                 batchId, nodeId }, new IncomingBatchHistoryMapper());
     }
 
@@ -99,23 +87,23 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatch(IncomingBatch status) {
-        jdbcTemplate.update(insertIncomingBatchSql, new Object[] { Long.valueOf(status.getBatchId()),
+        jdbcTemplate.update(getSql("insertIncomingBatchSql"), new Object[] { Long.valueOf(status.getBatchId()),
                 status.getNodeId(), status.getStatus().toString() });
     }
 
     public int updateIncomingBatch(IncomingBatch status) {
-        return jdbcTemplate.update(updateIncomingBatchSql, new Object[] { status.getStatus().toString(),
+        return jdbcTemplate.update(getSql("updateIncomingBatchSql"), new Object[] { status.getStatus().toString(),
                 Long.valueOf(status.getBatchId()), status.getNodeId(), IncomingBatch.Status.ER.toString() });
     }
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(insertIncomingBatchHistorySql, new Object[] { Long.valueOf(history.getBatchId()),
-                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
-                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
-                history.getByteCount(), history.getStatementCount(), history.getFallbackInsertCount(),
-                history.getFallbackUpdateCount(), history.getMissingDeleteCount(),
-                history.getFailedRowNumber(), history.getStartTime(), history.getEndTime(),
-                history.getSqlState(), history.getSqlCode(),
+        jdbcTemplate.update(getSql("insertIncomingBatchHistorySql"), new Object[] {
+                Long.valueOf(history.getBatchId()), history.getNodeId(), history.getStatus().toString(),
+                history.getNetworkMillis(), history.getFilterMillis(), history.getDatabaseMillis(),
+                history.getHostName(), history.getByteCount(), history.getStatementCount(),
+                history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
+                history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
+                history.getEndTime(), history.getSqlState(), history.getSqlCode(),
                 StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER,
                 Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
@@ -157,36 +145,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
-    public void setFindIncomingBatchHistorySql(String findIncomingBatchHistorySql) {
-        this.findIncomingBatchHistorySql = findIncomingBatchHistorySql;
-    }
-
-    public void setFindIncomingBatchSql(String findIncomingBatchSql) {
-        this.findIncomingBatchSql = findIncomingBatchSql;
-    }
-
-    public void setInsertIncomingBatchHistorySql(String insertIncomingBatchHistorySql) {
-        this.insertIncomingBatchHistorySql = insertIncomingBatchHistorySql;
-    }
-
-    public void setInsertIncomingBatchSql(String insertIncomingBatchSql) {
-        this.insertIncomingBatchSql = insertIncomingBatchSql;
-    }
-
-    public void setUpdateIncomingBatchSql(String updateIncomingBatchSql) {
-        this.updateIncomingBatchSql = updateIncomingBatchSql;
-    }
-
-    public void setSkipDuplicateBatches(boolean skipDuplicateBatchesEnabled) {
-        this.skipDuplicateBatches = skipDuplicateBatchesEnabled;
-    }
-
-    public void setFindIncomingBatchErrorsSql(String findIncomingBatchErrorsSql) {
-        this.findIncomingBatchErrorsSql = findIncomingBatchErrorsSql;
-    }
-
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setSkipDuplicateBatches(boolean skipDuplicateBatches) {
+        this.skipDuplicateBatches = skipDuplicateBatches;
     }
 
 }
