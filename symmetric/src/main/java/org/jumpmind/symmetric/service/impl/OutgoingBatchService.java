@@ -25,11 +25,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -80,13 +82,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IDbDialect dbDialect;
 
     /**
-     * Create a batch and mark events as tied to that batch.  We iterate through 
-     * all the events so we can find a transaction boundary to stop on.
-     * <p/>
-     * This method is currently non-transactional because of the fear of having to deal with
-     * large numbers of events as part of the same batch.  This shouldn't be an issue in most cases
-     * other than possibly leaving a batch row w/out data every now and then or leaving a batch w/out the
-     * associated history row.
+     * Create a batch and mark events as tied to that batch. We iterate through all the events so we can find
+     * a transaction boundary to stop on. <p/> This method is currently non-transactional because of the fear
+     * of having to deal with large numbers of events as part of the same batch. This shouldn't be an issue in
+     * most cases other than possibly leaving a batch row w/out data every now and then or leaving a batch
+     * w/out the associated history row.
      */
     @Transactional
     @Deprecated
@@ -155,7 +155,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                     }
 
                                     if (!peekAheadMode
-                                            || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
+                                            || (peekAheadMode && (trxId != null && transactionIds
+                                                    .contains(trxId)))) {
                                         peekAheadCountDown = batchSizePeekAhead;
 
                                         int dataId = results.getInt(2);
@@ -191,7 +192,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 history.setDataEventCount(dataEventCount);
                                 history.setDatabaseMillis(databaseMillis);
                                 insertOutgoingBatchHistory(history);
-                                
+
                             }
 
                         } finally {
@@ -212,7 +213,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         long batchId = dbDialect.insertWithGeneratedKey(createBatchSql, "sym_outgoing_batch_batch_id",
                 new PreparedStatementCallback() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
+                            DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
@@ -224,9 +226,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     /**
-     * Select batches to process.  Batches that are NOT in error will be returned first.  They will be ordered
-     * by batch id as the batches will have already been created by {@link #buildOutgoingBatches(String)} in channel
-     * priority order.
+     * Select batches to process. Batches that are NOT in error will be returned first. They will be ordered
+     * by batch id as the batches will have already been created by {@link #buildOutgoingBatches(String)} in
+     * channel priority order.
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
@@ -266,8 +268,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             return false;
         }
 
-        List<String> statuses = (List<String>) jdbcTemplate.queryForList(initialLoadStatusSql, new Object[] { nodeId },
-                String.class);
+        List<String> statuses = (List<String>) jdbcTemplate.queryForList(initialLoadStatusSql,
+                new Object[] { nodeId }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
@@ -286,7 +288,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
                 history.getByteCount(), history.getDataEventCount(), history.getFailedDataId(),
                 history.getStartTime(), history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                history.getSqlMessage() });
+                StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER,
+                Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                Types.INTEGER, Types.VARCHAR });
     }
 
     @SuppressWarnings("unchecked")
