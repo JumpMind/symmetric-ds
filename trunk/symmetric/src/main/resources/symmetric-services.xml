@@ -11,6 +11,8 @@
     <import resource="classpath:/sql/data-service-sql.xml"/>
     <import resource="classpath:/sql/incomingbatch-service-sql.xml"/>    
     <import resource="classpath:/sql/node-service-sql.xml"/>
+    <import resource="classpath:/sql/registration-service-sql.xml"/>
+    <import resource="classpath:/sql/purge-service-sql.xml"/>
     
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
         <property name="sql" ref="statisticServiceSql"/>
@@ -168,6 +170,7 @@
 
     <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService"
         scope="singleton">
+        <property name="sql" ref="registrationServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
         <property name="clusterService" ref="clusterService" />
@@ -178,44 +181,6 @@
         <property name="dataService" ref="dataService" />
         <property name="autoRegistration" value="${symmetric.auto.registration}" />
         <property name="autoReload" value="${symmetric.auto.reload}" />
-        <property name="findNodeToRegisterSql">
-            <value>
-                select min(c.node_id) from ${sync.table.prefix}_node c inner join
-                ${sync.table.prefix}_node_security s on c.node_id = s.node_id where
-                s.registration_enabled = 1 and c.node_group_id = ? and c.external_id = ?
-            </value>
-        </property>
-        <property name="registerNodeSql">
-            <value>
-                update ${sync.table.prefix}_node set sync_enabled = 1, sync_url = ?, schema_version
-                = ?, database_type = ?, database_version = ?, symmetric_version = ? where node_id =
-                ?
-            </value>
-        </property>
-        <property name="registerNodeSecuritySql">
-            <value>
-                update ${sync.table.prefix}_node_security set registration_enabled = 0,
-                registration_time = current_timestamp where node_id = ?
-            </value>
-        </property>
-        <property name="reopenRegistrationSql">
-            <value>
-                update ${sync.table.prefix}_node_security set node_password = ?, registration_enabled =
-                1, registration_time = null where node_id = ?
-            </value>
-        </property>
-        <property name="openRegistrationNodeSql">
-            <value>
-                insert into ${sync.table.prefix}_node (node_id, node_group_id, external_id) values
-                (?, ?, ?)
-            </value>
-        </property>
-        <property name="openRegistrationNodeSecuritySql">
-            <value>
-                insert into ${sync.table.prefix}_node_security (node_id, node_password,
-                registration_enabled) values (?, ?, 1)
-            </value>
-        </property>
     </bean>
 
     <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService"
@@ -376,61 +341,15 @@
 
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="sql" ref="purgeServiceSql" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="clusterService" ref="clusterService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
         <property name="maxNumOfDataIdsToPurgeInTx"
             value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}" />
-        <property name="selectOutgoingBatchIdsToPurgeSql">
-            <value>
-                select batch_id, node_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
-                create_time &lt; ? order by batch_id asc
-            </value>
-        </property>
-        <property name="deleteFromOutgoingBatchHistSql">
-            <value>delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id = ? and node_id = ?</value>
-        </property>
-        <property name="deleteFromOutgoingBatchSql">
-            <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
-        </property>
-        <property name="deleteFromEventDataIdSql">
-            <value>delete from ${sync.table.prefix}_data_event where batch_id=? and node_id=?</value>
-        </property>
-        <property name="selectMinDataIdSql">
-            <value>
-                 select min(data_id) from ${sync.table.prefix}_data
-            </value>
-        </property>
-        <property name="selectMaxDataIdSql">
-            <value>
-                 select max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?
-            </value>
-        </property>
-        <property name="deleteFromDataSql">
-            <value>
-                 delete from ${sync.table.prefix}_data where data_id not in (select data_id from ${sync.table.prefix}_data_event where data_id &gt;= ? and data_id  &lt;= ?) and data_id &gt;= ? and data_id &lt;= ?
-            </value>
-        </property>
-        <property name="selectIncomingBatchOrderByCreateTimeSql">
-        <value>select batch_id, node_id, status, create_time from ${sync.table.prefix}_incoming_batch order by create_time asc</value>
-        </property>
-        <property name="deleteIncomingBatchesByNodeIdSql">
-            <list>
-                <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?</value>
-                <value>delete from ${sync.table.prefix}_incoming_batch where node_id=?</value>
-            </list>
-        </property>
-        <property name="incomingPurgeSql">
-            <list>
-                <value>
-                    delete from ${sync.table.prefix}_incoming_batch_hist where batch_id=? and node_id=?
-                </value>
-                <value>
-                    delete from ${sync.table.prefix}_incoming_batch where batch_id=? and node_id=?
-                </value>
-            </list>
-        </property>
+        <property name="deleteIncomingBatchesByNodeIdSql" ref="deleteIncomingBatchesByNodeIdSql"/>
+        <property name="incomingPurgeSql" ref="incomingPurgeSql"/>
     </bean>
     
 
