@@ -38,8 +38,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     private IOutgoingBatchService outgoingBatchService;
 
-    private String selectDataIdSql;
-
     @Deprecated
     public void ack(final List<BatchInfo> batches) {
         for (BatchInfo batch : batches) {
@@ -54,7 +52,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
         if (!batch.isOk() && batch.getErrorLine() != 0) {
             CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-            jdbcTemplate.query(selectDataIdSql, new Object[] { history.getBatchId() }, handler);
+            jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { history.getBatchId() }, handler);
             history.setFailedDataId(handler.getDataId());
         }
 
@@ -88,7 +86,4 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         this.outgoingBatchService = outgoingBatchService;
     }
 
-    public void setSelectDataIdSql(String selectDataIdSql) {
-        this.selectDataIdSql = selectDataIdSql;
-    }
 }
