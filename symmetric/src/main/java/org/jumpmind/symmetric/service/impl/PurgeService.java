@@ -50,27 +50,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IDbDialect dbDialect;
 
-    private String[] incomingPurgeSql;
+    private List<String> incomingPurgeSql;
 
-    private String[] deleteIncomingBatchesByNodeIdSql;
+    private List<String> deleteIncomingBatchesByNodeIdSql;
 
     private int retentionInMinutes = 7200;
-
-    private String selectOutgoingBatchIdsToPurgeSql;
-
-    private String deleteFromOutgoingBatchHistSql;
-
-    private String deleteFromOutgoingBatchSql;
-
-    private String deleteFromEventDataIdSql;
-
-    private String deleteFromDataSql;
-
-    private String selectMinDataIdSql;
-    
-    private String selectMaxDataIdSql;
-
-    private String selectIncomingBatchOrderByCreateTimeSql;
 
     private IClusterService clusterService;
 
@@ -120,7 +104,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
                             try {
                                 long ts = System.currentTimeMillis();
-                                st = conn.prepareStatement(selectIncomingBatchOrderByCreateTimeSql,
+                                st = conn.prepareStatement(getSql("selectIncomingBatchOrderByCreateTimeSql"),
                                         java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
                                 st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                                 rs = st.executeQuery();
@@ -181,15 +165,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeDataRows(final Calendar time) {
         logger.info("About to purge data rows.");
-        int minDataId = jdbcTemplate.queryForInt(selectMinDataIdSql);
-        int purgeUpToDataId = jdbcTemplate.queryForInt(selectMaxDataIdSql, new Object[] { time.getTime()});
+        int minDataId = jdbcTemplate.queryForInt(getSql("selectMinDataIdSql"));
+        int purgeUpToDataId = jdbcTemplate.queryForInt(getSql("selectMaxDataIdSql"), new Object[] { time.getTime()});
         int maxDataId = minDataId + maxNumOfDataIdsToPurgeInTx;
         int deletedCount = 0;
         long ts = System.currentTimeMillis();
         int totalCount = 0;
 
         do {
-            deletedCount = jdbcTemplate.update(deleteFromDataSql, new Object[] { minDataId, maxDataId, minDataId,
+            deletedCount = jdbcTemplate.update(getSql("deleteFromDataSql"), new Object[] { minDataId, maxDataId, minDataId,
                     maxDataId });
             totalCount += deletedCount;
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
@@ -215,7 +199,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 long ts = System.currentTimeMillis();
 
                 try {
-                    st = conn.prepareStatement(selectOutgoingBatchIdsToPurgeSql, java.sql.ResultSet.TYPE_FORWARD_ONLY,
+                    st = conn.prepareStatement(getSql("selectOutgoingBatchIdsToPurgeSql"), java.sql.ResultSet.TYPE_FORWARD_ONLY,
                             java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     st.setTimestamp(1, new Timestamp(time.getTime().getTime()));
@@ -225,9 +209,9 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         final String nodeId = rs.getString(2);
 
                         eventRowCount += jdbcTemplate
-                                .update(deleteFromEventDataIdSql, new Object[] { batchId, nodeId });
-                        batchesPurged += jdbcTemplate.update(deleteFromOutgoingBatchSql, new Object[] { batchId });
-                        jdbcTemplate.update(deleteFromOutgoingBatchHistSql, new Object[] { batchId, nodeId });
+                                .update(getSql("deleteFromEventDataIdSql"), new Object[] { batchId, nodeId });
+                        batchesPurged += jdbcTemplate.update(getSql("deleteFromOutgoingBatchSql"), new Object[] { batchId });
+                        jdbcTemplate.update(getSql("deleteFromOutgoingBatchHistSql"), new Object[] { batchId, nodeId });
                         
                         if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
                             logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
@@ -252,7 +236,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");
     }
 
-    public void setIncomingPurgeSql(String[] purgeSql) {
+    public void setIncomingPurgeSql(List<String> purgeSql) {
         this.incomingPurgeSql = purgeSql;
     }
 
@@ -264,26 +248,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.dbDialect = dbDialect;
     }
 
-    public void setSelectOutgoingBatchIdsToPurgeSql(String selectOutgoingBatchIdsToPurgeSql) {
-        this.selectOutgoingBatchIdsToPurgeSql = selectOutgoingBatchIdsToPurgeSql;
-    }
-
-    public void setDeleteFromOutgoingBatchHistSql(String deleteFromOutgoingBatchHistSql) {
-        this.deleteFromOutgoingBatchHistSql = deleteFromOutgoingBatchHistSql;
-    }
-
-    public void setDeleteFromOutgoingBatchSql(String deleteFromOutgoingBatchSql) {
-        this.deleteFromOutgoingBatchSql = deleteFromOutgoingBatchSql;
-    }
-
-    public void setDeleteFromEventDataIdSql(String selectDataIdToPurgeSql) {
-        this.deleteFromEventDataIdSql = selectDataIdToPurgeSql;
-    }
-
-    public void setDeleteFromDataSql(String selectDataIdToDeleteSql) {
-        this.deleteFromDataSql = selectDataIdToDeleteSql;
-    }
-
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
@@ -292,20 +256,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.maxNumOfDataIdsToPurgeInTx = maxNumOfDataIdsToPurgeInTx;
     }
 
-    public void setDeleteIncomingBatchesByNodeIdSql(String[] deleteIncomingBatchesByNodeIdSql) {
+    public void setDeleteIncomingBatchesByNodeIdSql(List<String> deleteIncomingBatchesByNodeIdSql) {
         this.deleteIncomingBatchesByNodeIdSql = deleteIncomingBatchesByNodeIdSql;
     }
 
-    public void setSelectIncomingBatchOrderByCreateTimeSql(String selectIncomingBatchOrderByCreateTimeSql) {
-        this.selectIncomingBatchOrderByCreateTimeSql = selectIncomingBatchOrderByCreateTimeSql;
-    }
 
-    public void setSelectMinDataIdSql(String selectMinDataIdSql) {
-        this.selectMinDataIdSql = selectMinDataIdSql;
-    }
-
-    public void setSelectMaxDataIdSql(String selectMaxDataIdSql) {
-        this.selectMaxDataIdSql = selectMaxDataIdSql;
-    }
 
 }

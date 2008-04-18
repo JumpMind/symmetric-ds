@@ -63,18 +63,6 @@ public class RegistrationService extends AbstractService implements
 
     private IDataService dataService;
     
-    private String findNodeToRegisterSql;
-
-    private String registerNodeSql;
-
-    private String registerNodeSecuritySql;
-
-    private String reopenRegistrationSql;
-
-    private String openRegistrationNodeSql;
-
-    private String openRegistrationNodeSecuritySql;
-    
     private boolean autoRegistration;
     
     private boolean autoReload;
@@ -100,9 +88,9 @@ public class RegistrationService extends AbstractService implements
             return false;
         }
         node.setNodeId(nodeId);
-        jdbcTemplate.update(registerNodeSecuritySql, new Object[] { node
+        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node
                 .getNodeId() });
-        jdbcTemplate.update(registerNodeSql, new Object[] { node.getSyncURL().toString(),
+        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL().toString(),
                 node.getSchemaVersion(), node.getDatabaseType(), node.getDatabaseVersion(),
                 node.getSymmetricVersion(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
@@ -118,7 +106,7 @@ public class RegistrationService extends AbstractService implements
     }
 
     private String findNodeToRegister(String nodeGroupId, String externald) {
-        return (String) jdbcTemplate.queryForObject(findNodeToRegisterSql, new Object[] { nodeGroupId,
+        return (String) jdbcTemplate.queryForObject(getSql("findNodeToRegisterSql"), new Object[] { nodeGroupId,
                 externald }, String.class);
     }
 
@@ -163,7 +151,7 @@ public class RegistrationService extends AbstractService implements
      */
     public void reOpenRegistration(String nodeId) {
         String password = generatePassword();
-        jdbcTemplate.update(reopenRegistrationSql, new Object[] { password,
+        jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password,
                 nodeId });
     }
 
@@ -177,9 +165,9 @@ public class RegistrationService extends AbstractService implements
     public void openRegistration(String nodeGroup, String externalId) {
         String nodeId = generateNodeId(nodeGroup, externalId);
         String password = generatePassword();
-        jdbcTemplate.update(openRegistrationNodeSql, new Object[] { nodeId,
+        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId,
                 nodeGroup, externalId });
-        jdbcTemplate.update(openRegistrationNodeSecuritySql, new Object[] {
+        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
                 nodeId, password });        
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
     }
@@ -212,31 +200,6 @@ public class RegistrationService extends AbstractService implements
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
-    }
-
-    public void setOpenRegistrationNodeSecuritySql(
-            String openRegistrationNodeSecuritySql) {
-        this.openRegistrationNodeSecuritySql = openRegistrationNodeSecuritySql;
-    }
-
-    public void setOpenRegistrationNodeSql(String openRegistrationNodeSql) {
-        this.openRegistrationNodeSql = openRegistrationNodeSql;
-    }
-
-    public void setRegisterNodeSecuritySql(String registerNodeSecuritySql) {
-        this.registerNodeSecuritySql = registerNodeSecuritySql;
-    }
-
-    public void setRegisterNodeSql(String registerNodeSql) {
-        this.registerNodeSql = registerNodeSql;
-    }
-
-    public void setReopenRegistrationSql(String reopenRegistrationSql) {
-        this.reopenRegistrationSql = reopenRegistrationSql;
-    }
-
-    public void setFindNodeToRegisterSql(String findNodeToRegisterSql) {
-        this.findNodeToRegisterSql = findNodeToRegisterSql;
     }
 
     public void setDataExtractorService(

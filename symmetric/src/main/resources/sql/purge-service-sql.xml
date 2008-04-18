@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="purgeServiceSql">
+    <entry key="selectOutgoingBatchIdsToPurgeSql">
+      <value>
+        select batch_id, node_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
+        create_time &lt; ? order by batch_id asc
+      </value>
+    </entry>
+    <entry key="deleteFromOutgoingBatchHistSql">
+      <value>
+        delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id = ? and node_id = ?
+      </value>
+    </entry>
+    <entry key="deleteFromOutgoingBatchSql">
+      <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
+    </entry>
+    <entry key="deleteFromEventDataIdSql">
+      <value>delete from ${sync.table.prefix}_data_event where batch_id=? and node_id=?</value>
+    </entry>
+    <entry key="selectMinDataIdSql">
+      <value>select min(data_id) from ${sync.table.prefix}_data</value>
+    </entry>
+    <entry key="selectMaxDataIdSql">
+      <value>select max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?</value>
+    </entry>
+    <entry key="deleteFromDataSql">
+      <value>
+        delete from ${sync.table.prefix}_data where data_id not in (select data_id from
+        ${sync.table.prefix}_data_event where data_id &gt;= ? and data_id &lt;= ?) and data_id &gt;=
+        ? and data_id &lt;= ?
+      </value>
+    </entry>
+    <entry key="selectIncomingBatchOrderByCreateTimeSql">
+      <value>
+        select batch_id, node_id, status, create_time from ${sync.table.prefix}_incoming_batch order
+        by create_time asc
+      </value>
+    </entry>
+  </util:map>
+
+  <util:list id="deleteIncomingBatchesByNodeIdSql">
+    <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?</value>
+    <value>delete from ${sync.table.prefix}_incoming_batch where node_id=?</value>
+  </util:list>
+
+  <util:list id="incomingPurgeSql">
+    <value>
+      delete from ${sync.table.prefix}_incoming_batch_hist where batch_id=? and node_id=?
+    </value>
+    <value>delete from ${sync.table.prefix}_incoming_batch where batch_id=? and node_id=?</value>
+  </util:list>
+
+</beans>
