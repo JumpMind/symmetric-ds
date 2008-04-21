@@ -85,6 +85,10 @@ public class DataService extends AbstractService implements IDataService {
             final String overrideInitialLoadSelect) {
         final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
+        if (history == null) {
+            throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
+                    + trigger.getSourceTableName());
+        }
         // initial_load_select for table can be overridden by populating the row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect,
                 null, history);
