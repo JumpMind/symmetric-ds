@@ -27,6 +27,9 @@
       <action dev="chenson42" type="fix" issue="aid=1940365&amp;atid=997724">
         Fix the update trigger and the initial load for the HSQLDB dialect.
       </action>
+      <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
+        Remove extra comma in mssql.xml trigger text.
+      </action>      
       <action dev="erilong" type="fix" issue="aid=1944507&amp;atid=997724">
         Bug in selectDataIdSql.  data_id was not qualified.
       </action>
