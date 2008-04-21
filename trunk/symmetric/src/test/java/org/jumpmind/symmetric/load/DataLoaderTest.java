@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.testng.Assert;
 import org.testng.ITest;
@@ -55,7 +56,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
     @Test(groups="continuous")
     public void testInsertExisting() throws Exception {
         String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+                "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
     }
@@ -63,7 +64,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
     @Test(groups="continuous")
     public void testUpdateNotExisting() throws Exception {
         String[] values = { UPDATE_NOT_EXISTING_ID, "it's /a/  string", "it's  -not-  null",
-                "You're a \"character\"", "Where are you?", "2007-12-31 00:00:00.0", "2007-12-31 23:59:59.0", 
+                "You're a \"character\"", "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0", 
                 "1", "13", "9.95", UPDATE_NOT_EXISTING_ID };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         massageExpectectedResultsForDialect(expectedValues);
@@ -207,8 +208,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
     }
 
     private void massageExpectectedResultsForDialect(String[] values) {
-        if (getDbDialect() instanceof MsSqlDbDialect) {
-            values[5] = values[5] + " 00:00:00.0";
+        if (! (getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect)) {
+            values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
     }
 

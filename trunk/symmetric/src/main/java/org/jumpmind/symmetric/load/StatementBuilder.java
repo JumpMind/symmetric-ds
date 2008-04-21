@@ -86,6 +86,8 @@ public class StatementBuilder {
         for (Integer type : list) {
             if (type == Types.BLOB && isBlobOverrideToBinary) {
                 type = Types.BINARY;
+            } else if (type == Types.DATE) {
+                type = Types.TIMESTAMP;
             }
             types[index++] = type;
         }
