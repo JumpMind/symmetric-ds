@@ -187,6 +187,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.write("UnknownTokenWithinBatch");
         writer.writeRecord(new String[] { CsvConstants.COMMIT, getBatchId() });
         writer.close();
+        // Pause a moment to guarentee our history comes back in time order
+        Thread.sleep(10);
         load(out);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
