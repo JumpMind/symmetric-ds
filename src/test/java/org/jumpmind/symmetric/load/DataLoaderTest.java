@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.testng.Assert;
 import org.testng.ITest;
@@ -207,8 +208,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
     }
 
     private void massageExpectectedResultsForDialect(String[] values) {
-        if (getDbDialect() instanceof MsSqlDbDialect) {
-            values[5] = values[5] + " 00:00:00.0";
+        if (! (getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect)) {
+            values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
     }
 
