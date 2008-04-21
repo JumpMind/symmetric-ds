@@ -225,6 +225,9 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     @SuppressWarnings("unchecked")
     protected void testSyncUpdateWithEmptyKey() {
+        if (getClientDbDialect().isEmptyStringNulled()) {
+            return;
+        }
         clientJdbcTemplate.update(insertStoreStatusSql, new Object[] { "00001", "", 1 });
         getClientEngine().push();
 
