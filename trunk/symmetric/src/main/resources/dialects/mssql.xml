@@ -88,7 +88,7 @@
                                        (select '$(targetTableName)','I', $(triggerHistoryId), $(columns), current_timestamp from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition));
                                     $(else:containsBlobClobColumns)
                                       insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time) 
-                                       (select '$(targetTableName)',,'I', $(triggerHistoryId), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
+                                       (select '$(targetTableName)','I', $(triggerHistoryId), $(columns), current_timestamp from inserted where $(syncOnInsertCondition));                                    
                                     $(end:containsBlobClobColumns)
                                     if (@@ROWCOUNT > 0) begin 
                                       insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
