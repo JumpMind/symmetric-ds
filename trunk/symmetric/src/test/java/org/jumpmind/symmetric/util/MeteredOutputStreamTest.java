@@ -37,8 +37,6 @@ public class MeteredOutputStreamTest
         final long count = 20;
         final int bufferSize = 8192;
 
-        System.out.println("Running for " + (bufferSize * count) + " bytes");
-
         MeteredOutputStream out = new MeteredOutputStream(new NullOutputStream(), rate, 8192, 1);
         long start = System.currentTimeMillis();
         byte[] testBytes = new byte[bufferSize];
@@ -61,10 +59,10 @@ public class MeteredOutputStreamTest
 
         double expectedTime = (bufferSize * count) / rate;
         double actualTime = (System.currentTimeMillis() - start + 1) / 1000;
-        System.out.println("Configured rate: " + rate);
-        System.out.println("Actual rate: " + (i * bufferSize / actualTime));
-        System.out.println("Expected time: " + expectedTime);
-        System.out.println("Actual time: " + actualTime);
+//        System.out.println("Configured rate: " + rate);
+//        System.out.println("Actual rate: " + (i * bufferSize / actualTime));
+//        System.out.println("Expected time: " + expectedTime);
+//        System.out.println("Actual time: " + actualTime);
         assert (actualTime >= expectedTime - 2 && actualTime <= expectedTime + 2);
     }
 }

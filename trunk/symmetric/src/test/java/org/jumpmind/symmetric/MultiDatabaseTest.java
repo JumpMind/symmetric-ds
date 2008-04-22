@@ -36,15 +36,15 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
-import org.testng.annotations.Factory;
 import org.testng.Assert;
+import org.testng.annotations.Factory;
 
 /**
  * Run this test to run all the tests against all the configured databases.
  */
-public class MultiDatabaseTestFactory {
+public class MultiDatabaseTest {
 
-    private static final Log logger = LogFactory.getLog(MultiDatabaseTestFactory.class);
+    private static final Log logger = LogFactory.getLog(MultiDatabaseTest.class);
 
     enum DatabaseRole {
         CLIENT, ROOT
@@ -207,7 +207,7 @@ public class MultiDatabaseTestFactory {
             final String TEST_PROPERTIES_FILE = "/symmetric-test.properties";
             Properties properties = new Properties();
 
-            properties.load(MultiDatabaseTestFactory.class.getResourceAsStream(TEST_PROPERTIES_FILE));
+            properties.load(MultiDatabaseTest.class.getResourceAsStream(TEST_PROPERTIES_FILE));
             String homeDir = System.getProperty("user.home");
             File propertiesFile = new File(homeDir + TEST_PROPERTIES_FILE);
             if (propertiesFile.exists()) {

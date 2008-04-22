@@ -28,7 +28,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
+import org.jumpmind.symmetric.MultiDatabaseTest.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -45,9 +45,9 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     private SymmetricEngine engine;
     
     File getSymmetricFile() {        
-        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        Properties properties = MultiDatabaseTest.getTestProperties();
         String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(rootDatabaseTypes[0], DatabaseRole.ROOT);
+        return MultiDatabaseTest.writeTempPropertiesFileFor(rootDatabaseTypes[0], DatabaseRole.ROOT);
     }
     
     protected SymmetricEngine getSymmetricEngine() {

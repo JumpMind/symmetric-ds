@@ -6,7 +6,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.MultiDatabaseTestFactory.DatabaseRole;
+import org.jumpmind.symmetric.MultiDatabaseTest.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -57,16 +57,16 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
     
 
     File getClientFile() {
-        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        Properties properties = MultiDatabaseTest.getTestProperties();
         String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.CLIENT);
+        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.CLIENT);
     }
 
     File getRootFile() {
-        Properties properties = MultiDatabaseTestFactory.getTestProperties();
+        Properties properties = MultiDatabaseTest.getTestProperties();
         String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
 
-        return MultiDatabaseTestFactory.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.ROOT);
+        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.ROOT);
     }
 
 }
