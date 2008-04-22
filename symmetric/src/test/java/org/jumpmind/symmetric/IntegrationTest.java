@@ -62,8 +62,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         }
     }
 
-    //@Test(testName = "Integration Test", groups = "continuous", timeOut = 120000)
-     @Test(testName = "Integration Test", groups = "continuous")
+    @Test(testName = "Integration Test", groups = "continuous", timeOut = 120000)
     public void testLifecycle() {
         try {
             init();
@@ -309,6 +308,11 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"),
                 1, "Table name in mixed case was not synced");
     }
+    
+    protected void testDeletes() {        
+    }
+    
+    protected void testMultiRowInsert() {}
 
     protected void testMultipleChannels() {
     }
