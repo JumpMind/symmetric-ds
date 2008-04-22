@@ -127,7 +127,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return false;
     }
 
-    public boolean supportsMixedCaseNamesInCatalog() {
+    public boolean storesLowerCaseNamesInCatalog() {
         return true;
     }
 

@@ -106,10 +106,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public boolean supportsMixedCaseNamesInCatalog() {
-        return true;
-    }
-
     public void purge() {
     }
 

@@ -116,8 +116,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                             new Object[] { triggerName, tableName }) > 0;
     }
 
-    public boolean supportsMixedCaseNamesInCatalog() {
-        return false;
+    public boolean storesUpperCaseNamesInCatalog() {
+        return true;
     }
 
     public void purge() {
