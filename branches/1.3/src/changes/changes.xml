@@ -5,7 +5,18 @@
     <author email="chenson42@users.sourceforge.net">Chris Henson</author>
   </properties>
   <body>
-    <release version="1.3.2" date="2008-04-01" description="">
+    <release version="1.3.3" date="2008-04-22" description="Patch release">
+      <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
+        Remove extra comma in mssql.xml trigger text.
+      </action>
+      <action dev="chenson42" type="fix" issue="aid=1948790&amp;atid=997724">
+        Multi-row updates don't work for the Sql Server Dialect.
+      </action>    
+      <action dev="erilong" type="fix" issue="aid=1948109&amp;atid=997724">
+        Time portion of DATE column not syncing.
+      </action>       
+    </release>  
+    <release version="1.3.2" date="2008-04-01" description="Patch release">
       <action dev="chenson42" type="fix" issue="aid=1930496&amp;atid=997724">
         Make buildOutgoingBatches use only one connection from the connection pool vs the previous 
         two it used.
@@ -20,7 +31,7 @@
         Fixed the isInitialLoadComplete JMX method so it works with the new asynchronous reload.
       </action>    
     </release>  
-    <release version="1.3.1" date="2008-03-29" description="a brave new frontier, patched">
+    <release version="1.3.1" date="2008-03-29" description="Patch release">
       <action dev="erilong" type="fix" issue="aid=1924351&amp;atid=997724">
         Queries need to alias columns on PostgreSQL in case reserved words like "limit"
         are used as a column name.  Fixes synchronization for Adempiere.
@@ -38,7 +49,7 @@
         package variable has been installed.
       </action>
     </release>
-    <release version="1.3.0" date="2008-03-12" description="a brave new frontier">
+    <release version="1.3.0" date="2008-03-12" description="A brave new frontier">
       <action dev="chenson42" type="add">
         Changed Version.java to reference the pom.properties version that is packaged in the jar
         during a Maven build.
