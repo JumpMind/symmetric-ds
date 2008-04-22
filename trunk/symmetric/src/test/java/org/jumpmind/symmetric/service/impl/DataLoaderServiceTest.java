@@ -76,7 +76,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     }
 
     @Test(groups = "continuous")
-    public void testStatistics() throws Exception {        
+    public void testStatistics() throws Exception {
+        Level old = setLoggingLevelForTest(Level.OFF);
         String[] updateValues = new String[11];
         updateValues[0] = updateValues[10] = getNextId();
         updateValues[2] = updateValues[4] = "required string";
@@ -134,6 +135,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertEquals(history.getFallbackInsertCount(), 1, "Wrong fallback insert count");
         Assert.assertEquals(history.getFallbackUpdateCount(), 2, "Wrong fallback update count");
         Assert.assertEquals(history.getMissingDeleteCount(), 3, "Wrong missing delete count");
+        setLoggingLevelForTest(old);
     }
     
     @Test(groups = "continuous")
