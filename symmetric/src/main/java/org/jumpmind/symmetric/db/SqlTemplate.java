@@ -176,8 +176,11 @@ public class SqlTemplate {
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
         ddl = replace("triggerHistoryId", Integer.toString(history.getTriggerHistoryId()), ddl);
-        ddl = replace("txIdExpression", trigger.getTxIdExpression() == null ? dialect.getTransactionTriggerExpression()
-                : trigger.getTxIdExpression(), ddl);
+        String triggerExpression = dialect.getTransactionTriggerExpression();
+        if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
+            triggerExpression = trigger.getTxIdExpression();
+        }
+        ddl = replace("txIdExpression", triggerExpression, ddl);
         ddl = replace("nodeSelectWhere", trigger.getNodeSelect(), ddl);
         ddl = replace("nodeSelectWhereEscaped", replace("'", "''", trigger.getNodeSelect()), ddl);
         ddl = replace("syncOnInsertCondition", trigger.getSyncOnInsertCondition(), ddl);

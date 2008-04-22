@@ -29,7 +29,10 @@
       </action>
       <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
         Remove extra comma in mssql.xml trigger text.
-      </action>      
+      </action>
+      <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
+        Multi-row updates don't work for the Sql Server Dialect.
+      </action>                  
       <action dev="erilong" type="fix" issue="aid=1944507&amp;atid=997724">
         Bug in selectDataIdSql.  data_id was not qualified.
       </action>
