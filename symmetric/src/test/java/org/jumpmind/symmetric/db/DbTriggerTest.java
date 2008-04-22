@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,6 +139,7 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
         assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
     }
 
+    @SuppressWarnings("unchecked")
     @Test(groups = "continuous", dependsOnMethods = "validateTestTableTriggers")
     public void testInitialLoadSql() throws Exception {
         IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
@@ -145,10 +147,10 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
         service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
         String sql = getDbDialect(getSymmetricEngine()).createInitalLoadSqlFor(new Node("1", null, "1.0"),
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
-        String csvString = (String) getJdbcTemplate(getSymmetricEngine()).queryForObject(sql, String.class);
-        boolean match = false;
-        match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
-        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
+        List<String> csvStrings = getJdbcTemplate(getSymmetricEngine()).queryForList(sql, String.class);
+        Assert.assertTrue(csvStrings.size() > 0);
+        String csvString = csvStrings.get(0);
+        Assert.assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
