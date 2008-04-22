@@ -57,7 +57,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), '') +','+]]>
+                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as varchar), '') +','+]]>
                     </value>
                 </property>
                 <!-- TODO -->
@@ -78,7 +78,7 @@
                                 begin
                                   declare @TransactionId varchar(1000)
                                   declare @SyncEnabled varbinary(128)
-                                  declare @DataRow varchar(8000)
+                                  declare @DataRow varchar(max)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
@@ -94,11 +94,9 @@
                                        fetch next from DataCursor into @DataRow                                       
                                        while @@FETCH_STATUS = 0 begin
                                            insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time) 
-                                           values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, current_timestamp)                                   
-                                           if (@@ROWCOUNT > 0) begin 
-                                             insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                               c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
-                                           end                                         
+                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, current_timestamp)                                   
+                                           insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
+                                             c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
                                            fetch next from DataCursor into @DataRow
                                        end
                                        close DataCursor
@@ -115,7 +113,7 @@
                                 begin
                                   declare @TransactionId varchar(1000)
                                   declare @SyncEnabled varbinary(128)
-                                  declare @DataRow varchar(8000)
+                                  declare @DataRow varchar(max)
                                   declare @OldPk varchar(2000)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
@@ -133,10 +131,8 @@
                                        while @@FETCH_STATUS = 0 begin                                   
                                          insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, create_time) 
                                            values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, current_timestamp)
-                                         if (@@ROWCOUNT > 0) begin
-                                           insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                             c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
-                                         end
+                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
+                                           c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
                                          fetch next from DataCursor into @DataRow, @OldPk
                                        end
                                        close DataCursor
@@ -165,11 +161,9 @@
                                        fetch next from DataCursor into @OldPk                                       
                                        while @@FETCH_STATUS = 0 begin 
                                          insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time) 
-                                          values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, current_timestamp)
-                                         if (@@ROWCOUNT > 0) begin
-                                           insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                             c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
-                                         end
+                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, current_timestamp)
+                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
+                                           c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere))
                                          fetch next from DataCursor into @OldPk
                                        end
                                        close DataCursor

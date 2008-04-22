@@ -59,9 +59,9 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);        
         writer.write(dmlType);
         writer.writeRecord(values, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });

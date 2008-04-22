@@ -315,7 +315,8 @@ public class CsvLoader implements IDataLoader {
         }
         dbDialect.createTables(xml);
         context.getTableTemplate().resetMetaData();
-        dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
+        // TODO Eric - why was this done here?
+        //dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {
