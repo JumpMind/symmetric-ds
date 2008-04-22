@@ -143,6 +143,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean isCharSpaceTrimmed() {
         return false;
     }
+    
+    public boolean isTransactionIdOverrideSupported() {
+        return false;
+    }
 
     /**
      * SQL Server pads an empty string with spaces.

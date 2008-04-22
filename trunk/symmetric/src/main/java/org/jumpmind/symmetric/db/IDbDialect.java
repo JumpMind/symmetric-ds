@@ -151,6 +151,12 @@ public interface IDbDialect {
     
     public boolean isClobSyncSupported();
     
+    /**
+     * An indicator as to whether the ability to override the default transaction id provided by the 
+     * dialect can be overridden in the trigger configuration.
+     */
+    public boolean isTransactionIdOverrideSupported();
+    
     public void createTables(String xml);
     
     public String getSelectLastInsertIdSql(String sequenceName);
