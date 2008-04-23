@@ -31,6 +31,11 @@
         Bug in selectDataIdSql.  data_id was not qualified.
       </action>
     </release>
+    <release version="1.3.4" date="2008-04-??" description="Patch release">
+      <action dev="chenson42" type="fix" issue="aid=1950045&amp;atid=997724">
+        Fix peek ahead logic so that the max batch size limit is respected.
+      </action>
+    </release>    
     <release version="1.3.3" date="2008-04-22" description="">
       <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
         Remove extra comma in mssql.xml trigger text.
