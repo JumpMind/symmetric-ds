@@ -55,13 +55,13 @@ public class PushService implements IPushService {
     public void pushData() {
         List<Node> nodes = nodeService.findNodesToPushTo();
         if (nodes != null && nodes.size() > 0) {
-            logger.info("Push requested");
-            boolean success = false;
             for (Node node : nodes) {
-                success = pushToNode(node);
-            }
-            if (success) {
-                logger.info("Push completed");
+                logger.info("Push requested for " + node);
+                if (pushToNode(node)) {
+                    logger.info("Push completed for " + node);                    
+                } else {
+                    logger.info("Push unsuccessful for " + node);
+                }
             }
         }
     }
@@ -73,8 +73,7 @@ public class PushService implements IPushService {
             transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
 
             if (extractor.extract(remote, transport)) {
-                logger.info("Push data sent");
-
+                logger.info("Push data sent to " + remote);
                 BufferedReader reader = transport.readResponse();
                 String ackString = reader.readLine();
                 String ackExtendedString = reader.readLine();

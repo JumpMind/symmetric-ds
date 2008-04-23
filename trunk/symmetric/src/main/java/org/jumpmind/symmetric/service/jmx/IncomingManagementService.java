@@ -31,8 +31,6 @@ public class IncomingManagementService {
 
     IStatisticManager statisticManager;
 
-    //    INCOMING_TRANSPORT_ERROR_COUNT,
-    //    INCOMING_TRANSPORT_CONNECT_ERROR_COUNT,
     //    INCOMING_TRANSPORT_REJECTED_COUNT,
     //    INCOMING_DATABASE_ERROR_COUNT,
     //    INCOMING_OTHER_ERROR_COUNT,
@@ -65,5 +63,17 @@ public class IncomingManagementService {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT)
                 .getLifetimeTotal();
     }
+    
+    @ManagedAttribute(description = "Get the number of errors that occurred while attempting to connect to transport since the last flush")
+    public BigDecimal getTransportConnectErrorCountSinceLastFlush() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of errors that occurred while attempting to connect to transport for the lifetime of the server")
+    public BigDecimal getTransportConnectErrorCountForServerLifetime() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT)
+                .getLifetimeTotal();
+    }
+    
 
 }
