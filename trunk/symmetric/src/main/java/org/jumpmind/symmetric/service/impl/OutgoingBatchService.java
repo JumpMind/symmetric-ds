@@ -130,14 +130,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                                 do {
                                     String trxId = results.getString(1);
-                                    if (trxId != null) {
-                                        transactionIds.add(trxId);
-                                    }
 
                                     if (!peekAheadMode
                                             || (peekAheadMode && (trxId != null && transactionIds
                                                     .contains(trxId)))) {
                                         peekAheadCountDown = batchSizePeekAhead;
+                                        
+                                        if (trxId != null) {
+                                            transactionIds.add(trxId);
+                                        }
 
                                         int dataId = results.getInt(2);
 
@@ -167,7 +168,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                     }
 
                                 } while (results.next() && peekAheadCountDown != 0);
-
+                                
+                                long startTime = System.currentTimeMillis();
+                                update.executeBatch();
+                                databaseMillis += (System.currentTimeMillis() - startTime);
+                                
                                 history.setEndTime(new Date());
                                 history.setDataEventCount(dataEventCount);
                                 history.setDatabaseMillis(databaseMillis);
@@ -180,7 +185,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             JdbcUtils.closeStatement(select);
                         }
 
-                        update.executeBatch();
+                        
                     }
                 } finally {
                     JdbcUtils.closeStatement(update);
