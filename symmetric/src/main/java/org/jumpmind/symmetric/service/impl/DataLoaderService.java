@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -105,6 +106,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             logger.warn("Registration was lost, attempting to re-register");
             loadData(transportManager.getRegisterTransport(local));
             wasWorkDone = true;
+        } catch (MalformedURLException e) {
+            logger.error("Could not connect to the " + remote + " node's transport because of a bad URL: " + e.getMessage());
         }
         return wasWorkDone;
     }

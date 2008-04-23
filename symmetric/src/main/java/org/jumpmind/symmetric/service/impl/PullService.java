@@ -48,13 +48,14 @@ public class PullService implements IPullService {
         List<Node> nodes = nodeService.findNodesToPull();
         if (nodes != null && nodes.size() > 0) {            
             for (Node node : nodes) {
-                String nodeName =  " for " + node.getNodeGroupId() + "." + node.getNodeId();
+                String nodeName =  " for " + node;
                 try {
                     logger.info("Pull requested" + nodeName);
                     if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
                         logger.info("Pull data received" + nodeName);
-                    }
-                    logger.info("Pull completed" + nodeName);
+                    } else {
+                        logger.info("Pull no data received for " + nodeName);    
+                    }                    
                 } catch (ConnectException ex) {
                     logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
                 } catch (ConnectionRejectedException ex) {
