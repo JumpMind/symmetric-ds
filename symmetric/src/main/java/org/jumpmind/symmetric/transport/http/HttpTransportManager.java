@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -173,7 +174,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(connector);
         sb.append(WebConstants.SECURITY_TOKEN);
         sb.append("=");
-        String securityToken = nodeService.findNodeSecurity(nodeId).getPassword();
+        NodeSecurity security = nodeService.findNodeSecurity(nodeId);        
+        String securityToken = "none";
+        if (security != null) {
+            securityToken = security.getPassword();
+        }
         sb.append(securityToken);
         return sb.toString();
     }

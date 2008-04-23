@@ -30,19 +30,40 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 public class IncomingManagementService {
 
     IStatisticManager statisticManager;
-    
+
+    //    INCOMING_TRANSPORT_ERROR_COUNT,
+    //    INCOMING_TRANSPORT_CONNECT_ERROR_COUNT,
+    //    INCOMING_TRANSPORT_REJECTED_COUNT,
+    //    INCOMING_DATABASE_ERROR_COUNT,
+    //    INCOMING_OTHER_ERROR_COUNT,
+    //    INCOMING_MS_PER_ROW,
+    //    INCOMING_BATCH_COUNT,
+    //    INCOMING_SKIP_BATCH_COUNT,
+
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
-    
+
     @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node since the last time statistics were flushed")
     public BigDecimal getDatabaseMsPerRowSinceLastFlush() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getAverageValue();
     }
-    
+
     @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node for the lifetime of the server")
-    public BigDecimal getDatabaseMsPerRowForLifetime() {
-        return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getLifetimeAverageValue();
-    }    
-    
+    public BigDecimal getDatabaseMsPerRowForServerLifetime() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW)
+                .getLifetimeAverageValue();
+    }
+
+    @ManagedAttribute(description = "Get the number of errors that occurred during transport since the last flush")
+    public BigDecimal getTransportErrorCountSinceLastFlush() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of errors that occurred during transport for the lifetime of the server")
+    public BigDecimal getTransportErrorCountForServerLifetime() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT)
+                .getLifetimeTotal();
+    }
+
 }
