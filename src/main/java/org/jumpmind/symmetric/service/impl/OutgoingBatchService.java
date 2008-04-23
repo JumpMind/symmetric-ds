@@ -148,13 +148,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                                     do {
                                         String trxId = results.getString(1);
-                                        if (trxId != null) {
-                                            transactionIds.add(trxId);
-                                        }
 
                                         if (!peekAheadMode
                                                 || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
                                             peekAheadCountDown = batchSizePeekAhead;
+                                            
+                                            if (trxId != null) {
+                                                transactionIds.add(trxId);
+                                            }
 
                                             int dataId = results.getInt(2);
 
