@@ -31,49 +31,96 @@ public class IncomingManagementService {
 
     IStatisticManager statisticManager;
 
-    //    INCOMING_TRANSPORT_REJECTED_COUNT,
-    //    INCOMING_DATABASE_ERROR_COUNT,
-    //    INCOMING_OTHER_ERROR_COUNT,
-    //    INCOMING_MS_PER_ROW,
-    //    INCOMING_BATCH_COUNT,
-    //    INCOMING_SKIP_BATCH_COUNT,
-
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
     }
 
     @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node since the last time statistics were flushed")
-    public BigDecimal getDatabaseMsPerRowSinceLastFlush() {
+    public BigDecimal getPeriodicDatabaseMsPerRow() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).getAverageValue();
     }
 
     @ManagedAttribute(description = "Get the number of milliseconds the system is currently taking to commit a data row coming in from another node for the lifetime of the server")
-    public BigDecimal getDatabaseMsPerRowForServerLifetime() {
+    public BigDecimal getServerLifetimeDatabaseMsPerRow() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW)
                 .getLifetimeAverageValue();
     }
 
     @ManagedAttribute(description = "Get the number of errors that occurred during transport since the last flush")
-    public BigDecimal getTransportErrorCountSinceLastFlush() {
+    public BigDecimal getPeriodicTransportErrorCount() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).getTotal();
     }
 
     @ManagedAttribute(description = "Get the number of errors that occurred during transport for the lifetime of the server")
-    public BigDecimal getTransportErrorCountForServerLifetime() {
+    public BigDecimal getServerLifetimeTransportErrorCount() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT)
                 .getLifetimeTotal();
     }
     
     @ManagedAttribute(description = "Get the number of errors that occurred while attempting to connect to transport since the last flush")
-    public BigDecimal getTransportConnectErrorCountSinceLastFlush() {
+    public BigDecimal getPeriodicTransportConnectErrorCount() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).getTotal();
     }
 
     @ManagedAttribute(description = "Get the number of errors that occurred while attempting to connect to transport for the lifetime of the server")
-    public BigDecimal getTransportConnectErrorCountForServerLifetime() {
+    public BigDecimal getServerLifetimeTransportConnectErrorCount() {
         return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT)
                 .getLifetimeTotal();
     }
     
+    @ManagedAttribute(description = "Get the number of rejections that occurred while attempting to connect to transport since the last flush")
+    public BigDecimal getPeriodicTransportRejectedCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_REJECTED_COUNT).getTotal();
+    }
 
+    @ManagedAttribute(description = "Get the number of rejections that occurred while attempting to connect to transport for the lifetime of the server")
+    public BigDecimal getServerLifetimeTransportRejectedCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_REJECTED_COUNT)
+                .getLifetimeTotal();
+    }    
+    
+    @ManagedAttribute(description = "Get the number of errors that occurred during database activity since the last flush")
+    public BigDecimal getPeriodicDatabaseErrorCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of errors that occurred during database activity for the lifetime of the server")
+    public BigDecimal getServerLifetimeDatabaseErrorCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT)
+                .getLifetimeTotal();
+    }
+    
+    @ManagedAttribute(description = "Get the number of unanticipated errors that occurred since the last flush")
+    public BigDecimal getPeriodicOtherErrorCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_OTHER_ERROR_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of unanticipated errors that occurred for the lifetime of the server")
+    public BigDecimal getServerLifetimeOtherErrorCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_OTHER_ERROR_COUNT)
+                .getLifetimeTotal();
+    }
+    
+    @ManagedAttribute(description = "Get the number of batches that have been processed since the last flush")
+    public BigDecimal getPeriodicBatchCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of batches that have been processed for the lifetime of the server")
+    public BigDecimal getServerLifetimeBatchCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT)
+                .getLifetimeTotal();
+    }
+    
+    @ManagedAttribute(description = "Get the number of batches that have been skipped since the last flush")
+    public BigDecimal getPeriodicSkipBatchCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_SKIP_BATCH_COUNT).getTotal();
+    }
+
+    @ManagedAttribute(description = "Get the number of batches that have been skipped for the lifetime of the server")
+    public BigDecimal getServerLifetimeSkipBatchCount() {
+        return this.statisticManager.getStatistic(StatisticName.INCOMING_SKIP_BATCH_COUNT)
+                .getLifetimeTotal();
+    }    
+    
 }
