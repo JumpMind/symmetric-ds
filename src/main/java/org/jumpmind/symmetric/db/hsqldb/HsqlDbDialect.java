@@ -164,8 +164,8 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public boolean supportsMixedCaseNamesInCatalog() {
-        return false;
+    public boolean storesUpperCaseNamesInCatalog() {
+        return true;
     }
 
     public boolean supportsGetGeneratedKeys() {

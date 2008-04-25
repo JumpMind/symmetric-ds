@@ -95,7 +95,9 @@ public interface IDbDialect {
      */
     public int getMaxTriggerNameLength();    
     
-    public boolean supportsMixedCaseNamesInCatalog();
+    public boolean storesUpperCaseNamesInCatalog();
+
+    public boolean storesLowerCaseNamesInCatalog();
     
     public boolean supportsTransactionId();
     

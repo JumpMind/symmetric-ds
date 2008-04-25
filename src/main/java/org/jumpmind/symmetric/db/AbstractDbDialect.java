@@ -264,8 +264,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
                 String tableName = _tableName;
-                if (!supportsMixedCaseNamesInCatalog()) {
+                if (storesUpperCaseNamesInCatalog()) {
                     tableName = _tableName.toUpperCase();
+                } else if (storesLowerCaseNamesInCatalog()) {
+                    tableName = _tableName.toLowerCase();
                 }
                 ResultSet tableData = null;
                 try {
@@ -822,6 +824,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public boolean isClobSyncSupported() {
         return true;
+    }
+
+    public boolean storesUpperCaseNamesInCatalog() {
+        return false;
+    }
+
+    public boolean storesLowerCaseNamesInCatalog() {
+        return false;
     }
 
     public void setSqlTemplate(SqlTemplate sqlTemplate) {
