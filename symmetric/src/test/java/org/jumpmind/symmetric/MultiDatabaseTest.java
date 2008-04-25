@@ -73,7 +73,8 @@ public class MultiDatabaseTest {
         List<Object> tests2Run = new ArrayList<Object>();
         Object[][] clientAndRootCombos = getClientAndRootCombos();
         for (Object[] objects : clientAndRootCombos) {
-            tests2Run.addAll(createDatabaseTests(objects[1].toString()));
+            // temporarily disable to see if the mismash of test methods causes tests to fail.
+            //tests2Run.addAll(createDatabaseTests(objects[1].toString()));
             tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
         }
 
@@ -94,7 +95,7 @@ public class MultiDatabaseTest {
     /**
      * If you want to add any additional node 2 node tests, subclass from AbstractIntegrationTest and add the test here.  The reason
      * for the anonymous inner class trick is so TestNG actually runs tests sequentially (I found that if the same test is added
-     * more than once each of the same test methods are run once for each instance of the class instead of running once test to completetion, then
+     * more than once each of the same test methods are run once for each instance of the class instead of running once test to completion, then
      * another.) 
      */
     protected void addAbstractIntegrationTests(final File clientFile, final File rootFile,
