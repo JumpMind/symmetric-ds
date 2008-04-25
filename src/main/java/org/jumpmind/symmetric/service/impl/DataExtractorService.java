@@ -277,7 +277,7 @@ public class DataExtractorService implements IDataExtractorService, BeanFactoryA
                         ResultSet.CONCUR_READ_ONLY);
                 ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                 ps.setString(1, batch.getNodeId());
-                ps.setString(2, batch.getBatchId());
+                ps.setLong(2, new Long(batch.getBatchId()));
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     try {

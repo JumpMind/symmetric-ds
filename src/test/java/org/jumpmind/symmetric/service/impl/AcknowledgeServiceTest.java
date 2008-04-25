@@ -137,7 +137,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         final String sql = "select batch_id, status, data_event_count, event_time, "
                 + "failed_data_id from " + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
         final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
-        getJdbcTemplate().query(sql, new Object[] { batchId }, new RowMapper() {
+        getJdbcTemplate().query(sql, new Object[] { new Long(batchId) }, new RowMapper() {
             public Object[] mapRow(ResultSet rs, int row) throws SQLException {
                 OutgoingBatchHistory item = new OutgoingBatchHistory();
                 item.setBatchId(rs.getInt(1));

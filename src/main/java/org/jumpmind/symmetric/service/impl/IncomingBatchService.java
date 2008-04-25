@@ -59,7 +59,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
         try {
             return (IncomingBatch) jdbcTemplate.queryForObject(findIncomingBatchSql,
-                    new Object[] { batchId, nodeId }, new IncomingBatchMapper());
+                    new Object[] { new Long(batchId), nodeId }, new IncomingBatchMapper());
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -73,7 +73,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     @SuppressWarnings("unchecked")
     public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId) {
-        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] { batchId,
+        return (List<IncomingBatchHistory>) jdbcTemplate.query(findIncomingBatchHistorySql, new Object[] { new Long(batchId),
                 nodeId }, new IncomingBatchHistoryMapper());
     }
 

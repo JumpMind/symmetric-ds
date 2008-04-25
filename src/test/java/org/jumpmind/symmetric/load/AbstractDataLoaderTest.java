@@ -92,7 +92,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where " + getWhere(TEST_KEYS);
         Map<String, Object> results = null;
         try {
-            results = getJdbcTemplate().queryForMap(sql, new Object[] { testTableId });
+            results = getJdbcTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
         } catch (EmptyResultDataAccessException e) {
         }
         if (expectedValues != null) {
