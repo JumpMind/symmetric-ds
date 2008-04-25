@@ -118,7 +118,7 @@
     </distributionManagement>
     <properties>
         <surefire-report-release-version>2.4</surefire-report-release-version>
-        <springframework-release-version>2.0.7</springframework-release-version>
+        <springframework-release-version>2.5.2</springframework-release-version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide</docbook.target>
     </properties>
@@ -328,7 +328,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jmx</artifactId>
-            <version>${springframework-release-version}</version>
+            <version>2.0.5</version>
         </dependency>
         <!-- DDLUtils -->
         <dependency>
