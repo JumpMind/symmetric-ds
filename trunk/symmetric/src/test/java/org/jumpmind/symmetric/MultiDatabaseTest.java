@@ -36,7 +36,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
-import org.testng.Assert;
 import org.testng.annotations.Factory;
 
 /**
@@ -81,13 +80,14 @@ public class MultiDatabaseTest {
         return tests2Run.toArray(new Object[tests2Run.size()]);
     }
 
-    public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType, String rootDatabaseType)
-            throws Exception {
+    public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType,
+            String rootDatabaseType) throws Exception {
         List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
         File clientFile = writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
         File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-        addAbstractIntegrationTests(clientFile, rootFile, tests2Run);
-
+        if (clientFile != null && rootFile != null) {
+            addAbstractIntegrationTests(clientFile, rootFile, tests2Run);
+        }
         return tests2Run;
     }
 
@@ -162,11 +162,11 @@ public class MultiDatabaseTest {
                 newProperties.setProperty("symmetric.runtime.external.id",
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties
-                        .setProperty("symmetric.runtime.my.url", "internal://" + databaseRole.name().toLowerCase());
+                newProperties.setProperty("symmetric.runtime.my.url", "internal://"
+                        + databaseRole.name().toLowerCase());
                 newProperties.setProperty("symmetric.runtime.registration.url",
-                        databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name().toLowerCase())
-                                : "");
+                        databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name()
+                                .toLowerCase()) : "");
                 newProperties.setProperty("symmetric.runtime.engine.name", databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
@@ -177,7 +177,7 @@ public class MultiDatabaseTest {
                 return propertiesFile;
 
             } else {
-                Assert.fail();
+                logger.error("Could not find a valid connection for " + databaseType);
                 return null;
             }
         } catch (RuntimeException ex) {
@@ -196,8 +196,8 @@ public class MultiDatabaseTest {
             c.close();
             return true;
         } catch (Exception ex) {
-            logger.error("Could not connect to the test database using the url: " + properties.getProperty("db.url")
-                    + ".  ", ex);
+            logger.error("Could not connect to the test database using the url: "
+                    + properties.getProperty("db.url") + ".  ", ex);
             return false;
         }
     }
