@@ -245,7 +245,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void setBatchStatus(String batchId, Status status) {
-        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(), batchId });
+        jdbcTemplate.update(changeBatchStatusSql, new Object[] { status.name(), new Long(batchId) });
 
         if (status == Status.SE) {
             historyService.sent(new Integer(batchId));

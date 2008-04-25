@@ -254,7 +254,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement s = conn.prepareStatement("select count(*) " + "from "
                         + TestConstants.TEST_PREFIX + "data_event where batch_id = ?");
-                s.setString(1, batchId);
+                s.setLong(1, new Long(batchId));
                 ResultSet rs = s.executeQuery();
                 rs.next();
                 return rs.getInt(1);
