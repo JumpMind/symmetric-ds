@@ -116,7 +116,9 @@ public class MultiDatabaseTest {
     public List<? extends AbstractTest> createDatabaseTests(String rootDatabaseType) throws Exception {
         List<AbstractDatabaseTest> tests2Run = new ArrayList<AbstractDatabaseTest>();
         final File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-        addAbstractDatabaseTests(rootFile, tests2Run);
+        if (rootFile != null) {
+            addAbstractDatabaseTests(rootFile, tests2Run);
+        }
         return tests2Run;
     }
 
