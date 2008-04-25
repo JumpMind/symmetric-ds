@@ -179,13 +179,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         removeTrigger(schemaName, triggerName, null);
     }
 
-    /**
-     * SQL Server is case insensitive.
-     * @return false always
-     */
-    public boolean supportsMixedCaseNamesInCatalog() {
-        return false;
+    public boolean storesUpperCaseNamesInCatalog() {
+        return true;
     }
-
 
 }
