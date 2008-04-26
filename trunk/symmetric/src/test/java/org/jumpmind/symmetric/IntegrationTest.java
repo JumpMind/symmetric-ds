@@ -84,6 +84,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         } catch (Exception ex) {
             logger.error(ex, ex);
             Assert.fail();
+        } finally {
+            teardown();
         }
 
     }
@@ -96,35 +98,51 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         clientJdbcTemplate = new JdbcTemplate((DataSource) clientBeanFactory.getBean(Constants.DATA_SOURCE));
     }
 
+    protected void teardown() {
+        rootJdbcTemplate = null;
+        clientJdbcTemplate = null;
+        getRootEngine().close();
+        getClientEngine().close();
+    }
+
     protected void register() {
-        getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().start();
         Assert.assertTrue(getClientEngine().isRegistered(), "The client did not register.");
-        IStatisticManager statMgr = (IStatisticManager)getClientEngine().getApplicationContext().getBean(Constants.STATISTIC_MANAGER);
+        IStatisticManager statMgr = (IStatisticManager) getClientEngine().getApplicationContext().getBean(
+                Constants.STATISTIC_MANAGER);
         statMgr.flush();
     }
 
-    protected void initialLoad() { 
+    protected void initialLoad() {
         IDbDialect rootDialect = getRootDbDialect();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 301, "Linus", "1", "42 Blanket Street",
                 "Santa Claus", "IN", 90009, new Date(), "This is a test", BINARY_DATA });
-        insertIntoTestTriggerTable(rootDialect, new Object[] {1, "wow", "mom"});
-        insertIntoTestTriggerTable(rootDialect, new Object[] {2, "mom", "wow"});
+        insertIntoTestTriggerTable(rootDialect, new Object[] { 1, "wow", "mom" });
+        insertIntoTestTriggerTable(rootDialect, new Object[] { 2, "mom", "wow" });
         INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean(
                 Constants.NODE_SERVICE);
         String nodeId = nodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
         getRootEngine().reloadNode(nodeId);
-        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService)getRootEngine().getApplicationContext().getBean(Constants.OUTGOING_BATCH_SERVICE);
+        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine()
+                .getApplicationContext().getBean(Constants.OUTGOING_BATCH_SERVICE);
         Assert.assertFalse(outgoingBatchService.isInitialLoadComplete(nodeId));
         getClientEngine().pull();
         Assert.assertTrue(outgoingBatchService.isInitialLoadComplete(nodeId));
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_triggers_table"), 2, "test_triggers_table on the client did not contain the expected number of rows");
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer"), 2, "test_customer on the client did not contain the expected number of rows");
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0, "Initial load was not successful according to the client");
-        Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0, "Initial load was not successful accordign to the root");
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_triggers_table"), 2,
+                "test_triggers_table on the client did not contain the expected number of rows");
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer"), 2,
+                "test_customer on the client did not contain the expected number of rows");
+        Assert.assertEquals(clientJdbcTemplate
+                .queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0,
+                "Initial load was not successful according to the client");
+        Assert.assertEquals(rootJdbcTemplate
+                .queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0,
+                "Initial load was not successful accordign to the root");
     }
-    
+
     private void insertIntoTestTriggerTable(IDbDialect dialect, Object[] values) {
         Table testTriggerTable = dialect.getMetaDataFor(null, null, "test_triggers_table", true);
         try {
@@ -140,12 +158,13 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         getClientEngine().pull();
 
         // now change some data that should be sync'd
-        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101, "Charlie Brown", "1", "300 Grub Street",
-                "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
+        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101, "Charlie Brown", "1",
+                "300 Grub Street", "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
 
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=101"),
-                1, "The customer was not sync'd to the client.");
+        Assert.assertEquals(clientJdbcTemplate
+                .queryForInt("select count(*) from test_customer where customer_id=101"), 1,
+                "The customer was not sync'd to the client.");
 
         if (getRootDbDialect().isClobSyncSupported()) {
             Assert.assertEquals(clientJdbcTemplate.queryForObject(
@@ -165,21 +184,22 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     protected void testSyncToRootAutoGeneratedPrimaryKey() {
         final String NEW_VALUE = "unique new value one value";
         IDbDialect clientDialect = getClientDbDialect();
-        insertIntoTestTriggerTable(clientDialect, new Object[] { 3, "value one", "value \" two"});
+        insertIntoTestTriggerTable(clientDialect, new Object[] { 3, "value one", "value \" two" });
         getClientEngine().push();
         clientJdbcTemplate.update(updateTestTriggerTableSql, new Object[] { NEW_VALUE });
         getClientEngine().push();
         int syncCount = rootJdbcTemplate.queryForInt(
-                "select count(*) from test_triggers_table where string_one_value=?", new Object[] { NEW_VALUE });
-        Assert.assertEquals(syncCount, 3,
-                syncCount + " of the rows were updated");
+                "select count(*) from test_triggers_table where string_one_value=?",
+                new Object[] { NEW_VALUE });
+        Assert.assertEquals(syncCount, 3, syncCount + " of the rows were updated");
     }
 
     protected void testSyncToRoot() throws ParseException {
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
-        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, 3.33 });
+        clientJdbcTemplate
+                .update(insertOrderDetailSql, new Object[] { "10", 1, "STK", "110000065", 3, 3.33 });
         getClientEngine().push();
     }
 
@@ -190,20 +210,21 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         getClientEngine().pull();
 
-        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine().getApplicationContext()
-                .getBean(Constants.OUTGOING_BATCH_SERVICE);
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine()
+                .getApplicationContext().getBean(Constants.OUTGOING_BATCH_SERVICE);
+        List<OutgoingBatch> batches = outgoingBatchService
+                .getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");
 
-        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "11" }).size(), 0,
-                "The order record was sync'd when it should not have been.");
+        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "11" })
+                .size(), 0, "The order record was sync'd when it should not have been.");
 
         // Should sync when status = C
-        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12", 100, "C", date }, new int[] { Types.VARCHAR,
-                Types.INTEGER, Types.CHAR, Types.DATE });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "12", 100, "C", date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "12" }).size(), 1,
-                "The order record was not sync'd when it should have been.");
+        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "12" })
+                .size(), 1, "The order record was not sync'd when it should have been.");
         // TODO: make sure event did not fire
     }
 
@@ -211,8 +232,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     protected void testSyncUpdateCondition() {
         rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "I", "1" });
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "1" }).size(), 0,
-                "The order record was sync'd when it should not have been.");
+        Assert.assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "1" })
+                .size(), 0, "The order record was sync'd when it should not have been.");
 
         rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "C", "1" });
         getClientEngine().pull();
@@ -225,14 +246,16 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     @SuppressWarnings("unchecked")
     protected void testIgnoreNodeChannel() {
-        INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
+        INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean(
+                "nodeService");
         nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
-                "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
+        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1",
+                "300 Grub Street", "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=201"),
-                0, "The customer was sync'd to the client.");
+        Assert.assertEquals(clientJdbcTemplate
+                .queryForInt("select count(*) from test_customer where customer_id=201"), 0,
+                "The customer was sync'd to the client.");
         nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
 
@@ -248,7 +271,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
         clientJdbcTemplate.update(updateStoreStatusSql, new Object[] { 2, "00001", "" });
         getClientEngine().push();
-        
+
         int status = rootJdbcTemplate.queryForInt(selectStoreStatusSql, new Object[] { "00001", "   " });
         Assert.assertEquals(status, 2, "Wrong store status");
     }
@@ -257,11 +280,10 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         Thread.sleep(1000);
         getRootEngine().purge();
         getClientEngine().purge();
-        Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "data"),
-                0, "Expected all data rows to have been purged.");
-        Assert.assertEquals(clientJdbcTemplate
-                .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "data"), 0,
-                "Expected all data rows to have been purged.");
+        Assert.assertEquals(rootJdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
+                + "data"), 0, "Expected all data rows to have been purged.");
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from "
+                + TestConstants.TEST_PREFIX + "data"), 0, "Expected all data rows to have been purged.");
 
     }
 
@@ -270,13 +292,14 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         Thread.sleep(1000);
         getClientEngine().heartbeat();
         getClientEngine().push();
-        Date time = (Date) rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX
-                + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'", Timestamp.class);
+        Date time = (Date) rootJdbcTemplate.queryForObject("select heartbeat_time from "
+                + TestConstants.TEST_PREFIX + "node where external_id='"
+                + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'", Timestamp.class);
         Assert.assertTrue(time != null && time.getTime() > ts,
                 "The client node was not sync'd to the root as expected.");
     }
-    
-    protected void testVirtualTransactionId() {        
+
+    protected void testVirtualTransactionId() {
         rootJdbcTemplate.update("insert into test_very_long_table_name_1234 values('42')");
         if (getRootDbDialect().isTransactionIdOverrideSupported()) {
             Assert
@@ -297,22 +320,25 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
                             "The hardcoded transaction id was not found.");
         }
     }
-    
+
     protected void testCaseSensitiveTableNames() {
         rootJdbcTemplate.update("insert into TEST_ALL_CAPS values(1, 'HELLO')");
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from TEST_ALL_CAPS where ALL_CAPS_ID = 1"),
-                1, "Table name in all caps was not synced");
+        Assert.assertEquals(clientJdbcTemplate
+                .queryForInt("select count(*) from TEST_ALL_CAPS where ALL_CAPS_ID = 1"), 1,
+                "Table name in all caps was not synced");
         rootJdbcTemplate.update("insert into Test_Mixed_Case values(1, 'Hello')");
         getClientEngine().pull();
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"),
-                1, "Table name in mixed case was not synced");
+        Assert.assertEquals(clientJdbcTemplate
+                .queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"), 1,
+                "Table name in mixed case was not synced");
     }
-    
-    protected void testDeletes() {        
+
+    protected void testDeletes() {
     }
-    
-    protected void testMultiRowInsert() {}
+
+    protected void testMultiRowInsert() {
+    }
 
     protected void testMultipleChannels() {
     }
