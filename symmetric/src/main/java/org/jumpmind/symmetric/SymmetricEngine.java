@@ -20,10 +20,15 @@
 
 package org.jumpmind.symmetric;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -96,11 +101,45 @@ public class SymmetricEngine {
         // Setting system properties is probably not the best way to accomplish this setup.
         // Synchronizing on the class so creating multiple engines is thread safe.
         synchronized (SymmetricEngine.class) {
-            System.setProperty("symmetric.override.properties.file.1", overridePropertiesResource1 == null ? ""
-                    : overridePropertiesResource1);
-            System.setProperty("symmetric.override.properties.file.2", overridePropertiesResource2 == null ? ""
-                    : overridePropertiesResource2);
+            System.setProperty("symmetric.override.properties.file.1",
+                    overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
+            System.setProperty("symmetric.override.properties.file.2",
+                    overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
             this.init(createContext(), null);
+        }
+    }
+
+    public void close() {
+        logger.info("Closing SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
+                + Version.version() + " database=" + dbDialect.getName());
+        removeMeFromMap(registeredEnginesByName);
+        removeMeFromMap(registeredEnginesByUrl);
+        DataSource ds = dbDialect.getJdbcTemplate().getDataSource();
+        if (ds instanceof BasicDataSource) {
+            try {
+                ((BasicDataSource) ds).close();
+            } catch (SQLException ex) {
+                logger.error(ex, ex);
+            }
+        }
+        applicationContext = null;
+        properties = null;
+        bootstrapService = null;
+        runtimeConfig = null;
+        nodeService = null;
+        registrationService = null;
+        purgeService = null;
+        dataService = null;
+        dbDialect = null;
+
+    }
+
+    private void removeMeFromMap(Map<String, SymmetricEngine> map) {
+        Set<String> keys = map.keySet();
+        for (String key : keys) {
+            if (map.get(key).equals(this)) {
+                map.remove(key);
+            }
         }
     }
 
@@ -133,7 +172,8 @@ public class SymmetricEngine {
         bootstrapService = (IBootstrapService) applicationContext.getBean(Constants.BOOTSTRAP_SERVICE);
         runtimeConfig = (IRuntimeConfig) applicationContext.getBean(Constants.RUNTIME_CONFIG);
         nodeService = (INodeService) applicationContext.getBean(Constants.NODE_SERVICE);
-        registrationService = (IRegistrationService) applicationContext.getBean(Constants.REGISTRATION_SERVICE);
+        registrationService = (IRegistrationService) applicationContext
+                .getBean(Constants.REGISTRATION_SERVICE);
         purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
         dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
@@ -162,31 +202,35 @@ public class SymmetricEngine {
      * Start the jobs if they are configured to be started in symmetric.properties
      */
     private void startJobs() {
-        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
             applicationContext.getBean(Constants.PUSH_JOB_TIMER);
         }
-        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
             applicationContext.getBean(Constants.PULL_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
             applicationContext.getBean(Constants.PURGE_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
             applicationContext.getBean(Constants.HEARTBEAT_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString()
-                .equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
-        
-        if (Boolean.TRUE.toString()
-                .equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_STATISTIC_FLUSH_JOB))) {
+
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_STATISTIC_FLUSH_JOB))) {
             applicationContext.getBean(Constants.STATISTIC_FLUSH_JOB_TIMER);
         }
-       
+
     }
 
     /**
@@ -219,11 +263,11 @@ public class SymmetricEngine {
             setup();
             Node node = nodeService.findIdentity();
             if (node != null) {
-                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
-                        + ", externalId=" + node.getExternalId() + "]");
+                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id="
+                        + node.getNodeId() + ", externalId=" + node.getExternalId() + "]");
             } else {
-                logger.info("Starting unregistered node [group=" + runtimeConfig.getNodeGroupId() + ", externalId="
-                        + runtimeConfig.getExternalId() + "]");
+                logger.info("Starting unregistered node [group=" + runtimeConfig.getNodeGroupId()
+                        + ", externalId=" + runtimeConfig.getExternalId() + "]");
             }
             bootstrapService.register();
             bootstrapService.syncTriggers();
@@ -245,7 +289,8 @@ public class SymmetricEngine {
      * @see IPushService#pushData()
      */
     public void push() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
             ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -266,7 +311,8 @@ public class SymmetricEngine {
      * @see IPullService#pullData()
      */
     public void pull() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
             ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -278,7 +324,8 @@ public class SymmetricEngine {
      * @see IPurgeService#purge()
      */
     public void purge() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(
+                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
             purgeService.purge();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");
