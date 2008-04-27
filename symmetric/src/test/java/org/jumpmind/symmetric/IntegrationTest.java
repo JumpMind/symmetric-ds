@@ -152,6 +152,10 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             dialect.cleanupAfterDataLoad(testTriggerTable);
         }
     }
+    
+    private String printRootAndClientDatabases() {
+        return " The root database is " + getRootDatabaseName() + " and the client database is " + getClientDatabaseName() + ".";
+    }
 
     protected void testSyncToClient() {
         // test pulling no data
@@ -164,7 +168,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         getClientEngine().pull();
         Assert.assertEquals(clientJdbcTemplate
                 .queryForInt("select count(*) from test_customer where customer_id=101"), 1,
-                "The customer was not sync'd to the client.");
+                "The customer was not sync'd to the client." + printRootAndClientDatabases());
 
         if (getRootDbDialect().isClobSyncSupported()) {
             Assert.assertEquals(clientJdbcTemplate.queryForObject(
