@@ -131,7 +131,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         Assert.assertFalse(outgoingBatchService.isInitialLoadComplete(nodeId));
         getClientEngine().pull();
         Assert.assertTrue(outgoingBatchService.isInitialLoadComplete(nodeId));
-        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status='ER'"), 0, "The initial load errored out.");
+        Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status='ER'"), 0, "The initial load errored out." + printRootAndClientDatabases());
         Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_triggers_table"), 2,
                 "test_triggers_table on the client did not contain the expected number of rows");
         Assert.assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer"), 2,
