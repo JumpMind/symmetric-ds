@@ -33,7 +33,7 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
 
-    public void initTrigger(DataEventType dml, Trigger config,
+    public void initTrigger(DataEventType dml, Trigger trigger,
             TriggerHistory audit, String tablePrefix, Table table);
 
     @Deprecated
@@ -80,9 +80,9 @@ public interface IDbDialect {
     
     public String getTransactionTriggerExpression();
 
-    public String createInitalLoadSqlFor(Node node, Trigger config);
+    public String createInitalLoadSqlFor(Node node, Trigger trigger);
     
-    public String createPurgeSqlFor(Node node, Trigger trig);
+    public String createPurgeSqlFor(Node node, Trigger trigger, TriggerHistory history);
     
     public String createCsvDataSql(Trigger trig, String whereClause);
     

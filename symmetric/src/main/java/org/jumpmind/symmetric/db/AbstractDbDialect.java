@@ -199,8 +199,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 .trim();
     }
 
-    public String createPurgeSqlFor(Node node, Trigger trig) {
-        return sqlTemplate.createPurgeSql(node, this, trig);
+    public String createPurgeSqlFor(Node node, Trigger trig, TriggerHistory hist) {
+        return sqlTemplate.createPurgeSql(node, this, trig, hist);
     }
 
     public String createCsvDataSql(Trigger trig, String whereClause) {
