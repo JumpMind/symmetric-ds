@@ -15,5 +15,5 @@ drop table sym_channel;
 drop table sym_outgoing_batch;
 drop table sym_outgoing_batch_hist;
 drop table sym_event_status;
-drop table sym_global_parameter;
+drop table sym_parameter;
 drop table sym_statistic;

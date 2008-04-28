@@ -351,6 +351,9 @@
                 <value>
                     alter table ${sync.table.prefix}_outgoing_batch_hist drop constraint ${sync.table.prefix}_outgoing_batch_hist_pkey
                 </value>
+                <value>
+                    drop table ${sync.table.prefix}_global_parameter
+                </value>
             </list>
         </property>
     </bean>

@@ -36,8 +36,8 @@
         s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
       </value>
     </entry>
-    <entry key="${sync.table.prefix}_global_parameter">
-      <value>node_group_id = '$(groupId)'</value>
+    <entry key="${sync.table.prefix}_parameter">
+      <value>(external_id='ALL' and node_group_id = 'ALL') or (external_id='ALL' and node_group_id = '$(groupId)') or (node_group_id='ALL' and external_id='$(externalId)')</value>
     </entry>
     <entry key="${sync.table.prefix}_channel">
       <value>

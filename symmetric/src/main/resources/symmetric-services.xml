@@ -15,6 +15,7 @@
     <import resource="classpath:/sql/purge-service-sql.xml"/>
     <import resource="classpath:/sql/acknowledge-service-sql.xml"/>
     <import resource="classpath:/sql/cluster-service-sql.xml"/>
+    <import resource="classpath:/sql/parameter-service-sql.xml"/>    
     
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
         <property name="sql" ref="statisticServiceSql"/>
@@ -58,9 +59,9 @@
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
         scope="singleton">
-        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="sql" ref="parameterServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="defaultGlobalParameters" ref="defaultGlobalParameters" />
+        <property name="cacheTimeoutInMs" value="${symmetric.runtime.parameter.reload.timeout.ms}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
     </bean>
 
@@ -77,7 +78,7 @@
                 <value>${sync.table.prefix}_node_group_link</value>
                 <value>${sync.table.prefix}_node</value>
                 <value>${sync.table.prefix}_node_security</value>
-                <value>${sync.table.prefix}_global_parameter</value>
+                <value>${sync.table.prefix}_parameter</value>
                 <value>${sync.table.prefix}_channel</value>
                 <value>${sync.table.prefix}_node_channel_ctl</value>
                 <value>${sync.table.prefix}_trigger</value>

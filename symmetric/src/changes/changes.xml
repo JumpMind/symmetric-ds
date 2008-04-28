@@ -5,7 +5,12 @@
     <author email="chenson42@users.sourceforge.net">Chris Henson</author>
   </properties>
   <body>
-    <release version="1.4.0" date="unknown" description="Lets add some polish">     
+    <release version="1.4.0" date="unknown" description="Lets add some polish">
+      <action dev="chenson42" type="add" issue="aid=&amp;atid=997727">
+        Support runtime configuration from the sym_parameters table and the periodic
+        rereading of parameters from the file system (as long as the ParameterService is
+        being used.)
+      </action>
       <action dev="chenson42" type="add" issue="aid=1874255&amp;atid=997727">
         Record the timezone in sym_node for reporting purposes
       </action>
@@ -21,6 +26,10 @@
         configuration information.  From this point forward we will provide a standard web.xml and 
         configuration is in the same place as all the other SymmetricDS configuration.
       </action>
+      <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
+        Fixed a bug with the SQL Server filter that removes identity columns from updates.  When syncing from other 
+        databases the column case may not match.  We need to try to match regardless of case on the columns.
+      </action>      
       <action dev="chenson42" type="fix" issue="aid=1916017&amp;atid=997724">
         Preserve the original case of table names, table prefix, and foreign keys.
       </action>

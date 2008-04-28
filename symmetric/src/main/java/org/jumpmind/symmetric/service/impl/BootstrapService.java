@@ -59,6 +59,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private String tablePrefix;
 
+    @SuppressWarnings("unused")
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
@@ -93,7 +94,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             if (isAutoConfigurable()) {
                 logger.info("Initializing symmetric database.");
                 dbDialect.initConfigDb();
-                populateDefautGlobalParametersIfNeeded();
                 logger.info("Done initializing symmetric database.");
             } else {
                 logger.info("Symmetric is not configured to auto create the database.");
@@ -337,10 +337,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         return audit;
-    }
-
-    private void populateDefautGlobalParametersIfNeeded() {
-        parameterService.populateDefautGlobalParametersIfNeeded();
     }
 
     public void setParameterService(IParameterService parameterService) {
