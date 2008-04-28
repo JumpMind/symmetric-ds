@@ -178,7 +178,7 @@
           </systemProperties>
           <groups>continuous,integration,mysql</groups>
           <additionalClasspathElements>
-            <value>${user.home}\.symmetricds\lib\ojdbc14.jar</value>
+            <value>${user.home}\.symmetricds\lib\ojdbc14.jar;${user.home}\.symmetricds\lib\ojdbc6.jar</value>
           </additionalClasspathElements>
         </configuration>
       </plugin>
