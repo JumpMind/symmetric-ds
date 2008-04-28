@@ -129,7 +129,6 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <surefire-report-release-version>2.4</surefire-report-release-version>
     <springframework-release-version>2.5.2</springframework-release-version>
     <docbook.source>${basedir}/src/docbook</docbook.source>
     <docbook.target>${basedir}/target/site/guide</docbook.target>
@@ -168,7 +167,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire-report-release-version}</version>
         <configuration>
           <systemProperties>
             <property>
@@ -178,7 +176,15 @@
           </systemProperties>
           <groups>continuous,integration,mysql</groups>
           <additionalClasspathElements>
-            <value>${user.home}\.symmetricds\lib\ojdbc14.jar;${user.home}\.symmetricds\lib\ojdbc6.jar</value>
+            <additionalClasspathElement>
+              ${user.home}\.symmetricds\lib\ojdbc6.jar
+            </additionalClasspathElement>
+            <additionalClasspathElement>
+              ${user.home}\.symmetricds\lib\ojdbc5.jar
+            </additionalClasspathElement>
+            <additionalClasspathElement>
+              ${user.home}\.symmetricds\lib\ojdbc14.jar
+            </additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
