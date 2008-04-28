@@ -325,6 +325,12 @@
                 <value>
                     alter table ${sync.table.prefix}_incoming_batch_hist add sql_message varchar(50)
                 </value>
+                <value>
+                    alter table ${sync.table.prefix}_trigger add source_catalog_name varchar(50)
+                </value>
+                <value>
+                    alter table ${sync.table.prefix}_trigger_hist add source_catalog_name varchar(50)
+                </value>                                                
             </list>
         </property>
     </bean>        

@@ -26,6 +26,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -92,7 +93,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     }
 
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt(
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where trigger_name = ?",
@@ -108,7 +109,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
 
@@ -139,7 +140,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     /**
      * This is not used by the HSQLDB Java triggers
      */
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return "not used";
     }
 
@@ -179,6 +180,10 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public void purge() {
     }
 
+    public String getDefaultCatalog() {
+        return null;
+    }
+    
     public String getDefaultSchema() {
         return null;
     }

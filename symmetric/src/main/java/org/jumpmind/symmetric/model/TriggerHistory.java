@@ -42,6 +42,8 @@ public class TriggerHistory {
     private String sourceTableName;
     
     private String sourceSchemaName;
+    
+    private String sourceCatalogName;
 
     private Date createTime;
 
@@ -88,6 +90,7 @@ public class TriggerHistory {
         this.columnNames = getCommaDeliminatedColumns(trigger
                 .orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
+        this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         // set primary key equal to all the columns to make data sync work for tables
@@ -251,6 +254,14 @@ public class TriggerHistory {
 
     public void setInactiveTime(Date inactiveTime) {
         this.inactiveTime = inactiveTime;
+    }
+
+    public String getSourceCatalogName() {
+        return sourceCatalogName;
+    }
+
+    public void setSourceCatalogName(String sourceCatalogName) {
+        this.sourceCatalogName = sourceCatalogName;
     }
 
 }

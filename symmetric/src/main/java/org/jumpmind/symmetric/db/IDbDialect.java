@@ -36,15 +36,14 @@ public interface IDbDialect {
     public void initTrigger(DataEventType dml, Trigger trigger,
             TriggerHistory audit, String tablePrefix, Table table);
 
-    @Deprecated
-    public void removeTrigger(String schemaName, String triggerName);
-    
     /**
      * Get the name of this symmetric instance.  This can be set in symmetric.properties using the symmetric.runtime.engine.name property.
      */
     public String getEngineName();
     
-    public void removeTrigger(String schemaName, String triggerName, String tableName);
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName);
+    
+    public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
     /**
      * This is called by the data loader each time the table context changes, giving the dialect an opportunity to do any pre loading work.  Only one 
@@ -74,11 +73,9 @@ public interface IDbDialect {
     
     public BinaryEncoding getBinaryEncoding();
 
-    public boolean doesTriggerExist(String schema, String tableName, String triggerName);
-
     public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
     
-    public String getTransactionTriggerExpression();
+    public String getTransactionTriggerExpression(Trigger trigger);
 
     public String createInitalLoadSqlFor(Node node, Trigger trigger);
     

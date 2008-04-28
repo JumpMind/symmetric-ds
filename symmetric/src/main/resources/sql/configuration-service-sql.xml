@@ -140,14 +140,14 @@
     <entry key="allTriggerHistSql">
       <value>
         select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
         from ${sync.table.prefix}_trigger_hist
       </value>
     </entry>
     <entry key="latestTriggerHistSql">
       <value>
         select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
         from ${sync.table.prefix}_trigger_hist where trigger_hist_id = (select max(trigger_hist_id)
         from ${sync.table.prefix}_trigger_hist where trigger_id=?)
       </value>
@@ -155,15 +155,15 @@
     <entry key="triggerHistSql">
       <value>
         select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name
+        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name
         from ${sync.table.prefix}_trigger_hist where trigger_hist_id = ?
       </value>
     </entry>
     <entry key="insertTriggerHistorySql">
       <value>
         insert into ${sync.table.prefix}_trigger_hist
-        (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name)
-        values(?,?,?,?,?,?,?,?,?,?,?)
+        (trigger_id,source_table_name,table_hash,create_time,column_names,pk_column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name)
+        values(?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="selectTriggerSql">

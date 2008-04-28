@@ -152,11 +152,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
                 logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForInsertTrigger(), trigger
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForInsertTrigger(), trigger
                         .getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForDeleteTrigger(), trigger
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForDeleteTrigger(), trigger
                         .getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceSchemaName(), history.getNameForUpdateTrigger(), trigger
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForUpdateTrigger(), trigger
                         .getSourceTableName());
                 configurationService.inactivateTriggerHistory(history);
             } else {
@@ -175,7 +175,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getMetaDataFor(dbDialect.getDefaultCatalog(), trigger.getSourceSchemaName(),
+                Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
 
                 if (table != null) {
@@ -301,18 +301,21 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
+        String oldCatalogName = null;
         if (oldAudit != null) {
             oldTriggerName = oldAudit.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = oldAudit.getSourceSchemaName();
-            triggerExists = dbDialect.doesTriggerExist(oldAudit.getSourceSchemaName(), oldAudit.getSourceTableName(),
-                    oldTriggerName);
+            oldCatalogName = oldAudit.getSourceCatalogName();
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
+                    oldAudit.getSourceTableName(), oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as defined in the trigger
             // does not exist as well.
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
-            triggerExists = dbDialect.doesTriggerExist(trigger.getSourceSchemaName(), trigger.getSourceTableName(),
-                    oldTriggerName);
+            oldCatalogName = trigger.getSourceCatalogName();
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
+                    trigger.getSourceTableName(), oldTriggerName);
         }
 
         if (!triggerExists && forceRebuild) {
@@ -320,7 +323,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if ((forceRebuild || !create) && triggerExists) {
-            dbDialect.removeTrigger(oldSourceSchema, oldTriggerName, trigger.getSourceTableName());
+            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName());
             triggerExists = false;
         }
 

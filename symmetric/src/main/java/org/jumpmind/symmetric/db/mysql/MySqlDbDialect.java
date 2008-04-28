@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -40,56 +41,49 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema,
-            String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null
-                : getDefaultSchema()) : schema;
-        String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema='"
-                + schema + "'"
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
+        catalog = catalog == null ? (getDefaultCatalog() == null ? null : getDefaultCatalog()) : catalog;
+        String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='" + catalog + "'"
                 : "";
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                                + checkSchema, new Object[] { triggerName,
-                                tableName }) > 0;
+        return jdbcTemplate.queryForInt(
+                "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
+                        + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
     }
 
     // TODO this belongs in SqlTemplate
-    public void removeTrigger(String schemaName, String triggerName) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+        catalogName = catalogName == null ? "" : (catalogName + ".");
         try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
+            jdbcTemplate.update("drop trigger " + catalogName + triggerName);
         } catch (Exception e) {
             logger.warn("Trigger does not exist");
         }
     }
-    
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
-        removeTrigger(schemaName, triggerName);
-    }
 
     public void disableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "=1");
+        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                + "=null");
+        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
     }
-    
+
     public String getSyncTriggersExpression() {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
-    public String getTransactionTriggerExpression() {
-        return getDefaultSchema() + "." + TRANSACTION_ID_FUNCTION_NAME + "()";
+    public String getTransactionTriggerExpression(Trigger trigger) {
+        String defaultCatalog = "";
+        if (trigger.getSourceCatalogName() != null) {
+            defaultCatalog = this.getDefaultCatalog() + ".";
+        }
+        return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
     }
 
     public boolean supportsTransactionId() {
         return true;
     }
-    
+
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id()";
     }
@@ -110,25 +104,30 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("select database()",
-                String.class);
+        return null;
     }
-    
-    protected String switchSchemasForTriggerInstall(String schema, Connection c) throws SQLException {
-        String previousCatalog = c.getCatalog();
-        c.setCatalog(schema);
-        return previousCatalog;
-    }    
+
+    public String getDefaultCatalog() {
+        return (String) jdbcTemplate.queryForObject("select database()", String.class);
+    }
+
+    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+        if (catalog != null) {
+            String previousCatalog = c.getCatalog();
+            c.setCatalog(catalog);
+            return previousCatalog;
+        } else {
+            return null;
+        }
+    }
 
     /**
      * According to the documentation (and experience) the jdbc driver for mysql requires the 
      * fetch size to be as follows.
      */
-    @Override   
+    @Override
     public int getStreamingResultsFetchSize() {
         return Integer.MIN_VALUE;
     }
-    
-    
 
 }

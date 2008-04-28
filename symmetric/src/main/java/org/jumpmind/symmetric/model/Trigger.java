@@ -58,6 +58,8 @@ public class Trigger {
     private String targetGroupId;
 
     private String sourceSchemaName;
+    
+    private String sourceCatalogName;
 
     private String targetSchemaName;
 
@@ -439,6 +441,14 @@ public class Trigger {
 
     public void setSyncOnIncomingBatch(boolean syncOnIncomingBatch) {
         this.syncOnIncomingBatch = syncOnIncomingBatch;
+    }
+
+    public String getSourceCatalogName() {
+        return sourceCatalogName;
+    }
+
+    public void setSourceCatalogName(String sourceCatalogName) {
+        this.sourceCatalogName = sourceCatalogName;
     }
 
 }

@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -38,8 +39,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    static final String SYNC_TRIGGERS_DISABLED_FUNCTION = "fn_trigger_disabled";
-    
     @Override
     protected void initForSpecificDialect() {
         try {
@@ -91,11 +90,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
     
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
 
@@ -108,11 +107,11 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
             return jdbcTemplate
                     .queryForInt(
-                            "select count(*) from ALL_TRIGGERS  where trigger_name like upper(?) and table_name like upper(?)",
+                            "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
                             new Object[] { triggerName, tableName }) > 0;
     }
 
@@ -133,9 +132,13 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return SYNC_TRIGGERS_DISABLED_FUNCTION + "() is null";
+        return "fn_trigger_disabled() is null";
     }
-
+    
+    public String getDefaultCatalog() {
+        return null;
+    }    
+    
     public String getDefaultSchema() {
         return (String) jdbcTemplate.queryForObject(
                 "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",

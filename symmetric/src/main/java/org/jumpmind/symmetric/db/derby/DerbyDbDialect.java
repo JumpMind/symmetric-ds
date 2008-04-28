@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -37,7 +38,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
@@ -52,7 +53,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
     
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
 
@@ -80,7 +81,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return "fn_sym_sync_triggers_disabled() = 0";
     }
 
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return "fn_sym_transaction_id()";
     }
     
@@ -114,6 +115,10 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     
     public void purge() {
     }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }    
 
     public String getDefaultSchema() {
         return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA",
