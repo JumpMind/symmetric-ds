@@ -88,10 +88,10 @@ public class SqlTemplate {
 
         return sql;
     }
-
-    public String createPurgeSql(Node node, IDbDialect dialect, Trigger trig) {
+    
+    public String createPurgeSql(Node node, IDbDialect dialect, Trigger trig, TriggerHistory hist) {
         // TODO: during reload, purge table using initial_load_select clause
-        String sql = "delete from " + trig.getDefaultTargetTableName();
+        String sql = "delete from " + getDefaultTargetTableName(trig, hist);
         //+ " where " + trig.getInitialLoadSelect();
         //sql = replace("groupId", node.getNodeGroupId(), sql);
         //sql = replace("externalId", node.getExternalId(), sql);
@@ -164,10 +164,20 @@ public class SqlTemplate {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultSchema, ddl);
     }
+    
+    private String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
+        String targetTableName = null;
+        if (StringUtils.isBlank(trigger.getTargetTableName())) {
+            targetTableName = history.getSourceTableName();
+        } else {
+            targetTableName = trigger.getTargetTableName();
+        }
+        return targetTableName;
+    }
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema, String ddl) {
-        ddl = replace("targetTableName", trigger.getDefaultTargetTableName(), ddl);
+        ddl = replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
         ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
         ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
@@ -196,8 +206,8 @@ public class SqlTemplate {
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
-        ddl = replace("tableName", trigger.getSourceTableName(), ddl);
-        ddl = replace("schemaName", trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName()
+        ddl = replace("tableName", history.getSourceTableName(), ddl);
+        ddl = replace("schemaName", history.getSourceSchemaName() != null ? history.getSourceSchemaName()
                 + "." : "", ddl);
 
         columns = metaData.getPrimaryKeyColumns();

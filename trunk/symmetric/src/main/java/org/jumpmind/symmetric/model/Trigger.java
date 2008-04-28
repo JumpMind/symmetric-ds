@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
@@ -428,14 +427,6 @@ public class Trigger {
 
     public String getTargetTableName() {
         return targetTableName;
-    }
-
-    public String getDefaultTargetTableName() {
-        if (StringUtils.isBlank(targetTableName)) {
-            return sourceTableName;
-        } else {
-            return targetTableName;
-        }
     }
 
     public void setTargetTableName(String targetTableName) {

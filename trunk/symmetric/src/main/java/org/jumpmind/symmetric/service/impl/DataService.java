@@ -83,20 +83,25 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertReloadEvent(final Node targetNode, final Trigger trigger,
             final String overrideInitialLoadSelect) {
-        final TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-
-        if (history == null) {
-            throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
-                    + trigger.getSourceTableName());
-        }
+        TriggerHistory history = lookupTriggerHistory(trigger);
         // initial_load_select for table can be overridden by populating the row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect,
                 null, history);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
+    
+    private TriggerHistory lookupTriggerHistory(Trigger trigger) {
+        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+
+        if (history == null) {
+            throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
+                    + trigger.getSourceTableName());
+        }
+        return history;
+    }
 
     public void insertPurgeEvent(final Node targetNode, final Trigger trigger) {
-        String sql = dbDialect.createPurgeSqlFor(targetNode, trigger);
+        String sql = dbDialect.createPurgeSqlFor(targetNode, trigger, lookupTriggerHistory(trigger));
         insertSqlEvent(targetNode, trigger, sql);
     }
 
