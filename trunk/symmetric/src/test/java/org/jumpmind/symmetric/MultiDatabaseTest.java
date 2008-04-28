@@ -200,7 +200,7 @@ public class MultiDatabaseTest {
             return true;
         } catch (Exception ex) {
             logger.error("Could not connect to the test database using the url: "
-                    + properties.getProperty("db.url") + ".  ", ex);
+                    + properties.getProperty("db.url") + " and classpath: " + System.getProperty("java.class.path"), ex);            
             return false;
         }
     }
