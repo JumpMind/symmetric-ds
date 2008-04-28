@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -223,12 +224,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Dialect may optionally override this method to more efficiently lookup up table metadata
      * directly against information schemas. 
      */
-    public Table getMetaDataFor(String catalog, String schema, String tableName, boolean useCache) {
+    public Table getMetaDataFor(String catalogName, String schemaName, String tableName, boolean useCache) {
         Table retTable = cachedModel.findTable(tableName);
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = findTable(catalog, checkSchema(schema), tableName);
+                    Table table = findTable(catalogName, schemaName, tableName);
 
                     if (retTable != null) {
                         cachedModel.removeTable(retTable);
@@ -249,13 +250,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return retTable;
     }
 
-    private String checkSchema(String schema) {
-        return (schema == null || schema.trim().length() == 0) ? null : schema;
-    }
-
-    public Table findTable(String _catalog, String _schema, final String _tableName) throws Exception {
-        final String schema = checkSchema(_schema);
-        final String catalog = _catalog;
+    public Table findTable(String catalogName, String schemaName, final String tblName) throws Exception {
+        // if we don't provide a default schema or catalog, then on some databases multiple results
+        // will be found in the metadata from multiple schemas/catalogs
+        final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
+        final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog() : catalogName;
         return (Table) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 Table table = null;
@@ -264,11 +263,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 metaData.setCatalog(catalog);
                 metaData.setSchemaPattern(schema);
                 metaData.setTableTypes(null);
-                String tableName = _tableName;
+                String tableName = tblName;
                 if (storesUpperCaseNamesInCatalog()) {
-                    tableName = _tableName.toUpperCase();
+                    tableName = tblName.toUpperCase();
                 } else if (storesLowerCaseNamesInCatalog()) {
-                    tableName = _tableName.toLowerCase();
+                    tableName = tblName.toLowerCase();
                 }
 
                 ResultSet tableData = null;
