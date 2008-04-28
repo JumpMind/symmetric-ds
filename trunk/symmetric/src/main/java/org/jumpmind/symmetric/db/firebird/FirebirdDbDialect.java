@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -62,7 +63,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt(
                 "select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName }) > 0;
@@ -72,7 +73,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
     }
     
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);
@@ -94,7 +95,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return "1 = 1";
     }
 
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return "null";
     }
     
@@ -127,6 +128,10 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public String getName() {
         return super.getName().substring(0, 49);
+    }
+    
+    public String getDefaultCatalog() {
+        return null;
     }
     
     public String getDefaultSchema() {

@@ -68,8 +68,8 @@
     <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService"
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="dbDialect" ref="dbDialect" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="dbDialect" ref="dbDialect" />
         <property name="sql" ref="configurationServiceSql"/>
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect"/>
         <property name="rootConfigChannelTableNames">

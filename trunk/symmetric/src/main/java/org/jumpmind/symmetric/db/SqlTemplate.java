@@ -148,21 +148,21 @@ public class SqlTemplate {
      * TODO Document all the 'templated' values available for building triggers.
      */
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
-            String tablePrefix, Table metaData, String defaultSchema) {
+            String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + dialect.getPlatform().getName());
         }
-        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultSchema, ddl);
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog, defaultSchema, ddl);
     }
 
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
-            String tablePrefix, Table metaData, String defaultSchema) {
+            String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultSchema, ddl);
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog, defaultSchema, ddl);
     }
     
     private String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
@@ -176,17 +176,24 @@ public class SqlTemplate {
     }
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
-            TriggerHistory history, String tablePrefix, Table metaData, String defaultSchema, String ddl) {
+            TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema, String ddl) {
+        
+        boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null || trigger.getSourceSchemaName() != null;
+        
         ddl = replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
-        ddl = replace("defaultSchema", defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
+        
+        ddl = replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
                 ddl);
+        ddl = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "." : "",
+                ddl);        
+        
         ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
         ddl = replace("triggerHistoryId", Integer.toString(history.getTriggerHistoryId()), ddl);
-        String triggerExpression = dialect.getTransactionTriggerExpression();
+        String triggerExpression = dialect.getTransactionTriggerExpression(trigger);
         if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
             triggerExpression = trigger.getTxIdExpression();
         }
@@ -207,9 +214,9 @@ public class SqlTemplate {
 
         // some column templates need tableName and schemaName
         ddl = replace("tableName", history.getSourceTableName(), ddl);
-        ddl = replace("schemaName", history.getSourceSchemaName() != null ? history.getSourceSchemaName()
+        ddl = replace("schemaName", resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history.getSourceSchemaName()
                 + "." : "", ddl);
-
+        
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
@@ -481,10 +488,9 @@ public class SqlTemplate {
         }
     }
 
-    public String getFunctionInstalledSql(String schemaName, String functionName) {
+    public String getFunctionInstalledSql(String functionName) {
         if (functionInstalledSql != null) {
             String ddl = replace("functionName", functionName, functionInstalledSql);
-            ddl = replace("schemaName", schemaName, ddl);
             return ddl;
         } else {
             return null;

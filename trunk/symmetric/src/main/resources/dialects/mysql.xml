@@ -24,7 +24,7 @@
                 <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema='$(schemaName)']]>
+                        <![CDATA[select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())]]>
                     </value>
                 </property>
                 <property name="functionTemplatesToInstall">

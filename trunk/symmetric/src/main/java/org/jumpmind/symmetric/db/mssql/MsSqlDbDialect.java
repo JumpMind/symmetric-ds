@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.model.Trigger;
 
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -117,7 +118,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from sysobjects where type = 'TR' AND name = ?",
                 new Object[] { triggerName }) > 0;
     }
@@ -134,7 +135,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID";
     }
 
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return "@TransactionId";
     }
 
@@ -183,17 +184,13 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
     }
 
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);
         } catch (Exception e) {
             logger.warn("Trigger does not exist");
         }
-    }
-
-    public void removeTrigger(String schemaName, String triggerName) {
-        removeTrigger(schemaName, triggerName, null);
     }
 
     public boolean storesUpperCaseNamesInCatalog() {

@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.Trigger;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -68,7 +69,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema = '"
                 + schema + "'" : "";
@@ -81,7 +82,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
     }
     
-    public void removeTrigger(String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName + " on " + tableName);
@@ -103,7 +104,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return "current_setting('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') = 'on'";
     }
 
-    public String getTransactionTriggerExpression() {
+    public String getTransactionTriggerExpression(Trigger trigger) {
         return "null";
     }
     
@@ -133,6 +134,10 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     public void purge() {
     }
+    
+    public String getDefaultCatalog() {
+        return null;
+    }    
 
     public String getDefaultSchema() {
         return null;
