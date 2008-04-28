@@ -62,8 +62,19 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     indexesToRemove = new int[autoIncrementColumns.length];
                     int i = 0;
                     for (Column column : autoIncrementColumns) {
-                        indexesToRemove[i++] = columns.indexOf(column.getName());
-                        columns.remove(column.getName());
+                        String name = column.getName();
+                        int index = columns.indexOf(name);
+                        
+                        if (index < 0) {
+                            name = name.toLowerCase();
+                            index = columns.indexOf(name);
+                        }
+                        if (index < 0) {
+                            name = name.toUpperCase();
+                            index = columns.indexOf(name);
+                        }
+                        indexesToRemove[i++] = index;
+                        columns.remove(name);
                     }
                 }
                 return columns.toArray(new String[columns.size()]);
@@ -74,7 +85,9 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     ArrayList<Object> values = new ArrayList<Object>();
                     CollectionUtils.addAll(values, columnValues);
                     for (int  index : indexesToRemove) {
-                        values.remove(index);
+                        //if (values.size() > index) {
+                          values.remove(index);
+                        //}
                     }
                     return values.toArray(new Object[values.size()]);
                 }
