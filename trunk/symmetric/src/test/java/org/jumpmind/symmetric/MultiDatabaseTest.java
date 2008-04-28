@@ -73,7 +73,7 @@ public class MultiDatabaseTest {
         List<Object> tests2Run = new ArrayList<Object>();
         Object[][] clientAndRootCombos = getClientAndRootCombos();
         for (Object[] objects : clientAndRootCombos) {
-            // temporarily disable to see if the mismash of test methods causes tests to fail.
+            // TODO temporarily disable to see if the mismash of test methods causes tests to fail.
             //tests2Run.addAll(createDatabaseTests(objects[1].toString()));
             tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
         }

@@ -20,127 +20,147 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.common.Constants.GLOBAL_CONFIGURATION_ID;
-
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.model.GlobalParameter;
-import org.jumpmind.symmetric.model.GlobalParameterType;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.jdbc.core.RowMapper;
 
-public class ParameterService extends AbstractService implements
-        IParameterService {
+public class ParameterService extends AbstractService implements IParameterService, BeanFactoryAware {
 
     static final Log logger = LogFactory.getLog(ParameterService.class);
 
-    static final String TABLE = "global_parameter";
-    
-    private String tablePrefix;
+    static final String ALL = "ALL";
 
-    Map<String, Object> defaultGlobalParameters;
+    private Map<String, String> parameters;
 
-    public BigDecimal getDecimal(String configurationId, GlobalParameter key) {
-        return null;
+    private BeanFactory beanFactory;
+
+    private long cacheTimeoutInMs = -1;
+
+    private Date lastTimeParameterWereCached;
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 
-    public int getInt(String configurationId, GlobalParameter key) {
+    public BigDecimal getDecimal(String key) {
+        String val = getString(key);
+        if (val != null) {
+            return new BigDecimal(val);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public int getInt(String key) {
+        String val = getString(key);
+        if (val != null) {
+            return Integer.parseInt(val);
+        }
         return 0;
     }
 
-    public long getLong(String configurationId, GlobalParameter key) {
+    public long getLong(String key) {
+        String val = getString(key);
+        if (val != null) {
+            return Long.parseLong(val);
+        }
         return 0;
     }
 
-    public String getString(String configurationId, GlobalParameter key) {
-        return null;
+    public String getString(String key) {
+        return getParameters().get(key);
     }
 
-    public void saveParameter(String configurationId, String key, Object param) {
-        saveParameter(configurationId, key, param, false);
-    }
-
-    public void saveParameter(String configurationId, String key, Object param,
-            boolean insertOnly) {
-        final String updatePrefixSql = "update " + tablePrefix + "_" + TABLE
-                + " set ";
-        final String updateSuffixSql = " = ? where node_group_id=? and param_Key=? and param_Order=1 and param_Type=?";
-
-        String column = null;
-        int propertyType = 0;
-        if (param instanceof String) {
-            column = "stringValue";
-            propertyType = GlobalParameterType.STRING.ordinal();
-        } else if (param instanceof Integer) {
-            column = "int_value";
-            propertyType = GlobalParameterType.INTEGER.ordinal();
-
-        } else if (param instanceof BigDecimal) {
-            column = "decimal_value";
-            propertyType = GlobalParameterType.BIGDECIMAL.ordinal();
-
-        } else if (param instanceof Boolean) {
-            column = "boolean_value";
-            propertyType = GlobalParameterType.BOOLEAN.ordinal();
-            param = (Boolean) param ? 1 : 0;
-        } else {
-            throw new UnsupportedOperationException();
-        }
-
-        int count = 0;
-
-        if (!insertOnly) {
-            count = jdbcTemplate.update(updatePrefixSql + column
-                    + updateSuffixSql, new Object[] { param, configurationId,
-                    key, propertyType });
-        }
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
+        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,
+                nodeGroupId, key });
 
         if (count == 0) {
-            // Then insert ...
-            jdbcTemplate
-                    .update(
-                            "insert into "
-                                    + tablePrefix + "_"
-                                    + TABLE
-                                    + " (node_group_id, param_Key, param_Order, param_Type, "
-                                    + column + ") values(?, ?, 1, ?, ?)",
-                            new Object[] { configurationId, key, propertyType,
-                                    param });
+            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key,
+                    paramValue });
         }
     }
 
-    public void saveParameters(String configurationId,
-            Map<String, Object> parameters) {
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
         Set<String> keys = parameters.keySet();
         for (String key : keys) {
-            saveParameter(configurationId, key, parameters.get(key));
+            saveParameter(externalId, nodeGroupId, key, parameters.get(key));
         }
     }
 
-    public void populateDefautGlobalParametersIfNeeded() {
-        Set<String> keys = defaultGlobalParameters.keySet();
-        for (String key : keys) {
-            try {
-                saveParameter(GLOBAL_CONFIGURATION_ID, key,
-                        defaultGlobalParameters.get(key), true);
-            } catch (DataIntegrityViolationException ex) {
-                logger.info(key
-                        + " has already been defined at the global level.");
-            }
+    public synchronized void rereadParameters() {
+        this.parameters = null;
+        getParameters();
+    }
+
+    /**
+     * Every time we pull the properties out of the bean factory they should get reread from the file system.
+     */
+    private Properties rereadFileParameters() {
+        return (Properties) beanFactory.getBean(Constants.PROPERTIES);
+    }
+
+    private Map<String, String> rereadDatabaseParameters() {
+        Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
+        map.putAll(rereadDatabaseParameters(ALL, runtimeConfiguration.getNodeGroupId()));
+        map.putAll(rereadDatabaseParameters(runtimeConfiguration.getExternalId(), runtimeConfiguration
+                .getNodeGroupId()));
+        return map;
+    }
+
+    private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
+        final Map<String, String> map = new HashMap<String, String>();
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId },
+                new RowMapper() {
+                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        map.put(rs.getString(1), rs.getString(2));
+                        return null;
+                    }
+                });
+        return map;
+    }
+
+    private Map<String, String> buildSystemParameters() {
+        final Map<String, String> map = new HashMap<String, String>();
+        Properties p = rereadFileParameters();
+        for (Object key : p.keySet()) {
+            map.put((String) key, p.getProperty((String) key));
         }
+        map.putAll(rereadDatabaseParameters());
+        return map;
+
     }
 
-    public void setDefaultGlobalParameters(
-            Map<String, Object> defaultGlobalParameters) {
-        this.defaultGlobalParameters = defaultGlobalParameters;
+    private Map<String, String> getParameters() {
+        if (parameters == null
+                || lastTimeParameterWereCached == null
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
+                        .currentTimeMillis() - cacheTimeoutInMs))) {
+            lastTimeParameterWereCached = new Date();
+            parameters = buildSystemParameters();            
+        }
+        return parameters;
     }
 
-    public void setTablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
+    public void setCacheTimeoutInMs(long cacheTimeoutInMs) {
+        this.cacheTimeoutInMs = cacheTimeoutInMs;
+    }
+
+    public Date getLastTimeParameterWereCached() {
+        return lastTimeParameterWereCached;
     }
 
 }

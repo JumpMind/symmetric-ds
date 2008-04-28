@@ -229,17 +229,6 @@
         </foreign-key>
     </table>
 
-    <table name="global_parameter">
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="param_key" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="param_order" type="INTEGER" required="true" default="1" primaryKey="true" />
-        <column name="param_type" type="INTEGER" required="true" />
-        <column name="string_value" type="VARCHAR" size="200" />
-        <column name="boolean_value" type="BOOLEANINT" size="1" default="0" />
-        <column name="decimal_value" type="DECIMAL" />
-        <column name="int_value" type="INTEGER" />
-    </table>
-
     <table name="incoming_batch">
         <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
@@ -284,6 +273,14 @@
             <index-column name="node_id" />
             <index-column name="statistic_name" />
         </index>
+    </table>
+    
+    <table name="parameter">
+        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" />
+        <column name="param_type" type="CHAR" size="1" required="true" />
+        <column name="param_value" type="VARCHAR" size="1000" />
     </table>
 
 </database>

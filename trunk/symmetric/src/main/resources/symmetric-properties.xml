@@ -7,7 +7,7 @@
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd"
     default-lazy-init="true">
 
-    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean" scope="prototype">
         <property name="properties">
             <props>
                 <prop key="symmetric.override.properties.file.1"></prop>
@@ -42,25 +42,6 @@
         <!-- This means that any system properties set on the command line will take precendence over those set locally or in a properties file. -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
     </bean>
-
-    <!-- This is a list of the default global parameters which will be inserted into the parameter table upon the first deploy -->
-    <util:map id="defaultGlobalParameters">
-        <entry key="AUTO_CREATE_TRIGGERS">
-            <bean class="java.lang.Boolean">
-                <constructor-arg value="true" />
-            </bean>
-        </entry>
-        <entry key="PUSH_CONCURRENCY">
-            <bean class="java.lang.Integer">
-                <constructor-arg value="20" />
-            </bean>
-        </entry>
-        <entry key="PULL_CONCURRENCY">
-            <bean class="java.lang.Integer">
-                <constructor-arg value="10" />
-            </bean>
-        </entry>                        
-    </util:map>
 
     <!-- This the the default runtime configuration which will be used if no override is specified. -->
     <bean name="defaultRuntimeConfiguration"

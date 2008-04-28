@@ -22,6 +22,7 @@ package org.jumpmind.symmetric;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -135,7 +136,7 @@ public class SymmetricEngine {
     }
 
     private void removeMeFromMap(Map<String, SymmetricEngine> map) {
-        Set<String> keys = map.keySet();
+        Set<String> keys = new HashSet<String>(map.keySet());
         for (String key : keys) {
             if (map.get(key).equals(this)) {
                 map.remove(key);

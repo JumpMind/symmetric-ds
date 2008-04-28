@@ -21,28 +21,28 @@
 package org.jumpmind.symmetric.service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Map;
-
-import org.jumpmind.symmetric.model.GlobalParameter;
 
 /**
  * Get and set application wide configuration information.
- * @author chenson
  */
 public interface IParameterService {
 
-    public String getString(String configurationId, GlobalParameter key);
+    public BigDecimal getDecimal(String key);
 
-    public int getInt(String configurationId, GlobalParameter key);
+    public int getInt(String key);
 
-    public BigDecimal getDecimal(String configurationId, GlobalParameter key);
+    public long getLong(String key);
 
-    public long getLong(String configurationId, GlobalParameter key);
+    public String getString(String key);
 
-    public void saveParameter(String configurationId, String key, Object param);
+    public void saveParameter(String nodeId, String nodeGroupId, String key, Object paramValue);
+    
+    public void saveParameters(String nodeId, String nodeGroupId, Map<String, Object> parameters);
+    
+    public void rereadParameters();
+    
+    public Date getLastTimeParameterWereCached();
 
-    public void saveParameters(String configurationId,
-            Map<String, Object> parameters);
-
-    public void populateDefautGlobalParametersIfNeeded();
 }
