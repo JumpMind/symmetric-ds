@@ -31,8 +31,6 @@ import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
-import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -234,9 +232,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertEquals(history.getFallbackUpdateCount(), 1, "Wrong fallback update count");
         Assert.assertEquals(history.getMissingDeleteCount(), 0, "Wrong missing delete count");
         Assert.assertNotNull(history.getSqlState(), "Sql state should not be null");
-        if (! (getDbDialect() instanceof PostgreSqlDbDialect || getDbDialect() instanceof MsSqlDbDialect)) {
-            Assert.assertTrue(history.getSqlCode() != 0, "Sql code should not be zero");
-        }
         Assert.assertNotNull(history.getSqlMessage(), "Sql message should not be null");        
         setLoggingLevelForTest(old);
     }
