@@ -73,7 +73,7 @@ public class MultiDatabaseTest {
         return clientAndRootCombos;
 
     }
-    
+
     public String[] getRootDbTypes() {
         Properties properties = getTestProperties();
         return StringUtils.split(properties.getProperty("test.root"), ",");
@@ -82,20 +82,21 @@ public class MultiDatabaseTest {
     @Factory
     public Object[] createTests() throws Exception {
         List<Object> tests2Run = new ArrayList<Object>();
-        
+
         String[] rootDbTypes = getRootDbTypes();
 
         logger.info(rootDbTypes[0] + " will be tested when the individual unit tests are run.");
-        
+
         for (int i = 1; i < rootDbTypes.length; i++) {
             String dbType = rootDbTypes[i];
             logger.info("Tests are being dynamically added for the " + dbType + " database.");
-            tests2Run.addAll(createDatabaseTests(dbType));            
+            tests2Run.addAll(createDatabaseTests(dbType));
         }
-        
+
         String[][] clientAndRootCombos = getClientAndRootCombos();
-        for (String[] objects : clientAndRootCombos) {            
-            logger.info("Integration tests are being dynamically added for the " + objects[0] + " client and " + objects[1] + " root combination of databases.");
+        for (String[] objects : clientAndRootCombos) {
+            logger.info("Integration tests are being dynamically added for the " + objects[0]
+                    + " client and " + objects[1] + " root combination of databases.");
             tests2Run.addAll(createIntegrationTests(objects[0], objects[1]));
         }
 

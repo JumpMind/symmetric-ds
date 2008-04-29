@@ -22,10 +22,9 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
-import org.testng.ITest;
 import org.testng.annotations.Test;
 
-public class IntegrationTest extends AbstractIntegrationTest implements ITest {
+public class IntegrationTest extends AbstractIntegrationTest {
 
     private JdbcTemplate rootJdbcTemplate;
 
@@ -52,15 +51,6 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     static final String selectStoreStatusSql = "select status from test_store_status where store_id = ? and register_id = ?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
-
-    public String getTestName() {
-        try {
-            return "Test from " + getRootDatabaseName() + " to " + getClientDatabaseName();
-        } catch (RuntimeException ex) {
-            logger.error(ex, ex);
-            throw ex;
-        }
-    }
 
     @Test(testName = "Integration Test", groups = "continuous", timeOut = 120000)
     public void testLifecycle() {
@@ -91,6 +81,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     }
 
     protected void init() {
+        logger.info("Integration test running ... " + printRootAndClientDatabases());
+        
         BeanFactory rootBeanFactory = getRootEngine().getApplicationContext();
         rootJdbcTemplate = new JdbcTemplate((DataSource) rootBeanFactory.getBean(Constants.DATA_SOURCE));
 
