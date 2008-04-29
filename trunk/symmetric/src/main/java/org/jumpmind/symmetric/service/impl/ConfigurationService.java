@@ -130,6 +130,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             if (trigger == null) {
                 String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
                 trigger = new Trigger();
+                trigger.setSyncOnDelete(false);
+                trigger.setSyncOnInsert(false);
+                trigger.setSyncOnUpdate(false);
                 trigger.setSourceTableName(tableName);
                 trigger.setSourceGroupId(sourceGroupId);
                 trigger.setTargetGroupId(targetGroupId);
