@@ -535,7 +535,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * schema if the source schema is configured.
      */
     public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory audit,
-            final String tablePrefix, final Table table) {
+            final String tablePrefix, final Table table) {        
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String sourceCatalogName = trigger.getSourceCatalogName();
@@ -543,10 +543,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         + (sourceCatalogName != null ? (sourceCatalogName + ".") : "")
                         + trigger.getSourceTableName());
                 String previousCatalog = null;
+                String defaultCatalog = getDefaultCatalog();
+                String defaultSchema = getDefaultSchema();
                 try {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
                     Statement stmt = con.createStatement();
-                    String triggerSql = createTriggerDDL(dml, trigger, audit, tablePrefix, table);
+                    String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml, trigger, audit, tablePrefix, table, defaultCatalog, defaultSchema);
                     try {
                         stmt.executeUpdate(triggerSql);
                     } catch (SQLException ex) {
@@ -580,11 +582,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
      */
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         return null;
-    }
-
-    public String createTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit,
-            String tablePrefix, Table table) {
-        return sqlTemplate.createTriggerDDL(this, dml, config, audit, tablePrefix, table, getDefaultCatalog(), getDefaultSchema());
     }
 
     public String createPostTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit,
