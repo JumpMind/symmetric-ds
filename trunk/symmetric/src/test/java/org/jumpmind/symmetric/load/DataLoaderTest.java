@@ -34,12 +34,11 @@ import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.testng.Assert;
-import org.testng.ITest;
 import org.testng.annotations.Test;
 
 import com.csvreader.CsvWriter;
 
-public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
+public class DataLoaderTest extends AbstractDataLoaderTest {
 
     protected static final String INSERT_EXISTING_ID = "1";
 
@@ -49,10 +48,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest implements ITest {
 
     protected static final String UPDATE_NOT_EXISTING_ID = "7";
 
-    public String getTestName() {
-        return "DataLoaderTest on " + getDatabaseName();
-    }
-    
     @Test(groups="continuous")
     public void testInsertExisting() throws Exception {
         String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
