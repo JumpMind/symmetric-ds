@@ -33,8 +33,12 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.AbstractDatabaseTest;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.transport.mock.MockTransportManager;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.testng.Assert;
 
@@ -43,16 +47,45 @@ import com.csvreader.CsvWriter;
 public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected final static String TEST_TABLE = "test_dataloader_table";
-    
+
     protected final static String[] TEST_KEYS = { "id" };
-    
+
     protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value",
             "char_value", "char_required_value", "date_value", "time_value", "boolean_value",
             "integer_value", "decimal_value" };
-    
+
     protected static int batchId = 0;
-    
+
     protected static int sequenceId = 9;
+
+    private IDataLoaderService dataLoaderService;
+
+    private IIncomingBatchService incomingBatchService;
+
+    private MockTransportManager transportManager;
+
+    protected MockTransportManager getTransportManager() {
+        if (transportManager == null) {
+            transportManager = new MockTransportManager();
+        }
+        return transportManager;
+    }
+
+    protected IIncomingBatchService getIncomingBatchService() {
+        if (incomingBatchService == null) {
+            incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(
+                    Constants.INCOMING_BATCH_SERVICE);
+        }
+        return incomingBatchService;
+    }
+
+    protected IDataLoaderService getDataLoaderService() {
+        if (dataLoaderService == null) {
+            dataLoaderService = (IDataLoaderService) getBeanFactory().getBean(Constants.DATALOADER_SERVICE);
+            dataLoaderService.setTransportManager(transportManager);
+        }
+        return dataLoaderService;
+    }
 
     @SuppressWarnings("unchecked")
     public void testSimple(String dmlType, String[] values, String[] expectedValues) throws Exception {
@@ -61,7 +94,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
-        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);        
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
         writer.write(dmlType);
         writer.writeRecord(values, true);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
@@ -89,7 +122,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     @SuppressWarnings("unchecked")
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
-        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where " + getWhere(TEST_KEYS);
+        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where "
+                + getWhere(TEST_KEYS);
         Map<String, Object> results = null;
         try {
             results = getJdbcTemplate().queryForMap(sql, new Object[] { testTableId });
@@ -103,7 +137,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         }
         assertEquals(TEST_COLUMNS, expectedValues, results);
     }
-    
+
     protected void assertEquals(String[] name, String[] expected, Map<String, Object> results) {
         if (expected == null) {
             Assert.assertNull(results, "Expected empty results");
@@ -115,13 +149,13 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                 if (resultObj instanceof BigDecimal && expected[i].indexOf(".") != -1) {
                     DecimalFormat df = new DecimalFormat("#.00");
                     resultValue = df.format(resultObj);
-                } else if (resultObj instanceof Date) { 
+                } else if (resultObj instanceof Date) {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
                     resultValue = df.format(resultObj);
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }
-                
+
                 Assert.assertEquals(resultValue, expected[i], name[i]);
             }
         }
