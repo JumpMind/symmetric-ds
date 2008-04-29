@@ -41,11 +41,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
-import org.testng.ITest;
 import org.testng.annotations.Test;
 
 @Test
-public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
+public class DbTriggerTest extends AbstractDatabaseTest {
 
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);
     
@@ -73,15 +72,6 @@ public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
     final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
-
-    public String getTestName() {
-        try {
-            return "DbTriggerTest on " + getDatabaseName();
-        } catch (RuntimeException ex) {
-            logger.fatal(ex,ex);
-            throw ex;
-        }
-    }
 
     @Test(groups = "continuous")
     public void testBootstrapSchemaSync() throws Exception {
