@@ -137,6 +137,13 @@ public class MultiDatabaseTest {
                 return rootFile;
             }
         });
+        
+        tests2Run.add(new CrossCatalogSyncTest() {
+            @Override
+            File getSymmetricFile() {
+                return rootFile;
+            }
+        });        
 
         /* Cannot add tests that have dependent methods because they are not 
          * ordered correctly.

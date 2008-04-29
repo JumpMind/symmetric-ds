@@ -92,15 +92,6 @@
         ? and t.inactive_time is not null
       </value>
     </entry>
-    <entry key="insertTriggerSql">
-      <value>
-        insert into ${sync.table.prefix}_trigger (source_table_name, source_node_group_id,
-        target_node_group_id, channel_id, source_schema_name, sync_on_update, sync_on_insert,
-        sync_on_delete, initial_load_order, initial_load_select, last_updated_by, last_updated_time,
-        create_time) values (?, ?, ?, ?, null, 0, 0, 0, ?, ?, 'system', current_timestamp,
-        current_timestamp)
-      </value>
-    </entry>
     <entry key="groupsLinksSql">
       <value>
         select source_node_group_id, target_node_group_id, data_event_action from
@@ -166,6 +157,13 @@
         values(?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
+    <entry key="insertTriggerSql">
+      <value>
+        insert into ${sync.table.prefix}_trigger
+        (source_catalog_name,source_schema_name,source_table_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,excluded_column_names,initial_load_order,create_time,inactive_time,last_updated_by,last_updated_time)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+    </entry>    
     <entry key="selectTriggerSql">
       <value>
         select * from ${sync.table.prefix}_trigger where source_table_name = ? and

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,8 +129,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     Constants.CHANNEL_CONFIG);
             if (trigger == null) {
                 String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
-                jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { tableName, sourceGroupId,
-                        targetGroupId, Constants.CHANNEL_CONFIG, initialLoadOrder++, initialLoadSelect });
+                trigger = new Trigger();
+                trigger.setSourceTableName(tableName);
+                trigger.setSourceGroupId(sourceGroupId);
+                trigger.setTargetGroupId(targetGroupId);
+                trigger.setChannelId(Constants.CHANNEL_CONFIG);
+                trigger.setInitialLoadOrder(initialLoadOrder++);
+                trigger.setInitialLoadSelect(initialLoadSelect);
+                insert(trigger);
             }
         }
     }
@@ -256,6 +263,25 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 newHistRecord.getSourceCatalogName() }, new int[] { Types.INTEGER, Types.VARCHAR,
                 Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+    }
+
+    public void insert(Trigger trigger) {
+        jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetSchemaName(),
+                trigger.getTargetTableName(), trigger.getSourceGroupId(), trigger.getTargetGroupId(),
+                trigger.getChannelId(), trigger.getSyncOnUpdateCondition(),
+                trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
+                trigger.isSyncOnIncomingBatch(), trigger.getNameForUpdateTrigger(),
+                trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
+                trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
+                trigger.getSyncOnDeleteCondition(), trigger.getInitialLoadSelect(), trigger.getNodeSelect(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadOrder(),
+                new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                Types.VARCHAR, Types.TIMESTAMP });
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {

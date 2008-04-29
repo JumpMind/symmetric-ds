@@ -76,6 +76,8 @@ public interface IConfigurationService {
     public void insert(TriggerHistory newAuditRecord);
 
     public Map<Long, TriggerHistory> getHistoryRecords();
+    
+    public void insert(Trigger trigger);
 
     public boolean isRegistrationServer();
     
