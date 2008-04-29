@@ -51,6 +51,11 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Logger.getLogger(CsvLoader.class).setLevel(level);
         return old;
     }
+    
+    private String printDatabase() {
+        return " The database we are testing against is " + getDatabaseName() +  ".";
+    }
+    
 
     @Test(groups = "continuous")
     public void testStatistics() throws Exception {
@@ -101,17 +106,17 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        Assert.assertEquals(list.size(), 1, "Wrong number of history");
+        Assert.assertEquals(list.size(), 1, "Wrong number of history. " + printDatabase());
         IncomingBatchHistory history = list.get(0);
-        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        Assert.assertNotNull(history.getStartTime(), "Start time cannot be null");
-        Assert.assertNotNull(history.getEndTime(), "End time cannot be null");
-        Assert.assertEquals(history.getFailedRowNumber(), 8, "Wrong failed row number");
-        Assert.assertEquals(history.getByteCount(), 290, "Wrong byte count");
-        Assert.assertEquals(history.getStatementCount(), 8, "Wrong statement count");
-        Assert.assertEquals(history.getFallbackInsertCount(), 1, "Wrong fallback insert count");
-        Assert.assertEquals(history.getFallbackUpdateCount(), 2, "Wrong fallback update count");
-        Assert.assertEquals(history.getMissingDeleteCount(), 3, "Wrong missing delete count");
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. " + printDatabase());
+        Assert.assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
+        Assert.assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
+        Assert.assertEquals(history.getFailedRowNumber(), 8, "Wrong failed row number. " + printDatabase());
+        Assert.assertEquals(history.getByteCount(), 290, "Wrong byte count. " + printDatabase());
+        Assert.assertEquals(history.getStatementCount(), 8, "Wrong statement count. " + printDatabase());
+        Assert.assertEquals(history.getFallbackInsertCount(), 1, "Wrong fallback insert count. " + printDatabase());
+        Assert.assertEquals(history.getFallbackUpdateCount(), 2, "Wrong fallback update count. " + printDatabase());
+        Assert.assertEquals(history.getMissingDeleteCount(), 3, "Wrong missing delete count. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 
@@ -201,17 +206,17 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 1, "Wrong number of history");
         IncomingBatchHistory history = list.get(0);
-        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        Assert.assertNotNull(history.getStartTime(), "Start time cannot be null");
-        Assert.assertNotNull(history.getEndTime(), "End time cannot be null");
-        Assert.assertEquals(history.getFailedRowNumber(), 3, "Wrong failed row number");
-        Assert.assertEquals(history.getByteCount(), 365, "Wrong byte count");
-        Assert.assertEquals(history.getStatementCount(), 3, "Wrong statement count");
-        Assert.assertEquals(history.getFallbackInsertCount(), 0, "Wrong fallback insert count");
-        Assert.assertEquals(history.getFallbackUpdateCount(), 1, "Wrong fallback update count");
-        Assert.assertEquals(history.getMissingDeleteCount(), 0, "Wrong missing delete count");
-        Assert.assertNotNull(history.getSqlState(), "Sql state should not be null");
-        Assert.assertNotNull(history.getSqlMessage(), "Sql message should not be null");
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. " + printDatabase());
+        Assert.assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
+        Assert.assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
+        Assert.assertEquals(history.getFailedRowNumber(), 3, "Wrong failed row number. " + printDatabase());
+        Assert.assertEquals(history.getByteCount(), 365, "Wrong byte count. " + printDatabase());
+        Assert.assertEquals(history.getStatementCount(), 3, "Wrong statement count. " + printDatabase());
+        Assert.assertEquals(history.getFallbackInsertCount(), 0, "Wrong fallback insert count. " + printDatabase());
+        Assert.assertEquals(history.getFallbackUpdateCount(), 1, "Wrong fallback update count. " + printDatabase());
+        Assert.assertEquals(history.getMissingDeleteCount(), 0, "Wrong missing delete count. " + printDatabase());
+        Assert.assertNotNull(history.getSqlState(), "Sql state should not be null. " + printDatabase());
+        Assert.assertNotNull(history.getSqlMessage(), "Sql message should not be null. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 
