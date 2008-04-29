@@ -49,33 +49,54 @@ public class MultiDatabaseTest {
         CLIENT, ROOT
     };
 
-    public Object[][] getClientAndRootCombos() {
+    public String[][] getClientAndRootCombos() {
 
         Properties properties = getTestProperties();
         String[] clientDatabaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
-        String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+        String[] rootDatabaseTypes = getRootDbTypes();
 
-        Object[][] clientAndRootCombos = new Object[rootDatabaseTypes.length * clientDatabaseTypes.length][2];
+        String[][] clientAndRootCombos = new String[rootDatabaseTypes.length * clientDatabaseTypes.length - 1][2];
 
         int index = 0;
+        // skip the first because it will be covered in the normal run of the integration tests
+        boolean skipFirst = true;
         for (String rootDatabaseType : rootDatabaseTypes) {
             for (String clientDatabaseType : clientDatabaseTypes) {
-                clientAndRootCombos[index][0] = clientDatabaseType;
-                clientAndRootCombos[index++][1] = rootDatabaseType;
+                if (!skipFirst) {
+                    clientAndRootCombos[index][0] = clientDatabaseType;
+                    clientAndRootCombos[index++][1] = rootDatabaseType;
+                } else {
+                    skipFirst = false;
+                }
             }
         }
         return clientAndRootCombos;
 
     }
+    
+    public String[] getRootDbTypes() {
+        Properties properties = getTestProperties();
+        return StringUtils.split(properties.getProperty("test.root"), ",");
+    }
 
     @Factory
     public Object[] createTests() throws Exception {
         List<Object> tests2Run = new ArrayList<Object>();
-        Object[][] clientAndRootCombos = getClientAndRootCombos();
-        for (Object[] objects : clientAndRootCombos) {
-            // TODO temporarily disable to see if the mismash of test methods causes tests to fail.
-            tests2Run.addAll(createDatabaseTests(objects[1].toString()));
-            //tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
+        
+        String[] rootDbTypes = getRootDbTypes();
+
+        logger.info(rootDbTypes[0] + " will be tested when the individual unit tests are run.");
+        
+        for (int i = 1; i < rootDbTypes.length; i++) {
+            String dbType = rootDbTypes[i];
+            logger.info("Tests are being dynamically added for the " + dbType + " database.");
+            tests2Run.addAll(createDatabaseTests(dbType));            
+        }
+        
+        String[][] clientAndRootCombos = getClientAndRootCombos();
+        for (String[] objects : clientAndRootCombos) {            
+            logger.info("Integration tests are being dynamically added for the " + objects[0] + " client and " + objects[1] + " root combination of databases.");
+            tests2Run.addAll(createIntegrationTests(objects[0], objects[1]));
         }
 
         return tests2Run.toArray(new Object[tests2Run.size()]);
@@ -137,13 +158,13 @@ public class MultiDatabaseTest {
                 return rootFile;
             }
         });
-        
+
         tests2Run.add(new CrossCatalogSyncTest() {
             @Override
             File getSymmetricFile() {
                 return rootFile;
             }
-        });        
+        });
 
         /* Cannot add tests that have dependent methods because they are not 
          * ordered correctly.
