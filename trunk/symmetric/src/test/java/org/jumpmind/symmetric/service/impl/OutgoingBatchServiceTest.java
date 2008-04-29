@@ -72,6 +72,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         triggerHistId = histKeys.iterator().next().intValue();
     }
 
+    @SuppressWarnings("deprecation")
     @Test(groups = "continuous")
     public void test() {
         List<NodeChannel> channels = configService.getChannelsFor(true);
@@ -129,6 +130,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
     }
 
+    @SuppressWarnings("deprecation")
     @Test(groups = "continuous")
     public void testBatchBoundary() {
         List<NodeChannel> channels = configService.getChannelsFor(true);
@@ -157,6 +159,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test(groups = "continuous")
     public void testMultipleChannels() {
         List<NodeChannel> channels = configService.getChannelsFor(true);
@@ -193,6 +196,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(list.size(), 0);
     }
 
+    @SuppressWarnings("deprecation")
     @Test(groups = "continuous")
     public void testErrorChannel() {
         IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(

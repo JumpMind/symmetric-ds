@@ -43,12 +43,13 @@ import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.transport.mock.MockTransportManager;
 import org.testng.Assert;
+import org.testng.ITest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.csvreader.CsvWriter;
 
-public class DataLoaderServiceTest extends AbstractDataLoaderTest {
+public class DataLoaderServiceTest extends AbstractDataLoaderTest implements ITest {
 
     protected IDataLoaderService dataLoaderService;
 
@@ -64,6 +65,10 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Logger.getLogger(CsvLoader.class).setLevel(level);
         return old;
     }
+    
+    public String getTestName() {
+        return "DataLoaderServiceTest on " + getDatabaseName();
+    }    
 
     @BeforeTest(groups = "continuous")
     protected void setUp() {        

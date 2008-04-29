@@ -44,7 +44,7 @@ import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
-@Test(sequential = true)
+@Test
 public class DbTriggerTest extends AbstractDatabaseTest implements ITest {
 
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);

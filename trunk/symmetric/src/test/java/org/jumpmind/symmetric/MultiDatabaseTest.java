@@ -34,8 +34,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.TestConstants;
-import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
+import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
 import org.testng.annotations.Factory;
 
 /**
@@ -74,8 +74,8 @@ public class MultiDatabaseTest {
         Object[][] clientAndRootCombos = getClientAndRootCombos();
         for (Object[] objects : clientAndRootCombos) {
             // TODO temporarily disable to see if the mismash of test methods causes tests to fail.
-            //tests2Run.addAll(createDatabaseTests(objects[1].toString()));
-            tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
+            tests2Run.addAll(createDatabaseTests(objects[1].toString()));
+            //tests2Run.addAll(createIntegrationTests(objects[0].toString(), objects[1].toString()));
         }
 
         return tests2Run.toArray(new Object[tests2Run.size()]);
@@ -131,12 +131,22 @@ public class MultiDatabaseTest {
             }
         });
 
+        tests2Run.add(new DataLoaderServiceTest() {
+            @Override
+            File getSymmetricFile() {
+                return rootFile;
+            }
+        });
+
+        /* Cannot add tests that have dependent methods because they are not 
+         * ordered correctly.
         tests2Run.add(new DbTriggerTest() {
             @Override
             File getSymmetricFile() {
                 return rootFile;
             }
         });
+        */
     }
 
     protected static File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole) {
@@ -200,7 +210,8 @@ public class MultiDatabaseTest {
             return true;
         } catch (Exception ex) {
             logger.error("Could not connect to the test database using the url: "
-                    + properties.getProperty("db.url") + " and classpath: " + System.getProperty("java.class.path"), ex);            
+                    + properties.getProperty("db.url") + " and classpath: "
+                    + System.getProperty("java.class.path"), ex);
             return false;
         }
     }
