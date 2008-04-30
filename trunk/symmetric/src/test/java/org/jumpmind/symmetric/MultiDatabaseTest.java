@@ -106,7 +106,7 @@ public class MultiDatabaseTest {
     public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType,
             String rootDatabaseType) throws Exception {
         List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
-        tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
+        //tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
         return tests2Run;
     }
 
