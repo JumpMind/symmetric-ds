@@ -62,6 +62,8 @@
   <bean id="outgoingManagementService"
     class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService" />
     
-  <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService" />
+  <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService">
+    <property name="parameterService" ref="parameterService" />
+  </bean>
 
 </beans>
