@@ -52,11 +52,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         return old;
     }
     
-    private String printDatabase() {
-        return " The database we are testing against is " + getDatabaseName() +  ".";
-    }
-    
-
     @Test(groups = "continuous")
     public void testStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
@@ -332,11 +327,11 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
                     IncomingBatch.Status.ER, "Wrong status");
             List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(
                     batchId + "", TestConstants.TEST_CLIENT_EXTERNAL_ID);
-            Assert.assertEquals(list.size(), i + 1, "Wrong number of history");
+            Assert.assertEquals(list.size(), i + 1, "Wrong number of history. " + printDatabase());
             IncomingBatchHistory history = list.get(i);
-            Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-            Assert.assertEquals(history.getFailedRowNumber(), 1, "Wrong failed row number");
-            Assert.assertEquals(history.getStatementCount(), 1, "Wrong statement count");
+            Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. " + printDatabase());
+            Assert.assertEquals(history.getFailedRowNumber(), 1, "Wrong failed row number. " + printDatabase());
+            Assert.assertEquals(history.getStatementCount(), 1, "Wrong statement count. " + printDatabase());
             // pause to make sure we get a different start time on the incoming batch history
             Thread.sleep(10);
         }
@@ -345,14 +340,14 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         values[1] = "A smaller string that will succeed";
         testSimple(CsvConstants.INSERT, values, values);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
-                IncomingBatch.Status.OK, "Wrong status");
+                IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
         List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        Assert.assertEquals(list.size(), retries + 1, "Wrong number of history");
+        Assert.assertEquals(list.size(), retries + 1, "Wrong number of history. " + printDatabase());
         IncomingBatchHistory history = list.get(retries);
-        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.OK, "Wrong status");
-        Assert.assertEquals(history.getFailedRowNumber(), 0, "Wrong failed row number");
-        Assert.assertEquals(history.getStatementCount(), 1, "Wrong statement count");
+        Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.OK, "Wrong status. " + printDatabase());
+        Assert.assertEquals(history.getFailedRowNumber(), 0, "Wrong failed row number. " + printDatabase());
+        Assert.assertEquals(history.getStatementCount(), 1, "Wrong statement count. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 
@@ -388,9 +383,9 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         assertTestTableEquals(values2[0], null);
 
         Assert.assertEquals(findIncomingBatchStatus(Integer.parseInt(nextBatchId),
-                TestConstants.TEST_CLIENT_EXTERNAL_ID), IncomingBatch.Status.OK, "Wrong status");
+                TestConstants.TEST_CLIENT_EXTERNAL_ID), IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
         Assert.assertEquals(findIncomingBatchStatus(Integer.parseInt(nextBatchId2),
-                TestConstants.TEST_CLIENT_EXTERNAL_ID), IncomingBatch.Status.ER, "Wrong status");
+                TestConstants.TEST_CLIENT_EXTERNAL_ID), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 

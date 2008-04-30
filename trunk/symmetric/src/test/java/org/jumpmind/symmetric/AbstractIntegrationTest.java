@@ -19,6 +19,15 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
 
     private SymmetricEngine rootEngine;
 
+    private String rootDatabaseType;
+
+    private String clientDatabaseType;
+
+    AbstractIntegrationTest(String clientDatabaseType, String rootDatabaseType) {
+        this.rootDatabaseType = rootDatabaseType;
+        this.clientDatabaseType = clientDatabaseType;
+    }
+
     protected SymmetricEngine getClientEngine() {
         if (this.clientEngine == null) {
             this.clientEngine = createEngine(getClientFile());
@@ -26,47 +35,53 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
         }
         return this.clientEngine;
     }
-    
+
     protected String getRootDatabaseName() {
-        return getRootDbDialect().getName().toLowerCase();
+        return rootDatabaseType;
     }
 
     protected String getClientDatabaseName() {
-        return getClientDbDialect().getName().toLowerCase();
+        return clientDatabaseType;
     }
 
     protected SymmetricEngine getRootEngine() {
         if (this.rootEngine == null) {
             this.rootEngine = createEngine(getRootFile());
             dropAndCreateDatabaseTables(getRootDatabaseName(), rootEngine);
-            ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).setupDatabase();
-            new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT), (DataSource) this.rootEngine
-                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
+            ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
+                    .setupDatabase();
+            new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT),
+                    (DataSource) this.rootEngine.getApplicationContext().getBean(Constants.DATA_SOURCE), true)
+                    .execute();
             this.rootEngine.start();
         }
         return this.rootEngine;
     }
-    
+
     protected IDbDialect getRootDbDialect() {
-        return (IDbDialect)getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+        return (IDbDialect) getRootEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
     }
-    
+
     protected IDbDialect getClientDbDialect() {
-        return (IDbDialect)getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+        return (IDbDialect) getClientEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
     }
-    
 
     File getClientFile() {
-        Properties properties = MultiDatabaseTest.getTestProperties();
-        String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
-        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.CLIENT);
+        if (clientDatabaseType == null) {
+            Properties properties = MultiDatabaseTest.getTestProperties();
+            String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
+            clientDatabaseType = databaseTypes[0];
+        }
+        return MultiDatabaseTest.writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
     }
 
     File getRootFile() {
-        Properties properties = MultiDatabaseTest.getTestProperties();
-        String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-
-        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseTypes[0], DatabaseRole.ROOT);
+        if (rootDatabaseType == null) {
+            Properties properties = MultiDatabaseTest.getTestProperties();
+            String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+            rootDatabaseType = databaseTypes[0];
+        }
+        return MultiDatabaseTest.writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
     }
 
 }
