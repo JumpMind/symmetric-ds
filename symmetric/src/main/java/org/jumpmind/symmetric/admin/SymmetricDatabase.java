@@ -28,7 +28,7 @@ import javax.swing.JOptionPane;
 import org.jumpmind.symmetric.ActivityListenerSupport;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.PropertiesConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -70,12 +70,12 @@ public class SymmetricDatabase implements Serializable {
         this.controller = c;
         try {
             synchronized (SymmetricDatabase.class) {
-                System.setProperty(PropertiesConstants.DBPOOL_URL, jdbcUrl);
-                System.setProperty(PropertiesConstants.DBPOOL_DRIVER, driverName);
-                System.setProperty(PropertiesConstants.DBPOOL_USER, username == null ? "" : username);
-                System.setProperty(PropertiesConstants.DBPOOL_PASSWORD, password == null ? "" : password);
-                System.setProperty(PropertiesConstants.DBPOOL_INITIAL_SIZE, "1");
-                System.setProperty(PropertiesConstants.RUNTIME_CONFIG_TABLE_PREFIX, tablePrefix);
+                System.setProperty(ParameterConstants.DBPOOL_URL, jdbcUrl);
+                System.setProperty(ParameterConstants.DBPOOL_DRIVER, driverName);
+                System.setProperty(ParameterConstants.DBPOOL_USER, username == null ? "" : username);
+                System.setProperty(ParameterConstants.DBPOOL_PASSWORD, password == null ? "" : password);
+                System.setProperty(ParameterConstants.DBPOOL_INITIAL_SIZE, "1");
+                System.setProperty(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX, tablePrefix);
                 engine = new SymmetricEngine(new ActivityListenerSupport() {
                     @Override
                     public boolean createConfigurationTables(IDbDialect dbDialect) {

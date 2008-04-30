@@ -28,6 +28,8 @@ import java.util.Map;
  * Get and set application wide configuration information.
  */
 public interface IParameterService {
+    
+    public static final String ALL = "ALL";
 
     public BigDecimal getDecimal(String key);
 

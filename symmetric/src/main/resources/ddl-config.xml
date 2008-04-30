@@ -281,7 +281,6 @@
         <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" />
-        <column name="param_type" type="CHAR" size="1" required="true" />
         <column name="param_value" type="VARCHAR" size="1000" />
     </table>
 
