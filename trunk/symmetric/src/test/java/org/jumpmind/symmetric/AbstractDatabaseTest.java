@@ -23,6 +23,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -43,7 +45,7 @@ import org.testng.ITest;
 
 abstract public class AbstractDatabaseTest extends AbstractTest implements ITest {
 
-    private SymmetricEngine engine;
+    private Map<String, SymmetricEngine> engine = new HashMap<String, SymmetricEngine>();
 
     private String databaseType;
 
@@ -54,33 +56,35 @@ abstract public class AbstractDatabaseTest extends AbstractTest implements ITest
     public AbstractDatabaseTest() {
     }    
     
-    public String getTestName() {
-        return databaseType;
+    public String getTestName() {        
+        return getDatabaseName();
     }
 
     File getSymmetricFile() {
+        return MultiDatabaseTest.writeTempPropertiesFileFor(getDatabaseName(), DatabaseRole.ROOT);
+    }
+
+    protected SymmetricEngine getSymmetricEngine() {
+        SymmetricEngine e = this.engine.get(getDatabaseName()); 
+        if (e == null) {
+            e = createEngine(getSymmetricFile());
+            dropAndCreateDatabaseTables(getDatabaseName(), e);
+            ((IBootstrapService)e.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
+                    .setupDatabase();
+            new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) e
+                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
+            e.start();
+            this.engine.put(getDatabaseName(), e);            
+        }
+        return e;
+    }
+
+    protected String getDatabaseName() {
         if (databaseType == null) {
             Properties properties = MultiDatabaseTest.getTestProperties();
             String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
             databaseType = rootDatabaseTypes[0];
-        }
-        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseType, DatabaseRole.ROOT);
-    }
-
-    protected SymmetricEngine getSymmetricEngine() {
-        if (this.engine == null) {
-            this.engine = createEngine(getSymmetricFile());
-            dropAndCreateDatabaseTables(getDatabaseName(), engine);
-            ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
-                    .setupDatabase();
-            new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) this.engine
-                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
-            this.engine.start();
-        }
-        return this.engine;
-    }
-
-    protected String getDatabaseName() {
+        }        
         return databaseType;
     }
 
