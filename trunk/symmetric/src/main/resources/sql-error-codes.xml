@@ -148,7 +148,7 @@
             <value>17002,17447</value>
         </property>
         <property name="dataIntegrityViolationCodes">
-            <value>1,1400,1722,2291,2292</value>
+            <value>1,1400,1722,2291,2292,12899</value>
         </property>
         <property name="cannotAcquireLockCodes">
             <value>54</value>
