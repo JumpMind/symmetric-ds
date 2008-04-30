@@ -33,6 +33,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.PropertiesConstants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
@@ -106,7 +107,7 @@ public class MultiDatabaseTest {
     public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType,
             String rootDatabaseType) throws Exception {
         List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
-        //tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
+        tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
         return tests2Run;
     }
 
@@ -144,12 +145,12 @@ public class MultiDatabaseTest {
                 newProperties.setProperty("symmetric.runtime.external.id",
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty("symmetric.runtime.my.url", "internal://"
+                newProperties.setProperty(PropertiesConstants.START_RUNTIME_MY_URL, "internal://"
                         + databaseRole.name().toLowerCase());
-                newProperties.setProperty("symmetric.runtime.registration.url",
+                newProperties.setProperty(PropertiesConstants.START_RUNTIME_REGISTRATION_URL,
                         databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name()
                                 .toLowerCase()) : "");
-                newProperties.setProperty("symmetric.runtime.engine.name", databaseRole.name().toLowerCase());
+                newProperties.setProperty(PropertiesConstants.START_RUNTIME_ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
                 FileOutputStream os = new FileOutputStream(propertiesFile);
