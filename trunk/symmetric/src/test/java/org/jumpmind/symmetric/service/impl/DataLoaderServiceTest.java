@@ -126,7 +126,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
         Assert.assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
         Assert.assertEquals(history.getFailedRowNumber(), 8, "Wrong failed row number. " + printDatabase());
-        Assert.assertEquals(history.getByteCount(), 290, "Wrong byte count. " + printDatabase());
+        Assert.assertEquals(history.getByteCount(), 317, "Wrong byte count. " + printDatabase());
         Assert.assertEquals(history.getStatementCount(), 8, "Wrong statement count. " + printDatabase());
         Assert.assertEquals(history.getFallbackInsertCount(), 1, "Wrong fallback insert count. "
                 + printDatabase());
@@ -228,7 +228,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Assert.assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
         Assert.assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
         Assert.assertEquals(history.getFailedRowNumber(), 3, "Wrong failed row number. " + printDatabase());
-        Assert.assertEquals(history.getByteCount(), 365, "Wrong byte count. " + printDatabase());
+        Assert.assertEquals(history.getByteCount(), 374, "Wrong byte count. " + printDatabase());
         Assert.assertEquals(history.getStatementCount(), 3, "Wrong statement count. " + printDatabase());
         Assert.assertEquals(history.getFallbackInsertCount(), 0, "Wrong fallback insert count. "
                 + printDatabase());
