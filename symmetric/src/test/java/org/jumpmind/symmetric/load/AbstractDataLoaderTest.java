@@ -227,6 +227,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     private void resetIds() {
         if (lastDatabaseTested == null || !lastDatabaseTested.equals(getDatabaseName())) {
             sequenceId = 9;
+            batchId = 0;
             lastDatabaseTested = getDatabaseName();
         }
     }

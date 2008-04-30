@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.csvreader.CsvWriter;
@@ -58,7 +59,13 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Logger.getLogger(CsvLoader.class).setLevel(level);
         return old;
     }
-
+    
+    @BeforeTest(groups="continuous")
+    public void init() {
+        Logger.getLogger(DataLoaderServiceTest.class).info("initializing dataloaderservicetest for " + getDatabaseName());
+        getSymmetricEngine();
+    }
+    
     @Test(groups = "continuous")
     public void testStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
@@ -329,6 +336,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testErrorThenSuccessBatch() throws Exception {
+        Logger.getLogger(DataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0",
