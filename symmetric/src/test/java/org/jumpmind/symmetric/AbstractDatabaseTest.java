@@ -32,9 +32,9 @@ import org.jumpmind.symmetric.MultiDatabaseTest.DatabaseRole;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -63,8 +63,7 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     }
     
     protected String getDatabaseName() {
-        IDbDialect dialect = (IDbDialect)getSymmetricEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
-        return dialect.getName().toLowerCase();
+        return getDbDialect().getName().toLowerCase();
     }    
 
     protected BeanFactory getBeanFactory() {
@@ -72,7 +71,7 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     }
 
     protected DataSource getDataSource() {
-        return (DataSource) getBeanFactory().getBean("dataSource");
+        return (DataSource) getBeanFactory().getBean(Constants.DATA_SOURCE);
     }
 
     protected JdbcTemplate getJdbcTemplate() {
@@ -80,7 +79,11 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     }
 
     protected AbstractDbDialect getDbDialect() {
-        return (AbstractDbDialect) getBeanFactory().getBean("dbDialect");
+        return (AbstractDbDialect) getBeanFactory().getBean(Constants.DB_DIALECT);
+    }
+    
+    protected IParameterService getParameterService() {
+        return (IParameterService)getBeanFactory().getBean(Constants.PARAMETER_SERVICE);
     }
     
     protected void cleanSlate(final String... tableName)

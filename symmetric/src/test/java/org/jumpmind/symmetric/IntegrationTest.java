@@ -22,9 +22,10 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.Assert;
+import org.testng.ITest;
 import org.testng.annotations.Test;
 
-public class IntegrationTest extends AbstractIntegrationTest {
+public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
     private JdbcTemplate rootJdbcTemplate;
 
@@ -52,6 +53,18 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
+    public IntegrationTest() {
+        super(null, null);
+    }
+    
+    public IntegrationTest(String clientDb, String rootDb) {
+        super(clientDb, rootDb);
+    }
+    
+    public String getTestName() {
+        return "from " + getClientDatabaseName() + " to " + getRootDatabaseName();
+    }
+    
     @Test(testName = "Integration Test", groups = "continuous", timeOut = 120000)
     public void testLifecycle() {
         try {

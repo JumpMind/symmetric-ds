@@ -88,6 +88,10 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         }
         return dataLoaderService;
     }
+    
+    protected String printDatabase() {
+        return " The database we are testing against is " + getDatabaseName() +  ".";
+    }
 
     @SuppressWarnings("unchecked")
     public void testSimple(String dmlType, String[] values, String[] expectedValues) throws Exception {
@@ -142,9 +146,9 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected void assertEquals(String[] name, String[] expected, Map<String, Object> results) {
         if (expected == null) {
-            Assert.assertNull(results, "Expected empty results");
+            Assert.assertNull(results, "Expected empty results. " + printDatabase());
         } else {
-            Assert.assertNotNull(results, "Expected non-empty results");
+            Assert.assertNotNull(results, "Expected non-empty results. " + printDatabase());
             for (int i = 0; i < expected.length; i++) {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;
@@ -158,7 +162,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                     resultValue = resultObj.toString();
                 }
 
-                Assert.assertEquals(resultValue, expected[i], name[i]);
+                Assert.assertEquals(resultValue, expected[i], name[i] + ". " + printDatabase());
             }
         }
     }

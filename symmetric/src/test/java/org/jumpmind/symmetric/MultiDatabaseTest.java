@@ -106,34 +106,8 @@ public class MultiDatabaseTest {
     public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType,
             String rootDatabaseType) throws Exception {
         List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
-        File clientFile = writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
-        File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-        if (clientFile != null && rootFile != null) {
-            addAbstractIntegrationTests(clientFile, rootFile, tests2Run);
-        }
+        tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
         return tests2Run;
-    }
-
-    /**
-     * If you want to add any additional node 2 node tests, subclass from AbstractIntegrationTest and add the test here.  The reason
-     * for the anonymous inner class trick is so TestNG actually runs tests sequentially (I found that if the same test is added
-     * more than once each of the same test methods are run once for each instance of the class instead of running once test to completion, then
-     * another.) 
-     */
-    protected void addAbstractIntegrationTests(final File clientFile, final File rootFile,
-            List<AbstractIntegrationTest> tests2Run) {
-        tests2Run.add(new IntegrationTest() {
-            @Override
-            File getClientFile() {
-                return clientFile;
-            }
-
-            @Override
-            File getRootFile() {
-                return rootFile;
-            }
-
-        });
     }
 
     public List<? extends AbstractTest> createDatabaseTests(String rootDatabaseType) throws Exception {
