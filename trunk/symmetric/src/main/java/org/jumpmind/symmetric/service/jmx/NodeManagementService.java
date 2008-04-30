@@ -19,9 +19,21 @@
  */
 package org.jumpmind.symmetric.service.jmx;
 
+import org.jumpmind.symmetric.service.IParameterService;
+import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for nodes")
 public class NodeManagementService {
 
+    IParameterService parameterService;
+    
+    @ManagedOperation(description = "Reload supported parameters from file or database")
+    public void rereadParameters() {
+        this.parameterService.rereadParameters(); 
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
 }
