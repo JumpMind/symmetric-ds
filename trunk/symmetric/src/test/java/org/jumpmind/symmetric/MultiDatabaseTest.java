@@ -112,44 +112,10 @@ public class MultiDatabaseTest {
 
     public List<? extends AbstractTest> createDatabaseTests(String rootDatabaseType) throws Exception {
         List<AbstractDatabaseTest> tests2Run = new ArrayList<AbstractDatabaseTest>();
-        final File rootFile = writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
-        if (rootFile != null) {
-            addAbstractDatabaseTests(rootFile, tests2Run);
-        }
+        tests2Run.add(new DataLoaderServiceTest(rootDatabaseType));
+        tests2Run.add(new DataLoaderTest(rootDatabaseType));
+        tests2Run.add(new CrossCatalogSyncTest(rootDatabaseType));        
         return tests2Run;
-    }
-
-    protected void addAbstractDatabaseTests(final File rootFile, List<AbstractDatabaseTest> tests2Run) {
-        tests2Run.add(new DataLoaderTest() {
-            @Override
-            File getSymmetricFile() {
-                return rootFile;
-            }
-        });
-
-        tests2Run.add(new DataLoaderServiceTest() {
-            @Override
-            File getSymmetricFile() {
-                return rootFile;
-            }
-        });
-
-        tests2Run.add(new CrossCatalogSyncTest() {
-            @Override
-            File getSymmetricFile() {
-                return rootFile;
-            }
-        });
-
-        /* Cannot add tests that have dependent methods because they are not 
-         * ordered correctly.
-        tests2Run.add(new DbTriggerTest() {
-            @Override
-            File getSymmetricFile() {
-                return rootFile;
-            }
-        });
-        */
     }
 
     protected static File writeTempPropertiesFileFor(String databaseType, DatabaseRole databaseRole) {

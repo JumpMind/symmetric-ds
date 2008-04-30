@@ -48,7 +48,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
 
     protected static final String UPDATE_NOT_EXISTING_ID = "7";
 
-    @Test(groups="continuous")
+    public DataLoaderTest() {
+    }
+
+    public DataLoaderTest(String db) {
+        super(db);
+    }
+
+    @Test(groups = "continuous")
     public void testInsertExisting() throws Exception {
         String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
@@ -56,17 +63,17 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testUpdateNotExisting() throws Exception {
         String[] values = { UPDATE_NOT_EXISTING_ID, "it's /a/  string", "it's  -not-  null",
-                "You're a \"character\"", "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0", 
+                "You're a \"character\"", "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0",
                 "1", "13", "9.95", UPDATE_NOT_EXISTING_ID };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         massageExpectectedResultsForDialect(expectedValues);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringQuotes() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -77,7 +84,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringSpaces() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -88,7 +95,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringOneSpace() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -96,7 +103,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringEmpty() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -104,14 +111,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringNull() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testStringBackslash() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -124,23 +131,23 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testDeleteExisting() throws Exception {
         testSimple(CsvConstants.DELETE, new String[] { DELETE_EXISTING_ID }, null);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testDeleteNotExisting() throws Exception {
         testSimple(CsvConstants.DELETE, new String[] { DELETE_NOT_EXISTING_ID }, null);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testColumnNotExisting() throws Exception {
         String[] columns = (String[]) ArrayUtils.add(TEST_COLUMNS, "Unknown_Column");
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char", "char not null",
                 "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "i do not exist!" };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
@@ -153,17 +160,17 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
         massageExpectectedResultsForDialect(expectedValues);
-        assertTestTableEquals(values[0], expectedValues);    
+        assertTestTableEquals(values[0], expectedValues);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testTableNotExisting() throws Exception {
         String tableName = "UnknownTable";
         String[] keys = { "id" };
-        String[] columns= { "id", "name" };
+        String[] columns = { "id", "name" };
         String[] badValues = { "1", "testTableNotExisting" };
         String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char",
-                "char not null", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0", "12.10"};
+                "char not null", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0", "12.10" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -183,11 +190,11 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         assertTestTableEquals(values[0], values);
     }
 
-    @Test(groups="continuous")
+    @Test(groups = "continuous")
     public void testLargeColumn() throws Exception {
         String tableName = "UnknownTable";
         String[] keys = { "id" };
-        String[] columns= { "id", "name" };
+        String[] columns = { "id", "name" };
         String[] values = { "1", new RandomDataImpl().nextSecureHexString(110000) };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -203,14 +210,15 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     }
 
     private void massageExpectectedResultsForDialect(String[] values) {
-        if (! (getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect)) {
+        if (!(getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect)) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
     }
 
     @Test
     public void testBenchmark() throws Exception {
-        ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream("/test-data-loader-benchmark.zip"));
+        ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream(
+                "/test-data-loader-benchmark.zip"));
         in.getNextEntry();
         long startTime = System.currentTimeMillis();
         IDataLoader dataLoader = getDataLoader();

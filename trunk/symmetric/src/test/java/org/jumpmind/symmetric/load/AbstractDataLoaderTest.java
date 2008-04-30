@@ -57,7 +57,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     protected static int batchId = 0;
 
     protected static int sequenceId = 9;
-        
+
     private static String lastDatabaseTested = "";
 
     private IDataLoaderService dataLoaderService;
@@ -65,6 +65,13 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     private IIncomingBatchService incomingBatchService;
 
     private MockTransportManager transportManager;
+
+    public AbstractDataLoaderTest() {
+    }
+
+    public AbstractDataLoaderTest(String dbType) {
+        super(dbType);
+    }
 
     protected MockTransportManager getTransportManager() {
         if (transportManager == null) {
@@ -88,9 +95,9 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         }
         return dataLoaderService;
     }
-    
+
     protected String printDatabase() {
-        return " The database we are testing against is " + getDatabaseName() +  ".";
+        return " The database we are testing against is " + getDatabaseName() + ".";
     }
 
     @SuppressWarnings("unchecked")
@@ -212,7 +219,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         resetIds();
         return Integer.toString(batchId);
     }
-    
+
     /**
      * This crazy logic is to reset the ids so they are predictable for test assertions.  Because they are 
      * static, they may grow past expected values depending on how many databases we are testing.

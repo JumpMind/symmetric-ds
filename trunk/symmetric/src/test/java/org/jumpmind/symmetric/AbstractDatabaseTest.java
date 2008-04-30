@@ -39,32 +39,50 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.testng.ITest;
 
-abstract public class AbstractDatabaseTest extends AbstractTest {
+abstract public class AbstractDatabaseTest extends AbstractTest implements ITest {
 
     private SymmetricEngine engine;
-    
-    File getSymmetricFile() {        
-        Properties properties = MultiDatabaseTest.getTestProperties();
-        String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-        return MultiDatabaseTest.writeTempPropertiesFileFor(rootDatabaseTypes[0], DatabaseRole.ROOT);
+
+    private String databaseType;
+
+    public AbstractDatabaseTest(String dbType) {
+        this.databaseType = dbType;
     }
     
+    public AbstractDatabaseTest() {
+    }    
+    
+    public String getTestName() {
+        return databaseType;
+    }
+
+    File getSymmetricFile() {
+        if (databaseType == null) {
+            Properties properties = MultiDatabaseTest.getTestProperties();
+            String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+            databaseType = rootDatabaseTypes[0];
+        }
+        return MultiDatabaseTest.writeTempPropertiesFileFor(databaseType, DatabaseRole.ROOT);
+    }
+
     protected SymmetricEngine getSymmetricEngine() {
         if (this.engine == null) {
             this.engine = createEngine(getSymmetricFile());
             dropAndCreateDatabaseTables(getDatabaseName(), engine);
-            ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).setupDatabase();
+            ((IBootstrapService) this.engine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
+                    .setupDatabase();
             new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) this.engine
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             this.engine.start();
         }
         return this.engine;
     }
-    
+
     protected String getDatabaseName() {
-        return getDbDialect().getName().toLowerCase();
-    }    
+        return databaseType;
+    }
 
     protected BeanFactory getBeanFactory() {
         return getSymmetricEngine().getApplicationContext();
@@ -81,27 +99,23 @@ abstract public class AbstractDatabaseTest extends AbstractTest {
     protected AbstractDbDialect getDbDialect() {
         return (AbstractDbDialect) getBeanFactory().getBean(Constants.DB_DIALECT);
     }
-    
+
     protected IParameterService getParameterService() {
-        return (IParameterService)getBeanFactory().getBean(Constants.PARAMETER_SERVICE);
+        return (IParameterService) getBeanFactory().getBean(Constants.PARAMETER_SERVICE);
     }
-    
-    protected void cleanSlate(final String... tableName)
-    {
-        getJdbcTemplate().execute(new ConnectionCallback()
-        {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException
-            {
+
+    protected void cleanSlate(final String... tableName) {
+        getJdbcTemplate().execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 Statement s = conn.createStatement();
-                
-                for (String table: tableName)
-                {
-                    s.executeUpdate("delete from "+table);
+
+                for (String table : tableName) {
+                    s.executeUpdate("delete from " + table);
                 }
                 s.close();
                 return null;
             }
-            
+
         });
     }
 
