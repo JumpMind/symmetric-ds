@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.common;
 
-public class PropertiesConstants {
+public class ParameterConstants {
 
     public final static String START_PULL_JOB = "symmetric.runtime.start.pull.job";
     public final static String START_PUSH_JOB = "symmetric.runtime.start.push.job";
@@ -32,6 +32,8 @@ public class PropertiesConstants {
     public final static String START_RUNTIME_REGISTRATION_URL = "symmetric.runtime.registration.url";
     public final static String START_RUNTIME_MY_URL = "symmetric.runtime.my.url";
     public final static String START_RUNTIME_ENGINE_NAME = "symmetric.runtime.engine.name";
+    
+    public final static String CONCURRENT_WORKERS = "symmetric.http.concurrent.workers.max";
     
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER ="db.driver";

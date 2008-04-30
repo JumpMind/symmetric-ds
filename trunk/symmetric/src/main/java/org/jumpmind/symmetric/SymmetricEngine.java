@@ -33,7 +33,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.PropertiesConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.PullJob;
@@ -204,31 +204,31 @@ public class SymmetricEngine {
      */
     private void startJobs() {
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+                properties.getProperty(ParameterConstants.START_PUSH_JOB))) {
             applicationContext.getBean(Constants.PUSH_JOB_TIMER);
         }
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+                properties.getProperty(ParameterConstants.START_PULL_JOB))) {
             applicationContext.getBean(Constants.PULL_JOB_TIMER);
         }
 
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+                properties.getProperty(ParameterConstants.START_PURGE_JOB))) {
             applicationContext.getBean(Constants.PURGE_JOB_TIMER);
         }
 
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_HEARTBEAT_JOB))) {
+                properties.getProperty(ParameterConstants.START_HEARTBEAT_JOB))) {
             applicationContext.getBean(Constants.HEARTBEAT_JOB_TIMER);
         }
 
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_SYNCTRIGGERS_JOB))) {
+                properties.getProperty(ParameterConstants.START_SYNCTRIGGERS_JOB))) {
             applicationContext.getBean(Constants.SYNC_TRIGGERS_JOB_TIMER);
         }
 
         if (Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_STATISTIC_FLUSH_JOB))) {
+                properties.getProperty(ParameterConstants.START_STATISTIC_FLUSH_JOB))) {
             applicationContext.getBean(Constants.STATISTIC_FLUSH_JOB_TIMER);
         }
 
@@ -291,7 +291,7 @@ public class SymmetricEngine {
      */
     public void push() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PUSH_JOB))) {
+                properties.getProperty(ParameterConstants.START_PUSH_JOB))) {
             ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -313,7 +313,7 @@ public class SymmetricEngine {
      */
     public void pull() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PULL_JOB))) {
+                properties.getProperty(ParameterConstants.START_PULL_JOB))) {
             ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -326,7 +326,7 @@ public class SymmetricEngine {
      */
     public void purge() {
         if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                properties.getProperty(PropertiesConstants.START_PURGE_JOB))) {
+                properties.getProperty(ParameterConstants.START_PURGE_JOB))) {
             purgeService.purge();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");

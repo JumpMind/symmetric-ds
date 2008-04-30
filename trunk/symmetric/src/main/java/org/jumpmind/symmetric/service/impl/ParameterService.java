@@ -42,8 +42,6 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     static final Log logger = LogFactory.getLog(ParameterService.class);
 
-    static final String ALL = "ALL";
-
     private Map<String, String> parameters;
 
     private BeanFactory beanFactory;

@@ -33,7 +33,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.PropertiesConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
@@ -145,12 +145,12 @@ public class MultiDatabaseTest {
                 newProperties.setProperty("symmetric.runtime.external.id",
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty(PropertiesConstants.START_RUNTIME_MY_URL, "internal://"
+                newProperties.setProperty(ParameterConstants.START_RUNTIME_MY_URL, "internal://"
                         + databaseRole.name().toLowerCase());
-                newProperties.setProperty(PropertiesConstants.START_RUNTIME_REGISTRATION_URL,
+                newProperties.setProperty(ParameterConstants.START_RUNTIME_REGISTRATION_URL,
                         databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name()
                                 .toLowerCase()) : "");
-                newProperties.setProperty(PropertiesConstants.START_RUNTIME_ENGINE_NAME, databaseRole.name().toLowerCase());
+                newProperties.setProperty(ParameterConstants.START_RUNTIME_ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
                 FileOutputStream os = new FileOutputStream(propertiesFile);
