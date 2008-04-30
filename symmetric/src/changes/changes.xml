@@ -7,9 +7,11 @@
   <body>
     <release version="1.4.0" date="unknown" description="Lets add some polish">
       <action dev="chenson42" type="add" issue="aid=&amp;atid=997727">
-        Supported runtime configuration from the sym_parameters table and the periodic
-        rereading of parameters from the file system (as long as the ParameterService is
-        being used.)
+        Supported runtime configuration from the sym_parameters table and the periodic rereading of
+        parameters from the file system (as long as the ParameterService is being used.)
+      </action>
+      <action dev="chenson42" type="add" issue="aid=1954979&amp;atid=997727">
+        When db is unavailable during startup, add retry logic
       </action>
       <action dev="chenson42" type="add" issue="aid=1874255&amp;atid=997727">
         Recorded the timezone in sym_node for reporting purposes
@@ -19,25 +21,27 @@
       </action>
       <action dev="chenson42" type="add" issue="aid=1953442&amp;atid=997727">
         Added support for configuring the source table's catalog.
-      </action>      
-      <action dev="chenson42" type="add" issue="aid=1946085&amp;atid=997727">
-        Don't specify the schema in triggers if the schema/catalogs are specified in the trigger configuration.
-      </action>            
-      <!--       
-      <action dev="chenson42" type="add" issue="aid=1825808&amp;atid=997727">
-        Added a thick client configuration and administration utility application.
       </action>
-       --> 
+      <action dev="chenson42" type="add" issue="aid=1946085&amp;atid=997727">
+        Don't specify the schema in triggers if the schema/catalogs are specified in the trigger
+        configuration.
+      </action>
+      <!--       
+        <action dev="chenson42" type="add" issue="aid=1825808&amp;atid=997727">
+        Added a thick client configuration and administration utility application.
+        </action>
+      -->
       <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.1.</action>
       <action dev="knaas" type="add">
         Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
-        configuration information.  From this point forward we will provide a standard web.xml and 
+        configuration information. From this point forward we will provide a standard web.xml and
         configuration is in the same place as all the other SymmetricDS configuration.
       </action>
       <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
-        Fixed a bug with the SQL Server filter that removes identity columns from updates.  When syncing from other 
-        databases the column case may not match.  We need to try to match regardless of case on the columns.
-      </action>      
+        Fixed a bug with the SQL Server filter that removes identity columns from updates. When
+        syncing from other databases the column case may not match. We need to try to match
+        regardless of case on the columns.
+      </action>
       <action dev="chenson42" type="fix" issue="aid=1916017&amp;atid=997724">
         Preserved the original case of table names, table prefix, and foreign keys.
       </action>
@@ -45,48 +49,49 @@
         Fixed the update trigger and the initial load for the HSQLDB dialect.
       </action>
       <action dev="erilong" type="fix" issue="aid=1944507&amp;atid=997724">
-        Bug in selectDataIdSql.  data_id was not qualified.
+        Bug in selectDataIdSql. data_id was not qualified.
       </action>
     </release>
     <release version="1.3.4" date="2008-04-??" description="Patch release">
       <action dev="chenson42" type="fix" issue="aid=1950045&amp;atid=997724">
         Fixed peek ahead logic so that the max batch size limit is respected.
       </action>
-    </release>    
+    </release>
     <release version="1.3.3" date="2008-04-22" description="">
       <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
         Removed extra comma in mssql.xml trigger text.
       </action>
       <action dev="chenson42" type="fix" issue="aid=1948790&amp;atid=997724">
         Multi-row updates don't work for the Sql Server Dialect.
-      </action>    
+      </action>
       <action dev="erilong" type="fix" issue="aid=1948109&amp;atid=997724">
         Time portion of DATE column not syncing.
-      </action>       
-    </release>        
+      </action>
+    </release>
     <release version="1.3.2" date="2008-04-01" description="">
       <action dev="chenson42" type="fix" issue="aid=1930496&amp;atid=997724">
-        Make buildOutgoingBatches use only one connection from the connection pool vs the previous 
+        Make buildOutgoingBatches use only one connection from the connection pool vs the previous
         two it used.
       </action>
       <action dev="chenson42" type="fix" issue="aid=1929400&amp;atid=997724">
         Don't put all ACKs in the same transaction.
       </action>
       <action dev="chenson42" type="fix" issue="aid= 1929395&amp;atid=997724">
-        Introduce a compression filter that does not read an entire stream into memory before compressing.
+        Introduce a compression filter that does not read an entire stream into memory before
+        compressing.
       </action>
       <action dev="chenson42" type="fix" issue="aid=1918310&amp;atid=997724">
         Fixed the isInitialLoadComplete JMX method so it works with the new asynchronous reload.
-      </action>    
+      </action>
     </release>
     <release version="1.3.1" date="2008-03-29" description="a brave new frontier, patched">
       <action dev="erilong" type="fix" issue="aid=1924351&amp;atid=997724">
-        Queries need to alias columns on PostgreSQL in case reserved words like "limit"
-        are used as a column name.  Fixes synchronization for Adempiere.
+        Queries need to alias columns on PostgreSQL in case reserved words like "limit" are used as
+        a column name. Fixes synchronization for Adempiere.
       </action>
       <action dev="erilong" type="fix" issue="aid=1922524&amp;atid=997724">
-        Fixed the PostgreSQL dialect to query for existence of triggers correctly, which
-        was causing it to try creating them on every startup.
+        Fixed the PostgreSQL dialect to query for existence of triggers correctly, which was causing
+        it to try creating them on every startup.
       </action>
       <action dev="erilong" type="fix" issue="aid=1913260&amp;atid=997724">
         Fixed the population of the failed_data_id on sym_outgoing_batch_hist, which was always
