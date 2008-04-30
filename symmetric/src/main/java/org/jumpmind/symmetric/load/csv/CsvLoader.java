@@ -87,7 +87,6 @@ public class CsvLoader implements IDataLoader {
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
-            stats.incrementByteCount(csvReader.getRawRecord().length());
 
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(tokens[1]);

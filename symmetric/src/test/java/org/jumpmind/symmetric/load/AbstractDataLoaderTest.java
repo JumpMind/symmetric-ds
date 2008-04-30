@@ -57,6 +57,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     protected static int batchId = 0;
 
     protected static int sequenceId = 9;
+        
+    private static String lastDatabaseTested = "";
 
     private IDataLoaderService dataLoaderService;
 
@@ -203,10 +205,23 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     }
 
     protected synchronized String getBatchId() {
+        resetIds();
         return Integer.toString(batchId);
+    }
+    
+    /**
+     * This crazy logic is to reset the ids so they are predictable for test assertions.  Because they are 
+     * static, they may grow past expected values depending on how many databases we are testing.
+     */
+    private void resetIds() {
+        if (lastDatabaseTested == null || !lastDatabaseTested.equals(getDatabaseName())) {
+            sequenceId = 9;
+            lastDatabaseTested = getDatabaseName();
+        }
     }
 
     protected synchronized String getNextId() {
+        resetIds();
         return Integer.toString(++sequenceId);
     }
 
