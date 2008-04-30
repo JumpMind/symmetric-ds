@@ -29,6 +29,10 @@ public class PropertiesConstants {
     public final static String START_SYNCTRIGGERS_JOB = "symmetric.runtime.start.synctriggers.job";
     public final static String START_STATISTIC_FLUSH_JOB = "symmetric.runtime.start.stat.flush.job";
     
+    public final static String START_RUNTIME_REGISTRATION_URL = "symmetric.runtime.registration.url";
+    public final static String START_RUNTIME_MY_URL = "symmetric.runtime.my.url";
+    public final static String START_RUNTIME_ENGINE_NAME = "symmetric.runtime.engine.name";
+    
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER ="db.driver";
     public final static String DBPOOL_USER = "db.user";
