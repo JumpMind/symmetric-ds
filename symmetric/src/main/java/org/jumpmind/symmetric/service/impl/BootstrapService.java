@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -58,9 +57,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-
-    @SuppressWarnings("unused")
-    private IParameterService parameterService;
 
     private IConfigurationService configurationService;
 
@@ -340,10 +336,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         return audit;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

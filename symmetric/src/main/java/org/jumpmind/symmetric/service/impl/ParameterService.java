@@ -62,6 +62,19 @@ public class ParameterService extends AbstractService implements IParameterServi
         return BigDecimal.ZERO;
     }
 
+    public boolean is(String key) {
+        String val = getString(key);
+        if (val != null) {
+            if (val.equals("1")) {
+                return true;
+            } else {
+                return Boolean.parseBoolean(val);
+            }
+        } else {
+            return false;
+        }
+    }
+
     public int getInt(String key) {
         String val = getString(key);
         if (val != null) {
@@ -81,10 +94,11 @@ public class ParameterService extends AbstractService implements IParameterServi
     public String getString(String key) {
         return getParameters().get(key);
     }
-    
+
     public void saveParameter(String key, Object paramValue) {
-        this.saveParameter(runtimeConfiguration.getExternalId(), runtimeConfiguration.getNodeGroupId(), key, paramValue);
-    }    
+        this.saveParameter(runtimeConfiguration.getExternalId(), runtimeConfiguration.getNodeGroupId(), key,
+                paramValue);
+    }
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
         int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,
@@ -94,6 +108,8 @@ public class ParameterService extends AbstractService implements IParameterServi
             jdbcTemplate.update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key,
                     paramValue });
         }
+
+        rereadParameters();
     }
 
     public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
@@ -152,7 +168,7 @@ public class ParameterService extends AbstractService implements IParameterServi
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
                         .currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
-            parameters = buildSystemParameters();            
+            parameters = buildSystemParameters();
         }
         return parameters;
     }

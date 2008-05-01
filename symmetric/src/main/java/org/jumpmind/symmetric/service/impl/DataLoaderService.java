@@ -38,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -85,10 +86,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
 
-    int numberOfStatusSendRetries = 5;
-
-    long timeBetweenStatusSendRetriesMs = 5000;
-
     /**
      * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately
      * after the data is processed.
@@ -118,6 +115,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private void sendAck(Node remote, Node local, List<IncomingBatchHistory> list) throws IOException {
         Exception error = null;
         boolean sendAck = false;
+        int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
         for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local);
@@ -142,7 +140,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private final void sleepBetweenFailedAcks() {
         try {
-            Thread.sleep(timeBetweenStatusSendRetriesMs);
+            Thread.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
         } catch (InterruptedException e) {
         }
     }
@@ -347,14 +345,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void addColumnFilter(String tableName, IColumnFilter filter) {
         this.columnFilters.put(tableName, filter);
-    }
-
-    public void setNumberOfStatusSendRetries(int numberOfStatusSendRetries) {
-        this.numberOfStatusSendRetries = numberOfStatusSendRetries;
-    }
-
-    public void setTimeBetweenStatusSendRetriesMs(long timeBetweenStatusSendRetriesMs) {
-        this.timeBetweenStatusSendRetriesMs = timeBetweenStatusSendRetriesMs;
     }
 
     public void setStatisticManager(IStatisticManager statisticManager) {

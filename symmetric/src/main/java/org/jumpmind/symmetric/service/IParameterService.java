@@ -32,6 +32,8 @@ public interface IParameterService {
     public static final String ALL = "ALL";
 
     public BigDecimal getDecimal(String key);
+    
+    public boolean is(String key);
 
     public int getInt(String key);
 
