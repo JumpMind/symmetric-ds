@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.transport;
 
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class AuthenticationResourceHandler extends
         AbstractTransportResourceHandler {
@@ -31,13 +30,12 @@ public class AuthenticationResourceHandler extends
     };
 
     private INodeService nodeService;
-    private IRegistrationService registrationService;
 
     public AuthenticationStatus status(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
 
         if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
-            if (registrationService.isAutoRegistration()) {
+            if (nodeService.findNode(nodeId) == null) {
                 retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
             } else {
                 retVal = AuthenticationStatus.FORBIDDEN;
@@ -50,7 +48,4 @@ public class AuthenticationResourceHandler extends
         this.nodeService = nodeService;
     }
 
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
 }

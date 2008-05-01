@@ -74,12 +74,16 @@ public class SymmetricFilter implements Filter {
         new SymmetricFilterChain(chain).doFilter(request, response);
     }
 
+    @SuppressWarnings("unchecked")
     public void init(FilterConfig filterConfig) throws ServletException {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
-        @SuppressWarnings("unchecked")
-        final Map<String, Filter> filterBeans = getContext().getBeansOfType(
+        ApplicationContext ctx = getContext();
+        Map<String, Filter> filterBeans = ctx.getBeansOfType(
                 Filter.class);
+        if (filterBeans.size() == 0) {
+            filterBeans = ctx.getParent().getBeansOfType(Filter.class);
+        }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
         for (final Map.Entry<String, Filter> filterEntry : filterBeans

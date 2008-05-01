@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockFilterConfig;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -45,7 +46,7 @@ import org.testng.annotations.Test;
  * This simply makes sure the SymmetricFilter is setup correctly.
  * 
  */
-public class SymmetricFilterTest {
+public class SymmetricFilterTest extends AbstractDatabaseTest {
 
     private static final String BAD_SECURITY_TOKEN = "2";
     private static final String BAD_NODE_ID = "2";
@@ -58,10 +59,9 @@ public class SymmetricFilterTest {
             throws Exception {
         servletContext = new MockServletContext();
         applicationContext = new XmlWebApplicationContext();
+        applicationContext.setParent(getSymmetricEngine().getApplicationContext());
         applicationContext.setServletContext(servletContext);
-        applicationContext.setConfigLocation(this.getClass().getPackage()
-                .getName().replace(".", "/")
-                + "/symmetric-web.xml");
+        applicationContext.setConfigLocations(new String[0]);
         applicationContext.refresh();
 
         servletContext.setAttribute(
@@ -154,7 +154,6 @@ public class SymmetricFilterTest {
     @Test(groups = "continuous", dataProvider = "authenticationFilterRegistrationRequiredParams")
     public void testAuthenticationFilterRegistrationRequired(String method,
             String uri, Map<String, String> parameters) throws Exception {
-
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
 
@@ -194,11 +193,7 @@ public class SymmetricFilterTest {
                 { "DELETE", "/push", goodAuthentication },
                 { "TRACE", "/push", goodAuthentication },
                 { "OPTIONS", "/push", goodAuthentication },
-                { "HEAD", "/push", goodAuthentication },
-                { "GET", "/alert", null }, { "POST", "/alert", null },
-                { "PUT", "/alert", null }, { "DELETE", "/alert", null },
-                { "TRACE", "/alert", null }, { "OPTIONS", "/alert", null },
-                { "HEAD", "/alert", null }, };
+                { "HEAD", "/push", goodAuthentication } };
     }
 
     @Test(groups = "continuous", dataProvider = "authenticationFilterParams")
@@ -212,7 +207,7 @@ public class SymmetricFilterTest {
                 method, uri, parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
-        Assert.assertEquals(response.getStatus(), HttpServletResponse.SC_OK);
+        Assert.assertEquals(response.getStatus(), HttpServletResponse.SC_FORBIDDEN);
         filter.destroy();
     }
 
