@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
 
-public class PullService implements IPullService {
+public class PullService extends AbstractService implements IPullService {
 
     private static final Log logger = LogFactory.getLog(PullService.class);
 
