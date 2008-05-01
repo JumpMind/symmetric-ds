@@ -45,6 +45,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="needsRescheduled" value="true" />
         <property name="rescheduleDelay" value="${symmetric.runtime.job.push.period.time.ms}" />
         <property name="dataSource" ref="dataSource"/>
+        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
     </bean>
 
     <bean id="pullJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -64,6 +65,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="needsRescheduled" value="true" />
         <property name="rescheduleDelay" value="${symmetric.runtime.job.pull.period.time.ms}" />
         <property name="dataSource" ref="dataSource"/>
+        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
     </bean>
     
     <bean id="purgeJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -77,6 +79,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.PurgeJob">
                             <property name="purgeService" ref="purgeService" />
                             <property name="dataSource" ref="dataSource"/>
+                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
                         </bean>
                     </property>
                 </bean>
@@ -94,6 +97,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
                             <property name="statisticManager" ref="statisticManager" />
+                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
                         </bean>
                     </property>
                 </bean>
@@ -112,6 +116,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.SyncTriggersJob">
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
+                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
                         </bean>
                     </property>
                 </bean>
@@ -129,6 +134,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
+                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
                         </bean>
                     </property>
                 </bean>

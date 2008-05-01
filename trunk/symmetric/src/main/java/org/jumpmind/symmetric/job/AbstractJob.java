@@ -27,12 +27,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
+import org.jumpmind.symmetric.SymmetricEngine;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 
-abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware
-{
+abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
     DataSource dataSource;
 
     private boolean needsRescheduled;
@@ -43,21 +43,18 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     private String beanName;
 
+    private String engineName;
+
     @Override
-    public void run()
-    {
-        try
-        {
-            doJob();
-        }
-        catch (final Throwable ex)
-        {
+    public void run() {
+        try {
+            if (SymmetricEngine.findEngineByName(engineName).isStarted()) {
+                doJob();
+            }
+        } catch (final Throwable ex) {
             getLogger().error(ex, ex);
-        }
-        finally
-        {
-            if (isNeedsRescheduled())
-            {
+        } finally {
+            if (isNeedsRescheduled()) {
                 reschedule();
             }
         }
@@ -67,58 +64,51 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     abstract Log getLogger();
 
-    protected void reschedule()
-    {
+    protected void reschedule() {
         final Timer timer = new Timer();
         timer.schedule((TimerTask) beanFactory.getBean(beanName), getRescheduleDelay());
-        if (getLogger().isDebugEnabled())
-        {
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug("Rescheduling " + beanName + " with " + getRescheduleDelay() + " ms delay.");
         }
     }
 
-    protected void printDatabaseStats()
-    {
-        if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource)
-        {
+    protected void printDatabaseStats() {
+        if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource) {
             final BasicDataSource ds = (BasicDataSource) dataSource;
             getLogger().debug("There are currently " + ds.getNumActive() + " active database connections.");
         }
     }
 
-    public void setBeanFactory(final BeanFactory beanFactory)
-    {
+    public void setBeanFactory(final BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
-    public void setBeanName(final String beanName)
-    {
+    public void setBeanName(final String beanName) {
         this.beanName = beanName;
     }
 
-    public void setDataSource(final DataSource dataSource)
-    {
+    public void setDataSource(final DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public boolean isNeedsRescheduled()
-    {
+    public boolean isNeedsRescheduled() {
         return needsRescheduled;
     }
 
-    public void setNeedsRescheduled(final boolean needsRescheduled)
-    {
+    public void setNeedsRescheduled(final boolean needsRescheduled) {
         this.needsRescheduled = needsRescheduled;
     }
 
-    public void setRescheduleDelay(final long rescheduleDelay)
-    {
+    public void setRescheduleDelay(final long rescheduleDelay) {
         this.rescheduleDelay = rescheduleDelay;
     }
 
-    public long getRescheduleDelay()
-    {
+    public long getRescheduleDelay() {
         return rescheduleDelay;
+    }
+
+    public void setEngineName(String engineName) {
+        this.engineName = engineName;
     }
 
 }

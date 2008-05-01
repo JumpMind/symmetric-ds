@@ -110,7 +110,7 @@ public class SymmetricEngine {
         }
     }
 
-    public void close() {
+    public void stop() {
         logger.info("Closing SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
                 + Version.version() + " database=" + dbDialect.getName());
         removeMeFromMap(registeredEnginesByName);
@@ -132,7 +132,8 @@ public class SymmetricEngine {
         purgeService = null;
         dataService = null;
         dbDialect = null;
-
+        started = false;
+        starting = false;
     }
 
     private void removeMeFromMap(Map<String, SymmetricEngine> map) {
