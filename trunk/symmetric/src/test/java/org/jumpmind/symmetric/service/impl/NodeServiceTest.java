@@ -103,7 +103,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testFindPullNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPull();
-        Assert.assertEquals(list.size(), 3, "Wrong number of pull nodes");
+        Assert.assertEquals(list.size(), 4, "Wrong number of pull nodes");
     }
 
     @Test(groups = "continuous")
