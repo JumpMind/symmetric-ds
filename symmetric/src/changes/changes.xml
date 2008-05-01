@@ -5,7 +5,10 @@
     <author email="chenson42@users.sourceforge.net">Chris Henson</author>
   </properties>
   <body>
-    <release version="1.4.0" date="unknown" description="Lets add some polish">
+    <release version="1.4.0" date="unknown" description="Lets add some polish">    
+      <action dev="chenson42" type="add" issue="aid=1955383&amp;atid=997727">
+        Add a stop() method to the SymmetricEngine API.
+      </action>    
       <action dev="chenson42" type="add" issue="aid=&amp;atid=997727">
         Supported runtime configuration from the sym_parameters table and the periodic rereading of
         parameters from the file system (as long as the ParameterService is being used.)
