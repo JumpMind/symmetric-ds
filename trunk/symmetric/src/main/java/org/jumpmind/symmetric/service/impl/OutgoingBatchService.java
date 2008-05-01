@@ -34,6 +34,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -57,8 +58,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private INodeService nodeService;
 
-    private int batchSizePeekAhead = 100;
-
     private IDbDialect dbDialect;
 
     /**
@@ -78,6 +77,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Transactional
     public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
+        
+        final int batchSizePeekAhead = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
+        
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
@@ -322,10 +324,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
-    }
-
-    public void setBatchSizePeekAhead(int batchSizePeekAhead) {
-        this.batchSizePeekAhead = batchSizePeekAhead;
     }
 
     public void setNodeService(INodeService nodeService) {

@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
@@ -41,8 +42,6 @@ import org.springframework.jdbc.core.RowMapper;
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
     private static final Log logger = LogFactory.getLog(IncomingBatchService.class);
-
-    private boolean skipDuplicateBatches = true;
 
     private IDbDialect dbDialect;
 
@@ -76,7 +75,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } catch (DataIntegrityViolationException e) {
             dbDialect.rollbackToSavepoint(savepoint);
             status.setRetry(true);
-            okayToProcess = updateIncomingBatch(status) > 0 || (!skipDuplicateBatches);
+            okayToProcess = updateIncomingBatch(status) > 0 || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
             if (okayToProcess) {
                 logger.warn("Retrying batch " + status.getNodeBatchId());
             } else {
@@ -147,10 +146,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
-    }
-
-    public void setSkipDuplicateBatches(boolean skipDuplicateBatches) {
-        this.skipDuplicateBatches = skipDuplicateBatches;
     }
 
 }

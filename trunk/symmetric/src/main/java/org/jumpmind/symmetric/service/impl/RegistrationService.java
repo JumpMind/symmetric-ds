@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -63,10 +64,6 @@ public class RegistrationService extends AbstractService implements
 
     private IDataService dataService;
     
-    private boolean autoRegistration;
-    
-    private boolean autoReload;
-
     /**
      * Register a node for the given domain name and domain ID if the
      * registration is open.
@@ -80,7 +77,7 @@ public class RegistrationService extends AbstractService implements
             }
         }
         String nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
-        if (nodeId == null && autoRegistration) {
+        if (nodeId == null && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
             openRegistration(node.getNodeGroupId(), node.getExternalId());
             nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
         }
@@ -95,7 +92,7 @@ public class RegistrationService extends AbstractService implements
                 node.getSymmetricVersion(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
-        if (success && autoReload) {
+        if (success && parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once
             NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
             if (security != null && security.getInitialLoadTime() == null) {
@@ -220,20 +217,12 @@ public class RegistrationService extends AbstractService implements
         this.clusterService = clusterService;
     }
 
-    public void setAutoRegistration(boolean autoRegistration) {
-        this.autoRegistration = autoRegistration;
-    }
-
-    public void setAutoReload(boolean autoReload) {
-        this.autoReload = autoReload;
-    }
-
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
 
     public boolean isAutoRegistration() {
-        return autoRegistration;
+        return parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
     }
 
 }

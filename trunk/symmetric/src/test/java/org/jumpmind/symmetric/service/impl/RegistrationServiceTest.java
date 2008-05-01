@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -102,11 +103,12 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testRegisterNodeAutomatic() throws Exception {
         try {
-            ((RegistrationService) registrationService).setAutoRegistration(true);
+            
+            getParameterService().saveParameter(ParameterConstants.AUTO_REGISTER_ENABLED, true);
             doTestRegisterNodeAutomatic();
         }
         finally {
-            ((RegistrationService) registrationService).setAutoRegistration(false);            
+            getParameterService().saveParameter(ParameterConstants.AUTO_REGISTER_ENABLED, false);            
         }
     }
     

@@ -20,6 +20,7 @@
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
         <property name="sql" ref="statisticServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="parameterService" ref="parameterService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />        
     </bean>
     
@@ -31,7 +32,7 @@
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
         scope="singleton">
         <property name="transport" value="${symmetric.transport.type}" />
-        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="runtimeConfiguration" ref="runtimeConfiguration" />        
         <property name="nodeService" ref="nodeService" />
         <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
         <property name="useCompression" value="${symmetric.runtime.http.compression}" />
@@ -69,6 +70,7 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="sql" ref="configurationServiceSql"/>
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect"/>
@@ -90,8 +92,8 @@
         scope="singleton">
         <property name="sql" ref="outgoingBatchServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="batchSizePeekAhead" value="${symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
     </bean>
@@ -101,6 +103,7 @@
         <property name="sql" ref="dataExtractorServiceSql"/>
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="configurationService" ref="configurationService" />
+        <property name="parameterService" ref="parameterService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="context" ref="extractorContext" />
@@ -117,6 +120,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="purgeService" ref="purgeService" />
@@ -127,6 +131,7 @@
     <bean id="pushService" class="org.jumpmind.symmetric.service.impl.PushService">
         <property name="extractor" ref="dataExtractorService" />
         <property name="transportManager" ref="transportManager" />
+        <property name="parameterService" ref="parameterService" />
         <property name="ackService" ref="acknowledgeService" />
         <property name="nodeService" ref="nodeService" />
     </bean>
@@ -134,18 +139,17 @@
     <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService">
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService"
         scope="singleton">
-        <property name="numberOfStatusSendRetries" value="${symmetric.runtime.num.of.ack.retries}" />
-        <property name="timeBetweenStatusSendRetriesMs"
-            value="${symmetric.runtime.time.between.ack.retries.ms}" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
         <property name="statisticManager" ref="statisticManager" />
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
@@ -158,17 +162,17 @@
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
         scope="singleton">
-        <property name="skipDuplicateBatches"
-            value="${symmetric.runtime.incoming.batches.skip.duplicates}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="sql" ref="incomingBatchServiceSql"/>
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
     <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService"
         scope="singleton">
         <property name="sql" ref="nodeServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
     <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService"
@@ -181,9 +185,8 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />
+        <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
-        <property name="autoRegistration" value="${symmetric.auto.registration}" />
-        <property name="autoReload" value="${symmetric.auto.reload}" />
     </bean>
 
     <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService"
@@ -191,6 +194,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="parameterService" ref="parameterService" />
         <property name="sql" ref="acknowledgeServiceSql"/>
     </bean>
 
@@ -301,6 +305,7 @@
     <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="upgradeTaskMap" ref="upgradeTaskMap" />
     </bean>
@@ -308,6 +313,7 @@
     <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="lockTimeoutInMilliseconds"
             value="${symmetric.runtime.cluster.lock.timeout.ms}" />
@@ -324,6 +330,7 @@
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="sql" ref="purgeServiceSql" />
+        <property name="parameterService" ref="parameterService" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="clusterService" ref="clusterService" />
         <property name="dbDialect" ref="dbDialect" />

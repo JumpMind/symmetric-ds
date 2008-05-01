@@ -23,11 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.Map;
 
 import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 abstract class AbstractService {
 
     protected IRuntimeConfig runtimeConfiguration;
+    
+    protected IParameterService parameterService;
 
     protected JdbcTemplate jdbcTemplate;
     
@@ -47,6 +50,10 @@ abstract class AbstractService {
     
     public String getSql(String key) {
         return sql.get(key);
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
     
 }

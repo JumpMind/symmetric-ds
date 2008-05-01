@@ -19,25 +19,24 @@ public class ParameterServiceTest extends AbstractDatabaseTest {
     public void testParameterGetFromDatabase() {
        Assert.assertEquals(getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS), 2);       
        getParameterService().saveParameter(TestConstants.TEST_CLIENT_EXTERNAL_ID, TestConstants.TEST_CLIENT_NODE_GROUP, ParameterConstants.CONCURRENT_WORKERS, 10);
-       getParameterService().rereadParameters();       
        
        // make sure we are not picking up someone else's parameter
        Assert.assertEquals(getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS), 2);
        
        getParameterService().saveParameter(IParameterService.ALL, TestConstants.TEST_ROOT_NODE_GROUP, ParameterConstants.CONCURRENT_WORKERS, 5);
        
-       // make sure the parameters are cached
-       Assert.assertEquals(getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS), 2);
-
-       // make sure we pick up the new parameter for us
-       getParameterService().rereadParameters();
        Assert.assertEquals(getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS), 5);
        
        getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, 10);
        
-       // make sure we pick up the new parameter for us
-       getParameterService().rereadParameters();
        Assert.assertEquals(getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS), 10);
+    }
+    
+    @Test(groups="continuous")
+    public void testBooleanParameter() {
+        Assert.assertEquals(getParameterService().is("boolean.test"), false);
+        getParameterService().saveParameter("boolean.test", true);
+        Assert.assertEquals(getParameterService().is("boolean.test"), true);
     }
 
     
