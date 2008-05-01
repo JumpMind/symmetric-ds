@@ -34,7 +34,6 @@
 
     <bean id="authenticationResourceHandler"
         class="org.jumpmind.symmetric.transport.AuthenticationResourceHandler">
-        <property name="registrationService" ref="registrationService" />
         <property name="nodeService" ref="nodeService" />
     </bean>
     
