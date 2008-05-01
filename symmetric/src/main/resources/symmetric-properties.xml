@@ -24,6 +24,7 @@
                 <value>classpath:/symmetric-override.properties</value>
                 <value>${symmetric.override.properties.file.1}</value>
                 <value>${symmetric.override.properties.file.2}</value>
+                <!-- database configuration -->
             </list>
         </property>
     </bean>

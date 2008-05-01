@@ -106,8 +106,8 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
     protected void teardown() {
         rootJdbcTemplate = null;
         clientJdbcTemplate = null;
-        getRootEngine().close();
-        getClientEngine().close();
+        getRootEngine().stop();
+        getClientEngine().stop();
     }
 
     protected void register() {

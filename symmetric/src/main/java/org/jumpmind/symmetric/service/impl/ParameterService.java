@@ -81,6 +81,10 @@ public class ParameterService extends AbstractService implements IParameterServi
     public String getString(String key) {
         return getParameters().get(key);
     }
+    
+    public void saveParameter(String key, Object paramValue) {
+        this.saveParameter(runtimeConfiguration.getExternalId(), runtimeConfiguration.getNodeGroupId(), key, paramValue);
+    }    
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
         int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,

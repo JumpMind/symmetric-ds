@@ -4,15 +4,16 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import org.jumpmind.symmetric.AbstractDatabaseTest;
+import org.jumpmind.symmetric.common.Constants;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class NodeConcurrencyFilterTest {
+public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous", timeOut=60000)
     public void testFilter() throws Exception {
-        NodeConcurrencyFilter filter = new NodeConcurrencyFilter();
-        filter.maxNumberOfConcurrentWorkers = 2;
+        NodeConcurrencyFilter filter = (NodeConcurrencyFilter)getBeanFactory().getBean(Constants.NODE_CONCURRENCY_FILTER);
         filter.waitTimeBetweenRetriesInMs = 0;
         
         MockWorker one = new MockWorker(filter,"push");
