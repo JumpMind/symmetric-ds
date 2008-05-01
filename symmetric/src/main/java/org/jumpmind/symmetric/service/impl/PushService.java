@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
 
-public class PushService implements IPushService {
+public class PushService extends AbstractService implements IPushService {
 
     private static final Log logger = LogFactory.getLog(PushService.class);
 
