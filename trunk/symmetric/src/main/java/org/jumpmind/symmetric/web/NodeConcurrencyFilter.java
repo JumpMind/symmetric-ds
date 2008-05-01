@@ -35,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * 
@@ -66,11 +68,11 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     private final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
 
-    protected int maxNumberOfConcurrentWorkers = 20;
-
     protected long waitTimeBetweenRetriesInMs = 500;
 
     private static int tooBusyCount;
+    
+    private IParameterService parameterService;
 
     private static long lastTooBusyLogTime = System.currentTimeMillis();
 
@@ -102,7 +104,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         int numberOfWorkers;
         do {
             numberOfWorkers = getNumberOfWorkers(servletPath);
-            if (numberOfWorkers < maxNumberOfConcurrentWorkers) {
+            if (numberOfWorkers < parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS)) {
                 try {
                     changeNumberOfWorkers(servletPath, 1);
                     worker.work();
@@ -132,7 +134,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
                     }
                 }
             }
-        } while (numberOfWorkers >= maxNumberOfConcurrentWorkers && tries > 0);
+        } while (numberOfWorkers >= parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS) && tries > 0);
         return didWork;
     }
 
@@ -151,13 +153,13 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         public void work() throws ServletException, IOException;
     }
 
-    public void setMaxNumberOfConcurrentWorkers(int maxNumberOfConcurrentWorkers) {
-        this.maxNumberOfConcurrentWorkers = maxNumberOfConcurrentWorkers;
-    }
-
     @Override
     protected Log getLogger()
     {
         return logger;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 }

@@ -38,6 +38,8 @@ public interface IParameterService {
     public long getLong(String key);
 
     public String getString(String key);
+    
+    public void saveParameter(String key, Object paramValue);
 
     public void saveParameter(String nodeId, String nodeGroupId, String key, Object paramValue);
     
