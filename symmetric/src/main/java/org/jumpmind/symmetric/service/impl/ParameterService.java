@@ -174,6 +174,10 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return parameters;
     }
+    
+    public Map<String, String> getAllParameters() {
+        return getParameters();
+    }
 
     public Date getLastTimeParameterWereCached() {
         return lastTimeParameterWereCached;
