@@ -34,9 +34,11 @@ public class ParameterConstants {
     public final static String START_RUNTIME_ENGINE_NAME = "symmetric.runtime.engine.name";
     public final static String AUTO_REGISTER_ENABLED = "symmetric.auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "symmetric.auto.reload";
-
     
+    public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "symmetric.runtime.parameter.reload.timeout.ms";
+
     public final static String CONCURRENT_WORKERS = "symmetric.http.concurrent.workers.max";
+    
     public final static String OUTGOING_BATCH_PEEK_AHEAD_WINDOW = "symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size";
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "symmetric.runtime.incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "symmetric.runtime.num.of.ack.retries";
