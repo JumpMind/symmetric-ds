@@ -50,5 +50,7 @@ public interface IParameterService {
     public void rereadParameters();
     
     public Date getLastTimeParameterWereCached();
+    
+    public Map<String,String> getAllParameters();
 
 }
