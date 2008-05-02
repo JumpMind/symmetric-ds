@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -46,7 +47,7 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private BeanFactory beanFactory;
 
-    private long cacheTimeoutInMs = -1;
+    private long cacheTimeoutInMs = 0;
 
     private Date lastTimeParameterWereCached;
 
@@ -169,12 +170,9 @@ public class ParameterService extends AbstractService implements IParameterServi
                         .currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
             parameters = buildSystemParameters();
+            cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
         }
         return parameters;
-    }
-
-    public void setCacheTimeoutInMs(long cacheTimeoutInMs) {
-        this.cacheTimeoutInMs = cacheTimeoutInMs;
     }
 
     public Date getLastTimeParameterWereCached() {
