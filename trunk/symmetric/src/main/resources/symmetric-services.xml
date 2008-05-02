@@ -62,7 +62,6 @@
         scope="singleton">
         <property name="sql" ref="parameterServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="cacheTimeoutInMs" value="${symmetric.runtime.parameter.reload.timeout.ms}"/>
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
     </bean>
 
