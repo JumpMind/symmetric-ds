@@ -45,6 +45,7 @@ import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
+@Deprecated
 @ManagedResource(description = "The management interface for SymmetricDS")
 public class SymmetricManagementService {
 
