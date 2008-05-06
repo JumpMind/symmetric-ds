@@ -29,11 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface IIncomingBatchService {
 
-    public IncomingBatch findIncomingBatch(String batchId, String nodeId);
+    public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
     
-    public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId);
+    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId);
 
     @Transactional
     public boolean acquireIncomingBatch(IncomingBatch status);

@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.model;
 
 public class BatchInfo {
     
-    private String batchId;
+    private long batchId;
     
     private String nodeId;
     
@@ -44,18 +44,18 @@ public class BatchInfo {
     
     private String sqlMessage;
     
-    public BatchInfo(String batchId) {
+    public BatchInfo(long batchId) {
         this.batchId = batchId;
         isOk = true;
     }
 
-    public BatchInfo(String batchId, long errorLineNumber) {
+    public BatchInfo(long batchId, long errorLineNumber) {
         this.batchId = batchId;
         isOk = false;
         errorLine = errorLineNumber;
     }
 
-    public String getBatchId() {
+    public long getBatchId() {
         return batchId;
     }
 
@@ -67,7 +67,7 @@ public class BatchInfo {
         return isOk;
     }
 
-    public void setBatchId(String batchId) {
+    public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
 

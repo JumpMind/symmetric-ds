@@ -38,7 +38,7 @@ public class IncomingBatchHistory implements Serializable {
         OK, ER, SK;
     }
 
-    private String batchId;
+    private long batchId;
 
     private String nodeId;
 
@@ -110,11 +110,11 @@ public class IncomingBatchHistory implements Serializable {
         return nodeId + "-" + batchId;
     }
 
-    public String getBatchId() {
+    public long getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(String batchId) {
+    public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
 

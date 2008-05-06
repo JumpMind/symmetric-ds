@@ -54,7 +54,7 @@ abstract public class AbstractTransportManager {
         // original acknowledgement data and the second line contains more information
         builder.append("\n");
         for (IncomingBatchHistory status : list) {
-            String batchId = status.getBatchId();
+            long batchId = status.getBatchId();
             append(builder, WebConstants.ACK_NODE_ID + batchId, status.getNodeId());
             append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, status.getNetworkMillis());
             append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, status.getFilterMillis());
@@ -95,7 +95,7 @@ abstract public class AbstractTransportManager {
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
         for (String parameterName : parameters.keySet()) {
             if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
-                String batchId = parameterName.substring(WebConstants.ACK_BATCH_NAME.length());
+                long batchId = NumberUtils.toLong(parameterName.substring(WebConstants.ACK_BATCH_NAME.length()));
                 BatchInfo batchInfo = getBatchInfo(parameters, batchId);
                 batches.add(batchInfo);
             }
@@ -103,7 +103,7 @@ abstract public class AbstractTransportManager {
         return batches;
     }
 
-    private BatchInfo getBatchInfo(Map<String, Object> parameters, String batchId) {
+    private BatchInfo getBatchInfo(Map<String, Object> parameters, long batchId) {
         BatchInfo batchInfo = new BatchInfo(batchId);
         batchInfo.setNodeId(getParam(parameters, WebConstants.ACK_NODE_ID + batchId));
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));

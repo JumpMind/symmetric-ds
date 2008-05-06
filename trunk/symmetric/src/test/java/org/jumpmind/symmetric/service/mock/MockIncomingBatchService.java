@@ -35,7 +35,7 @@ public class MockIncomingBatchService implements IIncomingBatchService {
         return false;
     }
 
-    public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
+    public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
 
         return null;
     }
@@ -45,7 +45,7 @@ public class MockIncomingBatchService implements IIncomingBatchService {
         return null;
     }
 
-    public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId,
+    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId,
             String nodeId) {
 
         return null;

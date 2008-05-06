@@ -25,7 +25,7 @@ import org.apache.ddlutils.model.Table;
 
 public interface IDataLoaderContext {
 
-    public String getBatchId();
+    public long getBatchId();
 
     public String getNodeId();
 

@@ -36,7 +36,7 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     private String tableName;
 
-    private String batchId;
+    private long batchId;
     
     private boolean isSkipping;
     
@@ -67,11 +67,11 @@ public class DataLoaderContext implements IDataLoaderContext {
         return tables;
     }
     
-    public String getBatchId() {
+    public long getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(String batchId) {
+    public void setBatchId(long batchId) {
         this.batchId = batchId;
         isSkipping = false;
     }

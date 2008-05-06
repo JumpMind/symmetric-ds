@@ -117,7 +117,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 1, "Wrong number of history. " + printDatabase());
         IncomingBatchHistory history = list.get(0);
@@ -163,7 +163,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 1, "Wrong number of history");
 
@@ -172,7 +172,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         IncomingBatchHistory history = list.get(0);
         Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
 
-        list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 2, "Wrong number of history");
 
@@ -219,7 +219,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 1, "Wrong number of history");
         IncomingBatchHistory history = list.get(0);
@@ -258,7 +258,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
             Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                     IncomingBatch.Status.OK, "Wrong status");
             List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(
-                    batchId + "", TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                    batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
             Assert.assertEquals(list.size(), i + 1, "Wrong number of history");
             IncomingBatchHistory history = list.get(i);
             Assert.assertEquals(history.getStatus(), expectedStatus, "Wrong status");
@@ -280,7 +280,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 1, "Wrong number of history");
         IncomingBatchHistory history = list.get(0);
@@ -301,7 +301,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         load(out);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
-        list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 2, "Wrong number of history");
         history = list.get(1);
@@ -332,7 +332,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         load(out);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID), null,
                 "Wrong status");
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), 0, "Wrong number of history");
         setLoggingLevelForTest(old);
@@ -353,7 +353,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
             Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                     IncomingBatch.Status.ER, "Wrong status");
             List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(
-                    batchId + "", TestConstants.TEST_CLIENT_EXTERNAL_ID);
+                    batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
             Assert.assertEquals(list.size(), i + 1, "Wrong number of history. " + printDatabase());
             IncomingBatchHistory history = list.get(i);
             Assert.assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. "
@@ -370,7 +370,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
         Assert.assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId + "",
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertEquals(list.size(), retries + 1, "Wrong number of history. " + printDatabase());
         IncomingBatchHistory history = list.get(retries);
@@ -428,7 +428,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     }
 
     protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String nodeId) {
-        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId + "", nodeId);
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId, nodeId);
         IncomingBatch.Status status = null;
         if (batch != null) {
             status = batch.getStatus();

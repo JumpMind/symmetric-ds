@@ -52,7 +52,7 @@ public class CsvExtractor13 implements IDataExtractor {
 
     public void begin(OutgoingBatch batch, BufferedWriter writer)
             throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());               
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));               
         writer.newLine();
         Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
         writer.newLine();      
@@ -60,7 +60,7 @@ public class CsvExtractor13 implements IDataExtractor {
 
     public void commit(OutgoingBatch batch, BufferedWriter writer)
             throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());
+        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 

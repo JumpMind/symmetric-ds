@@ -78,7 +78,7 @@ public class OutgoingBatchHistory implements Serializable {
 
     public OutgoingBatchHistory(OutgoingBatch batch) {
         this();
-        this.batchId = new Long(batch.getBatchId());
+        this.batchId = batch.getBatchId();
         this.nodeId = batch.getNodeId();
     }
 

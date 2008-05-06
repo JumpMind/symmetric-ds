@@ -224,9 +224,9 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         List<OutgoingBatch> batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertNotNull(batches);
         Assert.assertEquals(batches.size(), 3);
-        String firstBatchId = batches.get(0).getBatchId();
-        String secondBatchId = batches.get(1).getBatchId();
-        String thirdBatchId = batches.get(2).getBatchId();
+        long firstBatchId = batches.get(0).getBatchId();
+        long secondBatchId = batches.get(1).getBatchId();
+        long thirdBatchId = batches.get(2).getBatchId();
         
         // Ack the first batch as an error, leaving the others as new
         ackService.ack(new BatchInfo(firstBatchId, 1));
@@ -252,12 +252,12 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         dataService.insertDataEvent(data, channelId, nodeId);
     }
 
-    protected int getBatchSize(final String batchId) {
+    protected int getBatchSize(final long batchId) {
         return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement s = conn.prepareStatement("select count(*) " + "from "
                         + TestConstants.TEST_PREFIX + "data_event where batch_id = ?");
-                s.setString(1, batchId);
+                s.setLong(1, batchId);
                 ResultSet rs = s.executeQuery();
                 rs.next();
                 return rs.getInt(1);
