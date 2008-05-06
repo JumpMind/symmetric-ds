@@ -20,52 +20,31 @@
 
 package org.jumpmind.symmetric.db.postgresql;
 
-import java.net.URL;
-import java.util.Date;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(PostgreSqlDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
+    static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
-        
+
+    private String transactionIdExpression = "null";
+    
     protected void initForSpecificDialect() {
-        try {
-            if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
-                logger.info("Creating function " + TRANSACTION_ID_FUNCTION_NAME);
-                new SqlScript(getTransactionIdSqlUrl(), getPlatform().getDataSource(), '/')
-                        .execute();
-            }
-        } catch (Exception e) {
-            logger.error("Error while initializing PostgreSql.", e);
+        if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
+            logger.info("Enabling transaction ID support");
+            transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
     }
     
     protected boolean allowsNullForIdentityColumn() {
         return false;
-    }
-
-    private URL getTransactionIdSqlUrl() {
-        return getClass().getResource("/dialects/postgresql-transactionid.sql");
-    }
-
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        long lastModified = getTransactionIdSqlUrl().openConnection().getLastModified();
-        String checkSchema = (getDefaultSchema() != null && getDefaultSchema().length() > 0) ? " and routine_schema = '"
-                + getDefaultSchema() + "'"
-                : "";
-        return jdbcTemplate.queryForInt(
-                "select count(*) from information_schema.routines where created >= ? and routine_name = ?"
-                        + checkSchema, new Object[] { new Date(lastModified), name.toLowerCase() }) > 0;
     }
 
     @Override
@@ -105,7 +84,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {
-        return "null";
+        return transactionIdExpression;
     }
     
     public String getSelectLastInsertIdSql(String sequenceName) {

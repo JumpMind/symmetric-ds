@@ -103,6 +103,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private String engineName;
 
     private boolean createFirstForReload;
+    
+    private String databaseName;
+    
+    private int databaseMajorVersion;
+    
+    private int databaseMinorVersion;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -147,6 +153,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
         this.platform = pf;
         this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+                DatabaseMetaData meta = c.getMetaData();
+                databaseName = meta.getDatabaseProductName();
+                databaseMajorVersion = meta.getDatabaseMajorVersion();
+                databaseMinorVersion = meta.getDatabaseMinorVersion();
+                return null;
+            }
+        });
     }
 
     abstract protected void initForSpecificDialect();
@@ -703,20 +718,19 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getName() {
-        return (String) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                return c.getMetaData().getDatabaseProductName();
-            }
-        });
+        return databaseName;
     }
 
     public String getVersion() {
-        return (String) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                DatabaseMetaData meta = c.getMetaData();
-                return meta.getDatabaseMajorVersion() + "." + meta.getDatabaseMinorVersion();
-            }
-        });
+        return databaseMajorVersion + "." + databaseMinorVersion;
+    }
+    
+    public int getMajorVersion() {
+        return databaseMajorVersion;
+    }
+    
+    public int getMinorVersion() {
+        return databaseMinorVersion;
     }
 
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
