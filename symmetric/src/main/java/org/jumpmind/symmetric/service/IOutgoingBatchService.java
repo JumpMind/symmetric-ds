@@ -45,7 +45,7 @@ public interface IOutgoingBatchService {
     @Deprecated
     public void markOutgoingBatchSent(OutgoingBatch batch);
 
-    public void setBatchStatus(String batchId, Status status);
+    public void setBatchStatus(long batchId, Status status);
 
     public boolean isInitialLoadComplete(String nodeId);
     

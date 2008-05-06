@@ -89,7 +89,7 @@ public class CsvLoader implements IDataLoader {
             String[] tokens = csvReader.getValues();
 
             if (tokens[0].equals(CsvConstants.BATCH)) {
-                context.setBatchId(tokens[1]);
+                context.setBatchId(new Long(tokens[1]));
                 stats = new DataLoaderStatistics();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {

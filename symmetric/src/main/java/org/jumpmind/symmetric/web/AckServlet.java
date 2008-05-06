@@ -31,7 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -68,8 +67,8 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
 
     private static class BatchIdComparator implements Comparator<BatchInfo> {
         public int compare(BatchInfo batchInfo1, BatchInfo batchInfo2) {
-            Long batchId1 = NumberUtils.toLong(batchInfo1.getBatchId());
-            Long batchId2 = NumberUtils.toLong(batchInfo1.getBatchId());
+            Long batchId1 = batchInfo1.getBatchId();
+            Long batchId2 = batchInfo1.getBatchId();
             return batchId1.compareTo(batchId2);
         }
     }

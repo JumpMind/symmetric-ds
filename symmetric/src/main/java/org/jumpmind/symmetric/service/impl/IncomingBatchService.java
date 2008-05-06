@@ -45,7 +45,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     private IDbDialect dbDialect;
 
-    public IncomingBatch findIncomingBatch(String batchId, String nodeId) {
+    public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         try {
             return (IncomingBatch) jdbcTemplate.queryForObject(getSql("findIncomingBatchSql"), new Object[] { batchId,
                     nodeId }, new IncomingBatchMapper());
@@ -61,7 +61,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     @SuppressWarnings("unchecked")
-    public List<IncomingBatchHistory> findIncomingBatchHistory(String batchId, String nodeId) {
+    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId) {
         return (List<IncomingBatchHistory>) jdbcTemplate.query(getSql("findIncomingBatchHistorySql"), new Object[] {
                 batchId, nodeId }, new IncomingBatchHistoryMapper());
     }
@@ -112,7 +112,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     class IncomingBatchMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             IncomingBatch batch = new IncomingBatch();
-            batch.setBatchId(rs.getString(1));
+            batch.setBatchId(rs.getLong(1));
             batch.setNodeId(rs.getString(2));
             batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(3)));
             batch.setCreateTime(rs.getTimestamp(4));
@@ -123,7 +123,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     class IncomingBatchHistoryMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             IncomingBatchHistory history = new IncomingBatchHistory();
-            history.setBatchId(rs.getString(1));
+            history.setBatchId(rs.getLong(1));
             history.setNodeId(rs.getString(2));
             history.setStatus(IncomingBatchHistory.Status.valueOf(rs.getString(3)));
             history.setStartTime(rs.getTime(4));

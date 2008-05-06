@@ -84,7 +84,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             BufferedWriter writer = new BufferedWriter(stringWriter);
             dataExtractor.init(writer, context);
 
-            String batchId = "cafebabe";
+            long batchId = 998877;
             OutgoingBatch batch = new OutgoingBatch();
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
@@ -121,7 +121,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             BufferedWriter writer = new BufferedWriter(stringWriter);
             dataExtractor.init(writer, context);
 
-            String batchId = "cafebabe";
+            long batchId = 998850;
             OutgoingBatch batch = new OutgoingBatch();
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
@@ -161,7 +161,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             BufferedWriter writer = new BufferedWriter(stringWriter);
             dataExtractor.init(writer, context);
 
-            String batchId = "cafebabe";
+            long batchId = 998860;
             OutgoingBatch batch = new OutgoingBatch();
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
@@ -211,7 +211,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             BufferedWriter writer = new BufferedWriter(stringWriter);
             dataExtractor.init(writer, context);
 
-            String batchId = "cafebabe";
+            long batchId = 998800;
             OutgoingBatch batch = new OutgoingBatch();
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
@@ -291,18 +291,18 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.newLine();
         }
 
-        void batchBegin(String batchId) throws IOException {
+        void batchBegin(long batchId) throws IOException {
             writeCSV(CsvConstants.BATCH);
-            writer.write(batchId);
+            writer.write(new Long(batchId).toString());
             writer.newLine();
             writeCSV(CsvConstants.BINARY);            
             writer.write(getDbDialect().getBinaryEncoding().name());
             writer.newLine();            
         }
 
-        void batchEnd(String batchId) throws IOException {
+        void batchEnd(long batchId) throws IOException {
             writeCSV(CsvConstants.COMMIT);
-            writer.write(batchId);
+            writer.write(Long.toString(batchId));
             writer.newLine();
         }
 

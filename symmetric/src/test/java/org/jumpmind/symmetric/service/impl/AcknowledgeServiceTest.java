@@ -63,9 +63,9 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void okTest() {
         cleanSlate();
-        ackService.ack(new BatchInfo("1"));
+        ackService.ack(new BatchInfo(1));
 
-        List<OutgoingBatchHistory> history = getOutgoingBatchHistory("1");
+        List<OutgoingBatchHistory> history = getOutgoingBatchHistory(1);
         Assert.assertEquals(history.size(), 1);
         OutgoingBatchHistory hist = history.get(0);
         Assert.assertEquals(hist.getBatchId(), 1);
@@ -117,25 +117,25 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         errorTestCore(batch.getBatchId(), 7, -1);
     }
 
-    protected void errorTestCore(String batchId, int errorLine, long expectedResults) {
+    protected void errorTestCore(long batchId, int errorLine, long expectedResults) {
         ackService.ack(new BatchInfo(batchId, errorLine));
         List<OutgoingBatchHistory> history = getOutgoingBatchHistory(batchId);
         Assert.assertEquals(history.size(), 1);
         OutgoingBatchHistory hist = history.get(0);
-        Assert.assertEquals(String.valueOf(hist.getBatchId()), batchId);
+        Assert.assertEquals(hist.getBatchId(), batchId);
         Assert.assertEquals(hist.getStatus(), OutgoingBatchHistory.Status.ER);
         Assert.assertEquals(hist.getFailedDataId(), expectedResults);
     }
 
     @SuppressWarnings("unchecked")
-    protected List<OutgoingBatchHistory> getOutgoingBatchHistory(String batchId) {
+    protected List<OutgoingBatchHistory> getOutgoingBatchHistory(long batchId) {
         final String sql = "select batch_id, status, data_event_count, start_time, "
                 + "failed_data_id from " + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
         final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
         getJdbcTemplate().query(sql, new Object[] { batchId }, new RowMapper() {
             public Object[] mapRow(ResultSet rs, int row) throws SQLException {
                 OutgoingBatchHistory item = new OutgoingBatchHistory();
-                item.setBatchId(rs.getInt(1));
+                item.setBatchId(rs.getLong(1));
                 item.setStatus(OutgoingBatchHistory.Status.valueOf(rs
                         .getString(2)));
                 item.setDataEventCount(rs.getLong(3));

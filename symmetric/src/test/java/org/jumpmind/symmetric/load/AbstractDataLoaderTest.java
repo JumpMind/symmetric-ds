@@ -137,7 +137,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                 + getWhere(TEST_KEYS);
         Map<String, Object> results = null;
         try {
-            results = getJdbcTemplate().queryForMap(sql, new Object[] { testTableId });
+            results = getJdbcTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
         } catch (EmptyResultDataAccessException e) {
         }
         if (expectedValues != null) {

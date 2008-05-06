@@ -34,7 +34,7 @@ public class IncomingBatch implements Serializable {
         OK, ER;
     }
 
-    private String batchId;
+    private long batchId;
 
     private String nodeId;
 
@@ -57,11 +57,11 @@ public class IncomingBatch implements Serializable {
         return nodeId + "-" + batchId;
     }
 
-    public String getBatchId() {
+    public long getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(String batchId) {
+    public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
 

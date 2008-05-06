@@ -209,7 +209,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         return null;
                     }
                 });
-        outgoingBatch.setBatchId(String.valueOf(batchId));
+        outgoingBatch.setBatchId(batchId);
     }
 
     /**
@@ -242,8 +242,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @Deprecated
-    public void setBatchStatus(String batchId, Status status) {
-        jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), new Long(batchId) });
+    public void setBatchStatus(long batchId, Status status) {
+        jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), batchId });
     }
 
     // TODO Should this move to DataService?
@@ -290,7 +290,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     class OutgoingBatchMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             OutgoingBatch batch = new OutgoingBatch();
-            batch.setBatchId(rs.getString(1));
+            batch.setBatchId(rs.getLong(1));
             batch.setNodeId(rs.getString(2));
             batch.setChannelId(rs.getString(3));
             batch.setStatus(rs.getString(4));

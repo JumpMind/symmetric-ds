@@ -61,7 +61,7 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     }
 
-    public void setBatchStatus(String batchId, Status status) {
+    public void setBatchStatus(long batchId, Status status) {
 
     }
 

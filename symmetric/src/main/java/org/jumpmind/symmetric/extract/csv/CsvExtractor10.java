@@ -49,13 +49,13 @@ public class CsvExtractor10 implements IDataExtractor {
 
     public void begin(OutgoingBatch batch, BufferedWriter writer)
             throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());               
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));               
         writer.newLine();
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer)
             throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, batch.getBatchId());
+        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
