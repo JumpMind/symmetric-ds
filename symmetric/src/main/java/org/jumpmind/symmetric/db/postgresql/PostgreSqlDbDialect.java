@@ -34,17 +34,16 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
 
+    private boolean supportsTransactionId = false;
+    
     private String transactionIdExpression = "null";
     
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
             logger.info("Enabling transaction ID support");
+            supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
-    }
-    
-    protected boolean allowsNullForIdentityColumn() {
-        return false;
     }
 
     @Override
@@ -109,6 +108,14 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     public boolean storesLowerCaseNamesInCatalog() {
         return true;
+    }
+
+    protected boolean allowsNullForIdentityColumn() {
+        return false;
+    }
+
+    public boolean supportsTransactionId() {
+        return supportsTransactionId;
     }
 
     public void purge() {
