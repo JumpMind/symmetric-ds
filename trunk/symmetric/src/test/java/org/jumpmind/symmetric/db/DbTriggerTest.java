@@ -58,7 +58,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, 1, 1, 1 };
 
     final static int[] INSERT1_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-            Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
+            Types.DATE, Types.INTEGER, Types.INTEGER, Types.DECIMAL };
 
     final static String INSERT2 = "insert into "
             + TEST_TRIGGERS_TABLE
