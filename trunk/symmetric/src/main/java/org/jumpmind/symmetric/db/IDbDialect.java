@@ -71,6 +71,10 @@ public interface IDbDialect {
     
     public String getVersion();
     
+    public int getMajorVersion();
+    
+    public int getMinorVersion();
+    
     public BinaryEncoding getBinaryEncoding();
 
     public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
