@@ -63,6 +63,15 @@
                         <entry>Y</entry>
                     </row>
                     <row>
+                        <entry>PostgreSQL</entry>
+                        <entry>8.3 and above</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
+                    <row>
                         <entry>SQL Server</entry>
                         <entry>2005</entry>
                         <entry>Y</entry>
@@ -107,7 +116,16 @@ alter sequence SEQ_SYM_TRIGGER_RIGGER_HIST_ID cache 1000 order;
 alter sequence SEQ_SYM_TRIGGER_TRIGGER_ID cache 1000 order;]]></programlisting>
         </para>
         <para>
-             While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
+            While BLOBs are supported on Oracle, the LONG data type is not.  LONG columns cannot be accessed from triggers.
+        </para>
+        <para>
+            The SymmetricDS user generally needs privileges for connecting and creating 
+            tables (including indexes), triggers, sequences, and procedures (including packages and functions).
+            The following is an example of the needed grant statements:
+            <programlisting><![CDATA[
+GRANT CONNECT TO SYMMETRIC;
+GRANT RESOURCE TO SYMMETRIC;
+GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
         </para>
     </section>
     <section>
