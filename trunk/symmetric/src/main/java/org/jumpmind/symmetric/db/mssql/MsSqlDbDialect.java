@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
 
@@ -55,7 +56,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public IColumnFilter getDatabaseColumnFilter() {
         return new IColumnFilter () {
             int[] indexesToRemove = null;            
-            public String[] filterColumnsNames(DmlType dml, Table table, String[] columnNames) {
+            public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames) {
                 ArrayList<String> columns = new ArrayList<String>();
                 CollectionUtils.addAll(columns, columnNames);                
                 if (dml == DmlType.UPDATE) {
@@ -81,7 +82,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 return columns.toArray(new String[columns.size()]);
             }
 
-            public Object[] filterColumnsValues(DmlType dml, Table table, Object[] columnValues) {
+            public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues) {
                 if (dml == DmlType.UPDATE && indexesToRemove != null) {
                     ArrayList<Object> values = new ArrayList<Object>();
                     CollectionUtils.addAll(values, columnValues);

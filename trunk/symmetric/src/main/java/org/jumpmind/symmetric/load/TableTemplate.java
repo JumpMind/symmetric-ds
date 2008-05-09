@@ -121,37 +121,37 @@ public class TableTemplate {
         return table == null;
     }
 
-    public int insert(String[] columnValues) {
-        return insert(columnValues, BinaryEncoding.NONE);
+    public int insert(IDataLoaderContext ctx, String[] columnValues) {
+        return insert(ctx, columnValues, BinaryEncoding.NONE);
     }
 
-    public int insert(String[] columnValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(DmlType.INSERT, encoding);
-        return execute(st, columnValues, columnMetaData, encoding);
+    public int insert(IDataLoaderContext ctx, String[] columnValues, BinaryEncoding encoding) {
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT, encoding);
+        return execute(ctx, st, columnValues, columnMetaData, encoding);
     }
 
-    public int update(String[] columnValues, String[] keyValues) {
-        return update(columnValues, keyValues, BinaryEncoding.NONE);
+    public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
+        return update(ctx, columnValues, keyValues, BinaryEncoding.NONE);
     }
 
-    public int update(String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(DmlType.UPDATE, encoding);
+    public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.UPDATE, encoding);
         String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
-        return execute(st, values, columnKeyMetaData, encoding);
+        return execute(ctx, st, values, columnKeyMetaData, encoding);
     }
 
-    public int delete(String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(DmlType.DELETE, BinaryEncoding.NONE);
-        return execute(st, keyValues, keyMetaData, BinaryEncoding.NONE);
+    public int delete(IDataLoaderContext ctx, String[] keyValues) {
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, BinaryEncoding.NONE);
+        return execute(ctx, st, keyValues, keyMetaData, BinaryEncoding.NONE);
     }
 
-    private StatementBuilder getStatementBuilder(DmlType type, BinaryEncoding encoding) {
+    private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type, BinaryEncoding encoding) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
             String[] filteredColumnNames = columnNames;
             if (columnFilters != null) {
                 for (IColumnFilter columnFilter : columnFilters) {
-                    filteredColumnNames = columnFilter.filterColumnsNames(type, getTable(), columnNames);
+                    filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), columnNames);
                 }            
             }
             if (keyMetaData == null) {
@@ -171,7 +171,7 @@ public class TableTemplate {
         return st;
     }
 
-    private int execute(StatementBuilder st, String[] values, Column[] metaData, BinaryEncoding encoding) {
+    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData, BinaryEncoding encoding) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -210,7 +210,7 @@ public class TableTemplate {
         Object[] objectValues = list.toArray();
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(st.getDmlType(), getTable(), objectValues);    
+                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);    
             }            
         }
         return jdbcTemplate.update(st.getSql(), objectValues, st.getTypes());
