@@ -27,6 +27,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
@@ -40,12 +41,10 @@ public class TransportManagerFactoryBean implements FactoryBean {
     private IRuntimeConfig runtimeConfiguration;
 
     private INodeService nodeService;
+    
+    private IParameterService parameterService;
 
     private String transport;
-
-    private int httpTimeout;
-
-    private boolean useCompression;
 
     private String httpSslVerifiedServerNames;
 
@@ -64,7 +63,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
                     return false;
                 }
             });
-            return new HttpTransportManager(runtimeConfiguration, nodeService, httpTimeout, useCompression);
+            return new HttpTransportManager(runtimeConfiguration, nodeService, parameterService);
         } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(runtimeConfiguration);
         } else {
@@ -92,16 +91,12 @@ public class TransportManagerFactoryBean implements FactoryBean {
         this.nodeService = nodeService;
     }
 
-    public void setHttpTimeout(int httpTimeout) {
-        this.httpTimeout = httpTimeout;
-    }
-
-    public void setUseCompression(boolean useCompression) {
-        this.useCompression = useCompression;
-    }
-
     public void setHttpSslVerifiedServerNames(String httpSslVerifiedServerNames) {
         this.httpSslVerifiedServerNames = httpSslVerifiedServerNames;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }
