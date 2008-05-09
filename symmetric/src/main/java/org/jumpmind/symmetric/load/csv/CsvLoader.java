@@ -206,7 +206,7 @@ public class CsvLoader implements IDataLoader {
             if (enableFallbackUpdate) {
                 savepoint = dbDialect.createSavepointForFallback();
             }
-            rows = context.getTableTemplate().insert(columnValues, encoding);
+            rows = context.getTableTemplate().insert(context, columnValues, encoding);
             dbDialect.releaseSavepoint(savepoint);
         } catch (DataIntegrityViolationException e) {
             // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
@@ -218,7 +218,7 @@ public class CsvLoader implements IDataLoader {
                 }
                 String keyValues[] = parseKeys(tokens, 1);
                 stats.incrementFallbackUpdateCount();
-                rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
+                rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
                 if (rows == 0) {
                     throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                             + ArrayUtils.toString(tokens), e);
@@ -247,7 +247,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         stats.startTimer();
-        int rows = context.getTableTemplate().update(columnValues, keyValues, encoding);
+        int rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
         if (rows == 0) {
             if (enableFallbackInsert) {
                 if (logger.isDebugEnabled()) {
@@ -255,7 +255,7 @@ public class CsvLoader implements IDataLoader {
                             + ArrayUtils.toString(tokens));
                 }
                 stats.incrementFallbackInsertCount();
-                rows = context.getTableTemplate().insert(columnValues, encoding);
+                rows = context.getTableTemplate().insert(context, columnValues, encoding);
             } else {
                 // TODO: log the PK information as an ERROR level.
                 stats.incrementDatabaseMillis(stats.endTimer());
@@ -283,7 +283,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         stats.startTimer();
-        int rows = context.getTableTemplate().delete(keyValues);
+        int rows = context.getTableTemplate().delete(context, keyValues);
         stats.incrementDatabaseMillis(stats.endTimer());
         if (rows == 0) {
             if (allowMissingDelete) {
