@@ -34,8 +34,7 @@
         <property name="transport" value="${symmetric.transport.type}" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />        
         <property name="nodeService" ref="nodeService" />
-        <property name="httpTimeout" value="${symmetric.runtime.http.timeout.ms}" />
-        <property name="useCompression" value="${symmetric.runtime.http.compression}" />
+        <property name="parameterService" ref="parameterService" />
         <property name="httpSslVerifiedServerNames" value="${symmetric.runtime.https.verified.server.names}" />
     </bean>
 

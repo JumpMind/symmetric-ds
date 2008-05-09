@@ -35,11 +35,13 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -56,17 +58,13 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     private IRuntimeConfig runtimeConfiguration;
 
     private INodeService nodeService;
-
-    private int httpTimeout;
     
-    private boolean useCompression;
+    private IParameterService parameterService;
 
-    public HttpTransportManager(IRuntimeConfig config, INodeService nodeService, int httpTimeout,
-            boolean useCompression) {
+    public HttpTransportManager(IRuntimeConfig config, INodeService nodeService, IParameterService paramService) {
         this.runtimeConfiguration = config;
+        this.parameterService = paramService;
         this.nodeService = nodeService;
-        this.httpTimeout = httpTimeout;
-        this.useCompression = useCompression;
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
@@ -91,8 +89,9 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
-        conn.setConnectTimeout(httpTimeout);
-        conn.setReadTimeout(httpTimeout);
+        int timeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
+        conn.setConnectTimeout(timeout);
+        conn.setReadTimeout(timeout);
         conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
         writeMessage(conn.getOutputStream(), data);
         return conn;
@@ -110,6 +109,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException {
         URL url = new URL(buildURL("push", remote, local));
+        int httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
+        boolean useCompression = parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION);
         return new HttpOutgoingTransport(url, httpTimeout, useCompression);
     }
 
@@ -128,6 +129,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     private HttpURLConnection createGetConnectionFor(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("accept-encoding", "gzip");
+        int httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);      
         conn.setConnectTimeout(httpTimeout);
         conn.setReadTimeout(httpTimeout);
         conn.setRequestMethod("GET");
