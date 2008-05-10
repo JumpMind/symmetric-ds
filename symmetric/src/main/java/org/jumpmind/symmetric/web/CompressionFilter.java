@@ -30,6 +30,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 
 /**
  * 
@@ -88,6 +89,11 @@ public class CompressionFilter extends AbstractFilter {
         delegate = new org.jumpmind.symmetric.web.compression.CompressionFilter();
 
         delegate.init(filterConfig);
+    }
+    
+    @Override
+    public boolean isDisabled() {
+        return parameterService.is(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET);
     }
 
     @Override

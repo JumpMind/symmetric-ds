@@ -71,8 +71,7 @@
                 <value>/registration/*</value>
             </list>
         </property>
-        <property name="disabled"
-            value="${symmetric.web.compression.disabled}" />
+        <property name="parameterService" ref="parameterService" />        
     </bean>
 
     <bean id="throttleFilter"

@@ -45,7 +45,8 @@ public class ParameterConstants {
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "symmetric.runtime.time.between.ack.retries.ms";
  
     public final static String TRANSPORT_HTTP_TIMEOUT = "symmetric.runtime.http.timeout.ms";
-    public final static String TRANSPORT_HTTP_USE_COMPRESSION = "symmetric.runtime.http.compression";
+    public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "symmetric.runtime.http.compression";
+    public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "symmetric.web.compression.disabled";
     
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER ="db.driver";
