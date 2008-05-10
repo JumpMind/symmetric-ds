@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -48,6 +49,7 @@ public class ServletResourceTemplate implements IServletResource {
     protected String[] uriPatterns;
     private String[] regexPatterns;
     protected Pattern[] compiledRegexPatterns;
+    protected IParameterService parameterService;
 
     public void init(ServletContext servletContext) {
         this.servletContext = servletContext;
@@ -258,5 +260,9 @@ public class ServletResourceTemplate implements IServletResource {
     protected void setServletContext(ServletContext servletContext)
     {
         this.servletContext = servletContext;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 }
