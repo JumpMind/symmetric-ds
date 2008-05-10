@@ -93,6 +93,7 @@
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="statisticManager" ref="statisticManager" />        
         <property name="dbDialect" ref="dbDialect" />
     </bean>
 

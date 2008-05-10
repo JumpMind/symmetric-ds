@@ -44,6 +44,8 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -59,6 +61,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private INodeService nodeService;
 
     private IDbDialect dbDialect;
+    
+    private IStatisticManager statisticManager;
 
     /**
      * Create a batch and mark events as tied to that batch. We iterate through all the events so we can find
@@ -179,6 +183,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                 history.setDataEventCount(dataEventCount);
                                 history.setDatabaseMillis(databaseMillis);
                                 insertOutgoingBatchHistory(history);
+                                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(databaseMillis, dataEventCount);
+                                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
 
                             }
 
@@ -328,6 +334,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 
 }
