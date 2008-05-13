@@ -20,10 +20,6 @@
 
 package org.jumpmind.symmetric.db;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
 
@@ -33,13 +29,16 @@ import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -50,20 +49,17 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     
     private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
-    final static String INSERT1 = "insert into "
+    final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
 
-    final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, 1, 1, 1 };
+    final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+        Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
-    final static int[] INSERT1_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-            Types.DATE, Types.INTEGER, Types.INTEGER, Types.DECIMAL };
+    final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
 
-    final static String INSERT2 = "insert into "
-            + TEST_TRIGGERS_TABLE
-            + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
-            + "values('here','here','1',null,null,1,1,1)";
+    final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
 
     final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,1,1,1";
 
@@ -120,7 +116,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void validateTestTableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
 
-        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES, INSERT1_TYPES);
+        int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
 
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
@@ -145,31 +141,25 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
     public void validateTransactionFunctionailty() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                boolean origValue = c.getAutoCommit();
-                c.setAutoCommit(false);
-                Statement stmt = c.createStatement();
-                stmt.executeUpdate("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
-                stmt.executeUpdate(INSERT2);
-                c.commit();
-                c.setAutoCommit(origValue);
-                ResultSet rs = stmt.executeQuery("select transaction_id from " + TestConstants.TEST_PREFIX
-                        + "data_event where transaction_id is not null group by transaction_id having count(*)>1");
-                String batchId = null;
-                if (rs.next()) {
-                    batchId = rs.getString(1);
-                }
-                IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(
-                        Constants.DB_DIALECT);
-                if (dbDialect.supportsTransactionId()) {
-                    Assert.assertNotNull(batchId);
-                }
-                stmt.close();
+        final JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
+                getDataSource()));
+        transactionTemplate.execute(new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                jdbcTemplate.update("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
+                jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES));
                 return null;
             }
         });
+        String sql = "select transaction_id from " + TestConstants.TEST_PREFIX
+                + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
+        String batchId = (String) jdbcTemplate.queryForObject(sql, String.class);
+
+        IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(
+                Constants.DB_DIALECT);
+        if (dbDialect.supportsTransactionId()) {
+            Assert.assertNotNull(batchId);
+        }
     }
 
     @Test(groups = "continuous", dependsOnMethods = "validateTransactionFunctionailty")
@@ -193,7 +183,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
+        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
 
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -204,7 +194,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         getDbDialect(getSymmetricEngine()).disableSyncTriggers();
-        int count = jdbcTemplate.update(INSERT1, INSERT1_VALUES, INSERT1_TYPES);
+        int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
         getDbDialect(getSymmetricEngine()).enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
@@ -235,12 +225,38 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        Assert.assertEquals(1, jdbcTemplate.update(INSERT2));
+        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
 
         String tableName = getNextDataRowTableName(getSymmetricEngine());
         Assert.assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
     }
 
+    private int[] filterTypes(int[] types) {
+        boolean isBooleanSupported = ! (getDbDialect() instanceof OracleDbDialect);
+        int[] filteredTypes = new int[types.length];
+        for (int i = 0; i < types.length; i++) {
+            if (types[i] == Types.BOOLEAN && ! isBooleanSupported) {
+                filteredTypes[i] = Types.INTEGER;
+            } else {
+                filteredTypes[i] = types[i];
+            }
+        }
+        return filteredTypes;
+    }
+    
+    private Object[] filterValues(Object[] values) {
+        boolean isBooleanSupported = ! (getDbDialect() instanceof OracleDbDialect);
+        Object[] filteredValues = new Object[values.length];
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] instanceof Boolean && ! isBooleanSupported) {
+                filteredValues[i] = ((Boolean) values[i]) ? new Integer(1) : new Integer(0);
+            } else {
+                filteredValues[i] = values[i];
+            }
+        }
+        return filteredValues;
+    }
+    
     private String getNextDataRow(SymmetricEngine engine) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
         return (String) jdbcTemplate

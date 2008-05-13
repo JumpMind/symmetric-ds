@@ -163,6 +163,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                 } else if (resultObj instanceof Date) {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
                     resultValue = df.format(resultObj);
+                } else if (resultObj instanceof Boolean) {
+                    resultValue = ((Boolean) resultObj) ? "1" : "0";
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }

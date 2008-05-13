@@ -133,6 +133,8 @@ public abstract class AbstractEmbeddedTrigger {
                         Binary d = (Binary) object;
                         b.append(new String(Base64.encodeBase64(d.getBytes())));
                         b.append("\"");
+                    } else if (object instanceof Boolean) {
+                        b.append(((Boolean) object) ? "1" : "0");
                     } else {
                         throw new IllegalStateException("Could not format " + object + " which is of type "
                                 + object.getClass().getName());
