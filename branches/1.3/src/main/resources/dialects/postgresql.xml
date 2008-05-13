@@ -31,7 +31,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ coalesce(cast($(tableAlias).$(columnName) as varchar), '') ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || cast($(tableAlias).$(columnName) as varchar) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
