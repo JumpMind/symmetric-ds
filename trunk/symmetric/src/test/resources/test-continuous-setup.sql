@@ -24,15 +24,3 @@ values('test_triggers_table','test-root-group','test-root-group','testchannel', 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,create_time)
 values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, null, null, null, null, null, 1, 'chenson', current_timestamp, current_timestamp);
-
-insert into test_dataloader_table
-(string_value, string_required_value, char_value, char_required_value,
-    date_value, time_value, boolean_value, integer_value, decimal_value)
-values ('string', 'string not null', 'char', 'char not null',
-    {d '2007-02-03'}, {ts '2007-01-02 03:04:05.06'}, '1', 42, 99.99);
-
-insert into test_dataloader_table
-(string_value, string_required_value, char_value, char_required_value,
-    date_value, time_value, boolean_value, integer_value, decimal_value)
-values ('string', 'string not null', 'char', 'char not null',
-    {d '2007-02-03'}, {ts '2007-01-02 03:04:05.06'}, '1', 42, 99.99);

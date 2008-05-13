@@ -138,13 +138,16 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     }
 
     @Test(groups = "continuous")
-    public void testUpdateCollision() throws Exception {
+    public void testUpdateCollision() throws Exception {       
         Level old = setLoggingLevelForTest(Level.OFF);
+        String[] insertValues = new String[11];
+        insertValues[0] = getNextId();
+        insertValues[2] = insertValues[4] = "inserted row for testUpdateCollision";
+
         String[] updateValues = new String[11];
-        // pick an id we won't hit
-        updateValues[10] = "699996";
-        updateValues[0] = "1";
-        updateValues[2] = updateValues[4] = "required string";
+        updateValues[0] = getId();
+        updateValues[10] = getNextId();
+        updateValues[2] = updateValues[4] = "update will become an insert that violates PK";
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -155,7 +158,11 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
 
-        // Update becomes fallback insert
+        // This insert will be OK
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(insertValues, true);
+
+        // Update becomes fallback insert, and then violate the primary key
         writer.write(CsvConstants.UPDATE);
         writer.writeRecord(updateValues, true);
 
