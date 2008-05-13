@@ -121,7 +121,9 @@ public abstract class AbstractEmbeddedTrigger {
                                 .replace(StringUtils.replace(object.toString(), "\\", "\\\\"), "\"", "\\\""));
                         b.append("\"");
                     } else if (object instanceof Number) {
+                        b.append("\"");
                         b.append(object);
+                        b.append("\"");
                     } else if (object instanceof Date) {
                         b.append(dateFormatter.format((Date) object));
                     } else if (object instanceof byte[]) {

@@ -31,7 +31,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ coalesce(cast($(tableAlias).$(columnName) as varchar), '') ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || cast($(tableAlias).$(columnName) as varchar) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
@@ -39,14 +39,14 @@
                         <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '1' else '0' end||','||]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value="||"/>
-                <property name="newTriggerValue" value="new"/>
-                <property name="oldTriggerValue" value="old"/>    
                 <property name="datetimeColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
                     </value>
                 </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>    
                 <property name="sqlTemplates">
                     <map>
                         <entry key="insertTriggerTemplate">
