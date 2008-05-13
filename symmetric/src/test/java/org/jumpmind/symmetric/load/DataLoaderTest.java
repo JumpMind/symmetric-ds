@@ -40,14 +40,6 @@ import com.csvreader.CsvWriter;
 
 public class DataLoaderTest extends AbstractDataLoaderTest {
 
-    protected static final String INSERT_EXISTING_ID = "1";
-
-    protected static final String DELETE_EXISTING_ID = "5";
-
-    protected static final String DELETE_NOT_EXISTING_ID = "6";
-
-    protected static final String UPDATE_NOT_EXISTING_ID = "7";
-
     public DataLoaderTest() {
     }
 
@@ -57,17 +49,22 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testInsertExisting() throws Exception {
-        String[] values = { INSERT_EXISTING_ID, "string2", "string not null2", "char2", "char not null2",
+        String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        massageExpectectedResultsForDialect(values);
+        testSimple(CsvConstants.INSERT, values, values);
+        
+        values[1] = "insert fallback to update";
         massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
     }
 
     @Test(groups = "continuous")
     public void testUpdateNotExisting() throws Exception {
-        String[] values = { UPDATE_NOT_EXISTING_ID, "it's /a/  string", "it's  -not-  null",
+        String id = getNextId();
+        String[] values = { id, "it's /a/  string", "it's  -not-  null",
                 "You're a \"character\"", "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0",
-                "1", "13", "9.95", UPDATE_NOT_EXISTING_ID };
+                "1", "13", "9.95", id };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         massageExpectectedResultsForDialect(expectedValues);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
@@ -133,12 +130,16 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
 
     @Test(groups = "continuous")
     public void testDeleteExisting() throws Exception {
-        testSimple(CsvConstants.DELETE, new String[] { DELETE_EXISTING_ID }, null);
+        String[] values = { getNextId(), "a row to be deleted", "testDeleteExisting", "char2", "char not null2",
+                "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+        massageExpectectedResultsForDialect(values);
+        testSimple(CsvConstants.INSERT, values, values);
+        testSimple(CsvConstants.DELETE, new String[] { getId() }, null);
     }
 
     @Test(groups = "continuous")
     public void testDeleteNotExisting() throws Exception {
-        testSimple(CsvConstants.DELETE, new String[] { DELETE_NOT_EXISTING_ID }, null);
+        testSimple(CsvConstants.DELETE, new String[] { getNextId() }, null);
     }
 
     @Test(groups = "continuous")
