@@ -66,6 +66,11 @@
                         <![CDATA[case when $(tableAlias).$(columnName) is null then '' else ('"' + convert(varchar,$(tableAlias).$(columnName),121) + '"') end +','+]]>
                     </value>
                 </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) = 1 then '1' else '0' end +','+]]>
+                    </value>
+                </property>
                 <property name="triggerConcatCharacter" value="+" />
                 <property name="newTriggerValue" value="inserted" />
                 <property name="oldTriggerValue" value="deleted" />

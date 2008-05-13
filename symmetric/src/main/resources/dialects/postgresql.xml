@@ -34,6 +34,11 @@
                         <![CDATA[ coalesce(cast($(tableAlias).$(columnName) as varchar), '') ||','||]]>
                     </value>
                 </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '1' else '0' end||','||]]>
+                    </value>
+                </property>
                 <property name="triggerConcatCharacter" value="||"/>
                 <property name="newTriggerValue" value="new"/>
                 <property name="oldTriggerValue" value="old"/>    

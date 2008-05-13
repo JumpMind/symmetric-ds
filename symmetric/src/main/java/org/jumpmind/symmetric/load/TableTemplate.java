@@ -190,10 +190,12 @@ public class TableTemplate {
                         objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                     } else if (type == Types.CHAR && dbDialect.isCharSpacePadded()) {
                         objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
-                    } else if (type == Types.INTEGER || type == Types.SMALLINT) {
+                    } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
                         objectValue = Integer.valueOf(value);
                     } else if (type == Types.NUMERIC || type == Types.DECIMAL) {
                         objectValue = new BigDecimal(value);
+                    } else if (type == Types.BOOLEAN) {
+                        objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
                     } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY) {
                         if (encoding == BinaryEncoding.NONE) {
                             objectValue = value.getBytes();

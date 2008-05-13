@@ -41,6 +41,11 @@
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
                     </value>
                 </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '1' else '0' end||','||]]>
+                    </value>
+                </property>
                 <property name="oldTriggerValue" value="t.old_" />
                 <property name="newTriggerValue" value="t.new_" />
                 <property name="triggerConcatCharacter" value="||" />

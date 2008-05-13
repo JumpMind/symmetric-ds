@@ -63,6 +63,8 @@ public class SqlTemplate {
 
     private String blobColumnTemplate;
 
+    private String booleanColumnTemplate;
+
     private String triggerConcatCharacter;
 
     private String newTriggerValue;
@@ -349,7 +351,6 @@ public class SqlTemplate {
         for (Column column : columns) {
             String templateToUse = null;
             switch (column.getTypeCode()) {
-            case Types.BIT:
             case Types.TINYINT:
             case Types.SMALLINT:
             case Types.INTEGER:
@@ -359,7 +360,6 @@ public class SqlTemplate {
             case Types.DOUBLE:
             case Types.NUMERIC:
             case Types.DECIMAL:
-            case Types.BOOLEAN:
                 templateToUse = numberColumnTemplate;
                 break;
             case Types.CHAR:
@@ -380,6 +380,10 @@ public class SqlTemplate {
             case Types.TIME:
             case Types.TIMESTAMP:
                 templateToUse = datetimeColumnTemplate;
+                break;
+            case Types.BOOLEAN:
+            case Types.BIT:
+                templateToUse = booleanColumnTemplate;
                 break;
             case Types.NULL:
             case Types.OTHER:
@@ -438,6 +442,10 @@ public class SqlTemplate {
 
     public void setClobColumnTemplate(String clobColumnTemplate) {
         this.clobColumnTemplate = clobColumnTemplate;
+    }
+
+    public void setBooleanColumnTemplate(String booleanColumnTemplate) {
+        this.booleanColumnTemplate = booleanColumnTemplate;
     }
 
     public void setTriggerConcatCharacter(String triggerConcatCharacter) {

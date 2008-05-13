@@ -80,6 +80,11 @@
                         <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
                     </value>
                 </property>
+                <property name="booleanColumnTemplate">
+                    <value>
+                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), ''),',',]]>
+                    </value>
+                </property>
                 <property name="triggerConcatCharacter" value=","/>
                 <property name="newTriggerValue" value="new"/>
                 <property name="oldTriggerValue" value="old"/>
