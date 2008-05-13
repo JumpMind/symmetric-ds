@@ -39,17 +39,17 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[coalesce($(tableAlias).$(columnName), '')||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end ||','||]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value="||"/>
-                <property name="newTriggerValue" value="new"/>
-                <property name="oldTriggerValue" value="old"/>
                 <property name="datetimeColumnTemplate" >
                     <value>
                         <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end ||','||]]>
                     </value>
                 </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>
                 <property name="sqlTemplates">
                     <map>
                         <entry key="insertTriggerTemplate">

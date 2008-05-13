@@ -68,8 +68,7 @@
                             </value>
                         </entry>
                     </map>
-                </property>                  
-                 
+                </property>
                 <property name="stringColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"')),'"') end ||','||]]>
@@ -87,18 +86,17 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as varchar(50)), '')||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"'||cast($(tableAlias).$(columnName) as varchar(50))||'"' end ||','||]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value="||"/>
-                <property name="newTriggerValue" value=":new"/>
-                <property name="oldTriggerValue" value=":old"/>
-                <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
                     </value>
                 </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value=":new"/>
+                <property name="oldTriggerValue" value=":old"/>
                 <property name="sqlTemplates">
                     <map>
                         <entry key="insertTriggerTemplate">
