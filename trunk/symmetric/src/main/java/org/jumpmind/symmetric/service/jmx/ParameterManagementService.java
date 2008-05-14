@@ -31,7 +31,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource(description = "The management interface for node parameters")
 public class ParameterManagementService {
 
-    IParameterService parameterService;
+    private IParameterService parameterService;
 
     @ManagedOperation(description = "Reload supported parameters from file or database")
     public void rereadParameters() {
@@ -74,18 +74,17 @@ public class ParameterManagementService {
     }
 
     @ManagedAttribute(description = "The parameters configured for this SymmetricDS instance")
-    public String getPropertiesList() {
+    public String getParametersList() {
         StringBuilder buffer = new StringBuilder();
         Map<String, String> params = parameterService.getAllParameters();
+        buffer.append("<pre>");
         for (String key : params.keySet()) {
-            buffer.append(key).append("=").append(params.get(key)).append("<br/>");
+            buffer.append(key).append("=").append(params.get(key)).append("\n");
         }
+        buffer.append("</pre>");
         return buffer.toString();
     }
 
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "nodeGroupId", description = "The node group id for a node"),
-            @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }

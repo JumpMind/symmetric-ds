@@ -109,6 +109,25 @@ public class SymmetricEngine {
             this.init(createContext(), null);
         }
     }
+    
+    /**
+     * Create a symmetric node
+     */
+    public SymmetricEngine() {
+        init(createContext(), null);
+    }
+
+    public SymmetricEngine(IActivityListener activityListener) {
+        init(createContext(), activityListener);
+    }
+
+    /**
+     * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
+     * @param ctx A Spring framework context
+     */
+    protected SymmetricEngine(ApplicationContext ctx) {
+        init(ctx, null);
+    }
 
     public void stop() {
         logger.info("Closing SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
@@ -145,25 +164,6 @@ public class SymmetricEngine {
         }
     }
 
-    /**
-     * Create a symmetric node
-     */
-    public SymmetricEngine() {
-        init(createContext(), null);
-    }
-
-    public SymmetricEngine(IActivityListener activityListener) {
-        init(createContext(), activityListener);
-    }
-
-    /**
-     * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
-     * @param ctx A Spring framework context
-     */
-    protected SymmetricEngine(ApplicationContext ctx) {
-        init(ctx, null);
-    }
-
     private ApplicationContext createContext() {
         return new ClassPathXmlApplicationContext("classpath:/symmetric.xml");
     }
@@ -181,8 +181,17 @@ public class SymmetricEngine {
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
         registerActivityListener(activityListener);
         registerEngine();
+        startLegacyJMX();
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
                 + Version.version() + " database=" + dbDialect.getName());
+    }
+    
+    private void startLegacyJMX() {
+        try {
+            getApplicationContext().getBean(Constants.LEGACY_JMX);
+        } catch (Exception ex) {
+            logger.warn("Unable to register legacy JMX bean: " + ex.getMessage());
+        }
     }
 
     private void registerActivityListener(IActivityListener listener) {
