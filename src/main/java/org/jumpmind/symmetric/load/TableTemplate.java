@@ -164,7 +164,17 @@ public class TableTemplate {
                 columnKeyMetaData = (Column[]) ArrayUtils.addAll(columnMetaData, keyMetaData);
             }
 
-            st = new StatementBuilder(type, table.getName(), keyMetaData,
+            String tableName = table.getName();
+            if (table.getSchema() != null && dbDialect.getDefaultSchema() != null
+                    && !table.getSchema().equals(dbDialect.getDefaultSchema())) {
+                tableName = table.getSchema() + "." + tableName;
+            }
+            if (table.getCatalog() != null && dbDialect.getDefaultCatalog() != null
+                    && !table.getCatalog().equals(dbDialect.getDefaultCatalog())) {
+                tableName = table.getCatalog() + "." + tableName;
+            }
+
+            st = new StatementBuilder(type, tableName, keyMetaData,
                     getColumnMetaData(filteredColumnNames), dbDialect.isBlobOverrideToBinary());
             statementMap.put(type, st);
         }
