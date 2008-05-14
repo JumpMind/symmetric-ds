@@ -53,6 +53,7 @@
     <bean id="nodeConcurrencyFilter"
         class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
         <property name="parameterService" ref="parameterService"/>
+        <property name="statisticManager" ref="statisticManager"/>
         <property name="uriPatterns">
             <list>
                 <value>/pull/*</value>

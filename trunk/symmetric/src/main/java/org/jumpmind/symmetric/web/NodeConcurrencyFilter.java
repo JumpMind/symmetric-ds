@@ -37,6 +37,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
 
 /**
  * 
@@ -73,6 +75,8 @@ public class NodeConcurrencyFilter extends AbstractFilter {
     private static int tooBusyCount;
 
     private IParameterService parameterService;
+    
+    private IStatisticManager statisticManager;
 
     private static long lastTooBusyLogTime = System.currentTimeMillis();
 
@@ -106,6 +110,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
                 try {
                     changeNumberOfWorkers(servletPath, 1);
                     worker.work();
+                    statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_DID_WORK_COUNT).increment();
                     didWork = true;
                 } finally {
                     changeNumberOfWorkers(servletPath, -1);
@@ -113,7 +118,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
             } else {
                 if (--tries == 0) {
                     tooBusyCount++;
-
+                    statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_TOO_BUSY_COUNT).increment();
                     if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
                             * TOO_BUSY_LOG_STATEMENTS_PER_MIN
                             && tooBusyCount > 0) {
@@ -155,5 +160,9 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
     }
 }
