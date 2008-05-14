@@ -245,8 +245,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     }
                 }
             }
-        } else if (runtimeConfiguration.getExternalId().equals(node.getExternalId()) && runtimeConfiguration.getNodeGroupId().equals(node.getNodeGroupId())) {
+        } else if (node != null && runtimeConfiguration.getExternalId().equals(node.getExternalId()) && runtimeConfiguration.getNodeGroupId().equals(node.getNodeGroupId())) {
             heartbeat();
+        } else if (node == null) {
+            logger.info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");           
         } else {
             throw new IllegalStateException("The configured state does not match recorded database state.  The recorded external id is " + node.getExternalId() + " while the configured external id is " + runtimeConfiguration.getExternalId() + ".  The recorded node group id is " + node.getNodeGroupId() + " while the configured node group id is " + runtimeConfiguration.getNodeGroupId());            
         }

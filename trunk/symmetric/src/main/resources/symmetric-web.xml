@@ -7,6 +7,8 @@
         class="org.jumpmind.symmetric.transport.PullResourceHandler">
         <property name="nodeService" ref="nodeService" />
         <property name="registrationService" ref="registrationService" />
+        <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="dataService" ref="dataService" />
     </bean>
 
     <bean id="pushResourceHandler"
