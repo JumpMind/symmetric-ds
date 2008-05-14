@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jumpmind.symmetric</groupId>
+    <artifactId>symmetric-ds-war</artifactId>
+    <packaging>war</packaging>
+    <version>1.4.0-SNAPSHOT</version>
+    <name>SymmetricDS</name>
+
+    <properties>
+        <wtpVersion>1.5</wtpVersion>
+    </properties>
+
+    <build>
+        <finalName>symmetric-ds-web</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <configuration>
+                    <wtpversion>${wtpVersion}</wtpversion>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <optimize>true</optimize>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.jumpmind.symmetric</groupId>
+            <artifactId>symmetric-ds</artifactId>
+            <version>1.4.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
