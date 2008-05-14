@@ -128,8 +128,10 @@
       <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
     </snapshotRepository>
   </distributionManagement>
+  
   <properties>
-    <springframework-release-version>2.5.2</springframework-release-version>
+    <wtpVersion>1.5</wtpVersion>
+    <springframework-release-version>2.5.4</springframework-release-version>
     <docbook.source>${basedir}/src/docbook</docbook.source>
     <docbook.target>${basedir}/target/site/guide</docbook.target>
   </properties>
@@ -323,37 +325,7 @@
     <!-- Spring Framework -->
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-tx</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>${springframework-release-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
+      <artifactId>spring</artifactId>
       <version>${springframework-release-version}</version>
     </dependency>
     <dependency>

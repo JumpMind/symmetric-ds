@@ -37,7 +37,7 @@
         Added a thick client configuration and administration utility application.
         </action>
       -->
-      <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.1.</action>
+      <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.4.</action>
       <action dev="knaas" type="add">
         Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
         configuration information. From this point forward we will provide a standard web.xml and
