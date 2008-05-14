@@ -581,7 +581,7 @@
         <property name="selectDataIdSql">
             <value>
                 select a.data_id from ${sync.table.prefix}_data a, ${sync.table.prefix}_data_event b
-                where a.data_Id = b.data_Id and b.batch_id=? order by data_id asc
+                where a.data_Id = b.data_Id and b.batch_id=? order by a.data_id asc
             </value>
         </property>
     </bean>

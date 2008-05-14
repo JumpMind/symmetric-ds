@@ -9,6 +9,9 @@
       <action dev="chenson42" type="fix" issue="aid=1950045&amp;atid=997724">
         Fix peek ahead logic so that the max batch size limit is respected.
       </action>
+      <action dev="chenson42" type="fix" issue="aid=1950045&amp;atid=997724">
+        Qualified data_id in order by SQL in selectDataIdSql.
+      </action>      
     </release>
     <release version="1.3.3" date="2008-04-22" description="Patch release">
       <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
