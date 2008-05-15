@@ -70,7 +70,9 @@
         <property name="statisticManager" ref="statisticManager" />
     </bean>
 
-    <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService" />
+    <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService">
+        <property name="statisticManager" ref="statisticManager" />    
+    </bean>
 
     <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService">
         <property name="parameterService" ref="parameterService" />

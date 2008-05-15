@@ -19,9 +19,30 @@
  */
 package org.jumpmind.symmetric.service.jmx;
 
+import java.math.BigDecimal;
+
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for outgoing synchronization")
 public class OutgoingManagementService {
 
+    IStatisticManager statisticManager;
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
+
+    @ManagedAttribute(description = "Get the average number of events in each batch since the last statistic flush")
+    public BigDecimal getPeriodicAverageEventsPerBatch() {
+        return this.statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).getAverageValue();
+    }
+
+    @ManagedAttribute(description = "Get the average number of events in each batch for the lifetime of the server")
+    public BigDecimal getServerLifetimeAverageEventsPerBatch() {
+        return this.statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH)
+                .getLifetimeAverageValue();
+    }
 }
