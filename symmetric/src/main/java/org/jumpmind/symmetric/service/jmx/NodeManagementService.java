@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -34,8 +35,11 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticName;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -43,7 +47,6 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedOperationParameter;
 import org.springframework.jmx.export.annotation.ManagedOperationParameters;
 import org.springframework.jmx.export.annotation.ManagedResource;
-
 
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
@@ -63,10 +66,18 @@ public class NodeManagementService {
     private IRegistrationService registrationService;
 
     private IDataExtractorService dataExtractorService;
-    
+
     private IClusterService clusterService;
 
+    private IParameterService parameterService;
+
     private DataSource dataSource;
+
+    IStatisticManager statisticManager;
+
+    public void setStatisticManager(IStatisticManager statisticManager) {
+        this.statisticManager = statisticManager;
+    }
 
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
@@ -78,6 +89,30 @@ public class NodeManagementService {
         bootstrapService.syncTriggers();
     }
 
+    @ManagedAttribute(description = "Get the number of current connections allowed to this "
+            + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
+            + " clients and 20 concurrent pull client would be allowed")
+    public int getNumfNodeConnectionsPerInstance() {
+        return parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
+    }
+
+    @ManagedAttribute(description = "Configure the number of connections allowed to this node."
+            + "  If the value is set to zero you are effectively disabling your transport"
+            + " (wihch can be useful for maintainance")
+    public void setNumOfNodeConnectionsPerInstance(int value) {
+        parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
+    }
+    
+    @ManagedAttribute(description = "This is a count of clients who connected to push or pull data and were rejected because the server was too busy")
+    public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
+        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_TOO_BUSY_COUNT).getLifetimeCount();
+    }
+    
+    @ManagedAttribute(description = "This is a count of the number of requests that were handled by this instance")
+    public long getNumOfNodesWhoConnectedForInstanceLifetime() {
+        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_DID_WORK_COUNT).getLifetimeCount();
+    }
+
     @ManagedAttribute(description = "The group this node belongs to")
     public String getNodeGroupId() {
         return runtimeConfiguration.getNodeGroupId();
@@ -87,7 +122,7 @@ public class NodeManagementService {
     public String getExternalId() {
         return runtimeConfiguration.getExternalId();
     }
-    
+
     @ManagedAttribute(description = "The node id given to this symmetric node")
     public String getNodeId() {
         Node node = nodeService.findIdentity();
@@ -96,7 +131,7 @@ public class NodeManagementService {
         } else {
             return "?";
         }
-    }    
+    }
 
     @ManagedAttribute(description = "Whether the basic data source is being used as the default datasource.")
     public boolean isBasicDataSource() {
@@ -119,12 +154,12 @@ public class NodeManagementService {
     public boolean isExternalIdRegistered(String nodeGroupdId, String externalId) {
         return nodeService.isExternalIdRegistered(nodeGroupdId, externalId);
     }
-    
+
     @ManagedOperation(description = "Emergency remove all locks (if left abandoned on a cluster)")
     public void clearAllLocks() {
         clusterService.clearAllLocks();
     }
-    
+
     @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
     public boolean isInitialLoadComplete(String nodeId) {
@@ -145,7 +180,7 @@ public class NodeManagementService {
             return false;
         }
     }
-    
+
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
@@ -179,29 +214,27 @@ public class NodeManagementService {
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to sent the event to."),
             @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
-            @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.")})
-
+            @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
     public String sendSQL(String nodeId, String tableName, String sql) {
         return dataService.sendSQL(nodeId, tableName, sql);
     }
-    
+
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
     public String reloadTable(String nodeId, String tableName) {
         return dataService.reloadTable(nodeId, tableName);
     }
-    
+
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload."),
-            @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.")})
+            @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.") })
     public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
         return dataService.reloadTable(nodeId, tableName, overrideInitialLoadSelect);
     }
-    
+
     @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
     public String showBatch(String batchId) throws Exception {
@@ -264,6 +297,10 @@ public class NodeManagementService {
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

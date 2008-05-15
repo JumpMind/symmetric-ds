@@ -64,6 +64,8 @@
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="statisticManager" ref="statisticManager" />
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
     <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">
