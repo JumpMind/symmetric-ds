@@ -82,7 +82,7 @@
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(cast($(tableAlias).$(columnName) as char), ''),',',]]>
+                        <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value=","/>
