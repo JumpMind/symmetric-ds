@@ -239,7 +239,7 @@
     </table>
 
     <table name="incoming_batch_hist">
-        <column name="batch_id" type="INTEGER" size="50" />
+        <column name="batch_id" type="INTEGER" size="50" required="true"/>
         <column name="node_id" type="VARCHAR" size="50" />
         <column name="status" type="CHAR" size="2" />
         <column name="start_time" type="TIMESTAMP" />
