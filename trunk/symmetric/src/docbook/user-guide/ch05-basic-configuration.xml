@@ -162,6 +162,18 @@
                     </para>
                 </listitem>
             </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>symmetric.runtime.my.url</command>
+                </term>
+                <listitem>
+                    <para>
+                        The URL where this Node can be contacted for synchronization.
+                        At startup and during each heartbeat, the Node updates its entry in
+                        the database with this URL.
+                    </para>
+                </listitem>
+            </varlistentry>
         </variablelist>
         <para>
             When a new Node is first started, it is has no information about synchronizing. It
