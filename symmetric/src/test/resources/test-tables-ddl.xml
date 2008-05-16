@@ -14,7 +14,7 @@
         <column name="long_String_Value" type="LONGVARCHAR" />
         <column name="time_Value" type="TIMESTAMP" />
         <column name="date_Value" type="DATE" />
-        <column name="boolean_Value" type="BOOLEANINT" size="1" required="true" default="1" />        
+        <column name="boolean_Value" type="BIT" size="1" />        
         <column name="bigInt_Value" type="BIGINT" />
         <column name="decimal_Value" type="DECIMAL" />        
     </table>
@@ -27,7 +27,7 @@
         <column name="date_value" type="DATE" />
         <column name="id" type="INTEGER" required="true" autoIncrement="true" primaryKey="true" />        
         <column name="time_value" type="TIMESTAMP" />
-        <column name="boolean_value" type="BOOLEANCHAR" size="1" />        
+        <column name="boolean_value" type="BIT" size="1" />        
         <column name="integer_value" type="INTEGER" />
         <column name="decimal_value" type="DECIMAL" size="10,2" />        
     </table>
