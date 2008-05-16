@@ -111,15 +111,14 @@
                         <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || rtrim(char($(tableAlias).$(columnName))) || '"' end ||','||]]>
                     </value>
                 </property>
-                <property name="triggerConcatCharacter" value="||"/>
-                <property name="newTriggerValue" value="new"/>
-                <property name="oldTriggerValue" value="old"/>
-                <!-- TODO -->                
                 <property name="datetimeColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || rtrim(char($(tableAlias).$(columnName))) || '"' end ||','||]]>
                     </value>
                 </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>
                 <property name="sqlTemplates">
                     <map>
                         <entry key="insertTriggerTemplate">

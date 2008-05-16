@@ -43,7 +43,7 @@
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '1' else '0' end||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '"1"' else '"0"' end||','||]]>
                     </value>
                 </property>
                 <property name="oldTriggerValue" value="t.old_" />
