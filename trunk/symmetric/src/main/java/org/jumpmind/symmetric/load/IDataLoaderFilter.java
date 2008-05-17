@@ -26,10 +26,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface IDataLoaderFilter {
 
-    public void filterInsert(IDataLoaderContext context, String[] columnValues);
+    /**
+     * @return true if the row should be loaded.  false if the filter has handled the row and it should be ignored.
+     */
+    public boolean filterInsert(IDataLoaderContext context, String[] columnValues);
+
+    /**
+     * @return true if the row should be loaded.  false if the filter has handled the row and it should be ignored.
+     */
+    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues);
     
-    public void filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues);
-    
-    public void filterDelete(IDataLoaderContext context, String[] keyValues);
+    /**
+     * @return true if the row should be loaded.  false if the filter has handled the row and it should be ignored.
+     */    
+    public boolean filterDelete(IDataLoaderContext context, String[] keyValues);
 
 }

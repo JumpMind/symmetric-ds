@@ -106,7 +106,7 @@ public class SymmetricEngine {
                     overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
             System.setProperty("symmetric.override.properties.file.2",
                     overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
-            this.init(createContext(), null);
+            this.init(createContext());
         }
     }
     
@@ -114,11 +114,7 @@ public class SymmetricEngine {
      * Create a symmetric node
      */
     public SymmetricEngine() {
-        init(createContext(), null);
-    }
-
-    public SymmetricEngine(IActivityListener activityListener) {
-        init(createContext(), activityListener);
+        init(createContext());
     }
 
     /**
@@ -126,7 +122,7 @@ public class SymmetricEngine {
      * @param ctx A Spring framework context
      */
     protected SymmetricEngine(ApplicationContext ctx) {
-        init(ctx, null);
+        init(ctx);
     }
 
     public void stop() {
@@ -168,7 +164,7 @@ public class SymmetricEngine {
         return new ClassPathXmlApplicationContext("classpath:/symmetric.xml");
     }
 
-    private void init(ApplicationContext applicationContext, IActivityListener activityListener) {
+    private void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         properties = (Properties) applicationContext.getBean(Constants.PROPERTIES);
         bootstrapService = (IBootstrapService) applicationContext.getBean(Constants.BOOTSTRAP_SERVICE);
@@ -179,7 +175,6 @@ public class SymmetricEngine {
         purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
         dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
-        registerActivityListener(activityListener);
         registerEngine();
         startLegacyJMX();
         logger.info("Initialized SymmetricDS externalId=" + runtimeConfig.getExternalId() + " version="
@@ -191,12 +186,6 @@ public class SymmetricEngine {
             getApplicationContext().getBean(Constants.LEGACY_JMX);
         } catch (Exception ex) {
             logger.warn("Unable to register legacy JMX bean: " + ex.getMessage());
-        }
-    }
-
-    private void registerActivityListener(IActivityListener listener) {
-        if (listener != null) {
-            bootstrapService.setActivityListener(listener);
         }
     }
 

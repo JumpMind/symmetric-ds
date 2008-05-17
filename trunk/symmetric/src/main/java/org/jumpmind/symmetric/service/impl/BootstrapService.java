@@ -29,7 +29,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.IActivityListener;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -82,8 +81,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private boolean initialized = false;
     
-    private IActivityListener activityListener = null;
-
     public void setupDatabase() {
         if (!initialized) {
             this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
@@ -118,8 +115,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         clusterService.initLockTable();
     }
     
-    private boolean isAutoConfigurable() {
-        return autoConfigureDatabase && (activityListener == null || activityListener.createConfigurationTables(this.dbDialect));
+    protected boolean isAutoConfigurable() {
+        return autoConfigureDatabase;
     }
 
     /**
@@ -390,10 +387,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
-    }
-
-    public void setActivityListener(IActivityListener activityListener) {
-        this.activityListener = activityListener;
     }
 
 }

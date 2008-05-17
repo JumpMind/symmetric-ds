@@ -192,43 +192,47 @@ public class CsvLoader implements IDataLoader {
         String[] columnValues = parseColumns(tokens, 1);
         int rows = 0;
 
+        boolean continueToLoad = true;
         if (filters != null) {
             stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
-                filter.filterInsert(context, columnValues);
+                continueToLoad &= filter.filterInsert(context, columnValues);
             }
             stats.incrementFilterMillis(stats.endTimer());
         }
 
-        Object savepoint = null;
-        try {
-            stats.startTimer();
-            if (enableFallbackUpdate) {
-                savepoint = dbDialect.createSavepointForFallback();
-            }
-            rows = context.getTableTemplate().insert(context, columnValues, encoding);
-            dbDialect.releaseSavepoint(savepoint);
-        } catch (DataIntegrityViolationException e) {
-            // TODO: modify sql-error-codes.xml for unique constraint vs foreign key
-            if (enableFallbackUpdate) {
-                dbDialect.rollbackToSavepoint(savepoint);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
-                            + ArrayUtils.toString(tokens));
+        if (continueToLoad) {
+            Object savepoint = null;
+            try {
+                stats.startTimer();
+                if (enableFallbackUpdate) {
+                    savepoint = dbDialect.createSavepointForFallback();
                 }
-                String keyValues[] = parseKeys(tokens, 1);
-                stats.incrementFallbackUpdateCount();
-                rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
-                if (rows == 0) {
-                    throw new RuntimeException("Unable to update " + context.getTableName() + ": "
-                            + ArrayUtils.toString(tokens), e);
+                rows = context.getTableTemplate().insert(context, columnValues, encoding);
+                dbDialect.releaseSavepoint(savepoint);
+            } catch (DataIntegrityViolationException e) {
+                // TODO: modify sql-error-codes.xml for unique constraint vs
+                // foreign key
+                if (enableFallbackUpdate) {
+                    dbDialect.rollbackToSavepoint(savepoint);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
+                                + ArrayUtils.toString(tokens));
+                    }
+                    String keyValues[] = parseKeys(tokens, 1);
+                    stats.incrementFallbackUpdateCount();
+                    rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
+                    if (rows == 0) {
+                        throw new RuntimeException("Unable to update " + context.getTableName() + ": "
+                                + ArrayUtils.toString(tokens), e);
+                    }
+                } else {
+                    // TODO: log the PK information as an ERROR level.
+                    throw e;
                 }
-            } else {
-                // TODO: log the PK information as an ERROR level.
-                throw e;
+            } finally {
+                stats.incrementDatabaseMillis(stats.endTimer());
             }
-        } finally {
-            stats.incrementDatabaseMillis(stats.endTimer());
         }
         return rows;
     }
@@ -237,63 +241,69 @@ public class CsvLoader implements IDataLoader {
         stats.incrementStatementCount();
         String columnValues[] = parseColumns(tokens, 1);
         String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
-
+        int rows = 0;
+        boolean continueToLoad = true;
         if (filters != null) {
             stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
-                filter.filterUpdate(context, columnValues, keyValues);
+                continueToLoad &= filter.filterUpdate(context, columnValues, keyValues);
             }
             stats.incrementFilterMillis(stats.endTimer());
         }
 
-        stats.startTimer();
-        int rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
-        if (rows == 0) {
-            if (enableFallbackInsert) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Unable to update " + context.getTableName() + ", inserting instead: "
+        if (continueToLoad) {
+            stats.startTimer();
+            rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
+            if (rows == 0) {
+                if (enableFallbackInsert) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Unable to update " + context.getTableName() + ", inserting instead: "
+                                + ArrayUtils.toString(tokens));
+                    }
+                    stats.incrementFallbackInsertCount();
+                    rows = context.getTableTemplate().insert(context, columnValues, encoding);
+                } else {
+                    // TODO: log the PK information as an ERROR level.
+                    stats.incrementDatabaseMillis(stats.endTimer());
+                    throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                             + ArrayUtils.toString(tokens));
                 }
-                stats.incrementFallbackInsertCount();
-                rows = context.getTableTemplate().insert(context, columnValues, encoding);
-            } else {
-                // TODO: log the PK information as an ERROR level.
-                stats.incrementDatabaseMillis(stats.endTimer());
-                throw new RuntimeException("Unable to update " + context.getTableName() + ": "
+            } else if (rows > 1) {
+                logger.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
                         + ArrayUtils.toString(tokens));
             }
-        } else if (rows > 1) {
-            logger.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
-                    + ArrayUtils.toString(tokens));
+            stats.incrementDatabaseMillis(stats.endTimer());
         }
-        stats.incrementDatabaseMillis(stats.endTimer());
         return rows;
     }
 
     protected int delete(String[] tokens) {
         stats.incrementStatementCount();
         String keyValues[] = parseKeys(tokens, 1);
+        int rows = 0;
+        boolean continueToLoad = true;
 
         if (filters != null) {
             stats.startTimer();
             for (IDataLoaderFilter filter : filters) {
-                filter.filterDelete(context, keyValues);
+                continueToLoad &= filter.filterDelete(context, keyValues);
             }
             stats.incrementFilterMillis(stats.endTimer());
         }
 
-        stats.startTimer();
-        int rows = context.getTableTemplate().delete(context, keyValues);
-        stats.incrementDatabaseMillis(stats.endTimer());
-        if (rows == 0) {
-            if (allowMissingDelete) {
-                logger
-                        .warn("Delete of " + context.getTableName() + " affected no rows: "
-                                + ArrayUtils.toString(tokens));
-                stats.incrementMissingDeleteCount();
-            } else {
-                throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
-                        + ArrayUtils.toString(tokens));
+        if (continueToLoad) {
+            stats.startTimer();
+            rows = context.getTableTemplate().delete(context, keyValues);
+            stats.incrementDatabaseMillis(stats.endTimer());
+            if (rows == 0) {
+                if (allowMissingDelete) {
+                    logger.warn("Delete of " + context.getTableName() + " affected no rows: "
+                            + ArrayUtils.toString(tokens));
+                    stats.incrementMissingDeleteCount();
+                } else {
+                    throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
+                            + ArrayUtils.toString(tokens));
+                }
             }
         }
         return rows;
@@ -314,8 +324,6 @@ public class CsvLoader implements IDataLoader {
         }
         dbDialect.createTables(xml);
         context.getTableTemplate().resetMetaData();
-        // TODO Eric - why was this done here?
-        //dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {

@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
@@ -85,6 +86,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected IStatisticManager statisticManager;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
+    
+    protected List<IBatchListener> batchListeners;
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately
@@ -266,7 +269,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         history.setStatus(IncomingBatchHistory.Status.SK);
                         dataLoader.skip();
                     }
-                    history.setValues(dataLoader.getStatistics(), true);
+                    history.setValues(dataLoader.getStatistics(), true); 
+                    fireBatchComplete(dataLoader, history);
                     incomingBatchService.insertIncomingBatchHistory(history);
                 } catch (IOException e) {
                     throw new TransportException(e);
@@ -275,6 +279,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         });
+    }
+    
+    private void fireBatchComplete(IDataLoader loader, IncomingBatchHistory history) {
+        if (batchListeners != null) {
+            for (IBatchListener listener : batchListeners) {
+                listener.batchComplete(loader, history);
+            }
+        }
     }
 
     protected void handleBatchError(final IncomingBatch status, final IncomingBatchHistory history) {
@@ -349,6 +361,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
+    }
+
+    public void addBatchListener(IBatchListener batchListener) {
+        if (this.batchListeners == null) {
+            this.batchListeners = new ArrayList<IBatchListener>();
+        }
+        this.batchListeners.add(batchListener);
+    }
+
+    public void setBatchListeners(List<IBatchListener> batchListeners) {
+        this.batchListeners = batchListeners;
     }
 
 }
