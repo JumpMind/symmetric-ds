@@ -142,12 +142,12 @@ public class SymmetricFilter implements Filter {
                         final AbstractFilter builtinFilter = (AbstractFilter) filter;
                         if (!builtinFilter.isDisabled()
                                 && builtinFilter.matches(request)) {
-                            builtinFilter.doFilter(request, response, chain);
+                            builtinFilter.doFilter(request, response, this);
                         } else {
                             this.doFilter(request, response);
                         }
                     } else {
-                        filter.doFilter(request, response, chain);
+                        filter.doFilter(request, response, this);
                     }
                 } else {
                     chain.doFilter(request, response);
