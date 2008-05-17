@@ -20,7 +20,6 @@
 
 package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.IActivityListener;
 
 /**
  * Provides methods to setup the runtime for data synchronization based on {@link IConfigurationService}.
@@ -36,7 +35,5 @@ public interface IBootstrapService {
     public void heartbeat();
 
     public void setAutoConfigureDatabase(boolean autoConfigureDatabase);
-
-    public void setActivityListener(IActivityListener activityListener);
 
 }
