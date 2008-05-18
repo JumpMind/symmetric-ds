@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.Node;
@@ -53,4 +54,6 @@ public interface IDataLoaderService {
     public void setTransportManager(ITransportManager transportManager);
     
     public void addColumnFilter(String tableName, IColumnFilter filter);
+    
+    public void addBatchListener(IBatchListener listener);
 }
