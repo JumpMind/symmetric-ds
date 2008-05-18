@@ -44,6 +44,8 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     private TableTemplate tableTemplate;
     
+    private Map<String, Object> contextCache = new HashMap<String, Object>();
+    
     public DataLoaderContext() {
         this.tableTemplateMap = new HashMap<String, TableTemplate>();
     }
@@ -123,6 +125,14 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setKeyNames(String[] keyNames) {
         tableTemplate.setKeyNames(keyNames);
+    }
+
+    /**
+     * This is a cache that is available for the lifetime of a batch load.  It
+     * can be useful for storing data from the filter for customization purposes.
+     */
+    public Map<String, Object> getContextCache() {
+        return contextCache;
     }
 
 }
