@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.load;
 
+import java.util.Map;
+
 import org.apache.ddlutils.model.Table;
 
 public interface IDataLoaderContext {
@@ -40,5 +42,7 @@ public interface IDataLoaderContext {
     public String[] getKeyNames();
     
     public Table[] getAllTablesProcessed();
+    
+    public Map<String, Object> getContextCache();
 
 }
