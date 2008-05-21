@@ -283,9 +283,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     
     private void fireBatchComplete(IDataLoader loader, IncomingBatchHistory history) {
         if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
                 listener.batchComplete(loader, history);
             }
+            // update the filter milliseconds so batch listeners are also included
+            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis()-ts));
         }
     }
 
