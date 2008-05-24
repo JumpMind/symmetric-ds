@@ -33,12 +33,14 @@ import org.springframework.beans.factory.FactoryBean;
 public class DataSourceFactoryBean implements FactoryBean, BeanFactoryAware {
 
     private String jndiName;
+    
+    private String beanName;
 
     private BeanFactory beanFactory;
 
     public Object getObject() throws Exception {
         if (jndiName == null || jndiName.trim().length() == 0) {
-            return beanFactory.getBean("basicDataSource");
+            return beanFactory.getBean(beanName);
         } else {
             return beanFactory.getBean("jndiDataSource");
         }
@@ -58,6 +60,10 @@ public class DataSourceFactoryBean implements FactoryBean, BeanFactoryAware {
 
     public void setJndiName(String jndiName) {
         this.jndiName = jndiName;
+    }
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
     }
 
 }
