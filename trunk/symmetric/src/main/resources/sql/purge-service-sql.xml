@@ -44,6 +44,11 @@
         by create_time asc
       </value>
     </entry>
+    <entry key="deleteFromStatisticSql">
+      <value>
+        delete from ${sync.table.prefix}_statistic where capture_end_time &lt; ?
+      </value>
+    </entry>
   </util:map>
 
   <util:list id="deleteIncomingBatchesByNodeIdSql">
