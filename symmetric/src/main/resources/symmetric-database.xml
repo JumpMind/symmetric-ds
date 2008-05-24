@@ -11,9 +11,10 @@
     <!-- Support two different types of data sources:  application server hosted and internal -->
     <bean id="dataSource" class="org.jumpmind.symmetric.db.DataSourceFactoryBean">
         <property name="jndiName" value="${db.jndi.name}" />
+        <property name="beanName" value="${db.spring.bean.name}" />
     </bean>
 
-    <bean id="basicDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+    <bean id="symmetricBasicDataSource" class="org.apache.commons.dbcp.BasicDataSource"
         destroy-method="close" >
         <property name="driverClassName" value="${db.driver}" />
         <property name="url" value="${db.url}" />
