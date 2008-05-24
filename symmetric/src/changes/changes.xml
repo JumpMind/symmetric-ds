@@ -9,7 +9,11 @@
       <action dev="chenson42" type="add">
         Add the ability to override the Spring bean name used for an embedded DataSource.  This allows
         users to define their own DataSource.
-      </action>         
+      </action>    
+      <action dev="chenson42" type="add">
+        Added a new plug-in point, the IBatchListener.  This new interface gives the end user a chance to do something with
+        a group of data rows that are in the same batch.  See XmlJmsPublisher for an usage example.
+      </action>              
       <action dev="chenson42" type="add" issue="aid=1961240&amp;atid=997727">
         Pass the IDataLoaderContext into the IColumnFilter interface.
       </action>
@@ -36,11 +40,6 @@
         Don't specify the schema in triggers if the schema/catalogs are specified in the trigger
         configuration.
       </action>
-      <!--       
-        <action dev="chenson42" type="add" issue="aid=1825808&amp;atid=997727">
-        Added a thick client configuration and administration utility application.
-        </action>
-      -->
       <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.4.</action>
       <action dev="knaas" type="add">
         Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
