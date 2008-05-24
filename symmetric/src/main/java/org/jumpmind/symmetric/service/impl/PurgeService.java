@@ -62,10 +62,31 @@ public class PurgeService extends AbstractService implements IPurgeService {
     public void purge() {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE, -retentionInMinutes);
-
         purgeOutgoing(retentionCutoff);
         purgeIncoming(retentionCutoff);
+        purgeStatistic(retentionCutoff);
+    }
+    
+    private void purgeStatistic(Calendar retentionCutoff) {
+        try {
+            if (clusterService.lock(LockAction.PURGE_STATISTICS)) {
+                try {
+                    logger.info("The statistic purge process is about to run.");
+                    int count = jdbcTemplate.update(
+                            getSql("deleteFromStatisticSql"),
+                            new Object[] { retentionCutoff.getTime() });
+                    logger.info("Purged " + count + " statistic rows.");
+                } finally {
+                    clusterService.unlock(LockAction.PURGE_STATISTICS);
+                    logger.info("The statistic purge process has completed.");
+                }
 
+            } else {
+                logger.info("Could not get a lock to run an statistic purge.");
+            }
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+        }
     }
 
     private void purgeOutgoing(Calendar retentionCutoff) {
