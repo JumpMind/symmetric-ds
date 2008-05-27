@@ -69,7 +69,7 @@ public class ParameterManagementService {
             @ManagedOperationParameter(name = "nodeGroup", description = "The name of the node group"),
             @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
-    public void updateParameterForNodeGroup(String externalId, String nodeGroup, String key, String value) {
+    public void updateParameterForNode(String externalId, String nodeGroup, String key, String value) {
         this.parameterService.saveParameter(externalId, nodeGroup, key, value);
     }
 

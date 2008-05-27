@@ -23,12 +23,6 @@ package org.jumpmind.symmetric.common;
 
 public class Constants {
 
-    /**
-     * This is a configuration id that can be used to apply parameters to all
-     * configurations.  Each configuration can override global settings.
-     */
-    public static final String GLOBAL_CONFIGURATION_ID = "GLOBAL";
-    
     public static final String PROPERTIES = "properties";
     
     public static final String CHANNEL_CONFIG = "config";
