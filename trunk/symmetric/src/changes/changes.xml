@@ -45,7 +45,10 @@
         Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
         configuration information. From this point forward we will provide a standard web.xml and
         configuration is in the same place as all the other SymmetricDS configuration.
-      </action>
+      </action>      
+      <action dev="chenson42" type="fix" issue="aid=1826895&amp;atid=997724">
+        Support BLOB syncing on Oracle.
+      </action>      
       <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
         Fixed a bug with the SQL Server filter that removes identity columns from updates. When
         syncing from other databases the column case may not match. We need to try to match

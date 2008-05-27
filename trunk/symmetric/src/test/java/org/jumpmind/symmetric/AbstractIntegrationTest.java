@@ -37,10 +37,20 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
     }
 
     protected String getRootDatabaseName() {
+        if (rootDatabaseType == null) {
+            Properties properties = MultiDatabaseTest.getTestProperties();
+            String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
+            rootDatabaseType = databaseTypes[0];
+        }        
         return rootDatabaseType;
     }
 
     protected String getClientDatabaseName() {
+        if (clientDatabaseType == null) {
+            Properties properties = MultiDatabaseTest.getTestProperties();
+            String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
+            clientDatabaseType = databaseTypes[0];
+        }        
         return clientDatabaseType;
     }
 
@@ -67,21 +77,11 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
     }
 
     File getClientFile() {
-        if (clientDatabaseType == null) {
-            Properties properties = MultiDatabaseTest.getTestProperties();
-            String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
-            clientDatabaseType = databaseTypes[0];
-        }
-        return MultiDatabaseTest.writeTempPropertiesFileFor(clientDatabaseType, DatabaseRole.CLIENT);
+        return MultiDatabaseTest.writeTempPropertiesFileFor(getClientDatabaseName(), DatabaseRole.CLIENT);
     }
 
     File getRootFile() {
-        if (rootDatabaseType == null) {
-            Properties properties = MultiDatabaseTest.getTestProperties();
-            String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
-            rootDatabaseType = databaseTypes[0];
-        }
-        return MultiDatabaseTest.writeTempPropertiesFileFor(rootDatabaseType, DatabaseRole.ROOT);
+        return MultiDatabaseTest.writeTempPropertiesFileFor(getRootDatabaseName(), DatabaseRole.ROOT);
     }
 
 }
