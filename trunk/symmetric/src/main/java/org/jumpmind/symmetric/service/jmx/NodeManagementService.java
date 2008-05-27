@@ -91,7 +91,7 @@ public class NodeManagementService {
 
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
             + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
-            + " clients and 20 concurrent pull client would be allowed")
+            + " clients and 20 concurrent pull clients will be allowed")
     public int getNumfNodeConnectionsPerInstance() {
         return parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
     }

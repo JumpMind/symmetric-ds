@@ -32,18 +32,19 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.springframework.jms.core.JmsTemplate;
 
 /**
- * This is an optional data loader filter/listener that is capable of 
- * translating table data to XML and publishing it to JMS for consumption
- * by the enterprise.
+ * This is an optional data loader filter/listener that is capable of
+ * translating table data to XML and publishing it to JMS for consumption by the
+ * enterprise.
  * </p>
- * This class must be configured in the same context that SymmetricDS is
- * running in.  Simply inject the IDataLoaderService and it will register
- * itself with the SymmetricDS engine.
+ * This class must be configured in the same context that SymmetricDS is running
+ * in. Simply inject the IDataLoaderService and it will register itself with the
+ * SymmetricDS engine.
  */
 public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
 
@@ -58,36 +59,56 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
     private String xmlTagNameToUseForGroup = "batch";
 
     private List<String> groupByColumnNames;
-    
+
     private boolean loadDataInTargetDatabase = true;
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
+        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
+            StringBuilder xml = getXmlFromCache(ctx, null, keys);
+            if (xml != null) {
+                toXmlElement(DataEventType.UPDATE, xml, ctx, null, keys);
+            }
+        }
         return loadDataInTargetDatabase;
     }
 
     public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
+        if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
+            StringBuilder xml = getXmlFromCache(ctx, data, keys);
+            if (xml != null) {
+                toXmlElement(DataEventType.UPDATE, xml, ctx, data, keys);
+            }
+        }
         return loadDataInTargetDatabase;
     }
 
     public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Map<String, StringBuilder> ctxCache = getXmlCache(ctx);
-            String txId = toXmlGroupId(ctx, data);
-            if (txId != null) {
-                StringBuilder xml = ctxCache.get(txId);
-                if (xml == null) {
-                    xml = new StringBuilder();
-                    xml.append("<");
-                    xml.append(xmlTagNameToUseForGroup);
-                    xml.append(" id='");
-                    xml.append(txId);
-                    xml.append("'>");
-                    ctxCache.put(txId, xml);
-                }
-                toXmlElement(xml, ctx, data);
+            StringBuilder xml = getXmlFromCache(ctx, data, null);
+            if (xml != null) {
+                toXmlElement(DataEventType.INSERT, xml, ctx, data, null);
             }
         }
         return loadDataInTargetDatabase;
+    }
+
+    private StringBuilder getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
+        StringBuilder xml = null;
+        Map<String, StringBuilder> ctxCache = getXmlCache(ctx);
+        String txId = toXmlGroupId(ctx, data, keys);
+        if (txId != null) {
+            xml = ctxCache.get(txId);
+            if (xml == null) {
+                xml = new StringBuilder();
+                xml.append("<");
+                xml.append(xmlTagNameToUseForGroup);
+                xml.append(" id='");
+                xml.append(txId);
+                xml.append("'>");
+                ctxCache.put(txId, xml);
+            }
+        }
+        return xml;
     }
 
     @SuppressWarnings("unchecked")
@@ -108,43 +129,65 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
         return xmlCache != null && xmlCache.size() > 0;
     }
 
-    private void toXmlElement(StringBuilder xml, IDataLoaderContext ctx, String[] data) {
-        xml.append("<");
+    private void toXmlElement(DataEventType dml, StringBuilder xml, IDataLoaderContext ctx, String[] data, String[] keys) {
+        xml.append("<row entity='");
         xml.append(ctx.getTableName());
-        xml.append(">");
+        xml.append("' dml='");
+        xml.append(dml.getCode());
+        xml.append("'>");
 
-        String[] colNames = ctx.getColumnNames();
+        String[] colNames = null;
+
+        if (data == null) {
+            colNames = ctx.getKeyNames();
+            data = keys;
+        } else {
+            colNames = ctx.getColumnNames();
+        }
 
         for (int i = 0; i < data.length; i++) {
             String col = colNames[i];
-            xml.append("<");
+            xml.append("<data key='");
             xml.append(col);
-            xml.append(">");
+            xml.append("'>");
             xml.append(data[i]);
-            xml.append("</");
-            xml.append(col);
-            xml.append(">");
+            xml.append("</data>");
         }
-
-        xml.append("</");
-        xml.append(ctx.getTableName());
-        xml.append(">");
-
+        xml.append("</row>");
     }
 
-    private String toXmlGroupId(IDataLoaderContext ctx, String[] data) {
+    private String toXmlGroupId(IDataLoaderContext ctx, String[] data, String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
-            String[] columns = ctx.getColumnNames();
-            for (String col : groupByColumnNames) {
-                int index = ArrayUtils.indexOf(columns, col, 0);
-                if (index >= 0) {
-                    id.append(data[index]);
-                } else {
-                    return null;
+
+            if (keys != null) {
+                String[] columns = ctx.getKeyNames();
+                for (String col : groupByColumnNames) {
+                    int index = ArrayUtils.indexOf(columns, col, 0);
+                    if (index >= 0) {
+                        id.append(data[index]);
+                    } else {
+                        id = new StringBuilder();
+                        break;
+                    }
                 }
             }
-            return id.toString().replaceAll("-", "");
+
+            if (id.length() == 0) {
+                String[] columns = ctx.getColumnNames();
+                for (String col : groupByColumnNames) {
+                    int index = ArrayUtils.indexOf(columns, col, 0);
+                    if (index >= 0) {
+                        id.append(data[index]);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+
+            if (id.length() > 0) {
+                return id.toString().replaceAll("-", "");
+            }
         }
         return null;
     }

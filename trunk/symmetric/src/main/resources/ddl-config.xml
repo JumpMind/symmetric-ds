@@ -280,6 +280,16 @@
         </index>
     </table>
     
+    <!-- This table configures thresholds at which JMX notifications will be fired -->
+    <table name="statistic_alert">
+        <column name="statistic_name" type="VARCHAR" size="50" primaryKey="true"/>
+        <column name="threshhold_total_max" type="DECIMAL" />
+        <column name="threshhold_count_max" type="BIGINT" />
+        <column name="threshhold_total_min" type="DECIMAL" />
+        <column name="threshhold_count_min" type="BIGINT" />
+        
+    </table>
+    
     <table name="parameter">
         <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />

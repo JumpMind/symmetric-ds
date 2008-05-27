@@ -42,7 +42,17 @@ public class OutgoingManagementService {
 
     @ManagedAttribute(description = "Get the average number of events in each batch for the lifetime of the server")
     public BigDecimal getServerLifetimeAverageEventsPerBatch() {
-        return this.statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH)
+        return this.statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).getLifetimeAverageValue();
+    }
+
+    @ManagedAttribute(description = "Get the average number of milliseconds it takes to batch an event since the last statistic flush")
+    public BigDecimal getPeriodicAverageMsPerEventBatched() {
+        return this.statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).getAverageValue();
+    }
+
+    @ManagedAttribute(description = "Get the average number of milliseconds it takes to batch an event for the lifetime of the server")
+    public BigDecimal getServerLifetimeAverageMsPerEventBatched() {
+        return this.statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED)
                 .getLifetimeAverageValue();
     }
 }

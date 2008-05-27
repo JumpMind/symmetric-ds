@@ -35,11 +35,11 @@ final public class Version {
 
     static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(Version.class);
 
-    private static final int MAJOR = 0;
+    private static final int MAJOR_INDEX = 0;
 
-    private static final int MINOR = 1;
+    private static final int MINOR_INDEX = 1;
 
-    private static final int PATCH = 2;
+    private static final int PATCH_INDEX = 2;
 
     public static String version() {
         InputStream is = Version.class
@@ -61,13 +61,13 @@ final public class Version {
         if (!StringUtils.isEmpty(version)) {
             String[] splitVersion = version.split("\\.");
             if (splitVersion.length >= 3) {
-                versions[PATCH] = parseVersionComponent(splitVersion[2]);
+                versions[PATCH_INDEX] = parseVersionComponent(splitVersion[2]);
             }
             if (splitVersion.length >= 2) {
-                versions[MINOR] = parseVersionComponent(splitVersion[1]);
+                versions[MINOR_INDEX] = parseVersionComponent(splitVersion[1]);
             }
             if (splitVersion.length >= 1) {
-                versions[MAJOR] = parseVersionComponent(splitVersion[0]);
+                versions[MAJOR_INDEX] = parseVersionComponent(splitVersion[0]);
             }
         }
         return versions;
@@ -88,7 +88,7 @@ final public class Version {
 
     public static boolean isOlderMajorVersion(int[] versions) {
         int[] softwareVersion = parseVersion(version());
-        if (versions[MAJOR] < softwareVersion[MAJOR]) {
+        if (versions[MAJOR_INDEX] < softwareVersion[MAJOR_INDEX]) {
             return true;
         }
         return false;
@@ -100,9 +100,9 @@ final public class Version {
 
     public static boolean isOlderMinorVersion(int[] versions) {
         int[] softwareVersion = parseVersion(version());
-        if (versions[0] < softwareVersion[MAJOR]) {
+        if (versions[0] < softwareVersion[MAJOR_INDEX]) {
             return true;
-        } else if (versions[MAJOR] == softwareVersion[MAJOR] && versions[MINOR] < softwareVersion[MINOR]) {
+        } else if (versions[MAJOR_INDEX] == softwareVersion[MAJOR_INDEX] && versions[MINOR_INDEX] < softwareVersion[MINOR_INDEX]) {
             return true;
         }
         return false;
