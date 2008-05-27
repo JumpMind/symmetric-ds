@@ -30,7 +30,6 @@
                                     v_clob    CLOB := null;
                                     v_varchar VARCHAR2(32767);
                                     v_start   PLS_INTEGER := 1;
-                                    --v_buffer  PLS_INTEGER := 32767;
                                     v_buffer  PLS_INTEGER := 32767;
                                 BEGIN
                                     IF blob_in IS NOT NULL THEN
