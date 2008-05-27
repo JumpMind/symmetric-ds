@@ -25,6 +25,7 @@ import java.net.URL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
@@ -64,6 +65,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                         "select count(*) from user_objects where object_name= upper(?) ",
                         new Object[] { name }) > 0;
     }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
+    }    
 
     public boolean isCharSpacePadded() {
         return true;

@@ -11,6 +11,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TestConstants;
@@ -27,6 +29,8 @@ import org.testng.annotations.Test;
 
 public class IntegrationTest extends AbstractIntegrationTest implements ITest {
 
+    private static final Log logger = LogFactory.getLog(IntegrationTest.class);
+    
     private JdbcTemplate rootJdbcTemplate;
 
     private JdbcTemplate clientJdbcTemplate;

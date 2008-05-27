@@ -19,7 +19,7 @@ import org.jumpmind.symmetric.db.SqlScript;
 
 abstract public class AbstractTest {
 	
-    static final Log logger = LogFactory.getLog(AbstractTest.class);
+    private static final Log logger = LogFactory.getLog(AbstractTest.class);
     
     protected SymmetricEngine createEngine(File propertiesFile) {
         try {
