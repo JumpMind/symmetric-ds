@@ -760,11 +760,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
         throw new UnsupportedOperationException();
     }
 
-    public long insertWithGeneratedKey(final String sql, final String sequenceName) {
-        return insertWithGeneratedKey(sql, sequenceName, null);
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId) {
+        return insertWithGeneratedKey(sql, sequenceId, null);
+    }
+    
+    protected String getSequenceName(SequenceIdentifier identifier) {
+        switch (identifier) {
+        case OUTGOING_BATCH:
+            return "sym_outgoing_batch_batch_id";
+        case DATA:
+            return "sym_data_data_id";
+        case TRIGGER_HIST:            
+            return "sym_trigger_his_ger_hist_id";
+        } 
+        return null;
     }
 
-    public long insertWithGeneratedKey(final String sql, final String sequenceName,
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback callback) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -774,7 +786,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 try {
                     boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
                     if (allowsNullForIdentityColumn()) {
-                        ps = conn.prepareStatement(sql, new int[] { 1 });
+                        if (supportsGetGeneratedKeys) {
+                            ps = conn.prepareStatement(sql, new int[] { 1 });
+                        } else {
+                            ps = conn.prepareStatement(sql);
+                        }
                     } else {
                         String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
                         if (supportsGetGeneratedKeys) {
@@ -805,7 +821,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         ResultSet rs = null;
                         try {
                             st = conn.createStatement();
-                            rs = st.executeQuery(getSelectLastInsertIdSql(sequenceName));
+                            rs = st.executeQuery(getSelectLastInsertIdSql(getSequenceName(sequenceId)));
                             if (rs.next()) {
                                 key = rs.getLong(1);
                             }

@@ -164,9 +164,9 @@ public interface IDbDialect {
     
     public String getSelectLastInsertIdSql(String sequenceName);
     
-    public long insertWithGeneratedKey(final String sql, final String sequenceName);
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
     
-    public long insertWithGeneratedKey(final String sql, final String sequenceName,
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceIde,
             final PreparedStatementCallback psCallback);
     
     /**

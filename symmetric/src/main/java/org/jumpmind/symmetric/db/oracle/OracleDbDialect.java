@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
 
@@ -106,9 +107,22 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return true;
     }
+    
+    @Override
+    protected String getSequenceName(SequenceIdentifier identifier) {
+        switch (identifier) {
+        case OUTGOING_BATCH:
+            return "SEQ_SYM_OUTGOIN_BATCH_BATCH_ID";
+        case DATA:
+            return "SEQ_SYM_DATA_DATA_ID";
+        case TRIGGER_HIST:
+            return "SEQ_SYM_TRIGGER_RIGGER_HIST_ID";
+        }
+        return null;
+    }    
 
     public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select " + sequenceName + "_seq.currval from dual')";
+        return "select " + sequenceName + ".currval from dual";
     }
 
     @Override

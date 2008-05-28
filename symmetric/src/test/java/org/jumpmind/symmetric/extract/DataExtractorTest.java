@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -269,7 +270,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
                 + "' , '"
                 + pk
                 + "','a','b','c',1,'T',current_timestamp)";
-        long key = dbDialect.insertWithGeneratedKey(sql, "sym_trigger_his_ger_hist_id");
+        long key = dbDialect.insertWithGeneratedKey(sql, SequenceIdentifier.TRIGGER_HIST);
         TriggerHistory audit = new TriggerHistory(TABLE_NAME, pk, col);
         audit.setTriggerHistoryId((int) key);
         return audit;
