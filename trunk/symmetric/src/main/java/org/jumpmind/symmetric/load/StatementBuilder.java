@@ -23,14 +23,17 @@ package org.jumpmind.symmetric.load;
 
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.ddlutils.model.Column;
 
 public class StatementBuilder {
     public enum DmlType {
-        INSERT, UPDATE, DELETE
+        INSERT, UPDATE, DELETE, UPDATE_NO_KEYS
     };
 
     protected DmlType dmlType;
@@ -39,19 +42,6 @@ public class StatementBuilder {
     
     protected int[] types;
 
-    public StatementBuilder(DmlType type, String tableName, String[] keyNames, String[] columnNames) {
-        if (type == DmlType.INSERT) {
-            sql = buildInsertSql(tableName, columnNames);
-        } else if (type == DmlType.UPDATE) {
-            sql = buildUpdateSql(tableName, keyNames, columnNames);
-        } else if (type == DmlType.DELETE) {
-            sql = buildDeleteSql(tableName, keyNames);
-        } else {
-            throw new NotImplementedException("Unimplemented SQL type: " + type);
-        }
-        dmlType = type;
-    }
-
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns, boolean isBlobOverrideToBinary) {
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
@@ -59,6 +49,10 @@ public class StatementBuilder {
         } else if (type == DmlType.UPDATE) {
             sql = buildUpdateSql(tableName, keys, columns);
             types = buildTypes(keys, columns, isBlobOverrideToBinary);
+        } else if (type == DmlType.UPDATE_NO_KEYS) {
+            columns = removeKeysFromColumns(keys, columns);
+            sql = buildUpdateSql(tableName, keys, columns);
+            types = buildTypes(keys, columns, isBlobOverrideToBinary);            
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
             types = buildTypes(keys, isBlobOverrideToBinary);
@@ -66,6 +60,20 @@ public class StatementBuilder {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
         dmlType = type;
+    }
+    
+    protected Column[] removeKeysFromColumns(Column[] keys, Column[] columns) {
+        Column[] columnsWithoutKeys = new Column[columns.length-keys.length];
+        Set<Column> keySet = new HashSet<Column>();
+        CollectionUtils.addAll(keySet, keys);
+        int n = 0;
+        for (int i = 0; i < columns.length; i++) {
+            Column column = columns[i];
+            if (!keySet.contains(column)) {
+                columnsWithoutKeys[n++] = column;
+            }            
+        }
+        return columnsWithoutKeys;
     }
 
     protected int[] buildTypes(Column[] keys, Column[] columns, boolean isBlobOverrideToBinary) {

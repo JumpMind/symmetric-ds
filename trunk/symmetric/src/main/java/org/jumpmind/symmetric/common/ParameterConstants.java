@@ -43,6 +43,7 @@ public class ParameterConstants {
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "symmetric.runtime.incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "symmetric.runtime.num.of.ack.retries";
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "symmetric.runtime.time.between.ack.retries.ms";
+    public final static String DATA_LOADER_NO_KEYS_IN_UPDATE = "symmetric.runtime.dont.include.keys.in.update.statement";
  
     public final static String TRANSPORT_HTTP_TIMEOUT = "symmetric.runtime.http.timeout.ms";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "symmetric.runtime.http.compression";
