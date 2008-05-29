@@ -112,12 +112,9 @@
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService"
         scope="singleton">
         <property name="sql" ref="dataServiceSql"/>
-        <property name="deleteFirstForReload"
-            value="${symmetric.runtime.initial.load.delete.first}" />
-        <property name="createFirstForReload"
-            value="${symmetric.runtime.initial.load.create.first}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
+        <property name="parameterService" ref="parameterService" />        
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
