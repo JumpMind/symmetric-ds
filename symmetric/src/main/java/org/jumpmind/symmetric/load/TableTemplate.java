@@ -62,33 +62,41 @@ public class TableTemplate {
     private IDbDialect dbDialect;
 
     private Table table;
-    
+
     private String tableName;
 
     private String[] keyNames;
 
     private String[] columnNames;
-    
+
     private Map<String, Column> allMetaData;
 
     private Column[] keyMetaData;
 
     private Column[] columnMetaData;
-    
+
     private Column[] columnKeyMetaData;
     
+    private Column[] noKeyColumnPlusKeyMetaData;
+
     private HashMap<DmlType, StatementBuilder> statementMap;
+
+    private int[] keyIndexesToRemoveOnUpdate;
 
     private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
 
-    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter) {
+    private boolean dontIncludeKeysInUpdateStatement = false;
+
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
+            boolean dontIncludeKeysInUpdateStatement) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.setupColumnFilters(columnFilter, dbDialect);
         this.tableName = tableName;
+        this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
         resetMetaData();
     }
-    
+
     public void resetMetaData() {
         table = dbDialect.getMetaDataFor(null, null, tableName, true);
         allMetaData = new HashMap<String, Column>();
@@ -103,14 +111,14 @@ public class TableTemplate {
             }
         }
     }
-    
+
     private void setupColumnFilters(IColumnFilter pluginFilter, IDbDialect dbDialect) {
         if (pluginFilter != null) {
             this.columnFilters.add(pluginFilter);
         }
         if (dbDialect.getDatabaseColumnFilter() != null) {
             this.columnFilters.add(dbDialect.getDatabaseColumnFilter());
-        }        
+        }
     }
 
     public String getTableName() {
@@ -135,9 +143,79 @@ public class TableTemplate {
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.UPDATE, encoding);
+        StatementBuilder st = null;
+        Column[] metaData = null;
+        if (dontIncludeKeysInUpdateStatement) {
+            String[] values = removeKeysFromColumnValuesIfSame(ctx, keyValues, columnValues);
+            if (values != null) {
+                columnValues = values;
+                st = getStatementBuilder(ctx, DmlType.UPDATE_NO_KEYS, encoding);
+                metaData = noKeyColumnPlusKeyMetaData;
+            }
+        }
+
+        if (st == null) {
+            st = getStatementBuilder(ctx, DmlType.UPDATE, encoding);
+            metaData = columnKeyMetaData;
+        }
         String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
-        return execute(ctx, st, values, columnKeyMetaData, encoding);
+        return execute(ctx, st, values, metaData, encoding);
+    }
+
+    /**
+     * This is in support of allowing update statements that don't use the keys in the set portion of the 
+     * update statement. 
+     */
+    private String[] removeKeysFromColumnValuesIfSame(IDataLoaderContext ctx, String[] keyValues, String[] columnValues) {
+        if (keyIndexesToRemoveOnUpdate == null) {
+            String[] colNames = ctx.getColumnNames();
+            String[] keyNames = ctx.getKeyNames();
+            String[] noKeyColNames = new String[colNames.length-keyNames.length];
+            keyIndexesToRemoveOnUpdate = new int[keyNames.length];            
+            int indexToRemoveIndex = 0;
+            int indexOfNoKeyColNames = 0;
+            for (int index = 0; index < colNames.length; index++) {
+                if (ArrayUtils.contains(keyNames, colNames[index])) {
+                    keyIndexesToRemoveOnUpdate[indexToRemoveIndex++] = index;
+                } else {
+                    noKeyColNames[indexOfNoKeyColNames++] = colNames[index];
+                }
+            }
+            
+            noKeyColumnPlusKeyMetaData = getColumnMetaData((String[])ArrayUtils.addAll(noKeyColNames, keyNames));
+        }
+        
+        if (noKeyColumnPlusKeyMetaData == null) {
+            String[] noKeys = new String[columnValues.length - keyValues.length];
+            int noKeysIndex = 0;
+            for (int index = 0; index < columnValues.length; index++) {
+                if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
+                    noKeys[noKeysIndex++] = columnValues[index];
+                }
+            }
+            return noKeys;
+        }
+
+        boolean keyChanged = false;
+        for (int index = 0; index < keyIndexesToRemoveOnUpdate.length; index++) {
+            if (!StringUtils.equals(keyValues[index], columnValues[index])) {
+                keyChanged = true;
+            }
+        }
+
+        if (!keyChanged) {
+            String[] noKeys = new String[columnValues.length - keyValues.length];
+            int noKeysIndex = 0;
+            for (int index = 0; index < columnValues.length; index++) {
+                if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
+                    noKeys[noKeysIndex++] = columnValues[index];
+                }
+            }
+            return noKeys;
+
+        } else {
+            return null;
+        }
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
@@ -152,7 +230,7 @@ public class TableTemplate {
             if (columnFilters != null) {
                 for (IColumnFilter columnFilter : columnFilters) {
                     filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), columnNames);
-                }            
+                }
             }
             if (keyMetaData == null) {
                 keyMetaData = getColumnMetaData(keyNames);
@@ -173,14 +251,15 @@ public class TableTemplate {
                     && !table.getCatalog().equals(dbDialect.getDefaultCatalog())) {
                 tableName = table.getCatalog() + "." + tableName;
             }
-            st = new StatementBuilder(type, tableName, keyMetaData,
-                    getColumnMetaData(filteredColumnNames), dbDialect.isBlobOverrideToBinary());
+            st = new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
+                    .isBlobOverrideToBinary());
             statementMap.put(type, st);
         }
         return st;
     }
 
-    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData, BinaryEncoding encoding) {
+    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData,
+            BinaryEncoding encoding) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -221,8 +300,8 @@ public class TableTemplate {
         Object[] objectValues = list.toArray();
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
-                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);    
-            }            
+                objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
+            }
         }
         return jdbcTemplate.update(st.getSql(), objectValues, st.getTypes());
     }
@@ -251,7 +330,7 @@ public class TableTemplate {
         columnMetaData = null;
         columnKeyMetaData = null;
     }
-    
+
     private Column[] getColumnMetaData(String[] names) {
         Column[] columns = new Column[names.length];
         for (int i = 0; i < names.length; i++) {

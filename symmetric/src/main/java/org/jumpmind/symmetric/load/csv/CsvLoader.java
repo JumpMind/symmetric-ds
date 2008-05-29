@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -40,6 +41,7 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -52,6 +54,8 @@ public class CsvLoader implements IDataLoader {
     protected JdbcTemplate jdbcTemplate;
 
     protected IDbDialect dbDialect;
+
+    protected IParameterService parameterService;
 
     protected CsvReader csvReader;
 
@@ -175,7 +179,8 @@ public class CsvLoader implements IDataLoader {
 
         if (context.getTableTemplate() == null) {
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
-                    this.columnFilters != null ? this.columnFilters.get(tableName) : null));
+                    this.columnFilters != null ? this.columnFilters.get(tableName) : null, parameterService
+                            .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE)));
         }
 
         dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
@@ -410,5 +415,9 @@ public class CsvLoader implements IDataLoader {
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 }

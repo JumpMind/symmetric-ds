@@ -156,6 +156,7 @@
         <property name="jdbcTemplate" ref="dataLoaderTemplate" />
         <property name="enableFallbackInsert" value="true" />
         <property name="enableFallbackUpdate" value="true" />
+        <property name="parameterService" ref="parameterService" />
         <property name="allowMissingDelete" value="true" />
     </bean>
 
