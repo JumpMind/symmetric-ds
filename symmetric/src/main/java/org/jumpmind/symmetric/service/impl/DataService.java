@@ -35,6 +35,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -50,6 +51,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -67,16 +69,14 @@ public class DataService extends AbstractService implements IDataService {
     private IPurgeService purgeService;
     
     private IOutgoingBatchService outgoingBatchService;
+    
+    private IParameterService parameterService;
 
     private String tablePrefix;
 
     private IDbDialect dbDialect;
 
     private List<IReloadListener> listeners;
-
-    private boolean deleteFirstForReload;
-    
-    private boolean createFirstForReload;
 
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         insertReloadEvent(targetNode, trigger, null);
@@ -178,14 +178,14 @@ public class DataService extends AbstractService implements IDataService {
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
 
-        if (createFirstForReload) {
+        if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
             for (Trigger trigger : triggers) {
                 String xml = dbDialect.getCreateTableXML(trigger);
                 insertCreateEvent(targetNode, trigger, xml);
                 buildReloadBatches(targetNode.getNodeId());
             }            
         }
-        if (deleteFirstForReload) {
+        if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
                 insertPurgeEvent(targetNode, trigger);
@@ -261,10 +261,10 @@ public class DataService extends AbstractService implements IDataService {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
         
-        if (createFirstForReload) {
+        if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
             String xml = dbDialect.getCreateTableXML(trigger);
             insertCreateEvent(targetNode, trigger, xml);
-        } else if (deleteFirstForReload) {
+        } else if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
             insertPurgeEvent(targetNode, trigger);
         }
 
@@ -371,20 +371,16 @@ public class DataService extends AbstractService implements IDataService {
         this.tablePrefix = tablePrefix;
     }
 
-    public void setDeleteFirstForReload(boolean deleteFirstForReload) {
-        this.deleteFirstForReload = deleteFirstForReload;
-    }
-
-    public void setCreateFirstForReload(boolean createFirstForReload) {
-        this.createFirstForReload = createFirstForReload;
-    }
-
     public void setPurgeService(IPurgeService purgeService) {
         this.purgeService = purgeService;
     }
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

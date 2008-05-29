@@ -34,6 +34,8 @@ public class ParameterConstants {
     public final static String START_RUNTIME_ENGINE_NAME = "symmetric.runtime.engine.name";
     public final static String AUTO_REGISTER_ENABLED = "symmetric.auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "symmetric.auto.reload";
+    public final static String AUTO_DELETE_BEFORE_RELOAD = "symmetric.runtime.initial.load.delete.first";
+    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "symmetric.runtime.initial.load.create.first";
     
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "symmetric.runtime.parameter.reload.timeout.ms";
 
