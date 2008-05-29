@@ -51,7 +51,6 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -70,8 +69,6 @@ public class DataService extends AbstractService implements IDataService {
     
     private IOutgoingBatchService outgoingBatchService;
     
-    private IParameterService parameterService;
-
     private String tablePrefix;
 
     private IDbDialect dbDialect;
@@ -377,10 +374,6 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
-    }
-
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
     }
 
 }

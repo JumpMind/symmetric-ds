@@ -114,7 +114,6 @@
         <property name="sql" ref="dataServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
-        <property name="parameterService" ref="parameterService" />        
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
