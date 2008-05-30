@@ -13,7 +13,10 @@
       <action dev="chenson42" type="add">
         Added a new plug-in point, the IBatchListener.  This new interface gives the end user a chance to do something with
         a group of data rows that are in the same batch.  See XmlJmsPublisher for an usage example.
-      </action>              
+      </action>
+      <action dev="chenson42" type="add">
+        Added a new plug-in point, the IExtractorFilter.  This new filter can be useful to capture and react to application events (for example a store close.)
+      </action>                                  
       <action dev="chenson42" type="add" issue="aid=1961240&amp;atid=997727">
         Pass the IDataLoaderContext into the IColumnFilter interface.
       </action>
@@ -54,10 +57,10 @@
       <action dev="chenson42" type="fix" issue="aid=1826895&amp;atid=997724">
         Support BLOB syncing on Oracle.
       </action>
-      <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
+      <action dev="chenson42" type="fix">
         Handle Oracle TIMESTAMP(9) data types.
       </action>                  
-      <action dev="chenson42" type="fix" issue="aid=todo&amp;atid=997724">
+      <action dev="chenson42" type="fix">
         Fixed a bug with the SQL Server filter that removes identity columns from updates. When
         syncing from other databases the column case may not match. We need to try to match
         regardless of case on the columns.
