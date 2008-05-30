@@ -6,6 +6,10 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="chenson42" type="fix">
+                Drop foreign keys from the SymmetricDS configuration tables.  They seem to 
+                get in the way for some people.
+            </action>        
             <action dev="chenson42" type="add">
                 Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to
                 define their own DataSource.
