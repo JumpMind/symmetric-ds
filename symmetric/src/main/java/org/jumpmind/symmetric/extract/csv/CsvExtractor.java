@@ -38,31 +38,29 @@ public class CsvExtractor implements IDataExtractor {
     private Map<String, IStreamDataCommand> dictionary = null;
 
     private IRuntimeConfig runtimeConfiguration;
-    
+
     private IDbDialect dbDialect;
 
-    public void init(BufferedWriter writer, DataExtractorContext context)
-            throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration.getExternalId());
+    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration
+                .getExternalId());
         writer.newLine();
     }
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));               
+    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
-        writer.newLine();      
+        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding()
+                .name());
+        writer.newLine();
     }
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
+    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
         Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
-    public void write(BufferedWriter writer, Data data,
-            DataExtractorContext context) throws IOException {
+    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
         preprocessTable(data, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
     }
@@ -74,27 +72,26 @@ public class CsvExtractor implements IDataExtractor {
      * @param tableName
      * @param out
      */
-    public void preprocessTable(Data data, BufferedWriter out,
-            DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
 
         if (data.getAudit() == null) {
-            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName() +
-                    ": try running syncTriggers() or restarting SymmetricDS");
+            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
+                    + ": try running syncTriggers() or restarting SymmetricDS");
         }
         String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
-            Util.write(out, "table, ", data.getTableName());
+            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
-            Util.write(out, "keys, ", data.getAudit().getPkColumnNames());
+            Util.write(out, CsvConstants.KEYS, ", ", data.getAudit().getPkColumnNames());
             out.newLine();
-            Util.write(out, "columns, ", data.getAudit().getColumnNames());
+            Util.write(out, CsvConstants.COLUMNS, ", ", data.getAudit().getColumnNames());
             out.newLine();
             context.getAuditRecordsWritten().add(auditKey);
         } else if (!context.isLastTable(data.getTableName())) {
-            Util.write(out, "table, ", data.getTableName());
+            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
         }
-        
+
         context.setLastTableName(data.getTableName());
     }
 
