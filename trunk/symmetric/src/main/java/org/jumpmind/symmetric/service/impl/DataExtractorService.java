@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
+import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -68,6 +69,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private BeanFactory beanFactory;
 
     private DataExtractorContext context;
+    
+    private List<IExtractorFilter> extractorFilters;
 
     private String tablePrefix;
 
@@ -324,6 +327,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public void dataExtracted(Data data) throws Exception {
+            if (extractorFilters != null) {
+                for (IExtractorFilter filter : extractorFilters) {
+                    if (!filter.filterData(data, context)) {
+                        // short circuit the extract if instructed
+                        return;
+                    }
+                }
+            }
             dataExtractor.write(writer, data, context);
         }
 
@@ -353,6 +364,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
+    }
+    
+    public void addExtractorFilter(IExtractorFilter extractorFilter) {
+        if (this.extractorFilters == null) {
+            this.extractorFilters = new ArrayList<IExtractorFilter>();
+        }
+        this.extractorFilters.add(extractorFilter);
+    }
+
+    public void setExtractorFilters(List<IExtractorFilter> extractorFilters) {
+        this.extractorFilters = extractorFilters;
     }
 
 }
