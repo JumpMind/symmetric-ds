@@ -25,6 +25,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -75,7 +77,13 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " to on");
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
+                if (! transactionstatus.isRollbackOnly()) {
+                    jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " to on");
+                }
+            }
+        });
     }
 
     public String getSyncTriggersExpression() {
