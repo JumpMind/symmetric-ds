@@ -97,7 +97,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     private Boolean supportsGetGeneratedKeys;
 
-    private TransactionTemplate transactionTemplate;
+    protected TransactionTemplate transactionTemplate;
 
     private String engineName;
     
