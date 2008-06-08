@@ -26,46 +26,45 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class CsvExtractor13 implements IDataExtractor {
 
     private Map<String, IStreamDataCommand> dictionary = null;
 
-    private IRuntimeConfig runtimeConfiguration;
-    
+    private IParameterService parameterService;
+
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-    
-    public void init(BufferedWriter writer, DataExtractorContext context)
-            throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration.getExternalId());
+
+    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService
+                .getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID));
         writer.newLine();
     }
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));               
+    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding().name());
-        writer.newLine();      
+        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding()
+                .name());
+        writer.newLine();
     }
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
+    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
         Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
-    public void write(BufferedWriter writer, Data data,
-            DataExtractorContext context) throws IOException {
+    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
         preprocessTable(data, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
     }
@@ -77,12 +76,11 @@ public class CsvExtractor13 implements IDataExtractor {
      * @param tableName
      * @param out
      */
-    public void preprocessTable(Data data, BufferedWriter out,
-            DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
 
         if (data.getAudit() == null) {
-            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName() +
-                    ": try running syncTriggers() or restarting SymmetricDS");
+            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
+                    + ": try running syncTriggers() or restarting SymmetricDS");
         }
         String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
@@ -92,7 +90,8 @@ public class CsvExtractor13 implements IDataExtractor {
             out.newLine();
             String columns = data.getAudit().getColumnNames();
             if (data.getTableName().equalsIgnoreCase(tablePrefix + "_node_security")) {
-                // In 1.4 the column named changed to "node_password", but old clients need "password"
+                // In 1.4 the column named changed to "node_password", but old
+                // clients need "password"
                 columns = columns.replaceFirst(",node_password,", ",password,");
                 columns = columns.replaceFirst(",NODE_PASSWORD,", ",PASSWORD,");
             }
@@ -103,12 +102,8 @@ public class CsvExtractor13 implements IDataExtractor {
             Util.write(out, "table, ", data.getTableName());
             out.newLine();
         }
-        
-        context.setLastTableName(data.getTableName());
-    }
 
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
+        context.setLastTableName(data.getTableName());
     }
 
     public void setDictionary(Map<String, IStreamDataCommand> dictionary) {
@@ -121,6 +116,10 @@ public class CsvExtractor13 implements IDataExtractor {
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.transport.RegistrationResourceHandler;
+import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
 
 public class RegistrationServlet extends
         AbstractTransportResourceServlet<RegistrationResourceHandler> {

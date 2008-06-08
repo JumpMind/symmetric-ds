@@ -22,8 +22,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,55 +30,22 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 
 /**
- * 
  * Configured within symmetric-web.xml
- * 
- * <pre>
- *  &lt;bean id=&quot;nodeConcurrencyFilter&quot;
- *  class=&quot;org.jumpmind.symmetric.web.NodeConcurrencyFilter&quot;&gt;
- *    &lt;property name=&quot;regexPattern&quot; value=&quot;string&quot; /&gt;
- *    &lt;property name=&quot;regexPatterns&quot;&gt;
- *      &lt;list&gt;
- *        &lt;value value=&quot;string&quot;/&gt;
- *      &lt;list/&gt;
- *    &lt;property/&gt;
- *    &lt;property name=&quot;uriPattern&quot; value=&quot;string&quot; /&gt;
- *    &lt;property name=&quot;uriPatterns&quot;&gt;
- *      &lt;list&gt;
- *        &lt;value value=&quot;string&quot;/&gt;
- *      &lt;list/&gt;
- *    &lt;property/&gt;
- *    &lt;property name=&quot;disabled&quot; value=&quot;boolean&quot; /&gt;
- *    &lt;property name=&quot;maxNumberOfConcurrentWorkers&quot; value=&quot;int&quot; /&gt;
- *  &lt;/bean&gt;
- * </pre>
  */
 public class NodeConcurrencyFilter extends AbstractFilter {
 
-    private static final int TOO_BUSY_LOG_STATEMENTS_PER_MIN = 10;
-
     private final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
 
-    protected long waitTimeBetweenRetriesInMs = 500;
+    private IConcurrentConnectionManager concurrentConnectionManager;
 
-    private static int tooBusyCount;
-
-    private IParameterService parameterService;
-    
-    private IStatisticManager statisticManager;
-
-    private static long lastTooBusyLogTime = System.currentTimeMillis();
-
-    static Map<String, Integer> numberOfWorkersByServlet = new HashMap<String, Integer>();
+    private String reservationUriPattern;
 
     @Override
     public boolean isContainerCompatible() {
@@ -89,68 +54,28 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     public void doFilter(final ServletRequest req, final ServletResponse resp, final FilterChain chain)
             throws IOException, ServletException {
-        String servletPath = ((HttpServletRequest) req).getServletPath();
-        if (!doWork(servletPath, new IWorker() {
-            public void work() throws ServletException, IOException {
-                chain.doFilter(req, resp);
+
+        HttpServletRequest httpRequest = (HttpServletRequest) req;
+        String poolId = httpRequest.getServletPath();
+        String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
+        String method = httpRequest.getMethod();
+
+        if (method.equals("HEAD") && matchesUriPattern(normalizeRequestUri(httpRequest), reservationUriPattern)) {
+            // I read here http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html that keepalive likes to 
+            // have a know content length.  I also read that HEAD is better if no content is going to be returned.
+            resp.setContentLength(0);
+            if (!concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
+                sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             }
-        })) {
+        } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.HARD)) {
+            try {
+                chain.doFilter(req, resp);
+            } finally {
+                concurrentConnectionManager.releaseConnection(nodeId, poolId);
+            }
+        } else {
             sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
-
-    }
-
-    protected boolean doWork(String servletPath, IWorker worker) throws ServletException, IOException {
-        boolean didWork = false;
-        int tries = 5;
-        int numberOfWorkers;
-        do {
-            numberOfWorkers = getNumberOfWorkers(servletPath);
-            if (numberOfWorkers < parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS)) {
-                try {
-                    changeNumberOfWorkers(servletPath, 1);
-                    worker.work();
-                    statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_DID_WORK_COUNT).increment();
-                    didWork = true;
-                } finally {
-                    changeNumberOfWorkers(servletPath, -1);
-                }
-            } else {
-                if (--tries == 0) {
-                    tooBusyCount++;
-                    statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_TOO_BUSY_COUNT).increment();
-                    if ((System.currentTimeMillis() - lastTooBusyLogTime) > DateUtils.MILLIS_PER_MINUTE
-                            * TOO_BUSY_LOG_STATEMENTS_PER_MIN
-                            && tooBusyCount > 0) {
-                        logger.warn(tooBusyCount + " symmetric requests were rejected in the last "
-                                + TOO_BUSY_LOG_STATEMENTS_PER_MIN
-                                + " minutes because the server was too busy.");
-                        lastTooBusyLogTime = System.currentTimeMillis();
-                        tooBusyCount = 0;
-                    }
-                } else {
-                    try {
-                        Thread.sleep(waitTimeBetweenRetriesInMs);
-                    } catch (InterruptedException ex) {
-                    }
-                }
-            }
-        } while (numberOfWorkers >= parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS)
-                && tries > 0);
-        return didWork;
-    }
-
-    private int getNumberOfWorkers(String servletPath) {
-        Integer number = numberOfWorkersByServlet.get(servletPath);
-        return number == null ? 0 : number;
-    }
-
-    synchronized private void changeNumberOfWorkers(String servletPath, int delta) {
-        numberOfWorkersByServlet.put(servletPath, getNumberOfWorkers(servletPath) + delta);
-    }
-
-    interface IWorker {
-        public void work() throws ServletException, IOException;
     }
 
     @Override
@@ -158,11 +83,11 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         return logger;
     }
 
-    public void setParameterService(IParameterService parameterService) {
-        this.parameterService = parameterService;
+    public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
+        this.concurrentConnectionManager = concurrentConnectionManager;
     }
 
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
+    public void setReservationUriPattern(String reservationUriPattern) {
+        this.reservationUriPattern = reservationUriPattern;
     }
 }

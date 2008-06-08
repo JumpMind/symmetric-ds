@@ -31,13 +31,13 @@ import java.util.Date;
 import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.testng.Assert;
@@ -51,7 +51,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     private IDataExtractor dataExtractor;
 
-    private IRuntimeConfig runtimeConfiguration;
+    private IParameterService parameterService;
 
     private IDbDialect dbDialect;
 
@@ -70,7 +70,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
     @BeforeTest(groups = "continuous")
     protected void setUp() {
         dataExtractor = (IDataExtractor) getBeanFactory().getBean(Constants.DATA_EXTRACTOR);
-        runtimeConfiguration = (IRuntimeConfig) getBeanFactory().getBean(Constants.RUNTIME_CONFIG);
+        parameterService = (IParameterService) getBeanFactory().getBean(Constants.PARAMETER_SERVICE);
         dbDialect = (IDbDialect) getBeanFactory().getBean(Constants.DB_DIALECT);
     }
 
@@ -96,7 +96,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
-            em.location(runtimeConfiguration.getExternalId());
+            em.location(parameterService.getExternalId());
             em.batchBegin(batchId);
             em.table(TD1.table, TD1.keyColumns, TD1.columns);
             em.insert(TD1.rowData);
@@ -137,7 +137,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
-            em.location(runtimeConfiguration.getExternalId());
+            em.location(parameterService.getExternalId());
             em.batchBegin(batchId);
             em.table(TD1.table, TD1.keyColumns, TD1.columns);
             em.insert(TD1.rowData);
@@ -182,7 +182,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
-            em.location(runtimeConfiguration.getExternalId());
+            em.location(parameterService.getExternalId());
             em.batchBegin(batchId);
             em.table(TD1.table, TD1.keyColumns, TD1.columns);
             em.insert(TD1.rowData);
@@ -231,7 +231,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
-            em.location(runtimeConfiguration.getExternalId());
+            em.location(parameterService.getExternalId());
             em.batchBegin(batchId);
             em.table(TD1.table, TD1.keyColumns, TD1.columns);
             em.insert(TD1.rowData);

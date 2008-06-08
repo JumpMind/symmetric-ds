@@ -21,24 +21,28 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 
-public class AckResourceHandler extends AbstractTransportResourceHandler {
-    private IAcknowledgeService acknowledgeService;
+public class PushResourceHandler extends AbstractTransportResourceHandler {
 
-    public void ack(List<BatchInfo> batches) throws IOException {
-        for (BatchInfo batchInfo : batches) {
-            acknowledgeService.ack(batchInfo);    
-        }        
+    private IDataLoaderService dataLoaderService;
+
+    public void push(InputStream inputStream, OutputStream outputStream) throws IOException {
+        getDataLoaderService().loadData(inputStream, outputStream);
     }
 
-    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
-        this.acknowledgeService = acknowledgeService;
+    private IDataLoaderService getDataLoaderService() {
+        return dataLoaderService;
     }
+
+    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
+        this.dataLoaderService = dataLoaderService;
+    }
+
 }

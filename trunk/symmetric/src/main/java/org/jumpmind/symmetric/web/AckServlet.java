@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.transport.AckResourceHandler;
+import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 
 public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> {

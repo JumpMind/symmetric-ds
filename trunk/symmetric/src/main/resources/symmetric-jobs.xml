@@ -8,7 +8,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     default-lazy-init="true">
 
     <bean id="randomTimeSlot" class="org.jumpmind.symmetric.util.RandomTimeSlot">
-        <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="parameterService" ref="parameterService" />
         <property name="maxValue" value="${symmetric.runtime.job.random.max.start.time.ms}" />
     </bean>
     

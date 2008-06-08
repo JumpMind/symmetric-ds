@@ -33,31 +33,11 @@
      <constructor-arg value="${symmetric.http.download.rate.kb}"/>
     </bean>
     
-    <bean id="maxConcurrentWorkers" class="java.lang.Integer">
-     <constructor-arg value="${symmetric.http.concurrent.workers.max}"/>
-    </bean>    
-
     <bean id="propertyPlaceholderConfigurer"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="properties" ref="properties" />
-        <!-- This means that any system properties set on the command line will take precendence over those set locally or in a properties file. -->
+        <!-- This means that any system properties set on the command line will take precedence over those set locally or in a properties file. -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
-    </bean>
-
-    <!-- This the the default runtime configuration which will be used if no override is specified. -->
-    <bean name="defaultRuntimeConfiguration"
-        class="org.jumpmind.symmetric.config.PropertyRuntimeConfig">
-        <property name="registrationUrlString" value="${symmetric.runtime.registration.url}" />
-        <property name="groupId" value="${symmetric.runtime.group.id}" />
-        <property name="externalId" value="${symmetric.runtime.external.id}" />
-        <property name="myUrlString" value="${symmetric.runtime.my.url}" />
-        <property name="schemaVersion" value="${symmetric.runtime.schema.version}" />
-    </bean>
-
-    <!-- Use this to inject the runtime configuration onto classes that need it. -->
-    <bean name="runtimeConfiguration" class="org.jumpmind.symmetric.config.RuntimeConfigFactory">
-        <property name="defaultInstance" ref="defaultRuntimeConfiguration" />
-        <property name="className" value="${symmetric.runtime.configuration.class}" />
     </bean>
 
 </beans>

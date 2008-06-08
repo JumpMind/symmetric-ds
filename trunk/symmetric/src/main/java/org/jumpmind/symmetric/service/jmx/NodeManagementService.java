@@ -27,7 +27,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -50,8 +49,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
-
-    private IRuntimeConfig runtimeConfiguration;
 
     private IBootstrapService bootstrapService;
 
@@ -105,22 +102,22 @@ public class NodeManagementService {
     
     @ManagedAttribute(description = "This is a count of clients who connected to push or pull data and were rejected because the server was too busy")
     public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_TOO_BUSY_COUNT).getLifetimeCount();
+        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
     }
     
     @ManagedAttribute(description = "This is a count of the number of requests that were handled by this instance")
     public long getNumOfNodesWhoConnectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_FILTER_DID_WORK_COUNT).getLifetimeCount();
+        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "The group this node belongs to")
     public String getNodeGroupId() {
-        return runtimeConfiguration.getNodeGroupId();
+        return parameterService.getNodeGroupId();
     }
 
     @ManagedAttribute(description = "An external name give to this symmetric node")
     public String getExternalId() {
-        return runtimeConfiguration.getExternalId();
+        return parameterService.getExternalId();
     }
 
     @ManagedAttribute(description = "The node id given to this symmetric node")
@@ -257,10 +254,6 @@ public class NodeManagementService {
         dataExtractorService.extractBatchRange(transport, startBatchId, endBatchId);
         transport.close();
         out.close();
-    }
-
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
     }
 
     public void setBootstrapService(IBootstrapService bootstrapService) {

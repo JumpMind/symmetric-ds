@@ -115,7 +115,7 @@ public class ServletResourceTemplate implements IServletResource {
         return retVal;
     }
 
-    private boolean matchesRegexPattern(String uri, Pattern compiledRegexPattern) {
+    protected boolean matchesRegexPattern(String uri, Pattern compiledRegexPattern) {
         return compiledRegexPattern.matcher(uri).matches();
     }
 
@@ -127,7 +127,7 @@ public class ServletResourceTemplate implements IServletResource {
         return retVal;
     }
 
-    private boolean matchesUriPattern(String uri, String uriPattern) {
+    protected boolean matchesUriPattern(String uri, String uriPattern) {
 
         boolean retVal = false;
         String path = StringUtils.defaultIfEmpty(uri, "/");
@@ -174,13 +174,13 @@ public class ServletResourceTemplate implements IServletResource {
     /**
      * Returns the part of the path we are interested in when doing pattern
      * matching. This should work whether or not the servlet or filter is
-     * explicely mapped inside of the web.xml since it always strips off the
+     * explicitly mapped inside of the web.xml since it always strips off the
      * contextPath.
      * 
      * @param httpRequest
      * @return
      */
-    private String normalizeRequestUri(HttpServletRequest httpRequest) {
+    protected String normalizeRequestUri(HttpServletRequest httpRequest) {
         String retVal = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         if (retVal.startsWith(contextPath)) {

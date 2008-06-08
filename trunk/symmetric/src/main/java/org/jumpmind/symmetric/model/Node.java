@@ -23,8 +23,9 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 import org.jumpmind.symmetric.Version;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * This class represents a node who has registered for sync updates.
@@ -67,13 +68,13 @@ public class Node {
     public Node() {
     }
 
-    public Node(IRuntimeConfig runtimeConfig, IDbDialect dbDialect) {
+    public Node(IParameterService runtimeConfig, IDbDialect dbDialect) {
         setNodeGroupId(runtimeConfig.getNodeGroupId());
         setExternalId(runtimeConfig.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
         setSyncURL(runtimeConfig.getMyUrl());        
-        setSchemaVersion(runtimeConfig.getSchemaVersion());
+        setSchemaVersion(runtimeConfig.getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION));
     }
 
     public Node(String nodeId, String syncURL, String version) {

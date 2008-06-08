@@ -25,25 +25,25 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class CsvExtractor implements IDataExtractor {
 
     private Map<String, IStreamDataCommand> dictionary = null;
 
-    private IRuntimeConfig runtimeConfiguration;
+    private IParameterService parameterService;
 
     private IDbDialect dbDialect;
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, runtimeConfiguration
-                .getExternalId());
+        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService.getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID));
         writer.newLine();
     }
 
@@ -95,16 +95,16 @@ public class CsvExtractor implements IDataExtractor {
         context.setLastTableName(data.getTableName());
     }
 
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
-    }
-
     public void setDictionary(Map<String, IStreamDataCommand> dictionary) {
         this.dictionary = dictionary;
     }
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

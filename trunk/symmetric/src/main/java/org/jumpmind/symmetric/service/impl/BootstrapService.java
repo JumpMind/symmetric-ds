@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -83,7 +84,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     
     public void setupDatabase() {
         if (!initialized) {
-            this.randomSleepTimeSlot = new RandomTimeSlot(this.runtimeConfiguration, 60);
             if (isAutoConfigurable()) {
                 logger.info("Initializing symmetric database.");
                 dbDialect.initConfigDb();
@@ -109,6 +109,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 }
             }
             initialized = true;
+            
+            this.randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID), 60);
+
         }
 
         // lets do this every time init is called.
@@ -139,8 +142,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private void removeInactiveTriggers() {
-        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(runtimeConfiguration
-                .getNodeGroupId());
+        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.START_RUNTIME_GROUP_ID));
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
@@ -160,8 +162,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private void updateOrCreateTriggers() {
 
-        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(runtimeConfiguration
-                .getNodeGroupId());
+        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.START_RUNTIME_GROUP_ID));
 
         for (Trigger trigger : triggers) {
 
@@ -222,9 +223,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             // If we cannot contact the server to register, we simply must wait and try again.   
             while (!registered) {
                 try {
-                    logger.info("Attempting to register with " + runtimeConfiguration.getRegistrationUrl());
+                    logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
                     registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
-                            this.runtimeConfiguration, dbDialect)));
+                            this.parameterService, dbDialect)));
                 } catch (ConnectException e) {
                     logger.warn("Connection failed while registering.");
                 } catch (Exception e) {
@@ -242,12 +243,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     }
                 }
             }
-        } else if (node != null && runtimeConfiguration.getExternalId().equals(node.getExternalId()) && runtimeConfiguration.getNodeGroupId().equals(node.getNodeGroupId())) {
+        } else if (node != null && parameterService.getExternalId().equals(node.getExternalId()) && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
             heartbeat();
         } else if (node == null) {
             logger.info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");           
         } else {
-            throw new IllegalStateException("The configured state does not match recorded database state.  The recorded external id is " + node.getExternalId() + " while the configured external id is " + runtimeConfiguration.getExternalId() + ".  The recorded node group id is " + node.getNodeGroupId() + " while the configured node group id is " + runtimeConfiguration.getNodeGroupId());            
+            throw new IllegalStateException("The configured state does not match recorded database state.  The recorded external id is " + node.getExternalId() + " while the configured external id is " + parameterService.getExternalId() + ".  The recorded node group id is " + node.getNodeGroupId() + " while the configured node group id is " + parameterService.getNodeGroupId());            
         }
     }
 
@@ -260,12 +261,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setTimezoneOffset(AppUtils.getTimezoneOffset());
             node.setDatabaseType(dbDialect.getName());
             node.setDatabaseVersion(dbDialect.getVersion());
-            node.setSchemaVersion(runtimeConfiguration.getSchemaVersion());
-            node.setExternalId(runtimeConfiguration.getExternalId());
-            node.setNodeGroupId(runtimeConfiguration.getNodeGroupId());
+            node.setSchemaVersion(parameterService.getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION));
+            node.setExternalId(parameterService.getExternalId());
+            node.setNodeGroupId(parameterService.getNodeGroupId());
             node.setSymmetricVersion(Version.version());
-            if (!StringUtils.isBlank(runtimeConfiguration.getMyUrl())) {
-                node.setSyncURL(runtimeConfiguration.getMyUrl());
+            if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                node.setSyncURL(parameterService.getMyUrl());
             }
             nodeService.updateNode(node);
             logger.info("Done updating my node information and heartbeat time.");

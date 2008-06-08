@@ -80,7 +80,24 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
     }
 
+    /**
+     * Before streaming data to the remote node, make sure it is ok to.  We have found that we can be more efficient on a push
+     * by relying on HTTP keep-alive. 
+     * @throws IOException
+     * @throws {@link ConnectionRejectedException}
+     * @throws {@link AuthenticationException} 
+     */
+    private void requestReservation() throws IOException {
+        HttpURLConnection c = (HttpURLConnection) url.openConnection();
+        c.setUseCaches(false);
+        c.setConnectTimeout(httpTimeout);
+        c.setReadTimeout(httpTimeout);
+        c.setRequestMethod("HEAD");
+        analyzeResponseCode(c.getResponseCode());
+    }
+
     public BufferedWriter open() throws IOException {
+        requestReservation();
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
@@ -90,7 +107,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setRequestMethod("PUT");
         connection.setRequestProperty("accept-encoding", "gzip");
         if (useCompression) {
-            connection.addRequestProperty("Content-Type", "gzip"); //application/x-gzip?
+            connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
         }
         OutputStream out = connection.getOutputStream();
         if (useCompression) {
@@ -101,13 +118,21 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return writer;
     }
 
-    public BufferedReader readResponse() throws IOException {
-        closeWriter();
-        if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == connection.getResponseCode()) {
+    /**
+     * @throws {@link ConnectionRejectedException}
+     * @throws {@link AuthenticationException}
+     */
+    private void analyzeResponseCode(int code) throws IOException {
+        if (HttpServletResponse.SC_SERVICE_UNAVAILABLE == code) {
             throw new ConnectionRejectedException();
-        } else if (HttpServletResponse.SC_FORBIDDEN == connection.getResponseCode()) {
+        } else if (HttpServletResponse.SC_FORBIDDEN == code) {
             throw new AuthenticationException();
         }
+    }
+
+    public BufferedReader readResponse() throws IOException {
+        closeWriter();
+        analyzeResponseCode(connection.getResponseCode());
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
     }

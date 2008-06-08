@@ -22,23 +22,16 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.Map;
 
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 abstract class AbstractService {
 
-    protected IRuntimeConfig runtimeConfiguration;
-    
     protected IParameterService parameterService;
 
     protected JdbcTemplate jdbcTemplate;
     
     private Map<String, String> sql;
-
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
-    }
 
     public void setJdbcTemplate(JdbcTemplate jdbc) {
         this.jdbcTemplate = jdbc;

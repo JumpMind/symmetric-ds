@@ -30,7 +30,7 @@ import org.springframework.beans.BeanUtils;
 
 /**
  * All symmetric filters (other than {@link SymmetricFilter}) should extend
- * this class. It it managed by Spring.
+ * this class. It is managed by Spring.
  * 
  * @since 1.4.0
  */

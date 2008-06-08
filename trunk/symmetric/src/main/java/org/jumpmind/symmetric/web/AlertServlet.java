@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.transport.AlertResourceHandler;
+import org.jumpmind.symmetric.transport.handler.AlertResourceHandler;
 
 import com.sun.syndication.io.FeedException;
 

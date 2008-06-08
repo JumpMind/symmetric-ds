@@ -20,27 +20,35 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.transport;
+
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.ITransportResourceHandler;
+import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
-public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
-    private IRegistrationService registrationService;
+/**
+ * In order to better support other transports, the logic associated with
+ * transport resources, e.g., pull, push, ack, and registration is isolated away
+ * from the HttpServletRequest and HttpServletResponse.
+ * 
+ * Filters should probably eventually be done this way as well.
+ * 
+ * This should also probably be springified so that they can be injected into
+ * all the right places.
+ * 
+ * @author Keith Naas <knaas@users.sourceforge.net>
+ * 
+ */
+public abstract class AbstractTransportResourceHandler implements
+        ITransportResourceHandler {
 
-    public boolean registerNode(Node node, OutputStream outputStream)
-            throws IOException {
-        return getRegistrationService().registerNode(node, outputStream);
+    protected IOutgoingTransport createOutgoingTransport(
+            OutputStream outputStream) throws IOException {
+        return new InternalOutgoingTransport(outputStream);
     }
 
-    private IRegistrationService getRegistrationService() {
-        return registrationService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
 }

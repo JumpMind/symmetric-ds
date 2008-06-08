@@ -20,20 +20,21 @@
 
 package org.jumpmind.symmetric.config;
 
-import java.net.URL;
-
-import org.jumpmind.symmetric.config.PropertyRuntimeConfig;
+import org.jumpmind.symmetric.AbstractDatabaseTest;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class PropertyRuntimeConfigurationTest {
+public class RuntimeConfigTest extends AbstractDatabaseTest {
 
-    @Test
-    public void testGetHostUrl() throws Exception {
-        PropertyRuntimeConfig p = new PropertyRuntimeConfig();
-        p.setRegistrationUrlString("http://localhost:8080");
-        String url = p.getRegistrationUrl();
-        assert (url != null);
-        assert (new URL(url).getHost().equals("localhost"));
+    @SuppressWarnings({ "unchecked", "deprecation" })
+    @Test(groups="continuous")
+    public void testRuntimeConfig() throws Exception {
+        String actual = getParameterService().getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION);
+        Assert.assertNotSame(actual, TestConfig.SCHEMA_VERSION);        
+        getParameterService().saveParameter(ParameterConstants.RUNTIME_CONFIGURATION_CLASS, TestConfig.class.getName());
+        actual = getParameterService().getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION);
+        Assert.assertEquals(actual, TestConfig.SCHEMA_VERSION);
     }
 
 }

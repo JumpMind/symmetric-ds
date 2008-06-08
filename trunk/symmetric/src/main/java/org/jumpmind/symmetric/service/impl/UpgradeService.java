@@ -70,7 +70,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         String majorMinorVersion = fromVersion[0] + "." + fromVersion[1];
         List<IUpgradeTask> upgradeTaskList = upgradeTaskMap.get(majorMinorVersion);
         logger.warn("Starting upgrade from version " + majorMinorVersion + " to " + Version.version());
-        boolean isRegistrationServer = StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl());
+        boolean isRegistrationServer = StringUtils.isEmpty(parameterService.getRegistrationUrl());
         if (upgradeTaskList != null) {
             for (IUpgradeTask upgradeTask : upgradeTaskList) {
                 if ((isRegistrationServer && upgradeTask.isUpgradeRegistrationServer())
