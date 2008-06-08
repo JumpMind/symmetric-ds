@@ -32,8 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.transport.AuthenticationResourceHandler;
-import org.jumpmind.symmetric.transport.AuthenticationResourceHandler.AuthenticationStatus;
+import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler;
+import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.AuthenticationStatus;
 
 /**
  * This better be the first filter that executes ! TODO: if this thing fails,

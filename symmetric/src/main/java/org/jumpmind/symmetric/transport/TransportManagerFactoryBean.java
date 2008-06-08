@@ -25,7 +25,6 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -37,8 +36,6 @@ public class TransportManagerFactoryBean implements FactoryBean {
     private static final String TRANSPORT_HTTP = "http";
 
     private static final String TRANSPORT_INTERNAL = "internal";
-
-    private IRuntimeConfig runtimeConfiguration;
 
     private INodeService nodeService;
     
@@ -63,9 +60,9 @@ public class TransportManagerFactoryBean implements FactoryBean {
                     return false;
                 }
             });
-            return new HttpTransportManager(runtimeConfiguration, nodeService, parameterService);
+            return new HttpTransportManager(nodeService, parameterService);
         } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
-            return new InternalTransportManager(runtimeConfiguration);
+            return new InternalTransportManager(parameterService);
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");
         }
@@ -77,10 +74,6 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     public boolean isSingleton() {
         return true;
-    }
-
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
     }
 
     public void setTransport(String transport) {

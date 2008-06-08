@@ -114,7 +114,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void initTriggerRowsForConfigChannel() {
-        if (StringUtils.isEmpty(runtimeConfiguration.getRegistrationUrl())) {
+        if (StringUtils.isEmpty(parameterService.getRegistrationUrl())) {
             initSystemChannels();
             for (NodeGroupLink link : getGroupLinks()) {
                 initTriggerRowsForConfigChannel(link.getSourceGroupId(), link.getTargetGroupId());
@@ -416,7 +416,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public boolean isRegistrationServer() {
-        return StringUtils.isBlank(runtimeConfiguration.getRegistrationUrl());
+        return StringUtils.isBlank(parameterService.getRegistrationUrl());
     }
 
     public void setRootConfigChannelTableNames(List<String> configChannelTableNames) {

@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.IOException;
 import java.io.Writer;

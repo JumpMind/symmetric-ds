@@ -34,7 +34,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
@@ -44,6 +43,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -60,10 +60,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
     static final Log logger = LogFactory.getLog(InternalTransportManager.class);
 
     @SuppressWarnings("unused")
-    private IRuntimeConfig runtimeConfiguration;
+    private IParameterService parameterServer;
 
-    public InternalTransportManager(IRuntimeConfig config) {
-        this.runtimeConfiguration = config;
+    public InternalTransportManager(IParameterService config) {
+        this.parameterServer = config;
     }
 
     public IIncomingTransport getPullTransport(final Node remote, final Node local) throws IOException {
@@ -111,7 +111,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(runtimeConfiguration.getRegistrationUrl(), null, respOs, new IClientRunnable() {
+        runAtClient(parameterServer.getRegistrationUrl(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the registration servlet does ...
                 IRegistrationService service = (IRegistrationService) factory.getBean(Constants.REGISTRATION_SERVICE);

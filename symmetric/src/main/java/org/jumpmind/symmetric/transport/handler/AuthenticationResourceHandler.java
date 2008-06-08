@@ -18,7 +18,7 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import org.jumpmind.symmetric.service.INodeService;
 

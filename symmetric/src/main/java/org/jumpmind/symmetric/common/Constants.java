@@ -93,7 +93,7 @@ public class Constants {
 
     public static final String NODE_CONCURRENCY_FILTER = "nodeConcurrencyFilter";
 
-    public static final String RUNTIME_CONFIG = "runtimeConfiguration";
+    public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
     
     public static final String DB_DIALECT = "dbDialect";
     

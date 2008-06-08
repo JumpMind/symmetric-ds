@@ -290,7 +290,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        Trigger trigger = configurationService.getTriggerFor(tableName, runtimeConfiguration.getNodeGroupId());
+        Trigger trigger = configurationService.getTriggerFor(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
             String rowData = null;
             String pkData = null;

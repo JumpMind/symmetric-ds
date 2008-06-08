@@ -36,9 +36,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -55,14 +54,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     protected static final Log logger = LogFactory.getLog(HttpTransportManager.class);
 
-    private IRuntimeConfig runtimeConfiguration;
-
     private INodeService nodeService;
     
     private IParameterService parameterService;
 
-    public HttpTransportManager(IRuntimeConfig config, INodeService nodeService, IParameterService paramService) {
-        this.runtimeConfiguration = config;
+    public HttpTransportManager(INodeService nodeService, IParameterService paramService) {
         this.parameterService = paramService;
         this.nodeService = nodeService;
     }
@@ -115,7 +111,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
-        StringBuilder builder = new StringBuilder(runtimeConfiguration.getRegistrationUrl() + "/registration?");
+        StringBuilder builder = new StringBuilder(parameterService.getRegistrationUrl() + "/registration?");
         append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
         append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
         append(builder, WebConstants.SYNC_URL, node.getSyncURL());
@@ -163,7 +159,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         if (StringUtils.isBlank(remote.getSyncURL())) {
             logger
                     .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
-            return runtimeConfiguration.getRegistrationUrl();
+            return parameterService.getRegistrationUrl();
         } else {
             return remote.getSyncURL();
         }

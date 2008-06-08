@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 
+import org.jumpmind.symmetric.config.IParameterFilter;
+
 /**
  * Get and set application wide configuration information.
  */
@@ -31,7 +33,7 @@ public interface IParameterService {
     
     public static final String ALL = "ALL";
 
-    public BigDecimal getDecimal(String key);
+    public BigDecimal getDecimal(String key);    
     
     public boolean is(String key);
 
@@ -52,5 +54,27 @@ public interface IParameterService {
     public Date getLastTimeParameterWereCached();
     
     public Map<String,String> getAllParameters();
+    
+    public void setParameterFilter(IParameterFilter f);
+    
+    /**
+     * Get the group id for this instance
+     */
+    public String getNodeGroupId();
 
+    /**
+     * Get the external id for this instance
+     */
+    public String getExternalId();
+
+    /**
+     * Provide the url used to register at to get initial configuration information
+     */
+    public String getRegistrationUrl();
+    
+    /**
+     * Provide information about the URL used to contact this symmetric instance
+     */
+    public String getMyUrl();
+    
 }

@@ -29,10 +29,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -50,6 +53,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     private long cacheTimeoutInMs = 0;
 
     private Date lastTimeParameterWereCached;
+
+    private IParameterFilter parameterFilter;
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
@@ -93,12 +98,15 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getString(String key) {
-        return getParameters().get(key);
+        String value = getParameters().get(key);
+        if (this.parameterFilter != null) {
+            value = this.parameterFilter.filterParameter(key, value);
+        }
+        return value;
     }
 
     public void saveParameter(String key, Object paramValue) {
-        this.saveParameter(runtimeConfiguration.getExternalId(), runtimeConfiguration.getNodeGroupId(), key,
-                paramValue);
+        this.saveParameter(getExternalId(), getNodeGroupId(), key, paramValue);
     }
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
@@ -106,8 +114,8 @@ public class ParameterService extends AbstractService implements IParameterServi
                 nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key,
-                    paramValue });
+            jdbcTemplate
+                    .update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key, paramValue });
         }
 
         rereadParameters();
@@ -126,29 +134,29 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     /**
-     * Every time we pull the properties out of the bean factory they should get reread from the file system.
+     * Every time we pull the properties out of the bean factory they should get
+     * reread from the file system.
      */
     private Properties rereadFileParameters() {
         return (Properties) beanFactory.getBean(Constants.PROPERTIES);
     }
 
-    private Map<String, String> rereadDatabaseParameters() {
+    private Map<String, String> rereadDatabaseParameters(Properties p) {
         Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
-        map.putAll(rereadDatabaseParameters(ALL, runtimeConfiguration.getNodeGroupId()));
-        map.putAll(rereadDatabaseParameters(runtimeConfiguration.getExternalId(), runtimeConfiguration
-                .getNodeGroupId()));
+        map.putAll(rereadDatabaseParameters(ALL, p.getProperty(ParameterConstants.START_RUNTIME_GROUP_ID)));
+        map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.START_RUNTIME_EXTERNAL_ID), p
+                .getProperty(ParameterConstants.START_RUNTIME_GROUP_ID)));
         return map;
     }
 
     private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId },
-                new RowMapper() {
-                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        map.put(rs.getString(1), rs.getString(2));
-                        return null;
-                    }
-                });
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper() {
+            public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+                map.put(rs.getString(1), rs.getString(2));
+                return null;
+            }
+        });
         return map;
     }
 
@@ -158,7 +166,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         for (Object key : p.keySet()) {
             map.put((String) key, p.getProperty((String) key));
         }
-        map.putAll(rereadDatabaseParameters());
+        map.putAll(rereadDatabaseParameters(p));
         return map;
 
     }
@@ -166,21 +174,74 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> getParameters() {
         if (parameters == null
                 || lastTimeParameterWereCached == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System
-                        .currentTimeMillis() - cacheTimeoutInMs))) {
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
             parameters = buildSystemParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
+            createRuntimeConfigIfNecessary();
         }
         return parameters;
     }
-    
+
+    /**
+     * For backward compatibility only.  Remove in 2.0.
+     */
+    @SuppressWarnings("deprecation")
+    private void createRuntimeConfigIfNecessary() {
+        String clazz = getString(ParameterConstants.RUNTIME_CONFIGURATION_CLASS);
+        if (parameterFilter == null && !StringUtils.isBlank(clazz)) {
+            try {
+                final IRuntimeConfig runtimeConfig = (IRuntimeConfig) Class.forName(clazz).newInstance();
+                parameterFilter = new IParameterFilter() {
+                    public String filterParameter(String key, String value) {
+                        if (key.equals(ParameterConstants.START_RUNTIME_EXTERNAL_ID)) {
+                            return runtimeConfig.getExternalId();
+                        } else if (key.equals(ParameterConstants.START_RUNTIME_GROUP_ID)) {
+                            return runtimeConfig.getNodeGroupId();
+                        } else if (key.equals(ParameterConstants.START_RUNTIME_REGISTRATION_URL)) {
+                            return runtimeConfig.getRegistrationUrl();
+                        } else if (key.equals(ParameterConstants.START_RUNTIME_SCHEMA_VERSION)) {
+                            return runtimeConfig.getSchemaVersion();
+                        } else if (key.equals(ParameterConstants.START_RUNTIME_MY_URL)) {
+                            return runtimeConfig.getMyUrl();
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+
+            } catch (Exception e) {
+                logger.error(e);
+            }
+        }
+    }
+
     public Map<String, String> getAllParameters() {
         return getParameters();
     }
 
     public Date getLastTimeParameterWereCached() {
         return lastTimeParameterWereCached;
+    }
+
+    public void setParameterFilter(IParameterFilter parameterFilter) {
+        this.parameterFilter = parameterFilter;
+    }
+
+    public String getExternalId() {
+        return getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID);
+    }
+
+    public String getMyUrl() {
+        return getString(ParameterConstants.START_RUNTIME_MY_URL);
+    }
+
+    public String getNodeGroupId() {
+        return getString(ParameterConstants.START_RUNTIME_GROUP_ID);
+    }
+
+    public String getRegistrationUrl() {
+        return getString(ParameterConstants.START_RUNTIME_REGISTRATION_URL);
     }
 
 }

@@ -119,7 +119,7 @@ public class RegistrationService extends AbstractService implements
         if (tableNames != null && tableNames.size() > 0) {
             for (String tableName : tableNames) {
                 Trigger trigger = configurationService
-                        .getTriggerForTarget(tableName, runtimeConfiguration
+                        .getTriggerForTarget(tableName, parameterService
                                 .getNodeGroupId(), node.getNodeGroupId(),
                                 Constants.CHANNEL_CONFIG);
                 if (trigger != null) {

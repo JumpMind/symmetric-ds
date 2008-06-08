@@ -20,28 +20,27 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.jumpmind.symmetric.service.IDataLoaderService;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
-public class PushResourceHandler extends AbstractTransportResourceHandler {
-    private IDataLoaderService dataLoaderService;
+public class RegistrationResourceHandler extends AbstractTransportResourceHandler {
+    private IRegistrationService registrationService;
 
-    public void push(InputStream inputStream, OutputStream outputStream)
+    public boolean registerNode(Node node, OutputStream outputStream)
             throws IOException {
-        getDataLoaderService().loadData(inputStream, outputStream);
+        return getRegistrationService().registerNode(node, outputStream);
     }
 
-    private IDataLoaderService getDataLoaderService() {
-        return dataLoaderService;
+    private IRegistrationService getRegistrationService() {
+        return registrationService;
     }
 
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        this.dataLoaderService = dataLoaderService;
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 }

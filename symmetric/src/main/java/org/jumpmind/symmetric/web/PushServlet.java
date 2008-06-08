@@ -32,30 +32,31 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.transport.PushResourceHandler;
+import org.jumpmind.symmetric.transport.handler.PushResourceHandler;
 
-public class PushServlet extends
-        AbstractTransportResourceServlet<PushResourceHandler> {
+public class PushServlet extends AbstractTransportResourceServlet<PushResourceHandler> {
     private static final long serialVersionUID = 1L;
 
     private static final Log logger = LogFactory.getLog(PushServlet.class);
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
+    }
+    
+    @Override
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        String nodeId = getParameter(req, WebConstants.NODE_ID);
+        
     }
 
     @Override
-    protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void handlePut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
-            logger
-                    .debug(String.format("Push request received from %s",
-                            nodeId));
+            logger.debug(String.format("Push request received from %s", nodeId));
         }
 
         InputStream inputStream = createInputStream(req);
@@ -66,8 +67,7 @@ public class PushServlet extends
         outputStream.flush(); // TODO: why is this necessary?
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String
-                    .format("Done with Push request from %s", nodeId));
+            logger.debug(String.format("Done with Push request from %s", nodeId));
         }
     }
 

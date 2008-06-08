@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
 
     <bean id="pullResourceHandler"
-        class="org.jumpmind.symmetric.transport.PullResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.PullResourceHandler">
         <property name="nodeService" ref="nodeService" />
         <property name="registrationService" ref="registrationService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
@@ -12,22 +12,22 @@
     </bean>
 
     <bean id="pushResourceHandler"
-        class="org.jumpmind.symmetric.transport.PushResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.PushResourceHandler">
         <property name="dataLoaderService" ref="dataLoaderService" />
     </bean>
 
     <bean id="registrationResourceHandler"
-        class="org.jumpmind.symmetric.transport.RegistrationResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler">
         <property name="registrationService" ref="registrationService" />
     </bean>
 
     <bean id="ackResourceHandler"
-        class="org.jumpmind.symmetric.transport.AckResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.AckResourceHandler">
         <property name="acknowledgeService" ref="acknowledgeService" />
     </bean>
 
     <bean id="alertResourceHandler"
-        class="org.jumpmind.symmetric.transport.AlertResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.AlertResourceHandler">
         <property name="incomingBatchService"
             ref="incomingBatchService" />
         <property name="outgoingBatchService"
@@ -35,7 +35,7 @@
     </bean>
 
     <bean id="authenticationResourceHandler"
-        class="org.jumpmind.symmetric.transport.AuthenticationResourceHandler">
+        class="org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler">
         <property name="nodeService" ref="nodeService" />
     </bean>
     
@@ -54,8 +54,7 @@
 
     <bean id="nodeConcurrencyFilter"
         class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
-        <property name="parameterService" ref="parameterService"/>
-        <property name="statisticManager" ref="statisticManager"/>
+        <property name="concurrentConnectionManager" ref="concurrentConnectionManager"/>
         <property name="uriPatterns">
             <list>
                 <value>/pull/*</value>
@@ -63,6 +62,7 @@
                 <value>/ack/*</value>
             </list>
         </property>
+        <property name="reservationUriPattern" value="/push/*"/>
     </bean>
 
     <bean id="compressionFilter"

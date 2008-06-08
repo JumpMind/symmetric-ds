@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric;
 
-import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;

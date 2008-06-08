@@ -22,15 +22,13 @@ package org.jumpmind.symmetric.util;
 
 import java.util.Random;
 
-import org.jumpmind.symmetric.config.IRuntimeConfig;
+import org.jumpmind.symmetric.service.IParameterService;
 
 /**
  * Use runtime configuration specific seeding to get a random number for use in time 
  * slotting nodes to help stagger load.
  */
 public class RandomTimeSlot {
-
-    IRuntimeConfig runtimeConfiguration;
 
     int maxValue = 1000;
 
@@ -40,19 +38,17 @@ public class RandomTimeSlot {
         random = new Random();
     }
 
-    public RandomTimeSlot(IRuntimeConfig config, int maxValue) {
-        this.runtimeConfiguration = config;
+    public RandomTimeSlot(String externalId, int maxValue) {
         this.maxValue = maxValue;
-        random = new Random(runtimeConfiguration.getExternalId().hashCode());
+        random = new Random(externalId.hashCode());
+    }
+    
+    public void setParameterService(IParameterService s) {
+        random = new Random(s.getExternalId().hashCode());
     }
 
     public void setMaxValue(int maxValue) {
         this.maxValue = maxValue;
-    }
-
-    public void setRuntimeConfiguration(IRuntimeConfig runtimeConfiguration) {
-        this.runtimeConfiguration = runtimeConfiguration;
-        random = new Random(runtimeConfiguration.getExternalId().hashCode());
     }
 
     public int getRandomValueSeededByDomainId() {

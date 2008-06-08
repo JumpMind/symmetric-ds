@@ -21,32 +21,24 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
 
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
+import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 
-/**
- * In order to better support other transports, the logic associated with
- * transport resources, e.g., pull, push, ack, and registration is isolated away
- * from the HttpServletRequest and HttpServletResponse.
- * 
- * Filters should probably eventually be done this way as well.
- * 
- * This should also probably be springified so that they can be injected into
- * all the right places.
- * 
- * @author Keith Naas <knaas@users.sourceforge.net>
- * 
- */
-public abstract class AbstractTransportResourceHandler implements
-        ITransportResourceHandler {
+public class AckResourceHandler extends AbstractTransportResourceHandler {
+    private IAcknowledgeService acknowledgeService;
 
-    protected IOutgoingTransport createOutgoingTransport(
-            OutputStream outputStream) throws IOException {
-        return new InternalOutgoingTransport(outputStream);
+    public void ack(List<BatchInfo> batches) throws IOException {
+        for (BatchInfo batchInfo : batches) {
+            acknowledgeService.ack(batchInfo);    
+        }        
     }
 
+    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
+        this.acknowledgeService = acknowledgeService;
+    }
 }

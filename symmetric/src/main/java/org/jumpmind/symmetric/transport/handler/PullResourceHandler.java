@@ -21,7 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.transport;
+package org.jumpmind.symmetric.transport.handler;
 
 import java.io.OutputStream;
 
@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class PullResourceHandler extends AbstractTransportResourceHandler {
     private static final Log logger = LogFactory
