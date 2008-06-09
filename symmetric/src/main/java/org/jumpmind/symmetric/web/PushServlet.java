@@ -43,11 +43,10 @@ public class PushServlet extends AbstractTransportResourceServlet<PushResourceHa
     public boolean isContainerCompatible() {
         return true;
     }
-    
+
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        String nodeId = getParameter(req, WebConstants.NODE_ID);
-        
+    protected void handleHead(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        // HTTP OK
     }
 
     @Override
