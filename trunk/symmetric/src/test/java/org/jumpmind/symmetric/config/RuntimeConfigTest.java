@@ -35,6 +35,7 @@ public class RuntimeConfigTest extends AbstractDatabaseTest {
         getParameterService().saveParameter(ParameterConstants.RUNTIME_CONFIGURATION_CLASS, TestConfig.class.getName());
         actual = getParameterService().getString(ParameterConstants.SCHEMA_VERSION);
         Assert.assertEquals(actual, TestConfig.SCHEMA_VERSION);
+        getParameterService().setParameterFilter(null);
         getParameterService().saveParameter(ParameterConstants.RUNTIME_CONFIGURATION_CLASS, null);
     }
 
