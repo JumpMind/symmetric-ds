@@ -22,48 +22,65 @@ package org.jumpmind.symmetric.common;
 
 public class ParameterConstants {
 
-    public final static String START_PULL_JOB = "symmetric.runtime.start.pull.job";
-    public final static String START_PUSH_JOB = "symmetric.runtime.start.push.job";
-    public final static String START_PURGE_JOB = "symmetric.runtime.start.purge.job";
-    public final static String START_HEARTBEAT_JOB = "symmetric.runtime.start.heartbeat.job";
-    public final static String START_SYNCTRIGGERS_JOB = "symmetric.runtime.start.synctriggers.job";
-    public final static String START_STATISTIC_FLUSH_JOB = "symmetric.runtime.start.stat.flush.job";
-    
-    public final static String START_RUNTIME_REGISTRATION_URL = "symmetric.runtime.registration.url";
-    public final static String START_RUNTIME_MY_URL = "symmetric.runtime.my.url";
-    public final static String START_RUNTIME_ENGINE_NAME = "symmetric.runtime.engine.name";
-    public final static String START_RUNTIME_GROUP_ID = "symmetric.runtime.group.id";
-    public final static String START_RUNTIME_EXTERNAL_ID = "symmetric.runtime.external.id";
-    public final static String START_RUNTIME_SCHEMA_VERSION = "symmetric.runtime.schema.version";
-    
-    @Deprecated
-    public final static String RUNTIME_CONFIGURATION_CLASS = "symmetric.runtime.configuration.class";
-    
-    public final static String AUTO_REGISTER_ENABLED = "symmetric.auto.registration";
-    public final static String AUTO_RELOAD_ENABLED = "symmetric.auto.reload";
-    public final static String AUTO_DELETE_BEFORE_RELOAD = "symmetric.runtime.initial.load.delete.first";
-    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "symmetric.runtime.initial.load.create.first";
-    
-    public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "symmetric.runtime.parameter.reload.timeout.ms";
+    public final static String START_PULL_JOB = "start.pull.job";
+    public final static String START_PUSH_JOB = "start.push.job";
+    public final static String START_PURGE_JOB = "start.purge.job";
+    public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
+    public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
+    public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
 
-    public final static String CONCURRENT_WORKERS = "symmetric.http.concurrent.workers.max";
-    public final static String CONCURRENT_RESERVATION_TIMEOUT = "symmetric.http.concurrent.reservation.timeout.ms";
-    
-    public final static String OUTGOING_BATCH_PEEK_AHEAD_WINDOW = "symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size";
-    public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "symmetric.runtime.incoming.batches.skip.duplicates";
-    public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "symmetric.runtime.num.of.ack.retries";
-    public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "symmetric.runtime.time.between.ack.retries.ms";
-    public final static String DATA_LOADER_NO_KEYS_IN_UPDATE = "symmetric.runtime.dont.include.keys.in.update.statement";
- 
-    public final static String TRANSPORT_HTTP_TIMEOUT = "symmetric.runtime.http.timeout.ms";
-    public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "symmetric.runtime.http.compression";
-    public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "symmetric.web.compression.disabled";
-    
+    public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
+    public final static String JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN = "job.synctriggers.aftermidnight.minutes";
+
+    public final static String REGISTRATION_URL = "registration.url";
+    public final static String MY_URL = "my.url";
+    public final static String ENGINE_NAME = "engine.name";
+    public final static String NODE_GROUP_ID = "group.id";
+    public final static String EXTERNAL_ID = "external.id";
+    public final static String SCHEMA_VERSION = "schema.version";
+
+    @Deprecated
+    public final static String RUNTIME_CONFIGURATION_CLASS = "configuration.class";
+
+    public final static String AUTO_REGISTER_ENABLED = "auto.registration";
+    public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
+    public final static String AUTO_UPGRADE = "auto.upgrade";
+    public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
+    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
+
+    public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
+
+    public final static String CONCURRENT_WORKERS = "http.concurrent.workers.max";
+    public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
+
+    public final static String OUTGOING_BATCH_PEEK_AHEAD_WINDOW = "outgoing.batches.peek.ahead.window.after.max.size";
+    public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
+    public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
+    public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "time.between.ack.retries.ms";
+    public final static String DATA_LOADER_NO_KEYS_IN_UPDATE = "dont.include.keys.in.update.statement";
+
+    public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
+    public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";
+    public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
+    public final static String TRANSPORT_TYPE = "transport.type";
+    public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
+
     public final static String DBPOOL_URL = "db.url";
-    public final static String DBPOOL_DRIVER ="db.driver";
+    public final static String DBPOOL_DRIVER = "db.driver";
     public final static String DBPOOL_USER = "db.user";
     public final static String DBPOOL_PASSWORD = "db.password";
     public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
-    
+
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
+
+    public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
+    public final static String CLUSTER_LOCK_DURING_PURGE = "cluster.lock.during.purge";
+    public final static String CLUSTER_LOCK_DURING_PULL = "cluster.lock.during.pull";
+    public final static String CLUSTER_LOCK_DURING_PUSH = "cluster.lock.during.push";
+    public final static String CLUSTER_LOCK_DURING_HEARTBEAT = "cluster.lock.during.heartbeat";
+    public final static String CLUSTER_LOCK_DURING_SYNC_TRIGGERS = "cluster.lock.during.sync.triggers";
+    
+    public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
+    public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.events.to.delete.in.tx";
 }

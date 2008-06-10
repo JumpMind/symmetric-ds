@@ -17,10 +17,14 @@
     <import resource="classpath:/sql/cluster-service-sql.xml"/>
     <import resource="classpath:/sql/parameter-service-sql.xml"/>    
     
+    <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    </bean>
+    
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
         <property name="sql" ref="statisticServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
+        
     </bean>
     
     <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
@@ -35,15 +39,13 @@
 
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
         scope="singleton">
-        <property name="transport" value="${symmetric.transport.type}" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
-        <property name="httpSslVerifiedServerNames" value="${symmetric.runtime.https.verified.server.names}" />
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService"
         scope="singleton">
-        <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+        <property name="triggerPrefix" value="${trigger.prefix}" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="dbDialect" ref="dbDialect" />
@@ -55,8 +57,6 @@
         <property name="dataService" ref="dataService" />
         <property name="upgradeService" ref="upgradeService" />
         <property name="clusterService" ref="clusterService" />
-        <property name="autoConfigureDatabase" value="${symmetric.auto.config.database}" />
-        <property name="autoUpgrade" value="${symmetric.auto.upgrade}" />
     </bean>
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService"
@@ -304,17 +304,8 @@
     <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="lockTimeoutInMilliseconds"
-            value="${symmetric.runtime.cluster.lock.timeout.ms}" />
-        <property name="lockDuringPurge" value="${symmetric.runtime.cluster.lock.during.purge}" />
-        <property name="lockDuringPull" value="${symmetric.runtime.cluster.lock.during.pull}" />
-        <property name="lockDuringPush" value="${symmetric.runtime.cluster.lock.during.push}" />
-        <property name="lockDuringHeartbeat"
-            value="${symmetric.runtime.cluster.lock.during.heartbeat}" />
-        <property name="lockDuringSyncTriggers"
-            value="${symmetric.runtime.cluster.lock.during.sync.triggers}" />
-        <property name="sql" ref="clusterServiceSql"/>
+        <property name="nodeService" ref="nodeService" />      
+        <property name="sql" ref="clusterServiceSql"/> 
     </bean>
 
     <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
@@ -323,9 +314,6 @@
         <property name="parameterService" ref="parameterService" />
         <property name="clusterService" ref="clusterService" />
         <property name="dbDialect" ref="dbDialect" />
-        <property name="retentionInMinutes" value="${symmetric.runtime.purge.retention.minutes}" />
-        <property name="maxNumOfDataIdsToPurgeInTx"
-            value="${symmetric.runtime.job.purge.max.num.data.events.to.delete.in.tx}" />
         <property name="deleteIncomingBatchesByNodeIdSql" ref="deleteIncomingBatchesByNodeIdSql"/>
         <property name="incomingPurgeSql" ref="incomingPurgeSql"/>
     </bean>

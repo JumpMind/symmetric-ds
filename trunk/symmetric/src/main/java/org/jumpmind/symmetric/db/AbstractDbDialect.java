@@ -57,11 +57,13 @@ import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.model.UniqueIndex;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -91,6 +93,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected SQLErrorCodeSQLExceptionTranslator sqlErrorTranslator;
 
     private Map<Integer, String> _defaultSizes;
+    
+    private IParameterService parameterService;
 
     protected String tablePrefix;
 
@@ -99,10 +103,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private Boolean supportsGetGeneratedKeys;
 
     protected TransactionTemplate transactionTemplate;
-
-    private String engineName;
-
-    private boolean createFirstForReload;
 
     private String databaseName;
 
@@ -314,7 +314,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             table.setSchema((String) values.get("TABLE_SCHEM"));
             table.setDescription((String) values.get("REMARKS"));
             table.addColumns(readColumns(metaData, tableName));
-            if (createFirstForReload) {
+            if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
                 table.addIndices(readIndices(metaData, tableName));
             }
             Collection primaryKeys = readPrimaryKeyNames(metaData, tableName);
@@ -930,19 +930,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getEngineName() {
-        return engineName;
-    }
-
-    public void setEngineName(String engineName) {
-        this.engineName = engineName;
+        return parameterService.getString(ParameterConstants.ENGINE_NAME);
     }
 
     public String getTablePrefix() {
         return tablePrefix;
     }
 
-    public void setCreateFirstForReload(boolean createFirstForReload) {
-        this.createFirstForReload = createFirstForReload;
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

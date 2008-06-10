@@ -42,12 +42,14 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -312,7 +314,8 @@ public class SymmetricLauncher {
     private static void autoCreateDatabase(SymmetricEngine engine) {
         IBootstrapService bootstrapService = (IBootstrapService) engine.getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
-        bootstrapService.setAutoConfigureDatabase(true);
+        IParameterService parameterService = (IParameterService)engine.getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
+        parameterService.saveParameter(ParameterConstants.AUTO_CONFIGURE_DATABASE, true);
         bootstrapService.setupDatabase();
     }
 

@@ -179,7 +179,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
         // test pulling no data
         getClientEngine().pull();
 
-        final byte[] BIG_BINARY = new byte[20000];
+        final byte[] BIG_BINARY = new byte[200];
         for (int i = 0; i < BIG_BINARY.length; i++) {
             BIG_BINARY[i] = 0x01;
         }

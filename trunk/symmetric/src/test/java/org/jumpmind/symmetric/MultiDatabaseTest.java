@@ -139,18 +139,18 @@ public class MultiDatabaseTest {
             }
 
             if (isConnectionValid(newProperties)) {
-                newProperties.setProperty("symmetric.runtime.group.id",
+                newProperties.setProperty(ParameterConstants.NODE_GROUP_ID,
                         databaseRole == DatabaseRole.CLIENT ? TestConstants.TEST_CLIENT_NODE_GROUP
                                 : TestConstants.TEST_ROOT_NODE_GROUP);
-                newProperties.setProperty("symmetric.runtime.external.id",
+                newProperties.setProperty(ParameterConstants.EXTERNAL_ID,
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty(ParameterConstants.START_RUNTIME_MY_URL, "internal://"
+                newProperties.setProperty(ParameterConstants.MY_URL, "internal://"
                         + databaseRole.name().toLowerCase());
-                newProperties.setProperty(ParameterConstants.START_RUNTIME_REGISTRATION_URL,
+                newProperties.setProperty(ParameterConstants.REGISTRATION_URL,
                         databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name()
                                 .toLowerCase()) : "");
-                newProperties.setProperty(ParameterConstants.START_RUNTIME_ENGINE_NAME, databaseRole.name().toLowerCase());
+                newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
                 FileOutputStream os = new FileOutputStream(propertiesFile);

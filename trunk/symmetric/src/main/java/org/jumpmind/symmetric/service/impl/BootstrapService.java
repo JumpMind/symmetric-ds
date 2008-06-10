@@ -74,26 +74,23 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private RandomTimeSlot randomSleepTimeSlot;
 
-    private boolean autoConfigureDatabase = true;
-
-    private boolean autoUpgrade = true;
-
     private String triggerPrefix;
 
     private boolean initialized = false;
     
     public void setupDatabase() {
         if (!initialized) {
-            if (isAutoConfigurable()) {
+            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
                 logger.info("Initializing symmetric database.");
                 dbDialect.initConfigDb();
+                parameterService.rereadParameters();
                 logger.info("Done initializing symmetric database.");
             } else {
                 logger.info("Symmetric is not configured to auto create the database.");
             }
 
             if (upgradeService.isUpgradeNecessary()) {
-                if (autoUpgrade) {
+                if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
                     try {
                         upgradeService.upgrade();
                     } catch (RuntimeException ex) {
@@ -110,16 +107,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             }
             initialized = true;
             
-            this.randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID), 60);
+            this.randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.EXTERNAL_ID), 60);
 
         }
 
         // lets do this every time init is called.
         clusterService.initLockTable();
-    }
-    
-    protected boolean isAutoConfigurable() {
-        return autoConfigureDatabase;
     }
 
     /**
@@ -142,7 +135,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private void removeInactiveTriggers() {
-        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.START_RUNTIME_GROUP_ID));
+        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.NODE_GROUP_ID));
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
@@ -162,7 +155,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private void updateOrCreateTriggers() {
 
-        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.START_RUNTIME_GROUP_ID));
+        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.NODE_GROUP_ID));
 
         for (Trigger trigger : triggers) {
 
@@ -261,7 +254,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setTimezoneOffset(AppUtils.getTimezoneOffset());
             node.setDatabaseType(dbDialect.getName());
             node.setDatabaseVersion(dbDialect.getVersion());
-            node.setSchemaVersion(parameterService.getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION));
+            node.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
             node.setExternalId(parameterService.getExternalId());
             node.setNodeGroupId(parameterService.getNodeGroupId());
             node.setSymmetricVersion(Version.version());
@@ -346,14 +339,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         this.dbDialect = dbDialect;
     }
 
-    public boolean isAutoConfigureDatabase() {
-        return autoConfigureDatabase;
-    }
-
-    public void setAutoConfigureDatabase(boolean autoConfigureDatabase) {
-        this.autoConfigureDatabase = autoConfigureDatabase;
-    }
-
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
@@ -380,10 +365,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setUpgradeService(IUpgradeService upgradeService) {
         this.upgradeService = upgradeService;
-    }
-
-    public void setAutoUpgrade(boolean autoUpgrade) {
-        this.autoUpgrade = autoUpgrade;
     }
 
     public void setClusterService(IClusterService clusterService) {

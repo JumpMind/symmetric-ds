@@ -25,6 +25,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -41,12 +42,10 @@ public class TransportManagerFactoryBean implements FactoryBean {
     
     private IParameterService parameterService;
 
-    private String transport;
-
-    private String httpSslVerifiedServerNames;
-
     public Object getObject() throws Exception {
+        String transport = parameterService.getString(ParameterConstants.TRANSPORT_TYPE);
         if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
+            final String httpSslVerifiedServerNames = parameterService.getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
             HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
                 public boolean verify(String s, SSLSession sslsession) {
                     if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
@@ -76,16 +75,8 @@ public class TransportManagerFactoryBean implements FactoryBean {
         return true;
     }
 
-    public void setTransport(String transport) {
-        this.transport = transport;
-    }
-
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
-    }
-
-    public void setHttpSslVerifiedServerNames(String httpSslVerifiedServerNames) {
-        this.httpSslVerifiedServerNames = httpSslVerifiedServerNames;
     }
 
     public void setParameterService(IParameterService parameterService) {

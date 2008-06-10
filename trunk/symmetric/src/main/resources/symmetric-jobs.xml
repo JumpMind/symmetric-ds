@@ -9,11 +9,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 
     <bean id="randomTimeSlot" class="org.jumpmind.symmetric.util.RandomTimeSlot">
         <property name="parameterService" ref="parameterService" />
-        <property name="maxValue" value="${symmetric.runtime.job.random.max.start.time.ms}" />
     </bean>
     
     <bean id="afterMidnightTimeSlot" class="org.jumpmind.symmetric.util.AfterMidnightTimeSlot">
-        <property name="minutesAfterMidnight" value="${symmetric.runtime.job.synctriggers.aftermidnight.minutes}" />
+        <property name="parameterService" ref="parameterService" />
     </bean>    
 
     <util:property-path id="delayBeforeStartTimeSlotPush"
@@ -41,11 +40,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     </bean>
     
     <bean id="pushTimerTask" class="org.jumpmind.symmetric.job.PushJob" scope="prototype">
+        <property name="parameterService" ref="parameterService" />
         <property name="pushService" ref="pushService" />
         <property name="needsRescheduled" value="true" />
-        <property name="rescheduleDelay" value="${symmetric.runtime.job.push.period.time.ms}" />
+        <property name="rescheduleDelayParameter" value="job.push.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
-        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
     </bean>
 
     <bean id="pullJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -63,9 +62,9 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     <bean id="pullTimerTask" class="org.jumpmind.symmetric.job.PullJob" scope="prototype">
         <property name="pullService" ref="pullService" />
         <property name="needsRescheduled" value="true" />
-        <property name="rescheduleDelay" value="${symmetric.runtime.job.pull.period.time.ms}" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="rescheduleDelayParameter" value="job.pull.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
-        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
     </bean>
     
     <bean id="purgeJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -74,12 +73,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
-                    <property name="period" value="${symmetric.runtime.job.purge.period.time.ms}" />
+                    <property name="period" value="${job.purge.period.time.ms}" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PurgeJob">
                             <property name="purgeService" ref="purgeService" />
                             <property name="dataSource" ref="dataSource"/>
-                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
+                            <property name="parameterService" ref="parameterService" />
                         </bean>
                     </property>
                 </bean>
@@ -93,11 +92,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
-                    <property name="period" value="${symmetric.runtime.job.stat.flush.period.time.ms}" />
+                    <property name="period" value="${job.stat.flush.period.time.ms}" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
                             <property name="statisticManager" ref="statisticManager" />
-                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
+                            <property name="parameterService" ref="parameterService" />
                         </bean>
                     </property>
                 </bean>
@@ -116,7 +115,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.SyncTriggersJob">
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
-                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
+                            <property name="parameterService" ref="parameterService" />
                         </bean>
                     </property>
                 </bean>
@@ -134,7 +133,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
-                            <property name="engineName" value="${symmetric.runtime.engine.name}"/>
+                            <property name="parameterService" ref="parameterService" />
                         </bean>
                     </property>
                 </bean>
