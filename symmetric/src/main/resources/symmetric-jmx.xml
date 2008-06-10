@@ -25,7 +25,7 @@
         <property name="assembler" ref="assembler" />
         <property name="beans">
             <map>
-                <entry key="Symmetric:name=${symmetric.runtime.engine.name}" value-ref="managementService" />
+                <entry key="Symmetric:name=${engine.name}" value-ref="managementService" />
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
