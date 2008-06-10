@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IPurgeService;
@@ -46,22 +47,18 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private final static Log logger = LogFactory.getLog(PurgeService.class);
 
-    private int maxNumOfDataIdsToPurgeInTx = 5000;
-
     private IDbDialect dbDialect;
 
     private List<String> incomingPurgeSql;
 
     private List<String> deleteIncomingBatchesByNodeIdSql;
 
-    private int retentionInMinutes = 7200;
-
     private IClusterService clusterService;
 
     @SuppressWarnings("unchecked")
     public void purge() {
         Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -retentionInMinutes);
+        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         purgeOutgoing(retentionCutoff);
         purgeIncoming(retentionCutoff);
         purgeStatistic(retentionCutoff);
@@ -185,6 +182,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private void purgeDataRows(final Calendar time) {
+        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         logger.info("About to purge data rows.");
         int minDataId = jdbcTemplate.queryForInt(getSql("selectMinDataIdSql"));
         int purgeUpToDataId = jdbcTemplate.queryForInt(getSql("selectMaxDataIdSql"), new Object[] { time.getTime()});
@@ -261,20 +259,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.incomingPurgeSql = purgeSql;
     }
 
-    public void setRetentionInMinutes(int retentionInMinutes) {
-        this.retentionInMinutes = retentionInMinutes;
-    }
-
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
     }
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
-    }
-
-    public void setMaxNumOfDataIdsToPurgeInTx(int maxNumOfDataIdsToPurgeInTx) {
-        this.maxNumOfDataIdsToPurgeInTx = maxNumOfDataIdsToPurgeInTx;
     }
 
     public void setDeleteIncomingBatchesByNodeIdSql(List<String> deleteIncomingBatchesByNodeIdSql) {

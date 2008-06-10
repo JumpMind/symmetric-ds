@@ -47,7 +47,7 @@ public class CsvExtractor13 implements IDataExtractor {
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
         Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService
-                .getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID));
+                .getString(ParameterConstants.EXTERNAL_ID));
         writer.newLine();
     }
 

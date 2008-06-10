@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.util;
 
 import java.util.Random;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -45,10 +46,7 @@ public class RandomTimeSlot {
     
     public void setParameterService(IParameterService s) {
         random = new Random(s.getExternalId().hashCode());
-    }
-
-    public void setMaxValue(int maxValue) {
-        this.maxValue = maxValue;
+        maxValue = s.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
     }
 
     public int getRandomValueSeededByDomainId() {

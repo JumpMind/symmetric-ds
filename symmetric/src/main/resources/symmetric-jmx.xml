@@ -4,7 +4,7 @@
 
     <bean id="mbeanserver" class="org.springframework.jmx.support.MBeanServerFactoryBean">
         <property name="locateExistingServerIfPossible" value="true" />
-        <property name="defaultDomain" value="org.jumpmind.symmetric.${symmetric.runtime.engine.name}" />
+        <property name="defaultDomain" value="org.jumpmind.symmetric.${engine.name}" />
     </bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">

@@ -9,11 +9,11 @@
     <bean id="oracleDialect" class="org.jumpmind.symmetric.db.oracle.OracleDbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
-        <property name="engineName" value="${symmetric.runtime.engine.name}"/>
+        <property name="parameterService" ref="parameterService" />
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
-                <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+                <property name="triggerPrefix" value="${trigger.prefix}" />
                 <property name="functionInstalledSql">
                     <value>
                         <![CDATA[select count(*) from user_source where line = 1 and (type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')]]>

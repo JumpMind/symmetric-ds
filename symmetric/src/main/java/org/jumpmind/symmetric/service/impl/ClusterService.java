@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -42,18 +43,6 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected static final String COMMON_LOCK_ID = "common";
 
-    private long lockTimeoutInMilliseconds;
-
-    private boolean lockDuringPurge = false;
-
-    private boolean lockDuringPull = false;
-
-    private boolean lockDuringPush = false;
-
-    private boolean lockDuringHeartbeat = false;
-
-    private boolean lockDuringSyncTriggers = false;
-
     private INodeService nodeService;
 
     public void initLockTable() {
@@ -61,6 +50,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTableForNodes(nodeService.findNodesToPushTo());
         initLockTable(LockAction.PURGE_INCOMING, COMMON_LOCK_ID);
         initLockTable(LockAction.PURGE_OUTGOING, COMMON_LOCK_ID);
+        initLockTable(LockAction.PURGE_STATISTICS, COMMON_LOCK_ID);
         initLockTable(LockAction.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
@@ -112,7 +102,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     private boolean lock(final LockAction action, final String id) {
         if (isClusteringEnabled(action)) {
-            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -lockTimeoutInMilliseconds);
+            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
             return jdbcTemplate
                     .update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action.name(), timeout }) == 1;
         } else {
@@ -133,16 +123,17 @@ public class ClusterService extends AbstractService implements IClusterService {
     private boolean isClusteringEnabled(final LockAction action) {
         switch (action) {
         case PULL:
-            return lockDuringPull;
+            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PULL);
         case PUSH:
-            return lockDuringPush;
+            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PUSH);
         case PURGE_INCOMING:
         case PURGE_OUTGOING:
-            return lockDuringPurge;
+        case PURGE_STATISTICS:
+            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PURGE);
         case HEARTBEAT:
-            return lockDuringHeartbeat;
+            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_HEARTBEAT);
         case SYNCTRIGGERS:
-            return lockDuringSyncTriggers;
+            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_SYNC_TRIGGERS);
         case OTHER:
             return true;
         default:
@@ -150,32 +141,9 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
-    public void setLockTimeoutInMilliseconds(final long lockTimeoutInMilliseconds) {
-        this.lockTimeoutInMilliseconds = lockTimeoutInMilliseconds;
-    }
-
-    public void setNodeService(final INodeService nodeService) {
+    public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setLockDuringPurge(final boolean lockDuringPurge) {
-        this.lockDuringPurge = lockDuringPurge;
-    }
-
-    public void setLockDuringPull(final boolean lockDuringPull) {
-        this.lockDuringPull = lockDuringPull;
-    }
-
-    public void setLockDuringPush(final boolean lockDuringPush) {
-        this.lockDuringPush = lockDuringPush;
-    }
-
-    public void setLockDuringHeartbeat(final boolean lockDuringHeartbeat) {
-        this.lockDuringHeartbeat = lockDuringHeartbeat;
-    }
-
-    public void setLockDuringSyncTriggers(final boolean lockDuringSyncTriggers) {
-        this.lockDuringSyncTriggers = lockDuringSyncTriggers;
-    }
 
 }

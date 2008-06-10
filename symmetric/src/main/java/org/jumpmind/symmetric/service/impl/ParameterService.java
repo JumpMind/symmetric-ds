@@ -35,14 +35,14 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
-import org.jumpmind.symmetric.config.IRuntimeConfig;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jdbc.core.RowMapper;
 
-public class ParameterService extends AbstractService implements IParameterService, BeanFactoryAware {
+public class ParameterService extends AbstractService implements
+        IParameterService, BeanFactoryAware {
 
     static final Log logger = LogFactory.getLog(ParameterService.class);
 
@@ -98,10 +98,24 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getString(String key) {
-        String value = getParameters().get(key);
+        String value = null;
+        // TODO remove in 2.0
+        if (!key.startsWith("symmetric.")) {
+            value = getString("symmetric." + key);
+            if (StringUtils.isBlank(value)
+                    && !key.startsWith("symmetric.runtime.")) {
+                value = getString("symmetric.runtime." + key);
+            }
+        }
+
+        if (StringUtils.isBlank(value)) {
+            value = getParameters().get(key);
+        }
+
         if (this.parameterFilter != null) {
             value = this.parameterFilter.filterParameter(key, value);
         }
+
         return value;
     }
 
@@ -109,19 +123,24 @@ public class ParameterService extends AbstractService implements IParameterServi
         this.saveParameter(getExternalId(), getNodeGroupId(), key, paramValue);
     }
 
-    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
-        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,
-                nodeGroupId, key });
+    public void saveParameter(String externalId, String nodeGroupId,
+            String key, Object paramValue) {
+
+        paramValue = paramValue != null ? paramValue.toString() : null;
+
+        int count = jdbcTemplate.update(getSql("updateParameterSql"),
+                new Object[] { paramValue, externalId, nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate
-                    .update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key, paramValue });
+            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] {
+                    externalId, nodeGroupId, key, paramValue });
         }
 
         rereadParameters();
     }
 
-    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
+    public void saveParameters(String externalId, String nodeGroupId,
+            Map<String, Object> parameters) {
         Set<String> keys = parameters.keySet();
         for (String key : keys) {
             saveParameter(externalId, nodeGroupId, key, parameters.get(key));
@@ -142,16 +161,25 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     private Map<String, String> rereadDatabaseParameters(Properties p) {
-        Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
-        map.putAll(rereadDatabaseParameters(ALL, p.getProperty(ParameterConstants.START_RUNTIME_GROUP_ID)));
-        map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.START_RUNTIME_EXTERNAL_ID), p
-                .getProperty(ParameterConstants.START_RUNTIME_GROUP_ID)));
-        return map;
+        try {
+            Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
+            map.putAll(rereadDatabaseParameters(ALL, p
+                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
+            map.putAll(rereadDatabaseParameters(p
+                    .getProperty(ParameterConstants.EXTERNAL_ID), p
+                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
+            return map;
+        } catch (Exception ex) {
+            logger.warn("Could not read the database parameters.  We will try again later.");
+            return new HashMap<String, String>();
+        }
     }
 
-    private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
+    private Map<String, String> rereadDatabaseParameters(String externalId,
+            String nodeGroupId) {
         final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper() {
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] {
+                externalId, nodeGroupId }, new RowMapper() {
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
                 map.put(rs.getString(1), rs.getString(2));
                 return null;
@@ -174,7 +202,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> getParameters() {
         if (parameters == null
                 || lastTimeParameterWereCached == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached
+                        .getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
             parameters = buildSystemParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
@@ -184,28 +213,31 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     /**
-     * For backward compatibility only.  Remove in 2.0.
+     * For backward compatibility only. Remove in 2.0.
      */
     @SuppressWarnings("deprecation")
     private void createRuntimeConfigIfNecessary() {
         String clazz = getString(ParameterConstants.RUNTIME_CONFIGURATION_CLASS);
         if (parameterFilter == null && !StringUtils.isBlank(clazz)) {
             try {
-                final IRuntimeConfig runtimeConfig = (IRuntimeConfig) Class.forName(clazz).newInstance();
+                final org.jumpmind.symmetric.config.IRuntimeConfig runtimeConfig = (org.jumpmind.symmetric.config.IRuntimeConfig) Class
+                        .forName(clazz).newInstance();
                 parameterFilter = new IParameterFilter() {
                     public String filterParameter(String key, String value) {
-                        if (key.equals(ParameterConstants.START_RUNTIME_EXTERNAL_ID)) {
+                        if (key.equals(ParameterConstants.EXTERNAL_ID)) {
                             return runtimeConfig.getExternalId();
-                        } else if (key.equals(ParameterConstants.START_RUNTIME_GROUP_ID)) {
+                        } else if (key.equals(ParameterConstants.NODE_GROUP_ID)) {
                             return runtimeConfig.getNodeGroupId();
-                        } else if (key.equals(ParameterConstants.START_RUNTIME_REGISTRATION_URL)) {
+                        } else if (key
+                                .equals(ParameterConstants.REGISTRATION_URL)) {
                             return runtimeConfig.getRegistrationUrl();
-                        } else if (key.equals(ParameterConstants.START_RUNTIME_SCHEMA_VERSION)) {
+                        } else if (key
+                                .equals(ParameterConstants.SCHEMA_VERSION)) {
                             return runtimeConfig.getSchemaVersion();
-                        } else if (key.equals(ParameterConstants.START_RUNTIME_MY_URL)) {
+                        } else if (key.equals(ParameterConstants.MY_URL)) {
                             return runtimeConfig.getMyUrl();
                         } else {
-                            return null;
+                            return value;
                         }
                     }
                 };
@@ -229,19 +261,19 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getExternalId() {
-        return getString(ParameterConstants.START_RUNTIME_EXTERNAL_ID);
+        return getString(ParameterConstants.EXTERNAL_ID);
     }
 
     public String getMyUrl() {
-        return getString(ParameterConstants.START_RUNTIME_MY_URL);
+        return getString(ParameterConstants.MY_URL);
     }
 
     public String getNodeGroupId() {
-        return getString(ParameterConstants.START_RUNTIME_GROUP_ID);
+        return getString(ParameterConstants.NODE_GROUP_ID);
     }
 
     public String getRegistrationUrl() {
-        return getString(ParameterConstants.START_RUNTIME_REGISTRATION_URL);
+        return getString(ParameterConstants.REGISTRATION_URL);
     }
 
 }

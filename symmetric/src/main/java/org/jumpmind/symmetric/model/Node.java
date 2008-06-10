@@ -74,7 +74,7 @@ public class Node {
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
         setSyncURL(runtimeConfig.getMyUrl());        
-        setSchemaVersion(runtimeConfig.getString(ParameterConstants.START_RUNTIME_SCHEMA_VERSION));
+        setSchemaVersion(runtimeConfig.getString(ParameterConstants.SCHEMA_VERSION));
     }
 
     public Node(String nodeId, String syncURL, String version) {

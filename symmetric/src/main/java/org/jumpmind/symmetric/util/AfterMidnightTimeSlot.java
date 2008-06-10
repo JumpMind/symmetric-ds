@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.util;
 import java.util.Calendar;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class AfterMidnightTimeSlot {
 
@@ -35,8 +37,9 @@ public class AfterMidnightTimeSlot {
         return midnight.getTime().getTime() - System.currentTimeMillis()
                 + minutesAfterMidnight * DateUtils.MILLIS_PER_MINUTE;
     }
-
-    public void setMinutesAfterMidnight(int minutesAfterMidnight) {
-        this.minutesAfterMidnight = minutesAfterMidnight;
+    
+    public void setParameterService(IParameterService s) {
+        this.minutesAfterMidnight = s.getInt(ParameterConstants.JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN);
     }
+
 }

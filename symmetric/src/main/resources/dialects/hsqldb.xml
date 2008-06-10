@@ -18,12 +18,12 @@
     <bean id="hsqldbDialect" class="org.jumpmind.symmetric.db.hsqldb.HsqlDbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
-        <property name="initializeDatabase" value="${symmetric.hsqldb.initialize.db}" />
-        <property name="engineName" value="${symmetric.runtime.engine.name}" />
+        <property name="initializeDatabase" value="${hsqldb.initialize.db}" />
+        <property name="parameterService" ref="parameterService" />
         <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">
-                <property name="triggerPrefix" value="${symmetric.runtime.trigger.prefix}" />
+                <property name="triggerPrefix" value="${trigger.prefix}" />
                 <property name="stringColumnTemplate" ref="stringTemplate" />
                 <property name="clobColumnTemplate" ref="stringTemplate" />
                 <property name="blobColumnTemplate">

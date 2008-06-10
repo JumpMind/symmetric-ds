@@ -28,11 +28,7 @@
             </list>
         </property>
     </bean>
-    
-    <bean id="downloadRateKb" class="java.lang.Integer">
-     <constructor-arg value="${symmetric.http.download.rate.kb}"/>
-    </bean>
-    
+       
     <bean id="propertyPlaceholderConfigurer"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="properties" ref="properties" />

@@ -28,6 +28,8 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
@@ -37,18 +39,18 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     private boolean needsRescheduled;
 
-    private long rescheduleDelay;
+    private String rescheduleDelayParameter;
 
     private BeanFactory beanFactory;
+    
+    protected IParameterService parameterService;
 
     private String beanName;
-
-    private String engineName;
 
     @Override
     public void run() {
         try {
-            if (SymmetricEngine.findEngineByName(engineName).isStarted()) {
+            if (SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME)).isStarted()) {
                 doJob();
             }
         } catch (final Throwable ex) {
@@ -66,9 +68,9 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     protected void reschedule() {
         final Timer timer = new Timer();
-        timer.schedule((TimerTask) beanFactory.getBean(beanName), getRescheduleDelay());
+        timer.schedule((TimerTask) beanFactory.getBean(beanName), parameterService.getLong(rescheduleDelayParameter));
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Rescheduling " + beanName + " with " + getRescheduleDelay() + " ms delay.");
+            getLogger().debug("Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter) + " ms delay.");
         }
     }
 
@@ -95,20 +97,16 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         return needsRescheduled;
     }
 
-    public void setNeedsRescheduled(final boolean needsRescheduled) {
+    public void setNeedsRescheduled(boolean needsRescheduled) {
         this.needsRescheduled = needsRescheduled;
     }
 
-    public void setRescheduleDelay(final long rescheduleDelay) {
-        this.rescheduleDelay = rescheduleDelay;
+    public void setRescheduleDelayParameter(String rescheduleDelay) {
+        this.rescheduleDelayParameter = rescheduleDelay;
     }
 
-    public long getRescheduleDelay() {
-        return rescheduleDelay;
-    }
-
-    public void setEngineName(String engineName) {
-        this.engineName = engineName;
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }
