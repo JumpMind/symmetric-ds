@@ -202,7 +202,7 @@ public class IntegrationTest extends AbstractIntegrationTest implements ITest {
             byte[] data = (byte[]) clientJdbcTemplate.queryForObject(
                     "select icon from test_customer where customer_id=101", new RowMapper() {
                         public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                            return rs.getBlob(1).getBytes(1, BIG_BINARY.length);
+                            return rs.getBytes(1);
                         }
                     });
             Assert.assertTrue(ArrayUtils.isEquals(data, BIG_BINARY),
