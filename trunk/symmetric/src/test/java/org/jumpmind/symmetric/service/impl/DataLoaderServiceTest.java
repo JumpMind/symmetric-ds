@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -444,7 +445,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         return status;
     }
     
-    @Test(groups="continuous",dependsOnMethods="testMultipleBatch")
+    @AfterClass(groups="continuous")
     public void testAutoRegisteredExtensionPoint() {
         TestDataLoaderFilter registeredFilter = (TestDataLoaderFilter)getBeanFactory().getBean("registeredDataFilter");
         TestDataLoaderFilter unRegisteredFilter = (TestDataLoaderFilter)getBeanFactory().getBean("unRegisteredDataFilter");
