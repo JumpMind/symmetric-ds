@@ -178,7 +178,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.auto.config.database</command>
+                    <command>auto.config.database</command>
                 </term>
                 <listitem>
                     <para>
@@ -189,7 +189,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.auto.upgrade</command>
+                    <command>auto.upgrade</command>
                 </term>
                 <listitem>
                     <para>
@@ -200,7 +200,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.auto.registration</command>
+                    <command>auto.registration</command>
                 </term>
                 <listitem>
                     <para>
@@ -211,7 +211,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.auto.reload</command>
+                    <command>auto.reload</command>
                 </term>
                 <listitem>
                     <para>
@@ -222,7 +222,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.http.download.rate.kb</command>
+                    <command>http.download.rate.kb</command>
                 </term>
                 <listitem>
                     <para>
@@ -233,7 +233,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.http.concurrent.workers.max</command>
+                    <command>http.concurrent.workers.max</command>
                 </term>
                 <listitem>
                     <para>
@@ -244,7 +244,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.outgoing.batches.peek.ahead.window.after.max.size</command>
+                    <command>outgoing.batches.peek.ahead.window.after.max.size</command>
                 </term>
                 <listitem>
                     <para>
@@ -257,7 +257,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.incoming.batches.skip.duplicates</command>
+                    <command>incoming.batches.skip.duplicates</command>
                 </term>
                 <listitem>
                     <para>
@@ -274,7 +274,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.num.of.ack.retries</command>
+                    <command>num.of.ack.retries</command>
                 </term>
                 <listitem>
                     <para>
@@ -286,7 +286,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.time.between.ack.retries.ms</command>
+                    <command>time.between.ack.retries.ms</command>
                 </term>
                 <listitem>
                     <para>
@@ -298,7 +298,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.engine.name</command>
+                    <command>engine.name</command>
                 </term>
                 <listitem>
                     <para>
@@ -310,7 +310,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>runtime.symmetric.cluster.server.id</command>
+                    <command>cluster.server.id</command>
                 </term>
                 <listitem>
                     <para>
@@ -322,7 +322,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.timeout.ms</command>
+                    <command>cluster.lock.timeout.ms</command>
                 </term>
                 <listitem>
                     <para>
@@ -333,7 +333,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.during.purge</command>
+                    <command>cluster.lock.during.purge</command>
                 </term>
                 <listitem>
                     <para>
@@ -344,7 +344,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.during.pull</command>
+                    <command>cluster.lock.during.pull</command>
                 </term>
                 <listitem>
                     <para>
@@ -355,7 +355,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.during.push</command>
+                    <command>cluster.lock.during.push</command>
                 </term>
                 <listitem>
                     <para>
@@ -366,7 +366,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.during.heartbeat</command>
+                    <command>cluster.lock.during.heartbeat</command>
                 </term>
                 <listitem>
                     <para>
@@ -377,7 +377,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.cluster.lock.during.sync.triggers</command>
+                    <command>cluster.lock.during.sync.triggers</command>
                 </term>
                 <listitem>
                     <para>
@@ -388,7 +388,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.trigger.prefix</command>
+                    <command>trigger.prefix</command>
                 </term>
                 <listitem>
                     <para>
@@ -399,7 +399,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.initial.load.delete.first</command>
+                    <command>initial.load.delete.first</command>
                 </term>
                 <listitem>
                     <para>
@@ -410,7 +410,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.initial.load.create.first</command>
+                    <command>initial.load.create.first</command>
                 </term>
                 <listitem>
                     <para>
@@ -421,7 +421,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.http.timeout.ms</command>
+                    <command>http.timeout.ms</command>
                 </term>
                 <listitem>
                     <para>
@@ -432,7 +432,7 @@
             </varlistentry>            
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.http.compression</command>
+                    <command>http.compression</command>
                 </term>
                 <listitem>
                     <para>
@@ -445,7 +445,7 @@
             </varlistentry>            
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.job.random.max.start.time.ms</command>
+                    <command>job.random.max.start.time.ms</command>
                 </term>
                 <listitem>
                     <para>
@@ -457,7 +457,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.purge.retention.minutes</command>
+                    <command>purge.retention.minutes</command>
                 </term>
                 <listitem>
                     <para>
@@ -469,7 +469,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.start.push.job</command>
+                    <command>start.push.job</command>
                 </term>
                 <listitem>
                     <para>Whether the push job is enabled for this node. [&#xA0;Default:&#xA0;true]</para>
@@ -477,7 +477,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.job.push.period.time.ms</command>
+                    <command>job.push.period.time.ms</command>
                 </term>
                 <listitem>
                     <para>This is how often the push job will be run. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
@@ -485,7 +485,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.start.pull.job</command>
+                    <command>start.pull.job</command>
                 </term>
                 <listitem>
                     <para>
@@ -495,7 +495,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.job.pull.period.time.ms</command>
+                    <command>job.pull.period.time.ms</command>
                 </term>
                 <listitem>
                     <para>This is how often the pull job will be run. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
@@ -503,7 +503,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.start.purge.job</command>
+                    <command>start.purge.job</command>
                 </term>
                 <listitem>
                     <para>
@@ -513,7 +513,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.job.purge.period.time.ms</command>
+                    <command>job.purge.period.time.ms</command>
                 </term>
                 <listitem>
                     <para>
@@ -523,7 +523,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.start.synctriggers.job</command>
+                    <command>start.synctriggers.job</command>
                 </term>
                 <listitem>
                     <para>
@@ -534,7 +534,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.job.synctriggers.aftermidnight.minutes</command>
+                    <command>job.synctriggers.aftermidnight.minutes</command>
                 </term>
                 <listitem>
                     <para>
@@ -545,7 +545,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.start.heartbeat.job</command>
+                    <command>start.heartbeat.job</command>
                 </term>
                 <listitem>
                     <para>
@@ -557,7 +557,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.schema.version</command>
+                    <command>schema.version</command>
                 </term>
                 <listitem>
                     <para>
@@ -569,7 +569,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.registration.url</command>
+                    <command>registration.url</command>
                 </term>
                 <listitem>
                     <para>
@@ -581,7 +581,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.my.url</command>
+                    <command>my.url</command>
                 </term>
                 <listitem>
                     <para>
@@ -593,7 +593,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.group.id</command>
+                    <command>group.id</command>
                 </term>
                 <listitem>
                     <para>
@@ -604,7 +604,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.external.id</command>
+                    <command>external.id</command>
                 </term>
                 <listitem>
                     <para>
@@ -618,19 +618,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.configuration.class</command>
-                </term>
-                <listitem>
-                    <para>
-                        Provides a way to override the default IRuntimeConfiguration. If you specify a class
-                        that implements the interface, it will be used instead of the default, property-based,
-                        version. [&#xA0;Default:&#xA0;]
-                    </para>
-                </listitem>
-            </varlistentry>
-            <varlistentry>
-                <term>
-                    <command>symmetric.transport.type</command>
+                    <command>transport.type</command>
                 </term>
                 <listitem>
                     <para>
@@ -641,7 +629,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.hsqldb.initialize.db</command>
+                    <command>hsqldb.initialize.db</command>
                 </term>
                 <listitem>
                     <para>
