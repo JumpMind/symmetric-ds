@@ -9,15 +9,23 @@
     <title>Getting Started</title>
     <para>
         This chapter is a hands-on tutorial that demonstrates how to synchronize the sample
-        database between two running nodes of SymmetricDS.
+        database between two running instances of SymmetricDS.  The sample database is an example
+        of a retail business that has a central office database (called "root") and multiple 
+        retail store databases (called "client").  The root database sends changes to the
+        client for item data, such as item number, description, and price.  The client database
+        sends changes to the root for sale transaction data, such as time of sale and items sold.
+        The sample configuration specifies synchronization with a pull method for the client to
+        receive data from root, and a push method for the root to receive data from client.
     </para>
     <para>
-        To get started, you create a root (central source) database and a client (remote target)
-        database that each run the SymmetricDS software to synchronize changes. You open
-        registration for the client, which registers with the root to receive the
-        synchronization configuration. You ask the root to reload the client in order to perform
-        an initial synchronization. Then you make changes to each database and observe the
-        changes propagating.
+        To get started, we create separate databases for the root and client where sample tables
+        will be created and populated.  We use a configuration file to run an instance
+        of SymmetricDS, called a node, on each database.  To link the nodes together, we
+        register the client node with the root node.  For this tutorial, the root database
+        is pre-populated with data, while the client database is left empty.  To load the data
+        on the client database, we use the root node to request a reload of the client node.
+        With the two databases in sync, we make changes to data in the tables and observe
+        the changes being synchronized.
     </para>
     <section>
         <title>Installing SymmetricDS</title>
@@ -38,9 +46,9 @@
             </step>
             <step>
                 <para>
-                    Unzip the file, which creates a
-                    <filename class="directory">symmetric-ds-1.0.0</filename>
-                    subdirectory.
+                    Unzip the file in any directory you choose.  This will create a
+                    <filename class="directory">symmetric-ds-1.X.X</filename>
+                    subdirectory, which corresponds to the version you downloaded.
                 </para>
             </step>
             <step>
@@ -63,7 +71,7 @@
             </step>
             <step>
                 <para>
-                    Set the following properties in both files for the corresponding databases:
+                    Set the following properties in both files to specify how to connect to the database:
                 </para>
                 <programlisting><![CDATA[# The class name for the JDBC Driver
 db.driver=com.mysql.jdbc.Driver
@@ -75,16 +83,27 @@ db.url=jdbc:mysql://localhost/sample
 db.user=symmetric
 
 # The password for the user to login as
-db.password=]]></programlisting>
+db.password=secret]]></programlisting>
             </step>
             <step>
                 <para>
-                    Set the following properties in the
+                    Set the following property in the
                     <filename>client.properties</filename>
-                    file:
+                    file to specify where the root node can be contacted:
                 </para>
                 <programlisting><![CDATA[# The HTTP URL of the root node to contact for registration
 symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting>
+                <para>
+                    For the tutorial, the client database starts out empty, and the node is not 
+                    registered.  Registration is the process where the node receives its
+                    configuration and stores it in the database.  The configuration describes
+                    which database tables to synchronize and with which nodes.
+                    When an unregistered node starts up, it will register with the node specified
+                    by the registration URL.  The registration node centrally controls nodes on
+                    the network by allowing registration and returning configuration.
+                    In this tutorial, the registration node is the root node, which also participates
+                    in synchronization with other nodes.
+                </para>
             </step>
         </procedure>
     </section>
@@ -124,8 +143,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                     </command>
                 </para>
                 <para>
-                    Note that the command may output warnings about altering foreign keys on the
-                    tables, which are safe to ignore.
+                    Note that the warning messages from the command are safe to ignore.
                 </para>
             </step>
             <step>
@@ -185,6 +203,15 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 </para>
             </step>
         </procedure>
+        <tip>
+            <title>Tip</title>
+            <para>
+                If you want to change the port number used by SymmetricDS, you need to also
+                set the symmetric.runtime.my.url runtime property to match.  The default value
+                is:
+            </para>
+            <programlisting><![CDATA[symmetric.runtime.my.url=http://localhost:8080/sync]]></programlisting>
+        </tip>
     </section>
     <section>
         <title>Registering a Node</title>
@@ -208,7 +235,11 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 </para>
                 <para>
                     The registration is opened for a node group called "store" with an external
-                    identifier of "1".
+                    identifier of "1".  This information matches the settings in
+                    <filename>client.properties</filename> for the client node.  Each node is
+                    assigned to a group and is given an external ID that makes sense for the application.
+                    In this tutorial, we have retail stores that run SymmetricDS, so we named our group
+                    "store" and we used numeric identifiers starting with "1".
                 </para>
             </step>
             <step>
@@ -242,7 +273,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 </para>
                 <para>
                     With this command, the root node queues up an initial load for the client
-                    node that will sent the next time the client performs its pull. The initial
+                    node that will be sent the next time the client performs its pull. The initial
                     load includes data for each table that is configured for synchronization.
                 </para>
             </step>
@@ -265,7 +296,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 <para>Open an interactive SQL session with the root database.</para>
             </step>
             <step>
-                <para>Add a new item for sale to the root database</para>
+                <para>Add a new item for sale:</para>
                 <para>
                     <command>
                         insert into item_selling_price (price_id, price) values (55, 0.65);
@@ -307,7 +338,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 <para>Open an interactive SQL session with the client database.</para>
             </step>
             <step>
-                <para>Add a new sale to the client database</para>
+                <para>Add a new sale to the client database:</para>
                 <para>
                     <command>
                         insert into sale_transaction (tran_id, store, workstation, day, seq) values
@@ -331,10 +362,134 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                     is configured to push data to the root each minute.
                 </para>
             </step>
+        </procedure>
+    </section>
+    <section>
+        <title>Verifying Outgoing Batches</title>
+        <para>
+            A batch is used for tracking and sending data changes to nodes.  The sending node
+            creates a batch and the receiving node acknowledges it.  A batch in error is retried
+            during synchronization attempts, but only after data changes in other channels are
+            allowed to be sent.  Channels are categories assigned to tables for the purpose
+            of independent synchronization and control.  Batches for a channel are not created
+            when a batch in the channel is in error status.
+        </para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with either the root or client database.</para>
+            </step>
             <step>
                 <para>
-                    Verify that the new data arrives in the root database using another
-                    interactive SQL session.
+                    Verify that the data change was captured:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_data where table_name like 'item%' or table_name like 'sale%';
+                    </command>
+                </para>
+                <para>
+                    Each row represents a row of data that was changed.
+                    The event_type is "I" for insert, "U" for update", or "D" for delete.
+                    For insert and update, the captured data values are listed in row_data.
+                    For update and delete, the primary key values are listed in pk_data.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Verify that the data change was routed to a node, using the data_id from
+                    the previous step:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_data_event where data_id = ?;
+                    </command>
+                </para>
+                <para>
+                    When the batched flag is set, the data change is assigned to a batch using a batch_id
+                    that is used to track and synchronize the data.  Batches are created and assigned
+                    during a push or pull synchronization.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Verify that the data change was batched, sent, and acknowledged, using the batch_id
+                    from the previous step:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_outgoing_batch where batch_id = ?;
+                    </command>
+                </para>
+                <para>
+                    A batch represents a collection of changes to be sent to a node.  The batch
+                    is created during a push or pull synchronization, when the status is set to "NE"
+                    for new.  The receiving node acknowledges the batch with a status of "OK" for
+                    success or "ER" for error.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Verify that the batch history was recorded, using the batch_id from the previous step:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_outgoing_batch_hist where batch_id = ?;
+                    </command>
+                </para>
+                <para>
+                    Work performed on the batch is recorded in the history table.
+                    A new batch with status of "NE" records the number of data changes it contains in the
+                    data_event_count field.
+                    The status of "SE" shows that a batch is being sent to a node.
+                    The acknowledgement status from the receiving node is also recorded.  If the
+                    status is error, the failed_data_id indicates which row in sym_data caused the error.
+                </para>
+            </step>
+        </procedure>
+    </section>
+    <section>
+        <title>Verifying Incoming Batches</title>
+        <para>
+            The receiving node keeps track of the batches it acknowledges and records
+            statistics about loading the data.
+            Duplicate batches are skipped by default, but this behavior can be changed with
+            the incoming.batches.skip.duplicates runtime property.
+        </para>
+        <procedure>
+            <step>
+                <para>Open an interactive SQL session with either the root or client database.</para>
+            </step>
+            <step>
+                <para>
+                    Verify that the batch was acknowledged, using a batch_id from the previous section:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_incoming_batch where batch_id = ?;
+                    </command>
+                </para>
+                <para>
+                    A batch represents a collection of changes loaded by the node.  The sending
+                    node that created the batch is recorded.  The status is either "OK" for success
+                    or "ER" for error.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Verify that the batch history was recorded, using the batch_id from the previous step:
+                </para>
+                <para>
+                    <command>
+                        select * from sym_incoming_batch_hist where batch_id = ?;
+                    </command>
+                </para>
+                <para>
+                    Work performed on the batch is recorded in the history table.
+                    If a duplicate batch was skipped, the status is recorded as "SK".
+                    Otherwise, the status is either "OK" for success or "ER" for error.
+                    The statement_count is the number of rows loaded and the byte_count
+                    is the size of the batch in bytes.  The database_millis is the
+                    amount of time in milliseconds spent loading data in the database.
                 </para>
             </step>
         </procedure>
