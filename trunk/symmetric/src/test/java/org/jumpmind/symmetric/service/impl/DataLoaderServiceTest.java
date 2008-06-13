@@ -71,7 +71,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         getSymmetricEngine();
     }
     
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] updateValues = new String[11];
@@ -138,7 +138,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testUpdateCollision() throws Exception {       
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] insertValues = new String[11];
@@ -192,7 +192,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testSqlStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] insertValues = new String[10];
@@ -249,7 +249,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testSkippingResentBatch() throws Exception {
         String[] values = { getNextId(), "resend string", "resend string not null", "resend char",
                 "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7", "10.10" };
@@ -279,7 +279,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         }
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testErrorWhileSkip() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
@@ -319,7 +319,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testErrorWhileParsing() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "should not reach database", "string not null", "char",
@@ -346,7 +346,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testErrorThenSuccessBatch() throws Exception {
         Logger.getLogger(DataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
         Level old = setLoggingLevelForTest(Level.OFF);
@@ -389,7 +389,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
-    @Test(groups = {"continuous","dataloadertests"})
+    @Test(groups = {"continuous"})
     public void testMultipleBatch() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
@@ -444,7 +444,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         return status;
     }
     
-    @Test(groups="continuous",dependsOnGroups="dataloadertests")
+    @Test(groups="continuous",dependsOnMethods="testMultipleBatch")
     public void testAutoRegisteredExtensionPoint() {
         TestDataLoaderFilter registeredFilter = (TestDataLoaderFilter)getBeanFactory().getBean("registeredDataFilter");
         TestDataLoaderFilter unRegisteredFilter = (TestDataLoaderFilter)getBeanFactory().getBean("unRegisteredDataFilter");
