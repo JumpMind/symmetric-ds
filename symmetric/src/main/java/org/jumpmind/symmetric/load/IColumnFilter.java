@@ -26,6 +26,9 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 /**
  * This is an extension point that can be implemented to filter out columns from
  * use by the dataloader. One column filter may be added per target table.
+ * </p>
+ * Please implement {@link ITableColumnFilter} instead of this class directly if
+ * you want the extension to be auto discovered.
  */
 public interface IColumnFilter extends IExtensionPoint {
 
