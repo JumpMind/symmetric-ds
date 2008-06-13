@@ -20,26 +20,30 @@
 package org.jumpmind.symmetric.load;
 
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 
 /**
- * This is an extension point that can be implemented to filter out
- * columns from use by the dataloader.  One column filter may be added
- * per target table.
+ * This is an extension point that can be implemented to filter out columns from
+ * use by the dataloader. One column filter may be added per target table.
  */
-public interface IColumnFilter {
+public interface IColumnFilter extends IExtensionPoint {
 
     /**
-     * This method is always called first.  Typically, you must cache the 
-     * column index you are interested in order to be able to filter the
-     * column value as well.
+     * This method is always called first. Typically, you must cache the column
+     * index you are interested in order to be able to filter the column value
+     * as well.
+     * 
      * @return The columnName that the data loader will use to build its dml.
      */
     public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames);
 
     /**
-     * This method is always called after {@link IColumnFilter#filterColumnsNames(DmlType, String[])}.  It 
-     * should perform the same filtering under the same conditions for the values as was done for the column names. 
+     * This method is always called after
+     * {@link IColumnFilter#filterColumnsNames(DmlType, String[])}. It should
+     * perform the same filtering under the same conditions for the values as
+     * was done for the column names.
+     * 
      * @return the column values
      */
     public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues);

@@ -19,6 +19,9 @@ public class ParameterFilterTest extends AbstractDatabaseTest {
                     return value;
                 }
             }
+            public boolean isAutoRegister() {
+                return false;
+            }
         });
         
         Assert.assertEquals(service.getString("param.filter.test"), "gotcha");

@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
@@ -48,4 +49,8 @@ public interface IDataExtractorService {
 
     public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId)
             throws Exception;
+    
+    public void addExtractorFilter(IExtractorFilter extractorFilter);
+    
+    
 }

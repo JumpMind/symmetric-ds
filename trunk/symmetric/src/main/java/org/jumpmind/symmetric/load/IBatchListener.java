@@ -1,10 +1,11 @@
 package org.jumpmind.symmetric.load;
 
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public interface IBatchListener {
+public interface IBatchListener extends IExtensionPoint {
 
     /**
      * This method is called after a batch has been successfully processed. It

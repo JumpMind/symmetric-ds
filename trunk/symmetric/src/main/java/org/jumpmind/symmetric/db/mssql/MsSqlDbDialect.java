@@ -95,6 +95,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 }
                 return columnValues;
             }
+            
+            public boolean isAutoRegister() {
+                return false;
+            }
            
         };
     }

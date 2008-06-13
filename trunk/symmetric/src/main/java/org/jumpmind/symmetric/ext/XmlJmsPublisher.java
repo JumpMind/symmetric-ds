@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.springframework.jms.core.JmsTemplate;
 
 /**
@@ -62,6 +61,10 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
 
     private boolean loadDataInTargetDatabase = true;
 
+    public boolean isAutoRegister() {
+        return true;
+    }
+    
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
             StringBuilder xml = getXmlFromCache(ctx, null, keys);
@@ -211,11 +214,6 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
         if (doesXmlExistToPublish(ctx)) {
             finalizeXmlAndPublish(ctx);
         }
-    }
-
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        dataLoaderService.addDataLoaderFilter(this);
-        dataLoaderService.addBatchListener(this);
     }
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
