@@ -11,4 +11,5 @@
     <import resource="classpath:/symmetric-jobs.xml" /> 
     <import resource="classpath:/symmetric-jmx.xml" />    
     <import resource="classpath:/symmetric-web.xml" />   
+    <import resource="classpath:/symmetric-extensions.xml" />   
 </beans>

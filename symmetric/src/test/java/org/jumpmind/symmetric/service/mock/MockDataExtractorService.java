@@ -23,6 +23,7 @@
 package org.jumpmind.symmetric.service.mock;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
@@ -59,11 +60,12 @@ public class MockDataExtractorService implements IDataExtractorService {
 
     public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger,
             IOutgoingTransport transport, DataExtractorContext ctx) {
-
     }
 
     public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
-
+    }
+    
+    public void addExtractorFilter(IExtractorFilter extractorFilter) {
     }
 
 }

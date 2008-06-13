@@ -21,10 +21,11 @@
 
 package org.jumpmind.symmetric.load;
 
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public interface IDataLoaderFilter {
+public interface IDataLoaderFilter  extends IExtensionPoint  {
 
     /**
      * @return true if the row should be loaded.  false if the filter has handled the row and it should be ignored.

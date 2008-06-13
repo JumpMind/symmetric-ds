@@ -240,6 +240,10 @@ public class ParameterService extends AbstractService implements
                             return value;
                         }
                     }
+                    
+                    public boolean isAutoRegister() {
+                        return false;
+                    }
                 };
 
             } catch (Exception e) {
