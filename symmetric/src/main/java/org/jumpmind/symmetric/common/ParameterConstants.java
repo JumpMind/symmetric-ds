@@ -45,9 +45,10 @@ public class ParameterConstants {
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
+    public final static String AUTO_CONFIGURE_REGISTRATION_SERVER_SQL_SCRIPT ="auto.config.registration.svr.sql.script";
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
-    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
+    public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";    
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
