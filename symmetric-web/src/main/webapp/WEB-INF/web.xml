@@ -1,22 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.4"
-    xmlns="http://java.sun.com/xml/ns/j2ee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
     <display-name>SymmetricDS</display-name>
 
-    <!-- Optionally specify other spring xml files that are loaded in the same context -->
-        <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:symmetric-plugins.xml</param-value>
-        </context-param>
-
     <filter>
         <filter-name>SymmetricFilter</filter-name>
-        <filter-class>
-            org.jumpmind.symmetric.web.SymmetricFilter
-        </filter-class>
+        <filter-class>org.jumpmind.symmetric.web.SymmetricFilter</filter-class>
     </filter>
 
     <filter-mapping>
@@ -25,16 +15,12 @@
     </filter-mapping>
 
     <listener>
-        <listener-class>
-            org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
-        </listener-class>
+        <listener-class>org.jumpmind.symmetric.SymmetricEngineContextLoaderListener</listener-class>
     </listener>
 
     <servlet>
         <servlet-name>SymmetricServlet</servlet-name>
-        <servlet-class>
-            org.jumpmind.symmetric.web.SymmetricServlet
-        </servlet-class>
+        <servlet-class>org.jumpmind.symmetric.web.SymmetricServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -42,5 +28,12 @@
         <servlet-name>SymmetricServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
+
+    <resource-ref>
+        <description>DB Connection</description>
+        <res-ref-name>jdbc/SymmetricDS</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
 
 </web-app>

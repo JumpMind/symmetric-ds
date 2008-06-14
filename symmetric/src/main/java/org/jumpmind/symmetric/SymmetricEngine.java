@@ -181,6 +181,18 @@ public class SymmetricEngine {
         registeredEnginesByUrl.put(parameterService.getMyUrl(), this);
         registeredEnginesByName.put(getEngineName(), this);
     }
+    
+    /**
+     * This is done dynamically because some application servers do not allow the default
+     * MBeanServer to accessed for security reasons.
+     */
+    private void startDefaultServerJMXExport() {
+        try {
+            getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
+        } catch (Exception ex) {
+            logger.warn("Unable to register JMX beans with the default MBeanServer. " + ex.getMessage());
+        }
+    }
 
     /**
      * Start the jobs if they are configured to be started in symmetric.properties
@@ -248,6 +260,7 @@ public class SymmetricEngine {
             starting = true;
             setup();
             registerEngine();
+            startDefaultServerJMXExport();
             Node node = nodeService.findIdentity();
             if (node != null) {
                 logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id="
