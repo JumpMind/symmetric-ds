@@ -22,10 +22,16 @@ package org.jumpmind.symmetric.service.jmx;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -39,7 +45,9 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -67,6 +75,8 @@ public class NodeManagementService {
     private IClusterService clusterService;
 
     private IParameterService parameterService;
+    
+    private IConcurrentConnectionManager concurrentConnectionManager;
 
     private DataSource dataSource;
 
@@ -92,6 +102,43 @@ public class NodeManagementService {
     public int getNumfNodeConnectionsPerInstance() {
         return parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
     }
+    
+    @ManagedAttribute(description = "Get connection statistics about indivdual nodes")
+    public String getNodeConcurrencyStatisticsAsText() {
+        String lineFeed = "\n";
+        if (parameterService.getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
+            lineFeed = "</br>";
+        }
+        Map<String, Map<String, NodeConnectionStatistics>> stats = concurrentConnectionManager.getNodeConnectionStatisticsByPoolByNodeId();
+        StringBuilder out = new StringBuilder();
+        for (String pool : stats.keySet()) {
+            out.append("---------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);
+            out.append("  CONNECTION TYPE:");
+            out.append(pool);
+            out.append(lineFeed);
+            out.append("---------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);            
+            out.append("             NODE ID            LAST CONNECT TIME          NUMBER OF REJECTIONS       AVG CONNECTED TIME");
+            out.append("---------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);
+            Map<String, NodeConnectionStatistics> nodeStats = stats.get(pool);
+            for (String nodeId : nodeStats.keySet()) {
+                NodeConnectionStatistics nodeStat = nodeStats.get(nodeId);
+                StringUtils.leftPad(nodeId, 20);
+                StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(nodeStat.getLastConnectionTimeMs())), 30);
+                StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 30);
+                StringUtils.leftPad(NumberFormat.getIntegerInstance().format(nodeStat.getTotalConnectionTimeMs()/nodeStat.getTotalConnectionCount()), 20);                
+            }
+            out.append(lineFeed);            
+        }
+        return out.toString();
+    }
+    
+    public String getCurrentNodeConcurrencyReservationsAsText() {
+        // TODO
+        throw new NotImplementedException();
+    }
 
     @ManagedAttribute(description = "Configure the number of connections allowed to this node."
             + "  If the value is set to zero you are effectively disabling your transport"
@@ -100,14 +147,19 @@ public class NodeManagementService {
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
     }
     
-    @ManagedAttribute(description = "This is a count of clients who connected to push or pull data and were rejected because the server was too busy")
+    @ManagedAttribute(description = "This is a count of nodes who connected to push or pull data and were rejected because the server was too busy")
     public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
         return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
     }
     
-    @ManagedAttribute(description = "This is a count of the number of requests that were handled by this instance")
+    @ManagedAttribute(description = "This is a count of the number of reservations that were handled by this instance")
     public long getNumOfNodesWhoConnectedForInstanceLifetime() {
         return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
+    }
+    
+    @ManagedAttribute(description = "This is a count of the number of reservations that handed out by this instance")
+    public long getNumOfNodesWhoReservedConnectionsForInstanceLifetime() {
+        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_CONNECTION_RESERVED).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "The group this node belongs to")
@@ -115,12 +167,12 @@ public class NodeManagementService {
         return parameterService.getNodeGroupId();
     }
 
-    @ManagedAttribute(description = "An external name give to this symmetric node")
+    @ManagedAttribute(description = "An external name given to this SymmetricDS node")
     public String getExternalId() {
         return parameterService.getExternalId();
     }
 
-    @ManagedAttribute(description = "The node id given to this symmetric node")
+    @ManagedAttribute(description = "The node id given to this SymmetricDS node")
     public String getNodeId() {
         Node node = nodeService.findIdentity();
         if (node != null) {
@@ -130,7 +182,7 @@ public class NodeManagementService {
         }
     }
 
-    @ManagedAttribute(description = "Whether the basic data source is being used as the default datasource.")
+    @ManagedAttribute(description = "Whether the basic DataSource is being used as the default datasource.")
     public boolean isBasicDataSource() {
         return dataSource instanceof BasicDataSource;
     }
@@ -294,6 +346,10 @@ public class NodeManagementService {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
+        this.concurrentConnectionManager = concurrentConnectionManager;
     }
 
 }

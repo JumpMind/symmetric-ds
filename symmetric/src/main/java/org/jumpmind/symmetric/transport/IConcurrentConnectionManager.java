@@ -1,5 +1,10 @@
 package org.jumpmind.symmetric.transport;
 
+import java.util.Map;
+
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
+import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
+
 public interface IConcurrentConnectionManager {
 
     public static enum ReservationType {
@@ -32,5 +37,9 @@ public interface IConcurrentConnectionManager {
     public boolean releaseConnection(String nodeId, String poolId);
     
     public int getReservationCount(String poolId);
+    
+    public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
+    
+    public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool();
 
 }
