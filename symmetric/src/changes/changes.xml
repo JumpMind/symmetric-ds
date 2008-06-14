@@ -14,7 +14,7 @@
                 Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to
                 define their own DataSource.
             </action>
-            <action dev="chenson42" type="add">
+            <action dev="chenson42" type="add" issue="aid=1964509&amp;atid=997724" >
                 Register from the pull thread if the pull job has been enabled.  This will allow an unregistered SymmetricDS client to
                 fully deploy to an application server without being registered. 
             </action>            
