@@ -64,6 +64,7 @@
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="parameterService" ref="parameterService" />
+        <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />        
     </bean>
 
     <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">

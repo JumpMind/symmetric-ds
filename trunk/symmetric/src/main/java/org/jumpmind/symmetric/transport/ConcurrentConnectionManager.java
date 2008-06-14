@@ -15,7 +15,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     private IStatisticManager statisticManager;
 
-    protected Map<String, Map<String, Reservation>> numberOfBusyNodesPerPool = new HashMap<String, Map<String, Reservation>>();
+    protected Map<String, Map<String, Reservation>> activeReservationsByNodeByPool = new HashMap<String, Map<String, Reservation>>();
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
 
@@ -54,7 +54,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             return false;
         }
     }
-    
+
     public int getReservationCount(String poolId) {
         return getReservationMap(poolId).size();
     }
@@ -65,8 +65,9 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations, timeout);
         if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId)) {
-            reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System.currentTimeMillis() + timeout
-                    : Long.MAX_VALUE));
+            reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System
+                    .currentTimeMillis()
+                    + timeout : Long.MAX_VALUE));
             statisticManager.getStatistic(
                     reservationRequest == ReservationType.HARD ? StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED
                             : StatisticName.NODE_CONCURRENCY_CONNECTION_RESERVED).increment();
@@ -90,10 +91,10 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     }
 
     private Map<String, Reservation> getReservationMap(String poolId) {
-        Map<String, Reservation> reservations = numberOfBusyNodesPerPool.get(poolId);
+        Map<String, Reservation> reservations = activeReservationsByNodeByPool.get(poolId);
         if (reservations == null) {
             reservations = new HashMap<String, Reservation>();
-            numberOfBusyNodesPerPool.put(poolId, reservations);
+            activeReservationsByNodeByPool.put(poolId, reservations);
         }
         return reservations;
     }
@@ -106,7 +107,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         this.statisticManager = statisticManager;
     }
 
-    class Reservation {
+    public class Reservation {
         String nodeId;
         long timeToLiveInMs;
         long createTime = System.currentTimeMillis();
@@ -130,13 +131,50 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             }
 
         }
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public long getTimeToLiveInMs() {
+            return timeToLiveInMs;
+        }
+
+        public long getCreateTime() {
+            return createTime;
+        }
+    }
+    
+    public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId() {
+        return this.nodeConnectionStatistics;
     }
 
-    class NodeConnectionStatistics {
+    public class NodeConnectionStatistics {
+        
         int numOfRejections;
         long totalConnectionCount;
         long totalConnectionTimeMs;
         long lastConnectionTimeMs;
+
+        public int getNumOfRejections() {
+            return numOfRejections;
+        }
+
+        public long getTotalConnectionCount() {
+            return totalConnectionCount;
+        }
+
+        public long getTotalConnectionTimeMs() {
+            return totalConnectionTimeMs;
+        }
+
+        public long getLastConnectionTimeMs() {
+            return lastConnectionTimeMs;
+        }
+    }
+
+    public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool() {
+        return activeReservationsByNodeByPool;
     }
 
 }
