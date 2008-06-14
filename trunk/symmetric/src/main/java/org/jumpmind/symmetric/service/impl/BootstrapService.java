@@ -20,12 +20,10 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.net.ConnectException;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
@@ -40,14 +38,12 @@ import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.service.LockAction;
-import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.transaction.annotation.Transactional;
 
 public class BootstrapService extends AbstractService implements IBootstrapService {
@@ -64,15 +60,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private INodeService nodeService;
 
-    private ITransportManager transportManager;
-
-    private IDataLoaderService dataLoaderService;
-
     private IDataService dataService;
 
     private IUpgradeService upgradeService;
-
-    private RandomTimeSlot randomSleepTimeSlot;
+    
+    private IRegistrationService registrationService;
 
     private String triggerPrefix;
 
@@ -107,8 +99,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             }
             initialized = true;
             
-            this.randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.EXTERNAL_ID), 60);
-
         }
 
         // lets do this every time init is called.
@@ -210,31 +200,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     public void register() {
-        boolean registered = false;
         Node node = nodeService.findIdentity();
         if (node == null && !configurationService.isRegistrationServer()) {
-            // If we cannot contact the server to register, we simply must wait and try again.   
-            while (!registered) {
-                try {
-                    logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
-                    registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
-                            this.parameterService, dbDialect)));
-                } catch (ConnectException e) {
-                    logger.warn("Connection failed while registering.");
-                } catch (Exception e) {
-                    logger.error(e, e);
-                }
-
-                if (!registered) {
-                    sleepBeforeRegistrationRetry();
-                } else {
-                    node = nodeService.findIdentity();
-                    if (node != null) {
-                        logger.info("Successfully registered node [id=" + node.getNodeId() + "]");
-                    } else {
-                        logger.error("Node registration is unavailable");
-                    }
-                }
+            if (!parameterService.is(ParameterConstants.START_PULL_JOB)) {
+                registrationService.registerWithServer();
             }
         } else if (node != null && parameterService.getExternalId().equals(node.getExternalId()) && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
             heartbeat();
@@ -266,15 +235,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             if (!configurationService.isRegistrationServer()) {
                 dataService.insertHeartbeatEvent(node);
             }
-        }
-    }
-
-    private void sleepBeforeRegistrationRetry() {
-        try {
-            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
-            logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
-            Thread.sleep(sleepTimeInMs);
-        } catch (InterruptedException e) {
         }
     }
 
@@ -343,14 +303,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         this.nodeService = nodeService;
     }
 
-    public void setTransportManager(ITransportManager transportManager) {
-        this.transportManager = transportManager;
-    }
-
-    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
-        this.dataLoaderService = dataLoaderService;
-    }
-
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
@@ -369,6 +321,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 
 }

@@ -48,12 +48,11 @@
         <property name="triggerPrefix" value="${trigger.prefix}" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="transportManager" ref="transportManager" />
-        <property name="dataLoaderService" ref="dataLoaderService" />
+        <property name="dbDialect" ref="dbDialect" />        
         <property name="configurationService" ref="configurationService" />
+        <property name="registrationService" ref="registrationService" />
         <property name="dataService" ref="dataService" />
         <property name="upgradeService" ref="upgradeService" />
         <property name="clusterService" ref="clusterService" />
@@ -130,6 +129,7 @@
     </bean>
 
     <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService">
+        <property name="registrationService" ref="registrationService" />
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
@@ -178,6 +178,9 @@
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />
+        <property name="dbDialect" ref="dbDialect" />        
+        <property name="transportManager" ref="transportManager" />
+        <property name="dataLoaderService" ref="dataLoaderService" />        
         <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
     </bean>
