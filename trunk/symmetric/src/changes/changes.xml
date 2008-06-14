@@ -24,7 +24,7 @@
             </action>
             <action dev="chenson42" type="fix" issue="aid=1979581&amp;atid=997724">
                 Make a push a two step process. First use a HEAD to see if the server is available, next do the actual
-                PUT. This solve an issue we have observed where the client PUSHES an entire payload before the response
+                PUT. This solves an issue we have observed where the client PUSHES an entire pay load before the response
                 is sent. This solution relies on HTTP keep-alive.
             </action>
             <action dev="chenson42" type="add">
