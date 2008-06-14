@@ -23,14 +23,17 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.sql.Types;
 import java.util.List;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -39,11 +42,14 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
+import org.jumpmind.symmetric.util.RandomTimeSlot;
 
 // TODO: NodeService already does all this DML.  Should use NodeService or move methods to there.
 public class RegistrationService extends AbstractService implements
@@ -63,6 +69,12 @@ public class RegistrationService extends AbstractService implements
     private IClusterService clusterService;
 
     private IDataService dataService;
+    
+    private IDataLoaderService dataLoaderService;
+    
+    private ITransportManager transportManager;
+    
+    private IDbDialect dbDialect;
     
     /**
      * Register a node for the given domain name and domain ID if the
@@ -105,6 +117,49 @@ public class RegistrationService extends AbstractService implements
     private String findNodeToRegister(String nodeGroupId, String externald) {
         return (String) jdbcTemplate.queryForObject(getSql("findNodeToRegisterSql"), new Object[] { nodeGroupId,
                 externald }, String.class);
+    }
+    
+
+    private void sleepBeforeRegistrationRetry() {
+        try {
+            RandomTimeSlot randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.EXTERNAL_ID), 60);
+            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
+            logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
+            Thread.sleep(sleepTimeInMs);
+        } catch (InterruptedException e) {
+        }
+    }
+    
+    public boolean isRegisteredWithServer() {
+        return nodeService.findIdentity() != null;
+    }
+    
+    public void registerWithServer() {
+        boolean registered = isRegisteredWithServer();
+        // If we cannot contact the server to register, we simply must wait and
+        // try again.
+        while (!registered) {
+            try {
+                logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
+                registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
+                        this.parameterService, dbDialect)));
+            } catch (ConnectException e) {
+                logger.warn("Connection failed while registering.");
+            } catch (Exception e) {
+                logger.error(e, e);
+            }
+
+            if (!registered) {
+                sleepBeforeRegistrationRetry();
+            } else {
+                Node node = nodeService.findIdentity();
+                if (node != null) {
+                    logger.info("Successfully registered node [id=" + node.getNodeId() + "]");
+                } else {
+                    logger.error("Node registration is unavailable");
+                }
+            }
+        }
     }
 
     /**
@@ -223,6 +278,18 @@ public class RegistrationService extends AbstractService implements
 
     public boolean isAutoRegistration() {
         return parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
+    }
+
+    public void setDataLoaderService(IDataLoaderService dataLoaderService) {
+        this.dataLoaderService = dataLoaderService;
+    }
+
+    public void setTransportManager(ITransportManager transportManager) {
+        this.transportManager = transportManager;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 
 }

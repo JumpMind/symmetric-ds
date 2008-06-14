@@ -35,5 +35,9 @@ public interface IRegistrationService {
     public void reOpenRegistration(String nodeId);
     
     public boolean isAutoRegistration();
+    
+    public void registerWithServer();
+    
+    public boolean isRegisteredWithServer();
 
 }

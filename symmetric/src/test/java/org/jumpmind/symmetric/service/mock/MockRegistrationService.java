@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class MockRegistrationService implements IRegistrationService {
+
     public boolean isAutoRegistration() {
         return false;
     }
@@ -41,5 +42,12 @@ public class MockRegistrationService implements IRegistrationService {
 
     public boolean registerNode(Node node, OutputStream out) throws IOException {
         return false;
+    }
+
+    public void registerWithServer() {
+    }
+    
+    public boolean isRegisteredWithServer() {
+        return true;
     }
 }

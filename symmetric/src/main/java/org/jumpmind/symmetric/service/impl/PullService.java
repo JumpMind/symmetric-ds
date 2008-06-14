@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IPullService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
@@ -43,8 +44,16 @@ public class PullService extends AbstractService implements IPullService {
     private INodeService nodeService;
 
     private IDataLoaderService dataLoaderService;
+    
+    private IRegistrationService registrationService;
 
     public void pullData() {
+        
+        // register if we haven't already been registered
+        if (!registrationService.isRegisteredWithServer()) {
+            registrationService.registerWithServer();
+        }
+        
         List<Node> nodes = nodeService.findNodesToPull();
         if (nodes != null && nodes.size() > 0) {            
             for (Node node : nodes) {
@@ -79,5 +88,9 @@ public class PullService extends AbstractService implements IPullService {
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
         this.dataLoaderService = dataLoaderService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 }
