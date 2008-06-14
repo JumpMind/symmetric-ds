@@ -236,6 +236,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * Give the end use the option to provide a script that will load a
      * registration server with an initial SymmetricDS setup.
      * 
+     * Look first on the file system, then in the classpath for the SQL file.
+     * 
      * @return true if the script was executed
      */
     private boolean loadFromScriptIfProvided() {
