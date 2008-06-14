@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +33,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -73,12 +77,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void setupDatabase() {
         if (!initialized) {
             if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
-                logger.info("Initializing symmetric database.");
+                logger.info("Initializing SymmetricDS database.");
                 dbDialect.initConfigDb();
                 parameterService.rereadParameters();
-                logger.info("Done initializing symmetric database.");
+                logger.info("Done initializing SymmetricDS database.");
             } else {
-                logger.info("Symmetric is not configured to auto create the database.");
+                logger.info("SymmetricDS is not configured to auto create the database.");
             }
 
             if (upgradeService.isUpgradeNecessary()) {
@@ -94,7 +98,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     }
                 } else {
                     throw new RuntimeException("Upgrade of node is necessary.  "
-                            + "Please set symmetric.auto.upgrade property to true for an automated upgrade.");
+                            + "Please set auto.upgrade property to true for an automated upgrade.");
                 }
             }
             initialized = true;
@@ -113,7 +117,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void syncTriggers() {
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
             try {
-                logger.info("Synchronizing triggers.");
+                logger.info("Synchronizing triggers");
                 configurationService.initTriggerRowsForConfigChannel();
                 removeInactiveTriggers();
                 updateOrCreateTriggers();
@@ -144,7 +148,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private void updateOrCreateTriggers() {
-
         List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.NODE_GROUP_ID));
 
         for (Trigger trigger : triggers) {
@@ -199,19 +202,64 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
+    @Deprecated
     public void register() {
+        validateConfiguration();
+    }
+        
+    public void validateConfiguration() {
         Node node = nodeService.findIdentity();
         if (node == null && !configurationService.isRegistrationServer()) {
             if (!parameterService.is(ParameterConstants.START_PULL_JOB)) {
                 registrationService.registerWithServer();
             }
-        } else if (node != null && parameterService.getExternalId().equals(node.getExternalId()) && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
+        } else if (node != null && parameterService.getExternalId().equals(node.getExternalId())
+                && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
             heartbeat();
         } else if (node == null) {
-            logger.info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");           
+            if (!loadFromScriptIfProvided()) {
+                logger
+                        .info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");
+            }
         } else {
-            throw new IllegalStateException("The configured state does not match recorded database state.  The recorded external id is " + node.getExternalId() + " while the configured external id is " + parameterService.getExternalId() + ".  The recorded node group id is " + node.getNodeGroupId() + " while the configured node group id is " + parameterService.getNodeGroupId());            
+            throw new IllegalStateException(
+                    "The configured state does not match recorded database state.  The recorded external id is "
+                            + node.getExternalId() + " while the configured external id is "
+                            + parameterService.getExternalId() + ".  The recorded node group id is "
+                            + node.getNodeGroupId() + " while the configured node group id is "
+                            + parameterService.getNodeGroupId());
         }
+    }
+    
+
+    /**
+     * Give the end use the option to provide a script that will load a
+     * registration server with an initial SymmetricDS setup.
+     * 
+     * @return true if the script was executed
+     */
+    private boolean loadFromScriptIfProvided() {
+        boolean loaded = false;
+        String sqlScript = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_SQL_SCRIPT);
+        if (!StringUtils.isBlank(sqlScript)) {
+            File file = new File(sqlScript);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(sqlScript);
+            }
+
+            if (fileUrl != null) {
+                new SqlScript(fileUrl, jdbcTemplate.getDataSource(), true).execute();
+                loaded = true;
+            }
+        }
+        return loaded;
     }
 
     @Transactional

@@ -256,7 +256,7 @@ public class SymmetricEngine {
      * Must be called to start symmetric.
      */
     public synchronized void start() {
-        if (!starting) {
+        if (!starting && !started) {
             starting = true;
             setup();
             registerEngine();
@@ -269,12 +269,13 @@ public class SymmetricEngine {
                 logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId()
                         + ", externalId=" + parameterService.getExternalId() + "]");
             }
-            bootstrapService.register();
+            bootstrapService.validateConfiguration();
             bootstrapService.syncTriggers();
             startJobs();
-            started = true;
+            started = true;            
             logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
                     + Version.version() + " database=" + dbDialect.getName());
+            starting = false;
             
         }
     }

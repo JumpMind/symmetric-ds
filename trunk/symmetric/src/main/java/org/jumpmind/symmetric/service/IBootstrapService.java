@@ -30,7 +30,10 @@ public interface IBootstrapService {
 
     public void syncTriggers();
 
+    @Deprecated
     public void register();
+    
+    public void validateConfiguration();
 
     public void heartbeat();
  
