@@ -43,7 +43,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
     public boolean isUpgradeNecessary() {
         boolean isUpgradeNecessary = false;
         Node node = nodeService.findIdentity();
-        if (node != null) {
+        if (node != null && !node.getSymmetricVersion().equals("development")) {
             if (Version.isOlderMinorVersion(node.getSymmetricVersion())) {
                 isUpgradeNecessary = true;
             }

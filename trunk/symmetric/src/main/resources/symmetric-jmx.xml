@@ -7,7 +7,7 @@
         <property name="defaultDomain" value="org.jumpmind.symmetric.${engine.name}" />
     </bean>
 
-    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+    <bean id="domainServerExporter" class="org.springframework.jmx.export.MBeanExporter">
         <property name="server" ref="mbeanserver" />
         <property name="assembler" ref="assembler" />
         <property name="beans">
@@ -21,11 +21,16 @@
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
     </bean>
 
-    <bean id="legacyExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="true">
+    <bean id="defaultServerExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="true">
         <property name="assembler" ref="assembler" />
         <property name="beans">
             <map>
                 <entry key="Symmetric:name=${engine.name}" value-ref="managementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Node" value-ref="nodeManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Incoming" value-ref="incomingManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Outgoing" value-ref="outgoingManagementService" />
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters" value-ref="parameterManagementService" />
+                
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />

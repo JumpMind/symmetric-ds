@@ -123,6 +123,6 @@ public class Constants {
     
     public static final String MAX_CONCURRENT_WORKERS = "maxConcurrentWorkers";
     
-    public static final String LEGACY_JMX = "legacyExporter";
+    public static final String DEFAULT_JMX_SERVER_EXPORTER = "defaultServerExporter";
     
 }
