@@ -139,6 +139,28 @@ public class NodeManagementService {
         // TODO
         throw new NotImplementedException();
     }
+    
+    @ManagedOperation(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
+    public String[] getNodesInWhiteList() {
+        return concurrentConnectionManager.getWhiteList();
+    }
+
+    @ManagedOperation(description = "Add a node id to the list of nodes that will always get through the concurrency manager")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list"),
+            })
+    public void addNodeToWhiteList(String nodeId) {
+        concurrentConnectionManager.addToWhitelist(nodeId);
+    }
+    
+    @ManagedOperation(description = "Remove a node id to the list of nodes that will always get through the concurrency manager")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list"),
+            })
+    public void removeNodeFromWhiteList(String nodeId) {
+        concurrentConnectionManager.removeFromWhiteList(nodeId);
+    }
+    
 
     @ManagedAttribute(description = "Configure the number of connections allowed to this node."
             + "  If the value is set to zero you are effectively disabling your transport"
