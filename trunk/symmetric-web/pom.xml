@@ -44,14 +44,6 @@
                     <artifactId>jetty</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>foxtrot</groupId>
-                    <artifactId>foxtrot</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>tablelayout</groupId>
-                    <artifactId>TableLayout</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.apache.derby</groupId>
                     <artifactId>derby</artifactId>
                 </exclusion>
