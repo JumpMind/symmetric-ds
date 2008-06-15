@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
@@ -10,6 +9,7 @@
 
     <properties>
         <wtpVersion>1.5</wtpVersion>
+        <symmetricdsVersion>1.4.0-SNAPSHOT</symmetricdsVersion>
     </properties>
 
     <build>
@@ -31,13 +31,55 @@
                     <optimize>true</optimize>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo.webstart</groupId>
+                <artifactId>webstart-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>jnlp-download-servlet</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- 
+                        This is the directory containing the Velocity templates from which the JNLP files 
+                        will be generated. The default location is 'src/main/jnlp'.
+                    -->
+                    <templateDirectory>src/main/jnlp/templates</templateDirectory>
+                    <jnlpFiles>
+                        <jnlpFile>
+                            <templateFilename>node.vm</templateFilename>
+                            <outputFilename>node.jnlp</outputFilename>
+                            <jarResources>
+                                <jarResource>
+                                    <groupId>org.jumpmind.symmetric</groupId>
+                                    <artifactId>symmetric-ds</artifactId>
+                                    <version>${symmetricdsVersion}</version>
+                                    <!-- A mainClass element must be specified on one, and only one, jarResource per jnlpFile -->
+                                    <mainClass>org.jumpmind.symmetric.SymmetricLauncher</mainClass>
+                                </jarResource>
+                            </jarResources>
+                        </jnlpFile>
+
+                    </jnlpFiles>
+
+                    <!--
+                        Set to true to exclude all transitive dependencies from the JNLP bundle. Default is false.
+                    -->
+                    <excludeTransitive>false</excludeTransitive>
+
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
             <artifactId>symmetric-ds</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>${symmetricdsVersion}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
@@ -68,6 +110,11 @@
                     <artifactId>hsqldb</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.mojo.webstart</groupId>
+            <artifactId>webstart-jnlp-servlet</artifactId>
+            <version>1.0-6.0-02_ea_b02</version>
         </dependency>
     </dependencies>
 </project>
