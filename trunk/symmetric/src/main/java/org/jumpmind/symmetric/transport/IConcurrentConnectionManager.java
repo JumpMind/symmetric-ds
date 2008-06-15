@@ -41,5 +41,11 @@ public interface IConcurrentConnectionManager {
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
     
     public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool();
+    
+    public void addToWhitelist(String nodeId);
+    
+    public String[] getWhiteList();
+    
+    public void removeFromWhiteList(String nodeId);
 
 }

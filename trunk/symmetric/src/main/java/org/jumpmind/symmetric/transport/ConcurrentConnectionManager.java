@@ -1,8 +1,10 @@
 package org.jumpmind.symmetric.transport;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -18,6 +20,8 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     protected Map<String, Map<String, Reservation>> activeReservationsByNodeByPool = new HashMap<String, Map<String, Reservation>>();
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
+    
+    protected Set<String> whiteList = new HashSet<String>();
 
     protected void logTooBusyRejection(String nodeId, String poolId) {
         getNodeConnectionStatistics(nodeId, poolId).numOfRejections++;
@@ -54,6 +58,18 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             return false;
         }
     }
+    
+    synchronized public void addToWhitelist(String nodeId) {
+        whiteList.add(nodeId);
+    }
+    
+    synchronized public void removeFromWhiteList(String nodeId) {
+        whiteList.remove(nodeId);       
+    }
+    
+    synchronized public String[] getWhiteList() {
+        return whiteList.toArray(new String[whiteList.size()]);        
+    }
 
     public int getReservationCount(String poolId) {
         return getReservationMap(poolId).size();
@@ -64,7 +80,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
         removeTimedOutReservations(reservations, timeout);
-        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId)) {
+        if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId) || whiteList.contains(nodeId)) {
             reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System
                     .currentTimeMillis()
                     + timeout : Long.MAX_VALUE));
