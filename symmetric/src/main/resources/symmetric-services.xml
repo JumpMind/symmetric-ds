@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd"
-    default-lazy-init="true" default-autowire="byName">
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
+    default-lazy-init="true">
     
     <import resource="classpath:/sql/configuration-service-sql.xml"/>
     <import resource="classpath:/sql/statistic-service-sql.xml"/>    
@@ -23,8 +23,7 @@
     
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
         <property name="sql" ref="statisticServiceSql"/>
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        
+        <property name="jdbcTemplate" ref="jdbcTemplate" />        
     </bean>
     
     <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
