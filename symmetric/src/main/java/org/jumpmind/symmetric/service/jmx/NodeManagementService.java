@@ -114,7 +114,7 @@ public class NodeManagementService {
         for (String pool : stats.keySet()) {
             out.append("---------------------------------------------------------------------------------------------------------");
             out.append(lineFeed);
-            out.append("  CONNECTION TYPE:");
+            out.append("  CONNECTION TYPE: ");
             out.append(pool);
             out.append(lineFeed);
             out.append("---------------------------------------------------------------------------------------------------------");
@@ -152,17 +152,13 @@ public class NodeManagementService {
     }
 
     @ManagedOperation(description = "Add a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list"),
-            })
+    @ManagedOperationParameters( {@ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list")})
     public void addNodeToWhiteList(String nodeId) {
         concurrentConnectionManager.addToWhitelist(nodeId);
     }
     
     @ManagedOperation(description = "Remove a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list"),
-            })
+    @ManagedOperationParameters( {@ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list")})
     public void removeNodeFromWhiteList(String nodeId) {
         concurrentConnectionManager.removeFromWhiteList(nodeId);
     }
