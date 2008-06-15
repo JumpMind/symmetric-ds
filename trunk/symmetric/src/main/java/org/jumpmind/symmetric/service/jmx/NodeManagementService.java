@@ -140,9 +140,15 @@ public class NodeManagementService {
         throw new NotImplementedException();
     }
     
-    @ManagedOperation(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
-    public String[] getNodesInWhiteList() {
-        return concurrentConnectionManager.getWhiteList();
+    @ManagedAttribute(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
+    public String getNodesInWhiteList() {
+        StringBuilder ret = new StringBuilder();
+        String[] list = concurrentConnectionManager.getWhiteList();
+        for (String string : list) {
+            ret.append(string);
+            ret.append(",");
+        }
+        return ret.length() > 0 ? ret.substring(0,ret.length()-1) : "";
     }
 
     @ManagedOperation(description = "Add a node id to the list of nodes that will always get through the concurrency manager")
