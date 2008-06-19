@@ -138,9 +138,7 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
     <section>
         <title>PostgreSQL</title>
         <para>
-            There is no transaction identifier support included with PostgreSQL 8.1.
-            We may include a library in the future that can be added to PostgreSQL server to provide
-            the transaction identifier.
+            Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
         </para>
         <para>
             Before database triggers can be created by in PostgreSQL,
