@@ -9,8 +9,8 @@
     <title>Getting Started</title>
     <para>
         This chapter is a hands-on tutorial that demonstrates how to synchronize the sample
-        database between two running instances of SymmetricDS.  The sample database is an example
-        of a retail business that has a central office database (called "root") and multiple 
+        database between two running instances of SymmetricDS.  This example models
+        a retail business that has a central office database (called "root") and multiple 
         retail store databases (called "client").  The root database sends changes to the
         client for item data, such as item number, description, and price.  The client database
         sends changes to the root for sale transaction data, such as time of sale and items sold.
@@ -23,7 +23,7 @@
         of SymmetricDS, called a node, on each database.  To link the nodes together, we
         register the client node with the root node.  For this tutorial, the root database
         is pre-populated with data, while the client database is left empty.  To load the data
-        on the client database, we use the root node to request a reload of the client node.
+        on the client database, we request the root node sends a "reload" to the client node.
         With the two databases in sync, we make changes to data in the tables and observe
         the changes being synchronized.
     </para>
@@ -71,7 +71,7 @@
             </step>
             <step>
                 <para>
-                    Set the following properties in both files to specify how to connect to the database:
+                    Set the following properties in <emphasis>both</emphasis> files to specify how to connect to the database:
                 </para>
                 <programlisting><![CDATA[# The class name for the JDBC Driver
 db.driver=com.mysql.jdbc.Driver
@@ -120,9 +120,10 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 with your specific database.
             </para>
         </important>
+        
         <para>
-            Create and load the root node tables with sample data and the synchronization
-            configuration. Create the tables in the client node database to prepare it.
+            Create the sample tables in the <emphasis>root</emphasis> node database, load the sample data,
+            and load the sample configuration.
         </para>
         <procedure>
             <step>
@@ -133,10 +134,46 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 </para>
             </step>
             <step>
-                <para>Create the sample tables in both the root and client databases.</para>
+                <para>Create the sample tables in the root database.</para>
                 <para>
                     <command>../bin/sym -p root.properties --run-ddl create_sample.xml</command>
                 </para>
+                <para>
+                    Note that the warning messages from the command are safe to ignore.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Create the SymmetricDS tables in the root node database. These tables will
+                    contain the configuration for synchronization. The following command uses
+                    the auto-creation feature to create all the necessary SymmetricDS system
+                    tables.
+                </para>
+                <para>
+                    <command>../bin/sym -p root.properties --auto-create</command>
+                </para>
+            </step>
+            <step>
+                <para>Load the sample data and configuration into the root node database.</para>
+                <para>
+                    <command>../bin/sym -p root.properties --run-sql insert_sample.sql</command>
+                </para>
+            </step>
+        </procedure>
+
+        <para>
+            Create the sample tables in the <emphasis>client</emphasis> node database to prepare it for receiving data.
+        </para>
+        <procedure>
+            <step>
+                <para>
+                    Open a command prompt and navigate to the
+                    <filename class="directory">samples</filename>
+                    subdirectory of your SymmetricDS installation.
+                </para>
+            </step>
+            <step>
+                <para>Create the sample tables in the client database.</para>
                 <para>
                     <command>
                         ../bin/sym -p client.properties --run-ddl create_sample.xml
@@ -146,25 +183,28 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                     Note that the warning messages from the command are safe to ignore.
                 </para>
             </step>
+        </procedure>
+        
+        <para>
+            Verify <emphasis>both</emphasis> databases by logging in and listing the tables.
+        </para>
+        <procedure>
             <step>
                 <para>
-                    Create the symmetric tables in the root node database. These tables will
-                    contain the configuration for synchronization. The following command uses
-                    the auto-creation feature to create all the necessary symmetric system
-                    tables.
-                </para>
-                <para>
-                    <command>../bin/sym -p root.properties --auto-create</command>
-                </para>
-            </step>
-            <step>
-                <para>Load sample data and configuration into the root node database.</para>
-                <para>
-                    <command>../bin/sym -p root.properties --run-sql insert_sample.sql</command>
+                    Find the item tables that sync from root to client: 
+                    item and item_selling_price.
                 </para>
             </step>
             <step>
-                <para>Verify the databases by logging in and listing the tables.</para>
+                <para>
+                    Find the sales tables that sync from client to root:
+                    sale_transaction and sale_return_line_item.
+                </para>
+            </step>
+            <step>
+                <para>
+                    Find the SymmetricDS system tables, which have a prefix of "sym_".
+                </para>
             </step>
         </procedure>
     </section>
@@ -197,7 +237,7 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
                 </para>
                 <para>
                     The client node server starts up and uses the auto-creation feature to
-                    create the symmetric system tables. It begins polling the root node in order
+                    create the SymmetricDS system tables. It begins polling the root node in order
                     to register. Since registration is not yet open, the client node receives an
                     authorization failure (HTTP response of 403).
                 </para>
