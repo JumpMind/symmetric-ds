@@ -109,7 +109,7 @@
     </xsl:template>
     
     <xsl:template name="user.footer.content">
-      <p class="copyright">&#x00A9; 2007 Eric Long and Chris Henson</p>
+      <p class="copyright">&#x00A9; 2007, 2008 Eric Long and Chris Henson</p>
     </xsl:template>
 
 </xsl:stylesheet>
