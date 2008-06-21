@@ -39,10 +39,12 @@
                     <webAppSourceDirectory>${basedir}/target/${projectName}</webAppSourceDirectory>
                     <connectors>
                         <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                            <port>9090</port>
+                            <port>9090</port>                            
                             <maxIdleTime>60000</maxIdleTime>
                         </connector>
                     </connectors>
+                    <stopKey>boo</stopKey>                    
+                    <stopPort>9999</stopPort>
                 </configuration>
                 <dependencies>
                     <dependency>
