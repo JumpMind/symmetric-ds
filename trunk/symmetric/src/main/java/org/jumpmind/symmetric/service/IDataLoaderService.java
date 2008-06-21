@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
+import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -56,4 +58,6 @@ public interface IDataLoaderService {
     public void addColumnFilter(String tableName, IColumnFilter filter);
     
     public void addBatchListener(IBatchListener listener);
+    
+    public IDataLoader openDataLoader(BufferedReader reader) throws IOException;
 }
