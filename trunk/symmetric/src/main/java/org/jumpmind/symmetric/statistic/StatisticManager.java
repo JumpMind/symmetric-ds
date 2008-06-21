@@ -61,11 +61,11 @@ public class StatisticManager implements IStatisticManager {
         if (node != null) {
             nodeId = node.getNodeId();
         }
-        
+
         StatisticName[] all = StatisticName.values();
         for (StatisticName statisticName : all) {
-            statistics.put(statisticName, new Statistic(statisticName, nodeId,
-                    lastCaptureEndTime == null ? new Date() : lastCaptureEndTime));
+            statistics.put(statisticName, new Statistic(statisticName, nodeId, lastCaptureEndTime == null ? new Date()
+                    : lastCaptureEndTime));
         }
 
     }

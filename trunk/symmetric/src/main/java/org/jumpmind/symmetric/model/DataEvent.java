@@ -5,18 +5,18 @@ public class DataEvent {
     private long dataId;
 
     private String nodeId;
-    
+
     private Long batchId;
-    
+
     private boolean batched;
-    
+
     private String channelId;
-    
+
     private String transactionId;
 
     public DataEvent() {
     }
-    
+
     public DataEvent(long dataId, String nodeId, String channelId) {
         this.dataId = dataId;
         this.nodeId = nodeId;
@@ -34,7 +34,7 @@ public class DataEvent {
         this.dataId = dataId;
         this.nodeId = nodeId;
     }
-    
+
     public Long getBatchId() {
         return batchId;
     }

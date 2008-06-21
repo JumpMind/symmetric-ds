@@ -72,7 +72,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
         runAtClient(remote.getSyncURL(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
-                // TODO this is duplicated from the Pull Servlet. It should be consolidated somehow!
+                // TODO this is duplicated from the Pull Servlet. It should be
+                // consolidated somehow!
                 INodeService nodeService = (INodeService) factory.getBean(Constants.NODE_SERVICE);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
                 if (security.isInitialLoadEnabled()) {
@@ -113,7 +114,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
         runAtClient(parameterServer.getRegistrationUrl(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
-                // This should be basically what the registration servlet does ...
+                // This should be basically what the registration servlet does
+                // ...
                 IRegistrationService service = (IRegistrationService) factory.getBean(Constants.REGISTRATION_SERVICE);
                 service.registerNode(client, os);
             }
@@ -125,7 +127,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         try {
             if (list != null && list.size() > 0) {
                 SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
-                
+
                 String ackData = getAcknowledgementData(list);
                 List<BatchInfo> batches = readAcknowledgement(ackData);
                 IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(

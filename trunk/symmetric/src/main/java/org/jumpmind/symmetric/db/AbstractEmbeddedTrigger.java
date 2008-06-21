@@ -44,7 +44,8 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 
 /**
- * This class implements the functionality needed by (most) java-based symmetric triggers.
+ * This class implements the functionality needed by (most) java-based symmetric
+ * triggers.
  */
 public abstract class AbstractEmbeddedTrigger {
 
@@ -150,9 +151,9 @@ public abstract class AbstractEmbeddedTrigger {
     }
 
     protected Data createData(Object[] oldRow, Object[] newRow) {
-        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName
-                : trigger.getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow,
-                newRow), triggerHistory);       
+        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
+                .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
+                triggerHistory);
         return data;
     }
 

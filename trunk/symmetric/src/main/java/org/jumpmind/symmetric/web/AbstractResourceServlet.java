@@ -36,18 +36,19 @@ import org.springframework.beans.BeanUtils;
  * 
  * @param <T>
  */
-public abstract class AbstractResourceServlet<T extends ITransportResourceHandler>
-        extends AbstractServlet implements IServletResource {
+public abstract class AbstractResourceServlet<T extends ITransportResourceHandler> extends AbstractServlet implements
+        IServletResource {
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
 
     /**
      * Returns true if this should be container compatible
+     * 
      * @return
      */
     public boolean isContainerCompatible() {
         return false;
     }
-    
+
     public void destroy() {
         servletResourceTemplate.destroy();
     }
@@ -56,13 +57,11 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
         return servletResourceTemplate.isDisabled();
     }
 
-    public String[] getRegexPatterns()
-    {
+    public String[] getRegexPatterns() {
         return servletResourceTemplate.getRegexPatterns();
     }
 
-    public String[] getUriPatterns()
-    {
+    public String[] getUriPatterns() {
         return servletResourceTemplate.getUriPatterns();
     }
 
@@ -102,20 +101,20 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
             final IServletResource springBean = getSpringBean();
             if (this != springBean) { // this != is deliberate!
                 if (getLogger().isInfoEnabled()) {
-                    getLogger().info(String.format("Initializing servlet %s",
-                        springBean.getClass().getSimpleName()));
-                }            
+                    getLogger().info(String.format("Initializing servlet %s", springBean.getClass().getSimpleName()));
+                }
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
                 BeanUtils.copyProperties(springBean, this, this.getClass());
-                
+
                 this.refresh();
             }
-        } 
+        }
     }
-    
+
     /**
      * Returns true if this is a spring managed resource.
+     * 
      * @return
      */
     public boolean isSpringManaged() {
@@ -124,6 +123,7 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
 
     /**
      * Returns true if this is a container managed resource.
+     * 
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -132,7 +132,7 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
         if (!isSpringManaged()) {
             Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
-                retVal = (IServletResource)iterator.next();
+                retVal = (IServletResource) iterator.next();
             }
         }
         return retVal;

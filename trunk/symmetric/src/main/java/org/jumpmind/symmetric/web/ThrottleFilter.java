@@ -77,20 +77,16 @@ public class ThrottleFilter extends AbstractFilter {
     private static final long DEFAULT_CHECK_POINT = 1024L;
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
-    
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
-        ThrottledResponseWrapper wrapper = new ThrottledResponseWrapper(
-                (HttpServletResponse) response);
-        wrapper.setCheckPoint((Long) ObjectUtils.defaultIfNull(checkPoint,
-                DEFAULT_CHECK_POINT));
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+            ServletException {
+        ThrottledResponseWrapper wrapper = new ThrottledResponseWrapper((HttpServletResponse) response);
+        wrapper.setCheckPoint((Long) ObjectUtils.defaultIfNull(checkPoint, DEFAULT_CHECK_POINT));
         wrapper.setMaxBps((Long) ObjectUtils.defaultIfNull(maxBps, 0L));
-        wrapper.setThreshold((Long) ObjectUtils.defaultIfNull(threshold,
-                DEFAULT_THRESHOLD));
+        wrapper.setThreshold((Long) ObjectUtils.defaultIfNull(threshold, DEFAULT_THRESHOLD));
         if (logger.isDebugEnabled()) {
             logger.debug("Before hit servlet");
         }
@@ -113,24 +109,20 @@ public class ThrottleFilter extends AbstractFilter {
         this.checkPoint = checkPoint;
     }
 
-    public Long getMaxBps()
-    {
+    public Long getMaxBps() {
         return maxBps;
     }
 
-    public Long getThreshold()
-    {
+    public Long getThreshold() {
         return threshold;
     }
 
-    public Long getCheckPoint()
-    {
+    public Long getCheckPoint() {
         return checkPoint;
     }
-    
+
     @Override
-    protected Log getLogger()
-    {
+    protected Log getLogger() {
         return logger;
     }
 

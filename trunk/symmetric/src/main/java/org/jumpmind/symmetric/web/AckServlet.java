@@ -52,8 +52,7 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         AckResourceHandler ackService = getTransportResourceHandler();
         if (logger.isDebugEnabled()) {

@@ -59,7 +59,7 @@ public class ServletResourceTemplate implements IServletResource {
     public void refresh() {
         compileRegexPatterns();
     }
-    
+
     protected void compileRegexPatterns() {
         final List<Pattern> compiledRegexPatterns;
         if (!ArrayUtils.isEmpty(regexPatterns)) {
@@ -70,8 +70,7 @@ public class ServletResourceTemplate implements IServletResource {
         } else {
             compiledRegexPatterns = Collections.emptyList();
         }
-        this.compiledRegexPatterns = compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns
-                .size()]);
+        this.compiledRegexPatterns = compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns.size()]);
     }
 
     public void setDisabled(boolean disabled) {
@@ -98,15 +97,14 @@ public class ServletResourceTemplate implements IServletResource {
         return disabled;
     }
 
-    public String[] getUriPatterns()
-    {
+    public String[] getUriPatterns() {
         return uriPatterns;
     }
 
-    public String[] getRegexPatterns()
-    {
+    public String[] getRegexPatterns() {
         return regexPatterns;
     }
+
     protected boolean matchesRegexPatterns(String uri) {
         boolean retVal = false;
         for (int i = 0; !retVal && i < compiledRegexPatterns.length; i++) {
@@ -138,11 +136,9 @@ public class ServletResourceTemplate implements IServletResource {
             final String[] patternParts = StringUtils.split(pattern, "/");
             final String[] pathParts = StringUtils.split(path, "/");
             boolean matches = true;
-            for (int i = 0; i < patternParts.length && i < pathParts.length
-                    && matches; i++) {
+            for (int i = 0; i < patternParts.length && i < pathParts.length && matches; i++) {
                 final String patternPart = patternParts[i];
-                matches = "*".equals(patternPart)
-                        || patternPart.equals(pathParts[i]);
+                matches = "*".equals(patternPart) || patternPart.equals(pathParts[i]);
             }
             retVal = matches;
         }
@@ -197,8 +193,7 @@ public class ServletResourceTemplate implements IServletResource {
      * @param statusCode
      * @throws IOException
      */
-    protected boolean sendError(ServletResponse resp, int statusCode)
-            throws IOException {
+    protected boolean sendError(ServletResponse resp, int statusCode) throws IOException {
         return ServletUtils.sendError(resp, statusCode);
     }
 
@@ -209,21 +204,20 @@ public class ServletResourceTemplate implements IServletResource {
      * @param resp
      * @param statusCode
      * @param message
-     *            a message to put in the body of the response
+     *                a message to put in the body of the response
      * @throws IOException
      */
-    protected boolean sendError(ServletResponse resp, int statusCode,
-            String message) throws IOException {
+    protected boolean sendError(ServletResponse resp, int statusCode, String message) throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
     }
 
     protected ApplicationContext getDefaultApplicationContext() {
-        return WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
-    
+
     /**
      * Returns true if this is a spring managed resource.
+     * 
      * @return
      */
     public boolean isSpringManaged() {
@@ -232,6 +226,7 @@ public class ServletResourceTemplate implements IServletResource {
 
     /**
      * Returns true if this is a container managed resource.
+     * 
      * @return
      */
     @SuppressWarnings("unchecked")
@@ -240,7 +235,7 @@ public class ServletResourceTemplate implements IServletResource {
         if (!isSpringManaged()) {
             Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
-                retVal = (IServletResource)iterator.next();
+                retVal = (IServletResource) iterator.next();
             }
         }
         return retVal;
@@ -248,17 +243,14 @@ public class ServletResourceTemplate implements IServletResource {
 
     /**
      * Returns true if this should be container compatible
+     * 
      * @return
      */
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return false;
     }
 
-
-
-    protected void setServletContext(ServletContext servletContext)
-    {
+    protected void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 

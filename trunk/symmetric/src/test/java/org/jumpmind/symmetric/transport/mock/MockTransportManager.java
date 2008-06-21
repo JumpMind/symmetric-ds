@@ -35,9 +35,9 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 public class MockTransportManager implements ITransportManager {
 
     protected IIncomingTransport incomingTransport;
-    
+
     protected IOutgoingWithResponseTransport outgoingTransport;
-    
+
     public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
         return incomingTransport;
     }
@@ -57,7 +57,7 @@ public class MockTransportManager implements ITransportManager {
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
     }
 
-    public void writeMessage(OutputStream out, String data) throws IOException {  
+    public void writeMessage(OutputStream out, String data) throws IOException {
     }
 
     public IIncomingTransport getIncomingTransport() {

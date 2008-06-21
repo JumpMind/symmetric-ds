@@ -58,7 +58,7 @@ public class Trigger {
     private String targetGroupId;
 
     private String sourceSchemaName;
-    
+
     private String sourceCatalogName;
 
     private String targetSchemaName;
@@ -86,20 +86,20 @@ public class Trigger {
     private String excludedColumnNames = null;
 
     /**
-     * Allows the end user to limit the data loaded when doing the initial
-     * load. if null, will default to 'from tablename'
+     * Allows the end user to limit the data loaded when doing the initial load.
+     * if null, will default to 'from tablename'
      */
     private String initialLoadSelect = DEFAULT_CONDITION;
 
     /**
-     * Default to selecting all. This can be changed to select based on
-     * joins between node parameters and data column values.
+     * Default to selecting all. This can be changed to select based on joins
+     * between node parameters and data column values.
      */
     private String nodeSelect = "";
 
     /**
-     * This is a sql expression that creates a unique id which the sync
-     * process can use to 'group' events together and commit together.
+     * This is a sql expression that creates a unique id which the sync process
+     * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
 
@@ -158,7 +158,8 @@ public class Trigger {
     }
 
     /**
-     * When dealing with columns, always use this method to order the columns so that the primary keys are first.
+     * When dealing with columns, always use this method to order the columns so
+     * that the primary keys are first.
      */
     public Column[] orderColumnsForTable(Table table) {
         List<String> excludedColumnNames = getExcludedColumnNamesAsList();
@@ -219,7 +220,8 @@ public class Trigger {
 
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
             triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
-            logger.warn("We just truncated the trigger name for the " + dml.name().toLowerCase() + " trigger id="+ triggerId
+            logger.warn("We just truncated the trigger name for the " + dml.name().toLowerCase() + " trigger id="
+                    + triggerId
                     + ".  You might want to consider manually providing a name for the trigger that is les than "
                     + maxTriggerNameLength + " characters long.");
         }
@@ -237,8 +239,8 @@ public class Trigger {
         for (int i = 0; i < seq.length(); i++) {
             char c = seq.charAt(i);
             if (i == 0
-                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o'
-                            || c == 'u' || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
+                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
+                            || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
                 shortName.append(c);
             }
             previousChar = c;

@@ -18,7 +18,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-
 package org.jumpmind.symmetric.service.impl;
 
 import org.jumpmind.symmetric.AbstractDatabaseTest;
@@ -26,12 +25,10 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.testng.annotations.Test;
 
-public class PurgeServiceTest extends AbstractDatabaseTest
-{
-    @Test(groups="continuous")
-    public void testThatPurgeExecutes()
-    {
-        IPurgeService service = (IPurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);        
+public class PurgeServiceTest extends AbstractDatabaseTest {
+    @Test(groups = "continuous")
+    public void testThatPurgeExecutes() {
+        IPurgeService service = (IPurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);
         service.purge();
     }
 }

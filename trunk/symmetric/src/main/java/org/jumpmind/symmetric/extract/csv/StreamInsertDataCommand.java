@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.Data;
 class StreamInsertDataCommand extends AbstractStreamDataCommand {
 
     public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.INSERT, DELIMITER,data.getRowData());
+        Util.write(writer, CsvConstants.INSERT, DELIMITER, data.getRowData());
         writer.newLine();
     }
 }

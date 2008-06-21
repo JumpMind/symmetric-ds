@@ -74,10 +74,9 @@ public class ClusterService extends AbstractService implements IClusterService {
             logger.debug("Failed to insert to the node_lock table for " + lockId + ".  Must be intialized already.");
         }
     }
-    
+
     public void clearAllLocks() {
-        jdbcTemplate
-        .update(getSql("clearAllLocksSql"));
+        jdbcTemplate.update(getSql("clearAllLocksSql"));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -102,9 +101,10 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     private boolean lock(final LockAction action, final String id) {
         if (isClusteringEnabled(action)) {
-            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService.getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return jdbcTemplate
-                    .update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action.name(), timeout }) == 1;
+            final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
+                    .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
+            return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action.name(),
+                    timeout }) == 1;
         } else {
             return true;
         }
@@ -144,6 +144,5 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-
 
 }

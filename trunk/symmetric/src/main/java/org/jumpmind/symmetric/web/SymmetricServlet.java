@@ -77,15 +77,12 @@ public class SymmetricServlet extends AbstractServlet {
 
         servlets = new ArrayList<HttpServlet>();
         @SuppressWarnings("unchecked")
-        final Map<String, HttpServlet> servletBeans = getDefaultApplicationContext()
-                .getBeansOfType(HttpServlet.class);
+        final Map<String, HttpServlet> servletBeans = getDefaultApplicationContext().getBeansOfType(HttpServlet.class);
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
-        for (final Map.Entry<String, HttpServlet> servletEntry : servletBeans
-                .entrySet()) {
+        for (final Map.Entry<String, HttpServlet> servletEntry : servletBeans.entrySet()) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Initializing servlet %s",
-                        servletEntry.getKey()));
+                logger.info(String.format("Initializing servlet %s", servletEntry.getKey()));
             }
             final HttpServlet servlet = servletEntry.getValue();
             servlet.init(this.getServletConfig());
@@ -99,11 +96,9 @@ public class SymmetricServlet extends AbstractServlet {
         }
     }
 
-    protected AbstractResourceServlet<?> findMatchingServlet(
-            HttpServletRequest req, HttpServletResponse resp) {
+    protected AbstractResourceServlet<?> findMatchingServlet(HttpServletRequest req, HttpServletResponse resp) {
         AbstractResourceServlet<?> retVal = null;
-        for (Iterator<HttpServlet> iterator = servlets.iterator(); retVal == null
-                && iterator.hasNext();) {
+        for (Iterator<HttpServlet> iterator = servlets.iterator(); retVal == null && iterator.hasNext();) {
             HttpServlet servlet = iterator.next();
             if (servlet instanceof AbstractResourceServlet) {
                 final AbstractResourceServlet<?> builtinServlet = (AbstractResourceServlet<?>) servlet;
@@ -116,8 +111,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handleDelete(req, resp);
@@ -127,8 +121,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handleGet(req, resp);
@@ -138,8 +131,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handleHead(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleHead(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handleHead(req, resp);
@@ -149,8 +141,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handleOptions(HttpServletRequest req,
-            HttpServletResponse resp) throws Exception {
+    protected void handleOptions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handleOptions(req, resp);
@@ -160,8 +151,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handlePost(req, resp);
@@ -171,8 +161,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handlePut(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handlePut(req, resp);
@@ -182,8 +171,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         AbstractResourceServlet<?> servlet = findMatchingServlet(req, resp);
         if (servlet != null) {
             servlet.handleTrace(req, resp);

@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 public class TransportUtils {
 
     public static BufferedReader toReader(InputStream is) throws IOException {
-        return new BufferedReader(
-                new InputStreamReader(is, "UTF-8"));
+        return new BufferedReader(new InputStreamReader(is, "UTF-8"));
     }
 }

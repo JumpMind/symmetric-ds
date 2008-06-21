@@ -50,7 +50,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 public class SymmetricManagementService {
 
     private IBootstrapService bootstrapService;
-    
+
     private IParameterService parameterService;
 
     private IPurgeService purgeService;
@@ -64,7 +64,7 @@ public class SymmetricManagementService {
     private IRegistrationService registrationService;
 
     private IDataExtractorService dataExtractorService;
-    
+
     private IClusterService clusterService;
 
     private DataSource dataSource;
@@ -81,7 +81,7 @@ public class SymmetricManagementService {
 
     @ManagedAttribute(description = "The properties configured for this symmetric instance")
     public String getPropertiesList() {
-        Map<String,String> properties = parameterService.getAllParameters();
+        Map<String, String> properties = parameterService.getAllParameters();
         StringBuilder buffer = new StringBuilder();
         for (String key : properties.keySet()) {
             buffer.append(key).append("=").append(properties.get(key)).append("<br/>");
@@ -120,19 +120,18 @@ public class SymmetricManagementService {
     public boolean isExternalIdRegistered(String nodeGroupdId, String externalId) {
         return nodeService.isExternalIdRegistered(nodeGroupdId, externalId);
     }
-    
+
     @ManagedOperation(description = "Emergency remove all locks (if left abandoned on a cluster)")
     public void clearAllLocks() {
         clusterService.clearAllLocks();
     }
-    
+
     @Deprecated
     @ManagedOperation(description = "Deprecated. Check to see if the external id is registered")
-    @ManagedOperationParameters( {            
-            @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public boolean isExternalIdRegistered(String externalId) {
         return nodeService.isExternalIdRegistered("store", externalId);
-    }    
+    }
 
     @ManagedOperation(description = "Check to see if the initial load for a node id is complete.  This method will throw an exception if the load error'd out or was never started.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id") })
@@ -154,16 +153,16 @@ public class SymmetricManagementService {
             return false;
         }
     }
-    
+
     @Deprecated
     @ManagedOperation(description = "Deprecated. Enable or disable a channel for a specific external id. ")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "ignore", description = "Set to true to enable and false to disable"),
-            @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),            
+            @ManagedOperationParameter(name = "channelId", description = "The channel id to enable or disable"),
             @ManagedOperationParameter(name = "externalId", description = "The external id for a node") })
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String externalId) {
         nodeService.ignoreNodeChannelForExternalId(ignore, channelId, "store", externalId);
-    }    
+    }
 
     @ManagedOperation(description = "Enable or disable a channel for a specific external id")
     @ManagedOperationParameters( {
@@ -198,29 +197,27 @@ public class SymmetricManagementService {
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to sent the event to."),
             @ManagedOperationParameter(name = "tableName", description = "The table name the SQL is for."),
-            @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.")})
-
+            @ManagedOperationParameter(name = "sql", description = "The SQL statement to send.") })
     public String sendSQL(String nodeId, String tableName, String sql) {
         return dataService.sendSQL(nodeId, tableName, sql);
     }
-    
+
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload.") })
     public String reloadTable(String nodeId, String tableName) {
         return dataService.reloadTable(nodeId, tableName);
     }
-    
+
     @ManagedOperation(description = "Send a delete and reload of a table to a node.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "nodeId", description = "The node id to reload."),
             @ManagedOperationParameter(name = "tableName", description = "The table name to reload."),
-            @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.")})
+            @ManagedOperationParameter(name = "overrideInitialLoadSelect", description = "Override initial load select where-clause.") })
     public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
         return dataService.reloadTable(nodeId, tableName, overrideInitialLoadSelect);
     }
-    
+
     @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
     public String showBatch(String batchId) throws Exception {

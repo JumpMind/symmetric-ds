@@ -90,8 +90,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table,
-                    new Date(), audit);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -127,12 +126,10 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table,
-                    new Date(), audit);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(),
-                    audit);
+            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -168,16 +165,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.begin(batch, writer);
 
             TriggerHistory audit = makeTableSyncAuditId(TD1.keyColumns, TD1.columns);
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table,
-                    new Date(), audit);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
 
             audit = makeTableSyncAuditId(TD3.keyColumns, TD3.columns);
-            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(),
-                    audit);
+            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
-            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(),
-                    audit);
+            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -217,16 +211,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table,
-                    new Date(), audit);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD4.dataId, TD4.key, TD4.rowData, DataEventType.UPDATE, TD4.table, new Date(),
-                    audit2);
+            data = new Data(TD4.dataId, TD4.key, TD4.rowData, DataEventType.UPDATE, TD4.table, new Date(), audit2);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(),
-                    audit);
+            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), audit);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -254,9 +245,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
         this.getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection connection) throws SQLException, DataAccessException {
                 Statement s = connection.createStatement();
-                s
-                        .executeUpdate("delete from sym_trigger_hist where source_table_name = '"
-                                + TABLE_NAME + "'");
+                s.executeUpdate("delete from sym_trigger_hist where source_table_name = '" + TABLE_NAME + "'");
                 return null;
             }
         });
@@ -264,12 +253,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     private TriggerHistory makeTableSyncAuditId(final String pk, final String col) {
         String sql = "insert into sym_trigger_hist (trigger_hist_id, source_table_name, source_schema_name, trigger_id, column_names, pk_column_names,name_for_update_trigger,name_for_delete_trigger, name_for_insert_trigger,table_hash,last_trigger_build_reason,create_time) values (null, '"
-                + TABLE_NAME
-                + "','symmetric',1,'"
-                + col
-                + "' , '"
-                + pk
-                + "','a','b','c',1,'T',current_timestamp)";
+                + TABLE_NAME + "','symmetric',1,'" + col + "' , '" + pk + "','a','b','c',1,'T',current_timestamp)";
         long key = dbDialect.insertWithGeneratedKey(sql, SequenceIdentifier.TRIGGER_HIST);
         TriggerHistory audit = new TriggerHistory(TABLE_NAME, pk, col);
         audit.setTriggerHistoryId((int) key);
@@ -296,9 +280,9 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writeCSV(CsvConstants.BATCH);
             writer.write(new Long(batchId).toString());
             writer.newLine();
-            writeCSV(CsvConstants.BINARY);            
+            writeCSV(CsvConstants.BINARY);
             writer.write(getDbDialect().getBinaryEncoding().name());
-            writer.newLine();            
+            writer.newLine();
         }
 
         void batchEnd(long batchId) throws IOException {

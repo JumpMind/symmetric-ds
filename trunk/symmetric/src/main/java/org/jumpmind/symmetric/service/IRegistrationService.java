@@ -27,17 +27,17 @@ import java.io.OutputStream;
 import org.jumpmind.symmetric.model.Node;
 
 public interface IRegistrationService {
-   
+
     public boolean registerNode(Node node, OutputStream out) throws IOException;
-    
+
     public void openRegistration(String nodeGroupId, String externalId);
-    
+
     public void reOpenRegistration(String nodeId);
-    
+
     public boolean isAutoRegistration();
-    
+
     public void registerWithServer();
-    
+
     public boolean isRegisteredWithServer();
 
 }

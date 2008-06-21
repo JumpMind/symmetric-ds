@@ -31,24 +31,25 @@ import org.springframework.transaction.annotation.Transactional;
 public interface IDataLoader extends Cloneable {
 
     public void open(BufferedReader in) throws IOException;
-    
-    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String,IColumnFilter> columnFilters) throws IOException;
+
+    public void open(BufferedReader in, List<IDataLoaderFilter> filters, Map<String, IColumnFilter> columnFilters)
+            throws IOException;
 
     public boolean hasNext() throws IOException;
 
     @Transactional
     public void load() throws IOException;
-    
+
     public void skip() throws IOException;
 
     public void close();
-    
+
     public IDataLoader clone();
 
     public IDataLoaderContext getContext();
-    
+
     public IDataLoaderStatistics getStatistics();
-    
+
     public boolean isEnableFallbackInsert();
 
     public boolean isEnableFallbackUpdate();

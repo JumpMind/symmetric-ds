@@ -60,8 +60,7 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-    public void ignoreNodeChannelForExternalId(boolean ignore,
-            String channelId, String nodeGroupId, String externalId) {
+    public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId) {
 
     }
 
@@ -77,8 +76,7 @@ public class MockNodeService implements INodeService {
         return false;
     }
 
-    public boolean setInitialLoadEnabled(String nodeId,
-            boolean initialLoadEnabled) {
+    public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         return false;
     }
 

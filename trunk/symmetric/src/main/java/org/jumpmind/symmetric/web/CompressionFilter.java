@@ -57,19 +57,18 @@ import org.jumpmind.symmetric.common.ParameterConstants;
  * </pre>
  */
 public class CompressionFilter extends AbstractFilter {
-    
+
     private static final Log logger = LogFactory.getLog(CompressionFilter.class);
 
     private org.jumpmind.symmetric.web.compression.CompressionFilter delegate;
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
-    
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+            ServletException {
         if (delegate != null) {
             delegate.doFilter(request, response, chain);
         }
@@ -90,15 +89,14 @@ public class CompressionFilter extends AbstractFilter {
 
         delegate.init(filterConfig);
     }
-    
+
     @Override
     public boolean isDisabled() {
         return parameterService.is(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET);
     }
 
     @Override
-    protected Log getLogger()
-    {
+    protected Log getLogger() {
         return logger;
     }
 

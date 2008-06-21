@@ -41,7 +41,7 @@ public interface IServletResource {
     public abstract void setRegexPattern(String regexPattern);
 
     public abstract void setRegexPatterns(String[] regexPatterns);
-    
+
     public abstract boolean isDisabled();
 
     public abstract String[] getUriPatterns();
@@ -62,23 +62,23 @@ public interface IServletResource {
 
     /**
      * Returns true if this is a container managed resource.
+     * 
      * @return
      */
     public abstract boolean isSpringManaged();
-    
+
     /**
      * Returns the spring managed bean
+     * 
      * @return
      */
-    public abstract IServletResource getSpringBean(); 
+    public abstract IServletResource getSpringBean();
 
     /**
      * Returns true if this should be container compatible
+     * 
      * @return
      */
     public boolean isContainerCompatible();
-    
 
 }
-    
- 

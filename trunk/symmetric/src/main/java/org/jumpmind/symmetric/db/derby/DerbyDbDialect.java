@@ -52,7 +52,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
             logger.warn("Trigger " + triggerName + " does not exist");
         }
     }
-    
+
     public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
@@ -60,11 +60,11 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean isBlobSyncSupported() {
         return true;
     }
-    
+
     public boolean isClobSyncSupported() {
         return true;
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
@@ -84,7 +84,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "fn_sym_transaction_id()";
     }
-    
+
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
     }
@@ -112,16 +112,15 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
-    
+
     public void purge() {
     }
-    
+
     public String getDefaultCatalog() {
         return null;
-    }    
+    }
 
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA",
-                String.class);
+        return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
     }
 }

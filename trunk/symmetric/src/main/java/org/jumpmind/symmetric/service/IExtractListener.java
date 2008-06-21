@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public interface IExtractListener {
-    
+
     public void init() throws Exception;
 
     /**

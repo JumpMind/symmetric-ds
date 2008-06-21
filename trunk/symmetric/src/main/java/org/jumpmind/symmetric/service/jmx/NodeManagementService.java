@@ -75,7 +75,7 @@ public class NodeManagementService {
     private IClusterService clusterService;
 
     private IParameterService parameterService;
-    
+
     private IConcurrentConnectionManager concurrentConnectionManager;
 
     private DataSource dataSource;
@@ -102,44 +102,51 @@ public class NodeManagementService {
     public int getNumfNodeConnectionsPerInstance() {
         return parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
     }
-    
+
     @ManagedAttribute(description = "Get connection statistics about indivdual nodes")
     public String getNodeConcurrencyStatisticsAsText() {
         String lineFeed = "\n";
         if (parameterService.getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
             lineFeed = "</br>";
         }
-        Map<String, Map<String, NodeConnectionStatistics>> stats = concurrentConnectionManager.getNodeConnectionStatisticsByPoolByNodeId();
+        Map<String, Map<String, NodeConnectionStatistics>> stats = concurrentConnectionManager
+                .getNodeConnectionStatisticsByPoolByNodeId();
         StringBuilder out = new StringBuilder();
         for (String pool : stats.keySet()) {
-            out.append("---------------------------------------------------------------------------------------------------------");
+            out
+                    .append("---------------------------------------------------------------------------------------------------------");
             out.append(lineFeed);
             out.append("  CONNECTION TYPE: ");
             out.append(pool);
             out.append(lineFeed);
-            out.append("---------------------------------------------------------------------------------------------------------");
-            out.append(lineFeed);            
-            out.append("             NODE ID            LAST CONNECT TIME          NUMBER OF REJECTIONS       AVG CONNECTED TIME");
-            out.append("---------------------------------------------------------------------------------------------------------");
+            out
+                    .append("---------------------------------------------------------------------------------------------------------");
+            out.append(lineFeed);
+            out
+                    .append("             NODE ID            LAST CONNECT TIME          NUMBER OF REJECTIONS       AVG CONNECTED TIME");
+            out
+                    .append("---------------------------------------------------------------------------------------------------------");
             out.append(lineFeed);
             Map<String, NodeConnectionStatistics> nodeStats = stats.get(pool);
             for (String nodeId : nodeStats.keySet()) {
                 NodeConnectionStatistics nodeStat = nodeStats.get(nodeId);
                 StringUtils.leftPad(nodeId, 20);
-                StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(nodeStat.getLastConnectionTimeMs())), 30);
+                StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(
+                        new Date(nodeStat.getLastConnectionTimeMs())), 30);
                 StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 30);
-                StringUtils.leftPad(NumberFormat.getIntegerInstance().format(nodeStat.getTotalConnectionTimeMs()/nodeStat.getTotalConnectionCount()), 20);                
+                StringUtils.leftPad(NumberFormat.getIntegerInstance().format(
+                        nodeStat.getTotalConnectionTimeMs() / nodeStat.getTotalConnectionCount()), 20);
             }
-            out.append(lineFeed);            
+            out.append(lineFeed);
         }
         return out.toString();
     }
-    
+
     public String getCurrentNodeConcurrencyReservationsAsText() {
         // TODO
         throw new NotImplementedException();
     }
-    
+
     @ManagedAttribute(description = "Get a list of nodes that have been added to the white list, a list of node ids that always get through the concurrency manager.")
     public String getNodesInWhiteList() {
         StringBuilder ret = new StringBuilder();
@@ -148,21 +155,20 @@ public class NodeManagementService {
             ret.append(string);
             ret.append(",");
         }
-        return ret.length() > 0 ? ret.substring(0,ret.length()-1) : "";
+        return ret.length() > 0 ? ret.substring(0, ret.length() - 1) : "";
     }
 
     @ManagedOperation(description = "Add a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( {@ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list")})
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to add to the white list") })
     public void addNodeToWhiteList(String nodeId) {
         concurrentConnectionManager.addToWhitelist(nodeId);
     }
-    
+
     @ManagedOperation(description = "Remove a node id to the list of nodes that will always get through the concurrency manager")
-    @ManagedOperationParameters( {@ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list")})
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "nodeId", description = "The node id to remove from the white list") })
     public void removeNodeFromWhiteList(String nodeId) {
         concurrentConnectionManager.removeFromWhiteList(nodeId);
     }
-    
 
     @ManagedAttribute(description = "Configure the number of connections allowed to this node."
             + "  If the value is set to zero you are effectively disabling your transport"
@@ -170,17 +176,17 @@ public class NodeManagementService {
     public void setNumOfNodeConnectionsPerInstance(int value) {
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, value);
     }
-    
+
     @ManagedAttribute(description = "This is a count of nodes who connected to push or pull data and were rejected because the server was too busy")
     public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
         return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
     }
-    
+
     @ManagedAttribute(description = "This is a count of the number of reservations that were handled by this instance")
     public long getNumOfNodesWhoConnectedForInstanceLifetime() {
         return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
     }
-    
+
     @ManagedAttribute(description = "This is a count of the number of reservations that handed out by this instance")
     public long getNumOfNodesWhoReservedConnectionsForInstanceLifetime() {
         return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_CONNECTION_RESERVED).getLifetimeCount();

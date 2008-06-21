@@ -53,7 +53,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
                 "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
         massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
-        
+
         values[1] = "insert fallback to update";
         massageExpectectedResultsForDialect(values);
         testSimple(CsvConstants.INSERT, values, values);
@@ -62,9 +62,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     @Test(groups = "continuous")
     public void testUpdateNotExisting() throws Exception {
         String id = getNextId();
-        String[] values = { id, "it's /a/  string", "it's  -not-  null",
-                "You're a \"character\"", "Where are you?", "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0",
-                "1", "13", "9.95", id };
+        String[] values = { id, "it's /a/  string", "it's  -not-  null", "You're a \"character\"", "Where are you?",
+                "2007-12-31 02:33:45.0", "2007-12-31 23:59:59.0", "1", "13", "9.95", id };
         String[] expectedValues = (String[]) ArrayUtils.subarray(values, 0, values.length - 1);
         massageExpectectedResultsForDialect(expectedValues);
         testSimple(CsvConstants.UPDATE, values, expectedValues);
@@ -121,8 +120,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         values[0] = getNextId();
         values[1] = "Here's a \\, a (backslash)";
         values[2] = "Fix TODO";
-        // TODO: Fix backslashing alphanumeric 
-        //values[2] = "\\a\\b\\c\\ \\1\\2\\3";
+        // TODO: Fix backslashing alphanumeric
+        // values[2] = "\\a\\b\\c\\ \\1\\2\\3";
         values[3] = "Tick quote \\'\\\"";
         values[4] = "Comma quote \\,\\\"";
         testSimple(CsvConstants.INSERT, values, values);
@@ -170,8 +169,8 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         String[] keys = { "id" };
         String[] columns = { "id", "name" };
         String[] badValues = { "1", "testTableNotExisting" };
-        String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char",
-                "char not null", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0", "12.10" };
+        String[] values = { getNextId(), "testTableNotExisting", "This row should load", "char", "char not null",
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "0", "12.10" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -218,8 +217,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
 
     @Test
     public void testBenchmark() throws Exception {
-        ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream(
-                "/test-data-loader-benchmark.zip"));
+        ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream("/test-data-loader-benchmark.zip"));
         in.getNextEntry();
         long startTime = System.currentTimeMillis();
         IDataLoader dataLoader = getDataLoader();

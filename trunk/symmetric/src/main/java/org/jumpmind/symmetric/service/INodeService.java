@@ -31,33 +31,33 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 public interface INodeService {
 
     public Node findNode(String nodeId);
-    
+
     public Node findNodeByExternalId(String nodeGroupId, String externalId);
-    
+
     public NodeSecurity findNodeSecurity(String nodeId);
-    
+
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
-   
+
     public boolean isRegistrationEnabled(String nodeId);
-    
+
     public Node findIdentity();
 
     public List<Node> findNodesToPull();
-    
+
     public List<Node> findNodesToPushTo();
-    
+
     public List<Node> findSourceNodesFor(DataEventAction eventAction);
-    
+
     public List<Node> findTargetNodesFor(DataEventAction eventAction);
-    
+
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
-    
+
     public boolean updateNode(Node node);
-    
+
     public boolean updateNodeSecurity(NodeSecurity security);
-    
+
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
-    
+
 }

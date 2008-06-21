@@ -35,19 +35,19 @@ public class Channel {
     private int processingOrder;
 
     private int maxBatchSize;
-    
+
     private int maxBatchToSend;
 
     private boolean enabled;
 
-    public Channel() {        
+    public Channel() {
     }
 
     public Channel(String id, int processingOrder) {
         this.id = id;
         this.processingOrder = processingOrder;
     }
-    
+
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled) {
         this(id, processingOrder);
         this.maxBatchSize = maxBatchSize;

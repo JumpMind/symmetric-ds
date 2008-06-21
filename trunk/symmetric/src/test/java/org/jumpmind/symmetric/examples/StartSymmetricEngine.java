@@ -24,8 +24,11 @@ import org.jumpmind.symmetric.SymmetricEngine;
 public class StartSymmetricEngine {
 
     /**
-     * Start an engine that is configured by two properties files.  One is packaged with the application and contains overridden properties that are specific to the 
-     * application.  The other is found in the application's working directory.  It can be used to setup environment specific properties.
+     * Start an engine that is configured by two properties files. One is
+     * packaged with the application and contains overridden properties that are
+     * specific to the application. The other is found in the application's
+     * working directory. It can be used to setup environment specific
+     * properties.
      */
     public static void main(String[] args) throws Exception {
         String workingDirectory = System.getProperty("user.dir");

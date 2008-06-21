@@ -51,16 +51,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * This is the preferred way to create, configure, start and manage an instance of
- * Symmetric.  The engine will bootstrap the symmetric.xml Spring context.
- * <p/>
- * The Symmetric instance is configured by properties configuration files.  By default the engine 
- * will look for and override existing properties with ones found in the properties files.  Symmetric looks 
- * for:  symmetric.properties in the classpath (it will use the first one it finds), and then for a symmetric.properties found 
- * in the user.home system property location.  Next, if provided, in the constructor of the SymmetricEngine, it will
- * locate and use the properties file passed to the engine.
- * <p/>
- * When the engine is ready to be started, the {@link #start()} method should be called.  It should only be called once.
+ * This is the preferred way to create, configure, start and manage an instance
+ * of Symmetric. The engine will bootstrap the symmetric.xml Spring context.
+ * <p/> The Symmetric instance is configured by properties configuration files.
+ * By default the engine will look for and override existing properties with
+ * ones found in the properties files. Symmetric looks for: symmetric.properties
+ * in the classpath (it will use the first one it finds), and then for a
+ * symmetric.properties found in the user.home system property location. Next,
+ * if provided, in the constructor of the SymmetricEngine, it will locate and
+ * use the properties file passed to the engine. <p/> When the engine is ready
+ * to be started, the {@link #start()} method should be called. It should only
+ * be called once.
  */
 public class SymmetricEngine {
 
@@ -93,21 +94,27 @@ public class SymmetricEngine {
     private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
     /**
-     * @param overridePropertiesResource1 Provide a Spring resource path to a properties file to be used for configuration
-     * @param overridePropertiesResource2 Provide a Spring resource path to a properties file to be used for configuration
+     * @param overridePropertiesResource1
+     *                Provide a Spring resource path to a properties file to be
+     *                used for configuration
+     * @param overridePropertiesResource2
+     *                Provide a Spring resource path to a properties file to be
+     *                used for configuration
      */
     public SymmetricEngine(String overridePropertiesResource1, String overridePropertiesResource2) {
-        // Setting system properties is probably not the best way to accomplish this setup.
-        // Synchronizing on the class so creating multiple engines is thread safe.
+        // Setting system properties is probably not the best way to accomplish
+        // this setup.
+        // Synchronizing on the class so creating multiple engines is thread
+        // safe.
         synchronized (SymmetricEngine.class) {
-            System.setProperty("symmetric.override.properties.file.1",
-                    overridePropertiesResource1 == null ? "" : overridePropertiesResource1);
-            System.setProperty("symmetric.override.properties.file.2",
-                    overridePropertiesResource2 == null ? "" : overridePropertiesResource2);
+            System.setProperty("symmetric.override.properties.file.1", overridePropertiesResource1 == null ? ""
+                    : overridePropertiesResource1);
+            System.setProperty("symmetric.override.properties.file.2", overridePropertiesResource2 == null ? ""
+                    : overridePropertiesResource2);
             this.init(createContext());
         }
     }
-    
+
     /**
      * Create a symmetric node
      */
@@ -116,8 +123,11 @@ public class SymmetricEngine {
     }
 
     /**
-     * Pass in the Spring context to be used.  This had better include the Spring configuration for required Symmetric services.
-     * @param ctx A Spring framework context
+     * Pass in the Spring context to be used. This had better include the Spring
+     * configuration for required Symmetric services.
+     * 
+     * @param ctx
+     *                A Spring framework context
      */
     protected SymmetricEngine(ApplicationContext ctx) {
         init(ctx);
@@ -166,25 +176,26 @@ public class SymmetricEngine {
         bootstrapService = (IBootstrapService) applicationContext.getBean(Constants.BOOTSTRAP_SERVICE);
         parameterService = (IParameterService) applicationContext.getBean(Constants.PARAMETER_SERVICE);
         nodeService = (INodeService) applicationContext.getBean(Constants.NODE_SERVICE);
-        registrationService = (IRegistrationService) applicationContext
-                .getBean(Constants.REGISTRATION_SERVICE);
+        registrationService = (IRegistrationService) applicationContext.getBean(Constants.REGISTRATION_SERVICE);
         purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
         dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
     }
 
     /**
-     * Register this instance of the engine so it can be found by other processes in the JVM.
+     * Register this instance of the engine so it can be found by other
+     * processes in the JVM.
+     * 
      * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
         registeredEnginesByUrl.put(parameterService.getMyUrl(), this);
         registeredEnginesByName.put(getEngineName(), this);
     }
-    
+
     /**
-     * This is done dynamically because some application servers do not allow the default
-     * MBeanServer to accessed for security reasons.
+     * This is done dynamically because some application servers do not allow
+     * the default MBeanServer to accessed for security reasons.
      */
     private void startDefaultServerJMXExport() {
         try {
@@ -195,25 +206,23 @@ public class SymmetricEngine {
     }
 
     /**
-     * Start the jobs if they are configured to be started in symmetric.properties
+     * Start the jobs if they are configured to be started in
+     * symmetric.properties
      */
     private void startJobs() {
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
             applicationContext.getBean(Constants.PUSH_JOB_TIMER);
         }
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PULL_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
             applicationContext.getBean(Constants.PULL_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
             applicationContext.getBean(Constants.PURGE_JOB_TIMER);
         }
 
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_HEARTBEAT_JOB))) {
+        if (Boolean.TRUE.toString()
+                .equalsIgnoreCase(parameterService.getString(ParameterConstants.START_HEARTBEAT_JOB))) {
             applicationContext.getBean(Constants.HEARTBEAT_JOB_TIMER);
         }
 
@@ -230,7 +239,7 @@ public class SymmetricEngine {
     }
 
     /**
-     * Get a list of configured properties for Symmetric.  Read-only.
+     * Get a list of configured properties for Symmetric. Read-only.
      */
     public Properties getProperties() {
         Properties p = new Properties();
@@ -243,7 +252,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Will setup the symmetric tables, if not already setup and if the engine is configured to do so.
+     * Will setup the symmetric tables, if not already setup and if the engine
+     * is configured to do so.
      */
     public synchronized void setup() {
         if (!setup) {
@@ -263,20 +273,20 @@ public class SymmetricEngine {
             startDefaultServerJMXExport();
             Node node = nodeService.findIdentity();
             if (node != null) {
-                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id="
-                        + node.getNodeId() + ", externalId=" + node.getExternalId() + "]");
+                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
+                        + ", externalId=" + node.getExternalId() + "]");
             } else {
-                logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId()
-                        + ", externalId=" + parameterService.getExternalId() + "]");
+                logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId() + ", externalId="
+                        + parameterService.getExternalId() + "]");
             }
             bootstrapService.validateConfiguration();
             bootstrapService.syncTriggers();
             startJobs();
-            started = true;            
+            started = true;
             logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
                     + Version.version() + " database=" + dbDialect.getName());
             starting = false;
-            
+
         }
     }
 
@@ -288,13 +298,13 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called if the push job has not been enabled.  It will perform a push
-     * the same way the {@link PushJob} would have.
+     * This can be called if the push job has not been enabled. It will perform
+     * a push the same way the {@link PushJob} would have.
+     * 
      * @see IPushService#pushData()
      */
     public void push() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
             ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -303,6 +313,7 @@ public class SymmetricEngine {
 
     /**
      * Call this to resync triggers
+     * 
      * @see IBootstrapService#syncTriggers()
      */
     public void syncTriggers() {
@@ -310,13 +321,13 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called if the pull job has not been enabled.  It will perform a pull
-     * the same way the {@link PullJob} would have.
+     * This can be called if the pull job has not been enabled. It will perform
+     * a pull the same way the {@link PullJob} would have.
+     * 
      * @see IPullService#pullData()
      */
     public void pull() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PULL_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
             ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
@@ -324,12 +335,13 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called to do a purge.  It may be called only if the {@link PurgeJob} has not been enabled.
+     * This can be called to do a purge. It may be called only if the
+     * {@link PurgeJob} has not been enabled.
+     * 
      * @see IPurgeService#purge()
      */
     public void purge() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
             purgeService.purge();
         } else {
             throw new UnsupportedOperationException("Cannot actuate a purge if it is already scheduled.");
@@ -337,7 +349,9 @@ public class SymmetricEngine {
     }
 
     /**
-     * Push a copy of the node onto the push queue so the symmetric node 'checks' in with it's root node.
+     * Push a copy of the node onto the push queue so the symmetric node
+     * 'checks' in with it's root node.
+     * 
      * @see IBootstrapService#heartbeat()
      */
     public void heartbeat() {
@@ -345,7 +359,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Open up registration for node to attach.  
+     * Open up registration for node to attach.
+     * 
      * @see IRegistrationService#openRegistration(String, String)
      */
     public void openRegistration(String groupId, String externalId) {
@@ -354,6 +369,7 @@ public class SymmetricEngine {
 
     /**
      * Check to see if this node has been registered.
+     * 
      * @return true if the node is registered
      */
     public boolean isRegistered() {
@@ -362,6 +378,7 @@ public class SymmetricEngine {
 
     /**
      * Check to see if this node has been started.
+     * 
      * @return true if the node is started
      */
     public boolean isStarted() {
@@ -370,6 +387,7 @@ public class SymmetricEngine {
 
     /**
      * Check to see if this node is starting.
+     * 
      * @return true if the node is starting
      */
 
@@ -378,7 +396,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Expose access to the Spring context.  This is for advanced use only.
+     * Expose access to the Spring context. This is for advanced use only.
+     * 
      * @return
      */
     public ApplicationContext getApplicationContext() {

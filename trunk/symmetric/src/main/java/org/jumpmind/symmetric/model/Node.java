@@ -43,7 +43,8 @@ public class Node {
     private String syncURL;
 
     /**
-     * Record the version of the schema.  This is recorded and managed by the sync software.
+     * Record the version of the schema. This is recorded and managed by the
+     * sync software.
      */
     private String schemaVersion;
 
@@ -51,7 +52,7 @@ public class Node {
      * Record the type of database the node hosts.
      */
     private String databaseType;
-    
+
     private String symmetricVersion = Version.version();
 
     /**
@@ -60,9 +61,9 @@ public class Node {
     private String databaseVersion;
 
     private boolean syncEnabled;
-    
+
     private String timezoneOffset;
-    
+
     private Date heartbeatTime = new Date();
 
     public Node() {
@@ -73,7 +74,7 @@ public class Node {
         setExternalId(runtimeConfig.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
-        setSyncURL(runtimeConfig.getMyUrl());        
+        setSyncURL(runtimeConfig.getMyUrl());
         setSchemaVersion(runtimeConfig.getString(ParameterConstants.SCHEMA_VERSION));
     }
 
@@ -154,7 +155,7 @@ public class Node {
     public void setSymmetricVersion(String symmetricVersion) {
         this.symmetricVersion = symmetricVersion;
     }
-    
+
     public String toString() {
         return nodeGroupId + ":" + externalId + ":" + (nodeId == null ? "?" : nodeId);
     }

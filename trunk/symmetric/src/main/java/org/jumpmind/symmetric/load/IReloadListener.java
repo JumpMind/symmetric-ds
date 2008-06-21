@@ -28,9 +28,9 @@ import org.jumpmind.symmetric.model.Node;
  * action before or after a reload is requested for a Node.
  */
 public interface IReloadListener extends IExtensionPoint {
-    
+
     public void beforeReload(Node node);
 
     public void afterReload(Node node);
-    
+
 }

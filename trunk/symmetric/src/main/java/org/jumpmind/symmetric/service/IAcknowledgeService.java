@@ -24,11 +24,10 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.BatchInfo;
 
-public interface IAcknowledgeService
-{
-      
+public interface IAcknowledgeService {
+
     public void ack(BatchInfo batch);
-    
+
     @Deprecated
     public void ack(List<BatchInfo> batches);
 }

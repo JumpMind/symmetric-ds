@@ -83,20 +83,21 @@ public class SqlTemplate {
         sql = replace("whereClause", trig.getInitialLoadSelect() == null ? "1=1" : trig.getInitialLoadSelect(), sql);
         sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString("t", metaData.getPrimaryKeyColumns()), sql);
 
-        // Replace these parameters to give the initiaLoadContition a chance to reference domainNames and domainIds
+        // Replace these parameters to give the initiaLoadContition a chance to
+        // reference domainNames and domainIds
         sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
         sql = replace("nodeId", node.getNodeId(), sql);
 
         return sql;
     }
-    
+
     public String createPurgeSql(Node node, IDbDialect dialect, Trigger trig, TriggerHistory hist) {
         // TODO: during reload, purge table using initial_load_select clause
         String sql = "delete from " + getDefaultTargetTableName(trig, hist);
-        //+ " where " + trig.getInitialLoadSelect();
-        //sql = replace("groupId", node.getNodeGroupId(), sql);
-        //sql = replace("externalId", node.getExternalId(), sql);
+        // + " where " + trig.getInitialLoadSelect();
+        // sql = replace("groupId", node.getNodeGroupId(), sql);
+        // sql = replace("externalId", node.getExternalId(), sql);
         return sql;
     }
 
@@ -106,7 +107,7 @@ public class SqlTemplate {
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString("t", "t", columns);
         sql = replace("columns", columnsText, sql);
-        
+
         sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("whereClause", whereClause, sql);
@@ -157,16 +158,18 @@ public class SqlTemplate {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + dialect.getPlatform().getName());
         }
-        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog, defaultSchema, ddl);
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog,
+                defaultSchema, ddl);
     }
 
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
 
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
-        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog, defaultSchema, ddl);
+        return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog,
+                defaultSchema, ddl);
     }
-    
+
     private String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
         String targetTableName = null;
         if (StringUtils.isBlank(trigger.getTargetTableName())) {
@@ -178,18 +181,22 @@ public class SqlTemplate {
     }
 
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
-            TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema, String ddl) {
-        
-        boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null || trigger.getSourceSchemaName() != null;
-        
+            TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema,
+            String ddl) {
+
+        boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
+                || trigger.getSourceSchemaName() != null;
+
         ddl = replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
-        
-        ddl = replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "",
-                ddl);
-        ddl = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "." : "",
-                ddl);        
-        
-        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength()).toUpperCase(), ddl);
+
+        ddl = replace("defaultSchema",
+                resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
+                        : "", ddl);
+        ddl = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
+
+        ddl = replace("triggerName", trigger.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength())
+                .toUpperCase(), ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
@@ -216,9 +223,10 @@ public class SqlTemplate {
 
         // some column templates need tableName and schemaName
         ddl = replace("tableName", history.getSourceTableName(), ddl);
-        ddl = replace("schemaName", resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history.getSourceSchemaName()
+        ddl = replace("schemaName", resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history
+                .getSourceSchemaName()
                 + "." : "", ddl);
-        
+
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
         ddl = replace("oldKeys", columnsText, ddl);
@@ -234,7 +242,7 @@ public class SqlTemplate {
             ddl = replace("curTriggerValue", oldTriggerValue, ddl);
             break;
         case INSERT:
-        case UPDATE:            
+        case UPDATE:
         default:
             ddl = replace("curTriggerValue", newTriggerValue, ddl);
             break;

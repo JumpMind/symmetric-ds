@@ -23,7 +23,8 @@ package org.jumpmind.symmetric.model;
 import org.jumpmind.symmetric.util.ICoded;
 
 /**
- * Identifies the action to take when the event watcher sees events in the event table.
+ * Identifies the action to take when the event watcher sees events in the event
+ * table.
  */
 public enum DataEventAction implements ICoded {
 

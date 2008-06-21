@@ -67,13 +67,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IDataService dataService;
 
     private IUpgradeService upgradeService;
-    
+
     private IRegistrationService registrationService;
 
     private String triggerPrefix;
 
     private boolean initialized = false;
-    
+
     public void setupDatabase() {
         if (!initialized) {
             if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
@@ -102,7 +102,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 }
             }
             initialized = true;
-            
+
         }
 
         // lets do this every time init is called.
@@ -110,9 +110,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     /**
-     * This is done periodically throughout the day (so it needs to be efficient).  If the trigger
-     * is created for the first time (no previous trigger existed), then
-     * should we auto-resync data?
+     * This is done periodically throughout the day (so it needs to be
+     * efficient). If the trigger is created for the first time (no previous
+     * trigger existed), then should we auto-resync data?
      */
     public void syncTriggers() {
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
@@ -129,17 +129,18 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private void removeInactiveTriggers() {
-        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.NODE_GROUP_ID));
+        List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService
+                .getString(ParameterConstants.NODE_GROUP_ID));
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
                 logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForInsertTrigger(), trigger
-                        .getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForDeleteTrigger(), trigger
-                        .getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history.getNameForUpdateTrigger(), trigger
-                        .getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
+                        .getNameForInsertTrigger(), trigger.getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
+                        .getNameForDeleteTrigger(), trigger.getSourceTableName());
+                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
+                        .getNameForUpdateTrigger(), trigger.getSourceTableName());
                 configurationService.inactivateTriggerHistory(history);
             } else {
                 logger.info("A trigger was inactivated that had not yet been built.  Taking no action.");
@@ -148,7 +149,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private void updateOrCreateTriggers() {
-        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getString(ParameterConstants.NODE_GROUP_ID));
+        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
+                .getString(ParameterConstants.NODE_GROUP_ID));
 
         for (Trigger trigger : triggers) {
 
@@ -176,7 +178,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         forceRebuildOfTriggers = true;
                     }
 
-                    // TODO should probably check to see if the time stamp on the symmetric-dialects.xml is newer than the
+                    // TODO should probably check to see if the time stamp on
+                    // the symmetric-dialects.xml is newer than the
                     // create time on the audit record.
 
                     TriggerHistory newestHistory = rebuildTriggerIfNecessary(forceRebuildOfTriggers, trigger,
@@ -206,7 +209,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void register() {
         validateConfiguration();
     }
-        
+
     public void validateConfiguration() {
         Node node = nodeService.findIdentity();
         if (node == null && !configurationService.isRegistrationServer()) {
@@ -230,7 +233,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             + parameterService.getNodeGroupId());
         }
     }
-    
 
     /**
      * Give the end use the option to provide a script that will load a
@@ -295,8 +297,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger.getTriggerName(
-                DataEventType.INSERT, triggerPrefix, maxTriggerNameLength).toUpperCase(), trigger.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength).toUpperCase(),
-                trigger.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLength).toUpperCase());
+                DataEventType.INSERT, triggerPrefix, maxTriggerNameLength).toUpperCase(), trigger.getTriggerName(
+                DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength).toUpperCase(), trigger.getTriggerName(
+                DataEventType.DELETE, triggerPrefix, maxTriggerNameLength).toUpperCase());
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -305,16 +308,17 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             oldTriggerName = oldAudit.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = oldAudit.getSourceSchemaName();
             oldCatalogName = oldAudit.getSourceCatalogName();
-            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
-                    oldAudit.getSourceTableName(), oldTriggerName);
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldAudit.getSourceTableName(),
+                    oldTriggerName);
         } else {
-            // We had no trigger_hist row, lets validate that the trigger as defined in the trigger
+            // We had no trigger_hist row, lets validate that the trigger as
+            // defined in the trigger
             // does not exist as well.
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
             oldCatalogName = trigger.getSourceCatalogName();
-            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
-                    trigger.getSourceTableName(), oldTriggerName);
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, trigger.getSourceTableName(),
+                    oldTriggerName);
         }
 
         if (!triggerExists && forceRebuild) {
@@ -326,8 +330,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             triggerExists = false;
         }
 
-        boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate()
-                && !trigger.isSyncOnDelete();
+        boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
 
         if (audit == null && (oldAudit == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
             configurationService.insert(newTriggerHist);

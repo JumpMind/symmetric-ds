@@ -26,13 +26,13 @@ import java.util.Date;
 public interface IDataLoaderStatistics {
 
     public long getByteCount();
-    
+
     public long getNetworkMillis();
-    
+
     public long getFilterMillis();
-    
+
     public long getDatabaseMillis();
-    
+
     public long getFallbackInsertCount();
 
     public long getFallbackUpdateCount();

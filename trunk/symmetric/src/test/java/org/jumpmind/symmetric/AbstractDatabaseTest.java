@@ -52,11 +52,11 @@ abstract public class AbstractDatabaseTest extends AbstractTest implements ITest
     public AbstractDatabaseTest(String dbType) {
         this.databaseType = dbType;
     }
-    
+
     public AbstractDatabaseTest() {
-    }    
-    
-    public String getTestName() {        
+    }
+
+    public String getTestName() {
         return getDatabaseName();
     }
 
@@ -65,16 +65,15 @@ abstract public class AbstractDatabaseTest extends AbstractTest implements ITest
     }
 
     protected SymmetricEngine getSymmetricEngine() {
-        SymmetricEngine e = this.engine.get(getDatabaseName()); 
+        SymmetricEngine e = this.engine.get(getDatabaseName());
         if (e == null) {
             e = createEngine(getSymmetricFile());
             dropAndCreateDatabaseTables(getDatabaseName(), e);
-            ((IBootstrapService)e.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
-                    .setupDatabase();
+            ((IBootstrapService) e.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE)).setupDatabase();
             new SqlScript(getResource(TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT), (DataSource) e
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             e.start();
-            this.engine.put(getDatabaseName(), e);            
+            this.engine.put(getDatabaseName(), e);
         }
         return e;
     }
@@ -84,7 +83,7 @@ abstract public class AbstractDatabaseTest extends AbstractTest implements ITest
             Properties properties = MultiDatabaseTest.getTestProperties();
             String[] rootDatabaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
             databaseType = rootDatabaseTypes[0];
-        }        
+        }
         return databaseType;
     }
 

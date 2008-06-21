@@ -40,19 +40,17 @@ import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.Au
  * should it prevent further processing of the request?
  * 
  */
-public class AuthenticationFilter extends
-        AbstractTransportFilter<AuthenticationResourceHandler> {
+public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> {
 
     private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
-  
+
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
 
-    public void doFilter(ServletRequest req, ServletResponse resp,
-            FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException,
+            ServletException {
         String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
         String nodeId = req.getParameter(WebConstants.NODE_ID);
 
@@ -61,8 +59,7 @@ public class AuthenticationFilter extends
             return;
         }
 
-        final AuthenticationStatus status = getTransportResourceHandler()
-                .status(nodeId, securityToken);
+        final AuthenticationStatus status = getTransportResourceHandler().status(nodeId, securityToken);
         if (AuthenticationStatus.FORBIDDEN.equals(status)) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN);
         } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
@@ -73,8 +70,7 @@ public class AuthenticationFilter extends
     }
 
     @Override
-    protected Log getLogger()
-    {
+    protected Log getLogger() {
         return logger;
     }
 }

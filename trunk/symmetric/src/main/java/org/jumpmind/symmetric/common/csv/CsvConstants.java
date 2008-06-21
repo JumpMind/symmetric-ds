@@ -22,9 +22,9 @@
 package org.jumpmind.symmetric.common.csv;
 
 public class CsvConstants {
-    
+
     public static final String BINARY = "binary";
-    
+
     public static final String VERSION = "version";
 
     public static final String NODEID = "nodeid";
@@ -44,9 +44,9 @@ public class CsvConstants {
     public static final String DELETE = "delete";
 
     public static final String COMMIT = "commit";
-    
+
     public static final String SQL = "sql";
-    
+
     public static final String CREATE = "create";
 
 }

@@ -81,11 +81,13 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     /**
-     * Before streaming data to the remote node, make sure it is ok to.  We have found that we can be more efficient on a push
-     * by relying on HTTP keep-alive. 
+     * Before streaming data to the remote node, make sure it is ok to. We have
+     * found that we can be more efficient on a push by relying on HTTP
+     * keep-alive.
+     * 
      * @throws IOException
      * @throws {@link ConnectionRejectedException}
-     * @throws {@link AuthenticationException} 
+     * @throws {@link AuthenticationException}
      */
     private void requestReservation() throws IOException {
         HttpURLConnection c = (HttpURLConnection) url.openConnection();

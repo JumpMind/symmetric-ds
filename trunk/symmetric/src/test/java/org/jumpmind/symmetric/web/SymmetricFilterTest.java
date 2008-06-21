@@ -55,8 +55,7 @@ public class SymmetricFilterTest extends AbstractDatabaseTest {
     protected ServletContext servletContext;
 
     @BeforeMethod(alwaysRun = true)
-    protected void springTestContextBeforeTestMethod(Method method)
-            throws Exception {
+    protected void springTestContextBeforeTestMethod(Method method) throws Exception {
         servletContext = new MockServletContext();
         applicationContext = new XmlWebApplicationContext();
         applicationContext.setParent(getSymmetricEngine().getApplicationContext());
@@ -64,9 +63,7 @@ public class SymmetricFilterTest extends AbstractDatabaseTest {
         applicationContext.setConfigLocations(new String[0]);
         applicationContext.refresh();
 
-        servletContext.setAttribute(
-                WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
-                applicationContext);
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext);
     }
 
     @DataProvider(name = "authenticationFilterForbiddenParams")
@@ -75,69 +72,36 @@ public class SymmetricFilterTest extends AbstractDatabaseTest {
         emptyAuthentication.put(WebConstants.SECURITY_TOKEN, "");
         emptyAuthentication.put(WebConstants.NODE_ID, "");
 
-        return new Object[][] {
-                { "GET", "/ack", null },
-                { "GET", "/ack/", null },
-                { "GET", "/ack/more", null },
-                { "GET", "/ack?name=value", null },
-                { "GET", "/ack?name=value&name=value", null },
-                {
-                        "GET",
-                        String.format("/ack?%s=1&%s=2",
-                                WebConstants.SECURITY_TOKEN,
-                                WebConstants.NODE_ID), null },
-                { "GET", "/ack", emptyAuthentication },
-                { "PUT", "/ack", null },
-                { "POST", "/ack", null },
-                { "DELETE", "/ack", null },
-                { "TRACE", "/ack", null },
-                { "OPTIONS", "/ack", null },
-                { "HEAD", "/ack", null },
-                { "GET", "/pull", null },
-                { "GET", "/pull/", null },
-                { "GET", "/pull/more", null },
-                { "GET", "/pull?name=value", null },
+        return new Object[][] { { "GET", "/ack", null }, { "GET", "/ack/", null }, { "GET", "/ack/more", null },
+                { "GET", "/ack?name=value", null }, { "GET", "/ack?name=value&name=value", null },
+                { "GET", String.format("/ack?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/ack", emptyAuthentication }, { "PUT", "/ack", null }, { "POST", "/ack", null },
+                { "DELETE", "/ack", null }, { "TRACE", "/ack", null }, { "OPTIONS", "/ack", null },
+                { "HEAD", "/ack", null }, { "GET", "/pull", null }, { "GET", "/pull/", null },
+                { "GET", "/pull/more", null }, { "GET", "/pull?name=value", null },
                 { "GET", "/pull?name=value&name=value", null },
-                {
-                        "GET",
-                        String.format("/pull?%s=1&%s=2",
-                                WebConstants.SECURITY_TOKEN,
-                                WebConstants.NODE_ID), null },
-                { "GET", "/pull", emptyAuthentication },
-                { "PUT", "/pull", null },
-                { "POST", "/pull", null },
-                { "DELETE", "/pull", null },
-                { "TRACE", "/pull", null },
-                { "OPTIONS", "/pull", null },
-                { "HEAD", "/pull", null },
-                { "GET", "/push", null },
-                { "GET", "/push/", null },
-                { "GET", "/push/more", null },
-                { "GET", "/push?name=value", null },
+                { "GET", String.format("/pull?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/pull", emptyAuthentication }, { "PUT", "/pull", null }, { "POST", "/pull", null },
+                { "DELETE", "/pull", null }, { "TRACE", "/pull", null }, { "OPTIONS", "/pull", null },
+                { "HEAD", "/pull", null }, { "GET", "/push", null }, { "GET", "/push/", null },
+                { "GET", "/push/more", null }, { "GET", "/push?name=value", null },
                 { "GET", "/push?name=value&name=value", null },
-                {
-                        "GET",
-                        String.format("/push?%s=1&%s=2",
-                                WebConstants.SECURITY_TOKEN,
-                                WebConstants.NODE_ID), null },
-                { "GET", "/push", emptyAuthentication },
-                { "PUT", "/push", null }, { "POST", "/push", null },
-                { "DELETE", "/push", null }, { "TRACE", "/push", null },
-                { "OPTIONS", "/push", null }, { "HEAD", "/push", null }, };
+                { "GET", String.format("/push?%s=1&%s=2", WebConstants.SECURITY_TOKEN, WebConstants.NODE_ID), null },
+                { "GET", "/push", emptyAuthentication }, { "PUT", "/push", null }, { "POST", "/push", null },
+                { "DELETE", "/push", null }, { "TRACE", "/push", null }, { "OPTIONS", "/push", null },
+                { "HEAD", "/push", null }, };
     }
 
     @Test(groups = "continuous", dataProvider = "authenticationFilterForbiddenParams")
-    public void testAuthenticationFilterForbidden(String method, String uri,
-            Map<String, String> parameters) throws Exception {
+    public void testAuthenticationFilterForbidden(String method, String uri, Map<String, String> parameters)
+            throws Exception {
 
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
-        final MockHttpServletRequest request = createMockHttpServletRequest(
-                method, uri, parameters);
+        final MockHttpServletRequest request = createMockHttpServletRequest(method, uri, parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
-        Assert.assertEquals(response.getStatus(),
-                HttpServletResponse.SC_FORBIDDEN);
+        Assert.assertEquals(response.getStatus(), HttpServletResponse.SC_FORBIDDEN);
         filter.destroy();
     }
 
@@ -146,76 +110,58 @@ public class SymmetricFilterTest extends AbstractDatabaseTest {
         final Map<String, String> badAuthentication = new HashMap<String, String>();
         badAuthentication.put(WebConstants.SECURITY_TOKEN, BAD_SECURITY_TOKEN);
         badAuthentication.put(WebConstants.NODE_ID, BAD_NODE_ID);
-        return new Object[][] { { "GET", "/ack", badAuthentication },
-                { "GET", "/pull", badAuthentication },
+        return new Object[][] { { "GET", "/ack", badAuthentication }, { "GET", "/pull", badAuthentication },
                 { "GET", "/push", badAuthentication }, };
     }
 
     @Test(groups = "continuous", dataProvider = "authenticationFilterRegistrationRequiredParams")
-    public void testAuthenticationFilterRegistrationRequired(String method,
-            String uri, Map<String, String> parameters) throws Exception {
+    public void testAuthenticationFilterRegistrationRequired(String method, String uri, Map<String, String> parameters)
+            throws Exception {
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
 
-        final MockHttpServletRequest request = createMockHttpServletRequest(
-                method, uri, parameters);
+        final MockHttpServletRequest request = createMockHttpServletRequest(method, uri, parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
-        Assert.assertEquals(response.getStatus(),
-                WebConstants.REGISTRATION_REQUIRED);
+        Assert.assertEquals(response.getStatus(), WebConstants.REGISTRATION_REQUIRED);
         filter.destroy();
     }
 
     @DataProvider(name = "authenticationFilterParams")
     public Object[][] authenticationFilterParams() {
         final Map<String, String> goodAuthentication = new HashMap<String, String>();
-        goodAuthentication.put(WebConstants.SECURITY_TOKEN,
-                MockNodeService.GOOD_SECURITY_TOKEN);
-        goodAuthentication.put(WebConstants.NODE_ID,
-                MockNodeService.GOOD_NODE_ID);
-        return new Object[][] { { "GET", "/ack", goodAuthentication },
-                { "POST", "/ack", goodAuthentication },
-                { "PUT", "/ack", goodAuthentication },
-                { "DELETE", "/ack", goodAuthentication },
-                { "TRACE", "/ack", goodAuthentication },
-                { "OPTIONS", "/ack", goodAuthentication },
-                { "HEAD", "/ack", goodAuthentication },
-                { "GET", "/pull", goodAuthentication },
-                { "POST", "/pull", goodAuthentication },
-                { "PUT", "/pull", goodAuthentication },
-                { "DELETE", "/pull", goodAuthentication },
-                { "TRACE", "/pull", goodAuthentication },
-                { "OPTIONS", "/pull", goodAuthentication },
-                { "HEAD", "/pull", goodAuthentication },
-                { "GET", "/push", goodAuthentication },
-                { "POST", "/push", goodAuthentication },
-                { "PUT", "/push", goodAuthentication },
-                { "DELETE", "/push", goodAuthentication },
-                { "TRACE", "/push", goodAuthentication },
-                { "OPTIONS", "/push", goodAuthentication },
+        goodAuthentication.put(WebConstants.SECURITY_TOKEN, MockNodeService.GOOD_SECURITY_TOKEN);
+        goodAuthentication.put(WebConstants.NODE_ID, MockNodeService.GOOD_NODE_ID);
+        return new Object[][] { { "GET", "/ack", goodAuthentication }, { "POST", "/ack", goodAuthentication },
+                { "PUT", "/ack", goodAuthentication }, { "DELETE", "/ack", goodAuthentication },
+                { "TRACE", "/ack", goodAuthentication }, { "OPTIONS", "/ack", goodAuthentication },
+                { "HEAD", "/ack", goodAuthentication }, { "GET", "/pull", goodAuthentication },
+                { "POST", "/pull", goodAuthentication }, { "PUT", "/pull", goodAuthentication },
+                { "DELETE", "/pull", goodAuthentication }, { "TRACE", "/pull", goodAuthentication },
+                { "OPTIONS", "/pull", goodAuthentication }, { "HEAD", "/pull", goodAuthentication },
+                { "GET", "/push", goodAuthentication }, { "POST", "/push", goodAuthentication },
+                { "PUT", "/push", goodAuthentication }, { "DELETE", "/push", goodAuthentication },
+                { "TRACE", "/push", goodAuthentication }, { "OPTIONS", "/push", goodAuthentication },
                 { "HEAD", "/push", goodAuthentication } };
     }
 
     @Test(groups = "continuous", dataProvider = "authenticationFilterParams")
-    public void testAuthenticationFilter(String method, String uri,
-            Map<String, String> parameters) throws Exception {
+    public void testAuthenticationFilter(String method, String uri, Map<String, String> parameters) throws Exception {
 
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
 
-        final MockHttpServletRequest request = createMockHttpServletRequest(
-                method, uri, parameters);
+        final MockHttpServletRequest request = createMockHttpServletRequest(method, uri, parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
         Assert.assertEquals(response.getStatus(), HttpServletResponse.SC_FORBIDDEN);
         filter.destroy();
     }
 
-    private MockHttpServletRequest createMockHttpServletRequest(String method,
-            String uri, Map<String, String> parameters) {
+    private MockHttpServletRequest createMockHttpServletRequest(String method, String uri,
+            Map<String, String> parameters) {
         final String[] uriParts = StringUtils.split(uri, "?");
-        final MockHttpServletRequest request = new MockHttpServletRequest(
-                servletContext, method, uriParts[0]);
+        final MockHttpServletRequest request = new MockHttpServletRequest(servletContext, method, uriParts[0]);
         if (uriParts.length > 1) {
             request.setQueryString(uriParts[1]);
         }

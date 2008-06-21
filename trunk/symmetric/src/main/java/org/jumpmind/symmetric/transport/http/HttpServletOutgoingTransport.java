@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class HttpServletOutgoingTransport implements IOutgoingTransport {
-private HttpServletResponse response;
+    private HttpServletResponse response;
 
     public HttpServletOutgoingTransport(HttpServletResponse resp) {
         this.response = resp;

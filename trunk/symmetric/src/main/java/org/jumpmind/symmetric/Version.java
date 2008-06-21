@@ -51,7 +51,7 @@ final public class Version {
                 return p.getProperty("version");
             } catch (IOException e) {
                 log.warn(e, e);
-            }            
+            }
         }
         return "development";
     }
@@ -102,7 +102,8 @@ final public class Version {
         int[] softwareVersion = parseVersion(version());
         if (versions[0] < softwareVersion[MAJOR_INDEX]) {
             return true;
-        } else if (versions[MAJOR_INDEX] == softwareVersion[MAJOR_INDEX] && versions[MINOR_INDEX] < softwareVersion[MINOR_INDEX]) {
+        } else if (versions[MAJOR_INDEX] == softwareVersion[MAJOR_INDEX]
+                && versions[MINOR_INDEX] < softwareVersion[MINOR_INDEX]) {
             return true;
         }
         return false;

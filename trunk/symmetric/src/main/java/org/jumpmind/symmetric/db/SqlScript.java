@@ -90,7 +90,7 @@ public class SqlScript {
             StringBuilder sql = new StringBuilder();
 
             while ((line = reader.readLine()) != null) {
-                if (! isComment(line)) {
+                if (!isComment(line)) {
                     if (checkStatementEnds(line)) {
                         sql.append(line.substring(0, line.indexOf(delimiter)));
                         if (logger.isDebugEnabled()) {

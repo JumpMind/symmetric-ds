@@ -20,16 +20,15 @@
 
 package org.jumpmind.symmetric.config;
 
-
 /**
  * This interface is used to pull the runtime configuration for this
  * SymmetricDSinstallation.
  * 
- * If the registrationURL is null, then this server will not register with another
- * server (it is likely that it is the host itself).
+ * If the registrationURL is null, then this server will not register with
+ * another server (it is likely that it is the host itself).
  * 
- * This interface is meant to be 'pluggable.'  It might be that different installations
- * might want to pull this information from different places.
+ * This interface is meant to be 'pluggable.' It might be that different
+ * installations might want to pull this information from different places.
  */
 @Deprecated
 public interface IRuntimeConfig {
@@ -45,16 +44,16 @@ public interface IRuntimeConfig {
     public String getExternalId();
 
     /**
-     * Provide the URL used to register at to get initial configuration information
+     * Provide the URL used to register at to get initial configuration
+     * information
      */
     public String getRegistrationUrl();
-    
+
     /**
      * Provide the URL of this specific instance of SymmetricDS
      */
     public String getMyUrl();
-    
-   
+
     /**
      * Provide information about the version of the schema being sync'd.
      */

@@ -26,17 +26,17 @@ import java.util.Date;
 public class NodeSecurity {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String nodeId;
-    
+
     private String password;
-    
+
     private boolean registrationEnabled;
-    
+
     private Date registrationTime;
 
     private boolean initialLoadEnabled;
-    
+
     private Date initialLoadTime;
 
     public String getNodeId() {
@@ -86,6 +86,5 @@ public class NodeSecurity {
     public void setInitialLoadTime(Date initialLoadTime) {
         this.initialLoadTime = initialLoadTime;
     }
-    
 
 }

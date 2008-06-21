@@ -40,9 +40,9 @@ public interface IDataLoaderContext {
     public String[] getColumnNames();
 
     public String[] getKeyNames();
-    
+
     public Table[] getAllTablesProcessed();
-    
+
     public Map<String, Object> getContextCache();
 
 }

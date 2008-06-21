@@ -168,8 +168,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         createDataEvent("Foo", triggerHistId, "testchannel", DataEventType.INSERT,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        createDataEvent("Foo", triggerHistId, "config", DataEventType.INSERT,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        createDataEvent("Foo", triggerHistId, "config", DataEventType.INSERT, TestConstants.TEST_CLIENT_EXTERNAL_ID);
 
         batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
 
@@ -199,8 +198,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @SuppressWarnings("deprecation")
     @Test(groups = "continuous")
     public void testErrorChannel() {
-        IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(
-                Constants.CONFIG_SERVICE);
+        IConfigurationService configService = (IConfigurationService) getBeanFactory()
+                .getBean(Constants.CONFIG_SERVICE);
         List<NodeChannel> channels = configService.getChannelsFor(true);
 
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
@@ -227,7 +226,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         long firstBatchId = batches.get(0).getBatchId();
         long secondBatchId = batches.get(1).getBatchId();
         long thirdBatchId = batches.get(2).getBatchId();
-        
+
         // Ack the first batch as an error, leaving the others as new
         ackService.ack(new BatchInfo(firstBatchId, 1));
 
@@ -236,16 +235,15 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertNotNull(batches);
         Assert.assertEquals(batches.size(), 3);
         Assert.assertEquals(batches.get(0).getBatchId(), secondBatchId,
-        "Channel in error should have batches last - missing new batch");        
+                "Channel in error should have batches last - missing new batch");
         Assert.assertEquals(batches.get(1).getBatchId(), firstBatchId,
                 "Channel in error should have batches last - missing error batch");
         Assert.assertEquals(batches.get(2).getBatchId(), thirdBatchId,
                 "Channel in error should have batches last - missing new batch");
-        
+
     }
 
-    protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type,
-            String nodeId) {
+    protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type, String nodeId) {
         TriggerHistory audit = new TriggerHistory();
         audit.setTriggerHistoryId(auditId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
@@ -255,8 +253,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     protected int getBatchSize(final long batchId) {
         return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement s = conn.prepareStatement("select count(*) " + "from "
-                        + TestConstants.TEST_PREFIX + "data_event where batch_id = ?");
+                PreparedStatement s = conn.prepareStatement("select count(*) " + "from " + TestConstants.TEST_PREFIX
+                        + "data_event where batch_id = ?");
                 s.setLong(1, batchId);
                 ResultSet rs = s.executeQuery();
                 rs.next();

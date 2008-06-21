@@ -64,8 +64,7 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertDataEvent(Data data, String channelId,
-            String transactionId, List<Node> nodes) {
+    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes) {
 
     }
 

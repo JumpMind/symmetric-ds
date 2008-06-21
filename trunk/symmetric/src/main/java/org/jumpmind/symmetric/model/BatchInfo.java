@@ -21,29 +21,29 @@
 package org.jumpmind.symmetric.model;
 
 public class BatchInfo {
-    
+
     private long batchId;
-    
+
     private String nodeId;
-    
+
     private boolean isOk;
 
     private long errorLine;
 
     private long networkMillis;
-    
+
     private long filterMillis;
-    
+
     private long databaseMillis;
-    
+
     private long byteCount;
-    
+
     private String sqlState;
-    
+
     private int sqlCode;
-    
+
     private String sqlMessage;
-    
+
     public BatchInfo(long batchId) {
         this.batchId = batchId;
         isOk = true;

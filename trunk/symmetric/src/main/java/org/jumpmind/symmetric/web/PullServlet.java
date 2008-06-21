@@ -33,48 +33,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.handler.PullResourceHandler;
 
-public class PullServlet extends
-        AbstractTransportResourceServlet<PullResourceHandler> {
+public class PullServlet extends AbstractTransportResourceServlet<PullResourceHandler> {
 
     private static final Log logger = LogFactory.getLog(PullServlet.class);
 
     private static final long serialVersionUID = 1L;
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
 
     @Override
-    public void handleGet(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         handlePost(req, resp);
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
         String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         if (logger.isDebugEnabled()) {
-            logger
-                    .debug(String.format("Pull request received from %s",
-                            nodeId));
+            logger.debug(String.format("Pull request received from %s", nodeId));
         }
 
         if (StringUtils.isBlank(nodeId)) {
-            sendError(resp, HttpServletResponse.SC_BAD_REQUEST,
-                    "Node must be specified");
+            sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
             return;
         }
         OutputStream outputStream = createOutputStream(resp);
         getTransportResourceHandler().pull(nodeId, outputStream);
 
         if (logger.isDebugEnabled()) {
-            logger.debug(String
-                    .format("Done with Pull request from %s", nodeId));
+            logger.debug(String.format("Done with Pull request from %s", nodeId));
         }
     }
 

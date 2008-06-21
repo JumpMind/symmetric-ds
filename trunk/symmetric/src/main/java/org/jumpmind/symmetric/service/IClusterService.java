@@ -22,8 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import org.jumpmind.symmetric.model.Node;
 
-public interface IClusterService
-{
+public interface IClusterService {
 
     public void initLockTable();
 
@@ -38,7 +37,7 @@ public interface IClusterService
     public void unlock(LockAction action);
 
     public void unlock(final LockAction action, final Node node);
-    
+
     public void clearAllLocks();
 
 }

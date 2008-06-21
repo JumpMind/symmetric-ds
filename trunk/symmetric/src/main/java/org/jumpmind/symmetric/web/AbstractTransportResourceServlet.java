@@ -31,8 +31,8 @@ import org.jumpmind.symmetric.transport.ITransportResourceHandler;
  * @since 1.4.0
  * 
  */
-public abstract class AbstractTransportResourceServlet<T extends ITransportResourceHandler>
-        extends AbstractResourceServlet<T> implements ITransportResource<T> {
+public abstract class AbstractTransportResourceServlet<T extends ITransportResourceHandler> extends
+        AbstractResourceServlet<T> implements ITransportResource<T> {
 
     private T transportResourceHandler;
 

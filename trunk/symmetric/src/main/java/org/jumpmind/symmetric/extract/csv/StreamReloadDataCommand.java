@@ -48,7 +48,8 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
             trigger.setInitialLoadSelect(data.getRowData());
         }
         Node node = nodeService.findNode(context.getBatch().getNodeId());
-        dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, new InternalOutgoingTransport(out), context);
+        dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, new InternalOutgoingTransport(out),
+                context);
         out.flush();
     }
 

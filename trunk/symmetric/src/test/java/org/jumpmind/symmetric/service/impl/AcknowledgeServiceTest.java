@@ -46,20 +46,20 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 public class AcknowledgeServiceTest extends AbstractDatabaseTest {
-    
+
     protected IAcknowledgeService ackService;
-    
+
     protected IOutgoingBatchService outgoingBatchService;
-    
+
     protected IDataService dataService;
 
-    @BeforeTest(groups="continuous")
+    @BeforeTest(groups = "continuous")
     protected void setUp() {
         ackService = (IAcknowledgeService) getBeanFactory().getBean(Constants.ACKNOWLEDGE_SERVICE);
         outgoingBatchService = (IOutgoingBatchService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
     }
-    
+
     @Test(groups = "continuous")
     public void okTest() {
         cleanSlate();
@@ -73,8 +73,8 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     }
 
     private void cleanSlate() {
-        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data", TestConstants.TEST_PREFIX + "outgoing_batch_hist",
-                TestConstants.TEST_PREFIX + "outgoing_batch");
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch_hist", TestConstants.TEST_PREFIX + "outgoing_batch");
     }
 
     @Test(groups = "continuous")
@@ -129,15 +129,14 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
     @SuppressWarnings("unchecked")
     protected List<OutgoingBatchHistory> getOutgoingBatchHistory(long batchId) {
-        final String sql = "select batch_id, status, data_event_count, start_time, "
-                + "failed_data_id from " + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
+        final String sql = "select batch_id, status, data_event_count, start_time, " + "failed_data_id from "
+                + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
         final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
         getJdbcTemplate().query(sql, new Object[] { batchId }, new RowMapper() {
             public Object[] mapRow(ResultSet rs, int row) throws SQLException {
                 OutgoingBatchHistory item = new OutgoingBatchHistory();
                 item.setBatchId(rs.getLong(1));
-                item.setStatus(OutgoingBatchHistory.Status.valueOf(rs
-                        .getString(2)));
+                item.setStatus(OutgoingBatchHistory.Status.valueOf(rs.getString(2)));
                 item.setDataEventCount(rs.getLong(3));
                 item.setStartTime(rs.getTimestamp(4));
                 item.setFailedDataId(rs.getLong(5));
@@ -164,10 +163,10 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         audit.setTriggerHistoryId(TestConstants.TEST_AUDIT_ID);
         final long[] id = new long[size];
         for (int i = 0; i < size; i++) {
-            Data data = new Data("table1", DataEventType.INSERT,
-                    "some data", "some data", audit);
+            Data data = new Data("table1", DataEventType.INSERT, "some data", "some data", audit);
             id[i] = dataService.insertData(data);
-            DataEvent dataEvent = new DataEvent(id[i], TestConstants.TEST_CLIENT_EXTERNAL_ID, TestConstants.TEST_CHANNEL_ID);
+            DataEvent dataEvent = new DataEvent(id[i], TestConstants.TEST_CLIENT_EXTERNAL_ID,
+                    TestConstants.TEST_CHANNEL_ID);
             dataEvent.setBatchId(Long.valueOf(batch.getBatchId()));
             dataEvent.setBatched(true);
             dataService.insertDataEvent(dataEvent);

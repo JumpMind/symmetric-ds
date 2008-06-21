@@ -53,8 +53,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     @BeforeTest(groups = "continuous")
     protected void setUp() {
-        dataExtractorService = (IDataExtractorService) getBeanFactory().getBean(
-                Constants.DATAEXTRACTOR_SERVICE);
+        dataExtractorService = (IDataExtractorService) getBeanFactory().getBean(Constants.DATAEXTRACTOR_SERVICE);
         configurationService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
         dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
         node = new Node();
@@ -69,40 +68,35 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
     public void testInitialLoadExtract() throws Exception {
         ((IBootstrapService) getBeanFactory().getBean(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
-        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(
-                TestConstants.TEST_PREFIX + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP),
-                mockTransport);
+        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX
+                + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP), mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: "
-                + loadResults);
+        Assert.assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
         Assert.assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
                 "Did not find expected insert for CORP");
-        Assert.assertTrue(loadResults.startsWith("nodeid, 00000"),
-                "Unexpected line at the start of the feed.");
+        Assert.assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
     }
 
     @Test(groups = "continuous")
     public void testExtract() throws Exception {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
-        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID,
-                DataEventType.INSERT, node.getNodeId());
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT, node.getNodeId());
 
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         mockTransport.open();
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
 
-        Assert.assertEquals(countLines(loadResults), 8,
-                "Unexpected number of lines in the transport result: " + loadResults);
+        Assert.assertEquals(countLines(loadResults), 8, "Unexpected number of lines in the transport result: "
+                + loadResults);
     }
 
     private int countLines(String results) {
         return new StringTokenizer(results, "\n").countTokens();
     }
 
-    private void createDataEvent(String tableName, int auditId, String channelId, DataEventType type,
-            String nodeId) {
+    private void createDataEvent(String tableName, int auditId, String channelId, DataEventType type, String nodeId) {
         TriggerHistory audit = new TriggerHistory();
         audit.setTriggerHistoryId(auditId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);

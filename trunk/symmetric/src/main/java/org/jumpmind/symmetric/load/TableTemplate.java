@@ -76,7 +76,7 @@ public class TableTemplate {
     private Column[] columnMetaData;
 
     private Column[] columnKeyMetaData;
-    
+
     private Column[] noKeyColumnPlusKeyMetaData;
 
     private HashMap<DmlType, StatementBuilder> statementMap;
@@ -163,15 +163,15 @@ public class TableTemplate {
     }
 
     /**
-     * This is in support of allowing update statements that don't use the keys in the set portion of the 
-     * update statement. 
+     * This is in support of allowing update statements that don't use the keys
+     * in the set portion of the update statement.
      */
     private String[] removeKeysFromColumnValuesIfSame(IDataLoaderContext ctx, String[] keyValues, String[] columnValues) {
         if (keyIndexesToRemoveOnUpdate == null) {
             String[] colNames = ctx.getColumnNames();
             String[] keyNames = ctx.getKeyNames();
-            String[] noKeyColNames = new String[colNames.length-keyNames.length];
-            keyIndexesToRemoveOnUpdate = new int[keyNames.length];            
+            String[] noKeyColNames = new String[colNames.length - keyNames.length];
+            keyIndexesToRemoveOnUpdate = new int[keyNames.length];
             int indexToRemoveIndex = 0;
             int indexOfNoKeyColNames = 0;
             for (int index = 0; index < colNames.length; index++) {
@@ -181,10 +181,10 @@ public class TableTemplate {
                     noKeyColNames[indexOfNoKeyColNames++] = colNames[index];
                 }
             }
-            
-            noKeyColumnPlusKeyMetaData = getColumnMetaData((String[])ArrayUtils.addAll(noKeyColNames, keyNames));
+
+            noKeyColumnPlusKeyMetaData = getColumnMetaData((String[]) ArrayUtils.addAll(noKeyColNames, keyNames));
         }
-        
+
         if (noKeyColumnPlusKeyMetaData == null) {
             String[] noKeys = new String[columnValues.length - keyValues.length];
             int noKeysIndex = 0;

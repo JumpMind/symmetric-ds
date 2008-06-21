@@ -46,16 +46,16 @@ import org.testng.annotations.Test;
 public class DbTriggerTest extends AbstractDatabaseTest {
 
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);
-    
+
     private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
     final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
-            + "values(?,?,?,?,?,?,?,?)"; //'\\\\','\"','\"1\"',null,null,1,1,1)";
+            + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
     final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-        Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
+            Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
     final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
 
@@ -136,7 +136,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         List<String> csvStrings = getJdbcTemplate(getSymmetricEngine()).queryForList(sql, String.class);
         Assert.assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
-        Assert.assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
+        Assert.assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
+                + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 
     @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
@@ -155,8 +156,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
         String batchId = (String) jdbcTemplate.queryForObject(sql, String.class);
 
-        IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(
-                Constants.DB_DIALECT);
+        IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
         if (dbDialect.supportsTransactionId()) {
             Assert.assertNotNull(batchId);
         }
@@ -166,7 +166,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void testExcludedColumnsFunctionality() throws Exception {
         IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
-        // need to wait for a second to make sure enough time has passed so the update of the config
+        // need to wait for a second to make sure enough time has passed so the
+        // update of the config
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
@@ -208,7 +209,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         final String TARGET_TABLE_NAME = "SOME_OTHER_TABLE_NAME";
         IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
-        // need to wait for a second to make sure enough time has passed so the update of the trigger
+        // need to wait for a second to make sure enough time has passed so the
+        // update of the trigger
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
@@ -232,10 +234,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private int[] filterTypes(int[] types) {
-        boolean isBooleanSupported = ! (getDbDialect() instanceof OracleDbDialect);
+        boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
         int[] filteredTypes = new int[types.length];
         for (int i = 0; i < types.length; i++) {
-            if (types[i] == Types.BOOLEAN && ! isBooleanSupported) {
+            if (types[i] == Types.BOOLEAN && !isBooleanSupported) {
                 filteredTypes[i] = Types.INTEGER;
             } else {
                 filteredTypes[i] = types[i];
@@ -243,12 +245,12 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         }
         return filteredTypes;
     }
-    
+
     private Object[] filterValues(Object[] values) {
-        boolean isBooleanSupported = ! (getDbDialect() instanceof OracleDbDialect);
+        boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
-            if (values[i] instanceof Boolean && ! isBooleanSupported) {
+            if (values[i] instanceof Boolean && !isBooleanSupported) {
                 filteredValues[i] = ((Boolean) values[i]) ? new Integer(1) : new Integer(0);
             } else {
                 filteredValues[i] = values[i];
@@ -256,7 +258,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         }
         return filteredValues;
     }
-    
+
     private String getNextDataRow(SymmetricEngine engine) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
         return (String) jdbcTemplate

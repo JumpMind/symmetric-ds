@@ -58,7 +58,7 @@ public class PushService extends AbstractService implements IPushService {
             for (Node node : nodes) {
                 logger.info("Push requested for " + node);
                 if (pushToNode(node)) {
-                    logger.info("Push completed for " + node);                    
+                    logger.info("Push completed for " + node);
                 } else {
                     logger.info("Push unsuccessful for " + node);
                 }

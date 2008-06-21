@@ -58,8 +58,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Run symmetric utilities and/or launch an embedded version of Symmetric.  If you run this
- * program without any arguments 'help' will print out.
+ * Run symmetric utilities and/or launch an embedded version of Symmetric. If
+ * you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
 
@@ -220,7 +220,8 @@ public class SymmetricLauncher {
                         OPTION_PROPERTIES_FILE,
                         true,
                         "Takes an argument with the path to the properties file that will drive symmetric.  If this is not provided, symmetric will use defaults, then override with the first symmetric.properties in your classpath, then override with symmetric.properties values in your user.home directory.");
-        options.addOption("X", OPTION_PURGE, false, "Will simply run the purge process against the currently configured database.");
+        options.addOption("X", OPTION_PURGE, false,
+                "Will simply run the purge process against the currently configured database.");
         options
                 .addOption("g", OPTION_PROPERTIES_GEN, true,
                         "Takes an argument with the path to a file which all the default overrideable properties will be written.");
@@ -314,7 +315,8 @@ public class SymmetricLauncher {
     private static void autoCreateDatabase(SymmetricEngine engine) {
         IBootstrapService bootstrapService = (IBootstrapService) engine.getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
-        IParameterService parameterService = (IParameterService)engine.getApplicationContext().getBean(Constants.PARAMETER_SERVICE);
+        IParameterService parameterService = (IParameterService) engine.getApplicationContext().getBean(
+                Constants.PARAMETER_SERVICE);
         parameterService.saveParameter(ParameterConstants.AUTO_CONFIGURE_DATABASE, true);
         bootstrapService.setupDatabase();
     }

@@ -69,7 +69,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private BeanFactory beanFactory;
 
     private DataExtractorContext context;
-    
+
     private List<IExtractorFilter> extractorFilters;
 
     private String tablePrefix;
@@ -150,8 +150,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.begin(batch, writer);
                         }
                         while (rs.next()) {
-                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT,
-                                    audit.getSourceTableName(), null, audit), ctxCopy);
+                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, audit
+                                    .getSourceTableName(), null, audit), ctxCopy);
                         }
                         if (batch != null) {
                             dataExtractor.commit(batch, writer);
@@ -175,15 +175,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     /**
-     * Allow a handler callback to do the work so we can route the extracted data to 
-     * other types of handlers for processing.
+     * Allow a handler callback to do the work so we can route the extracted
+     * data to other types of handlers for processing.
      */
     public boolean extract(Node node, final IExtractListener handler) throws Exception {
 
         List<NodeChannel> channels = configurationService.getChannelsFor(true);
 
         for (NodeChannel nodeChannel : channels) {
-            outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);    
+            outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);
         }
 
         List<OutgoingBatch> batches = filterMaxNumberOfOutgoingBatches(outgoingBatchService.getOutgoingBatches(node
@@ -262,8 +262,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"), ResultSet.TYPE_FORWARD_ONLY,
-                        ResultSet.CONCUR_READ_ONLY);
+                PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
+                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                 ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                 ps.setString(1, batch.getNodeId());
                 ps.setLong(2, batch.getBatchId());
@@ -365,7 +365,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
     }
-    
+
     public void addExtractorFilter(IExtractorFilter extractorFilter) {
         if (this.extractorFilters == null) {
             this.extractorFilters = new ArrayList<IExtractorFilter>();

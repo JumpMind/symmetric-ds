@@ -27,13 +27,13 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
- * Factory that will create either a jndiDataSource or a basicDataSource based on whether a JNDI name
- * is provided.
+ * Factory that will create either a jndiDataSource or a basicDataSource based
+ * on whether a JNDI name is provided.
  */
 public class DataSourceFactoryBean implements FactoryBean, BeanFactoryAware {
 
     private String jndiName;
-    
+
     private String beanName;
 
     private BeanFactory beanFactory;

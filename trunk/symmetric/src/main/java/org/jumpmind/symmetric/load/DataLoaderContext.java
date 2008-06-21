@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.ddlutils.model.Table;
 
-
 public class DataLoaderContext implements IDataLoaderContext {
 
     private String version;
@@ -37,15 +36,15 @@ public class DataLoaderContext implements IDataLoaderContext {
     private String tableName;
 
     private long batchId;
-    
+
     private boolean isSkipping;
-    
+
     private transient Map<String, TableTemplate> tableTemplateMap;
 
     private TableTemplate tableTemplate;
-    
+
     private Map<String, Object> contextCache = new HashMap<String, Object>();
-    
+
     public DataLoaderContext() {
         this.tableTemplateMap = new HashMap<String, TableTemplate>();
     }
@@ -58,7 +57,7 @@ public class DataLoaderContext implements IDataLoaderContext {
         this.tableTemplate = tableTemplate;
         tableTemplateMap.put(getTableName(), tableTemplate);
     }
-    
+
     public Table[] getAllTablesProcessed() {
         Collection<TableTemplate> templates = this.tableTemplateMap.values();
         Table[] tables = new Table[templates.size()];
@@ -68,7 +67,7 @@ public class DataLoaderContext implements IDataLoaderContext {
         }
         return tables;
     }
-    
+
     public long getBatchId() {
         return batchId;
     }
@@ -128,8 +127,9 @@ public class DataLoaderContext implements IDataLoaderContext {
     }
 
     /**
-     * This is a cache that is available for the lifetime of a batch load.  It
-     * can be useful for storing data from the filter for customization purposes.
+     * This is a cache that is available for the lifetime of a batch load. It
+     * can be useful for storing data from the filter for customization
+     * purposes.
      */
     public Map<String, Object> getContextCache() {
         return contextCache;

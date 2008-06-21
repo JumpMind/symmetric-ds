@@ -59,7 +59,8 @@ public class MultiDatabaseTest {
         String[][] clientAndRootCombos = new String[rootDatabaseTypes.length * clientDatabaseTypes.length - 1][2];
 
         int index = 0;
-        // skip the first because it will be covered in the normal run of the integration tests
+        // skip the first because it will be covered in the normal run of the
+        // integration tests
         boolean skipFirst = true;
         for (String rootDatabaseType : rootDatabaseTypes) {
             for (String clientDatabaseType : clientDatabaseTypes) {
@@ -96,16 +97,16 @@ public class MultiDatabaseTest {
 
         String[][] clientAndRootCombos = getClientAndRootCombos();
         for (String[] objects : clientAndRootCombos) {
-            logger.info("Integration tests are being dynamically added for the " + objects[0]
-                    + " client and " + objects[1] + " root combination of databases.");
+            logger.info("Integration tests are being dynamically added for the " + objects[0] + " client and "
+                    + objects[1] + " root combination of databases.");
             tests2Run.addAll(createIntegrationTests(objects[0], objects[1]));
         }
 
         return tests2Run.toArray(new Object[tests2Run.size()]);
     }
 
-    public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType,
-            String rootDatabaseType) throws Exception {
+    public List<? extends AbstractTest> createIntegrationTests(String clientDatabaseType, String rootDatabaseType)
+            throws Exception {
         List<AbstractIntegrationTest> tests2Run = new ArrayList<AbstractIntegrationTest>();
         tests2Run.add(new IntegrationTest(clientDatabaseType, rootDatabaseType));
         return tests2Run;
@@ -115,7 +116,7 @@ public class MultiDatabaseTest {
         List<AbstractDatabaseTest> tests2Run = new ArrayList<AbstractDatabaseTest>();
         tests2Run.add(new DataLoaderServiceTest(rootDatabaseType));
         tests2Run.add(new DataLoaderTest(rootDatabaseType));
-        tests2Run.add(new CrossCatalogSyncTest(rootDatabaseType));        
+        tests2Run.add(new CrossCatalogSyncTest(rootDatabaseType));
         return tests2Run;
     }
 
@@ -145,11 +146,10 @@ public class MultiDatabaseTest {
                 newProperties.setProperty(ParameterConstants.EXTERNAL_ID,
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty(ParameterConstants.MY_URL, "internal://"
-                        + databaseRole.name().toLowerCase());
+                newProperties.setProperty(ParameterConstants.MY_URL, "internal://" + databaseRole.name().toLowerCase());
                 newProperties.setProperty(ParameterConstants.REGISTRATION_URL,
-                        databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name()
-                                .toLowerCase()) : "");
+                        databaseRole == DatabaseRole.CLIENT ? ("internal://" + DatabaseRole.ROOT.name().toLowerCase())
+                                : "");
                 newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
@@ -179,9 +179,8 @@ public class MultiDatabaseTest {
             c.close();
             return true;
         } catch (Exception ex) {
-            logger.error("Could not connect to the test database using the url: "
-                    + properties.getProperty("db.url") + " and classpath: "
-                    + System.getProperty("java.class.path"), ex);
+            logger.error("Could not connect to the test database using the url: " + properties.getProperty("db.url")
+                    + " and classpath: " + System.getProperty("java.class.path"), ex);
             return false;
         }
     }

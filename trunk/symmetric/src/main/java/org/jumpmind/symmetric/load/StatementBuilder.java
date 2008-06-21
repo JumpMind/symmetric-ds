@@ -39,10 +39,11 @@ public class StatementBuilder {
     protected DmlType dmlType;
 
     protected String sql;
-    
+
     protected int[] types;
 
-    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns, boolean isBlobOverrideToBinary) {
+    public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
+            boolean isBlobOverrideToBinary) {
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
             types = buildTypes(columns, isBlobOverrideToBinary);
@@ -52,7 +53,7 @@ public class StatementBuilder {
         } else if (type == DmlType.UPDATE_NO_KEYS) {
             columns = removeKeysFromColumns(keys, columns);
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, isBlobOverrideToBinary);            
+            types = buildTypes(keys, columns, isBlobOverrideToBinary);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
             types = buildTypes(keys, isBlobOverrideToBinary);
@@ -61,9 +62,9 @@ public class StatementBuilder {
         }
         dmlType = type;
     }
-    
+
     protected Column[] removeKeysFromColumns(Column[] keys, Column[] columns) {
-        Column[] columnsWithoutKeys = new Column[columns.length-keys.length];
+        Column[] columnsWithoutKeys = new Column[columns.length - keys.length];
         Set<Column> keySet = new HashSet<Column>();
         CollectionUtils.addAll(keySet, keys);
         int n = 0;
@@ -71,7 +72,7 @@ public class StatementBuilder {
             Column column = columns[i];
             if (!keySet.contains(column)) {
                 columnsWithoutKeys[n++] = column;
-            }            
+            }
         }
         return columnsWithoutKeys;
     }
@@ -81,7 +82,7 @@ public class StatementBuilder {
         int[] keyTypes = buildTypes(keys, isBlobOverrideToBinary);
         return ArrayUtils.addAll(columnTypes, keyTypes);
     }
-    
+
     protected int[] buildTypes(Column[] columns, boolean isBlobOverrideToBinary) {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
@@ -101,7 +102,7 @@ public class StatementBuilder {
         }
         return types;
     }
-    
+
     public static String buildInsertSql(String tableName, String[] columnNames) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
         appendColumns(sql, columnNames);
@@ -198,7 +199,7 @@ public class StatementBuilder {
     public DmlType getDmlType() {
         return dmlType;
     }
-    
+
     public int[] getTypes() {
         return types;
     }

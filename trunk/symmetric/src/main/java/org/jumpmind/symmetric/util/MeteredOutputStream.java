@@ -1,4 +1,3 @@
-
 package org.jumpmind.symmetric.util;
 
 import java.io.FilterOutputStream;
@@ -6,14 +5,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Throttle output stream to write at a specified rate. the rate will be an average
+ * Throttle output stream to write at a specified rate. the rate will be an
+ * average
  * 
  * @author hwang
  */
-public class MeteredOutputStream extends FilterOutputStream
-{
+public class MeteredOutputStream extends FilterOutputStream {
 
-    // max allowed, this will be an average over time. for small packages, it will be consume the whole bandwidth
+    // max allowed, this will be an average over time. for small packages, it
+    // will be consume the whole bandwidth
     private long maxBps;
 
     // total bytes send through
@@ -38,12 +38,14 @@ public class MeteredOutputStream extends FilterOutputStream
     private static final long DEFAULT_CHECK_POINT = 1024L;
 
     /**
-     * @param out stream written to
-     * @param maxBps max number of bytes per second
-     * @param threshold the number in bytes before the throttle output stream
+     * @param out
+     *                stream written to
+     * @param maxBps
+     *                max number of bytes per second
+     * @param threshold
+     *                the number in bytes before the throttle output stream
      */
-    public MeteredOutputStream(OutputStream out, long maxBps, long threshold)
-    {
+    public MeteredOutputStream(OutputStream out, long maxBps, long threshold) {
         super(out);
         this.maxBps = maxBps;
         bytesSent = 0;
@@ -53,15 +55,22 @@ public class MeteredOutputStream extends FilterOutputStream
     }
 
     /**
-     * @param out out stream written to
-     * @param maxBps max number of bytes per second
-     * @param threshold the number in bytes before throttling output stream
-     * @param checkPoint check the average rate when total byts%checkPoint == 0. <br>
-     *        the throttled output stream will write checkPoing number of bytes at full speed, and then sleep for a
-     *        certain to obtain an average close to maxBps. If set it to 1, it will check every bytes written and the rate will be the most accurate.
+     * @param out
+     *                out stream written to
+     * @param maxBps
+     *                max number of bytes per second
+     * @param threshold
+     *                the number in bytes before throttling output stream
+     * @param checkPoint
+     *                check the average rate when total byts%checkPoint == 0.
+     *                <br>
+     *                the throttled output stream will write checkPoing number
+     *                of bytes at full speed, and then sleep for a certain to
+     *                obtain an average close to maxBps. If set it to 1, it will
+     *                check every bytes written and the rate will be the most
+     *                accurate.
      */
-    public MeteredOutputStream(OutputStream out, long maxBps, long threshold, long checkPoint)
-    {
+    public MeteredOutputStream(OutputStream out, long maxBps, long threshold, long checkPoint) {
         super(out);
         this.maxBps = maxBps;
         bytesSent = 0;
@@ -73,8 +82,7 @@ public class MeteredOutputStream extends FilterOutputStream
      * @param out
      * @param maxBps
      */
-    public MeteredOutputStream(OutputStream out, long maxBps)
-    {
+    public MeteredOutputStream(OutputStream out, long maxBps) {
         super(out);
         this.maxBps = maxBps;
         bytesSent = 0;
@@ -83,30 +91,26 @@ public class MeteredOutputStream extends FilterOutputStream
     }
 
     @Override
-    public void write(int b) throws IOException
-    {
-        // check if stream start output, if not, set started to true and set the start time
+    public void write(int b) throws IOException {
+        // check if stream start output, if not, set started to true and set the
+        // start time
         bytesSent += 1;
-        if (!started)
-        {
+        if (!started) {
             started = true;
             startTime = System.currentTimeMillis();
         }
-        // only check when total bytes greater than limit and adjust at checkPoint
-        if (bytesSent >= threshold && (bytesSent % checkPoint == 0))
-        {
+        // only check when total bytes greater than limit and adjust at
+        // checkPoint
+        if (bytesSent >= threshold && (bytesSent % checkPoint == 0)) {
             long elapsed = System.currentTimeMillis() - startTime + 1;
             long currentBps = bytesSent * 1000L / elapsed;
-            if (currentBps > maxBps)
-            {
+            if (currentBps > maxBps) {
 
                 long expected = bytesSent * 1000L / maxBps;
-                try
-                {
+                try {
                     Thread.sleep(expected - elapsed);
+                } catch (InterruptedException e) {
                 }
-                catch (InterruptedException e)
-                {}
             }
         }
         out.write(b);

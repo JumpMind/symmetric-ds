@@ -47,15 +47,13 @@ import com.sun.syndication.io.SyndFeedOutput;
 public class AlertResourceHandler extends AbstractTransportResourceHandler {
     private static final int MAX_ERRORS = 1000;
 
-    private static final FastDateFormat formatter = FastDateFormat
-            .getInstance("yyyy-MM-dd HH:mm:ss");
+    private static final FastDateFormat formatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
 
     private IIncomingBatchService incomingBatchService;
 
     private IOutgoingBatchService outgoingBatchService;
 
-    public void write(CharSequence feedURL, Writer outputWriter)
-            throws IOException, FeedException {
+    public void write(CharSequence feedURL, Writer outputWriter) throws IOException, FeedException {
         SyndFeed feed = new SyndFeedImpl();
         feed.setFeedType("rss_2.0");
         feed.setTitle("SymmetricDS Alerts");
@@ -66,16 +64,14 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
         for (IncomingBatch batch : findIncomingBatchErrors()) {
             String title = "Incoming Batch " + batch.getNodeBatchId();
-            String value = "Node " + batch.getNodeId() + " incoming batch "
-                    + batch.getBatchId() + " is in error at "
+            String value = "Node " + batch.getNodeId() + " incoming batch " + batch.getBatchId() + " is in error at "
                     + formatDate(batch.getCreateTime());
             entries.add(createEntry(title, value));
         }
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
             String title = "Outgoing Batch " + batch.getNodeBatchId();
-            String value = "Node " + batch.getNodeId() + " outgoing batch "
-                    + batch.getBatchId() + " is in error at "
+            String value = "Node " + batch.getNodeId() + " outgoing batch " + batch.getBatchId() + " is in error at "
                     + formatDate(batch.getCreateTime());
             entries.add(createEntry(title, value));
         }
@@ -113,8 +109,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return incomingBatchService;
     }
 
-    public void setIncomingBatchService(
-            IIncomingBatchService incomingBatchService) {
+    public void setIncomingBatchService(IIncomingBatchService incomingBatchService) {
         this.incomingBatchService = incomingBatchService;
     }
 
@@ -122,8 +117,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return outgoingBatchService;
     }
 
-    public void setOutgoingBatchService(
-            IOutgoingBatchService outgoingBatchService) {
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
 

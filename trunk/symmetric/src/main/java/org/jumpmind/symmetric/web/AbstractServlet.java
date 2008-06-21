@@ -46,27 +46,21 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected abstract Log getLogger();
 
-    
-    
-    protected OutputStream createOutputStream(HttpServletResponse resp)
-            throws IOException {
+    protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {
         return resp.getOutputStream();
     }
 
-    protected InputStream createInputStream(HttpServletRequest req)
-            throws IOException {
+    protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
         String contentType = req.getHeader("Content-Type");
-        boolean useCompression = contentType != null
-                && contentType.equalsIgnoreCase("gzip");
+        boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
 
         if (getLogger().isDebugEnabled()) {
             StringBuilder b = new StringBuilder();
             BufferedReader reader = null;
             if (useCompression) {
                 getLogger().debug("Received compressed stream");
-                reader = new BufferedReader(new InputStreamReader(
-                        new GZIPInputStream(req.getInputStream())));
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(req.getInputStream())));
             } else {
                 reader = req.getReader();
             }
@@ -93,19 +87,16 @@ abstract public class AbstractServlet extends HttpServlet {
     }
 
     protected ApplicationContext getDefaultApplicationContext() {
-        return WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
-    
+
     @Override
-    protected final void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleGet(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger()
-                        .warn("Socket issue while processing GET method ", e);
+                getLogger().warn("Socket issue while processing GET method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -126,23 +117,20 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      * 
      */
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected final void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handlePost(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing POST method ",
-                        e);
+                getLogger().warn("Socket issue while processing POST method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -161,22 +149,19 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected final void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected final void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handlePut(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger()
-                        .warn("Socket issue while processing PUT method ", e);
+                getLogger().warn("Socket issue while processing PUT method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -195,22 +180,20 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handlePut(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handlePut(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected final void doDelete(HttpServletRequest req,
-            HttpServletResponse resp) throws ServletException, IOException {
+    protected final void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+            IOException {
         try {
             handleDelete(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger().warn(
-                        "Socket issue while processing DELETE method ", e);
+                getLogger().warn("Socket issue while processing DELETE method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -229,22 +212,19 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleHead(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing HEAD method ",
-                        e);
+                getLogger().warn("Socket issue while processing HEAD method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -263,16 +243,14 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handleHead(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleHead(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleOptions(req, resp);
         } catch (SocketException e) {
@@ -296,22 +274,19 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handleOptions(HttpServletRequest req,
-            HttpServletResponse resp) throws Exception {
+    protected void handleOptions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Override
-    protected void doTrace(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleTrace(req, resp);
         } catch (SocketException e) {
             if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing TRACE method ",
-                        e);
+                getLogger().warn("Socket issue while processing TRACE method ", e);
             }
         } catch (Exception e) {
             if (getLogger().isErrorEnabled()) {
@@ -330,10 +305,9 @@ abstract public class AbstractServlet extends HttpServlet {
      * @throws IOException
      * @throws ServletException
      * @throws Exception
-     *             everything else that could go wrong!
+     *                 everything else that could go wrong!
      */
-    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp)
-            throws Exception {
+    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
@@ -345,8 +319,7 @@ abstract public class AbstractServlet extends HttpServlet {
      * @param statusCode
      * @throws IOException
      */
-    protected boolean sendError(HttpServletResponse resp, int statusCode)
-            throws IOException {
+    protected boolean sendError(HttpServletResponse resp, int statusCode) throws IOException {
         return ServletUtils.sendError(resp, statusCode);
     }
 
@@ -357,11 +330,10 @@ abstract public class AbstractServlet extends HttpServlet {
      * @param resp
      * @param statusCode
      * @param message
-     *            a message to put in the body of the response
+     *                a message to put in the body of the response
      * @throws IOException
      */
-    protected boolean sendError(HttpServletResponse resp, int statusCode,
-            String message) throws IOException {
+    protected boolean sendError(HttpServletResponse resp, int statusCode, String message) throws IOException {
         return ServletUtils.sendError(resp, statusCode, message);
     }
 
@@ -384,12 +356,10 @@ abstract public class AbstractServlet extends HttpServlet {
      * @param name
      * @return
      */
-    protected String getParameter(HttpServletRequest request, String name,
-            String defaultValue) {
-        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request
-                .getParameter(name)), defaultValue);
+    protected String getParameter(HttpServletRequest request, String name, String defaultValue) {
+        return StringUtils.defaultIfEmpty(StringUtils.trimToNull(request.getParameter(name)), defaultValue);
     }
-    
+
     protected long getParameterAsNumber(HttpServletRequest request, String name) {
         return NumberUtils.toLong(StringUtils.trimToNull(request.getParameter(name)));
     }

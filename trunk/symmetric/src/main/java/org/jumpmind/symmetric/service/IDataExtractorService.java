@@ -34,8 +34,8 @@ public interface IDataExtractorService {
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger,
-            final IOutgoingTransport transport, DataExtractorContext ctx);
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport,
+            DataExtractorContext ctx);
 
     /**
      * @return true if work was done or false if there was no work to do.
@@ -47,10 +47,8 @@ public interface IDataExtractorService {
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws Exception;
 
-    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId)
-            throws Exception;
-    
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws Exception;
+
     public void addExtractorFilter(IExtractorFilter extractorFilter);
-    
-    
+
 }

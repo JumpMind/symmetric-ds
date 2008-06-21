@@ -38,26 +38,23 @@ import com.sun.syndication.io.FeedException;
  * This is a place holder for the idea that we could create an RSS feed for
  * alerts.
  */
-public class AlertServlet extends
-        AbstractTransportResourceServlet<AlertResourceHandler> {
+public class AlertServlet extends AbstractTransportResourceServlet<AlertResourceHandler> {
 
     private static final long serialVersionUID = 1L;
 
     private static final Log logger = LogFactory.getLog(AlertServlet.class);
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
-    
+
     @Override
-    public void handleGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException, FeedException {
+    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException,
+            FeedException {
 
         resp.setContentType("application/rss+xml");
-        getTransportResourceHandler().write(req.getRequestURL(),
-                resp.getWriter());
+        getTransportResourceHandler().write(req.getRequestURL(), resp.getWriter());
     }
 
     @Override

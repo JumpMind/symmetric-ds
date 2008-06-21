@@ -137,7 +137,8 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     /**
-     * I wanted to do this as a preparedstatement but hsqldb doesn't seem to support it.
+     * I wanted to do this as a preparedstatement but hsqldb doesn't seem to
+     * support it.
      */
     private String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
         Object[] values = null;
@@ -220,7 +221,8 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     private String replaceOldNewTriggerTokens(String targetString) {
-        // This is a little hack to allow us to replace not only the old/new alias's, but also the column prefix for 
+        // This is a little hack to allow us to replace not only the old/new
+        // alias's, but also the column prefix for
         // use in a virtual table we can match SQL expressions against.
         targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
         targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");
@@ -258,12 +260,13 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     @Override
     protected String getTransactionId(Object[] oldRow, Object[] newRow) {
-        if (System.currentTimeMillis()-lastTransactionIdUpdate > 5000) {
+        if (System.currentTimeMillis() - lastTransactionIdUpdate > 5000) {
             transactionId = RandomStringUtils.randomAlphanumeric(12);
         }
-        
+
         if (transactionIdSql != null) {
-            transactionId =  (String)getDbDialect().getJdbcTemplate().queryForObject(fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class); 
+            transactionId = (String) getDbDialect().getJdbcTemplate().queryForObject(
+                    fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class);
         }
         return transactionId;
     }

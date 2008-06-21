@@ -64,7 +64,7 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
     public boolean isAutoRegister() {
         return true;
     }
-    
+
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
             StringBuilder xml = getXmlFromCache(ctx, null, keys);

@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 public class MockAcknowledgeService implements IAcknowledgeService {
 
     public void ack(List<BatchInfo> batches) {
-        
+
     }
 
     public void ack(BatchInfo batch) {

@@ -1,19 +1,19 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jumpmind.symmetric.web.compression;
 
 import java.io.IOException;
@@ -27,16 +27,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of <b>HttpServletResponseWrapper</b> that works with
- * the CompressionServletResponseStream implementation..
- *
- * This package is derived from the Jakarta
- * <a href="http://jakarta.apache.org/tomcat">Tomcat</a>
- * examples compression filter and is distributed in SymmetricDS for convenience.
+ * Implementation of <b>HttpServletResponseWrapper</b> that works with the
+ * CompressionServletResponseStream implementation..
+ * 
+ * This package is derived from the Jakarta <a
+ * href="http://jakarta.apache.org/tomcat">Tomcat</a> examples compression
+ * filter and is distributed in SymmetricDS for convenience.
  * 
  * @author Amy Roh
  * @author Dmitri Valdin
- * @version $Revision: 496190 $, $Date: 2007-01-14 16:21:45 -0700 (Sun, 14 Jan 2007) $
+ * @version $Revision: 496190 $, $Date: 2007-01-14 16:21:45 -0700 (Sun, 14 Jan
+ *          2007) $
  */
 
 public class CompressionServletResponseWrapper extends HttpServletResponseWrapper {
@@ -76,8 +77,8 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     protected ServletOutputStream stream = null;
 
     /**
-     * The PrintWriter that has been returned by
-     * <code>getWriter()</code>, if any.
+     * The PrintWriter that has been returned by <code>getWriter()</code>, if
+     * any.
      */
 
     protected PrintWriter writer = null;
@@ -101,11 +102,12 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
     }
 
     /**
-    * Create and return a ServletOutputStream to write the content
-    * associated with this Response.
-    *
-    * @exception IOException if an input/output error occurs
-    */
+     * Create and return a ServletOutputStream to write the content associated
+     * with this Response.
+     * 
+     * @exception IOException
+     *                    if an input/output error occurs
+     */
     public ServletOutputStream createOutputStream() throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug("createOutputStream gets called");
@@ -135,8 +137,9 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
     /**
      * Flush the buffer and commit this response.
-     *
-     * @exception IOException if an input/output error occurs
+     * 
+     * @exception IOException
+     *                    if an input/output error occurs
      */
     public void flushBuffer() throws IOException {
         if (logger.isDebugEnabled()) {
@@ -148,10 +151,12 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
     /**
      * Return the servlet output stream associated with this Response.
-     *
-     * @exception IllegalStateException if <code>getWriter</code> has
-     *  already been called for this response
-     * @exception IOException if an input/output error occurs
+     * 
+     * @exception IllegalStateException
+     *                    if <code>getWriter</code> has already been called
+     *                    for this response
+     * @exception IOException
+     *                    if an input/output error occurs
      */
     public ServletOutputStream getOutputStream() throws IOException {
 
@@ -170,10 +175,12 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
     /**
      * Return the writer associated with this Response.
-     *
-     * @exception IllegalStateException if <code>getOutputStream</code> has
-     *  already been called for this response
-     * @exception IOException if an input/output error occurs
+     * 
+     * @exception IllegalStateException
+     *                    if <code>getOutputStream</code> has already been
+     *                    called for this response
+     * @exception IOException
+     *                    if an input/output error occurs
      */
     public PrintWriter getWriter() throws IOException {
 
@@ -187,7 +194,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         if (logger.isDebugEnabled()) {
             logger.debug("stream is set to " + stream + " in getWriter");
         }
-        //String charset = getCharsetFromContentType(contentType);
+        // String charset = getCharsetFromContentType(contentType);
         String charEnc = origResponse.getCharacterEncoding();
         if (logger.isDebugEnabled()) {
             logger.debug("character encoding is " + charEnc);

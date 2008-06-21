@@ -50,11 +50,12 @@ public enum DataEventType implements ICoded {
     RELOAD("R"),
 
     /**
-     * An event that indicates that the data payload has a sql statement that needs to be executed.
-     * This is more of a remote control feature (that would have been very handy in past lives).
+     * An event that indicates that the data payload has a sql statement that
+     * needs to be executed. This is more of a remote control feature (that
+     * would have been very handy in past lives).
      */
     SQL("S"),
-    
+
     /**
      * An event that indicates that the data payload is a table creation.
      */
@@ -69,7 +70,7 @@ public enum DataEventType implements ICoded {
     public String getCode() {
         return this.code;
     }
-    
+
     public static DataEventType getEventType(String s) {
         if (s.equals("I")) {
             return DataEventType.INSERT;
@@ -85,5 +86,5 @@ public enum DataEventType implements ICoded {
             return DataEventType.CREATE;
         }
         return null;
-    }    
+    }
 }

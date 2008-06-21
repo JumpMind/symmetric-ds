@@ -93,7 +93,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected SQLErrorCodeSQLExceptionTranslator sqlErrorTranslator;
 
     private Map<Integer, String> _defaultSizes;
-    
+
     private IParameterService parameterService;
 
     protected String tablePrefix;
@@ -763,16 +763,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId) {
         return insertWithGeneratedKey(sql, sequenceId, null);
     }
-    
+
     protected String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
             return "sym_outgoing_batch_batch_id";
         case DATA:
             return "sym_data_data_id";
-        case TRIGGER_HIST:            
+        case TRIGGER_HIST:
             return "sym_trigger_his_ger_hist_id";
-        } 
+        }
         return null;
     }
 
