@@ -62,15 +62,17 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private INodeService nodeService;
 
     private IDbDialect dbDialect;
-    
+
     private IStatisticManager statisticManager;
 
     /**
-     * Create a batch and mark events as tied to that batch. We iterate through all the events so we can find
-     * a transaction boundary to stop on. <p/> This method is currently non-transactional because of the fear
-     * of having to deal with large numbers of events as part of the same batch. This shouldn't be an issue in
-     * most cases other than possibly leaving a batch row w/out data every now and then or leaving a batch
-     * w/out the associated history row.
+     * Create a batch and mark events as tied to that batch. We iterate through
+     * all the events so we can find a transaction boundary to stop on. <p/>
+     * This method is currently non-transactional because of the fear of having
+     * to deal with large numbers of events as part of the same batch. This
+     * shouldn't be an issue in most cases other than possibly leaving a batch
+     * row w/out data every now and then or leaving a batch w/out the associated
+     * history row.
      */
     @Transactional
     @Deprecated
@@ -82,9 +84,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Transactional
     public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
-        
+
         final int batchSizePeekAhead = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
-        
+
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
@@ -97,7 +99,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     if (channel.isSuspended()) {
                         logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
                     } else if (channel.isEnabled()) {
-                        // determine which transactions will be part of this batch on this channel
+                        // determine which transactions will be part of this
+                        // batch on this channel
                         PreparedStatement select = null;
                         ResultSet results = null;
 
@@ -123,7 +126,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             newBatch.setChannelId(channel.getId());
                             newBatch.setNodeId(nodeId);
 
-                            // node channel is setup to ignore, just mark the batch as already processed.
+                            // node channel is setup to ignore, just mark the
+                            // batch as already processed.
                             if (channel.isIgnored()) {
                                 newBatch.setStatus(Status.OK);
                             }
@@ -139,10 +143,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                     String trxId = results.getString(1);
 
                                     if (!peekAheadMode
-                                            || (peekAheadMode && (trxId != null && transactionIds
-                                                    .contains(trxId)))) {
+                                            || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
                                         peekAheadCountDown = batchSizePeekAhead;
-                                        
+
                                         if (trxId != null) {
                                             transactionIds.add(trxId);
                                         }
@@ -175,17 +178,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                     }
 
                                 } while (results.next() && peekAheadCountDown != 0);
-                                
+
                                 long startTime = System.currentTimeMillis();
                                 update.executeBatch();
                                 databaseMillis += (System.currentTimeMillis() - startTime);
-                                
+
                                 history.setEndTime(new Date());
                                 history.setDataEventCount(dataEventCount);
                                 history.setDatabaseMillis(databaseMillis);
                                 insertOutgoingBatchHistory(history);
-                                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(databaseMillis, dataEventCount);
-                                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
+                                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(
+                                        databaseMillis, dataEventCount);
+                                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(
+                                        dataEventCount, 1);
 
                             }
 
@@ -194,7 +199,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                             JdbcUtils.closeStatement(select);
                         }
 
-                        
                     }
                 } finally {
                     JdbcUtils.closeStatement(update);
@@ -207,8 +211,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         long batchId = dbDialect.insertWithGeneratedKey(getSql("createBatchSql"), SequenceIdentifier.OUTGOING_BATCH,
                 new PreparedStatementCallback() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException,
-                            DataAccessException {
+                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
@@ -220,9 +223,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     /**
-     * Select batches to process. Batches that are NOT in error will be returned first. They will be ordered
-     * by batch id as the batches will have already been created by {@link #buildOutgoingBatches(String)} in
-     * channel priority order.
+     * Select batches to process. Batches that are NOT in error will be returned
+     * first. They will be ordered by batch id as the batches will have already
+     * been created by {@link #buildOutgoingBatches(String)} in channel priority
+     * order.
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
@@ -279,13 +283,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
         jdbcTemplate.update(getSql("insertOutgoingBatchHistorySql"), new Object[] { history.getBatchId(),
                 history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
-                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(),
-                history.getByteCount(), history.getDataEventCount(), history.getFailedDataId(),
-                history.getStartTime(), history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER,
-                Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
-                Types.INTEGER, Types.VARCHAR });
+                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
+                history.getDataEventCount(), history.getFailedDataId(), history.getStartTime(), history.getEndTime(),
+                history.getSqlState(), history.getSqlCode(), StringUtils.abbreviate(history.getSqlMessage(), 50) },
+                new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                        Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                        Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
     }
 
     @SuppressWarnings("unchecked")

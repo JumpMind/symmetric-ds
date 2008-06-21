@@ -36,7 +36,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     static final Log logger = LogFactory.getLog(OracleDbDialect.class);
 
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-    
+
     static final String PACKAGE = "pack_symmetric";
 
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
@@ -45,11 +45,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     protected void initForSpecificDialect() {
         try {
             if (!isPackageUpToDate(PACKAGE)) {
-                logger
-                        .info("Creating package "
-                                + PACKAGE);
-                new SqlScript(getSqlScriptUrl(), getPlatform()
-                        .getDataSource(), '/').execute();
+                logger.info("Creating package " + PACKAGE);
+                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), '/').execute();
             }
         } catch (Exception ex) {
             logger.error("Error while initializing Oracle.", ex);
@@ -61,15 +58,13 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private boolean isPackageUpToDate(String name) throws Exception {
-        return jdbcTemplate
-                .queryForInt(
-                        "select count(*) from user_objects where object_name= upper(?) ",
-                        new Object[] { name }) > 0;
+        return jdbcTemplate.queryForInt("select count(*) from user_objects where object_name= upper(?) ",
+                new Object[] { name }) > 0;
     }
-    
+
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
-    }    
+    }
 
     public boolean isCharSpacePadded() {
         return true;
@@ -99,7 +94,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         removeTrigger(schemaName, triggerName);
     }
-    
+
     public String getTransactionTriggerExpression(Trigger trigger) {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
@@ -107,7 +102,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return true;
     }
-    
+
     @Override
     protected String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
@@ -119,19 +114,17 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             return "SEQ_SYM_TRIGGER_RIGGER_HIST_ID";
         }
         return null;
-    }    
+    }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select " + sequenceName + ".currval from dual";
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
-            String triggerName) {
-            return jdbcTemplate
-                    .queryForInt(
-                            "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
-                            new Object[] { triggerName, tableName }) > 0;
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
+        return jdbcTemplate.queryForInt(
+                "select count(*) from user_triggers where trigger_name like upper(?) and table_name like upper(?)",
+                new Object[] { triggerName, tableName }) > 0;
     }
 
     public boolean storesUpperCaseNamesInCatalog() {
@@ -153,14 +146,13 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getSyncTriggersExpression() {
         return "fn_trigger_disabled() is null";
     }
-    
+
     public String getDefaultCatalog() {
         return null;
-    }    
-    
+    }
+
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject(
-                "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",
+        return (String) jdbcTemplate.queryForObject("SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",
                 String.class);
     }
 

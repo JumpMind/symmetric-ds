@@ -30,6 +30,6 @@ public interface IUpgradeTask {
     public void upgrade(Node node, int[] fromVersion);
 
     public boolean isUpgradeRegistrationServer();
-    
+
     public boolean isUpgradeNonRegistrationServer();
 }

@@ -50,8 +50,10 @@ abstract public class AbstractTransportManager {
             append(builder, WebConstants.ACK_BATCH_NAME + status.getBatchId(), value);
         }
 
-        // For backwards compatibility with 1.3 and earlier, the first line is the
-        // original acknowledgement data and the second line contains more information
+        // For backwards compatibility with 1.3 and earlier, the first line is
+        // the
+        // original acknowledgement data and the second line contains more
+        // information
         builder.append("\n");
         for (IncomingBatchHistory status : list) {
             long batchId = status.getBatchId();
@@ -81,8 +83,7 @@ abstract public class AbstractTransportManager {
         builder.append(name).append("=").append(URLEncoder.encode(value.toString(), ENCODING));
     }
 
-    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2)
-            throws IOException {
+    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return readAcknowledgement(parameterString1 + "&" + parameterString2);
     }
 

@@ -41,7 +41,7 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
             Properties properties = MultiDatabaseTest.getTestProperties();
             String[] databaseTypes = StringUtils.split(properties.getProperty("test.root"), ",");
             rootDatabaseType = databaseTypes[0];
-        }        
+        }
         return rootDatabaseType;
     }
 
@@ -50,7 +50,7 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
             Properties properties = MultiDatabaseTest.getTestProperties();
             String[] databaseTypes = StringUtils.split(properties.getProperty("test.client"), ",");
             clientDatabaseType = databaseTypes[0];
-        }        
+        }
         return clientDatabaseType;
     }
 
@@ -60,9 +60,8 @@ abstract public class AbstractIntegrationTest extends AbstractTest {
             dropAndCreateDatabaseTables(getRootDatabaseName(), rootEngine);
             ((IBootstrapService) this.rootEngine.getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE))
                     .setupDatabase();
-            new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT),
-                    (DataSource) this.rootEngine.getApplicationContext().getBean(Constants.DATA_SOURCE), true)
-                    .execute();
+            new SqlScript(getResource(TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT), (DataSource) this.rootEngine
+                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             this.rootEngine.start();
         }
         return this.rootEngine;

@@ -9,5 +9,5 @@ public interface IExtractorFilter extends IExtensionPoint {
      * @return true if the row should be extracted
      */
     public boolean filterData(Data data, DataExtractorContext ctx);
-    
+
 }

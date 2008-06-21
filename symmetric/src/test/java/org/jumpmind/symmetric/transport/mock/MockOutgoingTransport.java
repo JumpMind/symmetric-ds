@@ -30,7 +30,7 @@ public class MockOutgoingTransport implements IOutgoingTransport {
 
     private StringWriter writer = new StringWriter();
     private BufferedWriter bWriter;
-    
+
     public MockOutgoingTransport() {
     }
 

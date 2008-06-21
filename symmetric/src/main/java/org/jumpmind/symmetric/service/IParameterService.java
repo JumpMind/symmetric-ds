@@ -30,11 +30,11 @@ import org.jumpmind.symmetric.config.IParameterFilter;
  * Get and set application wide configuration information.
  */
 public interface IParameterService {
-    
+
     public static final String ALL = "ALL";
 
-    public BigDecimal getDecimal(String key);    
-    
+    public BigDecimal getDecimal(String key);
+
     public boolean is(String key);
 
     public int getInt(String key);
@@ -42,21 +42,21 @@ public interface IParameterService {
     public long getLong(String key);
 
     public String getString(String key);
-    
+
     public void saveParameter(String key, Object paramValue);
 
     public void saveParameter(String nodeId, String nodeGroupId, String key, Object paramValue);
-    
+
     public void saveParameters(String nodeId, String nodeGroupId, Map<String, Object> parameters);
-    
+
     public void rereadParameters();
-    
+
     public Date getLastTimeParameterWereCached();
-    
-    public Map<String,String> getAllParameters();
-    
+
+    public Map<String, String> getAllParameters();
+
     public void setParameterFilter(IParameterFilter f);
-    
+
     /**
      * Get the group id for this instance
      */
@@ -68,13 +68,14 @@ public interface IParameterService {
     public String getExternalId();
 
     /**
-     * Provide the url used to register at to get initial configuration information
+     * Provide the url used to register at to get initial configuration
+     * information
      */
     public String getRegistrationUrl();
-    
+
     /**
      * Provide information about the URL used to contact this symmetric instance
      */
     public String getMyUrl();
-    
+
 }

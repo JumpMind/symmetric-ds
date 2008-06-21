@@ -1,4 +1,5 @@
 package org.jumpmind.symmetric.util;
+
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
@@ -26,14 +27,11 @@ import org.jumpmind.symmetric.util.MeteredOutputStream;
 
 import org.testng.annotations.Test;
 
-
-public class MeteredOutputStreamTest
-{
+public class MeteredOutputStreamTest {
 
     @Test(groups = "continuous")
-    public static void testBasic() throws IOException
-    {
-        final long rate = 5* 1024;
+    public static void testBasic() throws IOException {
+        final long rate = 5 * 1024;
         final long count = 20;
         final int bufferSize = 8192;
 
@@ -46,12 +44,10 @@ public class MeteredOutputStreamTest
         r.nextBytes(testBytes);
 
         long i = 0;
-        for (i = 0; i < count; i++)
-        {
+        for (i = 0; i < count; i++) {
             out.write(testBytes, 0, testBytes.length);
 
-            if ((i % 10) == 0)
-            {
+            if ((i % 10) == 0) {
                 System.out.print('#');
             }
         }
@@ -59,10 +55,10 @@ public class MeteredOutputStreamTest
 
         double expectedTime = (bufferSize * count) / rate;
         double actualTime = (System.currentTimeMillis() - start + 1) / 1000;
-//        System.out.println("Configured rate: " + rate);
-//        System.out.println("Actual rate: " + (i * bufferSize / actualTime));
-//        System.out.println("Expected time: " + expectedTime);
-//        System.out.println("Actual time: " + actualTime);
+        // System.out.println("Configured rate: " + rate);
+        // System.out.println("Actual rate: " + (i * bufferSize / actualTime));
+        // System.out.println("Expected time: " + expectedTime);
+        // System.out.println("Actual time: " + actualTime);
         assert (actualTime >= expectedTime - 2 && actualTime <= expectedTime + 2);
     }
 }

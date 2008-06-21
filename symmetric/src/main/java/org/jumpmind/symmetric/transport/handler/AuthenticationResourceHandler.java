@@ -22,8 +22,7 @@ package org.jumpmind.symmetric.transport.handler;
 
 import org.jumpmind.symmetric.service.INodeService;
 
-public class AuthenticationResourceHandler extends
-        AbstractTransportResourceHandler {
+public class AuthenticationResourceHandler extends AbstractTransportResourceHandler {
 
     public enum AuthenticationStatus {
         REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED;

@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.model;
 public class NodeChannel extends Channel {
 
     private static final long serialVersionUID = -2493052366767513160L;
-    
+
     String nodeId;
 
     private boolean ignored;

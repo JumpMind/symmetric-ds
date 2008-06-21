@@ -6,9 +6,9 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 public class TestDataLoaderFilter implements IDataLoaderFilter {
 
     private boolean autoRegister = true;
-    
+
     private int numberOfTimesCalled = 0;
-    
+
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         numberOfTimesCalled++;
         return true;

@@ -41,8 +41,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.jdbc.core.RowMapper;
 
-public class ParameterService extends AbstractService implements
-        IParameterService, BeanFactoryAware {
+public class ParameterService extends AbstractService implements IParameterService, BeanFactoryAware {
 
     static final Log logger = LogFactory.getLog(ParameterService.class);
 
@@ -102,8 +101,7 @@ public class ParameterService extends AbstractService implements
         // TODO remove in 2.0
         if (!key.startsWith("symmetric.")) {
             value = getString("symmetric." + key);
-            if (StringUtils.isBlank(value)
-                    && !key.startsWith("symmetric.runtime.")) {
+            if (StringUtils.isBlank(value) && !key.startsWith("symmetric.runtime.")) {
                 value = getString("symmetric.runtime." + key);
             }
         }
@@ -123,24 +121,22 @@ public class ParameterService extends AbstractService implements
         this.saveParameter(getExternalId(), getNodeGroupId(), key, paramValue);
     }
 
-    public void saveParameter(String externalId, String nodeGroupId,
-            String key, Object paramValue) {
+    public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
 
         paramValue = paramValue != null ? paramValue.toString() : null;
 
-        int count = jdbcTemplate.update(getSql("updateParameterSql"),
-                new Object[] { paramValue, externalId, nodeGroupId, key });
+        int count = jdbcTemplate.update(getSql("updateParameterSql"), new Object[] { paramValue, externalId,
+                nodeGroupId, key });
 
         if (count == 0) {
-            jdbcTemplate.update(getSql("insertParameterSql"), new Object[] {
-                    externalId, nodeGroupId, key, paramValue });
+            jdbcTemplate
+                    .update(getSql("insertParameterSql"), new Object[] { externalId, nodeGroupId, key, paramValue });
         }
 
         rereadParameters();
     }
 
-    public void saveParameters(String externalId, String nodeGroupId,
-            Map<String, Object> parameters) {
+    public void saveParameters(String externalId, String nodeGroupId, Map<String, Object> parameters) {
         Set<String> keys = parameters.keySet();
         for (String key : keys) {
             saveParameter(externalId, nodeGroupId, key, parameters.get(key));
@@ -163,10 +159,8 @@ public class ParameterService extends AbstractService implements
     private Map<String, String> rereadDatabaseParameters(Properties p) {
         try {
             Map<String, String> map = rereadDatabaseParameters(ALL, ALL);
-            map.putAll(rereadDatabaseParameters(ALL, p
-                    .getProperty(ParameterConstants.NODE_GROUP_ID)));
-            map.putAll(rereadDatabaseParameters(p
-                    .getProperty(ParameterConstants.EXTERNAL_ID), p
+            map.putAll(rereadDatabaseParameters(ALL, p.getProperty(ParameterConstants.NODE_GROUP_ID)));
+            map.putAll(rereadDatabaseParameters(p.getProperty(ParameterConstants.EXTERNAL_ID), p
                     .getProperty(ParameterConstants.NODE_GROUP_ID)));
             return map;
         } catch (Exception ex) {
@@ -175,11 +169,9 @@ public class ParameterService extends AbstractService implements
         }
     }
 
-    private Map<String, String> rereadDatabaseParameters(String externalId,
-            String nodeGroupId) {
+    private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] {
-                externalId, nodeGroupId }, new RowMapper() {
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper() {
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
                 map.put(rs.getString(1), rs.getString(2));
                 return null;
@@ -202,8 +194,7 @@ public class ParameterService extends AbstractService implements
     private Map<String, String> getParameters() {
         if (parameters == null
                 || lastTimeParameterWereCached == null
-                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached
-                        .getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
+                || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
             parameters = buildSystemParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
@@ -228,11 +219,9 @@ public class ParameterService extends AbstractService implements
                             return runtimeConfig.getExternalId();
                         } else if (key.equals(ParameterConstants.NODE_GROUP_ID)) {
                             return runtimeConfig.getNodeGroupId();
-                        } else if (key
-                                .equals(ParameterConstants.REGISTRATION_URL)) {
+                        } else if (key.equals(ParameterConstants.REGISTRATION_URL)) {
                             return runtimeConfig.getRegistrationUrl();
-                        } else if (key
-                                .equals(ParameterConstants.SCHEMA_VERSION)) {
+                        } else if (key.equals(ParameterConstants.SCHEMA_VERSION)) {
                             return runtimeConfig.getSchemaVersion();
                         } else if (key.equals(ParameterConstants.MY_URL)) {
                             return runtimeConfig.getMyUrl();
@@ -240,7 +229,7 @@ public class ParameterService extends AbstractService implements
                             return value;
                         }
                     }
-                    
+
                     public boolean isAutoRegister() {
                         return false;
                     }

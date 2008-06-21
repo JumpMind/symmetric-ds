@@ -8,18 +8,18 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.Reservation;
 public interface IConcurrentConnectionManager {
 
     public static enum ReservationType {
-        
+
         /**
          * A hard reservation is one that is expected to be released. It does
          * not have a timeout.
          */
         HARD,
-        
+
         /**
          * A soft reservation is one that will time out eventually.
          */
         SOFT
-        
+
     };
 
     /**
@@ -35,17 +35,17 @@ public interface IConcurrentConnectionManager {
     public boolean reserveConnection(String nodeId, String poolId, ReservationType reservationRequest);
 
     public boolean releaseConnection(String nodeId, String poolId);
-    
+
     public int getReservationCount(String poolId);
-    
+
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId();
-    
+
     public Map<String, Map<String, Reservation>> getActiveReservationsByNodeByPool();
-    
+
     public void addToWhitelist(String nodeId);
-    
+
     public String[] getWhiteList();
-    
+
     public void removeFromWhiteList(String nodeId);
 
 }

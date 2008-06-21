@@ -27,7 +27,7 @@ import java.util.Date;
 import org.jumpmind.symmetric.util.AppUtils;
 
 public class OutgoingBatchHistory implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
 
     private static String thisHostName;
@@ -47,7 +47,7 @@ public class OutgoingBatchHistory implements Serializable {
     private Date endTime;
 
     private long networkMillis;
-    
+
     private long filterMillis;
 
     private long databaseMillis;
@@ -55,17 +55,17 @@ public class OutgoingBatchHistory implements Serializable {
     private String hostName;
 
     private long byteCount;
-    
+
     private long dataEventCount;
 
     private long failedDataId;
 
     private String sqlState;
-    
+
     private int sqlCode;
-    
+
     private String sqlMessage;
-    
+
     static {
         thisHostName = AppUtils.getServerId();
     }
@@ -203,7 +203,7 @@ public class OutgoingBatchHistory implements Serializable {
     public String getHostName() {
         return hostName;
     }
-    
+
     public void setHostName(String hostName) {
         this.hostName = hostName;
     }

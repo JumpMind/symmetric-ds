@@ -20,14 +20,14 @@
 
 package org.jumpmind.symmetric.model;
 
-public class NodeGroupLink  {
+public class NodeGroupLink {
 
     private static final long serialVersionUID = 1L;
 
     private String sourceGroupId;
-    
+
     private String targetGroupId;
-    
+
     private DataEventAction dataEventAction = DataEventAction.WAIT_FOR_POLL;
 
     public DataEventAction getDataEventAction() {

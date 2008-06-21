@@ -35,51 +35,49 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  * Provides an API to configure data synchronizations.
  */
 public interface IConfigurationService {
-    
+
     public List<NodeGroupLink> getGroupLinks();
-    
+
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
-    
+
     public List<String> getRootConfigChannelTableNames();
-    
+
     public void initTriggerRowsForConfigChannel();
-    
+
     public void saveChannel(Channel channel);
-    
+
     public void deleteChannel(Channel channel);
-    
+
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
-    public Map<String, List<Trigger>> getTriggersByChannelFor(
-            String configurationTypeId);
+    public Map<String, List<Trigger>> getTriggersByChannelFor(String configurationTypeId);
 
     public void inactivateTriggerHistory(TriggerHistory history);
-    
+
     public TriggerHistory getLatestHistoryRecordFor(int triggerId);
 
     public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist);
-    
+
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
-    
+
     public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
-    
+
     public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
-    
+
     public TriggerHistory getHistoryRecordFor(int auditId);
-    
-    public Trigger getTriggerFor (String table, String sourceNodeGroupId);
-    
+
+    public Trigger getTriggerFor(String table, String sourceNodeGroupId);
+
     public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetDomainName, String channel);
 
     public Trigger getTriggerById(int triggerId);
-    
+
     public void insert(TriggerHistory newAuditRecord);
 
     public Map<Long, TriggerHistory> getHistoryRecords();
-    
+
     public void insert(Trigger trigger);
 
     public boolean isRegistrationServer();
-    
 
 }

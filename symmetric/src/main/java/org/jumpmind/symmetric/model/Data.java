@@ -24,6 +24,7 @@ import java.util.Date;
 
 /**
  * This is the data that changed due to a data sync trigger firing.
+ * 
  * @author chenson
  */
 public class Data {
@@ -42,23 +43,23 @@ public class Data {
     private String rowData;
 
     /**
-     * This is a reference to the audit row the trigger refered to when the data event fired.
+     * This is a reference to the audit row the trigger refered to when the data
+     * event fired.
      */
     private TriggerHistory audit;
 
     private DataEventType eventType;
 
     private String tableName;
-    
+
     /**
-     * This is populated by the trigger when the event happens.  It will be useful for 
-     * research.
+     * This is populated by the trigger when the event happens. It will be
+     * useful for research.
      */
     private Date createTime;
 
-    public Data(long dataId, String pkData, String rowData,
-            DataEventType eventType, String tableName,
-            Date createTime, TriggerHistory audit) {
+    public Data(long dataId, String pkData, String rowData, DataEventType eventType, String tableName, Date createTime,
+            TriggerHistory audit) {
         super();
         this.dataId = dataId;
         this.pkData = pkData;
@@ -69,8 +70,7 @@ public class Data {
         this.audit = audit;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData,
-            String pkData, TriggerHistory audit) {
+    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory audit) {
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
@@ -126,13 +126,11 @@ public class Data {
         this.createTime = createTime;
     }
 
-    public TriggerHistory getAudit()
-    {
+    public TriggerHistory getAudit() {
         return audit;
     }
 
-    public void setAudit(TriggerHistory audit)
-    {
+    public void setAudit(TriggerHistory audit) {
         this.audit = audit;
     }
 

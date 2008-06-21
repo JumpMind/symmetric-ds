@@ -28,8 +28,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
             jdbcTemplate.update("create database other");
             String db = (String) jdbcTemplate.queryForObject("select database()", String.class);
             jdbcTemplate.update("use other");
-            jdbcTemplate
-                    .update("create table other_table (id char(5) not null, name varchar(40), primary key(id))");
+            jdbcTemplate.update("create table other_table (id char(5) not null, name varchar(40), primary key(id))");
             jdbcTemplate.update("use " + db);
             IConfigurationService configService = (IConfigurationService) getBeanFactory().getBean(
                     Constants.CONFIG_SERVICE);

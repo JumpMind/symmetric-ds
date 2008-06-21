@@ -27,56 +27,47 @@ import javax.servlet.ServletOutputStream;
 
 import org.jumpmind.symmetric.util.MeteredOutputStream;
 
-public class ThrottledServletOutputStream extends ServletOutputStream
-{
+public class ThrottledServletOutputStream extends ServletOutputStream {
     private MeteredOutputStream stream;
 
-    public ThrottledServletOutputStream(OutputStream output,long maxBps)
-    {
+    public ThrottledServletOutputStream(OutputStream output, long maxBps) {
         stream = new MeteredOutputStream(output, maxBps);
     }
-    
-    public ThrottledServletOutputStream(OutputStream output,long maxBps,long threshold)
-    {
+
+    public ThrottledServletOutputStream(OutputStream output, long maxBps, long threshold) {
         stream = new MeteredOutputStream(output, maxBps, threshold);
     }
-    
-    public ThrottledServletOutputStream(OutputStream output,long maxBps,long threshold, long checkPoint)
-    {
+
+    public ThrottledServletOutputStream(OutputStream output, long maxBps, long threshold, long checkPoint) {
         stream = new MeteredOutputStream(output, maxBps, threshold, checkPoint);
     }
+
     @Override
-    public void write(int b) throws IOException
-    {
+    public void write(int b) throws IOException {
         stream.write(b);
 
     }
 
-    public void write(byte[] b) throws IOException
-    {
+    public void write(byte[] b) throws IOException {
         stream.write(b);
     }
 
-    public void write(byte[] b, int off, int len) throws IOException
-    {
+    public void write(byte[] b, int off, int len) throws IOException {
         stream.write(b, off, len);
     }
 
     @Override
-    public void close() throws IOException
-    {
-        
+    public void close() throws IOException {
+
         super.close();
         stream.close();
     }
 
     @Override
-    public void flush() throws IOException
-    {
-      
+    public void flush() throws IOException {
+
         super.flush();
         stream.flush();
     }
-    
-    
+
 }

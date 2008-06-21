@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.config;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 
-public interface IParameterFilter extends IExtensionPoint  {
+public interface IParameterFilter extends IExtensionPoint {
 
     /**
      * @param key

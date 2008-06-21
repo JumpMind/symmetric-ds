@@ -39,13 +39,14 @@ public class TransportManagerFactoryBean implements FactoryBean {
     private static final String TRANSPORT_INTERNAL = "internal";
 
     private INodeService nodeService;
-    
+
     private IParameterService parameterService;
 
     public Object getObject() throws Exception {
         String transport = parameterService.getString(ParameterConstants.TRANSPORT_TYPE);
         if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
-            final String httpSslVerifiedServerNames = parameterService.getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
+            final String httpSslVerifiedServerNames = parameterService
+                    .getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
             HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
                 public boolean verify(String s, SSLSession sslsession) {
                     if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {

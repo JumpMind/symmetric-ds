@@ -38,7 +38,7 @@ import org.testng.annotations.Test;
 public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;
-    
+
     protected IRegistrationService registrationService;
 
     @BeforeTest(groups = "continuous")
@@ -55,20 +55,17 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         // Existing domain name and ID that is not open to register
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00001");
-        Assert.assertFalse(registrationService.registerNode(node, out),
-                "Node should NOT be allowed to register");
+        Assert.assertFalse(registrationService.registerNode(node, out), "Node should NOT be allowed to register");
 
         // Existing domain name but wrong ID
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("wrongId");
-        Assert.assertFalse(registrationService.registerNode(node, out),
-                "Node should NOT be allowed to register");
+        Assert.assertFalse(registrationService.registerNode(node, out), "Node should NOT be allowed to register");
 
         // Wrong domain name and wrong ID
         node.setNodeGroupId("wrongDomain");
         node.setExternalId("wrongId");
-        Assert.assertFalse(registrationService.registerNode(node, out),
-                "Node should NOT be allowed to register");
+        Assert.assertFalse(registrationService.registerNode(node, out), "Node should NOT be allowed to register");
     }
 
     @Test(groups = "continuous")
@@ -81,8 +78,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");
 
         node = nodeService.findNode("00002");
         Assert.assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
@@ -103,16 +99,15 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     @Test(groups = "continuous")
     public void testRegisterNodeAutomatic() throws Exception {
         try {
-            
+
             getParameterService().saveParameter(ParameterConstants.AUTO_REGISTER_ENABLED, true);
             doTestRegisterNodeAutomatic();
-        }
-        finally {
-            getParameterService().saveParameter(ParameterConstants.AUTO_REGISTER_ENABLED, false);            
+        } finally {
+            getParameterService().saveParameter(ParameterConstants.AUTO_REGISTER_ENABLED, false);
         }
     }
-    
-    private void doTestRegisterNodeAutomatic() throws Exception{
+
+    private void doTestRegisterNodeAutomatic() throws Exception {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00008");
@@ -121,8 +116,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");
 
         node = nodeService.findNode("00008");
         Assert.assertEquals(node.getNodeId(), "00008", "Wrong nodeId");
@@ -138,7 +132,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Assert.assertNotSame(security.getPassword(), null, "Wrong password");
         Assert.assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         Assert.assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
-        
+
         // Make sure opening registration still works with auto-registration
         registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00009");
         node = new Node();
@@ -149,7 +143,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");        
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");
     }
 
     @Test(groups = "continuous")
@@ -164,8 +158,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");
         out.close();
         String response = out.toString();
         Assert.assertTrue(response.indexOf("batch,") != -1, "Expected batch");
@@ -193,8 +186,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("hqsql");
         node.setDatabaseVersion("1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be allowed to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be allowed to register");
 
         node = nodeService.findNode("00003");
         Assert.assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
@@ -220,7 +212,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     }
 
     @Test(groups = "continuous")
-    public void testOpenRegistration() throws Exception {        
+    public void testOpenRegistration() throws Exception {
         registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00005");
 
         Node node = nodeService.findNode("00005");
@@ -247,10 +239,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setExternalId("00006");
         node.setSyncURL("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be able to register");
-        Assert.assertFalse(registrationService.registerNode(node, out),
-                "Node should NOT be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be able to register");
+        Assert.assertFalse(registrationService.registerNode(node, out), "Node should NOT be able to register");
     }
 
     @Test(groups = "continuous")
@@ -262,12 +252,9 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setExternalId("00007");
         node.setSyncURL("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be able to register");
-        Assert.assertTrue(registrationService.registerNode(node, out),
-                "Node should be able to register");
-        Assert.assertFalse(registrationService.registerNode(node, out),
-                "Node should NOT be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be able to register");
+        Assert.assertTrue(registrationService.registerNode(node, out), "Node should be able to register");
+        Assert.assertFalse(registrationService.registerNode(node, out), "Node should NOT be able to register");
     }
 
 }

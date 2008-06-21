@@ -26,8 +26,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * Use runtime configuration specific seeding to get a random number for use in time 
- * slotting nodes to help stagger load.
+ * Use runtime configuration specific seeding to get a random number for use in
+ * time slotting nodes to help stagger load.
  */
 public class RandomTimeSlot {
 
@@ -43,7 +43,7 @@ public class RandomTimeSlot {
         this.maxValue = maxValue;
         random = new Random(externalId.hashCode());
     }
-    
+
     public void setParameterService(IParameterService s) {
         random = new Random(s.getExternalId().hashCode());
         maxValue = s.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);

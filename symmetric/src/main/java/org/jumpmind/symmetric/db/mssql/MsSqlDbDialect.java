@@ -38,8 +38,9 @@ import org.jumpmind.symmetric.model.Trigger;
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
  * 
- * TODO support text and image fields, they cannot be referenced from the inserted or deleted tables in the triggers.  Here is one
- * idea we could implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
+ * TODO support text and image fields, they cannot be referenced from the
+ * inserted or deleted tables in the triggers. Here is one idea we could
+ * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -54,11 +55,12 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public IColumnFilter getDatabaseColumnFilter() {
-        return new IColumnFilter () {
-            int[] indexesToRemove = null;            
+        return new IColumnFilter() {
+            int[] indexesToRemove = null;
+
             public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames) {
                 ArrayList<String> columns = new ArrayList<String>();
-                CollectionUtils.addAll(columns, columnNames);                
+                CollectionUtils.addAll(columns, columnNames);
                 if (dml == DmlType.UPDATE) {
                     Column[] autoIncrementColumns = table.getAutoIncrementColumns();
                     indexesToRemove = new int[autoIncrementColumns.length];
@@ -66,7 +68,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     for (Column column : autoIncrementColumns) {
                         String name = column.getName();
                         int index = columns.indexOf(name);
-                        
+
                         if (index < 0) {
                             name = name.toLowerCase();
                             index = columns.indexOf(name);
@@ -86,20 +88,20 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 if (dml == DmlType.UPDATE && indexesToRemove != null) {
                     ArrayList<Object> values = new ArrayList<Object>();
                     CollectionUtils.addAll(values, columnValues);
-                    for (int  index : indexesToRemove) {
-                        //if (values.size() > index) {
-                          values.remove(index);
-                        //}
+                    for (int index : indexesToRemove) {
+                        // if (values.size() > index) {
+                        values.remove(index);
+                        // }
                     }
                     return values.toArray(new Object[values.size()]);
                 }
                 return columnValues;
             }
-            
+
             public boolean isAutoRegister() {
                 return false;
             }
-           
+
         };
     }
 
@@ -110,7 +112,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    @Override    
+    @Override
     public void cleanupAfterDataLoad(Table table) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {
             jdbcTemplate.execute("SET IDENTITY_INSERT " + table.getName() + " OFF");
@@ -149,7 +151,9 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * SQL Server always pads character fields out to the right to fill out field with space characters.
+     * SQL Server always pads character fields out to the right to fill out
+     * field with space characters.
+     * 
      * @return true always
      */
     public boolean isCharSpacePadded() {
@@ -162,13 +166,14 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean isCharSpaceTrimmed() {
         return false;
     }
-    
+
     public boolean isTransactionIdOverrideSupported() {
         return false;
     }
 
     /**
      * SQL Server pads an empty string with spaces.
+     * 
      * @return false always
      */
     public boolean isEmptyStringNulled() {

@@ -75,7 +75,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         } catch (DataIntegrityViolationException e) {
             dbDialect.rollbackToSavepoint(savepoint);
             status.setRetry(true);
-            okayToProcess = updateIncomingBatch(status) > 0 || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
+            okayToProcess = updateIncomingBatch(status) > 0
+                    || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
             if (okayToProcess) {
                 logger.warn("Retrying batch " + status.getNodeBatchId());
             } else {
@@ -96,17 +97,16 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(getSql("insertIncomingBatchHistorySql"), new Object[] {
-                Long.valueOf(history.getBatchId()), history.getNodeId(), history.getStatus().toString(),
-                history.getNetworkMillis(), history.getFilterMillis(), history.getDatabaseMillis(),
-                history.getHostName(), history.getByteCount(), history.getStatementCount(),
-                history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
+        jdbcTemplate.update(getSql("insertIncomingBatchHistorySql"), new Object[] { Long.valueOf(history.getBatchId()),
+                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
+                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
+                history.getStatementCount(), history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
                 history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
                 history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER,
-                Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
+                StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER, Types.VARCHAR,
+                Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
+                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
     }
 
     class IncomingBatchMapper implements RowMapper {

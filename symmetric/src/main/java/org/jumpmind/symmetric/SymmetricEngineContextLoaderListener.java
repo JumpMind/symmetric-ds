@@ -37,13 +37,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * This is the standard way to bootstrap Symmetric in a web container.  Symmetric uses
- * Spring's WebApplicationContext for access to symmetric from its Servlets.  
- * This servlet context listener forces the contextConfigLocation for Spring to be load 
- * symmetric.xml.
- * <p/>
- * Developers have the option to subclass off of this listener and override the createConfigureAndStartEngine()
- * method.
+ * This is the standard way to bootstrap Symmetric in a web container. Symmetric
+ * uses Spring's WebApplicationContext for access to symmetric from its
+ * Servlets. This servlet context listener forces the contextConfigLocation for
+ * Spring to be load symmetric.xml. <p/> Developers have the option to subclass
+ * off of this listener and override the createConfigureAndStartEngine() method.
  */
 public class SymmetricEngineContextLoaderListener extends ContextLoaderListener {
 

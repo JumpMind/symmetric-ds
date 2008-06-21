@@ -34,8 +34,8 @@ public class AckResourceHandler extends AbstractTransportResourceHandler {
 
     public void ack(List<BatchInfo> batches) throws IOException {
         for (BatchInfo batchInfo : batches) {
-            acknowledgeService.ack(batchInfo);    
-        }        
+            acknowledgeService.ack(batchInfo);
+        }
     }
 
     public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {

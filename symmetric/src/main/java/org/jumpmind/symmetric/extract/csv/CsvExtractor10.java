@@ -42,26 +42,23 @@ public class CsvExtractor10 implements IDataExtractor {
 
     private String tablePrefix;
 
-    public void init(BufferedWriter writer, DataExtractorContext context)
-            throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService.getString(ParameterConstants.EXTERNAL_ID));
+    public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
+        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService
+                .getString(ParameterConstants.EXTERNAL_ID));
         writer.newLine();
     }
 
-    public void begin(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));               
+    public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
+        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
-    public void commit(OutgoingBatch batch, BufferedWriter writer)
-            throws IOException {
+    public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
         Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
-    public void write(BufferedWriter writer, Data data,
-            DataExtractorContext context) throws IOException {
+    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
         preprocessTable(data, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
     }
@@ -73,8 +70,7 @@ public class CsvExtractor10 implements IDataExtractor {
      * @param tableName
      * @param out
      */
-    public void preprocessTable(Data data, BufferedWriter out,
-            DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
 
         String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
@@ -84,7 +80,8 @@ public class CsvExtractor10 implements IDataExtractor {
             out.newLine();
             String columns = data.getAudit().getColumnNames();
             if (data.getTableName().equalsIgnoreCase(tablePrefix + "_node_security")) {
-                // In 1.4 the column named changed to "node_password", but old clients need "password"
+                // In 1.4 the column named changed to "node_password", but old
+                // clients need "password"
                 columns = columns.replaceFirst(",node_password,", ",password,");
                 columns = columns.replaceFirst(",NODE_PASSWORD,", ",PASSWORD,");
             }
@@ -95,7 +92,7 @@ public class CsvExtractor10 implements IDataExtractor {
             Util.write(out, "table, ", data.getTableName());
             out.newLine();
         }
-        
+
         context.setLastTableName(data.getTableName());
     }
 

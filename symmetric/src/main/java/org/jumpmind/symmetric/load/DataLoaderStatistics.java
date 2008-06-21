@@ -26,31 +26,31 @@ import java.util.Date;
 public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     private Date startTime;
-    
+
     private long networkMillis;
-    
+
     private long filterMillis;
 
     private long databaseMillis;
-    
+
     private long byteCount;
-    
+
     private long lineCount;
-    
+
     private long statementCount;
-    
+
     private long fallbackInsertCount;
-    
+
     private long fallbackUpdateCount;
-    
+
     private long missingDeleteCount;
-    
+
     private long timerMillis;
 
     public DataLoaderStatistics() {
         this.startTime = new Date();
     }
-    
+
     public long incrementLineCount() {
         return ++lineCount;
     }
@@ -70,7 +70,7 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
     public long incrementStatementCount() {
         return ++statementCount;
     }
-    
+
     public void incrementNetworkMillis(long millis) {
         networkMillis += millis;
     }
@@ -90,11 +90,11 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
     public void startTimer() {
         timerMillis = System.currentTimeMillis();
     }
-    
+
     public long endTimer() {
         return System.currentTimeMillis() - timerMillis;
     }
-    
+
     public long getFallbackInsertCount() {
         return fallbackInsertCount;
     }

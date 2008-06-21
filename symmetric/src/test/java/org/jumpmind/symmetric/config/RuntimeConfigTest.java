@@ -27,11 +27,11 @@ import org.testng.annotations.Test;
 
 public class RuntimeConfigTest extends AbstractDatabaseTest {
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    @Test(groups="continuous")
+    @SuppressWarnings( { "unchecked", "deprecation" })
+    @Test(groups = "continuous")
     public void testRuntimeConfig() throws Exception {
         String actual = getParameterService().getString(ParameterConstants.SCHEMA_VERSION);
-        Assert.assertNotSame(actual, TestConfig.SCHEMA_VERSION);        
+        Assert.assertNotSame(actual, TestConfig.SCHEMA_VERSION);
         getParameterService().saveParameter(ParameterConstants.RUNTIME_CONFIGURATION_CLASS, TestConfig.class.getName());
         actual = getParameterService().getString(ParameterConstants.SCHEMA_VERSION);
         Assert.assertEquals(actual, TestConfig.SCHEMA_VERSION);

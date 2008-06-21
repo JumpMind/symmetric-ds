@@ -31,13 +31,12 @@ public class AfterMidnightTimeSlot {
     int minutesAfterMidnight;
 
     public long getMillisecondsUntilTargetTime() {
-        Calendar midnight = DateUtils.truncate(Calendar.getInstance(),
-                Calendar.DATE);
+        Calendar midnight = DateUtils.truncate(Calendar.getInstance(), Calendar.DATE);
         midnight.add(Calendar.DATE, 1);
-        return midnight.getTime().getTime() - System.currentTimeMillis()
-                + minutesAfterMidnight * DateUtils.MILLIS_PER_MINUTE;
+        return midnight.getTime().getTime() - System.currentTimeMillis() + minutesAfterMidnight
+                * DateUtils.MILLIS_PER_MINUTE;
     }
-    
+
     public void setParameterService(IParameterService s) {
         this.minutesAfterMidnight = s.getInt(ParameterConstants.JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN);
     }

@@ -54,15 +54,15 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
-        List<Node> list = jdbcTemplate.query(getSql("findNodeByExternalIdSql"), new Object[] { nodeGroupId, externalId },
-                new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(getSql("findNodeByExternalIdSql"),
+                new Object[] { nodeGroupId, externalId }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
     public void ignoreNodeChannelForExternalId(boolean enabled, String channelId, String nodeGroupId, String externalId) {
         Node node = findNodeByExternalId(nodeGroupId, externalId);
-        if (jdbcTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] { enabled ? 1 : 0, node.getNodeId(),
-                channelId }) == 0) {
+        if (jdbcTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] { enabled ? 1 : 0,
+                node.getNodeId(), channelId }) == 0) {
             jdbcTemplate.update(getSql("insertNodeChannelControlSql"), new Object[] { node.getNodeId(), channelId,
                     enabled ? 1 : 0, 0 });
         }
@@ -90,8 +90,8 @@ public class NodeService extends AbstractService implements INodeService {
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
                 node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
-                node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(), 
-                node.getNodeId() }) == 1;
+                node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
+                node.getTimezoneOffset(), node.getNodeId() }) == 1;
         return updated;
     }
 
@@ -103,8 +103,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     /**
-     * Check that the given node and password match in the node_security
-     * table. A node must authenticate before it's allowed to sync data.
+     * Check that the given node and password match in the node_security table.
+     * A node must authenticate before it's allowed to sync data.
      */
     public boolean isNodeAuthorized(String id, String password) {
         NodeSecurity nodeSecurity = findNodeSecurity(id);
@@ -153,13 +153,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {
-        return jdbcTemplate.update(getSql("updateNodeSecuritySql"),
-                new Object[] { security.getPassword(), security.isRegistrationEnabled() ? 1 : 0,
-                        security.getRegistrationTime(), security.isInitialLoadEnabled() ? 1 : 0,
-                        security.getInitialLoadTime(), security.getNodeId() }, new int[] { Types.VARCHAR,
-                        Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, }) == 1;
+        return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
+                security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
+                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getNodeId() },
+                new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP,
+                        Types.VARCHAR, }) == 1;
     }
-    
+
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
         if (nodeSecurity != null) {

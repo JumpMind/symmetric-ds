@@ -37,9 +37,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
 
     private boolean supportsTransactionId = false;
-    
+
     private String transactionIdExpression = "null";
-    
+
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
             logger.info("Enabling transaction ID support");
@@ -51,17 +51,16 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema = '"
-                + schema + "'" : "";
+        String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema = '" + schema + "'" : "";
         return jdbcTemplate.queryForInt(
-                        "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                                + checkSchema, new Object[] { triggerName.toLowerCase(), tableName.toLowerCase() }) > 0;
+                "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
+                        + checkSchema, new Object[] { triggerName.toLowerCase(), tableName.toLowerCase() }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
         throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
     }
-    
+
     public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
@@ -79,7 +78,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public void enableSyncTriggers() {
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                if (! transactionstatus.isRollbackOnly()) {
+                if (!transactionstatus.isRollbackOnly()) {
                     jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " to on");
                 }
             }
@@ -93,7 +92,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public String getTransactionTriggerExpression(Trigger trigger) {
         return transactionIdExpression;
     }
-    
+
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select currval('" + sequenceName + "_seq')";
     }
@@ -128,10 +127,10 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     public void purge() {
     }
-    
+
     public String getDefaultCatalog() {
         return null;
-    }    
+    }
 
     public String getDefaultSchema() {
         return null;

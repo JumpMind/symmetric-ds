@@ -43,11 +43,9 @@ import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
  * @author Keith Naas <knaas@users.sourceforge.net>
  * 
  */
-public abstract class AbstractTransportResourceHandler implements
-        ITransportResourceHandler {
+public abstract class AbstractTransportResourceHandler implements ITransportResourceHandler {
 
-    protected IOutgoingTransport createOutgoingTransport(
-            OutputStream outputStream) throws IOException {
+    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream) throws IOException {
         return new InternalOutgoingTransport(outputStream);
     }
 

@@ -26,7 +26,7 @@ import java.util.List;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public class DataExtractorContext implements Cloneable {
-    
+
     private List<String> auditRecordsWritten = new ArrayList<String>();
     private String lastTableName;
     private OutgoingBatch batch;
@@ -36,7 +36,7 @@ public class DataExtractorContext implements Cloneable {
         this.dataExtractor = extractor;
         DataExtractorContext newVersion;
         try {
-            newVersion = (DataExtractorContext)super.clone();
+            newVersion = (DataExtractorContext) super.clone();
             newVersion.auditRecordsWritten = new ArrayList<String>();
             return newVersion;
         } catch (CloneNotSupportedException e) {
@@ -51,7 +51,7 @@ public class DataExtractorContext implements Cloneable {
     public void setLastTableName(String tableName) {
         lastTableName = tableName;
     }
-    
+
     public boolean isLastTable(String tableName) {
         return lastTableName.equals(tableName);
     }

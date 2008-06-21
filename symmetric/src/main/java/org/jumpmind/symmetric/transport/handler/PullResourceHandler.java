@@ -35,8 +35,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class PullResourceHandler extends AbstractTransportResourceHandler {
-    private static final Log logger = LogFactory
-            .getLog(PullResourceHandler.class);
+    private static final Log logger = LogFactory.getLog(PullResourceHandler.class);
 
     private INodeService nodeService;
 
@@ -51,16 +50,13 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
-                getRegistrationService().registerNode(
-                        nodeService.findNode(nodeId), outputStream);
+                getRegistrationService().registerNode(nodeService.findNode(nodeId), outputStream);
             } else {
                 if (nodeSecurity.isInitialLoadEnabled()) {
-                    getDataService().insertReloadEvent(
-                            nodeService.findNode(nodeId));
+                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
                 }
                 IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream);
-                getDataExtractorService().extract(nodeService.findNode(nodeId),
-                        outgoingTransport);
+                getDataExtractorService().extract(nodeService.findNode(nodeId), outgoingTransport);
                 outgoingTransport.close();
             }
         } else {
@@ -98,8 +94,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
         return dataExtractorService;
     }
 
-    public void setDataExtractorService(
-            IDataExtractorService dataExtractorService) {
+    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
     }
 }

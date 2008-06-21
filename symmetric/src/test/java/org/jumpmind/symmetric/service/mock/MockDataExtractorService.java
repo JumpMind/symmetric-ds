@@ -33,38 +33,34 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class MockDataExtractorService implements IDataExtractorService {
 
-    public boolean extract(Node node, IOutgoingTransport transport)
+    public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
+        return false;
+    }
+
+    public boolean extract(Node node, IExtractListener handler) throws Exception {
+        return false;
+    }
+
+    public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws Exception {
         return false;
     }
 
-    public boolean extract(Node node, IExtractListener handler)
-            throws Exception {
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws Exception {
         return false;
     }
 
-    public boolean extractBatchRange(IOutgoingTransport transport,
-            String startBatchId, String endBatchId) throws Exception {
-        return false;
-    }
-
-    public boolean extractBatchRange(IExtractListener handler,
-            String startBatchId, String endBatchId) throws Exception {
-        return false;
-    }
-
-    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config,
-            IOutgoingTransport transport) {
+    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport) {
         return null;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger,
-            IOutgoingTransport transport, DataExtractorContext ctx) {
+    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger, IOutgoingTransport transport,
+            DataExtractorContext ctx) {
     }
 
     public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
     }
-    
+
     public void addExtractorFilter(IExtractorFilter extractorFilter) {
     }
 

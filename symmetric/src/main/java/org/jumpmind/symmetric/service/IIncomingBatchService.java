@@ -32,18 +32,18 @@ public interface IIncomingBatchService {
     public IncomingBatch findIncomingBatch(long batchId, String nodeId);
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
-    
+
     public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId);
 
     @Transactional
     public boolean acquireIncomingBatch(IncomingBatch status);
-    
+
     @Transactional
     public void insertIncomingBatch(IncomingBatch status);
-    
+
     @Transactional
     public void insertIncomingBatchHistory(IncomingBatchHistory history);
-    
+
     @Transactional
     public int updateIncomingBatch(IncomingBatch status);
 

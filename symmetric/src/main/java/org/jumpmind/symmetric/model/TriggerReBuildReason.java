@@ -24,12 +24,13 @@ import org.jumpmind.symmetric.util.ICoded;
 
 /**
  * {@link TriggerHistory}
+ * 
  * @author chenson
  */
 public enum TriggerReBuildReason implements ICoded {
 
-    NEW_TRIGGERS("N"), TABLE_SCHEMA_CHANGED("S"), TABLE_SYNC_CONFIGURATION_CHANGED(
-            "C"), FORCED("F"), TRIGGERS_MISSING("T");
+    NEW_TRIGGERS("N"), TABLE_SCHEMA_CHANGED("S"), TABLE_SYNC_CONFIGURATION_CHANGED("C"), FORCED("F"), TRIGGERS_MISSING(
+            "T");
 
     private String code;
 

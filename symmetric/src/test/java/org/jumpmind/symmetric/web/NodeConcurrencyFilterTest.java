@@ -70,7 +70,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         Assert.assertEquals(five.success, true);
 
     }
-    
+
     @Test(groups = "continuous", timeOut = 60000)
     public void testPushConcurrency() throws Exception {
         IParameterService parameterService = getParameterService();
@@ -78,18 +78,19 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         NodeConcurrencyFilter filter = (NodeConcurrencyFilter) getBeanFactory().getBean(
                 Constants.NODE_CONCURRENCY_FILTER);
-        
-        IConcurrentConnectionManager manager = (IConcurrentConnectionManager)getBeanFactory().getBean(Constants.CONCURRENT_CONNECTION_MANGER);
+
+        IConcurrentConnectionManager manager = (IConcurrentConnectionManager) getBeanFactory().getBean(
+                Constants.CONCURRENT_CONNECTION_MANGER);
 
         MockWorker one = new MockWorker("00001", filter, "push", "HEAD");
         MockWorker two = new MockWorker("00002", filter, "push", "HEAD");
-        
+
         one.start();
         two.start();
         Thread.sleep(500);
-        
+
         Assert.assertEquals(manager.getReservationCount("push"), 2);
-               
+
         one = new MockWorker("00001", filter, "push", "PUT");
         two = new MockWorker("00002", filter, "push", "PUT");
 
@@ -99,7 +100,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         Assert.assertEquals(one.reached, true);
         Assert.assertEquals(two.reached, true);
-        
+
         Assert.assertEquals(manager.getReservationCount("push"), 2);
 
         MockWorker five = new MockWorker("00005", filter, "push", "PUT");
@@ -109,15 +110,14 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         Assert.assertEquals(five.reached, false);
         Assert.assertEquals(manager.getReservationCount("push"), 2);
-        
+
         one.hold = false;
         two.hold = false;
         Thread.sleep(500);
-        
+
         Assert.assertEquals(manager.getReservationCount("push"), 0);
 
     }
-    
 
     class MockWorker extends Thread {
 

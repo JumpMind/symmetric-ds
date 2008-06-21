@@ -36,11 +36,11 @@ public class Statistic {
 
     private long count;
 
-    private static Map<StatisticName, BigDecimal> lifeTimeTotal = new HashMap<StatisticName, BigDecimal>(
-            StatisticName.values().length);
-
-    private static Map<StatisticName, Long> lifeTimeCount = new HashMap<StatisticName, Long>(StatisticName
+    private static Map<StatisticName, BigDecimal> lifeTimeTotal = new HashMap<StatisticName, BigDecimal>(StatisticName
             .values().length);
+
+    private static Map<StatisticName, Long> lifeTimeCount = new HashMap<StatisticName, Long>(
+            StatisticName.values().length);
 
     static {
         StatisticName[] allStatistics = StatisticName.values();
@@ -96,9 +96,9 @@ public class Statistic {
             return BigDecimal.ZERO;
         }
     }
-    
+
     public void increment() {
-        add(1,1);
+        add(1, 1);
     }
 
     public void add(int v) {

@@ -69,8 +69,8 @@ public class SymmetricFilter implements Filter {
 
     private List<Filter> filters;
 
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
+            ServletException {
         new SymmetricFilterChain(chain).doFilter(request, response);
     }
 
@@ -79,18 +79,15 @@ public class SymmetricFilter implements Filter {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = getContext();
-        Map<String, Filter> filterBeans = ctx.getBeansOfType(
-                Filter.class);
+        Map<String, Filter> filterBeans = ctx.getBeansOfType(Filter.class);
         if (filterBeans.size() == 0) {
             filterBeans = ctx.getParent().getBeansOfType(Filter.class);
         }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
-        for (final Map.Entry<String, Filter> filterEntry : filterBeans
-                .entrySet()) {
+        for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Initializing filter %s", filterEntry
-                        .getKey()));
+                logger.info(String.format("Initializing filter %s", filterEntry.getKey()));
             }
             final Filter filter = filterEntry.getValue();
             filter.init(filterConfig);
@@ -106,8 +103,7 @@ public class SymmetricFilter implements Filter {
     }
 
     protected ApplicationContext getContext() {
-        return WebApplicationContextUtils
-                .getWebApplicationContext(getServletContext());
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 
     public ServletContext getServletContext() {
@@ -132,16 +128,14 @@ public class SymmetricFilter implements Filter {
             index = 0;
         }
 
-        public void doFilter(ServletRequest request, ServletResponse response)
-                throws IOException, ServletException {
+        public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
             // TODO: check to make sure its not an error status code!
             if (!response.isCommitted()) {
                 if (index < filters.size()) {
                     final Filter filter = filters.get(index++);
                     if (filter instanceof AbstractFilter) {
                         final AbstractFilter builtinFilter = (AbstractFilter) filter;
-                        if (!builtinFilter.isDisabled()
-                                && builtinFilter.matches(request)) {
+                        if (!builtinFilter.isDisabled() && builtinFilter.matches(request)) {
                             builtinFilter.doFilter(request, response, this);
                         } else {
                             this.doFilter(request, response);

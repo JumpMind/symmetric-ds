@@ -49,7 +49,7 @@ public class IncomingBatchHistory implements Serializable {
     private long byteCount;
 
     private long networkMillis;
-    
+
     private long filterMillis;
 
     private long databaseMillis;
@@ -61,7 +61,7 @@ public class IncomingBatchHistory implements Serializable {
     private long fallbackUpdateCount;
 
     private long missingDeleteCount;
-    
+
     private long failedRowNumber;
 
     private Date startTime;
@@ -69,9 +69,9 @@ public class IncomingBatchHistory implements Serializable {
     private Date endTime;
 
     private String sqlState;
-    
+
     private int sqlCode;
-    
+
     private String sqlMessage;
 
     static {
@@ -89,7 +89,7 @@ public class IncomingBatchHistory implements Serializable {
         startTime = new Date();
         this.hostName = thisHostName;
     }
-    
+
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
         byteCount = statistics.getByteCount();
         networkMillis = statistics.getNetworkMillis();
@@ -100,11 +100,11 @@ public class IncomingBatchHistory implements Serializable {
         fallbackUpdateCount = statistics.getFallbackUpdateCount();
         missingDeleteCount = statistics.getMissingDeleteCount();
         endTime = new Date();
-        if (! isSuccess) {
+        if (!isSuccess) {
             status = Status.ER;
             failedRowNumber = statistics.getStatementCount();
         }
-    }    
+    }
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
@@ -165,7 +165,7 @@ public class IncomingBatchHistory implements Serializable {
     public void setHostName(String hostName) {
         this.hostName = hostName;
     }
-    
+
     public String getNodeId() {
         return nodeId;
     }

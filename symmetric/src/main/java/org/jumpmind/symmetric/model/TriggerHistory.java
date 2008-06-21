@@ -26,23 +26,23 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 
 /**
- * Maps to the table sync audit table which tracks the history of sync trigger creation.
- * <p/>
- * This table also tracks the columns and the primary keys as of the create date so that if the table
- * definition changes while we still have events to process (as may be the case when distributing events
- * to remote locations), then we still have the history of what the columns and primary keys were at the 
- * time.
+ * Maps to the table sync audit table which tracks the history of sync trigger
+ * creation. <p/> This table also tracks the columns and the primary keys as of
+ * the create date so that if the table definition changes while we still have
+ * events to process (as may be the case when distributing events to remote
+ * locations), then we still have the history of what the columns and primary
+ * keys were at the time.
  */
 public class TriggerHistory {
 
     private int triggerHistoryId;
-    
+
     private int triggerId;
 
     private String sourceTableName;
-    
+
     private String sourceSchemaName;
-    
+
     private String sourceCatalogName;
 
     private Date createTime;
@@ -56,13 +56,13 @@ public class TriggerHistory {
     private String nameForUpdateTrigger;
 
     private String nameForDeleteTrigger;
-    
+
     private Date inactiveTime;
-    
 
     /**
-     * This is a hash based on the tablename, column names, and column data types.  It is used to 
-     * effectively version a table so we know when it changes.
+     * This is a hash based on the tablename, column names, and column data
+     * types. It is used to effectively version a table so we know when it
+     * changes.
      */
     private int tableHash;
 
@@ -72,28 +72,27 @@ public class TriggerHistory {
         createTime = new Date();
     }
 
-    public TriggerHistory(String tableName, String pkColumnNames,
-            String columnNames) {
+    public TriggerHistory(String tableName, String pkColumnNames, String columnNames) {
         this.sourceTableName = tableName;
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
     }
 
-    public TriggerHistory(Table table, Trigger trigger,
-            TriggerReBuildReason reason, String nameForInsertTrigger, String nameForUpdateTrigger, String nameForDeleteTrigger) {
+    public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason, String nameForInsertTrigger,
+            String nameForUpdateTrigger, String nameForDeleteTrigger) {
         this();
         this.sourceTableName = table.getName();
         this.lastTriggerBuildReason = reason;
         this.nameForDeleteTrigger = nameForDeleteTrigger;
         this.nameForInsertTrigger = nameForInsertTrigger;
         this.nameForUpdateTrigger = nameForUpdateTrigger;
-        this.columnNames = getCommaDeliminatedColumns(trigger
-                .orderColumnsForTable(table));
+        this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
-        // set primary key equal to all the columns to make data sync work for tables
+        // set primary key equal to all the columns to make data sync work for
+        // tables
         // with no primary keys
         if (pkColumnNames == null) {
             pkColumnNames = columnNames;
@@ -106,10 +105,8 @@ public class TriggerHistory {
         final int PRIME = 31;
         int result = 1;
         result = PRIME * result + table.getName().hashCode();
-        result = PRIME * result
-                + calculateHashForColumns(PRIME, table.getColumns());
-        result = PRIME * result
-                + calculateHashForColumns(PRIME, table.getPrimaryKeyColumns());
+        result = PRIME * result + calculateHashForColumns(PRIME, table.getColumns());
+        result = PRIME * result + calculateHashForColumns(PRIME, table.getPrimaryKeyColumns());
         return result;
     }
 
@@ -137,8 +134,8 @@ public class TriggerHistory {
         } else {
             return null;
         }
-    } 
-    
+    }
+
     public String getTriggerNameForDmlType(DataEventType type) {
         switch (type) {
         case INSERT:
@@ -187,8 +184,7 @@ public class TriggerHistory {
         return lastTriggerBuildReason;
     }
 
-    public void setLastTriggerBuildReason(
-            TriggerReBuildReason lastTriggerBuildReason) {
+    public void setLastTriggerBuildReason(TriggerReBuildReason lastTriggerBuildReason) {
         this.lastTriggerBuildReason = lastTriggerBuildReason;
     }
 

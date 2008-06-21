@@ -31,8 +31,7 @@ import java.io.OutputStreamWriter;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 
-public class InternalOutgoingWithResponseTransport implements
-        IOutgoingWithResponseTransport {
+public class InternalOutgoingWithResponseTransport implements IOutgoingWithResponseTransport {
 
     BufferedWriter writer = null;
 
@@ -40,8 +39,7 @@ public class InternalOutgoingWithResponseTransport implements
 
     boolean open = true;
 
-    InternalOutgoingWithResponseTransport(OutputStream pushOs,
-            InputStream respIs) {
+    InternalOutgoingWithResponseTransport(OutputStream pushOs, InputStream respIs) {
         writer = new BufferedWriter(new OutputStreamWriter(pushOs));
         reader = new BufferedReader(new InputStreamReader(respIs));
     }

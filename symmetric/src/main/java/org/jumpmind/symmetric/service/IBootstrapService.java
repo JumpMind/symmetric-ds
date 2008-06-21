@@ -20,9 +20,9 @@
 
 package org.jumpmind.symmetric.service;
 
-
 /**
- * Provides methods to setup the runtime for data synchronization based on {@link IConfigurationService}.
+ * Provides methods to setup the runtime for data synchronization based on
+ * {@link IConfigurationService}.
  */
 public interface IBootstrapService {
 
@@ -32,9 +32,9 @@ public interface IBootstrapService {
 
     @Deprecated
     public void register();
-    
+
     public void validateConfiguration();
 
     public void heartbeat();
- 
+
 }

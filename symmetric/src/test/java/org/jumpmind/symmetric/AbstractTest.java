@@ -18,13 +18,12 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 
 abstract public class AbstractTest {
-	
+
     private static final Log logger = LogFactory.getLog(AbstractTest.class);
-    
+
     protected SymmetricEngine createEngine(File propertiesFile) {
         try {
-            return new SymmetricEngine("file:"
-                    + propertiesFile.getAbsolutePath(), null);
+            return new SymmetricEngine("file:" + propertiesFile.getAbsolutePath(), null);
         } catch (RuntimeException ex) {
             logger.error(ex, ex);
             throw ex;

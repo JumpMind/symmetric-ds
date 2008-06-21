@@ -39,7 +39,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public static String DUAL_TABLE = "DUAL";
 
     private boolean initializeDatabase;
-    
+
     private boolean charFieldTrimmed = false;
 
     private static boolean hsqldbInitialized = false;
@@ -70,8 +70,9 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
 
         createDummyDualTable();
-        
-        charFieldTrimmed = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_PROPERTIES where property_name='sql.enforce_strict_size' and property_value='true'") == 1;
+
+        charFieldTrimmed = jdbcTemplate
+                .queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_PROPERTIES where property_name='sql.enforce_strict_size' and property_value='true'") == 1;
 
         if (jdbcTemplate
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.SYSTEM_ALIASES where ALIAS='BASE64_ENCODE'") == 0) {
@@ -81,7 +82,8 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * This is for use in the java triggers so we can create a virtual table w/ old and new columns values to bump SQL expressions up against.
+     * This is for use in the java triggers so we can create a virtual table w/
+     * old and new columns values to bump SQL expressions up against.
      */
     private void createDummyDualTable() {
         Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
@@ -183,7 +185,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getDefaultCatalog() {
         return null;
     }
-    
+
     public String getDefaultSchema() {
         return null;
     }

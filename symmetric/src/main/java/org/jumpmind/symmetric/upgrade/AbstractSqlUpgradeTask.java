@@ -27,11 +27,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 abstract public class AbstractSqlUpgradeTask implements IUpgradeTask {
 
     protected JdbcTemplate jdbcTemplate;
-    
+
     protected boolean isUpgradeRegistrationServer = true;
-    
+
     protected boolean isUpgradeNonRegistrationServer = true;
-    
+
     protected boolean useReplacement = true;
 
     public void upgrade(int[] fromVersion) {

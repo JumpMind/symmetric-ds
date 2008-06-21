@@ -50,9 +50,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected final static String[] TEST_KEYS = { "id" };
 
-    protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value",
-            "char_value", "char_required_value", "date_value", "time_value", "boolean_value",
-            "integer_value", "decimal_value" };
+    protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value", "char_value",
+            "char_required_value", "date_value", "time_value", "boolean_value", "integer_value", "decimal_value" };
 
     protected static int batchId = 10000;
 
@@ -80,8 +79,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected IIncomingBatchService getIncomingBatchService() {
         if (incomingBatchService == null) {
-            incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(
-                    Constants.INCOMING_BATCH_SERVICE);
+            incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(Constants.INCOMING_BATCH_SERVICE);
         }
         return incomingBatchService;
     }
@@ -122,8 +120,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected abstract void load(ByteArrayOutputStream out) throws Exception;
 
-    protected void writeTable(CsvWriter writer, String tableName, String[] keys, String[] columns)
-            throws IOException {
+    protected void writeTable(CsvWriter writer, String tableName, String[] keys, String[] columns) throws IOException {
         writer.writeRecord(new String[] { "table", tableName });
         writer.write("keys");
         writer.writeRecord(keys);
@@ -133,8 +130,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     @SuppressWarnings("unchecked")
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
-        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where "
-                + getWhere(TEST_KEYS);
+        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where " + getWhere(TEST_KEYS);
         Map<String, Object> results = null;
         try {
             results = getJdbcTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });

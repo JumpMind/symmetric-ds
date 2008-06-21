@@ -51,37 +51,36 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 
-// TODO: NodeService already does all this DML.  Should use NodeService or move methods to there.
-public class RegistrationService extends AbstractService implements
-        IRegistrationService {
+// TODO: NodeService already does all this DML. Should use NodeService or move
+// methods to there.
+public class RegistrationService extends AbstractService implements IRegistrationService {
 
-    protected static final Log logger = LogFactory
-            .getLog(RegistrationService.class);
+    protected static final Log logger = LogFactory.getLog(RegistrationService.class);
 
     private INodeService nodeService;
 
     private IDataExtractorService dataExtractorService;
-    
+
     private IAcknowledgeService acknowledgeService;
 
     private IConfigurationService configurationService;
-    
+
     private IClusterService clusterService;
 
     private IDataService dataService;
-    
+
     private IDataLoaderService dataLoaderService;
-    
+
     private ITransportManager transportManager;
-    
+
     private IDbDialect dbDialect;
-    
+
     /**
      * Register a node for the given domain name and domain ID if the
      * registration is open.
      */
     public boolean registerNode(Node node, OutputStream out) throws IOException {
-        if (! configurationService.isRegistrationServer()) {
+        if (!configurationService.isRegistrationServer()) {
             // registration is not allowed until this node has an initial load
             NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
             if (security != null && security.getInitialLoadTime() == null) {
@@ -97,12 +96,11 @@ public class RegistrationService extends AbstractService implements
             return false;
         }
         node.setNodeId(nodeId);
-        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node
-                .getNodeId() });
+        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node.getNodeId() });
         jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL().toString(),
-                node.getSchemaVersion(), node.getDatabaseType(), node.getDatabaseVersion(),
-                node.getSymmetricVersion(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                node.getSchemaVersion(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(),
+                node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once
@@ -118,22 +116,22 @@ public class RegistrationService extends AbstractService implements
         return (String) jdbcTemplate.queryForObject(getSql("findNodeToRegisterSql"), new Object[] { nodeGroupId,
                 externald }, String.class);
     }
-    
 
     private void sleepBeforeRegistrationRetry() {
         try {
-            RandomTimeSlot randomSleepTimeSlot = new RandomTimeSlot(parameterService.getString(ParameterConstants.EXTERNAL_ID), 60);
+            RandomTimeSlot randomSleepTimeSlot = new RandomTimeSlot(parameterService
+                    .getString(ParameterConstants.EXTERNAL_ID), 60);
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
             logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
         }
     }
-    
+
     public boolean isRegisteredWithServer() {
         return nodeService.findIdentity() != null;
     }
-    
+
     public void registerWithServer() {
         boolean registered = isRegisteredWithServer();
         // If we cannot contact the server to register, we simply must wait and
@@ -165,22 +163,18 @@ public class RegistrationService extends AbstractService implements
     /**
      * Synchronize node configuration.
      */
-    protected boolean writeConfiguration(Node node, OutputStream out)
-            throws IOException {
+    protected boolean writeConfiguration(Node node, OutputStream out) throws IOException {
         boolean written = false;
         IOutgoingTransport transport = new InternalOutgoingTransport(out);
-        List<String> tableNames = configurationService
-                .getRootConfigChannelTableNames();
+        List<String> tableNames = configurationService.getRootConfigChannelTableNames();
         if (tableNames != null && tableNames.size() > 0) {
             for (String tableName : tableNames) {
-                Trigger trigger = configurationService
-                        .getTriggerForTarget(tableName, parameterService
-                                .getNodeGroupId(), node.getNodeGroupId(),
-                                Constants.CHANNEL_CONFIG);
+                Trigger trigger = configurationService.getTriggerForTarget(tableName,
+                        parameterService.getNodeGroupId(), node.getNodeGroupId(), Constants.CHANNEL_CONFIG);
                 if (trigger != null) {
-                    OutgoingBatch batch = dataExtractorService.extractInitialLoadFor(node,
-                            trigger, transport);
-                    // acknowledge right away, because the acknowledgment is not build into the registration
+                    OutgoingBatch batch = dataExtractorService.extractInitialLoadFor(node, trigger, transport);
+                    // acknowledge right away, because the acknowledgment is not
+                    // build into the registration
                     // protocol.
                     acknowledgeService.ack(batch.getBatchInfo());
                 }
@@ -203,24 +197,21 @@ public class RegistrationService extends AbstractService implements
      */
     public void reOpenRegistration(String nodeId) {
         String password = generatePassword();
-        jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password,
-                nodeId });
+        jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
     }
 
     /**
-     * Open registration for a single new node given a node group (f.e., "STORE")
-     * and external ID (f.e., "00001"). The unique node ID and password are
-     * generated and stored in the node and node_security tables with the
-     * registration_enabled flag turned on. The next node to try registering
-     * for this node group and external ID will be given this information.
+     * Open registration for a single new node given a node group (f.e.,
+     * "STORE") and external ID (f.e., "00001"). The unique node ID and password
+     * are generated and stored in the node and node_security tables with the
+     * registration_enabled flag turned on. The next node to try registering for
+     * this node group and external ID will be given this information.
      */
     public void openRegistration(String nodeGroup, String externalId) {
         String nodeId = generateNodeId(nodeGroup, externalId);
         String password = generatePassword();
-        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId,
-                nodeGroup, externalId });
-        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                nodeId, password });        
+        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId });
+        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
     }
 
@@ -233,8 +224,8 @@ public class RegistrationService extends AbstractService implements
     }
 
     /**
-     * Generate the next node ID that is available. Try to use the domain ID
-     * as the node ID.
+     * Generate the next node ID that is available. Try to use the domain ID as
+     * the node ID.
      */
     // TODO: nodeGenerator.generateNodeId();
     protected String generateNodeId(String nodeGroupId, String externalId) {
@@ -246,21 +237,19 @@ public class RegistrationService extends AbstractService implements
             }
             nodeId = externalId + "-" + sequence;
         }
-        throw new RuntimeException("Could not find nodeId for externalId of "
-                + externalId + " after " + maxTries + " tries.");
+        throw new RuntimeException("Could not find nodeId for externalId of " + externalId + " after " + maxTries
+                + " tries.");
     }
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setDataExtractorService(
-            IDataExtractorService dataExtractorService) {
+    public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
     }
 
-    public void setConfigurationService(
-            IConfigurationService configurationService) {
+    public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
 

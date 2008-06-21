@@ -63,15 +63,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
         purgeIncoming(retentionCutoff);
         purgeStatistic(retentionCutoff);
     }
-    
+
     private void purgeStatistic(Calendar retentionCutoff) {
         try {
             if (clusterService.lock(LockAction.PURGE_STATISTICS)) {
                 try {
                     logger.info("The statistic purge process is about to run.");
-                    int count = jdbcTemplate.update(
-                            getSql("deleteFromStatisticSql"),
-                            new Object[] { retentionCutoff.getTime() });
+                    int count = jdbcTemplate.update(getSql("deleteFromStatisticSql"), new Object[] { retentionCutoff
+                            .getTime() });
                     logger.info("Purged " + count + " statistic rows.");
                 } finally {
                     clusterService.unlock(LockAction.PURGE_STATISTICS);
@@ -185,15 +184,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         logger.info("About to purge data rows.");
         int minDataId = jdbcTemplate.queryForInt(getSql("selectMinDataIdSql"));
-        int purgeUpToDataId = jdbcTemplate.queryForInt(getSql("selectMaxDataIdSql"), new Object[] { time.getTime()});
+        int purgeUpToDataId = jdbcTemplate.queryForInt(getSql("selectMaxDataIdSql"), new Object[] { time.getTime() });
         int maxDataId = minDataId + maxNumOfDataIdsToPurgeInTx;
         int deletedCount = 0;
         long ts = System.currentTimeMillis();
         int totalCount = 0;
 
         do {
-            deletedCount = jdbcTemplate.update(getSql("deleteFromDataSql"), new Object[] { minDataId, maxDataId, minDataId,
-                    maxDataId });
+            deletedCount = jdbcTemplate.update(getSql("deleteFromDataSql"), new Object[] { minDataId, maxDataId,
+                    minDataId, maxDataId });
             totalCount += deletedCount;
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                 logger.info("Purged a total of " + totalCount + " data rows so far.");
@@ -218,8 +217,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 long ts = System.currentTimeMillis();
 
                 try {
-                    st = conn.prepareStatement(getSql("selectOutgoingBatchIdsToPurgeSql"), java.sql.ResultSet.TYPE_FORWARD_ONLY,
-                            java.sql.ResultSet.CONCUR_READ_ONLY);
+                    st = conn.prepareStatement(getSql("selectOutgoingBatchIdsToPurgeSql"),
+                            java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
                     st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     st.setTimestamp(1, new Timestamp(time.getTime().getTime()));
                     rs = st.executeQuery();
@@ -227,11 +226,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         final int batchId = rs.getInt(1);
                         final String nodeId = rs.getString(2);
 
-                        eventRowCount += jdbcTemplate
-                                .update(getSql("deleteFromEventDataIdSql"), new Object[] { batchId, nodeId });
-                        batchesPurged += jdbcTemplate.update(getSql("deleteFromOutgoingBatchSql"), new Object[] { batchId });
+                        eventRowCount += jdbcTemplate.update(getSql("deleteFromEventDataIdSql"), new Object[] {
+                                batchId, nodeId });
+                        batchesPurged += jdbcTemplate.update(getSql("deleteFromOutgoingBatchSql"),
+                                new Object[] { batchId });
                         jdbcTemplate.update(getSql("deleteFromOutgoingBatchHistSql"), new Object[] { batchId, nodeId });
-                        
+
                         if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
                             logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
                                     + " data_events so far.");
@@ -270,7 +270,5 @@ public class PurgeService extends AbstractService implements IPurgeService {
     public void setDeleteIncomingBatchesByNodeIdSql(List<String> deleteIncomingBatchesByNodeIdSql) {
         this.deleteIncomingBatchesByNodeIdSql = deleteIncomingBatchesByNodeIdSql;
     }
-
-
 
 }

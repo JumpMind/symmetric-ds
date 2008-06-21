@@ -46,7 +46,7 @@ public class MockRegistrationService implements IRegistrationService {
 
     public void registerWithServer() {
     }
-    
+
     public boolean isRegisteredWithServer() {
         return true;
     }

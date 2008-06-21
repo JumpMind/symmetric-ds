@@ -48,7 +48,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private static final Log logger = LogFactory.getLog(DbDialectFactory.class);
-    
+
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
@@ -56,11 +56,12 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     public Object getObject() throws Exception {
 
         waitForAvailableDatabase();
-        
+
         String productName = getDbProductName();
         int majorVersion = getDbMajorVersion();
 
-        // Try to use latest version of platform, then fallback on default platform
+        // Try to use latest version of platform, then fallback on default
+        // platform
         Platform pf = PlatformFactory.createNewPlatformInstance(productName + majorVersion);
         if (pf == null) {
             pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
@@ -91,28 +92,28 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         }
 
         dialect.init(pf);
-        dialect.setTransactionTemplate((TransactionTemplate) beanFactory
-                .getBean("currentTransactionTemplate"));
+        dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
         return dialect;
     }
 
     private void waitForAvailableDatabase() {
         boolean success = false;
         while (!success) {
-        try {
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                return null;
-            }
-        });
-        success = true;
-        } catch (CannotGetJdbcConnectionException ex) {
-            logger.error("Could not get a connection to the database: " + ex.getMessage() + ".  Waiting for 10 seconds, before trying to connect to the database again.");
             try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
+                jdbcTemplate.execute(new ConnectionCallback() {
+                    public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                        return null;
+                    }
+                });
+                success = true;
+            } catch (CannotGetJdbcConnectionException ex) {
+                logger.error("Could not get a connection to the database: " + ex.getMessage()
+                        + ".  Waiting for 10 seconds, before trying to connect to the database again.");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                }
             }
-        }
         }
     }
 

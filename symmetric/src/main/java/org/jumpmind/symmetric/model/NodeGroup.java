@@ -20,14 +20,14 @@
 
 package org.jumpmind.symmetric.model;
 
-public class NodeGroup  {
+public class NodeGroup {
 
     private static final long serialVersionUID = -8244845505598568994L;
 
     private String groupId;
 
     private String description;
-    
+
     public String getGroupId() {
         return groupId;
     }

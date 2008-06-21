@@ -36,7 +36,7 @@ public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
 
     protected String updateSql;
 
-    public void upgrade(final Node node, int[] fromVersion) {        
+    public void upgrade(final Node node, int[] fromVersion) {
         String sql = prepareSql(node, driverSql);
         logger.warn("Upgrade for each: " + sql);
         logger.warn("Upgrade do: " + updateSql);
@@ -45,7 +45,7 @@ public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
                 int count = rs.getMetaData().getColumnCount();
                 Object[] params = new Object[count];
                 for (int i = 0; i < count; i++) {
-                    params[i] = rs.getObject(i+1);                    
+                    params[i] = rs.getObject(i + 1);
                 }
                 jdbcTemplate.update(prepareSql(node, updateSql), params);
             }

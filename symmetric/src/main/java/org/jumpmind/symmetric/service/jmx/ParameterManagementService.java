@@ -39,16 +39,14 @@ public class ParameterManagementService {
     }
 
     @ManagedOperation(description = "Update a parameter for this node only")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameter(String key, String value) {
         this.parameterService.saveParameter(key, value);
     }
 
     @ManagedOperation(description = "Update a parameter for all nodes")
-    @ManagedOperationParameters( {
-            @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
+    @ManagedOperationParameters( { @ManagedOperationParameter(name = "key", description = "The name of the parameter"),
             @ManagedOperationParameter(name = "value", description = "The value for the parameter") })
     public void updateParameterForAll(String key, String value) {
         this.parameterService.saveParameter(IParameterService.ALL, IParameterService.ALL, key, value);

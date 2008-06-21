@@ -36,8 +36,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
  */
 public class SymmetricWebServer {
 
-    protected static final Log logger = LogFactory
-            .getLog(SymmetricWebServer.class);
+    protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
 
     public void start(int port) throws Exception {
 
@@ -55,7 +54,7 @@ public class SymmetricWebServer {
         ServletHolder servletHolder = new ServletHolder(SymmetricServlet.class);
         servletHolder.setInitOrder(0);
         webContext.addServlet(servletHolder, "/*");
-        
+
         server.addHandler(webContext);
 
         logger.info("About to start SymmetricDS web server on port " + port);

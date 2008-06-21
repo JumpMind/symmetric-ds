@@ -34,8 +34,7 @@ class ServletUtils {
      * @return true if the error could be sent to the response
      * @throws IOException
      */
-    public static boolean sendError(final HttpServletResponse resp,
-            final int statusCode) throws IOException {
+    public static boolean sendError(final HttpServletResponse resp, final int statusCode) throws IOException {
         return sendError(resp, statusCode, null);
     }
 
@@ -46,12 +45,12 @@ class ServletUtils {
      * @param resp
      * @param statusCode
      * @param message
-     *            a message to put in the body of the response
+     *                a message to put in the body of the response
      * @return true if the error could be sent to the response
      * @throws IOException
      */
-    public static boolean sendError(final HttpServletResponse resp,
-            final int statusCode, final String message) throws IOException {
+    public static boolean sendError(final HttpServletResponse resp, final int statusCode, final String message)
+            throws IOException {
         boolean retVal = false;
         if (!resp.isCommitted()) {
             resp.sendError(statusCode, message);
@@ -69,8 +68,7 @@ class ServletUtils {
      * @return true if the error could be sent to the response
      * @throws IOException
      */
-    public static boolean sendError(final ServletResponse resp,
-            final int statusCode) throws IOException {
+    public static boolean sendError(final ServletResponse resp, final int statusCode) throws IOException {
         return sendError(resp, statusCode, null);
     }
 
@@ -81,12 +79,12 @@ class ServletUtils {
      * @param resp
      * @param statusCode
      * @param message
-     *            a message to put in the body of the response
+     *                a message to put in the body of the response
      * @return true if the error could be sent to the response
      * @throws IOException
      */
-    public static boolean sendError(final ServletResponse resp,
-            final int statusCode, final String message) throws IOException {
+    public static boolean sendError(final ServletResponse resp, final int statusCode, final String message)
+            throws IOException {
         boolean retVal = false;
         if (resp instanceof HttpServletResponse) {
             retVal = sendError((HttpServletResponse) resp, statusCode, message);

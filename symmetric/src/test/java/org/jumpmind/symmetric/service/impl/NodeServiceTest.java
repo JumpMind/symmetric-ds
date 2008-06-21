@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
 public class NodeServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;
-    
+
     @BeforeTest(groups = "continuous")
     protected void setUp() {
         nodeService = (INodeService) getBeanFactory().getBean(Constants.NODE_SERVICE);
@@ -66,8 +66,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
         Assert.assertEquals(node.getPassword(), "secret", "Wrong password");
         Assert.assertEquals(node.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
-        Assert.assertEquals(node.getRegistrationTime().toString(), "2007-01-01 01:01:01.0",
-                "Wrong registrationTime");
+        Assert.assertEquals(node.getRegistrationTime().toString(), "2007-01-01 01:01:01.0", "Wrong registrationTime");
     }
 
     @Test(groups = "continuous")
@@ -78,14 +77,11 @@ public class NodeServiceTest extends AbstractDatabaseTest {
 
     @Test(groups = "continuous")
     public void testIsNodeAuthorized() throws Exception {
-        Assert.assertTrue(nodeService.isNodeAuthorized("00001", "secret"),
-                "Node should be authorized");
+        Assert.assertTrue(nodeService.isNodeAuthorized("00001", "secret"), "Node should be authorized");
 
-        Assert.assertFalse(nodeService.isNodeAuthorized("00001", "wrongPassword"),
-                "Node should NOT be authorized");
+        Assert.assertFalse(nodeService.isNodeAuthorized("00001", "wrongPassword"), "Node should NOT be authorized");
 
-        Assert.assertFalse(nodeService.isNodeAuthorized("wrongNodeId", "secret"),
-                "Node should NOT be authorized");
+        Assert.assertFalse(nodeService.isNodeAuthorized("wrongNodeId", "secret"), "Node should NOT be authorized");
     }
 
     @Test(groups = "continuous")

@@ -42,7 +42,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private String rescheduleDelayParameter;
 
     private BeanFactory beanFactory;
-    
+
     protected IParameterService parameterService;
 
     private String beanName;
@@ -50,7 +50,8 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     @Override
     public void run() {
         try {
-            if (SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME)).isStarted()) {
+            if (SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME))
+                    .isStarted()) {
                 doJob();
             }
         } catch (final Throwable ex) {
@@ -70,7 +71,9 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         final Timer timer = new Timer();
         timer.schedule((TimerTask) beanFactory.getBean(beanName), parameterService.getLong(rescheduleDelayParameter));
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter) + " ms delay.");
+            getLogger().debug(
+                    "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
+                            + " ms delay.");
         }
     }
 

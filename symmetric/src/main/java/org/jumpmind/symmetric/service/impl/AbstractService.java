@@ -30,7 +30,7 @@ abstract class AbstractService {
     protected IParameterService parameterService;
 
     protected JdbcTemplate jdbcTemplate;
-    
+
     private Map<String, String> sql;
 
     public void setJdbcTemplate(JdbcTemplate jdbc) {
@@ -40,7 +40,7 @@ abstract class AbstractService {
     public void setSql(Map<String, String> sql) {
         this.sql = sql;
     }
-    
+
     public String getSql(String key) {
         return sql.get(key);
     }
@@ -48,5 +48,5 @@ abstract class AbstractService {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-    
+
 }

@@ -40,19 +40,19 @@ public class OutgoingBatch implements Serializable {
     private Status status = Status.NE;
 
     private BatchType batchType = BatchType.EVENTS;
-    
+
     private Date createTime;
 
     public OutgoingBatch() {
     }
-    
+
     public OutgoingBatch(Node node, String channelId, BatchType batchType) {
         this.nodeId = node.getNodeId();
         this.channelId = channelId;
         this.status = Status.NE;
         this.batchType = batchType;
     }
-    
+
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
     }
@@ -96,8 +96,8 @@ public class OutgoingBatch implements Serializable {
     public BatchType getBatchType() {
         return batchType;
     }
-    
-    public BatchInfo getBatchInfo() {        
+
+    public BatchInfo getBatchInfo() {
         return new BatchInfo(this.batchId);
     }
 

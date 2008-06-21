@@ -39,7 +39,7 @@ public class IncomingBatch implements Serializable {
     private String nodeId;
 
     private Status status;
-    
+
     private Date createTime;
 
     private boolean isRetry;
@@ -52,7 +52,7 @@ public class IncomingBatch implements Serializable {
         nodeId = context.getNodeId();
         status = Status.OK;
     }
-    
+
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
     }

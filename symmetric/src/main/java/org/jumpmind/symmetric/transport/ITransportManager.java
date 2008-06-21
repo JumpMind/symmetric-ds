@@ -31,13 +31,11 @@ import org.jumpmind.symmetric.model.Node;
 
 public interface ITransportManager {
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local)
-            throws IOException;
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException;
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException;
 
-    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2)
-            throws IOException;
+    public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
 
     public List<BatchInfo> readAcknowledgement(String parameterString) throws IOException;
 

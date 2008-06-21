@@ -20,7 +20,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     protected Map<String, Map<String, Reservation>> activeReservationsByNodeByPool = new HashMap<String, Map<String, Reservation>>();
 
     protected Map<String, Map<String, NodeConnectionStatistics>> nodeConnectionStatistics = new HashMap<String, Map<String, NodeConnectionStatistics>>();
-    
+
     protected Set<String> whiteList = new HashSet<String>();
 
     protected void logTooBusyRejection(String nodeId, String poolId) {
@@ -58,17 +58,17 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             return false;
         }
     }
-    
+
     synchronized public void addToWhitelist(String nodeId) {
         whiteList.add(nodeId);
     }
-    
+
     synchronized public void removeFromWhiteList(String nodeId) {
-        whiteList.remove(nodeId);       
+        whiteList.remove(nodeId);
     }
-    
+
     synchronized public String[] getWhiteList() {
-        return whiteList.toArray(new String[whiteList.size()]);        
+        return whiteList.toArray(new String[whiteList.size()]);
     }
 
     public int getReservationCount(String poolId) {
@@ -160,13 +160,13 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             return createTime;
         }
     }
-    
+
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId() {
         return this.nodeConnectionStatistics;
     }
 
     public class NodeConnectionStatistics {
-        
+
         int numOfRejections;
         long totalConnectionCount;
         long totalConnectionTimeMs;

@@ -44,27 +44,27 @@ public class PullService extends AbstractService implements IPullService {
     private INodeService nodeService;
 
     private IDataLoaderService dataLoaderService;
-    
+
     private IRegistrationService registrationService;
 
     public void pullData() {
-        
+
         // register if we haven't already been registered
         if (!registrationService.isRegisteredWithServer()) {
             registrationService.registerWithServer();
         }
-        
+
         List<Node> nodes = nodeService.findNodesToPull();
-        if (nodes != null && nodes.size() > 0) {            
+        if (nodes != null && nodes.size() > 0) {
             for (Node node : nodes) {
-                String nodeName =  " for " + node;
+                String nodeName = " for " + node;
                 try {
                     logger.info("Pull requested" + nodeName);
                     if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
                         logger.info("Pull data received" + nodeName);
                     } else {
-                        logger.info("Pull no data received" + nodeName);    
-                    }                    
+                        logger.info("Pull no data received" + nodeName);
+                    }
                 } catch (ConnectException ex) {
                     logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
                 } catch (ConnectionRejectedException ex) {
@@ -74,7 +74,7 @@ public class PullService extends AbstractService implements IPullService {
                 } catch (SocketException ex) {
                     logger.warn(ex.getMessage());
                 } catch (TransportException ex) {
-                    logger.warn(ex.getMessage());                    
+                    logger.warn(ex.getMessage());
                 } catch (IOException e) {
                     logger.error(e, e);
                 }

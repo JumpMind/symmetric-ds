@@ -40,10 +40,10 @@ public class MockDataLoaderService implements IDataLoaderService {
     public void addColumnFilter(String tableName, IColumnFilter filter) {
 
     }
-    
+
     public void loadDataBatch(String batchData) throws IOException {
     }
-    
+
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
         return null;
     }
@@ -78,7 +78,7 @@ public class MockDataLoaderService implements IDataLoaderService {
     }
 
     public void addBatchListener(IBatchListener listener) {
-        
+
     }
 
 }

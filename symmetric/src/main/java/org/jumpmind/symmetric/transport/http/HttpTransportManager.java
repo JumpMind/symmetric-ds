@@ -48,14 +48,15 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
- * Allow remote communication to nodes, in order to push data, pull data, and send messages.
+ * Allow remote communication to nodes, in order to push data, pull data, and
+ * send messages.
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
     protected static final Log logger = LogFactory.getLog(HttpTransportManager.class);
 
     private INodeService nodeService;
-    
+
     private IParameterService parameterService;
 
     public HttpTransportManager(INodeService nodeService, IParameterService paramService) {
@@ -125,7 +126,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     private HttpURLConnection createGetConnectionFor(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("accept-encoding", "gzip");
-        int httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);      
+        int httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
         conn.setConnectTimeout(httpTimeout);
         conn.setReadTimeout(httpTimeout);
         conn.setRequestMethod("GET");
@@ -133,7 +134,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     /**
-     * If the content is gzip'd, then uncompress. 
+     * If the content is gzip'd, then uncompress.
      */
     public static BufferedReader getReaderFrom(HttpURLConnection connection) throws IOException {
         String type = connection.getContentEncoding();
@@ -145,15 +146,15 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     /**
-     * Build a url for an action.  Include the nodeid and the security token.
+     * Build a url for an action. Include the nodeid and the security token.
      */
     protected String buildURL(String action, Node remote, Node local) throws IOException {
         return addSecurityToken((chooseURL(remote) + "/" + action), "&");
     }
 
     /**
-     * Build the url for remote node communication.  Use the remote sync_url first, if 
-     * it is null or blank, then use the registration url instead.
+     * Build the url for remote node communication. Use the remote sync_url
+     * first, if it is null or blank, then use the registration url instead.
      */
     private String chooseURL(Node remote) {
         if (StringUtils.isBlank(remote.getSyncURL())) {
@@ -172,7 +173,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(connector);
         sb.append(WebConstants.SECURITY_TOKEN);
         sb.append("=");
-        NodeSecurity security = nodeService.findNodeSecurity(nodeId);        
+        NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String securityToken = "none";
         if (security != null) {
             securityToken = security.getPassword();
