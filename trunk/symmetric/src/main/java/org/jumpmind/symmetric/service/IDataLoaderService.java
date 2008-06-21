@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -43,21 +44,33 @@ public interface IDataLoaderService {
 
     @Transactional
     public boolean loadData(IIncomingTransport reader);
-    
+
     @Transactional
     public void loadData(InputStream in, OutputStream out) throws IOException;
-    
+
+    /**
+     * This is a convenience method for a client that might need to load CSV
+     * formatted data using SymmetricDS's {@link IDataLoader}.
+     * 
+     * @param batchData
+     *                Data string formatted for the configured loader (the only
+     *                supported data loader today is the {@link CsvLoader})
+     * @throws IOException
+     */
+    @Transactional
+    public void loadDataBatch(String batchData) throws IOException;
+
     public void addDataLoaderFilter(IDataLoaderFilter filter);
 
     public void setDataLoaderFilters(List<IDataLoaderFilter> filters);
-    
+
     public void removeDataLoaderFilter(IDataLoaderFilter filter);
 
     public void setTransportManager(ITransportManager transportManager);
-    
+
     public void addColumnFilter(String tableName, IColumnFilter filter);
-    
+
     public void addBatchListener(IBatchListener listener);
-    
+
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException;
 }

@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -153,6 +154,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
         dataLoader.open(reader, filters, columnFilters);
         return dataLoader;
+    }
+
+    public void loadDataBatch(String batchData) throws IOException {
+        BufferedReader reader = new BufferedReader(new StringReader(batchData));
+        IDataLoader dataLoader = openDataLoader(reader);
+        try {
+            dataLoader.load();
+        } finally {
+            dataLoader.close();
+        }
     }
 
     /**
