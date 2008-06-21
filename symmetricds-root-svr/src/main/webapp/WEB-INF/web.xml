@@ -31,7 +31,12 @@
 
     <servlet-mapping>
         <servlet-name>SymmetricServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/sync/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>JnlpDownloadServlet</servlet-name>
+        <url-pattern>/webstart/*</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
