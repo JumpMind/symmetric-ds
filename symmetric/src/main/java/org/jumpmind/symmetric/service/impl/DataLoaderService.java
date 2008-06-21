@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -86,18 +87,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected IStatisticManager statisticManager;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
-    
+
     protected List<IBatchListener> batchListeners;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately
-     * after the data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of
+     * commit/error status is sent separately after the data is processed.
      */
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
         try {
-            List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(
-                    remote, local));
+            List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local));
             if (list.size() > 0) {
                 sendAck(remote, local, list);
                 wasWorkDone = true;
@@ -107,7 +107,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             loadData(transportManager.getRegisterTransport(local));
             wasWorkDone = true;
         } catch (MalformedURLException e) {
-            logger.error("Could not connect to the " + remote + " node's transport because of a bad URL: " + e.getMessage());
+            logger.error("Could not connect to the " + remote + " node's transport because of a bad URL: "
+                    + e.getMessage());
         }
         return wasWorkDone;
     }
@@ -148,19 +149,27 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
+    public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
+        IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
+        dataLoader.open(reader, filters, columnFilters);
+        return dataLoader;
+    }
+
     /**
-     * Load database from input stream and return a list of batch statuses. This is used for a pull request
-     * that responds with data, and the acknowledgment is sent later.
+     * Load database from input stream and return a list of batch statuses. This
+     * is used for a pull request that responds with data, and the
+     * acknowledgment is sent later.
      * 
      * @param in
      */
     protected List<IncomingBatchHistory> loadDataAndReturnBatches(IIncomingTransport transport) {
-        IDataLoader dataLoader = (IDataLoader) beanFactory.getBean(Constants.DATALOADER);
+
         List<IncomingBatchHistory> list = new ArrayList<IncomingBatchHistory>();
         IncomingBatch status = null;
         IncomingBatchHistory history = null;
+        IDataLoader dataLoader = null;
         try {
-            dataLoader.open(transport.open(), filters, columnFilters);
+            dataLoader = openDataLoader(transport.open());
             while (dataLoader.hasNext()) {
                 status = new IncomingBatch(dataLoader.getContext());
                 history = new IncomingBatchHistory(dataLoader.getContext());
@@ -174,8 +183,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
             statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (UnknownHostException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of "
-                    + ex.getMessage());
+            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());
             statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (RegistrationNotOpenException ex) {
             logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
@@ -185,17 +193,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Exception e) {
-            if (status != null) {
+            if (dataLoader != null && status != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
-                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: "
-                            + e.getMessage());
+                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
                     statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
-                        statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT)
-                                .increment();
+                        statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT).increment();
                         history.setSqlState(se.getSQLState());
                         history.setSqlCode(se.getErrorCode());
                         history.setSqlMessage(se.getMessage());
@@ -213,7 +219,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         } finally {
-            dataLoader.close();
+            if (dataLoader != null) {
+                dataLoader.close();
+            }
             recordStatistics(list);
         }
         return list;
@@ -269,7 +277,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         history.setStatus(IncomingBatchHistory.Status.SK);
                         dataLoader.skip();
                     }
-                    history.setValues(dataLoader.getStatistics(), true); 
+                    history.setValues(dataLoader.getStatistics(), true);
                     fireBatchComplete(dataLoader, history);
                     incomingBatchService.insertIncomingBatchHistory(history);
                 } catch (IOException e) {
@@ -280,15 +288,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         });
     }
-    
+
     private void fireBatchComplete(IDataLoader loader, IncomingBatchHistory history) {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
                 listener.batchComplete(loader, history);
             }
-            // update the filter milliseconds so batch listeners are also included
-            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis()-ts));
+            // update the filter milliseconds so batch listeners are also
+            // included
+            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
         }
     }
 
@@ -310,8 +319,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
-     * Load database from input stream and write acknowledgment to output stream. This is used for a "push"
-     * request with a response of an acknowledgment.
+     * Load database from input stream and write acknowledgment to output
+     * stream. This is used for a "push" request with a response of an
+     * acknowledgment.
      * 
      * @param in
      * @param out

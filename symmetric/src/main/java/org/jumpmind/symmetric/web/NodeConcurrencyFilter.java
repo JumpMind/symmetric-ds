@@ -62,7 +62,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
         if (method.equals("HEAD") && matchesUriPattern(normalizeRequestUri(httpRequest), reservationUriPattern)) {
             // I read here http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html that keepalive likes to 
-            // have a know content length.  I also read that HEAD is better if no content is going to be returned.
+            // have a known content length.  I also read that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
             if (!concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
                 sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
