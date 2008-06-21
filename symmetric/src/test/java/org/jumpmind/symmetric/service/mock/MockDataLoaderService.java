@@ -41,6 +41,9 @@ public class MockDataLoaderService implements IDataLoaderService {
 
     }
     
+    public void loadDataBatch(String batchData) throws IOException {
+    }
+    
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
         return null;
     }
