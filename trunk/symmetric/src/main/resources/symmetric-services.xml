@@ -4,18 +4,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
     default-lazy-init="true">
     
-    <import resource="classpath:/sql/configuration-service-sql.xml"/>
-    <import resource="classpath:/sql/statistic-service-sql.xml"/>    
-    <import resource="classpath:/sql/outgoingbatch-service-sql.xml"/>
-    <import resource="classpath:/sql/dataextractor-service-sql.xml"/>
-    <import resource="classpath:/sql/data-service-sql.xml"/>
-    <import resource="classpath:/sql/incomingbatch-service-sql.xml"/>    
-    <import resource="classpath:/sql/node-service-sql.xml"/>
-    <import resource="classpath:/sql/registration-service-sql.xml"/>
-    <import resource="classpath:/sql/purge-service-sql.xml"/>
-    <import resource="classpath:/sql/acknowledge-service-sql.xml"/>
-    <import resource="classpath:/sql/cluster-service-sql.xml"/>
-    <import resource="classpath:/sql/parameter-service-sql.xml"/>    
+    <import resource="classpath:/sql/*-service-sql.xml"/>
     
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
