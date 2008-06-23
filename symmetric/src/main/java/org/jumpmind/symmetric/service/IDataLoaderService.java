@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -58,7 +59,7 @@ public interface IDataLoaderService {
      * @throws IOException
      */
     @Transactional
-    public void loadDataBatch(String batchData) throws IOException;
+    public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException;
 
     public void addDataLoaderFilter(IDataLoaderFilter filter);
 

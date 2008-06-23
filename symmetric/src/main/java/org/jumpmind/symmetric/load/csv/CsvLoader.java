@@ -119,8 +119,8 @@ public class CsvLoader implements IDataLoader {
         BinaryEncoding encoding = BinaryEncoding.NONE;
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
-            if (tokens != null && tokens.length > 0 && tokens[0] != null) {
-                stats.incrementLineCount();
+            stats.incrementLineCount();
+            if (tokens != null && tokens.length > 0 && tokens[0] != null) {                
                 stats.incrementByteCount(csvReader.getRawRecord().length());
 
                 if (tokens[0].equals(CsvConstants.INSERT)) {

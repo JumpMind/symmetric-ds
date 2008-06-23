@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -41,7 +42,8 @@ public class MockDataLoaderService implements IDataLoaderService {
 
     }
 
-    public void loadDataBatch(String batchData) throws IOException {
+    public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException {
+        return null;
     }
 
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException {
