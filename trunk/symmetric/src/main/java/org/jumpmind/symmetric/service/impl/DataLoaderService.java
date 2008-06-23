@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
@@ -156,14 +157,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return dataLoader;
     }
 
-    public void loadDataBatch(String batchData) throws IOException {
+    public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException {
         BufferedReader reader = new BufferedReader(new StringReader(batchData));
         IDataLoader dataLoader = openDataLoader(reader);
+        IDataLoaderStatistics stats = null;
         try {
-            dataLoader.load();
+            while (dataLoader.hasNext()) {
+                dataLoader.load();
+            }
         } finally {
-            dataLoader.close();
+            stats = dataLoader.getStatistics();
+            dataLoader.close();            
         }
+        return stats;
     }
 
     /**
