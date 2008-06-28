@@ -148,7 +148,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jumpmind.symmetric</groupId>
-            <artifactId>symmetric-ds</artifactId>
+            <artifactId>symmetric</artifactId>
             <version>${symmetricdsVersion}</version>
             <exclusions>
                 <exclusion>
