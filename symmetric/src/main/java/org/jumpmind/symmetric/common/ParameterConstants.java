@@ -86,4 +86,6 @@ public class ParameterConstants {
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.events.to.delete.in.tx";
 
     public final static String JMX_LINE_FEED = "jmx.line.feed";
+    
+    public final static String IP_FILTERS = "ip.filters";
 }

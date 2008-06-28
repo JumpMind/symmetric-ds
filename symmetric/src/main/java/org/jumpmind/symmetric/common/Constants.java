@@ -21,7 +21,8 @@
 
 package org.jumpmind.symmetric.common;
 
-public class Constants {
+public class Constants
+{
 
     public static final String PROPERTIES = "properties";
 
@@ -80,6 +81,10 @@ public class Constants {
     public static final String ALERT_SERVLET = "alertResourceHandler";
 
     public static final String PULL_SERVLET = "pullResourceServlet";
+
+    public static final String INET_ADDRESS_FILTER = "inetAddressFilter";
+
+    public static final String INET_ADDRESS_RESOURCE_HANDLER = "inetAddressResourceHandler";
 
     public static final String PUSH_SERVLET = "pushResourceServlet";
 

@@ -6,6 +6,7 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="dmichels2" type="add">Added IP address authorization.</action>
             <action dev="chenson42" type="add">
                 Change the property names to remove the inconsistent symmetric. and symmetric.runtime. prefixes. This
                 change keeps backwards compatibility with the old property names.
@@ -14,18 +15,18 @@
                 Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to
                 define their own DataSource.
             </action>
-            <action dev="chenson42" type="add" issue="aid=1964509&amp;atid=997724" >
-                Register from the pull thread if the pull job has been enabled.  This will allow an unregistered SymmetricDS client to
-                fully deploy to an application server without being registered. 
-            </action>            
+            <action dev="chenson42" type="add" issue="aid=1964509&amp;atid=997724">
+                Register from the pull thread if the pull job has been enabled. This will allow an unregistered
+                SymmetricDS client to fully deploy to an application server without being registered.
+            </action>
             <action dev="chenson42" type="fix">
                 Drop foreign keys from the SymmetricDS configuration tables. They seem to get in the way for some
                 people.
             </action>
             <action dev="chenson42" type="fix" issue="aid=1979581&amp;atid=997724">
                 Make a push a two step process. First use a HEAD to see if the server is available, next do the actual
-                PUT. This solves an issue we have observed where the client PUSHES an entire pay load before the response
-                is sent. This solution relies on HTTP keep-alive.
+                PUT. This solves an issue we have observed where the client PUSHES an entire pay load before the
+                response is sent. This solution relies on HTTP keep-alive.
             </action>
             <action dev="chenson42" type="add">
                 Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to

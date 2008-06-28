@@ -51,6 +51,28 @@
         <property name="transportResourceHandler"
             ref="authenticationResourceHandler" />
     </bean>
+    
+    <bean id="inetAddressAuthorizationCompiler"
+          class="org.jumpmind.symmetric.security.inet.InetAddressAuthorizerCompiler"/>
+          
+    <bean id="inetAddressResourceHandler"
+        class="org.jumpmind.symmetric.transport.InetAddressResourceHandler">
+        <property name="addressCompiler" ref="inetAddressAuthorizationCompiler" />
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+    
+    <bean id="inetAddressFilter"
+        class="org.jumpmind.symmetric.web.InetAddressFilter">
+        <property name="uriPatterns">
+            <list>
+                <value>/pull/*</value>
+                <value>/push/*</value>
+                <value>/ack/*</value>
+            </list>
+        </property>
+        <property name="transportResourceHandler"
+            ref="inetAddressResourceHandler" />
+    </bean>    
 
     <bean id="nodeConcurrencyFilter"
         class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
