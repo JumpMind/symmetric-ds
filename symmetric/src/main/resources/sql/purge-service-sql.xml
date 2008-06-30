@@ -8,59 +8,70 @@
   default-lazy-init="true">
 
   <util:map id="purgeServiceSql">
-    <entry key="selectOutgoingBatchIdsToPurgeSql">
+    <entry key="selectOutgoingBatchRangeSql">
       <value>
-        select batch_id, node_id from ${sync.table.prefix}_outgoing_batch where status='OK' and
-        create_time &lt; ? order by batch_id asc
+        select min(batch_id), max(batch_id) from ${sync.table.prefix}_outgoing_batch where
+        create_time &lt; ?
       </value>
     </entry>
-    <entry key="deleteFromOutgoingBatchHistSql">
+    <entry key="deleteOutgoingBatchSql">
       <value>
-        delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id = ? and node_id = ?
+        delete from ${sync.table.prefix}_outgoing_batch where status = 'OK' and batch_id between ?
+        and ?
       </value>
     </entry>
-    <entry key="deleteFromOutgoingBatchSql">
-      <value>delete from ${sync.table.prefix}_outgoing_batch where batch_id=?</value>
+    <entry key="deleteOutgoingBatchHistSql">
+      <value>
+        delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id between ? and ? and
+        batch_id not in (select batch_id from ${sync.table.prefix}_outgoing_batch where batch_id
+        between ? and ? and status != 'OK')
+      </value>
     </entry>
-    <entry key="deleteFromEventDataIdSql">
-      <value>delete from ${sync.table.prefix}_data_event where batch_id=? and node_id=?</value>
+    <entry key="deleteDataEventSql">
+      <value>
+        delete from ${sync.table.prefix}_data_event where batch_id not in (select batch_id from
+        ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? and status != 'OK') and
+        batched = 1 and batch_id between ? and ?
+      </value>
     </entry>
-    <entry key="selectMinDataIdSql">
-      <value>select min(data_id) from ${sync.table.prefix}_data</value>
+    <entry key="selectDataRangeSql">
+      <value>
+        select min(data_id), max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?
+      </value>
     </entry>
-    <entry key="selectMaxDataIdSql">
-      <value>select max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?</value>
-    </entry>
-    <entry key="deleteFromDataSql">
+    <entry key="deleteDataSql">
       <value>
         delete from ${sync.table.prefix}_data where data_id not in (select data_id from
-        ${sync.table.prefix}_data_event where data_id &gt;= ? and data_id &lt;= ?) and data_id &gt;=
-        ? and data_id &lt;= ?
+        ${sync.table.prefix}_data_event where data_id between ? and ?) and data_id between ? and ?
       </value>
     </entry>
-    <entry key="selectIncomingBatchOrderByCreateTimeSql">
+    <entry key="selectIncomingBatchRangeSql">
       <value>
-        select batch_id, node_id, status, create_time from ${sync.table.prefix}_incoming_batch order
-        by create_time asc
+        select node_id, min(batch_id), max(batch_id) from ${sync.table.prefix}_incoming_batch where
+        create_time &lt; ? group by node_id
+      </value>
+    </entry>
+    <entry key="deleteIncomingBatchSql">
+      <value>
+        delete from ${sync.table.prefix}_incoming_batch where batch_id between ? and ? and node_id =
+        ?
+      </value>
+    </entry>
+    <entry key="deleteIncomingBatchHistSql">
+      <value>
+        delete from ${sync.table.prefix}_incoming_batch_hist where batch_id between ? and ? and
+        node_id = ?
       </value>
     </entry>
     <entry key="deleteFromStatisticSql">
-      <value>
-        delete from ${sync.table.prefix}_statistic where capture_end_time &lt; ?
-      </value>
+      <value>delete from ${sync.table.prefix}_statistic where capture_end_time &lt; ?</value>
+    </entry>
+    <entry key="deleteIncomingBatchByNodeSql">
+      <value>delete from ${sync.table.prefix}_incoming_batch where node_id = ?</value>
+    </entry>
+    <entry key="deleteIncomingBatchHistByNodeSql">
+      <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id = ?</value>
     </entry>
   </util:map>
-
-  <util:list id="deleteIncomingBatchesByNodeIdSql">
-    <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id=?</value>
-    <value>delete from ${sync.table.prefix}_incoming_batch where node_id=?</value>
-  </util:list>
-
-  <util:list id="incomingPurgeSql">
-    <value>
-      delete from ${sync.table.prefix}_incoming_batch_hist where batch_id=? and node_id=?
-    </value>
-    <value>delete from ${sync.table.prefix}_incoming_batch where batch_id=? and node_id=?</value>
-  </util:list>
 
 </beans>

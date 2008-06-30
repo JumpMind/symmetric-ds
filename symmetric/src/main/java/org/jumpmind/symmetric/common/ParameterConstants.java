@@ -84,6 +84,7 @@ public class ParameterConstants {
 
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.events.to.delete.in.tx";
+    public final static String PURGE_MAX_NUMBER_OF_BATCH_IDS = "job.purge.max.num.batches.to.delete.in.tx";
 
     public final static String JMX_LINE_FEED = "jmx.line.feed";
     
