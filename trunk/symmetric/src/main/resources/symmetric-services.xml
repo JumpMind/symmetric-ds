@@ -304,10 +304,6 @@
         <property name="sql" ref="purgeServiceSql" />
         <property name="parameterService" ref="parameterService" />
         <property name="clusterService" ref="clusterService" />
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="deleteIncomingBatchesByNodeIdSql" ref="deleteIncomingBatchesByNodeIdSql"/>
-        <property name="incomingPurgeSql" ref="incomingPurgeSql"/>
     </bean>
-    
 
 </beans>

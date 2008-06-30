@@ -20,45 +20,31 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.LockAction;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.core.RowMapper;
 
 public class PurgeService extends AbstractService implements IPurgeService {
 
     private final static Log logger = LogFactory.getLog(PurgeService.class);
-
-    private IDbDialect dbDialect;
-
-    private List<String> incomingPurgeSql;
-
-    private List<String> deleteIncomingBatchesByNodeIdSql;
 
     private IClusterService clusterService;
 
     @SuppressWarnings("unchecked")
     public void purge() {
         Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
+        retentionCutoff.add(Calendar.MINUTE, -parameterService
+                .getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         purgeOutgoing(retentionCutoff);
         purgeIncoming(retentionCutoff);
         purgeStatistic(retentionCutoff);
@@ -69,8 +55,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
             if (clusterService.lock(LockAction.PURGE_STATISTICS)) {
                 try {
                     logger.info("The statistic purge process is about to run.");
-                    int count = jdbcTemplate.update(getSql("deleteFromStatisticSql"), new Object[] { retentionCutoff
-                            .getTime() });
+                    int count = jdbcTemplate.update(getSql("deleteFromStatisticSql"),
+                            new Object[] { retentionCutoff.getTime() });
                     logger.info("Purged " + count + " statistic rows.");
                 } finally {
                     clusterService.unlock(LockAction.PURGE_STATISTICS);
@@ -91,14 +77,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 try {
                     logger.info("The outgoing purge process is about to run.");
 
-                    purgeBatchesOlderThan(retentionCutoff);
+                    purgeOutgoingBatch(retentionCutoff);
                     purgeDataRows(retentionCutoff);
-
                 } finally {
                     clusterService.unlock(LockAction.PURGE_OUTGOING);
                     logger.info("The outgoing purge process has completed.");
                 }
-
             } else {
                 logger.info("Could not get a lock to run an outgoing purge.");
             }
@@ -107,63 +91,78 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
-    private void purgeIncoming(final Calendar retentionCutoff) {
+    private void purgeOutgoingBatch(final Calendar time) {
+        logger.info("Getting range for outgoing batch");
+        int[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"), new Object[] { time.getTime() });
+        int maxNumOfDataIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        int maxNumOfBatchIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
+        purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfBatchIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), false, maxNumOfDataIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), false, maxNumOfBatchIdsToPurgeInTx);
+    }
+
+    private void purgeDataRows(final Calendar time) {
+        logger.info("Getting range for data");
+        int[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[] { time.getTime() });
+        int maxNumOfDataIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        purgeByMinMax(minMax, getSql("deleteDataSql"), true, maxNumOfDataIdsToPurgeInTx);
+    }
+
+    private int[] queryForMinMax(String sql, Object[] params) {
+        int[] minMax = (int[]) jdbcTemplate.queryForObject(sql, params, new RowMapper() {
+            public Object mapRow(ResultSet rs, int row) throws SQLException {
+                return new int[] { rs.getInt(1), rs.getInt(2) };
+            }
+        });
+        return minMax;
+    }
+
+    private void purgeByMinMax(int[] minMax, String deleteSql, boolean useRangeTwice, int maxNumtoPurgeinTx) {
+        int minId = minMax[0];
+        int purgeUpToId = minMax[1];
+        long ts = System.currentTimeMillis();
+        int totalCount = 0;
+        String tableName = deleteSql.trim().split("\\s")[2];
+        logger.info("About to purge " + tableName);
+
+        while (minId <= purgeUpToId) {
+            int maxId = minId + maxNumtoPurgeinTx;
+            if (maxId > purgeUpToId) {
+                maxId = purgeUpToId;
+            }
+
+            Object[] param = null;
+            if (useRangeTwice) {
+                param = new Object[] { minId, maxId, minId, maxId };
+            } else {
+                param = new Object[] { minId, maxId };
+            }
+
+            totalCount += jdbcTemplate.update(deleteSql, param);
+
+            if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+                logger.info("Purged " + totalCount + " of " + tableName + " rows so far.");
+                ts = System.currentTimeMillis();
+            }
+            minId = maxId + 1;
+        }
+        logger.info("Done purging " + totalCount + " of " + tableName + " rows.");
+    }
+
+    private void purgeIncoming(Calendar retentionCutoff) {
         try {
             if (clusterService.lock(LockAction.PURGE_INCOMING)) {
                 try {
                     logger.info("The incoming purge process is about to run.");
 
-                    jdbcTemplate.execute(new ConnectionCallback() {
-                        public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                            List<Integer> dataIds = new ArrayList<Integer>();
-                            PreparedStatement st = null;
-                            ResultSet rs = null;
-
-                            try {
-                                long ts = System.currentTimeMillis();
-                                st = conn.prepareStatement(getSql("selectIncomingBatchOrderByCreateTimeSql"),
-                                        java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-                                st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                                rs = st.executeQuery();
-                                int totalRowsPurged = 0;
-                                while (rs.next()) {
-                                    int batchId = rs.getInt(1);
-                                    String nodeId = rs.getString(2);
-                                    String status = rs.getString(3);
-                                    Date createTime = rs.getTimestamp(4);
-                                    if (createTime.after(retentionCutoff.getTime())) {
-                                        logger.info("Done purging incoming.  Purged " + totalRowsPurged
-                                                + " total batch and hist rows up through " + createTime);
-                                        break;
-                                    }
-                                    if ("OK".equals(status)) {
-                                        for (String sql : incomingPurgeSql) {
-                                            totalRowsPurged += jdbcTemplate.update(sql,
-                                                    new Object[] { batchId, nodeId });
-                                        }
-                                    }
-
-                                    if (totalRowsPurged > 0
-                                            && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                                        logger.info("Purged " + totalRowsPurged
-                                                + " total incoming batch and hist rows up through " + createTime);
-                                        ts = System.currentTimeMillis();
-                                    }
-                                }
-                            } finally {
-                                JdbcUtils.closeResultSet(rs);
-                                JdbcUtils.closeStatement(st);
-                            }
-
-                            return dataIds;
-                        }
-                    });
-
+                    purgeIncomingBatch(retentionCutoff);
                 } finally {
                     clusterService.unlock(LockAction.PURGE_INCOMING);
                     logger.info("The incoming purge process has completed.");
                 }
-
             } else {
                 logger.info("Could not get a lock to run an incoming purge.");
             }
@@ -172,103 +171,90 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
-    public void purgeAllIncomingEventsForNode(String nodeId) {
-        if (deleteIncomingBatchesByNodeIdSql != null)
-            for (String sql : deleteIncomingBatchesByNodeIdSql) {
-                int count = jdbcTemplate.update(sql, new Object[] { nodeId });
-                logger.info("Purged " + count + " rows for node " + nodeId + " after running: " + cleanSql(sql));
-            }
+    @SuppressWarnings( { "unchecked" })
+    private void purgeIncomingBatch(final Calendar time) {
+        logger.info("Getting range for incoming batch");
+        List<NodeBatchRange> nodeBatchRangeList = jdbcTemplate.query(getSql("selectIncomingBatchRangeSql"),
+                new Object[] { time.getTime() }, new RowMapper() {
+                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return new NodeBatchRange(rs.getString(1), rs.getInt(2), rs.getInt(3));
+                    }
+                });
+        purgeByNodeBatchRangeList(getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
+        purgeByNodeBatchRangeList(getSql("deleteIncomingBatchHistSql"), nodeBatchRangeList);
     }
 
-    private void purgeDataRows(final Calendar time) {
-        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        logger.info("About to purge data rows.");
-        int minDataId = jdbcTemplate.queryForInt(getSql("selectMinDataIdSql"));
-        int purgeUpToDataId = jdbcTemplate.queryForInt(getSql("selectMaxDataIdSql"), new Object[] { time.getTime() });
-        int maxDataId = minDataId + maxNumOfDataIdsToPurgeInTx;
-        int deletedCount = 0;
+    private void purgeByNodeBatchRangeList(String deleteSql, List<NodeBatchRange> nodeBatchRangeList) {
         long ts = System.currentTimeMillis();
         int totalCount = 0;
+        String tableName = deleteSql.trim().split("\\s")[2];
+        logger.info("About to purge " + tableName);
 
-        do {
-            deletedCount = jdbcTemplate.update(getSql("deleteFromDataSql"), new Object[] { minDataId, maxDataId,
-                    minDataId, maxDataId });
-            totalCount += deletedCount;
+        for (NodeBatchRange nodeBatchRange : nodeBatchRangeList) {
+            totalCount += purgeByNodeBatchRange(deleteSql, nodeBatchRange);
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
-                logger.info("Purged a total of " + totalCount + " data rows so far.");
+                logger.info("Purged " + totalCount + " of " + tableName + " rows so far.");
                 ts = System.currentTimeMillis();
             }
-            minDataId += maxNumOfDataIdsToPurgeInTx;
-            maxDataId += maxNumOfDataIdsToPurgeInTx;
-        } while (maxDataId <= purgeUpToDataId);
-
-        logger.info("Done purging " + totalCount + " data rows.");
-
+        }
+        logger.info("Done purging " + totalCount + " of " + tableName + " rows.");
     }
 
-    @SuppressWarnings("unchecked")
-    private void purgeBatchesOlderThan(final Calendar time) {
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement st = null;
-                ResultSet rs = null;
-                int eventRowCount = 0;
-                int batchesPurged = 0;
-                long ts = System.currentTimeMillis();
+    private int purgeByNodeBatchRange(String deleteSql, NodeBatchRange nodeBatchRange) {
+        int maxNumOfDataIdsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        int minBatchId = nodeBatchRange.getMinBatchId();
+        int purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
+        int totalCount = 0;
 
-                try {
-                    st = conn.prepareStatement(getSql("selectOutgoingBatchIdsToPurgeSql"),
-                            java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-                    st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    st.setTimestamp(1, new Timestamp(time.getTime().getTime()));
-                    rs = st.executeQuery();
-                    while (rs.next()) {
-                        final int batchId = rs.getInt(1);
-                        final String nodeId = rs.getString(2);
-
-                        eventRowCount += jdbcTemplate.update(getSql("deleteFromEventDataIdSql"), new Object[] {
-                                batchId, nodeId });
-                        batchesPurged += jdbcTemplate.update(getSql("deleteFromOutgoingBatchSql"),
-                                new Object[] { batchId });
-                        jdbcTemplate.update(getSql("deleteFromOutgoingBatchHistSql"), new Object[] { batchId, nodeId });
-
-                        if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
-                            logger.info("Purged " + batchesPurged + " batches and " + eventRowCount
-                                    + " data_events so far.");
-                            ts = System.currentTimeMillis();
-                        }
-
-                    }
-
-                    logger.info("Purged a total of " + batchesPurged + " batches and " + eventRowCount
-                            + " data_events.");
-                } finally {
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(st);
-                }
-                return null;
+        while (minBatchId <= purgeUpToBatchId) {
+            int maxBatchId = minBatchId + maxNumOfDataIdsToPurgeInTx;
+            if (maxBatchId > purgeUpToBatchId) {
+                maxBatchId = purgeUpToBatchId;
             }
-        });
+            totalCount += jdbcTemplate.update(deleteSql, new Object[] { minBatchId, maxBatchId,
+                    nodeBatchRange.getNodeId() });
+            minBatchId = maxBatchId + 1;
+        }
+
+        return totalCount;
     }
 
-    private String cleanSql(String sql) {
-        return StringUtils.replace(StringUtils.replace(StringUtils.replace(sql, "\r", " "), "\n", " "), "  ", "");
+    class NodeBatchRange {
+        private String nodeId;
+
+        private int minBatchId;
+
+        private int maxBatchId;
+
+        public NodeBatchRange(String nodeId, int minBatchId, int maxBatchId) {
+            this.nodeId = nodeId;
+            this.minBatchId = minBatchId;
+            this.maxBatchId = maxBatchId;
+        }
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public int getMaxBatchId() {
+            return maxBatchId;
+        }
+
+        public int getMinBatchId() {
+            return minBatchId;
+        }
     }
 
-    public void setIncomingPurgeSql(List<String> purgeSql) {
-        this.incomingPurgeSql = purgeSql;
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
+    public void purgeAllIncomingEventsForNode(String nodeId) {
+        int count = jdbcTemplate.update(getSql("deleteIncomingBatchByNodeSql"), new Object[] { nodeId });
+        logger.info("Purged all " + count + " incoming batch for node " + nodeId);
+        count = jdbcTemplate.update(getSql("deleteIncomingBatchHistByNodeSql"), new Object[] { nodeId });
+        logger.info("Purged all " + count + " incoming batch hist for node " + nodeId);
     }
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
-    }
-
-    public void setDeleteIncomingBatchesByNodeIdSql(List<String> deleteIncomingBatchesByNodeIdSql) {
-        this.deleteIncomingBatchesByNodeIdSql = deleteIncomingBatchesByNodeIdSql;
     }
 
 }
