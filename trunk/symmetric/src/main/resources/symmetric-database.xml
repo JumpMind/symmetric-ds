@@ -26,6 +26,7 @@
         <property name="minEvictableIdleTimeMillis" value="${db.pool.min.evictable.idle.millis}"/>
         <property name="timeBetweenEvictionRunsMillis" value="120000"/>
         <property name="numTestsPerEvictionRun" value="10"/>
+        <property name="validationQuery" value="${db.validation.query}"/>
     </bean>
 
     <bean id="jndiDataSource" class="org.springframework.jndi.JndiObjectFactoryBean"
