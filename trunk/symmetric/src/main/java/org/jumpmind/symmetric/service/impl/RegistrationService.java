@@ -89,8 +89,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         String nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
         if (nodeId == null && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
-            openRegistration(node.getNodeGroupId(), node.getExternalId());
-            nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
+            Node existingNode = nodeService.findNodeByExternalId(node.getNodeGroupId(), node.getExternalId());
+            if (existingNode != null) {
+                nodeId = existingNode.getNodeId();
+            } else {
+                openRegistration(node.getNodeGroupId(), node.getExternalId());
+                nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
+            }
         }
         if (nodeId == null) {
             return false;
