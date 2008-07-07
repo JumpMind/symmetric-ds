@@ -39,7 +39,6 @@ public class SymmetricWebServer {
     protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
 
     public void start(int port) throws Exception {
-
         Server server = new Server();
         Connector connector = new SelectChannelConnector();
         connector.setPort(port);

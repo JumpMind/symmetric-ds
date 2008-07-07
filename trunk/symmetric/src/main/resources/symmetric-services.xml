@@ -18,6 +18,8 @@
     <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
         <property name="statisticService" ref="statisticService"/>
         <property name="nodeService" ref="nodeService"/>
+        <property name="notificationService" ref="notificationService"/>
+        <property name="parameterService" ref="parameterService"/>
     </bean>
     
     <bean id="concurrentConnectionManager" class="org.jumpmind.symmetric.transport.ConcurrentConnectionManager">

@@ -60,6 +60,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     </bean>
     
     <bean id="pullTimerTask" class="org.jumpmind.symmetric.job.PullJob" scope="prototype">
+        <property name="requiresRegistration" value="false"/>
         <property name="pullService" ref="pullService" />
         <property name="needsRescheduled" value="true" />
         <property name="parameterService" ref="parameterService" />

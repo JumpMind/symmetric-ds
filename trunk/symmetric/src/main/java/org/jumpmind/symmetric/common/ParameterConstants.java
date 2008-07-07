@@ -38,6 +38,8 @@ public class ParameterConstants {
     public final static String NODE_GROUP_ID = "group.id";
     public final static String EXTERNAL_ID = "external.id";
     public final static String SCHEMA_VERSION = "schema.version";
+    
+    public static final String STATISTIC_THRESHOLD_ALERTS_ENABLED = "statistic.threshold.alerts.enabled";
 
     @Deprecated
     public final static String RUNTIME_CONFIGURATION_CLASS = "configuration.class";

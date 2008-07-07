@@ -25,6 +25,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -34,17 +35,13 @@ import org.springframework.beans.factory.FactoryBean;
 
 public class TransportManagerFactoryBean implements FactoryBean {
 
-    private static final String TRANSPORT_HTTP = "http";
-
-    private static final String TRANSPORT_INTERNAL = "internal";
-
     private INodeService nodeService;
 
     private IParameterService parameterService;
 
     public Object getObject() throws Exception {
         String transport = parameterService.getString(ParameterConstants.TRANSPORT_TYPE);
-        if (TRANSPORT_HTTP.equalsIgnoreCase(transport)) {
+        if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
             final String httpSslVerifiedServerNames = parameterService
                     .getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
             HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
@@ -61,7 +58,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
                 }
             });
             return new HttpTransportManager(nodeService, parameterService);
-        } else if (TRANSPORT_INTERNAL.equalsIgnoreCase(transport)) {
+        } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(parameterService);
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");

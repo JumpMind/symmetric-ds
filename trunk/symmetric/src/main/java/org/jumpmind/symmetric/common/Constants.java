@@ -129,5 +129,11 @@ public class Constants
     public static final String MAX_CONCURRENT_WORKERS = "maxConcurrentWorkers";
 
     public static final String DEFAULT_JMX_SERVER_EXPORTER = "defaultServerExporter";
+    
+    public static final String PROTOCOL_NONE = "nop";
+    
+    public static final String PROTOCOL_HTTP = "http";
+    
+    public static final String PROTOCOL_INTERNAL = "internal";
 
 }

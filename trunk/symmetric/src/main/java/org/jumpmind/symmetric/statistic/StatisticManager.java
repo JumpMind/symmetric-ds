@@ -23,8 +23,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INotificationService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IStatisticService;
 
 public class StatisticManager implements IStatisticManager {
@@ -34,6 +37,10 @@ public class StatisticManager implements IStatisticManager {
     INodeService nodeService;
 
     IStatisticService statisticService;
+
+    INotificationService notificationService;
+
+    IParameterService parameterService;
 
     synchronized public void init() {
         if (statistics == null) {
@@ -45,8 +52,19 @@ public class StatisticManager implements IStatisticManager {
         Date captureEndTime = new Date();
         if (statistics != null) {
             statisticService.save(statistics.values(), captureEndTime);
+            publishAlerts();
         }
         refresh(captureEndTime);
+    }
+
+    /**
+     * Compare the statistics we have cached against the configured statistic
+     * alert thresholds and publish alerts if we fall outside the range.
+     */
+    synchronized protected void publishAlerts() {
+        if (parameterService.is(ParameterConstants.STATISTIC_THRESHOLD_ALERTS_ENABLED)) {
+            // TODO
+        }
     }
 
     synchronized protected void refresh(Date lastCaptureEndTime) {
@@ -81,5 +99,13 @@ public class StatisticManager implements IStatisticManager {
 
     public void setStatisticService(IStatisticService statisticService) {
         this.statisticService = statisticService;
+    }
+
+    public void setNotificationService(INotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 }
