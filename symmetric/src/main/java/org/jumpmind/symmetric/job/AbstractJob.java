@@ -28,8 +28,10 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
@@ -47,12 +49,20 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     private String beanName;
 
+    private boolean requiresRegistration = true;
+
     @Override
     public void run() {
         try {
             if (SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME))
                     .isStarted()) {
-                doJob();
+                IRegistrationService service = (IRegistrationService) beanFactory
+                        .getBean(Constants.REGISTRATION_SERVICE);
+                if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
+                    doJob();
+                } else {
+                    getLogger().warn("Did not run job because the engine is not registered.");
+                }
             }
         } catch (final Throwable ex) {
             getLogger().error(ex, ex);
@@ -110,6 +120,10 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setRequiresRegistration(boolean requiresRegistration) {
+        this.requiresRegistration = requiresRegistration;
     }
 
 }

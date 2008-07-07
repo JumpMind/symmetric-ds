@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
@@ -281,6 +282,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             node.setSymmetricVersion(Version.version());
             if (!StringUtils.isBlank(parameterService.getMyUrl())) {
                 node.setSyncURL(parameterService.getMyUrl());
+            } else {
+                node.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
             }
             nodeService.updateNode(node);
             logger.info("Done updating my node information and heartbeat time.");

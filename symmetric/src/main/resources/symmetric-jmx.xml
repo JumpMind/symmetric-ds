@@ -16,6 +16,7 @@
                 <entry key=":name=Incoming" value-ref="incomingManagementService" />
                 <entry key=":name=Outgoing" value-ref="outgoingManagementService" />
                 <entry key=":name=Parameters" value-ref="parameterManagementService" />
+                <entry key=":name=Notifications" value-ref="notificationService" />
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
@@ -29,8 +30,9 @@
                 <entry key="org.jumpmind.symmetric.${engine.name}:name=Node" value-ref="nodeManagementService" />
                 <entry key="org.jumpmind.symmetric.${engine.name}:name=Incoming" value-ref="incomingManagementService" />
                 <entry key="org.jumpmind.symmetric.${engine.name}:name=Outgoing" value-ref="outgoingManagementService" />
-                <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters" value-ref="parameterManagementService" />
-                
+                <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters"
+                    value-ref="parameterManagementService" />
+
             </map>
         </property>
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
@@ -69,12 +71,15 @@
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="parameterService" ref="parameterService" />
-        <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />        
+        <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />
     </bean>
 
     <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">
         <property name="statisticManager" ref="statisticManager" />
     </bean>
+
+    <bean id="notificationService" class="org.jumpmind.symmetric.service.jmx.NotificationService"></bean>
+
 
     <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService">
         <property name="statisticManager" ref="statisticManager" />
