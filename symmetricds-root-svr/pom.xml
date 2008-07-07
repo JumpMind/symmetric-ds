@@ -101,7 +101,7 @@
                             <jarResources>
                                 <jarResource>
                                     <groupId>org.jumpmind.symmetric</groupId>
-                                    <artifactId>symmetric-ds</artifactId>
+                                    <artifactId>symmetric</artifactId>
                                     <version>${symmetricdsVersion}</version>
                                     <!-- A mainClass element must be specified on one, and only one, jarResource per jnlpFile -->
                                     <mainClass>org.jumpmind.symmetric.SymmetricLauncher</mainClass>
