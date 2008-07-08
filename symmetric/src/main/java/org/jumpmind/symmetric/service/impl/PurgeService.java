@@ -100,7 +100,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfBatchIdsToPurgeInTx);
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), false, maxNumOfDataIdsToPurgeInTx);
-        purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), false, maxNumOfBatchIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), true, maxNumOfBatchIdsToPurgeInTx);
     }
 
     private void purgeDataRows(final Calendar time) {
