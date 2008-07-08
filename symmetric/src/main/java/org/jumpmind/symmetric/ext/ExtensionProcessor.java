@@ -9,6 +9,7 @@ import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.load.INodeGroupDataLoaderFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -40,7 +41,18 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
                     dataLoaderService.addBatchListener((IBatchListener) plugin);
                 }
 
-                if (plugin instanceof IDataLoaderFilter) {
+                if (plugin instanceof INodeGroupDataLoaderFilter) {
+                    String nodeGroupId = parameterService.getNodeGroupId();
+                    INodeGroupDataLoaderFilter filter = (INodeGroupDataLoaderFilter) plugin;
+                    String[] ids = filter.getNodeGroupIdsToApplyTo();
+                    if (ids != null) {
+                        for (String targetNodeGroupId : ids) {
+                            if (nodeGroupId.equals(targetNodeGroupId)) {
+                                dataLoaderService.addDataLoaderFilter(filter);
+                            }
+                        }
+                    }
+                } else if (plugin instanceof IDataLoaderFilter) {
                     dataLoaderService.addDataLoaderFilter((IDataLoaderFilter) plugin);
                 }
 
