@@ -30,6 +30,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.ext.NodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.TestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
@@ -443,6 +444,13 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
                 "unRegisteredDataFilter");
         Assert.assertTrue(registeredFilter.getNumberOfTimesCalled() > 0);
         Assert.assertTrue(unRegisteredFilter.getNumberOfTimesCalled() == 0);
+
+        NodeGroupTestDataLoaderFilter registeredNodeGroupFilter = (NodeGroupTestDataLoaderFilter) getBeanFactory()
+                .getBean("registeredNodeGroupTestDataFilter");
+        NodeGroupTestDataLoaderFilter unRegisteredNodeGroupFilter = (NodeGroupTestDataLoaderFilter) getBeanFactory()
+                .getBean("unRegisteredNodeGroupTestDataFilter");
+        Assert.assertTrue(registeredNodeGroupFilter.getNumberOfTimesCalled() > 0);
+        Assert.assertTrue(unRegisteredNodeGroupFilter.getNumberOfTimesCalled() == 0);
     }
 
 }
