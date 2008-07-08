@@ -40,6 +40,8 @@ public interface IDataLoaderContext {
     public String[] getColumnNames();
 
     public String[] getKeyNames();
+    
+    public int getColumnIndex(String columnName);
 
     public Table[] getAllTablesProcessed();
 

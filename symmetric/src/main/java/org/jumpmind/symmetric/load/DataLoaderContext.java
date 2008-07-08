@@ -58,6 +58,16 @@ public class DataLoaderContext implements IDataLoaderContext {
         tableTemplateMap.put(getTableName(), tableTemplate);
     }
 
+    public int getColumnIndex(String columnName) {
+        String[] columnNames = tableTemplate.getColumnNames();
+        for (int i = 0; i < columnNames.length; i++) {
+            if (columnNames[i].equals(columnName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public Table[] getAllTablesProcessed() {
         Collection<TableTemplate> templates = this.tableTemplateMap.values();
         Table[] tables = new Table[templates.size()];
