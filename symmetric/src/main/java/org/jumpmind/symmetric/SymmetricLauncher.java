@@ -109,7 +109,7 @@ public class SymmetricLauncher {
 
             // validate that block-size has been set
             if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                System.setProperty("symmetric.override.properties.file.1", "file:"
+                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, "file:"
                         + line.getOptionValue(OPTION_PROPERTIES_FILE));
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
                     throw new ParseException("Could not find the properties file specified: "

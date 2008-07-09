@@ -107,9 +107,9 @@ public class SymmetricEngine {
         // Synchronizing on the class so creating multiple engines is thread
         // safe.
         synchronized (SymmetricEngine.class) {
-            System.setProperty("symmetric.override.properties.file.1", overridePropertiesResource1 == null ? ""
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
                     : overridePropertiesResource1);
-            System.setProperty("symmetric.override.properties.file.2", overridePropertiesResource2 == null ? ""
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
                     : overridePropertiesResource2);
             this.init(createContext());
         }
