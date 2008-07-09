@@ -24,6 +24,9 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.SymmetricWebServer;
+import org.jumpmind.symmetric.common.Constants;
 
 public class AppUtils {
 
@@ -72,5 +75,21 @@ public class AppUtils {
             return tz.substring(0, 3) + ":" + tz.substring(3, 5);
         }
         return null;
+    }
+
+    /**
+     * Handy utility method to look up a SymmetricDS component given the bean
+     * name.
+     * 
+     * @see Constants
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T find(String name, SymmetricEngine engine) {
+        return (T) engine.getApplicationContext().getBean(name);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <T> T find(String name, SymmetricWebServer server) {
+        return (T) server.getEngine().getApplicationContext().getBean(name);
     }
 }
