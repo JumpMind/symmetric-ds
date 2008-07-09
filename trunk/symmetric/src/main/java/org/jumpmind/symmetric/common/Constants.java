@@ -24,6 +24,10 @@ package org.jumpmind.symmetric.common;
 public class Constants
 {
 
+    public static final String OVERRIDE_PROPERTIES_FILE_1 = "symmetric.override.properties.file.1";
+    
+    public static final String OVERRIDE_PROPERTIES_FILE_2 = "symmetric.override.properties.file.2";
+    
     public static final String PROPERTIES = "properties";
 
     public static final String CHANNEL_CONFIG = "config";

@@ -21,6 +21,7 @@ package org.jumpmind.symmetric;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.web.SymmetricFilter;
 import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
@@ -38,15 +39,30 @@ public class SymmetricWebServer {
 
     protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
 
+    protected SymmetricEngineContextLoaderListener contextListener;
+
+    protected Server server;
+
+    protected boolean join = true;
+    
+    public void start(int port, String propertiesUrl) throws Exception {
+        System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
+        start(port);
+    }
+    
     public void start(int port) throws Exception {
-        Server server = new Server();
+        server = new Server();
         Connector connector = new SelectChannelConnector();
         connector.setPort(port);
         server.setConnectors(new Connector[] { connector });
 
         Context webContext = new Context(server, "/sync", Context.NO_SESSIONS);
 
-        webContext.addEventListener(new SymmetricEngineContextLoaderListener());
+        if (this.contextListener == null) {
+            this.contextListener = new SymmetricEngineContextLoaderListener();
+        }
+
+        webContext.addEventListener(this.contextListener);
 
         webContext.addFilter(SymmetricFilter.class, "/*", 0);
 
@@ -58,11 +74,43 @@ public class SymmetricWebServer {
 
         logger.info("About to start SymmetricDS web server on port " + port);
         server.start();
-        server.join();
+
+        if (join) {
+            server.join();
+        }
+    }
+
+    public void stop() throws Exception {
+        if (server != null) {
+            server.stop();
+        }
+    }
+
+    public SymmetricEngineContextLoaderListener getContextListener() {
+        return contextListener;
+    }
+
+    /**
+     * Before starting the web server, you have the option of overriding the
+     * default context listener.
+     * 
+     * @param contextListener
+     *                Usually an overridden instance
+     */
+    public void setContextListener(SymmetricEngineContextLoaderListener contextListener) {
+        this.contextListener = contextListener;
     }
 
     public static void main(String[] args) throws Exception {
         new SymmetricWebServer().start(8080);
+    }
+
+    public boolean isJoin() {
+        return join;
+    }
+
+    public void setJoin(boolean join) {
+        this.join = join;
     }
 
 }
