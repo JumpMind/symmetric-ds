@@ -48,6 +48,8 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
     static final String SYMMETRIC_SPRING_LOCATION = "classpath:/symmetric.xml";
 
     static final Log logger = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
+    
+    SymmetricEngine engine = null;
 
     @Override
     final public void contextInitialized(ServletContextEvent event) {
@@ -66,7 +68,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
     }
 
     protected void createConfigureAndStartEngine(ApplicationContext ctx) {
-        SymmetricEngine engine = new SymmetricEngine(ctx);
+        this.engine = new SymmetricEngine(ctx);
         engine.start();
     }
 
@@ -100,6 +102,10 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
                 return wac;
             }
         };
+    }
+
+    public SymmetricEngine getEngine() {
+        return engine;
     }
 
 }

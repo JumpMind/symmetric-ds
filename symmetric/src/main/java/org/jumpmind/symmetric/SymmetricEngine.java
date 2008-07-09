@@ -93,26 +93,16 @@ public class SymmetricEngine {
 
     private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
-    /**
-     * @param overridePropertiesResource1
-     *                Provide a Spring resource path to a properties file to be
-     *                used for configuration
-     * @param overridePropertiesResource2
-     *                Provide a Spring resource path to a properties file to be
-     *                used for configuration
-     */
-    public SymmetricEngine(String overridePropertiesResource1, String overridePropertiesResource2) {
-        // Setting system properties is probably not the best way to accomplish
-        // this setup.
-        // Synchronizing on the class so creating multiple engines is thread
-        // safe.
-        synchronized (SymmetricEngine.class) {
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
-                    : overridePropertiesResource1);
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
-                    : overridePropertiesResource2);
-            this.init(createContext());
+    public SymmetricEngine(String... overridePropertiesResources) {
+        String one = null;
+        String two = null;
+        if (overridePropertiesResources.length > 0) {
+            one = overridePropertiesResources[0];
+            if (overridePropertiesResources.length > 1) {
+                two = overridePropertiesResources[1];
+            }
         }
+        init(one, two);
     }
 
     /**
@@ -169,6 +159,28 @@ public class SymmetricEngine {
 
     private ApplicationContext createContext() {
         return new ClassPathXmlApplicationContext("classpath:/symmetric.xml");
+    }
+
+    /**
+     * @param overridePropertiesResource1
+     *                Provide a Spring resource path to a properties file to be
+     *                used for configuration
+     * @param overridePropertiesResource2
+     *                Provide a Spring resource path to a properties file to be
+     *                used for configuration
+     */
+    private void init(String overridePropertiesResource1, String overridePropertiesResource2) {
+        // Setting system properties is probably not the best way to accomplish
+        // this setup.
+        // Synchronizing on the class so creating multiple engines is thread
+        // safe.
+        synchronized (SymmetricEngine.class) {
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
+                    : overridePropertiesResource1);
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
+                    : overridePropertiesResource2);
+            this.init(createContext());
+        }
     }
 
     private void init(ApplicationContext applicationContext) {

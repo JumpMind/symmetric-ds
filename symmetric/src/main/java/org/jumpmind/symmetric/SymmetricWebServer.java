@@ -44,12 +44,20 @@ public class SymmetricWebServer {
     protected Server server;
 
     protected boolean join = true;
-    
+
     public void start(int port, String propertiesUrl) throws Exception {
         System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
         start(port);
     }
-    
+
+    public SymmetricEngine getEngine() {
+        if (contextListener != null) {
+            return contextListener.getEngine();
+        } else {
+            return null;
+        }
+    }
+
     public void start(int port) throws Exception {
         server = new Server();
         Connector connector = new SelectChannelConnector();
