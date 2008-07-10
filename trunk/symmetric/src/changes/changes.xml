@@ -9,7 +9,12 @@
             <action dev="dmichels2" type="add">Added IP address authorization.</action>
             <action dev="chenson42" type="add">
                 Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console. 
-            </action>            
+            </action>
+            <action dev="chenson42" type="add">
+                Added new extension architecture which allows extension points to be register automatically when they are in the 
+                classpath and the META-INF/services/symmetric-*-ext.xml Spring file is found.  Also added an interface which allows
+                extension points to be targeted for specific node groups. 
+            </action>                              
             <action dev="chenson42" type="add">
                 Change the property names to remove the inconsistent symmetric. and symmetric.runtime. prefixes. This
                 change keeps backwards compatibility with the old property names.
