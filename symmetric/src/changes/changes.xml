@@ -8,6 +8,9 @@
         <release version="1.4.0" date="unknown" description="Lets add some polish">
             <action dev="dmichels2" type="add">Added IP address authorization.</action>
             <action dev="chenson42" type="add">
+                Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console. 
+            </action>            
+            <action dev="chenson42" type="add">
                 Change the property names to remove the inconsistent symmetric. and symmetric.runtime. prefixes. This
                 change keeps backwards compatibility with the old property names.
             </action>
