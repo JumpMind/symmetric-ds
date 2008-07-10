@@ -19,9 +19,17 @@
  */
 package org.jumpmind.symmetric;
 
+import javax.management.Attribute;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
+import mx4j.tools.adaptor.http.HttpAdaptor;
+import mx4j.tools.adaptor.http.XSLTProcessor;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.SymmetricFilter;
 import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
@@ -82,6 +90,16 @@ public class SymmetricWebServer {
 
         logger.info("About to start SymmetricDS web server on port " + port);
         server.start();
+        
+        MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
+        
+        ObjectName name = new ObjectName("Server:name=HttpAdaptor");
+        mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
+        mbeanServer.setAttribute(name, new Attribute("Port", new Integer(port+1)));
+        ObjectName processorName = new ObjectName("Server:name=XSLTProcessor");
+        mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
+        mbeanServer.setAttribute(name, new Attribute("ProcessorName", processorName));
+        mbeanServer.invoke(name, "start", null, null);
 
         if (join) {
             server.join();

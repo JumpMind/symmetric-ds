@@ -28,6 +28,8 @@ public class Constants
     
     public static final String OVERRIDE_PROPERTIES_FILE_2 = "symmetric.override.properties.file.2";
     
+    public static final String MBEAN_SERVER = "mbeanserver";
+    
     public static final String PROPERTIES = "properties";
 
     public static final String CHANNEL_CONFIG = "config";
