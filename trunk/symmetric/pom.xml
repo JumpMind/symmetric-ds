@@ -404,14 +404,12 @@
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <optional>true</optional>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
             <artifactId>jms-api</artifactId>
             <version>1.1</version>
             <optional>true</optional>
-            <scope>provided</scope>
         </dependency>
         <!-- Commons -->
         <dependency>
