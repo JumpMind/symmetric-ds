@@ -207,13 +207,15 @@ public class SymmetricEngine {
 
     /**
      * This is done dynamically because some application servers do not allow
-     * the default MBeanServer to accessed for security reasons.
+     * the default MBeanServer to be accessed for security reasons (OC4J).
      */
     private void startDefaultServerJMXExport() {
-        try {
-            getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
-        } catch (Exception ex) {
-            logger.warn("Unable to register JMX beans with the default MBeanServer. " + ex.getMessage());
+        if (parameterService.is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
+            try {
+                getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
+            } catch (Exception ex) {
+                logger.warn("Unable to register JMX beans with the default MBeanServer. " + ex.getMessage());
+            }
         }
     }
 

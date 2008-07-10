@@ -38,7 +38,7 @@ public class ParameterConstants {
     public final static String NODE_GROUP_ID = "group.id";
     public final static String EXTERNAL_ID = "external.id";
     public final static String SCHEMA_VERSION = "schema.version";
-    
+
     public static final String STATISTIC_THRESHOLD_ALERTS_ENABLED = "statistic.threshold.alerts.enabled";
 
     @Deprecated
@@ -89,6 +89,8 @@ public class ParameterConstants {
     public final static String PURGE_MAX_NUMBER_OF_BATCH_IDS = "job.purge.max.num.batches.to.delete.in.tx";
 
     public final static String JMX_LINE_FEED = "jmx.line.feed";
-    
+    public final static String JMX_LEGACY_BEANS_ENABLED = "jmx.legacy.beans.enabled";
+    public final static String JMX_HTTP_CONSOLE_ENABLED = "jmx.http.console.for.embedded.webserver.enabled";
+
     public final static String IP_FILTERS = "ip.filters";
 }
