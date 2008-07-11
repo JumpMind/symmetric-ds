@@ -38,11 +38,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
 
 /**
- * This better be the first filter that executes ! TODO: if this thing fails, should it prevent further processing of
- * the request?
+ * This better be the first filter that executes ! TODO: if this thing fails,
+ * should it prevent further processing of the request?
  */
-public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler>
-{
+public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> {
     public static final String INET_ADDRESS_FILTERS = "inetAddressFilters";
 
     public static final String INET_ADDRESS_ALLOW_MULICAST = "inetAddressAllowMultcast";
@@ -52,72 +51,59 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
     private InetAddressResourceHandler authorizer;
 
     @Override
-    public void init(final FilterConfig config) throws ServletException
-    {
+    public void init(final FilterConfig config) throws ServletException {
         super.init(config);
         authorizer = getTransportResourceHandler();
         final String addressFilters = config.getInitParameter(INET_ADDRESS_FILTERS);
-        if (addressFilters != null)
-        {
-            try
-            {
+        if (addressFilters != null) {
+            try {
                 authorizer.setAddressFilters(addressFilters);
-            }
-            catch (final UnknownHostException e)
-            {
+            } catch (final UnknownHostException e) {
                 throw new ServletException("Invalid fddress filter string: " + addressFilters, e);
             }
         }
 
         final String multicastAllowed = config.getInitParameter(INET_ADDRESS_ALLOW_MULICAST);
-        if (!StringUtils.isBlank(multicastAllowed))
-        {
+        if (!StringUtils.isBlank(multicastAllowed)) {
             authorizer.setMulicastAllowed(Boolean.parseBoolean(multicastAllowed.trim()));
         }
     }
 
     @Override
-    public boolean isContainerCompatible()
-    {
+    public boolean isContainerCompatible() {
         return true;
     }
 
     public void doFilter(final ServletRequest req, final ServletResponse resp, final FilterChain chain)
-        throws IOException, ServletException
-    {
-        // final IInetAddressAuthorizer authorizer = getTransportResourceHandler();
+            throws IOException, ServletException {
+        // final IInetAddressAuthorizer authorizer =
+        // getTransportResourceHandler();
         final HttpServletRequest httpRequest = (HttpServletRequest) req;
         final String sourceAddrString = httpRequest.getRemoteAddr();
-        try
-        {
+        try {
             final InetAddress sourceAddr = InetAddress.getByName(sourceAddrString);
-            logger.info("Authorizing address: " + sourceAddr.toString());
-            if (authorizer.isAuthorized(sourceAddr))
-            {
-                chain.doFilter(req, resp);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Authorizing address: " + sourceAddr.toString());
             }
-            else
-            {
+            if (authorizer.isAuthorized(sourceAddr)) {
+                chain.doFilter(req, resp);
+            } else {
                 logger.info("Denied address: " + sourceAddr.toString());
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             }
-        }
-        catch (final UnknownHostException uhe)
-        {
+        } catch (final UnknownHostException uhe) {
             sendError(resp, HttpServletResponse.SC_FORBIDDEN);
         }
     }
 
     @Override
-    public void destroy()
-    {
+    public void destroy() {
         super.destroy();
         authorizer.clearFilters();
     }
 
     @Override
-    protected Log getLogger()
-    {
+    protected Log getLogger() {
         return logger;
     }
 }
