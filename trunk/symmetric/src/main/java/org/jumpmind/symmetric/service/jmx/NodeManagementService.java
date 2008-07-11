@@ -114,28 +114,28 @@ public class NodeManagementService {
         StringBuilder out = new StringBuilder();
         for (String pool : stats.keySet()) {
             out
-                    .append("---------------------------------------------------------------------------------------------------------");
-            out.append(lineFeed);
+            .append("-------------------------------------------------------------------------------------------------------------------------------");            out.append(lineFeed);
             out.append("  CONNECTION TYPE: ");
             out.append(pool);
             out.append(lineFeed);
             out
-                    .append("---------------------------------------------------------------------------------------------------------");
+                    .append("-------------------------------------------------------------------------------------------------------------------------------");
             out.append(lineFeed);
             out
-                    .append("             NODE ID            LAST CONNECT TIME          NUMBER OF REJECTIONS       AVG CONNECTED TIME");
-            out
-                    .append("---------------------------------------------------------------------------------------------------------");
+                    .append("             NODE ID             LAST CONNECT TIME      NUMBER OF CONNECTIONS     NUMBER OF REJECTIONS       AVG CONNECTED TIME");
             out.append(lineFeed);
+            out
+            .append("-------------------------------------------------------------------------------------------------------------------------------");            out.append(lineFeed);
             Map<String, NodeConnectionStatistics> nodeStats = stats.get(pool);
             for (String nodeId : nodeStats.keySet()) {
                 NodeConnectionStatistics nodeStat = nodeStats.get(nodeId);
-                StringUtils.leftPad(nodeId, 20);
-                StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(
-                        new Date(nodeStat.getLastConnectionTimeMs())), 30);
-                StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 30);
-                StringUtils.leftPad(NumberFormat.getIntegerInstance().format(
-                        nodeStat.getTotalConnectionTimeMs() / nodeStat.getTotalConnectionCount()), 20);
+                out.append(StringUtils.leftPad(nodeId, 20));
+                out.append(StringUtils.leftPad(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(
+                        new Date(nodeStat.getLastConnectionTimeMs())), 30));
+                out.append(StringUtils.leftPad(Long.toString(nodeStat.getTotalConnectionCount()), 27));
+                out.append(StringUtils.leftPad(Integer.toString(nodeStat.getNumOfRejections()), 25));
+                out.append(StringUtils.leftPad(NumberFormat.getIntegerInstance().format(
+                        nodeStat.getTotalConnectionTimeMs() / nodeStat.getTotalConnectionCount()), 25));
             }
             out.append(lineFeed);
         }

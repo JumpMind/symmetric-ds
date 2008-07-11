@@ -56,7 +56,7 @@ public class NodeConcurrencyFilter extends AbstractFilter {
             throws IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) req;
-        String poolId = httpRequest.getServletPath();
+        String poolId = httpRequest.getRequestURI();
         String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
         String method = httpRequest.getMethod();
 
