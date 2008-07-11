@@ -81,7 +81,6 @@
             <list>
                 <value>/pull/*</value>
                 <value>/push/*</value>
-                <value>/ack/*</value>
             </list>
         </property>
         <property name="reservationUriPattern" value="/push/*"/>
@@ -107,7 +106,6 @@
                 <value>/push/*</value>
             </list>
         </property>
-
         <property name="disabled" value="true" />
     </bean>
 
