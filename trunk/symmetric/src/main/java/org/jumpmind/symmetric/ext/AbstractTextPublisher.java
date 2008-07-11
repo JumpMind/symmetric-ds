@@ -29,19 +29,18 @@ import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.springframework.jms.core.JmsTemplate;
 
 /**
  * An abstract convenience class meant to be implemented by classes that need to
- * publish JMS messages
+ * publish text messages
  */
-abstract public class AbstractJmsPublisher implements IDataLoaderFilter, IBatchListener {
+abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatchListener {
 
-    private static final Log logger = LogFactory.getLog(AbstractJmsPublisher.class);
+    private static final Log logger = LogFactory.getLog(AbstractTextPublisher.class);
 
     private static final String msg_CACHE = "msg_CACHE";
 
-    protected JmsTemplate jmsTemplate;
+    protected IPublisher publisher;
 
     private boolean loadDataInTargetDatabase = true;
 
@@ -114,9 +113,9 @@ abstract public class AbstractJmsPublisher implements IDataLoaderFilter, IBatchL
             msg.append(addTextFooter(ctx));
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Sending Text to JMS -> " + msg);
+                logger.debug("publishing text message -> " + msg);
             }
-            jmsTemplate.convertAndSend(msg.toString());
+            publisher.publish(msg.toString());
         }
     }
 
@@ -127,16 +126,16 @@ abstract public class AbstractJmsPublisher implements IDataLoaderFilter, IBatchL
         }
     }
 
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
-    }
-
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
     public void setTableList(Set<String> tableList) {
         this.tableList = tableList;
+    }
+
+    public void setPublisher(IPublisher publisher) {
+        this.publisher = publisher;
     }
 
 }
