@@ -89,7 +89,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         two.start();
         Thread.sleep(500);
 
-        Assert.assertEquals(manager.getReservationCount("push"), 2);
+        Assert.assertEquals(manager.getReservationCount("/sync/push"), 2);
 
         one = new MockWorker("00001", filter, "push", "PUT");
         two = new MockWorker("00002", filter, "push", "PUT");
@@ -101,7 +101,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         Assert.assertEquals(one.reached, true);
         Assert.assertEquals(two.reached, true);
 
-        Assert.assertEquals(manager.getReservationCount("push"), 2);
+        Assert.assertEquals(manager.getReservationCount("/sync/push"), 2);
 
         MockWorker five = new MockWorker("00005", filter, "push", "PUT");
         five.hold = false;
@@ -109,13 +109,13 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         Thread.sleep(500);
 
         Assert.assertEquals(five.reached, false);
-        Assert.assertEquals(manager.getReservationCount("push"), 2);
+        Assert.assertEquals(manager.getReservationCount("/sync/push"), 2);
 
         one.hold = false;
         two.hold = false;
         Thread.sleep(500);
 
-        Assert.assertEquals(manager.getReservationCount("push"), 0);
+        Assert.assertEquals(manager.getReservationCount("/sync/push"), 0);
 
     }
 
