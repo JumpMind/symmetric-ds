@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 abstract class AbstractService {
 
@@ -35,6 +36,10 @@ abstract class AbstractService {
 
     public void setJdbcTemplate(JdbcTemplate jdbc) {
         this.jdbcTemplate = jdbc;
+    }
+    
+    protected SimpleJdbcTemplate getSimpleTemplate() {
+        return new SimpleJdbcTemplate(jdbcTemplate);
     }
 
     public void setSql(Map<String, String> sql) {
