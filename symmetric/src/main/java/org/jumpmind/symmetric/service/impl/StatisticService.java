@@ -19,12 +19,18 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
+import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.Statistic;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class StatisticService extends AbstractService implements IStatisticService {
 
@@ -38,4 +44,30 @@ public class StatisticService extends AbstractService implements IStatisticServi
         }
     }
 
+    public List<StatisticAlertThresholds> getAlertThresholds() {
+        return getSimpleTemplate().query(getSql("getAlertThresholdsSql"),
+                new ParameterizedRowMapper<StatisticAlertThresholds>() {
+                    public StatisticAlertThresholds mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return new StatisticAlertThresholds(rs.getString("statistic_name"), rs
+                                .getBigDecimal("threshhold_total_max"), rs.getLong("threshhold_count_max"), rs
+                                .getBigDecimal("threshhold_total_min"), rs.getLong("threshhold_count_min"));
+                    }
+                });
+    }
+
+    public void saveStatisticAlertThresholds(StatisticAlertThresholds threshold) {
+        SimpleJdbcTemplate template = getSimpleTemplate();
+        int updated = template.update(getSql("updateAlertThresholdsSql"), threshold.getThreshholdTotalMax(), threshold
+                .getThreshholdCountMax(), threshold.getThreshholdTotalMin(), threshold.getThreshholdCountMin(),
+                threshold.getStatisticName());
+        if (updated == 0) {
+            template.update(getSql("insertAlertThresholdsSql"), threshold.getStatisticName(), threshold
+                    .getThreshholdTotalMax(), threshold.getThreshholdCountMax(), threshold.getThreshholdTotalMin(),
+                    threshold.getThreshholdCountMin());
+        }
+    }
+    
+    public boolean removeStatisticAlertThresholds(String statisticName) {
+       return 1 == getSimpleTemplate().update(getSql("deleteAlertThresholdsSql"), statisticName);
+    }
 }

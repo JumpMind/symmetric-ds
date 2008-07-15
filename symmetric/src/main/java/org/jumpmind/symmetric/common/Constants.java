@@ -73,6 +73,8 @@ public class Constants
     public static final String ALERT_RESOURCE_HANDLER = "alertResourceHandler";
 
     public static final String STATISTIC_MANAGER = "statisticManager";
+    
+    public static final String STATISTIC_SERVICE = "statisticService";
 
     public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
 
