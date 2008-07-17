@@ -19,24 +19,24 @@
         <entry key="getAlertThresholdsSql">
             <value><![CDATA[      
                select statistic_name, 
-                 threshhold_total_max, threshhold_count_max, 
-                 threshhold_total_min, threshhold_count_min 
+                 threshold_total_max, threshold_count_max, threshold_avg_max,
+                 threshold_total_min, threshold_count_min, threshold_avg_min
                from ${sync.table.prefix}_statistic_alert 
             ]]></value>
         </entry>
         <entry key="updateAlertThresholdsSql">
             <value><![CDATA[      
                update ${sync.table.prefix}_statistic_alert
-               set threshhold_total_max=?, threshhold_count_max=?, 
-                 threshhold_total_min=?, threshhold_count_min=?
+               set threshold_total_max=?, threshold_count_max=?, threshold_avg_max=?,
+                 threshold_total_min=?, threshold_count_min=?, threshold_avg_min=?
                where statistic_name=?
              ]]></value>
         </entry>
         <entry key="insertAlertThresholdsSql">
             <value><![CDATA[      
                insert into ${sync.table.prefix}_statistic_alert
-                 (statistic_name, threshhold_total_max, threshhold_count_max, 
-                 threshhold_total_min, threshhold_count_min) values (?,?,?,?,?) 
+                 (statistic_name, threshold_total_max, threshold_count_max, threshold_avg_max,
+                 threshold_total_min, threshold_count_min, threshold_avg_min) values (?,?,?,?,?,?,?) 
              ]]></value>
         </entry>
         <entry key="deleteAlertThresholdsSql">
