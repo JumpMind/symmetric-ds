@@ -21,10 +21,14 @@ package org.jumpmind.symmetric.statistic;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.management.Notification;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -62,8 +66,19 @@ public class StatisticManager implements IStatisticManager {
      * alert thresholds and publish alerts if we fall outside the range.
      */
     synchronized protected void publishAlerts() {
-        if (parameterService.is(ParameterConstants.STATISTIC_THRESHOLD_ALERTS_ENABLED)) {
-            // TODO
+        if (parameterService.is(ParameterConstants.STATISTIC_THRESHOLD_ALERTS_ENABLED) && statistics != null) {
+            List<StatisticAlertThresholds> thresholds = statisticService.getAlertThresholds();
+            if (thresholds != null) {
+                for (StatisticAlertThresholds statisticAlertThresholds : thresholds) {
+                    StatisticName name = StatisticName.valueOf(statisticAlertThresholds.getStatisticName());
+                    if (name != null) {
+                        Notification event = statisticAlertThresholds.outsideOfBoundsNotification(statistics.get(name));
+                        if (event != null) {
+                            notificationService.sendNotification(event);
+                        }
+                    }
+                }
+            }
         }
     }
 

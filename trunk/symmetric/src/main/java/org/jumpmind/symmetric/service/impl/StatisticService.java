@@ -49,25 +49,27 @@ public class StatisticService extends AbstractService implements IStatisticServi
                 new ParameterizedRowMapper<StatisticAlertThresholds>() {
                     public StatisticAlertThresholds mapRow(ResultSet rs, int rowNum) throws SQLException {
                         return new StatisticAlertThresholds(rs.getString("statistic_name"), rs
-                                .getBigDecimal("threshhold_total_max"), rs.getLong("threshhold_count_max"), rs
-                                .getBigDecimal("threshhold_total_min"), rs.getLong("threshhold_count_min"));
+                                .getBigDecimal("threshold_total_max"), rs.getLong("threshold_count_max"), rs
+                                .getBigDecimal("threshold_total_min"), rs.getLong("threshold_count_min"), rs
+                                .getBigDecimal("threshold_avg_max"), rs.getBigDecimal("threshold_avg_min"));
                     }
                 });
     }
 
     public void saveStatisticAlertThresholds(StatisticAlertThresholds threshold) {
         SimpleJdbcTemplate template = getSimpleTemplate();
-        int updated = template.update(getSql("updateAlertThresholdsSql"), threshold.getThreshholdTotalMax(), threshold
-                .getThreshholdCountMax(), threshold.getThreshholdTotalMin(), threshold.getThreshholdCountMin(),
-                threshold.getStatisticName());
+        int updated = template.update(getSql("updateAlertThresholdsSql"), threshold.getThresholdTotalMax(), threshold
+                .getThresholdCountMax(), threshold.getThresholdAvgMax(), threshold.getThresholdTotalMin(), threshold
+                .getThresholdCountMin(), threshold.getThresholdAvgMin(), threshold.getStatisticName());
         if (updated == 0) {
             template.update(getSql("insertAlertThresholdsSql"), threshold.getStatisticName(), threshold
-                    .getThreshholdTotalMax(), threshold.getThreshholdCountMax(), threshold.getThreshholdTotalMin(),
-                    threshold.getThreshholdCountMin());
+                    .getThresholdTotalMax(), threshold.getThresholdCountMax(), threshold.getThresholdAvgMax(),
+                    threshold.getThresholdTotalMin(), threshold.getThresholdCountMin(), threshold
+                            .getThresholdAvgMin());
         }
     }
-    
+
     public boolean removeStatisticAlertThresholds(String statisticName) {
-       return 1 == getSimpleTemplate().update(getSql("deleteAlertThresholdsSql"), statisticName);
+        return 1 == getSimpleTemplate().update(getSql("deleteAlertThresholdsSql"), statisticName);
     }
 }
