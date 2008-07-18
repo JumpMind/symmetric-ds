@@ -58,6 +58,7 @@ import org.apache.ddlutils.model.UniqueIndex;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -321,7 +322,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
             for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn((String) it.next(), true)
                     .setPrimaryKey(true))
                 ;
-            determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            
+            if (this instanceof MsSqlDbDialect) {
+                determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
+            }
         }
         return table;
     }
