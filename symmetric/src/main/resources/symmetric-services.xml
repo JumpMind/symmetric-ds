@@ -122,6 +122,7 @@
         <property name="registrationService" ref="registrationService" />
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="bootstrapService" ref="bootstrapService" />
         <property name="parameterService" ref="parameterService" />
     </bean>
 

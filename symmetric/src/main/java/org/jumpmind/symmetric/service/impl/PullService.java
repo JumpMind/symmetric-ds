@@ -29,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IPullService;
@@ -46,12 +47,15 @@ public class PullService extends AbstractService implements IPullService {
     private IDataLoaderService dataLoaderService;
 
     private IRegistrationService registrationService;
+    
+    private IBootstrapService bootstrapService;
 
     public void pullData() {
 
         // register if we haven't already been registered
         if (!registrationService.isRegisteredWithServer()) {
             registrationService.registerWithServer();
+            bootstrapService.syncTriggers();
         }
 
         List<Node> nodes = nodeService.findNodesToPull();
@@ -93,4 +97,9 @@ public class PullService extends AbstractService implements IPullService {
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
     }
+
+    public void setBootstrapService(IBootstrapService bootstrapService) {
+        this.bootstrapService = bootstrapService;
+    }
+
 }
