@@ -38,6 +38,8 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
+    
+    protected String defaultSchema;
         
     protected void initForSpecificDialect() {
         try {
@@ -46,6 +48,8 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 new SqlScript(getTransactionIdSqlUrl(), getPlatform().getDataSource(), '/')
                         .execute();
             }
+
+            defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);
         } catch (Exception e) {
             logger.error("Error while initializing PostgreSql.", e);
         }
@@ -143,6 +147,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public String getDefaultSchema() {
-        return null;
+        return defaultSchema;
     }
 }
