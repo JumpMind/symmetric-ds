@@ -63,6 +63,8 @@ public class TableTemplate {
 
     private Table table;
 
+    private String schema;
+    
     private String tableName;
 
     private String[] keyNames;
@@ -92,13 +94,22 @@ public class TableTemplate {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
         this.setupColumnFilters(columnFilter, dbDialect);
-        this.tableName = tableName;
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
+        
+        int periodIndex = tableName.indexOf(".");
+        if (periodIndex != -1) {
+            this.schema = tableName.substring(0, periodIndex);
+            this.tableName = tableName.substring(periodIndex + 1);
+        } else {
+            this.schema = dbDialect.getDefaultSchema();
+            this.tableName = tableName;
+        }
+
         resetMetaData();
     }
 
     public void resetMetaData() {
-        table = dbDialect.getMetaDataFor(null, null, tableName, true);
+        table = dbDialect.getMetaDataFor(null, schema, tableName, true);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
         keyMetaData = null;
