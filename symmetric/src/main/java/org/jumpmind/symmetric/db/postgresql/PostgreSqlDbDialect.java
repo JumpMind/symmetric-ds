@@ -40,12 +40,15 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     private String transactionIdExpression = "null";
 
+    protected String defaultSchema;
+
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
             logger.info("Enabling transaction ID support");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
+        defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);        
     }
 
     @Override
@@ -133,6 +136,6 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public String getDefaultSchema() {
-        return null;
+        return defaultSchema;
     }
 }

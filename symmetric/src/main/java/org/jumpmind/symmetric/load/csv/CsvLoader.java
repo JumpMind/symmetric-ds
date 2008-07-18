@@ -41,6 +41,10 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -57,6 +61,10 @@ public class CsvLoader implements IDataLoader {
 
     protected IParameterService parameterService;
 
+    protected IConfigurationService configurationService;
+    
+    protected INodeService nodeService;
+
     protected CsvReader csvReader;
 
     protected DataLoaderContext context;
@@ -72,6 +80,8 @@ public class CsvLoader implements IDataLoader {
     protected List<IDataLoaderFilter> filters;
 
     protected Map<String, IColumnFilter> columnFilters;
+    
+    protected Node sourceNode;
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
@@ -98,6 +108,7 @@ public class CsvLoader implements IDataLoader {
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
+                sourceNode = nodeService.findNode(tokens[1]);
             } else if (tokens[0].equals(CsvConstants.VERSION)) {
                 context.setVersion(tokens[1] + "." + tokens[2] + "." + tokens[3]);
             } else if (isMetaTokenParsed(tokens)) {
@@ -180,7 +191,15 @@ public class CsvLoader implements IDataLoader {
         context.setTableName(tableName);
 
         if (context.getTableTemplate() == null) {
-            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
+            String fullTableName = tableName;
+            if (sourceNode != null) {
+                Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                if (trigger != null && trigger.getTargetSchemaName() != null) {
+                    fullTableName = trigger.getTargetSchemaName() + "." + tableName;
+                }
+            }
+
+            context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, fullTableName,
                     this.columnFilters != null ? this.columnFilters.get(tableName) : null, parameterService
                             .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE)));
         }
@@ -422,4 +441,13 @@ public class CsvLoader implements IDataLoader {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
 }
