@@ -38,7 +38,7 @@
       <value>
         select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
         database_type, database_version, symmetric_version from ${sync.table.prefix}_node where
-        node_group_id = ? and external_id = ?
+        node_group_id = ? and external_id = ? order by node_id
       </value>
     </entry>
     <entry key="findNodeSecuritySql">
