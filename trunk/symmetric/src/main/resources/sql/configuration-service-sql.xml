@@ -43,6 +43,7 @@
       <value>
         channel_id in (select channel_id from ${sync.table.prefix}_trigger where
         source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
+        or channel_id = 'reload'
       </value>
     </entry>
     <entry key="${sync.table.prefix}_node_channel_ctl">
