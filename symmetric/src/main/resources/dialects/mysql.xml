@@ -33,7 +33,7 @@
                             <value>
                                 <![CDATA[ 
                                 create function fn_transaction_id()
-                                  returns varchar(50)
+                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA
                                   begin
                                      declare comm_name varchar(50);
                                      declare comm_value varchar(50);
