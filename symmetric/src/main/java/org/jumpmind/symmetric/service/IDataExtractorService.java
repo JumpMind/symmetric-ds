@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
 
-    public void extractNodeIdentityFor(Node node, IOutgoingTransport transport);
+    public OutgoingBatch extractNodeIdentityFor(Node node, IOutgoingTransport transport);
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 

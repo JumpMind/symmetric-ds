@@ -58,7 +58,8 @@ public class MockDataExtractorService implements IDataExtractorService {
             DataExtractorContext ctx) {
     }
 
-    public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
+    public OutgoingBatch extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
+        return null;
     }
 
     public void addExtractorFilter(IExtractorFilter extractorFilter) {

@@ -184,7 +184,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     acknowledgeService.ack(batch.getBatchInfo());
                 }
             }
-            dataExtractorService.extractNodeIdentityFor(node, transport);
+            acknowledgeService.ack(dataExtractorService.extractNodeIdentityFor(node, transport).getBatchInfo());
             written = true;
         } else {
             logger
