@@ -172,6 +172,7 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <forkMode>pertest</forkMode>
                     <systemProperties>
                         <property>
                             <name>javassist-write-dir</name>
@@ -298,7 +299,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <dependencies>
         <!-- 
             Stolen from http://viewvc.jboss.org/cgi-bin/viewvc.cgi/seam/trunk/build/parent.pom.xml?revision=7344&view=markup
@@ -335,7 +336,7 @@
             <artifactId>junit</artifactId>
             <version>4.4</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
