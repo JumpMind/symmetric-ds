@@ -74,11 +74,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private String tablePrefix;
 
-    public void extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
+    public OutgoingBatch extractNodeIdentityFor(Node node, IOutgoingTransport transport) {
         String tableName = tablePrefix + "_node_identity";
         OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
-
         try {
             BufferedWriter writer = transport.open();
             IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
@@ -89,9 +88,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, tableName, null, audit);
             dataExtractor.write(writer, data, ctxCopy);
             dataExtractor.commit(batch, writer);
+            return batch;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        
     }
 
     private IDataExtractor getDataExtractor(String version) {
