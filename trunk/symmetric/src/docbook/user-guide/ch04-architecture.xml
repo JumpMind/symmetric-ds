@@ -98,7 +98,7 @@
 	<filter>
 		<filter-name>SymmetricFilter</filter-name>
 		<filter-class>
-			org.jumpmind.symmetric.web.Symmetric
+			org.jumpmind.symmetric.web.SymmetricFilter
 		</filter-class>
 	</filter>
 
@@ -155,7 +155,7 @@
             <programlisting><![CDATA[
 import org.jumpmind.symmetric.SymmetricEngine;
 
-public class StartSymmetricEngine {
+public class StartSymmetricDSEngine {
 
     public static void main(String[] args) throws Exception {
         String workingDirectory = System.getProperty("user.dir");
@@ -164,7 +164,12 @@ public class StartSymmetricEngine {
                 + workingDirectory + "/my-environment.properties");
 
         // this will create the database, sync triggers, start jobs running
-        engine.start(8080);
+        engine.start();
+        
+        ....
+        
+        // this will stop the engine
+        engine.stop();
     }   
 
 }]]></programlisting>
