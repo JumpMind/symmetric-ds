@@ -54,6 +54,8 @@ public class SymmetricWebServer {
     protected Server server;
 
     protected boolean join = true;
+    
+    protected String webHome = "/sync";
 
     public void start(int port, String propertiesUrl) throws Exception {
         System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
@@ -74,7 +76,7 @@ public class SymmetricWebServer {
         connector.setPort(port);
         server.setConnectors(new Connector[] { connector });
 
-        Context webContext = new Context(server, "/sync", Context.NO_SESSIONS);
+        Context webContext = new Context(server, webHome, Context.NO_SESSIONS);
 
         if (this.contextListener == null) {
             this.contextListener = new SymmetricEngineContextLoaderListener();
@@ -145,6 +147,10 @@ public class SymmetricWebServer {
 
     public void setJoin(boolean join) {
         this.join = join;
+    }
+
+    public void setWebHome(String webHome) {
+        this.webHome = webHome;
     }
 
 }
