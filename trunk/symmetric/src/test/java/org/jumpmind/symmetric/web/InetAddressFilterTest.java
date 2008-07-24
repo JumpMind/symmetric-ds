@@ -305,8 +305,6 @@ public class InetAddressFilterTest
     public void testInetAddressFilterDefaultMulticastAddressFilter(final String filterString, final String checkAddr)
         throws Exception
     {
-
-        // final InetAddressFilter filter = new InetAddressFilter();
         final InetAddressFilter filter = getFilter();
         final MockFilterConfig config = new MockFilterConfig(servletContext);
         config.addInitParameter(InetAddressFilter.INET_ADDRESS_FILTERS, filterString);
@@ -315,7 +313,7 @@ public class InetAddressFilterTest
         final MockHttpServletRequest request = createMockHttpServletRequest(checkAddr);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
-        Assert.assertTrue(response.getStatus() == HttpServletResponse.SC_FORBIDDEN);
+        Assert.assertEquals(response.getStatus(),HttpServletResponse.SC_FORBIDDEN, "The " + filterString + " filter did not return the expected response when " + checkAddr + " was checked.");
 
         filter.destroy();
     }
