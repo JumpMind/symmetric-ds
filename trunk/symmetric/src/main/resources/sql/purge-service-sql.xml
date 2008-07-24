@@ -54,7 +54,7 @@
     <entry key="deleteIncomingBatchSql">
       <value>
         delete from ${sync.table.prefix}_incoming_batch where batch_id between ? and ? and node_id =
-        ?
+        ? and status = 'OK'
       </value>
     </entry>
     <entry key="deleteIncomingBatchHistSql">
