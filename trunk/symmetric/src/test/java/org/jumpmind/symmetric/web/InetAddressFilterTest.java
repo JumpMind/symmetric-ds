@@ -308,6 +308,7 @@ public class InetAddressFilterTest
         final InetAddressFilter filter = getFilter();
         final MockFilterConfig config = new MockFilterConfig(servletContext);
         config.addInitParameter(InetAddressFilter.INET_ADDRESS_FILTERS, filterString);
+        config.addInitParameter(InetAddressFilter.INET_ADDRESS_ALLOW_MULICAST, "false");
         filter.init(config);
 
         final MockHttpServletRequest request = createMockHttpServletRequest(checkAddr);
