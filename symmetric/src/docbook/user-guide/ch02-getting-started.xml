@@ -92,7 +92,7 @@ db.password=secret]]></programlisting>
                     file to specify where the root node can be contacted:
                 </para>
                 <programlisting><![CDATA[# The HTTP URL of the root node to contact for registration
-symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting>
+registration.url=http://localhost:8080/sync]]></programlisting>
                 <para>
                     For the tutorial, the client database starts out empty, and the node is not 
                     registered.  Registration is the process where the node receives its
@@ -247,10 +247,10 @@ symmetric.runtime.registration.url=http://localhost:8080/sync]]></programlisting
             <title>Tip</title>
             <para>
                 If you want to change the port number used by SymmetricDS, you need to also
-                set the symmetric.runtime.my.url runtime property to match.  The default value
+                set the my.url runtime property to match.  The default value
                 is:
             </para>
-            <programlisting><![CDATA[symmetric.runtime.my.url=http://localhost:8080/sync]]></programlisting>
+            <programlisting><![CDATA[my.url=http://localhost:8080/sync]]></programlisting>
         </tip>
     </section>
     <section>

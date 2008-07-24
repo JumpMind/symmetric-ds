@@ -49,7 +49,7 @@
             <variablelist>
                 <varlistentry>
                     <term>
-                        <command>symmetric.runtime.start.synctriggers.job</command>
+                        <command>start.synctriggers.job</command>
                     </term>
                     <listitem>
                         <para>
@@ -60,7 +60,7 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>symmetric.runtime.job.synctriggers.aftermidnight.minutes</command>
+                        <command>job.synctriggers.aftermidnight.minutes</command>
                     </term>
                     <listitem>
                         <para>
@@ -71,7 +71,7 @@
                 </varlistentry>           
                 <varlistentry>
                     <term>
-                        <command>symmetric.runtime.cluster.lock.during.sync.triggers</command>
+                        <command>cluster.lock.during.sync.triggers</command>
                     </term>
                     <listitem>
                         <para>

@@ -135,7 +135,7 @@
         <variablelist>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.group.id</command>
+                    <command>group.id</command>
                 </term>
                 <listitem>
                     <para>
@@ -148,7 +148,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.external.id</command>
+                    <command>external.id</command>
                 </term>
                 <listitem>
                     <para>
@@ -164,7 +164,7 @@
             </varlistentry>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.my.url</command>
+                    <command>my.url</command>
                 </term>
                 <listitem>
                     <para>
@@ -184,7 +184,7 @@
         <variablelist>
             <varlistentry>
                 <term>
-                    <command>symmetric.runtime.registration.url</command>
+                    <command>registration.url</command>
                 </term>
                 <listitem>
                     <para>
