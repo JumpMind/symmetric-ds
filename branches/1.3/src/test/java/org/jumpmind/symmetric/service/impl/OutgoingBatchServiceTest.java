@@ -232,11 +232,11 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertNotNull(batches);
         Assert.assertEquals(batches.size(), 3);
-        Assert.assertEquals(batches.get(0).getBatchId(), secondBatchId,
+        Assert.assertEquals(batches.get(0).getBatchId(), thirdBatchId,
         "Channel in error should have batches last - missing new batch");        
         Assert.assertEquals(batches.get(1).getBatchId(), firstBatchId,
                 "Channel in error should have batches last - missing error batch");
-        Assert.assertEquals(batches.get(2).getBatchId(), thirdBatchId,
+        Assert.assertEquals(batches.get(2).getBatchId(), secondBatchId,
                 "Channel in error should have batches last - missing new batch");
         
     }
