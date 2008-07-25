@@ -87,4 +87,9 @@ public class MockNodeService implements INodeService {
     public boolean updateNodeSecurity(NodeSecurity security) {
         return false;
     }
+
+    public Node findIdentity(boolean useCache) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
