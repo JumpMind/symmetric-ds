@@ -134,6 +134,7 @@
         <property name="incomingBatchService" ref="incomingBatchService" />
         <property name="statisticManager" ref="statisticManager" />
         <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService" />
     </bean>
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
@@ -193,6 +194,7 @@
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService" />
         <property name="dictionary">
             <map>
                 <entry key="I">

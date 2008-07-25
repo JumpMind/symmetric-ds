@@ -41,6 +41,8 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
+    
+    private Node nodeIdentity;
 
     /**
      * Lookup a node in the database, which contains information for syncing
@@ -116,10 +118,17 @@ public class NodeService extends AbstractService implements INodeService {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public Node findIdentity() {
-        List<Node> list = jdbcTemplate.query(getSql("findNodeIdentitySql"), new NodeRowMapper());
-        return (Node) getFirstEntry(list);
+        return findIdentity(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Node findIdentity(boolean useCache) {
+        if (nodeIdentity == null || useCache == false) {
+            List<Node> list = jdbcTemplate.query(getSql("findNodeIdentitySql"), new NodeRowMapper());
+            nodeIdentity = (Node) getFirstEntry(list);
+        }
+        return nodeIdentity;
     }
 
     public List<Node> findNodesToPull() {
