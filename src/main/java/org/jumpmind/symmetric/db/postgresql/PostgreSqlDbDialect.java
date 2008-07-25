@@ -75,12 +75,10 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String schema, String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        String checkSchema = (schema != null && schema.length() > 0) ? " and trigger_schema = '"
-                + schema + "'" : "";
         return jdbcTemplate.queryForInt(
-                        "select count(*) from information_schema.triggers where trigger_name like ? and event_object_table like ?"
-                                + checkSchema, new Object[] { triggerName.toLowerCase(), tableName.toLowerCase() }) > 0;
+            "select count(*) from information_schema.triggers where trigger_name = ? " +
+            "and event_object_table = ? and trigger_schema = ?",
+            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), defaultSchema }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
@@ -90,7 +88,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName + " on " + tableName);
+            jdbcTemplate.update("drop trigger " + triggerName + " on " + tableName);
             jdbcTemplate.update("drop function " + schemaName + "f" + triggerName + "()");
         } catch (Exception e) {
             logger.warn("Trigger does not exist");
