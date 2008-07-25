@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -71,6 +72,8 @@ public class DataLoaderService extends AbstractService implements
     protected IIncomingBatchService incomingBatchService;
 
     protected ITransportManager transportManager;
+    
+    protected INodeService nodeService;
 
     protected TransactionTemplate transactionTemplate;
 
@@ -96,6 +99,7 @@ public class DataLoaderService extends AbstractService implements
         } catch (RegistrationRequiredException e) {
             logger.warn("Registration was lost, attempting to re-register");
             loadData(transportManager.getRegisterTransport(local));
+            nodeService.findIdentity(false);
         }
     }
     
@@ -311,6 +315,10 @@ public class DataLoaderService extends AbstractService implements
 
     public void setTimeBetweenStatusSendRetriesMs(long timeBetweenStatusSendRetriesMs) {
         this.timeBetweenStatusSendRetriesMs = timeBetweenStatusSendRetriesMs;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }

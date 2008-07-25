@@ -372,6 +372,7 @@
         <property name="transactionTemplate" ref="transactionTemplate" />
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
+        <property name="nodeService" ref="nodeService" />
     </bean>
 
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
@@ -596,6 +597,7 @@
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />
         <property name="runtimeConfiguration" ref="runtimeConfiguration" />
+        <property name="nodeService" ref="nodeService" />
         <property name="dictionary">
             <map>
                 <entry key="I">

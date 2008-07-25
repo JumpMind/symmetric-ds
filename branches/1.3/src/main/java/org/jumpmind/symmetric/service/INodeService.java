@@ -44,6 +44,8 @@ public interface INodeService {
     
     public Node findIdentity();
 
+    public Node findIdentity(boolean useCache);
+
     public List<Node> findNodesToPull();
     
     public List<Node> findNodesToPushTo();
