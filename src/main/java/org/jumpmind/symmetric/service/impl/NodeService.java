@@ -63,6 +63,8 @@ public class NodeService extends AbstractService implements INodeService {
     private String findNodeByExternalIdSql;
     
     private String updateNodeSecuritySql;
+    
+    private Node nodeIdentity;
 
     /**
      * Lookup a node in the database, which contains information for synching
@@ -138,10 +140,17 @@ public class NodeService extends AbstractService implements INodeService {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public Node findIdentity() {
-        List<Node> list = jdbcTemplate.query(findNodeIdentitySql, new NodeRowMapper());
-        return (Node) getFirstEntry(list);
+        return findIdentity(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Node findIdentity(boolean useCache) {
+        if (nodeIdentity == null || useCache == false) {
+            List<Node> list = jdbcTemplate.query(findNodeIdentitySql, new NodeRowMapper());
+            nodeIdentity = (Node) getFirstEntry(list);
+        }
+        return nodeIdentity;
     }
 
     public List<Node> findNodesToPull() {
