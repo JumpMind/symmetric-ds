@@ -53,6 +53,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -87,6 +88,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected List<IDataLoaderFilter> filters;
 
     protected IStatisticManager statisticManager;
+    
+    protected INodeService nodeService;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
 
@@ -107,6 +110,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (RegistrationRequiredException e) {
             logger.warn("Registration was lost, attempting to re-register");
             loadData(transportManager.getRegisterTransport(local));
+            nodeService.findIdentity(false);
             wasWorkDone = true;
         } catch (MalformedURLException e) {
             logger.error("Could not connect to the " + remote + " node's transport because of a bad URL: "
@@ -402,6 +406,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void setBatchListeners(List<IBatchListener> batchListeners) {
         this.batchListeners = batchListeners;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }

@@ -31,7 +31,9 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class CsvExtractor implements IDataExtractor {
@@ -42,9 +44,13 @@ public class CsvExtractor implements IDataExtractor {
 
     private IDbDialect dbDialect;
 
+    private INodeService nodeService;
+
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService
-                .getString(ParameterConstants.EXTERNAL_ID));
+        Node nodeIdentity = nodeService.findIdentity();
+        String nodeId = (nodeIdentity == null) ? parameterService.getString(ParameterConstants.EXTERNAL_ID)
+                : nodeIdentity.getNodeId();
+        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, nodeId);
         writer.newLine();
     }
 
@@ -106,6 +112,10 @@ public class CsvExtractor implements IDataExtractor {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }
