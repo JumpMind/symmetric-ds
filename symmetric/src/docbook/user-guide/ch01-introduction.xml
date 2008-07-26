@@ -75,7 +75,9 @@
                             <literal>IDataLoaderFilter</literal>
                             can change the data in a column or route it somewhere else. One possible
                             use might be to route credit card data to a secure database and blank it
-                            out as it loads into a centralized sales database.
+                            out as it loads into a centralized sales database.  The filter can also prevent
+                            data from reaching the database altogether, effectively replacing the default
+                            data loading.
                         </para>
                     </listitem>
                     <listitem>
