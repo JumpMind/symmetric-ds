@@ -3,9 +3,9 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Startup Properties</title>
+    <title>Startup Parameters</title>
     <para>
-        Startup properties are read once from properties files during initialization and change the behavior
+        Startup parameters are read periodically from properties files or the database and change the behavior
         of SymmetricDS at runtime. The following properties are used:
 
         <variablelist>

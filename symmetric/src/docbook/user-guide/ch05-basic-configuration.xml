@@ -33,20 +33,21 @@
         begin running as required to synchronize changes with other Nodes.
     </para>
     <section>
-        <title>Setting Startup Properties</title>
+        <title>Setting Startup Parameters</title>
         <para>
-            A SymmetricDS instance is configured at start time by a hierarchy of properties files.
-            By default, it looks for properties in the following files.
-
+            As of 1.4 most system parameters are accessed using the <literal>ParameterService</literal>.  The 
+            <literal>ParameterService</literal> looks for parameters in a hierarchy of properties files and 
+            in a database table.  Parameters are re-queried from their source at a configured interval and can 
+            also be refreshed on demand by using the JMX API.  The following table defines the way parameters may be defined. 
             <table>
-                <title>Properties Files</title>
+                <title>Parameter Locations</title>
                 <tgroup cols="3">
                     <colspec colwidth="115px" />
                     <colspec colwidth="50px" />
                     <colspec colwidth="250px" />
                     <thead>
                         <row>
-                            <entry>File Name</entry>
+                            <entry>Location</entry>
                             <entry>Required</entry>
                             <entry>Description</entry>
                         </row>
@@ -118,11 +119,31 @@
                                 runtime. It will take precedence over any properties file property.
                             </entry>
                         </row>
+                        <row>
+                            <entry>
+                                <emphasis>Parameter table</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                A table which contains SymmetricDS parameters. Parameters can be targeted at a specific node group and
+                                even at a specific external id.  These settings will take precedence over all of the above.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <emphasis>IParameterFilter</emphasis>
+                            </entry>
+                            <entry>N</entry>
+                            <entry>
+                                An extension point which allows parameters to be sourced from another location or customized.  
+                                These settings will take precedence over all of the above.
+                            </entry>
+                        </row>                        
                     </tbody>
                 </tgroup>
             </table>
             
-            Also see the appendix on <emphasis>Startup Properties</emphasis> to see all the possible
+            Also see the appendix on <emphasis>Startup Parameters</emphasis> to see all the possible
             properties and their defaults.
         </para>
     </section>
@@ -329,7 +350,7 @@ values
 <![CDATA[insert into SYM_NODE 
   (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
 values
-  ('00000', 'corp', '00000', 1, '1.3.0');
+  ('00000', 'corp', '00000', 1, '1.4.0');
 
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
