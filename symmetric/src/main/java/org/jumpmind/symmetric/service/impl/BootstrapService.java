@@ -76,8 +76,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private boolean initialized = false;
 
     public void setupDatabase() {
-        if (!initialized) {
-            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE)) {
+        setupDatabase(false);
+    }
+    
+    public void setupDatabase(boolean force) {
+        if (!initialized || force) {
+            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
                 logger.info("Initializing SymmetricDS database.");
                 dbDialect.initConfigDb();
                 parameterService.rereadParameters();
