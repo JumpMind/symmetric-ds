@@ -56,14 +56,6 @@
                             <entry>Unique identifier for a data</entry>
                         </row>
                         <row>
-                            <entry>channel_id</entry>
-                            <entry>varchar(50)</entry>
-                            <entry>N</entry>
-                            <entry>FK</entry>
-                            <entry></entry>
-                            <entry>The channel that this data belongs to, such as "prices"</entry>
-                        </row>
-                        <row>
                             <entry>table_name</entry>
                             <entry>varchar(50)</entry>
                             <entry>N</entry>
@@ -121,17 +113,6 @@
                             <entry>
                                 The foreign key to the Trigger Hist entry that contains the primary
                                 key and column names for the table being synchronized.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>transaction_id</entry>
-                            <entry>varchar(1000)</entry>
-                            <entry>Y</entry>
-                            <entry></entry>
-                            <entry></entry>
-                            <entry>
-                                An optional transaction identifier that links multiple data changes
-                                together as the same transaction.
                             </entry>
                         </row>
                         <row>
@@ -356,6 +337,25 @@
                             <entry></entry>
                             <entry>The Node that will receive the Data.</entry>
                         </row>
+                        <row>
+                            <entry>channel_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>FK</entry>
+                            <entry></entry>
+                            <entry>The channel that this data belongs to, such as "prices"</entry>
+                        </row>                        
+                        <row>
+                            <entry>transaction_id</entry>
+                            <entry>varchar(1000)</entry>
+                            <entry>Y</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>
+                                An optional transaction identifier that links multiple data changes
+                                together as the same transaction.
+                            </entry>
+                        </row>                        
                         <row>
                             <entry>batch_id</entry>
                             <entry>integer</entry>

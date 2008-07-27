@@ -146,6 +146,17 @@
                                 attempted every ten minutes by default.
                             </entry>
                         </row>
+                        <row>
+                            <entry>timezone_offset</entry>
+                            <entry>varchar(6)</entry>
+                            <entry>Y</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>
+                                The timezone offset in RFC822 format at the time of the last heartbeat.
+                            </entry>
+                        </row>
+                        
                     </tbody>
                 </tgroup>
             </table>
