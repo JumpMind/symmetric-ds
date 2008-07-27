@@ -279,6 +279,18 @@
                     </para>
                 </listitem>
             </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>db.spring.bean.name</command>
+                </term>
+                <listitem>
+                    <para>
+                        The name of a Spring bean to use as the DataSource.  If you want to use a different
+                        DataSource other than the provided DBCP version that SymmetricDS uses out of the box,
+                        you may set this to be the Spring bean name of your DataSource.
+                    </para>
+                </listitem>
+            </varlistentry>                        
         </variablelist>
     </section>
     <section>

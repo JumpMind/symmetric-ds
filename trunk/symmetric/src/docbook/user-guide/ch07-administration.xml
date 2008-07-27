@@ -95,4 +95,13 @@
         <title>Viewing Batches</title>
         <para></para>
     </section>
+    <section>
+        <title>JMX</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Statistics</title>
+        <para></para>
+    </section>
+    
 </chapter>
