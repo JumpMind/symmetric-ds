@@ -806,4 +806,73 @@
             </table>
         </para>
     </section>
+    <section>
+        <title>Parameter</title>
+        <para>
+            The Parameter table provides a way to manage most SymmetricDS settings in the database.
+        </para>
+        <para>
+            <table>
+                <title>Parameter</title>
+                <tgroup cols="6">
+                    <colspec colwidth="115px" />
+                    <colspec colwidth="65px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="40px" />
+                    <colspec colwidth="250px" />
+                    <thead>
+                        <row>
+                            <entry>Column Name</entry>
+                            <entry>Type</entry>
+                            <entry>Null</entry>
+                            <entry>Key</entry>
+                            <entry>Default</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>external_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>PK</entry>
+                            <entry></entry>
+                            <entry>Target the parameter at a specific external id.  To target all nodes, use the value of 'ALL.'</entry>
+                        </row>
+                        <row>
+                            <entry>node_group_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>PK FK</entry>
+                            <entry></entry>
+                            <entry>
+                                Target the parameter at a specific node group id.  To target all groups, use the value of 'ALL.'
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>param_key</entry>
+                            <entry>varchar(100)</entry>
+                            <entry>N</entry>
+                            <entry>PK</entry>
+                            <entry></entry>
+                            <entry>
+                                The name of the parameter.
+                            </entry>
+                        </row>
+                        <row>
+                            <entry>param_value</entry>
+                            <entry>varchar(1000)</entry>
+                            <entry>N</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>
+                                The value of the parameter.
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </para>
+    </section>    
 </section>
