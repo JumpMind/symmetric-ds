@@ -27,6 +27,8 @@ package org.jumpmind.symmetric.service;
 public interface IBootstrapService {
 
     public void setupDatabase();
+    
+    public void setupDatabase(boolean force);
 
     public void syncTriggers();
 
