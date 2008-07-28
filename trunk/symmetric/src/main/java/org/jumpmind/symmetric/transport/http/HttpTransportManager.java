@@ -35,6 +35,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
@@ -157,7 +158,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
      * first, if it is null or blank, then use the registration url instead.
      */
     private String chooseURL(Node remote) {
-        if (StringUtils.isBlank(remote.getSyncURL())) {
+        if (StringUtils.isBlank(remote.getSyncURL()) || remote.getSyncURL().startsWith(Constants.PROTOCOL_NONE)) {
             logger
                     .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
             return parameterService.getRegistrationUrl();
