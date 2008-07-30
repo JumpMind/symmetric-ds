@@ -172,7 +172,7 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>never</forkMode>
+                    <forkMode>once</forkMode>
                     <systemProperties>
                         <property>
                             <name>javassist-write-dir</name>
