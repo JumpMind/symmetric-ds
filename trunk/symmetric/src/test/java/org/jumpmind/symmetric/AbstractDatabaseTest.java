@@ -42,6 +42,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.ITest;
+import org.testng.annotations.AfterTest;
 
 abstract public class AbstractDatabaseTest extends AbstractTest implements ITest {
 
@@ -58,6 +59,14 @@ abstract public class AbstractDatabaseTest extends AbstractTest implements ITest
 
     public String getTestName() {
         return getDatabaseName();
+    }
+    
+    @AfterTest
+    public void done () {
+        SymmetricEngine e = this.engine.get(getDatabaseName());
+        if (e != null) {
+            e.stop();
+        }
     }
 
     File getSymmetricFile() {
