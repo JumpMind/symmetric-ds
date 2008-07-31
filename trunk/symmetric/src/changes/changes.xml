@@ -37,10 +37,6 @@
                 response is sent. This solution relies on HTTP keep-alive.
             </action>
             <action dev="chenson42" type="add">
-                Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to
-                define their own DataSource.
-            </action>
-            <action dev="chenson42" type="add">
                 Added a new plug-in point, the IBatchListener. This new interface gives the end user a chance to do
                 something with a group of data rows that are in the same batch. See XmlJmsPublisher for an usage
                 example.
