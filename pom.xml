@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric-ds</artifactId>
     <packaging>jar</packaging>
-    <version>1.3.4-SNAPSHOT</version>
+    <version>1.3.4</version>
     <name>SymmetricDS</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -13,9 +13,9 @@
         'retail store' databases and a centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.3</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.3</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.3</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.3.4</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.3.4</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-ds-1.3.4</url>
     </scm>
     <issueManagement>
         <system>SourceForge</system>
