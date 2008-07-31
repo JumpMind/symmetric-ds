@@ -1,0 +1,33 @@
+ ------
+ Developing With Eclipse
+ ------
+ ------
+ Date
+ ------ 
+
+Developing With Eclipse
+
+ Install the {{{http://www.eclipse.org/}Eclipse}} Integrated Developer Environment
+
+ Install Polarion's {{{http://www.polarion.org/index.php?page=download&project=subversive} Subversive}}
+ plug-in for Eclipse to enable 
+
+ Install {{{http://maven.apache.org/}Maven}} build manager.  Make sure the Maven "bin" directory is
+ in your system path.
+
+ Import the {{{/symmetric.psf}symmetric.psf}} project set file in Eclipse.  Go to File->Import, then select
+ Team, Team Project Set.
+
+ Configure the Maven repository variable for Eclipse.  Select the "symmetric" project and
+ go to Window->Preferences.  In the tree, select Java->Build Path->Classpath Variables.
+ Click the New button and enter "M2_REPO" with a value of your ".m2" directory.
+ (Windows: C:\Documents and Settings\user\.m2, Unix: /home/user/.m2)
+ 
+ Common Maven tasks are accessible through Eclipse external tools.  Go to 
+ Run->External Tools->External Tools.  The following tasks are avalable:
+
+    * Symmetric Eclipse
+
+    * Symmetric Compile and Package Only
+
+    * Symmetric Test and Package
