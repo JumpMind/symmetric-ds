@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Assert;

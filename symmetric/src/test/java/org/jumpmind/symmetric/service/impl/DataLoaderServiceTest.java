@@ -38,9 +38,6 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.csvreader.CsvWriter;
@@ -62,18 +59,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Logger.getLogger(DataLoaderService.class).setLevel(level);
         Logger.getLogger(CsvLoader.class).setLevel(level);
         return old;
-    }
-
-    /**
-     * Make sure the symmetric engine is initialized.
-     * 
-     * @BeforeMethod was used intentionally to make sure the engine is
-     *               initialized right before the tests run.
-     * @BeforeTest ran too early for the MultiDatabaseTest.
-     */
-    @Before
-    public void init() {
-        getSymmetricEngine();
     }
 
     @Test
