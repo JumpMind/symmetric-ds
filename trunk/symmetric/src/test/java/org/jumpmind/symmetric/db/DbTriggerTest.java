@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -147,6 +148,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     @Test
+    @ParameterExcluder("postgres")
     public void validateTransactionFunctionailty() throws Exception {
         final JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(

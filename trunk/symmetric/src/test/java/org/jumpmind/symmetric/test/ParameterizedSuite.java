@@ -38,6 +38,12 @@ public class ParameterizedSuite extends CompositeRunner {
     public static @interface ParameterMatcher {
         String[] value();
     }
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public static @interface ParameterExcluder {
+        String[] value();
+    }
 
     static class TestClassRunnerForParameters extends JUnit4ClassRunner {
         private final Object[] fParameters;
@@ -64,6 +70,22 @@ public class ParameterizedSuite extends CompositeRunner {
                         for (String matchValue : matchValues) {
                             if (p != null && p.toString().equals(matchValue)) {
                                 remove = false;
+                            }                            
+                        }
+                    }
+                    if (remove) {
+                        iterator.remove();
+                    }
+                }
+                
+                ParameterExcluder excluder = method.getAnnotation(ParameterExcluder.class);
+                if (excluder != null) {
+                    boolean remove = false;
+                    for (Object p : fParameters) {
+                        String[] excludeValues = excluder.value();
+                        for (String excludeValue : excludeValues) {
+                            if (p != null && p.toString().equals(excludeValue)) {
+                                remove = true;
                             }                            
                         }
                     }
