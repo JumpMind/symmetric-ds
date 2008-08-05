@@ -20,15 +20,24 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IPurgeService;
-import org.testng.annotations.Test;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.junit.Test;
 
 public class PurgeServiceTest extends AbstractDatabaseTest {
-    @Test(groups = "continuous")
+        
+    public PurgeServiceTest() throws Exception {
+        super();
+    }
+
+    public PurgeServiceTest(String dbName) {
+        super(dbName);
+    }
+
+    @Test
     public void testThatPurgeExecutes() {
-        IPurgeService service = (IPurgeService) getBeanFactory().getBean(Constants.PURGE_SERVICE);
+        IPurgeService service = find(Constants.PURGE_SERVICE);
         service.purge();
     }
 }

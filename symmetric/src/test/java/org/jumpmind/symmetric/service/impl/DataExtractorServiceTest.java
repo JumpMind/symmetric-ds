@@ -23,21 +23,20 @@ package org.jumpmind.symmetric.service.impl;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.mock.MockOutgoingTransport;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
@@ -51,33 +50,41 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     protected Node node;
 
-    @BeforeTest(groups = "continuous")
-    protected void setUp() {
-        dataExtractorService = (IDataExtractorService) getBeanFactory().getBean(Constants.DATAEXTRACTOR_SERVICE);
-        configurationService = (IConfigurationService) getBeanFactory().getBean(Constants.CONFIG_SERVICE);
-        dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
+    public DataExtractorServiceTest() throws Exception {
+        super();
+    }
+
+    public DataExtractorServiceTest(String dbName) {
+        super(dbName);
+    }
+
+    @Before
+    public void setUp() {
+        dataExtractorService = (IDataExtractorService) find(Constants.DATAEXTRACTOR_SERVICE);
+        configurationService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
+        dataService = (IDataService) find(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         Set<Long> histKeys = configurationService.getHistoryRecords().keySet();
-        Assert.assertFalse(histKeys.isEmpty());
+        assertFalse(histKeys.isEmpty());
         triggerHistId = histKeys.iterator().next().intValue();
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testInitialLoadExtract() throws Exception {
-        ((IBootstrapService) getBeanFactory().getBean(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
+        ((IBootstrapService) find(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX
                 + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP), mockTransport);
         String loadResults = mockTransport.toString();
-        Assert.assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
-        Assert.assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
+        assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
+        assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
                 "Did not find expected insert for CORP");
-        Assert.assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
+        assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testExtract() throws Exception {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
@@ -88,7 +95,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
 
-        Assert.assertEquals(countLines(loadResults), 8, "Unexpected number of lines in the transport result: "
+        assertEquals(countLines(loadResults), 8, "Unexpected number of lines in the transport result: "
                 + loadResults);
     }
 

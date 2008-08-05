@@ -32,15 +32,15 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.mock.MockTransportManager;
+import org.junit.Assert;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.testng.Assert;
 
 import com.csvreader.CsvWriter;
 
@@ -63,7 +63,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     private MockTransportManager transportManager;
 
-    public AbstractDataLoaderTest() {
+    public AbstractDataLoaderTest() throws Exception {
     }
 
     public AbstractDataLoaderTest(String dbType) {
@@ -79,21 +79,21 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected IIncomingBatchService getIncomingBatchService() {
         if (incomingBatchService == null) {
-            incomingBatchService = (IIncomingBatchService) getBeanFactory().getBean(Constants.INCOMING_BATCH_SERVICE);
+            incomingBatchService = (IIncomingBatchService) find(Constants.INCOMING_BATCH_SERVICE);
         }
         return incomingBatchService;
     }
 
     protected IDataLoaderService getDataLoaderService() {
         if (dataLoaderService == null) {
-            dataLoaderService = (IDataLoaderService) getBeanFactory().getBean(Constants.DATALOADER_SERVICE);
+            dataLoaderService = (IDataLoaderService) find(Constants.DATALOADER_SERVICE);
             dataLoaderService.setTransportManager(transportManager);
         }
         return dataLoaderService;
     }
 
     protected String printDatabase() {
-        return " The database we are testing against is " + getDatabaseName() + ".";
+        return " The database we are testing against is " + database + ".";
     }
 
     @SuppressWarnings("unchecked")
@@ -147,9 +147,9 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected void assertEquals(String[] name, String[] expected, Map<String, Object> results) {
         if (expected == null) {
-            Assert.assertNull(results, "Expected empty results. " + printDatabase());
+            Assert.assertNull("Expected empty results. " + printDatabase(), results);
         } else {
-            Assert.assertNotNull(results, "Expected non-empty results. " + printDatabase());
+            Assert.assertNotNull("Expected non-empty results. " + printDatabase(), results);
             for (int i = 0; i < expected.length; i++) {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;
@@ -165,7 +165,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                     resultValue = resultObj.toString();
                 }
 
-                Assert.assertEquals(resultValue, expected[i], name[i] + ". " + printDatabase());
+                Assert.assertEquals(name[i] + ". " + printDatabase(), expected[i], resultValue);
             }
         }
     }

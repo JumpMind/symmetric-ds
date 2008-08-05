@@ -21,6 +21,7 @@ package org.jumpmind.symmetric;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
@@ -54,9 +55,14 @@ public class SymmetricWebServer {
     protected Server server;
 
     protected boolean join = true;
-    
+
     protected String webHome = "/sync";
 
+    public SymmetricWebServer() {}
+    
+    public SymmetricWebServer(SymmetricEngine engine) {
+        this.contextListener = new SymmetricEngineContextLoaderListener(engine);
+    }
     public void start(int port, String propertiesUrl) throws Exception {
         System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
         start(port);
@@ -95,29 +101,53 @@ public class SymmetricWebServer {
         logger.info("About to start SymmetricDS web server on port " + port);
         server.start();
 
-        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
-
-        if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
-            final int JMX_PORT = port + 1;
-            logger.info("Starting JMX HTTP console on port " + JMX_PORT);
-            MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
-
-            ObjectName name = new ObjectName("Server:name=HttpAdaptor");
-            mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            mbeanServer.setAttribute(name, new Attribute("Port", new Integer(JMX_PORT)));
-            ObjectName processorName = new ObjectName("Server:name=XSLTProcessor");
-            mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
-            mbeanServer.setAttribute(name, new Attribute("ProcessorName", processorName));
-            mbeanServer.invoke(name, "start", null, null);
-        }
+        registerHttpJmxAdaptor(port + 1);
 
         if (join) {
             server.join();
         }
     }
 
+    protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
+        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
+        if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
+            logger.info("Starting JMX HTTP console on port " + jmxPort);
+            MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
+            ObjectName name = getHttpJmxAdaptorName();
+            mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
+            mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
+            ObjectName processorName = getXslJmxAdaptorName();
+            mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
+            mbeanServer.setAttribute(name, new Attribute("ProcessorName", processorName));
+            mbeanServer.invoke(name, "start", null, null);
+        }
+    }
+
+    protected ObjectName getHttpJmxAdaptorName() throws MalformedObjectNameException {
+        return new ObjectName("Server:name=HttpAdaptor");
+    }
+    
+    protected ObjectName getXslJmxAdaptorName() throws MalformedObjectNameException {
+        return new ObjectName("Server:name=XSLTProcessor");
+    }
+    
+
+    protected void removeHttpJmxAdaptor() {
+        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
+        if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
+            try {
+                MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
+                mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
+                mbeanServer.unregisterMBean(getXslJmxAdaptorName());
+            } catch (Exception e) {
+                logger.warn("Could not unregister the JMX HTTP Adaptor");
+            }
+        }
+    }
+
     public void stop() throws Exception {
         if (server != null) {
+            removeHttpJmxAdaptor();
             server.stop();
         }
     }

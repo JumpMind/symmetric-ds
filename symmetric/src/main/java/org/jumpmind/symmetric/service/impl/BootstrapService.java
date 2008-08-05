@@ -228,6 +228,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             if (!loadFromScriptIfProvided()) {
                 logger
                         .info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");
+                // TODO
+                //nodeService.insertIdentity();
             }
         } else {
             throw new IllegalStateException(

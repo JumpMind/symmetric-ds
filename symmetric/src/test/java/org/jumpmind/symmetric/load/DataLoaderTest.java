@@ -28,26 +28,26 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
+import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.TransportUtils;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.csvreader.CsvWriter;
 
 public class DataLoaderTest extends AbstractDataLoaderTest {
 
-    public DataLoaderTest() {
+    public DataLoaderTest() throws Exception {
     }
 
     public DataLoaderTest(String db) {
         super(db);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testInsertExisting() throws Exception {
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
                 "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
@@ -59,7 +59,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testUpdateNotExisting() throws Exception {
         String id = getNextId();
         String[] values = { id, "it's /a/  string", "it's  -not-  null", "You're a \"character\"", "Where are you?",
@@ -69,7 +69,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.UPDATE, values, expectedValues);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringQuotes() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -80,7 +80,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringSpaces() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -91,7 +91,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringOneSpace() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -99,7 +99,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringEmpty() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -107,14 +107,14 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringNull() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testStringBackslash() throws Exception {
         String[] values = new String[10];
         values[0] = getNextId();
@@ -127,7 +127,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testDeleteExisting() throws Exception {
         String[] values = { getNextId(), "a row to be deleted", "testDeleteExisting", "char2", "char not null2",
                 "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
@@ -136,12 +136,12 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.DELETE, new String[] { getId() }, null);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testDeleteNotExisting() throws Exception {
         testSimple(CsvConstants.DELETE, new String[] { getNextId() }, null);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testColumnNotExisting() throws Exception {
         String[] columns = (String[]) ArrayUtils.add(TEST_COLUMNS, "Unknown_Column");
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char", "char not null",
@@ -163,7 +163,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         assertTestTableEquals(values[0], expectedValues);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testTableNotExisting() throws Exception {
         String tableName = "UnknownTable";
         String[] keys = { "id" };
@@ -190,7 +190,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         assertTestTableEquals(values[0], values);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void testLargeColumn() throws Exception {
         String tableName = "UnknownTable";
         String[] keys = { "id" };
@@ -228,7 +228,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         dataLoader.close();
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         // TODO: this used to run in 1 second; can we do some optimization?
-        Assert.assertTrue(totalSeconds <= 4.0, "DataLoader running in " + totalSeconds + " is too slow");
+        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 4.0);
     }
 
     protected void load(ByteArrayOutputStream out) throws Exception {
@@ -242,7 +242,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     }
 
     protected IDataLoader getDataLoader() {
-        return (IDataLoader) getBeanFactory().getBean(Constants.DATALOADER);
+        return (IDataLoader) find(Constants.DATALOADER);
     }
 
 }

@@ -23,13 +23,11 @@ package org.jumpmind.symmetric.util;
 import java.io.IOException;
 import java.util.Random;
 
-import org.jumpmind.symmetric.util.MeteredOutputStream;
-
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 public class MeteredOutputStreamTest {
 
-    @Test(groups = "continuous")
+    @Test
     public static void testBasic() throws IOException {
         final long rate = 5 * 1024;
         final long count = 20;
@@ -51,14 +49,9 @@ public class MeteredOutputStreamTest {
                 System.out.print('#');
             }
         }
-        System.out.println();
 
         double expectedTime = (bufferSize * count) / rate;
         double actualTime = (System.currentTimeMillis() - start + 1) / 1000;
-        // System.out.println("Configured rate: " + rate);
-        // System.out.println("Actual rate: " + (i * bufferSize / actualTime));
-        // System.out.println("Expected time: " + expectedTime);
-        // System.out.println("Actual time: " + actualTime);
         assert (actualTime >= expectedTime - 2 && actualTime <= expectedTime + 2);
     }
 }
