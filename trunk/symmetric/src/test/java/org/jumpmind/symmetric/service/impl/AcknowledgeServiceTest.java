@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -40,10 +38,13 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.jdbc.core.RowMapper;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+
 
 public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
@@ -53,14 +54,22 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
     protected IDataService dataService;
 
-    @BeforeTest(groups = "continuous")
-    protected void setUp() {
-        ackService = (IAcknowledgeService) getBeanFactory().getBean(Constants.ACKNOWLEDGE_SERVICE);
-        outgoingBatchService = (IOutgoingBatchService) getBeanFactory().getBean(Constants.OUTGOING_BATCH_SERVICE);
-        dataService = (IDataService) getBeanFactory().getBean(Constants.DATA_SERVICE);
+    public AcknowledgeServiceTest() throws Exception {
+        super();
     }
 
-    @Test(groups = "continuous")
+    public AcknowledgeServiceTest(String dbName) {
+        super(dbName);
+    }
+
+    @Before
+    public void setUp() {
+        ackService = (IAcknowledgeService)find(Constants.ACKNOWLEDGE_SERVICE);
+        outgoingBatchService = (IOutgoingBatchService)find(Constants.OUTGOING_BATCH_SERVICE);
+        dataService = (IDataService)find(Constants.DATA_SERVICE);
+    }
+
+    @Test
     public void okTest() {
         cleanSlate();
         ackService.ack(new BatchInfo(1));
@@ -77,7 +86,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_PREFIX + "outgoing_batch_hist", TestConstants.TEST_PREFIX + "outgoing_batch");
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void unspecifiedErrorTest() {
         cleanSlate();
         OutgoingBatch batch = createOutgoingBatch();
@@ -85,7 +94,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         errorTestCore(batch.getBatchId(), -1, -1);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void errorTest() {
         cleanSlate();
         OutgoingBatch batch = createOutgoingBatch();
@@ -93,7 +102,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         errorTestCore(batch.getBatchId(), 3, dataId[2]);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void errorTestBoundary1() {
         cleanSlate();
         OutgoingBatch batch = createOutgoingBatch();
@@ -101,7 +110,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         errorTestCore(batch.getBatchId(), 1, dataId[0]);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void errorTestBoundary2() {
         cleanSlate();
         OutgoingBatch batch = createOutgoingBatch();
@@ -109,7 +118,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         errorTestCore(batch.getBatchId(), 5, dataId[dataId.length - 1]);
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void errorErrorTest() {
         cleanSlate();
         OutgoingBatch batch = createOutgoingBatch();

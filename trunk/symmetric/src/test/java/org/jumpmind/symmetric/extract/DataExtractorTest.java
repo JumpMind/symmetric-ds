@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -38,13 +37,15 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
 
 public class DataExtractorTest extends AbstractDatabaseTest {
+    
     private static final String CONTEXT_NAME = "extractorContext";
 
     private static final String TABLE_NAME = "table1";
@@ -66,20 +67,30 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
     private final TestData TD4 = new TestData(997, "bar", "\"monday\", 879, \"ggg\"", "6502", "basket_id",
             "grape, tomato, cucumber");
+    
+    
 
-    @BeforeTest(groups = "continuous")
-    protected void setUp() {
-        dataExtractor = (IDataExtractor) getBeanFactory().getBean(Constants.DATA_EXTRACTOR);
-        parameterService = (IParameterService) getBeanFactory().getBean(Constants.PARAMETER_SERVICE);
-        dbDialect = (IDbDialect) getBeanFactory().getBean(Constants.DB_DIALECT);
+    public DataExtractorTest() throws Exception {
+        super();
     }
 
-    @Test(groups = "continuous")
+    public DataExtractorTest(String dbName) {
+        super(dbName);
+    }
+
+    @Before
+    public void setUp() {
+        dataExtractor = (IDataExtractor) find(Constants.DATA_EXTRACTOR);
+        parameterService = (IParameterService) find(Constants.PARAMETER_SERVICE);
+        dbDialect = (IDbDialect) find(Constants.DB_DIALECT);
+    }
+
+    @Test
     public void basicTest() {
         TriggerHistory audit = makeTableSyncAuditId(TD1.keyColumns, TD1.columns);
 
         try {
-            DataExtractorContext context = (DataExtractorContext) getBeanFactory().getBean(CONTEXT_NAME);
+            DataExtractorContext context = (DataExtractorContext) find(CONTEXT_NAME);
 
             StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter);
@@ -104,18 +115,18 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.flush();
             Assert.assertEquals(stringWriter.toString(), em.toString());
         } catch (IOException e) {
-            Assert.fail("BasicTeset failed", e);
+            Assert.fail("BasicTeset failed");
         }
 
-        cleanup();
+        reset();
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void biggerTest() {
         TriggerHistory audit = makeTableSyncAuditId(TD1.keyColumns, TD1.columns);
 
         try {
-            DataExtractorContext context = (DataExtractorContext) getBeanFactory().getBean(CONTEXT_NAME);
+            DataExtractorContext context = (DataExtractorContext) find(CONTEXT_NAME);
 
             StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter);
@@ -144,16 +155,16 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.flush();
             Assert.assertEquals(stringWriter.toString(), em.toString());
         } catch (IOException e) {
-            Assert.fail("BasicTeset failed", e);
+            Assert.fail("BasicTeset failed");
         }
 
-        cleanup();
+        reset();
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void notherTest() {
         try {
-            DataExtractorContext context = (DataExtractorContext) getBeanFactory().getBean(CONTEXT_NAME);
+            DataExtractorContext context = (DataExtractorContext) find(CONTEXT_NAME);
 
             StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter);
@@ -188,19 +199,19 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.flush();
             Assert.assertEquals(stringWriter.toString(), em.toString());
         } catch (IOException e) {
-            Assert.fail("BasicTest failed", e);
+            Assert.fail("BasicTest failed");
         }
 
-        cleanup();
+        reset();
     }
 
-    @Test(groups = "continuous")
+    @Test
     public void changingTables() {
         TriggerHistory audit = makeTableSyncAuditId(TD1.keyColumns, TD1.columns);
         TriggerHistory audit2 = makeTableSyncAuditId(TD4.keyColumns, TD4.columns);
 
         try {
-            DataExtractorContext context = (DataExtractorContext) getBeanFactory().getBean(CONTEXT_NAME);
+            DataExtractorContext context = (DataExtractorContext)find(CONTEXT_NAME);
 
             StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter);
@@ -235,13 +246,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.flush();
             Assert.assertEquals(stringWriter.toString(), em.toString());
         } catch (IOException e) {
-            Assert.fail("BasicTeset failed", e);
+            Assert.fail("BasicTeset failed");
         }
 
-        cleanup();
+        reset();
     }
 
-    protected void cleanup() {
+    protected void reset() {
         this.getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection connection) throws SQLException, DataAccessException {
                 Statement s = connection.createStatement();
@@ -339,7 +350,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
                 writer.flush();
                 return base.toString();
             } catch (IOException e) {
-                Assert.fail("", e);
+                Assert.fail();
             }
             return null;
         }
@@ -353,7 +364,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
                     String out = base.toString();
                     return out.equals(s);
                 } catch (IOException e) {
-                    Assert.fail("", e);
+                    Assert.fail();
                 }
             }
 

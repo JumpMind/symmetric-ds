@@ -25,24 +25,22 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.TestConstants;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
-@Test
 public class DbTriggerTest extends AbstractDatabaseTest {
 
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);
@@ -69,7 +67,15 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
-    @Test(groups = "continuous")
+    public DbTriggerTest() throws Exception {
+        super();
+    }
+
+    public DbTriggerTest(String dbName) {
+        super(dbName);
+    }
+
+    @Test
     public void testBootstrapSchemaSync() throws Exception {
         IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
                 "bootstrapService");
@@ -95,8 +101,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         service.syncTriggers();
 
         // check to see that we recorded the rebuilds
-        Assert.assertEquals(getTriggerHistTableRowCount(getSymmetricEngine()), count,
-                "Wrong trigger_hist row count. engine=" + getDbDialect(getSymmetricEngine()).getPlatform().getName());
+        assertEquals(getTriggerHistTableRowCount(getSymmetricEngine()), count, "Wrong trigger_hist row count. engine="
+                + getDbDialect(getSymmetricEngine()).getPlatform().getName());
     }
 
     private JdbcTemplate getJdbcTemplate(SymmetricEngine engine) {
@@ -112,7 +118,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
     }
 
-    @Test(groups = "continuous", dependsOnMethods = "testBootstrapSchemaSync")
+    @Test
     public void validateTestTableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
 
@@ -126,7 +132,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Test(groups = "continuous", dependsOnMethods = "validateTestTableTriggers")
+    @Test
     public void testInitialLoadSql() throws Exception {
         IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
                 "configurationService");
@@ -134,13 +140,13 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         String sql = getDbDialect(getSymmetricEngine()).createInitalLoadSqlFor(new Node("1", null, "1.0"),
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
         List<String> csvStrings = getJdbcTemplate(getSymmetricEngine()).queryForList(sql, String.class);
-        Assert.assertTrue(csvStrings.size() > 0);
+        assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
-        Assert.assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
+        assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 
-    @Test(groups = "continuous", dependsOnMethods = "testInitialLoadSql")
+    @Test
     public void validateTransactionFunctionailty() throws Exception {
         final JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
@@ -156,13 +162,13 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
         String batchId = (String) jdbcTemplate.queryForObject(sql, String.class);
 
-        IDbDialect dbDialect = (IDbDialect) getSymmetricEngine().getApplicationContext().getBean(Constants.DB_DIALECT);
+        IDbDialect dbDialect = getDbDialect();
         if (dbDialect.supportsTransactionId()) {
-            Assert.assertNotNull(batchId);
+            assertNotNull(batchId);
         }
     }
 
-    @Test(groups = "continuous", dependsOnMethods = "validateTransactionFunctionailty")
+    @Test
     public void testExcludedColumnsFunctionality() throws Exception {
         IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
@@ -171,7 +177,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
-        Assert.assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
+        assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
                 + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
                 + TEST_TRIGGER_WHERE_CLAUSE));
 
@@ -180,18 +186,18 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
                 .getBean(Constants.CONFIG_SERVICE);
         Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
+        assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
+        assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
 
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
     }
 
-    @Test(groups = "continuous", dependsOnMethods = "testExcludedColumnsFunctionality")
+    @Test
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         getDbDialect(getSymmetricEngine()).disableSyncTriggers();
@@ -203,7 +209,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
     }
 
-    @Test(groups = "continuous", dependsOnMethods = "testDisableTriggers")
+    @Test
     public void testTargetTableNameFunctionality() throws Exception {
 
         final String TARGET_TABLE_NAME = "SOME_OTHER_TABLE_NAME";
@@ -214,23 +220,22 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
-        Assert.assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
-                + "trigger set target_table_name='" + TARGET_TABLE_NAME + "', last_updated_time=current_timestamp "
-                + TEST_TRIGGER_WHERE_CLAUSE));
+        assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set target_table_name='"
+                + TARGET_TABLE_NAME + "', last_updated_time=current_timestamp " + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
 
         IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
                 .getBean(Constants.CONFIG_SERVICE);
         Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        Assert.assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
+        assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
+        assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
 
         String tableName = getNextDataRowTableName(getSymmetricEngine());
-        Assert.assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
+        assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
     }
 
     private int[] filterTypes(int[] types) {

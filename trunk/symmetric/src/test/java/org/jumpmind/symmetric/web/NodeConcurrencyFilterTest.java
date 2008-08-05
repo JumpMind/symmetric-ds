@@ -8,25 +8,32 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.symmetric.AbstractDatabaseTest;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
+import org.junit.Assert;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
-    @Test(groups = "continuous", timeOut = 60000)
+    public NodeConcurrencyFilterTest() throws Exception {
+        super();
+    }
+
+    public NodeConcurrencyFilterTest(String dbName) {
+        super(dbName);
+    }
+
+    @Test(timeout = 60000)
     public void testPullConcurrency() throws Exception {
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, 3);
 
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) getBeanFactory().getBean(
-                Constants.NODE_CONCURRENCY_FILTER);
+        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
 
         MockWorker one = new MockWorker("00001", filter, "pull", "GET");
         MockWorker two = new MockWorker("00002", filter, "pull", "GET");
@@ -71,16 +78,14 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
     }
 
-    @Test(groups = "continuous", timeOut = 60000)
+    @Test(timeout = 60000)
     public void testPushConcurrency() throws Exception {
         IParameterService parameterService = getParameterService();
         parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS, 2);
 
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) getBeanFactory().getBean(
-                Constants.NODE_CONCURRENCY_FILTER);
+        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
 
-        IConcurrentConnectionManager manager = (IConcurrentConnectionManager) getBeanFactory().getBean(
-                Constants.CONCURRENT_CONNECTION_MANGER);
+        IConcurrentConnectionManager manager = (IConcurrentConnectionManager) find(Constants.CONCURRENT_CONNECTION_MANGER);
 
         MockWorker one = new MockWorker("00001", filter, "push", "HEAD");
         MockWorker two = new MockWorker("00002", filter, "push", "HEAD");

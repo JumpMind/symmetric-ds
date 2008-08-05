@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
@@ -14,7 +15,9 @@
     </description>
     <scm>
         <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</developerConnection>
+        <developerConnection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </developerConnection>
         <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</url>
     </scm>
     <issueManagement>
@@ -169,14 +172,6 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>once</forkMode>
-                    <systemProperties>
-                        <property>
-                            <name>javassist-write-dir</name>
-                            <value>target/transformed-classes</value>
-                        </property>
-                    </systemProperties>
-                    <groups>continuous,integration,mysql</groups>
                     <additionalClasspathElements>
                         <additionalClasspathElement>
                             ${user.home}\.symmetricds\lib\ojdbc6.jar
@@ -188,6 +183,9 @@
                             ${user.home}\.symmetricds\lib\ojdbc14.jar
                         </additionalClasspathElement>
                     </additionalClasspathElements>
+                    <includes>
+                        <include>**/*TestSuite.java</include>
+                    </includes>
                 </configuration>
             </plugin>
             <plugin>
@@ -314,20 +312,6 @@
             include JSF, Servlet API, JSP API, EL, JPA API.  
         -->
 
-        <!-- Test NG -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>5.8</version>
-            <classifier>jdk15</classifier>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
