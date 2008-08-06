@@ -56,6 +56,16 @@ public class AbstractIntegrationTest {
     protected String printRootAndClientDatabases() {
         return " The root database is " + root + " and the client database is " + client + ".";
     }
+    
+    @SuppressWarnings("unchecked")
+    protected <T> T findOnClient(String name) {
+        return (T) AppUtils.find(name, getClientEngine());
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected <T> T findOnRoot(String name) {
+        return (T) AppUtils.find(name, getRootEngine());
+    }
 
     @Before
     public void setupTemplates() {
