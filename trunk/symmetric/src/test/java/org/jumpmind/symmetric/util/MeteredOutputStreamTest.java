@@ -1,5 +1,3 @@
-package org.jumpmind.symmetric.util;
-
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
@@ -19,6 +17,7 @@ package org.jumpmind.symmetric.util;
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.util;
 
 import java.io.IOException;
 import java.util.Random;
