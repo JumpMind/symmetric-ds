@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 public class TestSetupUtil {
@@ -194,7 +195,7 @@ public class TestSetupUtil {
                 return propertiesFile;
 
             } else {
-                logger.error("Could not find a valid connection for " + databaseType);
+                Assert.fail("Could not find a valid connection for " + databaseType);
                 return null;
             }
         } catch (RuntimeException ex) {

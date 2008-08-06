@@ -159,18 +159,21 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(failureMessage, expected, actual);
     }
 
-    private void turnOnNoKeysInUpdateParameter() {
+    private boolean turnOnNoKeysInUpdateParameter(boolean newValue) {
         IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
                 .getBean(Constants.PARAMETER_SERVICE);
         IParameterService rootParameterService = (IParameterService) getRootEngine().getApplicationContext().getBean(
                 Constants.PARAMETER_SERVICE);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, true);
-        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, true);
+        Assert.assertEquals(clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE), rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
+        boolean oldValue = clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
+        rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
+        return oldValue;
     }
 
     @Test(timeout = 30000)
     public void syncToRoot() throws ParseException {
-        turnOnNoKeysInUpdateParameter();
+        turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "10", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
@@ -186,8 +189,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         getClientEngine().pull();
 
-        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine().getApplicationContext()
-                .getBean(Constants.OUTGOING_BATCH_SERVICE);
+        IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");
 
@@ -201,6 +203,21 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "12" }).size(), 1,
                 "The order record was not sync'd when it should have been.");
         // TODO: make sure event did not fire
+    }
+    
+    @Test //(timeout = 30000)
+    public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
+        boolean oldValue = turnOnNoKeysInUpdateParameter(true);
+        rootJdbcTemplate.update("insert into ONE_COLUMN_TABLE values(1)");
+        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1")==0);
+        getClientEngine().pull();
+        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1")==1);
+        rootJdbcTemplate.update("update ONE_COLUMN_TABLE set MY_ONE_COLUMN=1 where MY_ONE_COLUMN=1");
+        getClientEngine().pull();
+        IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
+        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");        
+        turnOnNoKeysInUpdateParameter(oldValue);
     }
 
     @Test(timeout = 30000)

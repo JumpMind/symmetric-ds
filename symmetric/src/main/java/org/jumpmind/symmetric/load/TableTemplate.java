@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
@@ -64,7 +65,7 @@ public class TableTemplate {
     private Table table;
 
     private String schema;
-    
+
     private String tableName;
 
     private String[] keyNames;
@@ -95,7 +96,7 @@ public class TableTemplate {
         this.dbDialect = dbDialect;
         this.setupColumnFilters(columnFilter, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
-        
+
         int periodIndex = tableName.indexOf(".");
         if (periodIndex != -1) {
             this.schema = tableName.substring(0, periodIndex);
@@ -174,59 +175,66 @@ public class TableTemplate {
     }
 
     /**
-     * This is in support of allowing update statements that don't use the keys
+     * This is in support of creating update statements that don't use the keys
      * in the set portion of the update statement.
+     * 
+     * @see ParameterConstants#DATA_LOADER_NO_KEYS_IN_UPDATE
      */
     private String[] removeKeysFromColumnValuesIfSame(IDataLoaderContext ctx, String[] keyValues, String[] columnValues) {
         if (keyIndexesToRemoveOnUpdate == null) {
             String[] colNames = ctx.getColumnNames();
             String[] keyNames = ctx.getKeyNames();
             String[] noKeyColNames = new String[colNames.length - keyNames.length];
-            keyIndexesToRemoveOnUpdate = new int[keyNames.length];
-            int indexToRemoveIndex = 0;
-            int indexOfNoKeyColNames = 0;
-            for (int index = 0; index < colNames.length; index++) {
-                if (ArrayUtils.contains(keyNames, colNames[index])) {
-                    keyIndexesToRemoveOnUpdate[indexToRemoveIndex++] = index;
-                } else {
-                    noKeyColNames[indexOfNoKeyColNames++] = colNames[index];
+            if (noKeyColNames.length > 0) {
+                keyIndexesToRemoveOnUpdate = new int[keyNames.length];
+                int indexToRemoveIndex = 0;
+                int indexOfNoKeyColNames = 0;
+                for (int index = 0; index < colNames.length; index++) {
+                    if (ArrayUtils.contains(keyNames, colNames[index])) {
+                        keyIndexesToRemoveOnUpdate[indexToRemoveIndex++] = index;
+                    } else {
+                        noKeyColNames[indexOfNoKeyColNames++] = colNames[index];
+                    }
                 }
+            } else {
+                keyIndexesToRemoveOnUpdate = new int[0];
             }
-
             noKeyColumnPlusKeyMetaData = getColumnMetaData((String[]) ArrayUtils.addAll(noKeyColNames, keyNames));
+
         }
 
-        if (noKeyColumnPlusKeyMetaData == null) {
-            String[] noKeys = new String[columnValues.length - keyValues.length];
-            int noKeysIndex = 0;
-            for (int index = 0; index < columnValues.length; index++) {
-                if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
-                    noKeys[noKeysIndex++] = columnValues[index];
+        if (keyIndexesToRemoveOnUpdate.length > 0) {
+            if (noKeyColumnPlusKeyMetaData == null) {
+                String[] noKeys = new String[columnValues.length - keyValues.length];
+                int noKeysIndex = 0;
+                for (int index = 0; index < columnValues.length; index++) {
+                    if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
+                        noKeys[noKeysIndex++] = columnValues[index];
+                    }
+                }
+                return noKeys;
+            }
+
+            boolean keyChanged = false;
+            for (int index = 0; index < keyIndexesToRemoveOnUpdate.length; index++) {
+                if (!StringUtils.equals(keyValues[index], columnValues[index])) {
+                    keyChanged = true;
                 }
             }
-            return noKeys;
-        }
 
-        boolean keyChanged = false;
-        for (int index = 0; index < keyIndexesToRemoveOnUpdate.length; index++) {
-            if (!StringUtils.equals(keyValues[index], columnValues[index])) {
-                keyChanged = true;
-            }
-        }
-
-        if (!keyChanged) {
-            String[] noKeys = new String[columnValues.length - keyValues.length];
-            int noKeysIndex = 0;
-            for (int index = 0; index < columnValues.length; index++) {
-                if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
-                    noKeys[noKeysIndex++] = columnValues[index];
+            if (!keyChanged) {
+                String[] noKeys = new String[columnValues.length - keyValues.length];
+                int noKeysIndex = 0;
+                for (int index = 0; index < columnValues.length; index++) {
+                    if (!ArrayUtils.contains(keyIndexesToRemoveOnUpdate, index)) {
+                        noKeys[noKeysIndex++] = columnValues[index];
+                    }
                 }
-            }
-            return noKeys;
+                return noKeys;
 
-        } else {
-            return null;
+            }
         }
+        return null;
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
