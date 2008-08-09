@@ -101,6 +101,15 @@ public class TestSetupUtil {
             rootServer = null;
         }
 
+        closeDerbyAndReloadDriver();
+    }
+    
+    /**
+     * Unit tests were failing after opening and closing several data connection pools against the 
+     * same database in memory.  After shutting down the connection pool, it seems to help by shutting
+     * down the entire database.
+     */
+    protected static void closeDerbyAndReloadDriver() throws SQLException {
         try {
             DriverManager.getConnection("jdbc:derby:;shutdown=true");            
         } catch (SQLException ex) {
@@ -111,7 +120,6 @@ public class TestSetupUtil {
         } catch (Exception ex) {
             // derby not in use ...
         }
-
     }
 
     public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb)
