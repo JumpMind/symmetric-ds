@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,6 +99,18 @@ public class TestSetupUtil {
             rootServer.stop();
             rootServer = null;
         }
+        
+        try {
+        DriverManager.getConnection("jdbc:derby:;shutdown=true");
+        logger.info("Just shutdown a derby database.");
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 50000) {
+                logger.info(ex.getMessage());
+            }
+        } catch (Exception ex) {
+            // derby not in use ...
+        }
+
     }
 
     public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb) throws Exception {
