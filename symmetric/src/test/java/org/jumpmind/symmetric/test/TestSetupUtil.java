@@ -85,7 +85,7 @@ public class TestSetupUtil {
         List<String[]> list = new ArrayList<String[]>();
         String[] dbs = getRootDbTypes(testPrefix);
         for (String string : dbs) {
-            list.add(new String[] {string});
+            list.add(new String[] { string });
         }
         return list;
     }
@@ -99,10 +99,10 @@ public class TestSetupUtil {
             rootServer.stop();
             rootServer = null;
         }
-        
+
         try {
-        DriverManager.getConnection("jdbc:derby:;shutdown=true");
-        logger.info("Just shutdown a derby database.");
+            DriverManager.getConnection("jdbc:derby:;shutdown=true");
+            logger.info("Just shutdown a derby database.");
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 50000) {
                 logger.info(ex.getMessage());
@@ -113,16 +113,16 @@ public class TestSetupUtil {
 
     }
 
-    public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb) throws Exception {
+    public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb)
+            throws Exception {
         if (rootDb != null) {
             rootServer = new SymmetricWebServer(new SymmetricEngine("file:"
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath()));
             dropAndCreateDatabaseTables(rootDb, rootServer.getEngine());
             IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, rootServer.getEngine());
             bootstrapService.setupDatabase();
-            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix),
-                    (DataSource) rootServer.getEngine().getApplicationContext().getBean(Constants.DATA_SOURCE), true)
-                    .execute();
+            new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), (DataSource) rootServer.getEngine()
+                    .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             rootServer.setJoin(false);
             rootServer.start(8888);
         }
@@ -264,10 +264,9 @@ public class TestSetupUtil {
         Properties properties = getTestProperties(testPrefix);
         return StringUtils.split(properties.getProperty(testPrefix + ".root"), ",");
     }
-    
 
-    public static MockHttpServletRequest createMockHttpServletRequest(ServletContext servletContext, String method, String uri,
-            Map<String, String> parameters) {
+    public static MockHttpServletRequest createMockHttpServletRequest(ServletContext servletContext, String method,
+            String uri, Map<String, String> parameters) {
         final String[] uriParts = StringUtils.split(uri, "?");
         final MockHttpServletRequest request = new MockHttpServletRequest(servletContext, method, uriParts[0]);
         if (uriParts.length > 1) {
