@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
+import org.apache.derby.jdbc.EmbeddedDriver;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
@@ -101,10 +102,10 @@ public class TestSetupUtil {
         }
 
         try {
-            DriverManager.getConnection("jdbc:derby:;shutdown=true");
-            logger.info("Just shutdown a derby database.");
+            DriverManager.getConnection("jdbc:derby:;shutdown=true");            
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 50000) {
+                DriverManager.registerDriver(new EmbeddedDriver());
                 logger.info(ex.getMessage());
             }
         } catch (Exception ex) {
