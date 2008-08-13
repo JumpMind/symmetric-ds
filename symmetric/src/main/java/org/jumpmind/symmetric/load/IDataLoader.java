@@ -50,15 +50,4 @@ public interface IDataLoader extends Cloneable {
 
     public IDataLoaderStatistics getStatistics();
 
-    public boolean isEnableFallbackInsert();
-
-    public boolean isEnableFallbackUpdate();
-
-    public boolean isAllowMissingDelete();
-
-    public void setEnableFallbackInsert(boolean enableFallbackInsert);
-
-    public void setEnableFallbackUpdate(boolean enableFallbackUpdate);
-
-    public void setAllowMissingDelete(boolean allowMissingDelete);
 }

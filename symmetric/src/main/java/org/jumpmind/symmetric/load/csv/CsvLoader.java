@@ -62,7 +62,7 @@ public class CsvLoader implements IDataLoader {
     protected IParameterService parameterService;
 
     protected IConfigurationService configurationService;
-    
+
     protected INodeService nodeService;
 
     protected CsvReader csvReader;
@@ -71,17 +71,9 @@ public class CsvLoader implements IDataLoader {
 
     protected DataLoaderStatistics stats;
 
-    protected boolean enableFallbackInsert;
-
-    protected boolean enableFallbackUpdate;
-
-    protected boolean allowMissingDelete;
-
     protected List<IDataLoaderFilter> filters;
 
     protected Map<String, IColumnFilter> columnFilters;
-    
-    protected Node sourceNode;
 
     public void open(BufferedReader reader) throws IOException {
         csvReader = new CsvReader(reader);
@@ -108,7 +100,6 @@ public class CsvLoader implements IDataLoader {
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
-                sourceNode = nodeService.findNode(tokens[1]);
             } else if (tokens[0].equals(CsvConstants.VERSION)) {
                 context.setVersion(tokens[1] + "." + tokens[2] + "." + tokens[3]);
             } else if (isMetaTokenParsed(tokens)) {
@@ -131,7 +122,7 @@ public class CsvLoader implements IDataLoader {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
             stats.incrementLineCount();
-            if (tokens != null && tokens.length > 0 && tokens[0] != null) {                
+            if (tokens != null && tokens.length > 0 && tokens[0] != null) {
                 stats.incrementByteCount(csvReader.getRawRecord().length());
 
                 if (tokens[0].equals(CsvConstants.INSERT)) {
@@ -192,10 +183,14 @@ public class CsvLoader implements IDataLoader {
 
         if (context.getTableTemplate() == null) {
             String fullTableName = tableName;
-            if (sourceNode != null) {
-                Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
-                if (trigger != null && trigger.getTargetSchemaName() != null) {
-                    fullTableName = trigger.getTargetSchemaName() + "." + tableName;
+
+            if (parameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA)) {
+                Node sourceNode = nodeService.findNode(context.getNodeId());
+                if (sourceNode != null) {
+                    Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                    if (trigger != null && trigger.getTargetSchemaName() != null) {
+                        fullTableName = trigger.getTargetSchemaName() + "." + tableName;
+                    }
                 }
             }
 
@@ -228,6 +223,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         if (continueToLoad) {
+            boolean enableFallbackUpdate = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_UPDATE);
             Object savepoint = null;
             try {
                 stats.startTimer();
@@ -278,6 +274,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         if (continueToLoad) {
+            boolean enableFallbackInsert = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_INSERT);
             stats.startTimer();
             rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
             if (rows == 0) {
@@ -318,6 +315,7 @@ public class CsvLoader implements IDataLoader {
         }
 
         if (continueToLoad) {
+            boolean allowMissingDelete = parameterService.is(ParameterConstants.DATA_LOADER_ALLOW_MISSING_DELETE);
             stats.startTimer();
             rows = context.getTableTemplate().delete(context, keyValues);
             stats.incrementDatabaseMillis(stats.endTimer());
@@ -382,9 +380,9 @@ public class CsvLoader implements IDataLoader {
         CsvLoader dataLoader = new CsvLoader();
         dataLoader.setJdbcTemplate(jdbcTemplate);
         dataLoader.setDbDialect(dbDialect);
-        dataLoader.setEnableFallbackInsert(enableFallbackInsert);
-        dataLoader.setEnableFallbackUpdate(enableFallbackUpdate);
-        dataLoader.setAllowMissingDelete(allowMissingDelete);
+        dataLoader.setParameterService(parameterService);
+        dataLoader.setConfigurationService(configurationService);
+        dataLoader.setNodeService(nodeService);
         return dataLoader;
     }
 
@@ -404,30 +402,6 @@ public class CsvLoader implements IDataLoader {
 
     public IDataLoaderStatistics getStatistics() {
         return stats;
-    }
-
-    public boolean isAllowMissingDelete() {
-        return allowMissingDelete;
-    }
-
-    public void setAllowMissingDelete(boolean allowMissingDelete) {
-        this.allowMissingDelete = allowMissingDelete;
-    }
-
-    public boolean isEnableFallbackInsert() {
-        return enableFallbackInsert;
-    }
-
-    public void setEnableFallbackInsert(boolean enableFallbackInsert) {
-        this.enableFallbackInsert = enableFallbackInsert;
-    }
-
-    public boolean isEnableFallbackUpdate() {
-        return enableFallbackUpdate;
-    }
-
-    public void setEnableFallbackUpdate(boolean enableFallbackUpdate) {
-        this.enableFallbackUpdate = enableFallbackUpdate;
     }
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
