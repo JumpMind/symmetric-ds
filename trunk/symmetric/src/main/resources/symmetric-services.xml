@@ -143,9 +143,6 @@
         <property name="configurationService" ref="configurationService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
-        <property name="enableFallbackInsert" value="true" />
-        <property name="enableFallbackUpdate" value="true" />
-        <property name="allowMissingDelete" value="true" />
     </bean>
 
     <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
