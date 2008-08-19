@@ -35,7 +35,7 @@
                     <command>table {table name}</command>
                 </term>
                 <listitem>
-                    <para>Sets the context of which table to operate on</para>
+                    <para>Sets the context of which table on which to operate.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -55,7 +55,7 @@
                 </term>
                 <listitem>
                     <para>
-                        Lists all the column names of the table. Only needs to occur after the
+                        Lists all the column names (including key columns) of the table. Only needs to occur after the
                         first occurrence of the table.
                     </para>
                 </listitem>
@@ -66,7 +66,7 @@
                 </term>
                 <listitem>
                     <para>
-                        Insert into the table with the values that correspond with the columns
+                        Insert into the table with the values that correspond with the columns.
                     </para>
                 </listitem>
             </varlistentry>
@@ -76,7 +76,7 @@
                 </term>
                 <listitem>
                     <para>
-                        Update the table using the old key values to set the new column values
+                        Update the table using the old key values to set the new column values.
                     </para>
                 </listitem>
             </varlistentry>
@@ -85,7 +85,7 @@
                     <command>delete {old key value...}</command>
                 </term>
                 <listitem>
-                    <para>Delete from the table using the old key values</para>
+                    <para>Delete from the table using the old key values.</para>
                 </listitem>
             </varlistentry>
         </variablelist>
@@ -96,7 +96,7 @@
 <![CDATA[version, 1,0,0
 table, item_selling_price
 keys, price_id
-columns, price, cost
+columns, price_id, price, cost
 insert, 55, 0.65, 0.55
 table, item
 keys, item_id 
