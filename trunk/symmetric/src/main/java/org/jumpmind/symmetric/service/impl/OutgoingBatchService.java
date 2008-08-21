@@ -26,6 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -230,8 +232,28 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"), new Object[] { nodeId },
-                new OutgoingBatchMapper());
+        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
+                getSql("selectOutgoingBatchSql"), new Object[] { nodeId }, new OutgoingBatchMapper());
+        final HashSet<String> errorChannels = new HashSet<String>();
+        for (OutgoingBatch batch : list) {
+            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
+                errorChannels.add(batch.getChannelId());
+            }
+        }
+        Collections.sort(list, new Comparator<OutgoingBatch>() {
+            public int compare(OutgoingBatch b1, OutgoingBatch b2) {
+                boolean isError1 = errorChannels.contains(b1.getChannelId());
+                boolean isError2 = errorChannels.contains(b2.getChannelId());
+                if (isError1 == isError2) {
+                    return b1.getBatchId() < b2.getBatchId() ? -1 : 1;
+                } else if (!isError1 && isError2) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+        return list;
     }
 
     @SuppressWarnings("unchecked")

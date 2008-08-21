@@ -34,11 +34,8 @@
     </entry>
     <entry key="selectOutgoingBatchSql">
       <value>
-        select b.batch_id, b.node_id, b.channel_id, b.status, b.batch_type, b.create_time from
-        ${sync.table.prefix}_outgoing_batch b left join (select node_id, channel_id from
-        ${sync.table.prefix}_outgoing_batch where status = 'ER') e on e.node_id = b.node_id and
-        e.channel_id = b.channel_id where b.node_id = ? and b.status in ('NE', 'SE', 'ER') order by
-        case when e.channel_id is null then 1 else 2 end, b.batch_id
+        select batch_id, node_id, channel_id, status, batch_type, create_time from
+        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in ('NE', 'SE', 'ER')
       </value>
     </entry>
     <entry key="selectOutgoingBatchRangeSql">
