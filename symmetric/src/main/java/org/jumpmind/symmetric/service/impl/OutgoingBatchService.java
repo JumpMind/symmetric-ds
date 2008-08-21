@@ -112,8 +112,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                             select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
 
-                            select.setString(1, nodeId);
-                            select.setString(2, channel.getId());
+                            select.setInt(1, 0);
+                            select.setString(2, nodeId);
+                            select.setString(3, channel.getId());
                             results = select.executeQuery();
 
                             int count = 0;
@@ -156,8 +157,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                                         update.clearParameters();
                                         update.setLong(1, Long.valueOf(newBatch.getBatchId()));
-                                        update.setString(2, nodeId);
-                                        update.setLong(3, dataId);
+                                        update.setInt(2, 1);
+                                        update.setString(3, nodeId);
+                                        update.setLong(4, dataId);
                                         update.addBatch();
 
                                         count++;
@@ -232,8 +234,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(
-                getSql("selectOutgoingBatchSql"), new Object[] { nodeId }, new OutgoingBatchMapper());
+        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
+                new Object[] { nodeId, OutgoingBatch.Status.NE.toString(),
+                        OutgoingBatch.Status.SE.toString(), OutgoingBatch.Status.ER.toString() },
+                new OutgoingBatchMapper());
         final HashSet<String> errorChannels = new HashSet<String>();
         for (OutgoingBatch batch : list) {
             if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {

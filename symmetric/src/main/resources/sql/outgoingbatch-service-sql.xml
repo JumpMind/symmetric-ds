@@ -16,8 +16,8 @@
     </entry>
     <entry key="selectEventsToBatchSql">
       <value>
-        select transaction_id, data_id from ${sync.table.prefix}_data_event where batched = 0 and
-        node_id = ? and channel_id=? order by data_id asc
+        select transaction_id, data_id from ${sync.table.prefix}_data_event where batched = ? and
+        node_id = ? and channel_id = ? order by data_id asc
       </value>
     </entry>
     <entry key="createBatchSql">
@@ -28,14 +28,14 @@
     </entry>
     <entry key="updateBatchedEventsSql">
       <value>
-        update ${sync.table.prefix}_data_event set batch_id = ?, batched = 1 where node_id = ? and
+        update ${sync.table.prefix}_data_event set batch_id = ?, batched = ? where node_id = ? and
         data_id = ?
       </value>
     </entry>
     <entry key="selectOutgoingBatchSql">
       <value>
         select batch_id, node_id, channel_id, status, batch_type, create_time from
-        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in ('NE', 'SE', 'ER')
+        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in (?, ?, ?)
       </value>
     </entry>
     <entry key="selectOutgoingBatchRangeSql">
