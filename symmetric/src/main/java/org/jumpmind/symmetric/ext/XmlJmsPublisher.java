@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.springframework.jms.core.JmsTemplate;
 
 /**
  * This is an optional data loader filter/listener that is capable of
@@ -45,24 +44,32 @@ import org.springframework.jms.core.JmsTemplate;
  * in. Simply inject the IDataLoaderService and it will register itself with the
  * SymmetricDS engine.
  */
-public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
+public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener, INodeGroupExtensionPoint {
 
     private static final Log logger = LogFactory.getLog(XmlJmsPublisher.class);
 
     private static final String XML_CACHE = "XML_CACHE";
 
-    protected JmsTemplate jmsTemplate;
+    protected IPublisher publisher;
 
     private Set<String> tableNamesToPublishAsGroup;
 
     private String xmlTagNameToUseForGroup = "batch";
 
     private List<String> groupByColumnNames;
+    
+    private String[] nodeGroups;
 
     private boolean loadDataInTargetDatabase = true;
+    
+    private boolean autoRegister = true;
 
     public boolean isAutoRegister() {
-        return true;
+        return autoRegister;
+    }
+    
+    public String[] getNodeGroupIdsToApplyTo() {
+        return nodeGroups;
     }
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
@@ -205,7 +212,7 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
             if (logger.isDebugEnabled()) {
                 logger.debug("Sending XML to JMS -> " + xml);
             }
-            jmsTemplate.convertAndSend(xml.toString());
+            publisher.publish(xml.toString());
         }
     }
 
@@ -214,10 +221,6 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
         if (doesXmlExistToPublish(ctx)) {
             finalizeXmlAndPublish(ctx);
         }
-    }
-
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
     }
 
     public void setTableNamesToPublishAsGroup(Set<String> tableNamesToPublishAsGroup) {
@@ -234,6 +237,18 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener {
 
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
+    }
+
+    public void setPublisher(IPublisher publisher) {
+        this.publisher = publisher;
+    }
+
+    public void setNodeGroups(String[] nodeGroups) {
+        this.nodeGroups = nodeGroups;
+    }
+
+    public void setAutoRegister(boolean autoRegister) {
+        this.autoRegister = autoRegister;
     }
 
 }
