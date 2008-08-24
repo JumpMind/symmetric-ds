@@ -158,8 +158,11 @@ public class DataService extends AbstractService implements IDataService {
         if (targetNode == null) {
             return "Unknown node " + nodeId;
         }
-        nodeService.setInitialLoadEnabled(nodeId, true);
-        return "Successfully opened initial load for node " + nodeId;
+        if (nodeService.setInitialLoadEnabled(nodeId, true)) {
+            return "Successfully opened initial load for node " + nodeId;
+        } else {
+            return "Could not open initial load for " + nodeId;
+        }
     }
 
     public void insertReloadEvent(Node targetNode) {

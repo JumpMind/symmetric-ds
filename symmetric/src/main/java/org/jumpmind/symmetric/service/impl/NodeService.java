@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -41,7 +42,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
-    
+
     private Node nodeIdentity;
 
     /**
@@ -84,9 +85,23 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String id) {
+        return findNodeSecurity(id, false);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public NodeSecurity findNodeSecurity(String id, boolean createIfNotFound) {    
         List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { id },
                 new NodeSecurityRowMapper());
-        return (NodeSecurity) getFirstEntry(list);
+        NodeSecurity security = (NodeSecurity) getFirstEntry(list);
+        if (security == null && createIfNotFound) {
+            insertNodeSecurity(id);
+            security = findNodeSecurity(id, false);
+        }
+        return security;
+    }
+
+    public void insertNodeSecurity(String id) {
+        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword() });
     }
 
     public boolean updateNode(Node node) {
@@ -170,7 +185,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
-        NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
+        NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
         if (nodeSecurity != null) {
             nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
             if (initialLoadEnabled) {
@@ -182,6 +197,32 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return false;
     }
+    
+    /**
+     * Generate a secure random password for a node.
+     */
+    // TODO: nodeGenerator.generatePassword();
+    public String generatePassword() {
+        return new RandomDataImpl().nextSecureHexString(30);
+    }
+
+    /**
+     * Generate the next node ID that is available. Try to use the domain ID as
+     * the node ID.
+     */
+    // TODO: nodeGenerator.generateNodeId();
+    public String generateNodeId(String nodeGroupId, String externalId) {
+        String nodeId = externalId;
+        int maxTries = 100;
+        for (int sequence = 0; sequence < maxTries; sequence++) {
+            if (findNode(nodeId) == null) {
+                return nodeId;
+            }
+            nodeId = externalId + "-" + sequence;
+        }
+        throw new RuntimeException("Could not find nodeId for externalId of " + externalId + " after " + maxTries
+                + " tries.");
+    }    
 
     class NodeRowMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {

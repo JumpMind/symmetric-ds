@@ -71,6 +71,12 @@
     <table name="ONE_COLUMN_TABLE">
         <column name="MY_ONE_COLUMN" type="INTEGER" primaryKey="true" required="true" />
     </table>
+    
+    <table name="INITIAL_LOAD_FROM_CLIENT_TABLE">
+        <column name="ID" type="INTEGER" primaryKey="true" required="true" />
+        <column name="DATA" type="VARCHAR" size="10" />
+    </table>
+    
 
     <table name="TEST_ALL_CAPS">
         <column name="ALL_CAPS_ID" type="INTEGER" primaryKey="true" required="true" />

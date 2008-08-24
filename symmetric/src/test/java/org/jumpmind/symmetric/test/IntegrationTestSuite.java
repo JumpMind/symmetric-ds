@@ -27,7 +27,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { SimpleIntegrationTest.class, CleanupTest.class })
+@SuiteClasses( { SimpleIntegrationTest.class, LoadFromClientIntegrationTest.class, CleanupTest.class })
 public class IntegrationTestSuite {
 
     static final String TEST_PREFIX = "test";

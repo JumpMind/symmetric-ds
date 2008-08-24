@@ -114,6 +114,7 @@
         <property name="extractor" ref="dataExtractorService" />
         <property name="transportManager" ref="transportManager" />
         <property name="parameterService" ref="parameterService" />
+        <property name="dataService" ref="dataService" />
         <property name="ackService" ref="acknowledgeService" />
         <property name="nodeService" ref="nodeService" />
     </bean>

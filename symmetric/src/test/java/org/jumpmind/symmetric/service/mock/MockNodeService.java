@@ -92,4 +92,12 @@ public class MockNodeService implements INodeService {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    public String generateNodeId(String nodeGroupId, String externalId) {
+        return null;
+    }
+    
+    public String generatePassword() {
+        return null;
+    }
 }

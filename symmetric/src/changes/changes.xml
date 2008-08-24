@@ -6,21 +6,32 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="erilong" type="fix">Sorted outgoing batch in code to reduce stress on database.</action>
             <action dev="erilong" type="fix">
-                Sorted outgoing batch in code to reduce stress on database.     
+                Went through code to make sure ALL literals in SQL were parameterized (even the ones that are not
+                variable). This makes a big difference on Oracle.
             </action>
-            <action dev="erilong" type="fix">
-                Went through code to make sure ALL literals in SQL were parameterized (even the ones that are not variable).  This makes a big difference on Oracle.     
-            </action>            
+            <action dev="chenson42" type="add" issue="aid=1985814&amp;atid=997724">
+                By default, the DataLoader uses fallback logic. (If an insert violates the primary key, perform an
+                update instead. If an update affects no rows, perform an insert instead.) Addd a runtime property that
+                lets you disable the fallback logic.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1956188&amp;atid=997724">
+                Support an initial load pushed from client to server.
+            </action>
+            <action dev="chenson42" type="fix">
+                Fixed null pointer for blank my.url property. We now default my.url to blank in
+                symmetric-default.properties.
+            </action>
             <action dev="dmichels2" type="add">Added IP address authorization.</action>
             <action dev="chenson42" type="add">
-                Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console. 
+                Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console.
             </action>
             <action dev="chenson42" type="add">
-                Added new extension architecture which allows extension points to be register automatically when they are in the 
-                classpath and the META-INF/services/symmetric-*-ext.xml Spring file is found.  Also added an interface which allows
-                extension points to be targeted for specific node groups. 
-            </action>                              
+                Added new extension architecture which allows extension points to be register automatically when they
+                are in the classpath and the META-INF/services/symmetric-*-ext.xml Spring file is found. Also added an
+                interface which allows extension points to be targeted for specific node groups.
+            </action>
             <action dev="chenson42" type="add">
                 Change the property names to remove the inconsistent symmetric. and symmetric.runtime. prefixes. This
                 change keeps backwards compatibility with the old property names.
