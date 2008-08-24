@@ -6,6 +6,12 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="erilong" type="fix">
+                Sorted outgoing batch in code to reduce stress on database.     
+            </action>
+            <action dev="erilong" type="fix">
+                Went through code to make sure ALL literals in SQL were parameterized (even the ones that are not variable).  This makes a big difference on Oracle.     
+            </action>            
             <action dev="dmichels2" type="add">Added IP address authorization.</action>
             <action dev="chenson42" type="add">
                 Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console. 
