@@ -61,5 +61,13 @@ public interface INodeService {
     public boolean updateNodeSecurity(NodeSecurity security);
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
+    
+    public String generatePassword();
+
+    /**
+     * Generate the next node ID that is available. Try to use the domain ID as
+     * the node ID.
+     */
+    public String generateNodeId(String nodeGroupId, String externalId);
 
 }

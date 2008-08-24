@@ -30,8 +30,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -52,6 +54,8 @@ public class PushService extends AbstractService implements IPushService {
 
     private INodeService nodeService;
 
+    private IDataService dataService;
+
     public void pushData() {
         List<Node> nodes = nodeService.findNodesToPushTo();
         if (nodes != null && nodes.size() > 0) {
@@ -70,6 +74,13 @@ public class PushService extends AbstractService implements IPushService {
         IOutgoingWithResponseTransport transport = null;
         boolean success = false;
         try {
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId());
+            if (nodeSecurity != null) {
+                if (nodeSecurity.isInitialLoadEnabled()) {
+                    dataService.insertReloadEvent(remote);
+                }
+            }
+
             transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
 
             if (extractor.extract(remote, transport)) {
@@ -131,5 +142,9 @@ public class PushService extends AbstractService implements IPushService {
 
     public void setAckService(IAcknowledgeService ackService) {
         this.ackService = ackService;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
 }

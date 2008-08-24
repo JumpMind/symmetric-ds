@@ -307,8 +307,8 @@ public class SymmetricEngine {
     /**
      * Queue up an initial load or a reload to a node.
      */
-    public void reloadNode(String nodeId) {
-        dataService.reloadNode(nodeId);
+    public String reloadNode(String nodeId) {
+        return dataService.reloadNode(nodeId);
     }
 
     /**

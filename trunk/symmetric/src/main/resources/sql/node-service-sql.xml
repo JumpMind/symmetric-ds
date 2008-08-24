@@ -87,6 +87,12 @@
         registration_time = ?, initial_load_enabled = ?, initial_load_time = ? where node_id = ?
       </value>
     </entry>
+    <entry key="insertNodeSecuritySql">
+      <value>
+        insert into ${sync.table.prefix}_node_security (node_id, node_password) values (?, ?)
+      </value>
+    </entry>
+    
   </util:map>
 
 </beans>

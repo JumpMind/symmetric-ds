@@ -30,7 +30,6 @@ import java.util.List;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -201,7 +200,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * external ID will be given this information.
      */
     public void reOpenRegistration(String nodeId) {
-        String password = generatePassword();
+        String password = nodeService.generatePassword();
         jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
     }
 
@@ -213,37 +212,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * this node group and external ID will be given this information.
      */
     public void openRegistration(String nodeGroup, String externalId) {
-        String nodeId = generateNodeId(nodeGroup, externalId);
-        String password = generatePassword();
+        String nodeId = nodeService.generateNodeId(nodeGroup, externalId);
+        String password = nodeService.generatePassword();
         jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId });
         jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
-    }
-
-    /**
-     * Generate a secure random password for a node.
-     */
-    // TODO: nodeGenerator.generatePassword();
-    protected String generatePassword() {
-        return new RandomDataImpl().nextSecureHexString(30);
-    }
-
-    /**
-     * Generate the next node ID that is available. Try to use the domain ID as
-     * the node ID.
-     */
-    // TODO: nodeGenerator.generateNodeId();
-    protected String generateNodeId(String nodeGroupId, String externalId) {
-        String nodeId = externalId;
-        int maxTries = 100;
-        for (int sequence = 0; sequence < maxTries; sequence++) {
-            if (nodeService.findNode(nodeId) == null) {
-                return nodeId;
-            }
-            nodeId = externalId + "-" + sequence;
-        }
-        throw new RuntimeException("Could not find nodeId for externalId of " + externalId + " after " + maxTries
-                + " tries.");
     }
 
     public void setNodeService(INodeService nodeService) {
