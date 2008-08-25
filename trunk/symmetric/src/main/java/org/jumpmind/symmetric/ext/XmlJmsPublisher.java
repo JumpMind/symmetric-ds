@@ -114,11 +114,25 @@ public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener, INode
                 xml.append(xmlTagNameToUseForGroup);
                 xml.append(" id='");
                 xml.append(txId);
-                xml.append("'>");
+                xml.append("' ");
+                addFormattedExtraGroupAttributes(ctx, xml);
+                xml.append(">");
                 ctxCache.put(txId, xml);
             }
         }
         return xml;
+    }
+    
+    /**
+     * Give the opportunity for the user of this publisher to add in additional attributes.
+     * The default implementation adds in the nodeId from the {@link IDataLoaderContext}.
+     * @param ctx
+     * @param xml append XML attributes to this buffer
+     */
+    protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, StringBuilder xml) {
+        xml.append("nodeid='");
+        xml.append(ctx.getNodeId());
+        xml.append("' ");
     }
 
     @SuppressWarnings("unchecked")
