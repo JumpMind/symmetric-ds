@@ -44,9 +44,9 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
  * in. Simply inject the IDataLoaderService and it will register itself with the
  * SymmetricDS engine.
  */
-public class XmlJmsPublisher implements IDataLoaderFilter, IBatchListener, INodeGroupExtensionPoint {
+public class XmlPublisher implements IDataLoaderFilter, IBatchListener, INodeGroupExtensionPoint {
 
-    private static final Log logger = LogFactory.getLog(XmlJmsPublisher.class);
+    private static final Log logger = LogFactory.getLog(XmlPublisher.class);
 
     private static final String XML_CACHE = "XML_CACHE";
 
