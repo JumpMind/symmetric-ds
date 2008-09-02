@@ -115,7 +115,7 @@ abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatch
             if (logger.isDebugEnabled()) {
                 logger.debug("publishing text message -> " + msg);
             }
-            publisher.publish(msg.toString());
+            publisher.publish(ctx, msg.toString());
         }
     }
 

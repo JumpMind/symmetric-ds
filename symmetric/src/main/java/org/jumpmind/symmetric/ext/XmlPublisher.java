@@ -226,7 +226,7 @@ public class XmlPublisher implements IDataLoaderFilter, IBatchListener, INodeGro
             if (logger.isDebugEnabled()) {
                 logger.debug("Sending XML to JMS -> " + xml);
             }
-            publisher.publish(xml.toString());
+            publisher.publish(ctx, xml.toString());
         }
     }
 
