@@ -52,6 +52,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     final static Log logger = LogFactory.getLog(ConfigurationService.class);
 
+    private static final long MAX_CHANNEL_CACHE_TIME = 60000;
+    
+    private static List<NodeChannel> channelCache;
+    
+    private static long channelCacheTime;
+
     private List<String> rootConfigChannelTableNames;
 
     private Map<String, String> rootConfigChannelInitialLoadSelect;
@@ -139,10 +145,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
+    @Deprecated
+    public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist) {
+        return getChannels();
+    }
+    
     @SuppressWarnings("unchecked")
-    public List<NodeChannel> getChannelsFor(boolean failOnError) {
-        try {
-            return jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] {}, new RowMapper() {
+    public List<NodeChannel> getChannels() {
+        if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
+            channelCache = jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] {}, new RowMapper() {
                 public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
                     NodeChannel channel = new NodeChannel();
                     channel.setId(rs.getString(1));
@@ -156,13 +167,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     return channel;
                 };
             });
-        } catch (RuntimeException ex) {
-            if (failOnError) {
-                throw ex;
-            } else {
-                return new ArrayList<NodeChannel>(0);
-            }
+            channelCacheTime = System.currentTimeMillis();
         }
+        return channelCache;
+    }
+    
+    public void flushChannels() {
+        channelCache = null;
     }
 
     private boolean isSet(Object value) {

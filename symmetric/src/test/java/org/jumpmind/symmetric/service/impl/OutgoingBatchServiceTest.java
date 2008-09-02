@@ -82,7 +82,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @SuppressWarnings("deprecation")
     @Test
     public void test() {
-        List<NodeChannel> channels = configService.getChannelsFor(true);
+        List<NodeChannel> channels = configService.getChannels();
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         // create a batch
@@ -140,7 +140,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testBatchBoundary() {
-        List<NodeChannel> channels = configService.getChannelsFor(true);
+        List<NodeChannel> channels = configService.getChannels();
 
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
@@ -169,7 +169,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testMultipleChannels() {
-        List<NodeChannel> channels = configService.getChannelsFor(true);
+        List<NodeChannel> channels = configService.getChannels();
 
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
@@ -206,7 +206,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @Test
     public void testErrorChannel() {
         IConfigurationService configService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
-        List<NodeChannel> channels = configService.getChannelsFor(true);
+        List<NodeChannel> channels = configService.getChannels();
 
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
