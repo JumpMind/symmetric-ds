@@ -87,6 +87,45 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @Transactional
     public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
 
+        if (channel.isSuspended()) {
+            logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
+        } else if (channel.isEnabled()) {
+            long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"),
+                    new Object[] { 0, nodeId, channel.getId() });
+
+            if (dataEventCount > channel.getMaxBatchSize()) {
+                buildOutgoingBatchesPeekAhead(nodeId, channel);
+            } else if (dataEventCount > 0) {
+                OutgoingBatch newBatch = new OutgoingBatch();
+                newBatch.setBatchType(BatchType.EVENTS);
+                newBatch.setChannelId(channel.getId());
+                newBatch.setNodeId(nodeId);
+
+                if (channel.isIgnored()) {
+                    newBatch.setStatus(Status.OK);
+                }
+
+                long startTime = System.currentTimeMillis();
+                insertOutgoingBatch(newBatch);
+                dataEventCount = jdbcTemplate.update(getSql("updateBatchedEventsMultiSql"), new Object[] {
+                        newBatch.getBatchId(), 1, 0, nodeId, newBatch.getChannelId() });
+                long databaseMillis = System.currentTimeMillis() - startTime;
+
+                OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
+                history.setEndTime(new Date());
+                history.setDataEventCount(dataEventCount);
+                history.setDatabaseMillis(databaseMillis);
+                insertOutgoingBatchHistory(history);
+                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(
+                        databaseMillis, dataEventCount);
+                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
+            }
+        }
+    }
+
+    @Transactional
+    private void buildOutgoingBatchesPeekAhead(final String nodeId, final NodeChannel channel) {
+
         final int batchSizePeekAhead = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
 
         jdbcTemplate.execute(new ConnectionCallback() {

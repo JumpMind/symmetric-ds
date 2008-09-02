@@ -14,6 +14,12 @@
         node_id=?
       </value>
     </entry>
+    <entry key="selectEventsToBatchCountSql">
+      <value>
+        select count(*) from ${sync.table.prefix}_data_event where batched = ? and node_id = ? and
+        channel_id = ?
+      </value>
+    </entry>
     <entry key="selectEventsToBatchSql">
       <value>
         select transaction_id, data_id from ${sync.table.prefix}_data_event where batched = ? and
@@ -24,6 +30,12 @@
       <value>
         insert into ${sync.table.prefix}_outgoing_batch (batch_id, node_id, channel_id, status,
         batch_type, create_time) values (null, ?, ?, ?, ?, current_timestamp)
+      </value>
+    </entry>
+    <entry key="updateBatchedEventsMultiSql">
+      <value>
+        update ${sync.table.prefix}_data_event set batch_id = ?, batched = ? where batched = ?
+        and node_id = ? and channel_id = ?
       </value>
     </entry>
     <entry key="updateBatchedEventsSql">
