@@ -181,7 +181,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public boolean extract(Node node, final IExtractListener handler) throws Exception {
 
-        List<NodeChannel> channels = configurationService.getChannelsFor(true);
+        List<NodeChannel> channels = configurationService.getChannels();
 
         for (NodeChannel nodeChannel : channels) {
             outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);

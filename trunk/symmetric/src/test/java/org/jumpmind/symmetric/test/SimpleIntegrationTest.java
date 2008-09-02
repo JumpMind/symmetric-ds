@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -260,8 +261,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     public void ignoreNodeChannel() {
         INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
+        IConfigurationService configService = (IConfigurationService) getRootEngine().getApplicationContext().getBean("configurationService");
         nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        configService.flushChannels();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
                 "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
         getClientEngine().pull();
@@ -269,7 +272,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "The customer was sync'd to the client.");
         nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-
+        configService.flushChannels();
     }
 
     @Test(timeout = 30000)
