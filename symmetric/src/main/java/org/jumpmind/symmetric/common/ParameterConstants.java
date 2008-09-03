@@ -73,7 +73,7 @@ public class ParameterConstants {
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     
-    public final static String SECURITY_CACHE_TIME = "cache.node.security.time.ms"; 
+    public final static String NODE_SECURITY_CACHE_REFRESH_PERIOD_IN_MS = "cache.node.security.time.ms"; 
 
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER = "db.driver";
