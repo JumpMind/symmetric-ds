@@ -72,6 +72,8 @@ public class ParameterConstants {
     public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
+    
+    public final static String SECURITY_CACHE_TIME = "cache.node.security.time.ms"; 
 
     public final static String DBPOOL_URL = "db.url";
     public final static String DBPOOL_DRIVER = "db.driver";

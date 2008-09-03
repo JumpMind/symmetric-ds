@@ -34,6 +34,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -46,8 +47,6 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
-    
-    private static final long MAX_SECURITY_CACHE_TIME = 60000; 
     
     private Node nodeIdentity;
 
@@ -136,7 +135,8 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public boolean isNodeAuthorized(String id, String password) {
-        if (System.currentTimeMillis() - securityCacheTime >= MAX_SECURITY_CACHE_TIME
+        long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.SECURITY_CACHE_TIME);
+        if (System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime
                 || securityCacheTime == 0) {
             securityCache = (Map<String, NodeSecurity>) jdbcTemplate.query(getSql("findAllNodeSecuritySql"),
                     new NodeSecurityResultSetExtractor());
