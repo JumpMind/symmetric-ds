@@ -100,4 +100,9 @@ public class MockNodeService implements INodeService {
     public String generatePassword() {
         return null;
     }
+
+    public void flushNodeAuthorizedCache() {
+        // TODO Auto-generated method stub
+        
+    }
 }

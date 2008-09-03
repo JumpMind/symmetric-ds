@@ -39,6 +39,8 @@ public interface INodeService {
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
+    
+    public void flushNodeAuthorizedCache();
 
     public boolean isRegistrationEnabled(String nodeId);
 

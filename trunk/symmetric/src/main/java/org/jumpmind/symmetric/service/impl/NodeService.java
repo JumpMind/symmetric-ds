@@ -27,7 +27,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,15 +38,23 @@ import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
-
+    
+    private static final long MAX_SECURITY_CACHE_TIME = 60000; 
+    
     private Node nodeIdentity;
 
+    private Map<String, NodeSecurity> securityCache;
+    
+    private long securityCacheTime;
+    
     /**
      * Lookup a node in the database, which contains information for syncing
      * with it.
@@ -101,6 +111,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void insertNodeSecurity(String id) {
+        flushNodeAuthorizedCache();
         jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword() });
     }
 
@@ -123,14 +134,26 @@ public class NodeService extends AbstractService implements INodeService {
      * Check that the given node and password match in the node_security table.
      * A node must authenticate before it's allowed to sync data.
      */
+    @SuppressWarnings("unchecked")
     public boolean isNodeAuthorized(String id, String password) {
-        NodeSecurity nodeSecurity = findNodeSecurity(id);
+        if (System.currentTimeMillis() - securityCacheTime >= MAX_SECURITY_CACHE_TIME
+                || securityCacheTime == 0) {
+            securityCache = (Map<String, NodeSecurity>) jdbcTemplate.query(getSql("findAllNodeSecuritySql"),
+                    new NodeSecurityResultSetExtractor());
+            securityCacheTime = System.currentTimeMillis();
+        }
+
+        NodeSecurity nodeSecurity = securityCache.get(id);
         if (nodeSecurity != null
                 && ((nodeSecurity.getPassword() != null && !nodeSecurity.getPassword().equals("") && nodeSecurity
                         .getPassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
             return true;
         }
         return false;
+    }
+    
+    public void flushNodeAuthorizedCache() {
+        securityCacheTime = 0;
     }
 
     public Node findIdentity() {
@@ -177,6 +200,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean updateNodeSecurity(NodeSecurity security) {
+        flushNodeAuthorizedCache();
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                 security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getNodeId() },
@@ -250,6 +274,19 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
             nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
             return nodeSecurity;
+        }
+    }
+
+    class NodeSecurityResultSetExtractor implements ResultSetExtractor {       
+        public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<String, NodeSecurity> result = new HashMap<String, NodeSecurity>();
+            NodeSecurityRowMapper mapper = new NodeSecurityRowMapper();
+
+            while (rs.next()) {
+                NodeSecurity nodeSecurity = (NodeSecurity) mapper.mapRow(rs, 0);
+                result.put(nodeSecurity.getNodeId(), nodeSecurity);
+            }
+            return result;
         }
     }
 
