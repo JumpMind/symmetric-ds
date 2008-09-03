@@ -135,7 +135,7 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public boolean isNodeAuthorized(String id, String password) {
-        long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.SECURITY_CACHE_TIME);
+        long maxSecurityCacheTime = parameterService.getLong(ParameterConstants.NODE_SECURITY_CACHE_REFRESH_PERIOD_IN_MS);
         if (System.currentTimeMillis() - securityCacheTime >= maxSecurityCacheTime
                 || securityCacheTime == 0) {
             securityCache = (Map<String, NodeSecurity>) jdbcTemplate.query(getSql("findAllNodeSecuritySql"),
