@@ -8,6 +8,17 @@
         <release version="1.4.0" date="unknown" description="Lets add some polish">
             <action dev="erilong" type="fix">Sorted outgoing batch in code to reduce stress on database.</action>
             <action dev="erilong" type="fix">
+                Change index on sym_data_event to (batched, node_id, channel_id), which is how we are accessing the
+                table.
+            </action>
+            <action dev="erilong" type="fix">
+                Improve performance by doing a multi-row count and update during batching. If the count is greater than
+                the max batch size, then we fall back to the peek ahead result set scrolling.
+            </action>
+            <action dev="erilong" type="fix">
+                Cache channels query - we run this too much on high activity systems.
+            </action>
+            <action dev="erilong" type="fix">
                 Went through code to make sure ALL literals in SQL were parameterized (even the ones that are not
                 variable). This makes a big difference on Oracle.
             </action>
@@ -55,8 +66,7 @@
             </action>
             <action dev="chenson42" type="add">
                 Added a new plug-in point, the IBatchListener. This new interface gives the end user a chance to do
-                something with a group of data rows that are in the same batch. See XmlPublisher for an usage
-                example.
+                something with a group of data rows that are in the same batch. See XmlPublisher for an usage example.
             </action>
             <action dev="chenson42" type="add">
                 Added a new plug-in point, the IExtractorFilter. This new filter can be useful to capture and react to
