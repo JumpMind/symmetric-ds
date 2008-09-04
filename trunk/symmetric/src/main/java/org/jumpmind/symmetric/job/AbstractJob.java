@@ -68,7 +68,10 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             if (engine == null) {
                 engine = SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
             }
-            if (engine.isStarted()) {
+            
+            if (engine == null) {
+                logger.info("Could not find a reference to the SymmetricEngine from " + beanName);
+            } else if (engine.isStarted()) {
                 IRegistrationService service = (IRegistrationService) beanFactory
                         .getBean(Constants.REGISTRATION_SERVICE);
                 if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
@@ -76,6 +79,8 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
                 } else {
                     getLogger().warn("Did not run job because the engine is not registered.");
                 }
+            } else {
+                logger.info("The engine is not currently started.");
             }
         } catch (final Throwable ex) {
             getLogger().error(ex, ex);

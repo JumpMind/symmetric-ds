@@ -229,7 +229,7 @@ public class SymmetricEngine {
             jobs = new HashSet<Timer>();
         }
         logger.info("Starting " + name);
-        Timer timer = AppUtils.find(Constants.PUSH_JOB_TIMER, this);
+        Timer timer = AppUtils.find(name, this);
         jobs.add(timer);
     }
 
