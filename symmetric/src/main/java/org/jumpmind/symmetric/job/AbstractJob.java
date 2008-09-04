@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -38,7 +39,9 @@ import org.springframework.beans.factory.BeanNameAware;
 
 abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
     DataSource dataSource;
-
+    
+    protected static final Log logger = LogFactory.getLog(AbstractJob.class);
+    
     private boolean needsRescheduled;
 
     private String rescheduleDelayParameter;
@@ -50,6 +53,12 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private String beanName;
 
     private boolean requiresRegistration = true;
+    
+    public void stop() {
+        setNeedsRescheduled(false);
+        cancel();
+        logger.info("Requested that " + beanName + " be stopped.");
+    }
 
     @Override
     public void run() {
