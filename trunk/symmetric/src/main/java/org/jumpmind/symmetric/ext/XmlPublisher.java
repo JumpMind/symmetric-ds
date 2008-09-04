@@ -132,7 +132,9 @@ public class XmlPublisher implements IDataLoaderFilter, IBatchListener, INodeGro
     protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, StringBuilder xml) {
         xml.append("nodeid='");
         xml.append(ctx.getNodeId());
-        xml.append("' ");
+        xml.append("' time='");
+        xml.append(System.currentTimeMillis());
+        xml.append("'");
     }
 
     @SuppressWarnings("unchecked")
