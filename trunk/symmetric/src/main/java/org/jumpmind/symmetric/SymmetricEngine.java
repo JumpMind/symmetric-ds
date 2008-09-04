@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
 
 import javax.sql.DataSource;
 
@@ -35,7 +36,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.job.AbstractJob;
 import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
@@ -91,7 +91,7 @@ public class SymmetricEngine {
 
     private IDbDialect dbDialect;
 
-    private Set<AbstractJob> jobs;
+    private Set<Timer> jobs;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
 
@@ -226,11 +226,11 @@ public class SymmetricEngine {
 
     private void startJob(String name) {
         if (jobs == null) {
-            jobs = new HashSet<AbstractJob>();
+            jobs = new HashSet<Timer>();
         }
         logger.info("Starting " + name);
-        AbstractJob job = AppUtils.find(Constants.PUSH_JOB_TIMER, this);
-        jobs.add(job);
+        Timer timer = AppUtils.find(Constants.PUSH_JOB_TIMER, this);
+        jobs.add(timer);
     }
 
     /**
@@ -269,9 +269,9 @@ public class SymmetricEngine {
 
     private void stopJobs() {
         if (jobs != null) {
-            for (AbstractJob job : jobs) {
+            for (Timer job : jobs) {
                 try {
-                    job.stop();
+                    job.cancel();
                 } catch (RuntimeException e) {
                     logger.error(e, e);
                 }

@@ -39,9 +39,9 @@ import org.springframework.beans.factory.BeanNameAware;
 
 abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
     DataSource dataSource;
-    
+
     protected static final Log logger = LogFactory.getLog(AbstractJob.class);
-    
+
     private boolean needsRescheduled;
 
     private String rescheduleDelayParameter;
@@ -53,18 +53,22 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private String beanName;
 
     private boolean requiresRegistration = true;
-    
-    public void stop() {
-        setNeedsRescheduled(false);
-        cancel();
-        logger.info("Requested that " + beanName + " be stopped.");
+
+    private SymmetricEngine engine;
+
+    @Override
+    public boolean cancel() {
+        logger.info("This job, " + beanName + ", has been cancelled.");
+        return super.cancel();
     }
 
     @Override
     public void run() {
         try {
-            if (SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME))
-                    .isStarted()) {
+            if (engine == null) {
+                engine = SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
+            }
+            if (engine.isStarted()) {
                 IRegistrationService service = (IRegistrationService) beanFactory
                         .getBean(Constants.REGISTRATION_SERVICE);
                 if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
@@ -76,7 +80,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         } catch (final Throwable ex) {
             getLogger().error(ex, ex);
         } finally {
-            if (isNeedsRescheduled()) {
+            if (isNeedsRescheduled() && engine != null && (engine.isStarted() || engine.isStarting())) {
                 reschedule();
             }
         }
