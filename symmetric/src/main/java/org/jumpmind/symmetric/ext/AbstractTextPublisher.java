@@ -45,9 +45,11 @@ abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatch
     private boolean loadDataInTargetDatabase = true;
 
     private Set<String> tableList;
+    
+    private boolean autoRegister = true;
 
     public boolean isAutoRegister() {
-        return true;
+        return autoRegister;
     }
 
     protected abstract String addTextHeader(IDataLoaderContext ctx);
@@ -136,6 +138,10 @@ abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatch
 
     public void setPublisher(IPublisher publisher) {
         this.publisher = publisher;
+    }
+
+    public void setAutoRegister(boolean autoRegister) {
+        this.autoRegister = autoRegister;
     }
 
 }
