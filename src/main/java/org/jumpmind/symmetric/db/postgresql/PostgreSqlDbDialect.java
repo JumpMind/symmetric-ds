@@ -78,7 +78,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return jdbcTemplate.queryForInt(
             "select count(*) from information_schema.triggers where trigger_name = ? " +
             "and event_object_table = ? and trigger_schema = ?",
-            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), defaultSchema }) > 0;
+            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
@@ -88,7 +88,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public void removeTrigger(String schemaName, String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
-            jdbcTemplate.update("drop trigger " + triggerName + " on " + tableName);
+            jdbcTemplate.update("drop trigger " + triggerName + " on " + schemaName + tableName);
             jdbcTemplate.update("drop function " + schemaName + "f" + triggerName + "()");
         } catch (Exception e) {
             logger.warn("Trigger does not exist");
