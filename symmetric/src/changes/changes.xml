@@ -102,7 +102,7 @@
             <action dev="chenson42" type="add" issue="aid=1946085&amp;atid=997727">
                 Don't specify the schema in triggers if the schema/catalogs are specified in the trigger configuration.
             </action>
-            <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.4.</action>
+            <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.5.</action>
             <action dev="knaas" type="add">
                 Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
                 configuration information. From this point forward we will provide a standard web.xml and configuration

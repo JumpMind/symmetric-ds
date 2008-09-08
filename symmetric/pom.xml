@@ -126,7 +126,7 @@
 
     <properties>
         <wtpVersion>1.5</wtpVersion>
-        <springframework-release-version>2.5.4</springframework-release-version>
+        <springframework-release-version>2.5.5</springframework-release-version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide</docbook.target>
     </properties>
