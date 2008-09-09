@@ -149,6 +149,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test
     @ParameterExcluder("postgres")
+    @SuppressWarnings("unchecked")
     public void validateTransactionFunctionailty() throws Exception {
         final JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
         TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
@@ -162,11 +163,12 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         });
         String sql = "select transaction_id from " + TestConstants.TEST_PREFIX
                 + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
-        String batchId = (String) jdbcTemplate.queryForObject(sql, String.class);
+        List<String> batchIdList = (List<String>) jdbcTemplate.queryForList(sql, String.class);
 
         IDbDialect dbDialect = getDbDialect();
         if (dbDialect.supportsTransactionId()) {
-            assertNotNull(batchId);
+            assertTrue(batchIdList != null && batchIdList.size() == 1);
+            assertNotNull(batchIdList.get(0));
         }
     }
 
