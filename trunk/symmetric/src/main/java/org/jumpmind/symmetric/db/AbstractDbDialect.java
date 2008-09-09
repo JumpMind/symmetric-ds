@@ -110,6 +110,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private int databaseMajorVersion;
 
     private int databaseMinorVersion;
+    
+    private String databaseProductVersion;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -161,6 +163,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 databaseName = meta.getDatabaseProductName();
                 databaseMajorVersion = meta.getDatabaseMajorVersion();
                 databaseMinorVersion = meta.getDatabaseMinorVersion();
+                databaseProductVersion = meta.getDatabaseProductVersion();
                 return null;
             }
         });
@@ -744,6 +747,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public int getMinorVersion() {
         return databaseMinorVersion;
+    }
+
+    public String getProductVersion() {
+        return databaseProductVersion;
     }
 
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,

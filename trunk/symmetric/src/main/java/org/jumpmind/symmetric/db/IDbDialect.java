@@ -78,6 +78,8 @@ public interface IDbDialect {
     public int getMajorVersion();
 
     public int getMinorVersion();
+    
+    public String getProductVersion();
 
     public BinaryEncoding getBinaryEncoding();
 
