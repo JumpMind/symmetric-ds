@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch06-advanced-configuration" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Advanced Configuration</title>
+    <section>
+        <title>Initial Load</title>
+        <para>
+            There are variables you can use when specifying the initial_load_select SQL for
+            a Trigger that will be replaced at runtime:
+        </para> 
+        <itemizedlist>
+            <listitem>
+                <para>$(nodeId) - the node ID of the target node </para>
+            </listitem>
+            <listitem>
+                <para>$(groupId) - the node group ID of the target node  </para>
+            </listitem>
+            <listitem>
+                <para>$(externalId) - the external ID of the target node </para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Dead Triggers</title>
+        <para>
+            Normally a Trigger is specified to capture data changes to a table and send them to
+            a target Node Group.  A dead Trigger is one that does not capture data changes.
+            In other words, the sync_on_insert, sync_on_update, and sync_on_delete properties
+            for the Trigger are all set to false.  Because the Trigger is specified, it will
+            be included in the initial load of data for target Nodes.
+        </para>
+        <para>
+            A dead Trigger might be used to load a read-only lookup table.  It could be used
+            to load a table that needs populated with example or default data.
+            Another use is a recovery load of data for tables that have a single direction
+            of synchronization.  For example, a retail store records sales transaction that
+            synchronize in one direction by trickling back to the central office.
+            If the retail store needs to recover all the sales transactions, they can be sent
+            are part of an initial load from the central office by setting up dead Triggers
+            that "sync" in that direction.
+        </para>
+        <para>
+            The following SQL statement sets up a non-syncing dead Trigger that sends
+            the sale_transaction table to the "store" Node Group from the "corp" Node Group during
+            an initial load.
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER 
+  (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+   sync_on_insert, sync_on_update, sync_on_delete, 
+   initial_load_order, last_updated_by, last_updated_time, create_time)
+values
+  ('sale_transaction', 'corp', 'store', 'sale_transaction', 
+   0, 0, 0, 
+   105, 'demo', current_timestamp, current_timestamp);]]></programlisting>
+        </para>
+    </section>
+    <section>
+        <title>Extension Points</title>
+        <para>
+             SymmetricDS may be extended via a plug-in like architecture where extension point interfaces 
+             may be implemented by a custom class and registered with the synchronization engine.  All supported extension 
+             points extend the IExtensionPoint interface.  The currently available extension points are documented in the following sections.  
+        </para>
+        <para>
+             When the synchronization engine starts up, a Spring 
+             post processor searches the Spring ApplicationContext for any registered classes which implement 
+             IExtensionPoint.  An IExtensionPoint designates whether it should be auto registered or not.  If the extension point 
+             is to be auto registered then the post processor registers the known interface with the appropriate service.
+        </para>
+        <para>
+             The INodeGroupExtensionPoint interface may be optionally implemented to designate that auto registered 
+             extension points should only be auto registered with specific node groups.
+             <programlisting><![CDATA[/**
+ * Only apply this extension point to the 'root' node group.
+ */
+ public String[] getNodeGroupIdsToApplyTo() {
+     return new String[] { "root" };
+ }
+]]></programlisting>             
+        </para>
+        <para>
+             SymmetricDS will look for Spring configured extensions in the application Classpath by importing any Spring 
+             XML configuration files found matching the following pattern: META-INF/services/symmetric-*-ext.xml.
+        </para>
+        <section>
+            <title>IParameterFilter</title>
+            <para>
+                Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
+                filter per engine instance.  The IParameterFilter replaces the depreciated IRuntimeConfig from prior releases.
+                <programlisting><![CDATA[public class MyParameterFilter 
+    implements IParameterFilter, INodeGroupExtensionPoint {
+
+    /**
+     * Only apply this filter to stores
+     */
+    public String[] getNodeGroupIdsToApplyTo() {
+        return new String[] { "store" };
+    }
+
+    public String filterParameter(String key, String value) {
+        // look up a store number from an already existing properties file.
+        if (key.equals(ParameterConstants.EXTERNAL_ID)) {
+            return StoreProperties.getStoreProperties().
+              getProperty(StoreProperties.STORE_NUMBER);
+        } 
+        return value;
+    }
+
+    public boolean isAutoRegister() {
+        return true;
+    }
+
+}]]></programlisting> 
+            </para>
+        </section>        
+        <section>
+            <title>IDataLoaderFilter</title>         
+            <para>
+                Data can be filtered as it is loaded into the target database or when
+                it is extracted from the source database.
+            </para>            
+            <para>
+                As data is loaded into the target database, a filter can change the
+                data in a column or save it somewhere else.  It can also specify by the
+                return type of the function call that the data loader should continue on 
+                and load the data or ignore it.  One possible use of the filter might be to
+                route credit card data to a secure database and blank it out as it loads 
+                into less-restricted reporting database.
+            </para>
+            <para>
+                A class implementing the IDataLoaderFilter interface is given to the
+                DataLoaderService in order to receive callbacks when data is inserted,
+                updated, or deleted.
+                
+                <programlisting><![CDATA[public MyFilter implements IDataLoaderFilter {
+                
+    public boolean isAutoRegister() {
+        return true;
+    }
+ 
+    public boolean filterInsert(IDataLoaderContext context,
+        String[] columnValues) {
+        return true;
+    }
+    
+    public boolean filterUpdate(IDataLoaderContext context, 
+        String[] columnValues, String[] keyValues) {
+        return true;
+    }
+    
+    public void filterDelete(IDataLoaderContext context, 
+        String[] keyValues) {
+        return true;
+    }
+
+}]]></programlisting>
+            </para>
+            <para>
+                The filter class is specified as a Spring-managed bean.  A custom Spring XML file
+                is specified as follows in a jar at META-INF/servers/symmetric-myfilter-ext.xml.
+                
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+ 
+    <bean id="myFilter" class="com.mydomain.MyFilter"/>
+     
+</beans>]]></programlisting>
+            </para>
+        </section>
+        <section>
+            <title>IColumnFilter</title>
+            <para></para>
+        </section>
+        <section>
+            <title>IBatchListener</title>
+            <para></para>
+        </section>
+        <section>
+            <title>IReloadListener</title>
+            <para></para>
+        </section>                
+        <section>
+            <title>IExtractorListener</title>
+            <para></para>
+        </section>
+    </section>
+    <section>
+        <title>Secure Transport</title>
+        <para></para>
+    </section>
+</chapter>
