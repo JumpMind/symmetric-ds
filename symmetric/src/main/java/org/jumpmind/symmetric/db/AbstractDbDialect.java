@@ -201,6 +201,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    public boolean isDateOverrideToTimestamp() {
+        return false;
+    }
+
     abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName,
             String triggerName);
 

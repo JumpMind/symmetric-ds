@@ -82,6 +82,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
+    public boolean isDateOverrideToTimestamp() {
+        return true;
+    }
+
     public void removeTrigger(String schemaName, String triggerName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {

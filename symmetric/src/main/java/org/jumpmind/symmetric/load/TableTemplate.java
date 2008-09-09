@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.load;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -271,7 +272,7 @@ public class TableTemplate {
                 tableName = table.getCatalog() + "." + tableName;
             }
             st = new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
-                    .isBlobOverrideToBinary());
+                    .isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp());
             statementMap.put(type, st);
         }
         return st;
@@ -293,7 +294,10 @@ public class TableTemplate {
                     objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
                 }
                 if (value != null) {
-                    if (type == Types.DATE || type == Types.TIMESTAMP) {
+                    if (type == Types.DATE && ! dbDialect.isDateOverrideToTimestamp()) {
+                        objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
+                    } else if (type == Types.TIMESTAMP
+                            || (type == Types.DATE && dbDialect.isDateOverrideToTimestamp())) {
                         objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
                     } else if (type == Types.CHAR && dbDialect.isCharSpacePadded()) {
                         objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');

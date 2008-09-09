@@ -171,6 +171,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    public boolean isDateOverrideToTimestamp() {
+        return true;
+    }
+
     /**
      * SQL Server pads an empty string with spaces.
      * 

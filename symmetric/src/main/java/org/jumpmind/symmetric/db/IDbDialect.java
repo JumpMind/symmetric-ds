@@ -157,6 +157,8 @@ public interface IDbDialect {
     public boolean isBlobSyncSupported();
 
     public boolean isBlobOverrideToBinary();
+    
+    public boolean isDateOverrideToTimestamp();
 
     public boolean isClobSyncSupported();
 
