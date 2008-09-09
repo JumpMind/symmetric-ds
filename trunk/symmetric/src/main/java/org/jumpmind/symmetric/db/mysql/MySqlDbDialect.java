@@ -25,6 +25,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -37,7 +38,28 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
+    private boolean supportsTransactionId = false;
+
     protected void initForSpecificDialect() {
+        int[] versions = Version.parseVersion(getProductVersion());
+        if (getMajorVersion() == 5
+                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+            logger.info("Enabling transaction ID support");
+            supportsTransactionId = true;
+        }
+    }
+
+    @Override
+    protected void createRequiredFunctions() {
+        String[] functions = sqlTemplate.getFunctionsToInstall();
+        for (String funcName : functions) {
+            if (! funcName.equals("fn_transaction_id") || supportsTransactionId) {
+                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName)) == 0) {
+                    jdbcTemplate.update(sqlTemplate.getFunctionSql(funcName));
+                    logger.info("Just installed " + funcName);
+                }
+            }
+        }
     }
 
     @Override
@@ -72,16 +94,20 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
+    // Mister CHenson, what is this non-sense?
     public String getTransactionTriggerExpression(Trigger trigger) {
-        String defaultCatalog = "";
-        if (trigger.getSourceCatalogName() != null) {
-            defaultCatalog = this.getDefaultCatalog() + ".";
+        if (supportsTransactionId) {
+            String defaultCatalog = "";
+            if (trigger.getSourceCatalogName() != null) {
+                defaultCatalog = this.getDefaultCatalog() + ".";
+            }
+            return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
         }
-        return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
+        return "null";
     }
 
     public boolean supportsTransactionId() {
-        return true;
+        return supportsTransactionId;
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
