@@ -57,6 +57,7 @@ final public class Version {
     }
 
     public static int[] parseVersion(String version) {
+        version = version.replaceAll("[^0-9\\.]", "");
         int[] versions = new int[3];
         if (!StringUtils.isEmpty(version)) {
             String[] splitVersion = version.split("\\.");
