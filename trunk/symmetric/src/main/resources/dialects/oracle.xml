@@ -30,19 +30,17 @@
                                     v_clob    CLOB := null;
                                     v_varchar VARCHAR2(32767);
                                     v_start   PLS_INTEGER := 1;
-                                    v_buffer  PLS_INTEGER := 21000;
+                                    v_buffer  PLS_INTEGER := 999;
                                 BEGIN
                                     IF blob_in IS NOT NULL THEN
                                         DBMS_LOB.CREATETEMPORARY(v_clob, TRUE);
-                                        --FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)
-                                        --LOOP    
+                                        FOR i IN 1..CEIL(DBMS_LOB.GETLENGTH(blob_in) / v_buffer)
+                                        LOOP    
                                             v_varchar := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.base64_encode(DBMS_LOB.SUBSTR(blob_in, v_buffer, v_start)));
-                                            --Hack: remove CR & LF symbols (encode inserts them)  
-                                            v_varchar := REPLACE(v_varchar,CHR(13)); 
-                                            v_varchar := REPLACE(v_varchar,CHR(10)); 
+                                            v_varchar := REPLACE(v_varchar,CHR(13)||CHR(10)); 
                                             DBMS_LOB.WRITEAPPEND(v_clob, LENGTH(v_varchar), v_varchar);
                                             v_start := v_start + v_buffer;
-                                        --END LOOP;
+                                        END LOOP;
                                     END IF;
                                     RETURN v_clob; 
                                 END fn_sym_blob2clob;
