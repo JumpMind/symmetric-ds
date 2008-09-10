@@ -56,7 +56,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return jdbcTemplate.queryForInt(
             "select count(*) from information_schema.triggers where trigger_name = ? " +
             "and event_object_table = ? and trigger_schema = ?",
-            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema }) > 0;
+            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema == null ? defaultSchema : schema }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
