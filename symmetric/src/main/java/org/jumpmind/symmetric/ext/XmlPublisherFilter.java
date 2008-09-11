@@ -28,10 +28,8 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 
@@ -44,9 +42,9 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
  * in. Simply inject the IDataLoaderService and it will register itself with the
  * SymmetricDS engine.
  */
-public class XmlPublisher implements IDataLoaderFilter, IBatchListener, INodeGroupExtensionPoint {
+public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
 
-    private static final Log logger = LogFactory.getLog(XmlPublisher.class);
+    private static final Log logger = LogFactory.getLog(XmlPublisherFilter.class);
 
     private static final String XML_CACHE = "XML_CACHE";
 
