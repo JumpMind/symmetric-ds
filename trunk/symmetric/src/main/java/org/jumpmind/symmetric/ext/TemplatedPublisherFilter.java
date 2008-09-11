@@ -39,6 +39,9 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * <li>%TIMESTAMP% - evaluates to ms value returned by
  * System.currentTimeInMillis()</li>
  * </ol>
+ * </p>
+ * If you have special formatting needs, implement the {@link IFormat} interface
+ * and map your formatter to the column you want to 'massage.' 
  */
 public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
