@@ -24,19 +24,17 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 
 /**
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  */
-abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatchListener {
+abstract public class AbstractTextPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
 
-    private static final Log logger = LogFactory.getLog(AbstractTextPublisher.class);
+    private static final Log logger = LogFactory.getLog(AbstractTextPublisherFilter.class);
 
     private static final String msg_CACHE = "msg_CACHE";
 
@@ -47,10 +45,8 @@ abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatch
     private Set<String> tableList;
     
     private boolean autoRegister = true;
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
+    
+    private String[] nodeGroupIdsToApplyTo;
 
     protected abstract String addTextHeader(IDataLoaderContext ctx);
 
@@ -143,5 +139,17 @@ abstract public class AbstractTextPublisher implements IDataLoaderFilter, IBatch
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
     }
+
+    public boolean isAutoRegister() {
+        return autoRegister;
+    }
+
+    public String[] getNodeGroupIdsToApplyTo() {
+        return nodeGroupIdsToApplyTo;
+    }
+
+    public void setNodeGroupIdToApplyTo(String nodeGroupdId) {
+        this.nodeGroupIdsToApplyTo = new String[] { nodeGroupdId };
+    }    
 
 }
