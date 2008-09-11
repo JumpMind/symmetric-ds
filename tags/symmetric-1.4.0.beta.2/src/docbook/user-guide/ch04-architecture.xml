@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="ch04-architecture" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:ns="http://docbook.org/ns/docbook"
+         xmlns:mml="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+    <title>Architecture</title>
+    <para>
+        The SymmetricDS library allows for outgoing and incoming changes to be synchronized
+        to/from another database.  The Node that initiates the connection is the client, and the
+        Node receiving a connection is the host.  Because synchronization is configurable to
+        push or pull in either direction, the same Node can act as either a client or a host
+        in different circumstances.
+    </para>
+    <para>
+        As a client, the Node runs the Push Job and Pull Job on a timer in order to synchronize
+        with a host Node.  The Push Job uses services to batch, extract, and stream data to
+        another Node (i.e. it pushes data).  The response from a push is a list
+        of batch acknowlegements to indicate that data was loaded.
+        The Pull Job uses services to load data that is streamed from another Node
+        (i.e. it pulls data).  After loading data, a second connection is made to send a list
+        of batch acknowlegements.
+    </para>
+    <para>
+        As a host, the Node waits for incoming connections that pull, push, or acknowledge data changes.
+        The Push Servlet uses services to load data that is pushed from a client Node.
+        After loading data, it responds with a list of batch acknowledgements.
+        The Pull Servlet uses services to batch, extract, and stream data back to the client Node.
+        The Ack Servlet uses services to update the status of data that was loaded at a client Node.
+    </para>
+    <para>
+        The Transport Manager handles the incoming and outgoing streams of data between Nodes.
+        The default transport is based on a simple implementation over HTTP, and other
+        implementations may be added.
+    </para>
+    <para>
+        <figure>
+            <title>Software Stack</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </para>
+    <section>
+        <title>Software Components</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Deployment Options</title>
+        <para>The following deployment options are possible:</para>
+        <itemizedlist>
+            <listitem>
+                <para>Web application archive (WAR) deployed to an application server</para>
+            </listitem>
+            <listitem>
+                <para>Standalone service that embeds Jetty web server</para>
+            </listitem>
+            <listitem>
+                <para>Embedded as a Java library in an application</para>
+            </listitem>
+        </itemizedlist>
+        <para>
+            In each deployment, you configure which services are available.
+            The possible services to map for deployment include PushServlet,
+            PullServlet, AckServlet, and RegistrationServlet.  If synchronization is configured
+            for "pull" action, the PullServlet and AckServlet must be mapped.  If using "push"
+            action, the PushServlet must be mapped.  If the instance is used as the registration
+            server, the RegistrationServlet must mapped.
+        </para>
+        <section>
+            <title>Web Archive</title>
+            <para>
+                As a web application archive, a WAR or EAR file is deployed to an application server,
+                such as Tomcat, Jetty, or JBoss.  The <filename>WEB-INF/web.xml</filename> file
+                is configured with a <literal>SymmetricEngineContextLoaderListener</literal>
+                the required SymmetricFilter mapping, and the required SymmetricServlet mapping.
+                Note that this was changed in version 1.4.0 to make it easier to configure
+                Symmetric.
+            </para>
+            <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+
+	<display-name>sync</display-name>
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<!-- Optionally specify other spring xml files that are loaded in the same context -->
+		<param-value>classpath:additional-spring.xml</param-value>
+	</context-param>
+
+	<filter>
+		<filter-name>SymmetricFilter</filter-name>
+		<filter-class>
+			org.jumpmind.symmetric.web.SymmetricFilter
+		</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>SymmetricFilter</filter-name>
+		<servlet-name>/*</servlet-name>
+	</filter-mapping>
+	
+	<listener>
+		<listener-class>
+			org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
+		</listener-class>
+	</listener>
+	
+	<servlet>
+		<servlet-name>SymmetricServlet</servlet-name>
+		<servlet-class>
+			org.jumpmind.symmetric.web.SymmetricServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SymmetricServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+</web-app>]]></programlisting>
+            <para>
+                This example starts all the SymmetricDS Servlets with Filters to compress the
+                stream, authenticate nodes, and reject nodes when the server is too busy.
+            </para>
+        </section>
+        <section>
+            <title>Standalone</title>
+            <para>
+                A standalone service can use the <literal>sym</literal> command line options to start
+                a server.  An embedded instance of Jetty is used to service web
+                requests for all the servlets.
+            </para>
+            <programlisting><![CDATA[/symmetric/bin/sym --properties root.properties --port 8080 --server
+]]></programlisting>
+            <para>
+                This example starts the SymmetricDS server on port 8080 with the startup
+                properties found in the <filename>root.properties</filename> file.
+            </para>
+        </section>
+        <section>
+            <title>Embedded</title>
+            <para>
+                A Java application with the SymmetricDS Java Archive (JAR) library on its
+                classpath can use the <literal>SymmetricEngine</literal> to start the server.
+            </para>
+            <programlisting><![CDATA[
+import org.jumpmind.symmetric.SymmetricEngine;
+
+public class StartSymmetricDSEngine {
+
+    public static void main(String[] args) throws Exception {
+        String workingDirectory = System.getProperty("user.dir");
+
+        SymmetricEngine engine = new SymmetricEngine("classpath://my-application.properties", "file://"
+                + workingDirectory + "/my-environment.properties");
+
+        // this will create the database, sync triggers, start jobs running
+        engine.start();
+        
+        ....
+        
+        // this will stop the engine
+        engine.stop();
+    }   
+
+}]]></programlisting>
+            <para>
+                This example starts the SymmetricDS server on port 8080 with startup properies found
+                in two locations.  The first file, <filename>my-application.properties</filename>,
+                is packaged in the application to provide properties that override the SymmetricDS 
+                default values.  The second file, <filename>my-environment.properties</filename>,
+                is located in a working directory that overrides properties specific to the
+                environment.  This allows the same application to deploy to development and 
+                production environments using different <filename>my-environment.properties</filename>.
+            </para>
+        </section>
+    </section>
+</chapter>
