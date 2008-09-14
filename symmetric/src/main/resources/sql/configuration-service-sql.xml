@@ -88,8 +88,7 @@
     </entry>
     <entry key="inactiveTriggersForSourceNodeGroupSql">
       <value>
-        select * from ${sync.table.prefix}_trigger t inner join ${sync.table.prefix}_trigger_hist h
-        on t.trigger_id=h.trigger_id where h.inactive_time is not null and t.source_node_group_id =
+        select * from ${sync.table.prefix}_trigger t where t.source_node_group_id =
         ? and t.inactive_time is not null
       </value>
     </entry>
