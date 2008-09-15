@@ -50,24 +50,13 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_sym_blob2clob">
-                            <value>
-                                <![CDATA[ 
-                                create function fn_sym_blob2clob(blob_in blob)
-                                  returns mediumtext
-                                  begin
-                                    return if(blob_in is null,'',concat('"',replace(replace(blob_in,'\\','\\\\'),'"','\\"'),'"'));
-                                  end
-                                ]]>
-                            </value>
-                        </entry>                        
                     </map>
                 </property>                
                 <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
                 <property name="clobColumnTemplate" ref="mysqlStringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName)),',',]]>
+                        <![CDATA[coalesce(hex($(tableAlias).$(columnName)),''),',',]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">

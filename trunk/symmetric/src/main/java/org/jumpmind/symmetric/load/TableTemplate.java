@@ -32,7 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -312,6 +314,12 @@ public class TableTemplate {
                             objectValue = value.getBytes();
                         } else if (encoding == BinaryEncoding.BASE64) {
                             objectValue = Base64.decodeBase64(value.getBytes());
+                        } else if (encoding == BinaryEncoding.HEX) {
+                            try {
+                                objectValue = Hex.decodeHex(value.toCharArray());
+                            } catch (DecoderException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     } else if (type == Types.TIME) {
                         objectValue = new Time(getTime(value, TIMESTAMP_PATTERNS));
