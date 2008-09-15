@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 
@@ -156,4 +157,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return Integer.MIN_VALUE;
     }
 
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.HEX;
+    }
 }
