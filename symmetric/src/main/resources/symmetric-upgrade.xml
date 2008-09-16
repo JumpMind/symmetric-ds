@@ -367,6 +367,9 @@
                 <value>
                     drop table ${sync.table.prefix}_global_parameter
                 </value>
+                <value>
+                    drop function fn_sym_blob2clob
+                </value>
             </list>
         </property>
     </bean>
