@@ -6,6 +6,9 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="chenson42" type="fix" issue="aid=1944227&amp;atid=997724">
+                Fixed trigger creation issue for tables with no primary keys.
+            </action>
             <action dev="erilong" type="fix">Sorted outgoing batch in code to reduce stress on database.</action>
             <action dev="erilong" type="fix">
                 Change index on sym_data_event to (batched, node_id, channel_id), which is how we are accessing the
@@ -31,9 +34,8 @@
                 Support an initial load pushed from client to server.
             </action>
             <action dev="chenson42" type="fix">
-                Inactivating a sym_trigger by setting the inactive_time column to a non-null value
-                was fixed.
-            </action>            
+                Inactivating a sym_trigger by setting the inactive_time column to a non-null value was fixed.
+            </action>
             <action dev="chenson42" type="fix">
                 Fixed null pointer for blank my.url property. We now default my.url to blank in
                 symmetric-default.properties.
@@ -70,7 +72,8 @@
             </action>
             <action dev="chenson42" type="add">
                 Added a new plug-in point, the IBatchListener. This new interface gives the end user a chance to do
-                something with a group of data rows that are in the same batch. See XmlPublisherFilter for an usage example.
+                something with a group of data rows that are in the same batch. See XmlPublisherFilter for an usage
+                example.
             </action>
             <action dev="chenson42" type="add">
                 Added a new plug-in point, the IExtractorFilter. This new filter can be useful to capture and react to
@@ -81,8 +84,7 @@
             </action>
             <action dev="chenson42" type="add" issue="aid=1955378&amp;atid=997727">
                 Don't include the keys in data loader update statement if they haven't changed. This feature is turned
-                off by default and can be enabled by the new dont.include.keys.in.update.statement
-                parameter.
+                off by default and can be enabled by the new dont.include.keys.in.update.statement parameter.
             </action>
             <action dev="chenson42" type="add" issue="aid=1955383&amp;atid=997727">
                 Add a stop() method to the SymmetricEngine API.
