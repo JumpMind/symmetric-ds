@@ -305,9 +305,24 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 } finally {
                     JdbcUtils.closeResultSet(tableData);
                 }
+                
+                makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
+                
                 return table;
             }
         });
+    }
+    
+    /**
+     * Treat tables with no primary keys as a table with all primary keys.
+     */
+    protected void makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(Table table) {
+        if (table != null && table.getPrimaryKeyColumns() != null && table.getPrimaryKeyColumns().length == 0) {
+            Column[] allCoumns = table.getColumns();
+            for (Column column : allCoumns) {
+                column.setPrimaryKey(true);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
