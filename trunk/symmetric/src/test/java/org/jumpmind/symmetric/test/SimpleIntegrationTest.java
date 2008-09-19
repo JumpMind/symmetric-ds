@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.RowMapper;
@@ -352,7 +353,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Table name in mixed case was not synced");
     }
 
-    @Test(timeout = 30000)
+    /**
+     * TODO test on MSSQL
+     */
+    @Test(timeout = 30000)    
+    @ParameterExcluder("mssql")
     public void testNoPrimaryKeySync() {
         rootJdbcTemplate.update("insert into NO_PRIMARY_KEY_TABLE values(1, 2, 'HELLO')");
         getClientEngine().pull();
