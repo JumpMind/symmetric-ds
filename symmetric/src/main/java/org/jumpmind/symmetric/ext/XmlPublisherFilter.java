@@ -55,17 +55,17 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     private String xmlTagNameToUseForGroup = "batch";
 
     private List<String> groupByColumnNames;
-    
+
     private String[] nodeGroups;
 
     private boolean loadDataInTargetDatabase = true;
-    
+
     private boolean autoRegister = true;
 
     public boolean isAutoRegister() {
         return autoRegister;
     }
-    
+
     public String[] getNodeGroupIdsToApplyTo() {
         return nodeGroups;
     }
@@ -120,12 +120,15 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         }
         return xml;
     }
-    
+
     /**
-     * Give the opportunity for the user of this publisher to add in additional attributes.
-     * The default implementation adds in the nodeId from the {@link IDataLoaderContext}.
+     * Give the opportunity for the user of this publisher to add in additional
+     * attributes. The default implementation adds in the nodeId from the
+     * {@link IDataLoaderContext}.
+     * 
      * @param ctx
-     * @param xml append XML attributes to this buffer
+     * @param xml
+     *                append XML attributes to this buffer
      */
     protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, StringBuilder xml) {
         xml.append("nodeid='");
@@ -173,9 +176,15 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
             String col = colNames[i];
             xml.append("<data key='");
             xml.append(col);
-            xml.append("'>");
-            xml.append(data[i]);
-            xml.append("</data>");
+            xml.append("'");
+
+            if (data[i] == null) {
+                xml.append(" xsi:nil='true'/>");
+            } else {
+                xml.append(">");
+                xml.append(data[i]);
+                xml.append("</data>");
+            }
         }
         xml.append("</row>");
     }
