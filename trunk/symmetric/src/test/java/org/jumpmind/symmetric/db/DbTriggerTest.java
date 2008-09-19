@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -59,10 +60,14 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
 
     final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
+    
+    final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE, 1, 1 };
 
     final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
     final static String EXPECTED_INSERT2_CSV_ENDSWITH = "\"here\",\"here\",\"1\",,,\"1\",\"1\"";
+    
+    final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
 
     final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
@@ -91,7 +96,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
         // force the triggers to rebuild
         count = count
-                + getJdbcTemplate(getSymmetricEngine())
+                + getJdbcTemplate()
                         .update(
                                 "update "
                                         + TestConstants.TEST_PREFIX
@@ -103,25 +108,17 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
         // check to see that we recorded the rebuilds
         assertEquals(getTriggerHistTableRowCount(getSymmetricEngine()), count, "Wrong trigger_hist row count. engine="
-                + getDbDialect(getSymmetricEngine()).getPlatform().getName());
-    }
-
-    private JdbcTemplate getJdbcTemplate(SymmetricEngine engine) {
-        return (JdbcTemplate) engine.getApplicationContext().getBean(Constants.JDBC);
-    }
-
-    private IDbDialect getDbDialect(SymmetricEngine engine) {
-        return (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+                + getDbDialect().getPlatform().getName());
     }
 
     private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate(engine)
+        return getJdbcTemplate()
                 .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
     }
 
     @Test
     public void validateTestTableTriggers() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
 
         int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
 
@@ -131,16 +128,16 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
         assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
     }
-
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testInitialLoadSql() throws Exception {
         IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
                 "configurationService");
         service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        String sql = getDbDialect(getSymmetricEngine()).createInitalLoadSqlFor(new Node("1", null, "1.0"),
+        String sql = getDbDialect().createInitalLoadSqlFor(new Node("1", null, "1.0"),
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
-        List<String> csvStrings = getJdbcTemplate(getSymmetricEngine()).queryForList(sql, String.class);
+        List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
@@ -151,7 +148,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     @ParameterExcluder("postgres")
     @SuppressWarnings("unchecked")
     public void validateTransactionFunctionailty() throws Exception {
-        final JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        final JdbcTemplate jdbcTemplate = getJdbcTemplate();
         TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
                 getDataSource()));
         transactionTemplate.execute(new TransactionCallback() {
@@ -180,7 +177,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // update of the config
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
                 + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
                 + TEST_TRIGGER_WHERE_CLAUSE));
@@ -203,10 +200,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test
     public void testDisableTriggers() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
-        getDbDialect(getSymmetricEngine()).disableSyncTriggers();
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        getDbDialect().disableSyncTriggers();
         int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
-        getDbDialect(getSymmetricEngine()).enableSyncTriggers();
+        getDbDialect().enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -223,7 +220,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // update of the trigger
         // table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(getSymmetricEngine());
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set target_table_name='"
                 + TARGET_TABLE_NAME + "', last_updated_time=current_timestamp " + TEST_TRIGGER_WHERE_CLAUSE));
 
@@ -241,6 +238,17 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         String tableName = getNextDataRowTableName(getSymmetricEngine());
         assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
     }
+    
+    @Test
+    public void inactivateTriggersTest() throws Exception {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set inactive_time=current_timestamp where source_table_name='"+TEST_TRIGGERS_TABLE+"'");
+        getSymmetricEngine().syncTriggers();
+        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT3_VALUES), filterTypes(INSERT_TYPES)));
+        String csvString = getNextDataRow(getSymmetricEngine());
+        Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString, "Data was captured when it should not have been");
+        
+    }    
 
     private int[] filterTypes(int[] types) {
         boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
@@ -269,7 +277,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private String getNextDataRow(SymmetricEngine engine) {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
         return (String) jdbcTemplate
                 .queryForObject("select row_data from " + TestConstants.TEST_PREFIX
                         + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
@@ -278,7 +286,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private String getNextDataRowTableName(SymmetricEngine engine) {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate(engine);
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
         return (String) jdbcTemplate
                 .queryForObject("select table_name from " + TestConstants.TEST_PREFIX
                         + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",

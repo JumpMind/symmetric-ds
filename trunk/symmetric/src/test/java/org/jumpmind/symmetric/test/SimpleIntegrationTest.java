@@ -72,6 +72,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
+    public SimpleIntegrationTest() throws Exception {
+    }
+    
     public SimpleIntegrationTest(String client, String root) throws Exception {
         super(client, root);
     }
@@ -157,7 +160,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                             return rs.getBytes(1);
                         }
                     });
-            Assert.assertTrue("The BLOB icon field on customer was not sync'd to the client.", ArrayUtils.isEquals(data, BIG_BINARY));
+            Assert.assertTrue("The BLOB icon field on customer was not sync'd to the client.", ArrayUtils.isEquals(
+                    data, BIG_BINARY));
         }
 
     }
@@ -184,7 +188,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 .getBean(Constants.PARAMETER_SERVICE);
         IParameterService rootParameterService = (IParameterService) getRootEngine().getApplicationContext().getBean(
                 Constants.PARAMETER_SERVICE);
-        Assert.assertEquals(clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE), rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
+        Assert.assertEquals(clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE),
+                rootParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE));
         boolean oldValue = clientParameterService.is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
         rootParameterService.saveParameter(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE, newValue);
@@ -224,19 +229,24 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "The order record was not sync'd when it should have been.");
         // TODO: make sure event did not fire
     }
-    
-    @Test //(timeout = 30000)
+
+    @Test
+    // (timeout = 30000)
     public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
         boolean oldValue = turnOnNoKeysInUpdateParameter(true);
         rootJdbcTemplate.update("insert into ONE_COLUMN_TABLE values(1)");
-        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1")==0);
+        Assert
+                .assertTrue(clientJdbcTemplate
+                        .queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1") == 0);
         getClientEngine().pull();
-        Assert.assertTrue(clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1")==1);
+        Assert
+                .assertTrue(clientJdbcTemplate
+                        .queryForInt("select count(*) from ONE_COLUMN_TABLE where MY_ONE_COLUMN=1") == 1);
         rootJdbcTemplate.update("update ONE_COLUMN_TABLE set MY_ONE_COLUMN=1 where MY_ONE_COLUMN=1");
         getClientEngine().pull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");        
+        assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");
         turnOnNoKeysInUpdateParameter(oldValue);
     }
 
@@ -261,7 +271,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     public void ignoreNodeChannel() {
         INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
-        IConfigurationService configService = (IConfigurationService) getRootEngine().getApplicationContext().getBean("configurationService");
+        IConfigurationService configService = (IConfigurationService) getRootEngine().getApplicationContext().getBean(
+                "configurationService");
         nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         configService.flushChannels();
@@ -339,6 +350,24 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"), 1,
                 "Table name in mixed case was not synced");
+    }
+
+    @Test(timeout = 30000)
+    public void testNoPrimaryKeySync() {
+        rootJdbcTemplate.update("insert into NO_PRIMARY_KEY_TABLE values(1, 2, 'HELLO')");
+        getClientEngine().pull();
+        assertEquals(clientJdbcTemplate.queryForInt("select TWO_COLUMN from NO_PRIMARY_KEY_TABLE where ONE_COLUMN=1"),
+                2, "Table was not synced");
+        rootJdbcTemplate.update("update NO_PRIMARY_KEY_TABLE set TWO_COLUMN=3 where ONE_COLUMN=1");
+        getClientEngine().pull();
+        assertEquals(clientJdbcTemplate.queryForInt("select TWO_COLUMN from NO_PRIMARY_KEY_TABLE where ONE_COLUMN=1"),
+                3, "Table was not updated");
+        rootJdbcTemplate.update("delete from NO_PRIMARY_KEY_TABLE");
+        getClientEngine().pull();
+        assertEquals(clientJdbcTemplate.queryForInt("select count(*) from NO_PRIMARY_KEY_TABLE"),
+                0, "Table was not deleted from");
+        
+
     }
 
     protected void testDeletes() {
