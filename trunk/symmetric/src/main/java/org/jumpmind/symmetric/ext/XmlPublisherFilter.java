@@ -233,7 +233,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
             xml.append(xmlTagNameToUseForGroup);
             xml.append(">");
             if (logger.isDebugEnabled()) {
-                logger.debug("Sending XML to JMS -> " + xml);
+                logger.debug("Sending XML to IPublisher -> " + xml);
             }
             publisher.publish(ctx, xml.toString());
         }
