@@ -110,7 +110,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
                 xml = new StringBuilder();
                 xml.append("<");
                 xml.append(xmlTagNameToUseForGroup);
-                xml.append(" id='");
+                xml.append(" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' id='");
                 xml.append(txId);
                 xml.append("' ");
                 addFormattedExtraGroupAttributes(ctx, xml);
