@@ -31,6 +31,7 @@
         <column name="item_id" type="INTEGER" required="true" />
         <column name="price" type="DECIMAL" size="10,2" required="true" />
         <column name="quantity" type="INTEGER" required="true" />
+        <column name="returned_quantity" type="INTEGER"/>
         <foreign-key name="fk_srli_tran_id" foreignTable="sale_transaction">
             <reference local="tran_id" foreign="tran_id" />
         </foreign-key>
