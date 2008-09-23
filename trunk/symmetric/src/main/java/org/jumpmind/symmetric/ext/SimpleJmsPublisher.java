@@ -11,15 +11,30 @@ public class SimpleJmsPublisher implements IPublisher {
 
     JmsTemplate jmsTemplate;
 
+    public boolean enabled = true;
+
     public void publish(IDataLoaderContext ctx, String text) {
         if (logger.isDebugEnabled()) {
             logger.debug(text);
         }
-        jmsTemplate.convertAndSend(text);
+
+        if (enabled) {
+            jmsTemplate.convertAndSend(text);
+        } else {
+            logger.warn("Message was not published because the publisher is not enabled.");
+        }
     }
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enable) {
+        this.enabled = enable;
     }
 
 }
