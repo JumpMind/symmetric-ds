@@ -168,6 +168,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             while (dataLoader.hasNext()) {
                 dataLoader.load();
+                IncomingBatchHistory history = new IncomingBatchHistory(dataLoader.getContext());
+                history.setValues(dataLoader.getStatistics(), true);
+                fireBatchComplete(dataLoader, history);                
             }
         } finally {
             stats = dataLoader.getStatistics();
