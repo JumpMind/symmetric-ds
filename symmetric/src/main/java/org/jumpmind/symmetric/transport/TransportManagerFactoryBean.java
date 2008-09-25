@@ -59,7 +59,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
             });
             return new HttpTransportManager(nodeService, parameterService);
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
-            return new InternalTransportManager(parameterService);
+            return new InternalTransportManager(nodeService, parameterService);
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");
         }

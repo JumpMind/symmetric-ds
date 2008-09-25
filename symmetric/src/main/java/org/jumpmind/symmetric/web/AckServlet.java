@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
-import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 
 public class AckServlet extends AbstractTransportResourceServlet<AckResourceHandler> {
 
@@ -59,7 +59,7 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
             logger.debug("Reading ack: " + req.getParameterMap());
         }
         // TODO: fix this; the servlets need to participate in the transport API
-        List<BatchInfo> batches = new InternalTransportManager(null).readAcknowledgement(req.getParameterMap());
+        List<BatchInfo> batches = AbstractTransportManager.readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
         ackService.ack(batches);
     }

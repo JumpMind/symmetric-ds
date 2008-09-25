@@ -62,8 +62,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
     @SuppressWarnings("unused")
     private IParameterService parameterServer;
 
-    public InternalTransportManager(IParameterService config) {
+    private INodeService nodeService;
+
+    public InternalTransportManager(INodeService nodeService, IParameterService config) {
         this.parameterServer = config;
+        this.nodeService = nodeService;
     }
 
     public IIncomingTransport getPullTransport(final Node remote, final Node local) throws IOException {
@@ -128,7 +131,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             if (list != null && list.size() > 0) {
                 SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
 
-                String ackData = getAcknowledgementData(list);
+                String ackData = getAcknowledgementData(local.getNodeId(), list);
                 List<BatchInfo> batches = readAcknowledgement(ackData);
                 IAcknowledgeService service = (IAcknowledgeService) remoteEngine.getApplicationContext().getBean(
                         Constants.ACKNOWLEDGE_SERVICE);
@@ -146,7 +149,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
-        pw.println(getAcknowledgementData(list));
+        pw.println(getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
         pw.close();
     }
 
