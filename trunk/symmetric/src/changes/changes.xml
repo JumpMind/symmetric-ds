@@ -6,6 +6,9 @@
     </properties>
     <body>
         <release version="1.4.0" date="unknown" description="Lets add some polish">
+            <action dev="chenson42" type="fix">
+                The wrong node id was being recorded in outgoing_batch_hist during the ACK.
+            </action>        
             <action dev="chenson42" type="fix" issue="aid=1944227&amp;atid=997724">
                 Fixed trigger creation issue for tables with no primary keys.
             </action>

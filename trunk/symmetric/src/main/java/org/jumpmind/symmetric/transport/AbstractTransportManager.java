@@ -38,7 +38,7 @@ abstract public class AbstractTransportManager {
 
     protected static final String ENCODING = "UTF-8";
 
-    protected String getAcknowledgementData(List<IncomingBatchHistory> list) throws IOException {
+    protected String getAcknowledgementData(String nodeId, List<IncomingBatchHistory> list) throws IOException {
         StringBuilder builder = new StringBuilder();
         for (IncomingBatchHistory status : list) {
             Object value = null;
@@ -57,7 +57,7 @@ abstract public class AbstractTransportManager {
         builder.append("\n");
         for (IncomingBatchHistory status : list) {
             long batchId = status.getBatchId();
-            append(builder, WebConstants.ACK_NODE_ID + batchId, status.getNodeId());
+            append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
             append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, status.getNetworkMillis());
             append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, status.getFilterMillis());
             append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, status.getDatabaseMillis());
@@ -92,7 +92,7 @@ abstract public class AbstractTransportManager {
         return readAcknowledgement(parameters);
     }
 
-    public List<BatchInfo> readAcknowledgement(Map<String, Object> parameters) {
+    public static List<BatchInfo> readAcknowledgement(Map<String, Object> parameters) {
         List<BatchInfo> batches = new ArrayList<BatchInfo>();
         for (String parameterName : parameters.keySet()) {
             if (parameterName.startsWith(WebConstants.ACK_BATCH_NAME)) {
@@ -104,7 +104,7 @@ abstract public class AbstractTransportManager {
         return batches;
     }
 
-    private BatchInfo getBatchInfo(Map<String, Object> parameters, long batchId) {
+    private static BatchInfo getBatchInfo(Map<String, Object> parameters, long batchId) {
         BatchInfo batchInfo = new BatchInfo(batchId);
         batchInfo.setNodeId(getParam(parameters, WebConstants.ACK_NODE_ID + batchId));
         batchInfo.setNetworkMillis(getParamAsNum(parameters, WebConstants.ACK_NETWORK_MILLIS + batchId));
@@ -123,7 +123,7 @@ abstract public class AbstractTransportManager {
         return batchInfo;
     }
 
-    protected Map<String, Object> getParametersFromQueryUrl(String parameterString) throws IOException {
+    protected static Map<String, Object> getParametersFromQueryUrl(String parameterString) throws IOException {
         Map<String, Object> parameters = new HashMap<String, Object>();
         String[] tokens = parameterString.split("&");
         for (String param : tokens) {
@@ -135,16 +135,16 @@ abstract public class AbstractTransportManager {
         return parameters;
     }
 
-    private long getParamAsNum(Map<String, Object> parameters, String parameterName) {
+    private static long getParamAsNum(Map<String, Object> parameters, String parameterName) {
         return NumberUtils.toLong(getParam(parameters, parameterName));
     }
 
-    private String getParam(Map<String, Object> parameters, String parameterName, String defaultValue) {
+    private static String getParam(Map<String, Object> parameters, String parameterName, String defaultValue) {
         String value = getParam(parameters, parameterName);
         return value == null ? defaultValue : value;
     }
 
-    private String getParam(Map<String, Object> parameters, String parameterName) {
+    private static String getParam(Map<String, Object> parameters, String parameterName) {
         Object value = parameters.get(parameterName);
         if (value instanceof String[]) {
             String[] arrayValue = (String[]) value;
