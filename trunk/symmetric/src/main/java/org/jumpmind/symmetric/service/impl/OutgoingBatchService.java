@@ -90,8 +90,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (channel.isSuspended()) {
             logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
         } else if (channel.isEnabled()) {
-            long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"),
-                    new Object[] { 0, nodeId, channel.getId() });
+            long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"), new Object[] { 0,
+                    nodeId, channel.getId() });
 
             if (dataEventCount > channel.getMaxBatchSize()) {
                 buildOutgoingBatchesPeekAhead(nodeId, channel);
@@ -116,8 +116,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 history.setDataEventCount(dataEventCount);
                 history.setDatabaseMillis(databaseMillis);
                 insertOutgoingBatchHistory(history);
-                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(
-                        databaseMillis, dataEventCount);
+                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(databaseMillis,
+                        dataEventCount);
                 statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
             }
         }
@@ -214,7 +214,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
                                     // put this in so we don't build up too many
                                     // statements to send to the server.
-                                    if (count % 10000 == 0) {
+                                    if (count
+                                            % parameterService
+                                                    .getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE) == 0) {
                                         long startTime = System.currentTimeMillis();
                                         update.executeBatch();
                                         databaseMillis += (System.currentTimeMillis() - startTime);
@@ -274,9 +276,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
-                new Object[] { nodeId, OutgoingBatch.Status.NE.toString(),
-                        OutgoingBatch.Status.SE.toString(), OutgoingBatch.Status.ER.toString() },
-                new OutgoingBatchMapper());
+                new Object[] { nodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
+                        OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
         final HashSet<String> errorChannels = new HashSet<String>();
         for (OutgoingBatch batch : list) {
             if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
