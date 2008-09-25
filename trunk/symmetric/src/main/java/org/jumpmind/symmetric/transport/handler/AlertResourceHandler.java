@@ -68,7 +68,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
             String title = "Incoming Batch " + batch.getNodeBatchId();
             String value = "Node " + batch.getNodeId() + " incoming batch " + batch.getBatchId() + " is in error at "
                     + formatDate(batch.getCreateTime());
-            entries.add(createEntry(title, value));
+            entries.add(createEntry(title, value, batch.getCreateTime()));
         }
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
@@ -85,17 +85,19 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
             value.append("The batch has been attempted ");
             value.append(histories.size());
             value.append(" times.  ");
-            OutgoingBatchHistory history = histories.get(histories.size() - 1);
-            int sqlCode = history.getSqlCode();
-            String msg = history.getSqlMessage();
-            if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
-                value.append("The sql error code is ");
-                value.append(sqlCode);
-                value.append(" and the error message is: ");
-                value.append(msg);
+            if (histories.size() > 0) {
+                OutgoingBatchHistory history = histories.get(histories.size() - 1);
+                int sqlCode = history.getSqlCode();
+                String msg = history.getSqlMessage();
+                if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
+                    value.append("The sql error code is ");
+                    value.append(sqlCode);
+                    value.append(" and the error message is: ");
+                    value.append(msg);
+                }
             }
 
-            entries.add(createEntry(title, value.toString()));
+            entries.add(createEntry(title, value.toString(), batch.getCreateTime()));
         }
 
         feed.setEntries(entries);
@@ -104,9 +106,10 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         out.output(feed, outputWriter);
     }
 
-    private SyndEntry createEntry(String title, String value) {
+    private SyndEntry createEntry(String title, String value, Date updatedDate) {
         SyndEntry entry = new SyndEntryImpl();
         entry.setTitle(title);
+        entry.setUpdatedDate(updatedDate);
         SyndContent content = new SyndContentImpl();
         content.setType("text/html");
         content.setValue(value);
