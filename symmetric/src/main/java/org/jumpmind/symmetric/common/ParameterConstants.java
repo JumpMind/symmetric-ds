@@ -57,6 +57,7 @@ public class ParameterConstants {
     public final static String CONCURRENT_WORKERS = "http.concurrent.workers.max";
     public final static String CONCURRENT_RESERVATION_TIMEOUT = "http.concurrent.reservation.timeout.ms";
 
+    public final static String OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE = "outgoing.batches.peek.ahead.batch.commit.size";
     public final static String OUTGOING_BATCH_PEEK_AHEAD_WINDOW = "outgoing.batches.peek.ahead.window.after.max.size";
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
