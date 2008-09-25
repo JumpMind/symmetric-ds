@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
@@ -71,9 +73,29 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
             String title = "Outgoing Batch " + batch.getNodeBatchId();
-            String value = "Node " + batch.getNodeId() + " outgoing batch " + batch.getBatchId() + " is in error at "
-                    + formatDate(batch.getCreateTime());
-            entries.add(createEntry(title, value));
+            StringBuilder value = new StringBuilder("Node ");
+            value.append(batch.getNodeId());
+            value.append(" outgoing batch ");
+            value.append(batch.getBatchId());
+            value.append(" is in error at ");
+            value.append(formatDate(batch.getCreateTime()));
+            value.append(".  ");
+            List<OutgoingBatchHistory> histories = outgoingBatchService.findOutgoingBatchHistory(batch.getBatchId(),
+                    batch.getNodeId());
+            value.append("The batch has been attempted ");
+            value.append(histories.size());
+            value.append(" times.  ");
+            OutgoingBatchHistory history = histories.get(histories.size() - 1);
+            int sqlCode = history.getSqlCode();
+            String msg = history.getSqlMessage();
+            if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
+                value.append("The sql error code is ");
+                value.append(sqlCode);
+                value.append(" and the error message is: ");
+                value.append(msg);
+            }
+
+            entries.add(createEntry(title, value.toString()));
         }
 
         feed.setEntries(entries);
