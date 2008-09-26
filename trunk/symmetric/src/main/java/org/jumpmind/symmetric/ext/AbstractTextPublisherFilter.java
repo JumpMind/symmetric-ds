@@ -113,6 +113,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
             if (logger.isDebugEnabled()) {
                 logger.debug("publishing text message -> " + msg);
             }
+            ctx.getContextCache().remove(msg_CACHE);
             publisher.publish(ctx, msg.toString());
         }
     }

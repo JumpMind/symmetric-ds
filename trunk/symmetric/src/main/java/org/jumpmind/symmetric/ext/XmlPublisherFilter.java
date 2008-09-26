@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -228,15 +229,18 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     private void finalizeXmlAndPublish(IDataLoaderContext ctx) {
         Map<String, StringBuilder> ctxCache = getXmlCache(ctx);
         Collection<StringBuilder> buffers = ctxCache.values();
-        for (StringBuilder xml : buffers) {
+        for (Iterator<StringBuilder> iterator = buffers.iterator(); iterator.hasNext();) {
+            StringBuilder xml = iterator.next();
             xml.append("</");
             xml.append(xmlTagNameToUseForGroup);
             xml.append(">");
             if (logger.isDebugEnabled()) {
                 logger.debug("Sending XML to IPublisher -> " + xml);
             }
-            publisher.publish(ctx, xml.toString());
+            iterator.remove();
+            publisher.publish(ctx, xml.toString());            
         }
+        
     }
 
     public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
