@@ -26,14 +26,19 @@ package org.jumpmind.symmetric.transport.handler;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
+import org.jumpmind.symmetric.model.OutgoingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
@@ -66,9 +71,30 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
         for (IncomingBatch batch : findIncomingBatchErrors()) {
             String title = "Incoming Batch " + batch.getNodeBatchId();
-            String value = "Node " + batch.getNodeId() + " incoming batch " + batch.getBatchId() + " is in error at "
-                    + formatDate(batch.getCreateTime());
-            entries.add(createEntry(title, value, batch.getCreateTime()));
+            StringBuilder value = new StringBuilder("Node ");
+            value.append(batch.getNodeId());
+            value.append(" incoming batch ");
+            value.append(batch.getBatchId());
+            value.append(" is in error at ");
+            value.append(formatDate(batch.getCreateTime()));
+            value.append(".  ");
+            List<IncomingBatchHistory> list = filterOutIncomingHistoryErrors(incomingBatchService
+                    .findIncomingBatchHistory(batch.getBatchId(), batch.getNodeId()));
+            if (list.size() > 0) {
+                value.append("The batch has been attempted ");
+                value.append(list.size());
+                value.append(" times.  ");
+                IncomingBatchHistory history = list.get(list.size() - 1);
+                int sqlCode = history.getSqlCode();
+                String msg = history.getSqlMessage();
+                if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
+                    value.append("The sql error code is ");
+                    value.append(sqlCode);
+                    value.append(" and the error message is: ");
+                    value.append(msg);
+                }
+            }
+            entries.add(createEntry(title, value.toString(), batch.getCreateTime()));
         }
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
@@ -80,12 +106,12 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
             value.append(" is in error at ");
             value.append(formatDate(batch.getCreateTime()));
             value.append(".  ");
-            List<OutgoingBatchHistory> histories = outgoingBatchService.findOutgoingBatchHistory(batch.getBatchId(),
-                    batch.getNodeId());
-            value.append("The batch has been attempted ");
-            value.append(histories.size());
-            value.append(" times.  ");
+            List<OutgoingBatchHistory> histories = filterOutOutgoingHistoryErrors(outgoingBatchService
+                    .findOutgoingBatchHistory(batch.getBatchId(), batch.getNodeId()));
             if (histories.size() > 0) {
+                value.append("The batch has been attempted ");
+                value.append(histories.size());
+                value.append(" times.  ");
                 OutgoingBatchHistory history = histories.get(histories.size() - 1);
                 int sqlCode = history.getSqlCode();
                 String msg = history.getSqlMessage();
@@ -100,16 +126,43 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
             entries.add(createEntry(title, value.toString(), batch.getCreateTime()));
         }
 
+        Collections.sort(entries, new SyndEntryOrderer());
         feed.setEntries(entries);
 
         SyndFeedOutput out = new SyndFeedOutput();
         out.output(feed, outputWriter);
     }
 
-    private SyndEntry createEntry(String title, String value, Date updatedDate) {
+    private List<IncomingBatchHistory> filterOutIncomingHistoryErrors(List<IncomingBatchHistory> list) {
+        for (Iterator<IncomingBatchHistory> iterator = list.iterator(); iterator.hasNext();) {
+            IncomingBatchHistory outgoingBatchHistory = iterator.next();
+            if (outgoingBatchHistory.getStatus() != org.jumpmind.symmetric.model.IncomingBatchHistory.Status.ER) {
+                iterator.remove();
+            }
+        }
+        return list;
+    }
+
+    private List<OutgoingBatchHistory> filterOutOutgoingHistoryErrors(List<OutgoingBatchHistory> list) {
+        for (Iterator<OutgoingBatchHistory> iterator = list.iterator(); iterator.hasNext();) {
+            OutgoingBatchHistory outgoingBatchHistory = iterator.next();
+            if (outgoingBatchHistory.getStatus() != Status.ER) {
+                iterator.remove();
+            }
+        }
+        return list;
+    }
+    
+    class SyndEntryOrderer implements Comparator<SyndEntry> {
+        public int compare(SyndEntry o1, SyndEntry o2) {
+            return o1.getPublishedDate().compareTo(o2.getPublishedDate());
+        }
+    }
+
+    private SyndEntry createEntry(String title, String value, Date publishedDate) {
         SyndEntry entry = new SyndEntryImpl();
         entry.setTitle(title);
-        entry.setUpdatedDate(updatedDate);
+        entry.setPublishedDate(publishedDate);
         SyndContent content = new SyndContentImpl();
         content.setType("text/html");
         content.setValue(value);
