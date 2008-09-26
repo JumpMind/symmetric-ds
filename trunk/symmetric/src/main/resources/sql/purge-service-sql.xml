@@ -11,7 +11,7 @@
     <entry key="selectOutgoingBatchRangeSql">
       <value>
         select min(batch_id), max(batch_id) from ${sync.table.prefix}_outgoing_batch where
-        create_time &lt; ?
+        create_time &lt; ? and status = 'OK'
       </value>
     </entry>
     <entry key="deleteOutgoingBatchSql">
@@ -48,7 +48,7 @@
     <entry key="selectIncomingBatchRangeSql">
       <value>
         select node_id, min(batch_id), max(batch_id) from ${sync.table.prefix}_incoming_batch where
-        create_time &lt; ? group by node_id
+        create_time &lt; ? and status = 'OK' group by node_id
       </value>
     </entry>
     <entry key="deleteIncomingBatchSql">
