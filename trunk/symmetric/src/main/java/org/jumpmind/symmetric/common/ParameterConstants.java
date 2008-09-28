@@ -100,4 +100,6 @@ public class ParameterConstants {
     public final static String JMX_HTTP_CONSOLE_ENABLED = "jmx.http.console.for.embedded.webserver.enabled";
 
     public final static String IP_FILTERS = "ip.filters";
+    
+    public final static String WEB_BATCH_SERVLET_ENABLE = "web.batch.servlet.enable";
 }
