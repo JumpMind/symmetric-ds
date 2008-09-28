@@ -32,7 +32,15 @@
             ref="incomingBatchService" />
         <property name="outgoingBatchService"
             ref="outgoingBatchService" />
+        <property name="parameterService"
+            ref="parameterService" />            
     </bean>
+    
+    <bean id="batchResourceHandler"
+        class="org.jumpmind.symmetric.transport.handler.BatchResourceHandler">
+        <property name="dataExtractorService"
+            ref="dataExtractorService" />
+    </bean>    
 
     <bean id="authenticationResourceHandler"
         class="org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler">
@@ -143,5 +151,13 @@
         <property name="transportResourceHandler"
             ref="alertResourceHandler" />
     </bean>
+    
+    <bean id="batchServlet"
+        class="org.jumpmind.symmetric.web.BatchServlet">
+        <property name="uriPattern" value="/batch/*" />
+        <property name="transportResourceHandler"
+            ref="batchResourceHandler" />
+        <property name="enabled" value="${web.batch.servlet.enable}"/>            
+    </bean>    
 
 </beans>

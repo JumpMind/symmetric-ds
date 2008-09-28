@@ -72,6 +72,10 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
     public void setDisabled(boolean disabled) {
         servletResourceTemplate.setDisabled(disabled);
     }
+    
+    public void setEnabled(boolean enabled) {
+        servletResourceTemplate.setDisabled(!enabled);
+    }
 
     public void setRegexPattern(String regexPattern) {
         servletResourceTemplate.setRegexPattern(regexPattern);

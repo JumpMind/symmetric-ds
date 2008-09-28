@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IParameterService;
 
 import com.sun.syndication.feed.synd.SyndContent;
 import com.sun.syndication.feed.synd.SyndContentImpl;
@@ -60,10 +61,12 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
     private IOutgoingBatchService outgoingBatchService;
 
+    private IParameterService parameterService;
+
     public void write(CharSequence feedURL, Writer outputWriter) throws IOException, FeedException {
         SyndFeed feed = new SyndFeedImpl();
         feed.setFeedType("rss_2.0");
-        feed.setTitle("SymmetricDS Alerts");
+        feed.setTitle("SymmetricDS Alerts for " + parameterService.getMyUrl());
         feed.setDescription("Problems synchronizing data");
         feed.setLink(feedURL.toString());
 
@@ -94,7 +97,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
                     value.append(msg);
                 }
             }
-            entries.add(createEntry(title, value.toString(), batch.getCreateTime()));
+            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), null));
         }
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
@@ -123,7 +126,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
                 }
             }
 
-            entries.add(createEntry(title, value.toString(), batch.getCreateTime()));
+            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), "batch/" + batch.getBatchId()));
         }
 
         Collections.sort(entries, new SyndEntryOrderer());
@@ -152,16 +155,19 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         }
         return list;
     }
-    
+
     class SyndEntryOrderer implements Comparator<SyndEntry> {
         public int compare(SyndEntry o1, SyndEntry o2) {
             return o1.getPublishedDate().compareTo(o2.getPublishedDate());
         }
     }
 
-    private SyndEntry createEntry(String title, String value, Date publishedDate) {
+    private SyndEntry createEntry(String title, String value, Date publishedDate, String sourceLink) {
         SyndEntry entry = new SyndEntryImpl();
         entry.setTitle(title);
+        if (sourceLink != null) {
+            entry.setLink(sourceLink);
+        }
         entry.setPublishedDate(publishedDate);
         SyndContent content = new SyndContentImpl();
         content.setType("text/html");
@@ -197,6 +203,10 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
 }

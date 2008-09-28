@@ -83,6 +83,7 @@
 
     <bean id="outgoingManagementService" class="org.jumpmind.symmetric.service.jmx.OutgoingManagementService">
         <property name="statisticManager" ref="statisticManager" />
+        <property name="dataExtractorService" ref="dataExtractorService" />        
     </bean>
 
     <bean id="parameterManagementService" class="org.jumpmind.symmetric.service.jmx.ParameterManagementService">

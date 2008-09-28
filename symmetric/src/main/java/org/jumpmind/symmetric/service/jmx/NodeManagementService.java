@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.jmx;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -314,18 +313,7 @@ public class NodeManagementService {
         return dataService.reloadTable(nodeId, tableName, overrideInitialLoadSelect);
     }
 
-    @ManagedOperation(description = "Show a batch in Symmetric Data Format.")
-    @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
-    public String showBatch(String batchId) throws Exception {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        IOutgoingTransport transport = new InternalOutgoingTransport(out);
-        dataExtractorService.extractBatchRange(transport, batchId, batchId);
-        transport.close();
-        out.close();
-        return out.toString();
-    }
-
-    @ManagedOperation(description = "Write a range of batches to a file in Symmetric Data Format.")
+    @ManagedOperation(description = "Write a range of batches to a file in SymmetricDS Data Format.")
     @ManagedOperationParameters( {
             @ManagedOperationParameter(name = "startBatchId", description = "Starting batch ID of range"),
             @ManagedOperationParameter(name = "endBatchId", description = "Ending batch ID of range"),
