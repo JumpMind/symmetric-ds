@@ -252,6 +252,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
         count = jdbcTemplate.update(getSql("deleteIncomingBatchHistByNodeSql"), new Object[] { nodeId });
         logger.info("Purged all " + count + " incoming batch hist for node " + nodeId);
     }
+    
+    public void purgeAllOutgoingEventsForNode(String nodeId) {
+        long ts = System.currentTimeMillis();
+        int count = jdbcTemplate.update(getSql("deleteOutgoingEventsByNodeSql"), new Object[] {nodeId});
+        logger.info("Deleted " + count + " data events for node " + nodeId + " in " + (System.currentTimeMillis()-ts) + "ms.");
+    }
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
