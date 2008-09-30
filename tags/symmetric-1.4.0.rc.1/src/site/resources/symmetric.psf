@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psf version="2.0">
+<provider id="org.polarion.team.svn.core.svnnature">
+<project reference="1.0.0,https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric,symmetric,b0521079ae6e001c1ca4e52d5fa8f9f6;https://symmetricds.svn.sourceforge.net/svnroot/symmetricds;https://symmetricds.svn.sourceforge.net/svnroot/symmetricds;branches;tags;trunk"/>
+</provider>
+</psf>
