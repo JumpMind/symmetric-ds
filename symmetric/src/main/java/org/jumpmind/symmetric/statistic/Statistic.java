@@ -116,7 +116,7 @@ public class Statistic {
     public void add(long v, long count) {
         synchronized (name) {
             this.total = this.total.add(new BigDecimal(v));
-            this.count += this.count;
+            this.count += count;
             lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
             lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(new BigDecimal(v)));
         }
@@ -125,7 +125,7 @@ public class Statistic {
     public void add(int v, long count) {
         synchronized (name) {
             this.total = this.total.add(new BigDecimal(v));
-            this.count += this.count;
+            this.count += count;
             lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
             lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(new BigDecimal(v)));
         }
@@ -134,7 +134,7 @@ public class Statistic {
     public void add(BigDecimal v, long count) {
         synchronized (name) {
             this.total = this.total.add(v);
-            this.count += this.count;
+            this.count += count;
             lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
             lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(v));
         }
