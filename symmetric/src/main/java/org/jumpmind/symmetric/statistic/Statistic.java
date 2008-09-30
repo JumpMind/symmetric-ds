@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,8 +91,8 @@ public class Statistic {
     }
 
     private BigDecimal getAverageValue(BigDecimal total, long count) {
-        if (total != null && count > 0) {
-            return total.divide(new BigDecimal(count));
+        if (total != null && total.compareTo(BigDecimal.ZERO) > 0 && count > 0) {
+            return total.divide(new BigDecimal(count), RoundingMode.HALF_UP);
         } else {
             return BigDecimal.ZERO;
         }
