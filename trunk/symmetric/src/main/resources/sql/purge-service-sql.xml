@@ -72,6 +72,9 @@
     <entry key="deleteIncomingBatchHistByNodeSql">
       <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id = ?</value>
     </entry>
+    <entry key="deleteOutgoingEventsByNodeSql">
+      <value>delete from ${sync.table.prefix}_data_event where node_id = ?</value>
+    </entry>    
   </util:map>
 
 </beans>
