@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -62,6 +63,8 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
     private IOutgoingBatchService outgoingBatchService;
 
     private IParameterService parameterService;
+    
+    private INodeService nodeService;
 
     public void write(CharSequence feedURL, Writer outputWriter) throws IOException, FeedException {
         SyndFeed feed = new SyndFeedImpl();
@@ -97,7 +100,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
                     value.append(msg);
                 }
             }
-            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), null));
+            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), nodeService.findNode(batch.getNodeId()).getSyncURL() + "/batch/" + batch.getBatchId()));
         }
 
         for (OutgoingBatch batch : findOutgoingBatchErrors()) {
@@ -207,6 +210,10 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }
