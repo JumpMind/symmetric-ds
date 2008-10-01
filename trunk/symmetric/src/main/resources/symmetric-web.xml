@@ -33,7 +33,9 @@
         <property name="outgoingBatchService"
             ref="outgoingBatchService" />
         <property name="parameterService"
-            ref="parameterService" />            
+            ref="parameterService" />
+        <property name="nodeService"
+            ref="nodeService" />                         
     </bean>
     
     <bean id="batchResourceHandler"
