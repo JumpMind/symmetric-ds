@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -249,17 +248,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             recordStatistics(list);
         }
         return list;
-    }
-
-    @SuppressWarnings("unchecked")
-    private SQLException unwrapSqlException(Exception e) {
-        List<Throwable> exs = ExceptionUtils.getThrowableList(e);
-        for (Throwable throwable : exs) {
-            if (throwable instanceof SQLException) {
-                return (SQLException) throwable;
-            }
-        }
-        return null;
     }
 
     private void recordStatistics(List<IncomingBatchHistory> list) {

@@ -20,8 +20,11 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -41,6 +44,17 @@ abstract class AbstractService {
     protected SimpleJdbcTemplate getSimpleTemplate() {
         return new SimpleJdbcTemplate(jdbcTemplate);
     }
+    
+    @SuppressWarnings("unchecked")
+    protected SQLException unwrapSqlException(Exception e) {
+        List<Throwable> exs = ExceptionUtils.getThrowableList(e);
+        for (Throwable throwable : exs) {
+            if (throwable instanceof SQLException) {
+                return (SQLException) throwable;
+            }
+        }
+        return null;
+    }    
 
     public void setSql(Map<String, String> sql) {
         this.sql = sql;

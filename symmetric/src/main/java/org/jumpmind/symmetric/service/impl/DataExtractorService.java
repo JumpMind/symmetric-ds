@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -46,6 +48,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
@@ -59,6 +62,8 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
 public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
+
+    protected static final Log logger = LogFactory.getLog(DataExtractorService.class);
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -92,7 +97,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
     }
 
     private IDataExtractor getDataExtractor(String version) {
@@ -191,10 +196,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 .getNodeId()), channels);
 
         if (batches != null && batches.size() > 0) {
+            OutgoingBatchHistory history = null;
             try {
                 handler.init();
                 for (final OutgoingBatch batch : batches) {
-                    OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+                    history = new OutgoingBatchHistory(batch);
                     handler.startBatch(batch);
                     selectEventDataToExtract(handler, batch);
                     handler.endBatch(batch);
@@ -202,6 +208,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     history.setEndTime(new Date());
                     outgoingBatchService.insertOutgoingBatchHistory(history);
                 }
+            } catch (RuntimeException e) {
+                SQLException se = unwrapSqlException(e);
+                if (se != null && history != null) {
+                    history.setSqlState(se.getSQLState());
+                    history.setSqlCode(se.getErrorCode());
+                    history.setSqlMessage(se.getMessage());
+                }
+                if (history != null) {
+                    history.setStatus(OutgoingBatchHistory.Status.SE);
+                    history.setEndTime(new Date());
+                    outgoingBatchService.setBatchStatus(history.getBatchId(), Status.ER);
+                    outgoingBatchService.insertOutgoingBatchHistory(history);
+                } else {
+                    logger.error(
+                            "Could not log the outgoing batch status because the batch history has not been created.",
+                            e);
+                }
+                throw e;
             } finally {
                 handler.done();
             }
@@ -269,17 +293,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ps.setString(1, batch.getNodeId());
                 ps.setLong(2, batch.getBatchId());
                 ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    try {
-                        handler.dataExtracted(next(rs));
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                try {
+                    while (rs.next()) {
+                        try {
+                            handler.dataExtracted(next(rs));
+                        } catch (RuntimeException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);
                 }
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(ps);
                 return null;
             }
         });
