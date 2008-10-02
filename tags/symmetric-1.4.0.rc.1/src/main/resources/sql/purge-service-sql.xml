@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="purgeServiceSql">
+    <entry key="selectOutgoingBatchRangeSql">
+      <value>
+        select min(batch_id), max(batch_id) from ${sync.table.prefix}_outgoing_batch where
+        create_time &lt; ? and status = 'OK'
+      </value>
+    </entry>
+    <entry key="deleteOutgoingBatchSql">
+      <value>
+        delete from ${sync.table.prefix}_outgoing_batch where status = 'OK' and batch_id between ?
+        and ?
+      </value>
+    </entry>
+    <entry key="deleteOutgoingBatchHistSql">
+      <value>
+        delete from ${sync.table.prefix}_outgoing_batch_hist where batch_id between ? and ? and
+        batch_id not in (select batch_id from ${sync.table.prefix}_outgoing_batch where batch_id
+        between ? and ? and status != 'OK')
+      </value>
+    </entry>
+    <entry key="deleteDataEventSql">
+      <value>
+        delete from ${sync.table.prefix}_data_event where batch_id not in (select batch_id from
+        ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? and status != 'OK') and
+        batched = 1 and batch_id between ? and ?
+      </value>
+    </entry>
+    <entry key="selectDataRangeSql">
+      <value>
+        select min(data_id), max(data_id) from ${sync.table.prefix}_data where create_time &lt; ?
+      </value>
+    </entry>
+    <entry key="deleteDataSql">
+      <value>
+        delete from ${sync.table.prefix}_data where data_id not in (select data_id from
+        ${sync.table.prefix}_data_event where data_id between ? and ?) and data_id between ? and ?
+      </value>
+    </entry>
+    <entry key="selectIncomingBatchRangeSql">
+      <value>
+        select node_id, min(batch_id), max(batch_id) from ${sync.table.prefix}_incoming_batch where
+        create_time &lt; ? and status = 'OK' group by node_id
+      </value>
+    </entry>
+    <entry key="deleteIncomingBatchSql">
+      <value>
+        delete from ${sync.table.prefix}_incoming_batch where batch_id between ? and ? and node_id =
+        ? and status = 'OK'
+      </value>
+    </entry>
+    <entry key="deleteIncomingBatchHistSql">
+      <value>
+        delete from ${sync.table.prefix}_incoming_batch_hist where batch_id between ? and ? and
+        node_id = ?
+      </value>
+    </entry>
+    <entry key="deleteFromStatisticSql">
+      <value>delete from ${sync.table.prefix}_statistic where capture_end_time &lt; ?</value>
+    </entry>
+    <entry key="deleteIncomingBatchByNodeSql">
+      <value>delete from ${sync.table.prefix}_incoming_batch where node_id = ?</value>
+    </entry>
+    <entry key="deleteIncomingBatchHistByNodeSql">
+      <value>delete from ${sync.table.prefix}_incoming_batch_hist where node_id = ?</value>
+    </entry>
+    <entry key="deleteOutgoingEventsByNodeSql">
+      <value>delete from ${sync.table.prefix}_data_event where node_id = ?</value>
+    </entry>    
+  </util:map>
+
+</beans>
