@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * </ol>
  * </p>
  * If you have special formatting needs, implement the {@link IFormat} interface
- * and map your formatter to the column you want to 'massage.' 
+ * and map your formatter to the column you want to 'massage.'
  */
 public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
