@@ -36,7 +36,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     private static final Log logger = LogFactory.getLog(AbstractTextPublisherFilter.class);
 
-    private static final String msg_CACHE = "msg_CACHE";
+    private final String MSG_CACHE = "msg_CACHE" + hashCode();
 
     protected IPublisher publisher;
 
@@ -90,10 +90,10 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     protected StringBuilder getFromCache(IDataLoaderContext ctx) {
         Map<String, Object> cache = ctx.getContextCache();
-        StringBuilder msgCache = (StringBuilder) cache.get(msg_CACHE);
+        StringBuilder msgCache = (StringBuilder) cache.get(MSG_CACHE);
         if (msgCache == null) {
             msgCache = new StringBuilder(addTextHeader(ctx));
-            cache.put(msg_CACHE, msgCache);
+            cache.put(MSG_CACHE, msgCache);
         }
         return msgCache;
     }
@@ -101,7 +101,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     @SuppressWarnings("unchecked")
     protected boolean doesTextExistToPublish(IDataLoaderContext ctx) {
         Map<String, Object> cache = ctx.getContextCache();
-        StringBuilder msgCache = (StringBuilder) cache.get(msg_CACHE);
+        StringBuilder msgCache = (StringBuilder) cache.get(MSG_CACHE);
         return msgCache != null && msgCache.length() > 0;
     }
 
@@ -113,7 +113,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
             if (logger.isDebugEnabled()) {
                 logger.debug("publishing text message -> " + msg);
             }
-            ctx.getContextCache().remove(msg_CACHE);
+            ctx.getContextCache().remove(MSG_CACHE);
             publisher.publish(ctx, msg.toString());
         }
     }
