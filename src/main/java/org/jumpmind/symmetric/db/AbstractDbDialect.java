@@ -659,8 +659,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String getCreateTableXML(Trigger trig) {
         Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
         Database db = new Database();
-        db.setName(trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() : getDefaultSchema() != null
-                ? getDefaultSchema() : getDefaultCatalog());
+        db.setName(trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() : getDefaultSchema());
         db.addTable(table);
         StringWriter buffer = new StringWriter();
         DatabaseIO xmlWriter = new DatabaseIO();
