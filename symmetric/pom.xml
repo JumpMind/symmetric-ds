@@ -102,24 +102,19 @@
             <timezone>-5</timezone>
         </contributor>
     </contributors>
+    
     <distributionManagement>
-        <site>
-            <id>sourceforge.net</id>
-            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs</url>
-        </site>
-        <!-- use the following if you're not using a snapshot version. -->
-        <repository>
-            <id>sourceforge.net</id>
-            <name>SymmetricDS Repo</name>
-            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
-        </repository>
-        <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
+            <uniqueVersion>false</uniqueVersion>
             <id>sourceforge.net</id>
-            <name>SymmetricDS Repo</name>
-            <url>scp://shell.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+            <url>svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/repository</url>
         </snapshotRepository>
-    </distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>sourceforge.net</id>
+            <url>svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/repository</url>
+        </repository>
+    </distributionManagement>    
 
     <properties>
         <wtpVersion>1.5</wtpVersion>
@@ -136,6 +131,13 @@
     </repositories>
 
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.jvnet.wagon-svn</groupId>
+                <artifactId>wagon-svn</artifactId>
+                <version>1.8</version>
+            </extension>
+        </extensions>    
         <finalName>symmetric-ds</finalName>
         <plugins>
             <plugin>
