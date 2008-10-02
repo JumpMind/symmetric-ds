@@ -10,6 +10,10 @@
                 Enhanced the RSS functionality a bit by adding published date field as the batch creation date, added
                 SQL error information if it exists and the number of times a batch errored out.
             </action>
+            <action dev="chenson42" type="fix">
+                Log the SQL error code and message and mark the outgoing batch as in 'ER' if the error happens on the
+                extract side.
+            </action>
             <action dev="chenson42" type="fix" issue="aid=1917203&amp;atid=997724">
                 Clear out unsent events when an initial load is queue'd up.
             </action>
