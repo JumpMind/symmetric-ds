@@ -24,8 +24,12 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * A convenience class that allows the end user to template a message using
@@ -43,52 +47,104 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * If you have special formatting needs, implement the {@link IFormat} interface
  * and map your formatter to the column you want to 'massage.'
  */
-public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
+public class TemplatedPublisherFilter extends AbstractTextPublisherFilter implements INodeGroupExtensionPoint,
+        BeanNameAware {
 
     static final Log logger = LogFactory.getLog(TemplatedPublisherFilter.class);
 
-    Map<String, String> headerTableTemplates;
-    Map<String, String> footerTableTemplates;
-    Map<String, String> contentTableTemplates;
-    Map<String, IFormat> columnNameToDataFormatter;
-    boolean processDelete = true;
-    boolean processInsert = true;
-    boolean processUpdate = true;
+    private Map<String, String> headerTableTemplates;
+    private Map<String, String> footerTableTemplates;
+    private Map<String, String> contentTableTemplates;
+    private Map<String, IFormat> columnNameToDataFormatter;
+    private String[] nodeGroupIdsToApplyTo;
+    private boolean processDelete = true;
+    private boolean processInsert = true;
+    private boolean processUpdate = true;
+    private String beanName;
+    private int messagesSinceLastLogOutput = 0;
+    private long minTimeInMsBetweenLogOutput = 30000;
+    private long lastTimeInMsOutputLogged = System.currentTimeMillis();
+    private IDataLoaderFilter dataFilter;
+
+    public String[] getNodeGroupIdsToApplyTo() {
+        return nodeGroupIdsToApplyTo;
+    }
+
+    public void setBeanName(String name) {
+        this.beanName = name;
+    }
+
+    public void setNodeGroupIdToApplyTo(String nodeGroupdId) {
+        this.nodeGroupIdsToApplyTo = new String[] { nodeGroupdId };
+    }
+
+    @Override
+    public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
+        super.batchComplete(loader, hist);
+        if (doesTextExistToPublish(loader.getContext())) {
+            logCount();
+        }
+    }
+
+    protected void logCount() {
+        messagesSinceLastLogOutput++;
+        long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
+        if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
+            if (logger.isInfoEnabled()) {
+                logger.info(beanName + " published " + messagesSinceLastLogOutput + " messages in the last "
+                        + timeInMsSinceLastLogOutput + "ms");
+            }
+            lastTimeInMsOutputLogged = System.currentTimeMillis();
+            messagesSinceLastLogOutput = 0;
+        }
+    }
 
     @Override
     protected String addTextElementForDelete(IDataLoaderContext ctx, String[] keys) {
-        String template = null;
-        if (processDelete) {
-            template = contentTableTemplates.get(ctx.getTableName());
-            if (template != null) {
-                template = fillOutTemplate(DmlType.DELETE, template, ctx, null, keys);
+        if (this.dataFilter == null || this.dataFilter.filterDelete(ctx, keys)) {
+            String template = null;
+            if (processDelete) {
+                template = contentTableTemplates.get(ctx.getTableName());
+                if (template != null) {
+                    template = fillOutTemplate(DmlType.DELETE, template, ctx, null, keys);
+                }
             }
+            return template;
+        } else {
+            return null;
         }
-        return template;
     }
 
     @Override
     protected String addTextElementForInsert(IDataLoaderContext ctx, String[] data) {
-        String template = null;
-        if (processInsert) {
-            template = contentTableTemplates.get(ctx.getTableName());
-            if (template != null) {
-                template = fillOutTemplate(DmlType.INSERT, template, ctx, data, null);
+        if (this.dataFilter == null || this.dataFilter.filterInsert(ctx, data)) {
+            String template = null;
+            if (processInsert) {
+                template = contentTableTemplates.get(ctx.getTableName());
+                if (template != null) {
+                    template = fillOutTemplate(DmlType.INSERT, template, ctx, data, null);
+                }
             }
+            return template;
+        } else {
+            return null;
         }
-        return template;
     }
 
     @Override
     protected String addTextElementForUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
-        String template = null;
-        if (processUpdate) {
-            template = contentTableTemplates.get(ctx.getTableName());
-            if (template != null) {
-                template = fillOutTemplate(DmlType.UPDATE, template, ctx, data, keys);
+        if (this.dataFilter == null || this.dataFilter.filterUpdate(ctx, data, keys)) {
+            String template = null;
+            if (processUpdate) {
+                template = contentTableTemplates.get(ctx.getTableName());
+                if (template != null) {
+                    template = fillOutTemplate(DmlType.UPDATE, template, ctx, data, keys);
+                }
             }
+            return template;
+        } else {
+            return null;
         }
-        return template;
     }
 
     @Override
@@ -148,10 +204,6 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
         this.columnNameToDataFormatter = columnNameToDataFormatter;
     }
 
-    public interface IFormat {
-        public String format(String data) throws ParseException;
-    }
-
     public void setProcessDelete(boolean processDeletes) {
         this.processDelete = processDeletes;
     }
@@ -174,6 +226,26 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
     public void setContentTableTemplates(Map<String, String> contentTableTemplates) {
         this.contentTableTemplates = contentTableTemplates;
+    }
+
+    public void setNodeGroupIdsToApplyTo(String[] nodeGroupsToApplyTo) {
+        this.nodeGroupIdsToApplyTo = nodeGroupsToApplyTo;
+    }
+
+    public void setMessagesSinceLastLogOutput(int messagesSinceLastLogOutput) {
+        this.messagesSinceLastLogOutput = messagesSinceLastLogOutput;
+    }
+
+    public void setMinTimeInMsBetweenLogOutput(long timeInMsBetweenLogOutput) {
+        this.minTimeInMsBetweenLogOutput = timeInMsBetweenLogOutput;
+    }
+
+    public interface IFormat {
+        public String format(String data) throws ParseException;
+    }
+
+    public void setDataFilter(IDataLoaderFilter dataFilter) {
+        this.dataFilter = dataFilter;
     }
 
 }
