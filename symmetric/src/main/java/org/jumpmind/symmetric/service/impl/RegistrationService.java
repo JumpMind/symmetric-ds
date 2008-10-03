@@ -201,7 +201,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     public void reOpenRegistration(String nodeId) {
         String password = nodeService.generatePassword();
-        jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
+        int updateCount = jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
+        if (updateCount == 0) {
+            // if the update count was 0, then we probably have a row in the node table, but not in node security.
+            // lets go ahead and try to insert into node security.            
+            jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
+        }
     }
 
     /**
