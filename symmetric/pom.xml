@@ -103,6 +103,7 @@
         </contributor>
     </contributors>
     
+    <!-- 
     <distributionManagement>
         <snapshotRepository>
             <uniqueVersion>false</uniqueVersion>
@@ -115,7 +116,8 @@
             <url>svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/repository</url>
         </repository>
     </distributionManagement>    
-
+    -->
+ 
     <properties>
         <wtpVersion>1.5</wtpVersion>
         <springframework-release-version>2.5.5</springframework-release-version>
@@ -131,13 +133,15 @@
     </repositories>
 
     <build>
+    <!-- 
         <extensions>
             <extension>
                 <groupId>org.jvnet.wagon-svn</groupId>
                 <artifactId>wagon-svn</artifactId>
                 <version>1.8</version>
             </extension>
-        </extensions>    
+        </extensions>
+         -->    
         <finalName>symmetric-ds</finalName>
         <plugins>
             <plugin>
