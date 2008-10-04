@@ -27,12 +27,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  */
-abstract public class AbstractTextPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
+abstract public class AbstractTextPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
 
     private static final Log logger = LogFactory.getLog(AbstractTextPublisherFilter.class);
 
@@ -43,10 +44,18 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     private boolean loadDataInTargetDatabase = true;
 
     private Set<String> tableList;
-    
+
     private boolean autoRegister = true;
-    
+
     private String[] nodeGroupIdsToApplyTo;
+
+    private int messagesSinceLastLogOutput = 0;
+
+    private long minTimeInMsBetweenLogOutput = 30000;
+
+    private long lastTimeInMsOutputLogged = System.currentTimeMillis();
+
+    private String beanName;
 
     protected abstract String addTextHeader(IDataLoaderContext ctx);
 
@@ -57,6 +66,10 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     protected abstract String addTextElementForInsert(IDataLoaderContext ctx, String[] data);
 
     protected abstract String addTextFooter(IDataLoaderContext ctx);
+
+    public void setBeanName(String name) {
+        this.beanName = name;
+    }
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
         if (tableList != null && tableList.contains(ctx.getTableName())) {
@@ -109,7 +122,6 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         StringBuilder msg = getFromCache(ctx);
         if (msg.length() > 0) {
             msg.append(addTextFooter(ctx));
-
             if (logger.isDebugEnabled()) {
                 logger.debug("publishing text message -> " + msg);
             }
@@ -122,6 +134,20 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         IDataLoaderContext ctx = loader.getContext();
         if (doesTextExistToPublish(ctx)) {
             finalizeAndPublish(ctx);
+            logCount();
+        }
+    }
+
+    protected void logCount() {
+        messagesSinceLastLogOutput++;
+        long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
+        if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
+            if (logger.isInfoEnabled()) {
+                logger.info(beanName + " published " + messagesSinceLastLogOutput + " messages in the last "
+                        + timeInMsSinceLastLogOutput + "ms");
+            }
+            lastTimeInMsOutputLogged = System.currentTimeMillis();
+            messagesSinceLastLogOutput = 0;
         }
     }
 
@@ -151,6 +177,14 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     public void setNodeGroupIdToApplyTo(String nodeGroupdId) {
         this.nodeGroupIdsToApplyTo = new String[] { nodeGroupdId };
-    }    
+    }
+
+    public void setMessagesSinceLastLogOutput(int messagesSinceLastLogOutput) {
+        this.messagesSinceLastLogOutput = messagesSinceLastLogOutput;
+    }
+
+    public void setMinTimeInMsBetweenLogOutput(long timeInMsBetweenLogOutput) {
+        this.minTimeInMsBetweenLogOutput = timeInMsBetweenLogOutput;
+    }
 
 }
