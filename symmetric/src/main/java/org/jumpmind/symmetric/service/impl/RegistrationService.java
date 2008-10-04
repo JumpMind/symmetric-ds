@@ -101,10 +101,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         node.setNodeId(nodeId);
         jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node.getNodeId() });
-        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(),
-                node.getSchemaVersion(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(),
-                node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR });
+        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
+                node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once
@@ -201,11 +200,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     public void reOpenRegistration(String nodeId) {
         String password = nodeService.generatePassword();
-        int updateCount = jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
-        if (updateCount == 0) {
-            // if the update count was 0, then we probably have a row in the node table, but not in node security.
-            // lets go ahead and try to insert into node security.            
-            jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
+        Node node = nodeService.findNode(nodeId);
+        if (node != null) {
+            int updateCount = jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
+            if (updateCount == 0) {
+                // if the update count was 0, then we probably have a row in the
+                // node table, but not in node security.
+                // lets go ahead and try to insert into node security.
+                jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
+            }
         }
     }
 
