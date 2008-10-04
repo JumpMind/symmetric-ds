@@ -24,12 +24,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * A convenience class that allows the end user to template a message using
@@ -47,8 +44,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * If you have special formatting needs, implement the {@link IFormat} interface
  * and map your formatter to the column you want to 'massage.'
  */
-public class TemplatedPublisherFilter extends AbstractTextPublisherFilter implements INodeGroupExtensionPoint,
-        BeanNameAware {
+public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
     static final Log logger = LogFactory.getLog(TemplatedPublisherFilter.class);
 
@@ -56,48 +52,11 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter implem
     private Map<String, String> footerTableTemplates;
     private Map<String, String> contentTableTemplates;
     private Map<String, IFormat> columnNameToDataFormatter;
-    private String[] nodeGroupIdsToApplyTo;
     private boolean processDelete = true;
     private boolean processInsert = true;
     private boolean processUpdate = true;
-    private String beanName;
-    private int messagesSinceLastLogOutput = 0;
-    private long minTimeInMsBetweenLogOutput = 30000;
-    private long lastTimeInMsOutputLogged = System.currentTimeMillis();
+
     private IDataLoaderFilter dataFilter;
-
-    public String[] getNodeGroupIdsToApplyTo() {
-        return nodeGroupIdsToApplyTo;
-    }
-
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void setNodeGroupIdToApplyTo(String nodeGroupdId) {
-        this.nodeGroupIdsToApplyTo = new String[] { nodeGroupdId };
-    }
-
-    @Override
-    public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
-        super.batchComplete(loader, hist);
-        if (doesTextExistToPublish(loader.getContext())) {
-            logCount();
-        }
-    }
-
-    protected void logCount() {
-        messagesSinceLastLogOutput++;
-        long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
-        if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            if (logger.isInfoEnabled()) {
-                logger.info(beanName + " published " + messagesSinceLastLogOutput + " messages in the last "
-                        + timeInMsSinceLastLogOutput + "ms");
-            }
-            lastTimeInMsOutputLogged = System.currentTimeMillis();
-            messagesSinceLastLogOutput = 0;
-        }
-    }
 
     @Override
     protected String addTextElementForDelete(IDataLoaderContext ctx, String[] keys) {
@@ -226,18 +185,6 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter implem
 
     public void setContentTableTemplates(Map<String, String> contentTableTemplates) {
         this.contentTableTemplates = contentTableTemplates;
-    }
-
-    public void setNodeGroupIdsToApplyTo(String[] nodeGroupsToApplyTo) {
-        this.nodeGroupIdsToApplyTo = nodeGroupsToApplyTo;
-    }
-
-    public void setMessagesSinceLastLogOutput(int messagesSinceLastLogOutput) {
-        this.messagesSinceLastLogOutput = messagesSinceLastLogOutput;
-    }
-
-    public void setMinTimeInMsBetweenLogOutput(long timeInMsBetweenLogOutput) {
-        this.minTimeInMsBetweenLogOutput = timeInMsBetweenLogOutput;
     }
 
     public interface IFormat {
