@@ -48,9 +48,9 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
     static final Log logger = LogFactory.getLog(TemplatedPublisherFilter.class);
 
-    private Map<String, String> headerTableTemplates;
-    private Map<String, String> footerTableTemplates;
-    private Map<String, String> contentTableTemplates;
+    private String headerTableTemplate;
+    private String footerTableTemplate;
+    private String contentTableTemplate;
     private Map<String, IFormat> columnNameToDataFormatter;
     private boolean processDelete = true;
     private boolean processInsert = true;
@@ -63,7 +63,7 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
         if (this.dataFilter == null || this.dataFilter.filterDelete(ctx, keys)) {
             String template = null;
             if (processDelete) {
-                template = contentTableTemplates.get(ctx.getTableName());
+                template = contentTableTemplate;
                 if (template != null) {
                     template = fillOutTemplate(DmlType.DELETE, template, ctx, null, keys);
                 }
@@ -79,7 +79,7 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
         if (this.dataFilter == null || this.dataFilter.filterInsert(ctx, data)) {
             String template = null;
             if (processInsert) {
-                template = contentTableTemplates.get(ctx.getTableName());
+                template = contentTableTemplate;
                 if (template != null) {
                     template = fillOutTemplate(DmlType.INSERT, template, ctx, data, null);
                 }
@@ -95,7 +95,7 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
         if (this.dataFilter == null || this.dataFilter.filterUpdate(ctx, data, keys)) {
             String template = null;
             if (processUpdate) {
-                template = contentTableTemplates.get(ctx.getTableName());
+                template = contentTableTemplate;
                 if (template != null) {
                     template = fillOutTemplate(DmlType.UPDATE, template, ctx, data, keys);
                 }
@@ -108,12 +108,12 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
 
     @Override
     protected String addTextFooter(IDataLoaderContext ctx) {
-        return footerTableTemplates.get(ctx.getTableName());
+        return footerTableTemplate;
     }
 
     @Override
     protected String addTextHeader(IDataLoaderContext ctx) {
-        return headerTableTemplates.get(ctx.getTableName());
+        return headerTableTemplate;
     }
 
     protected String fillOutTemplate(DmlType dmlType, String template, IDataLoaderContext ctx, String[] data,
@@ -175,16 +175,16 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
         this.processUpdate = processUpdates;
     }
 
-    public void setHeaderTableTemplates(Map<String, String> headerTableTemplates) {
-        this.headerTableTemplates = headerTableTemplates;
+    public void setHeaderTableTemplate(String headerTableTemplate) {
+        this.headerTableTemplate = headerTableTemplate;
     }
 
-    public void setFooterTableTemplates(Map<String, String> footerTableTemplates) {
-        this.footerTableTemplates = footerTableTemplates;
+    public void setFooterTableTemplate(String footerTableTemplate) {
+        this.footerTableTemplate = footerTableTemplate;
     }
 
-    public void setContentTableTemplates(Map<String, String> contentTableTemplates) {
-        this.contentTableTemplates = contentTableTemplates;
+    public void setContentTableTemplate(String contentTableTemplate) {
+        this.contentTableTemplate = contentTableTemplate;
     }
 
     public interface IFormat {

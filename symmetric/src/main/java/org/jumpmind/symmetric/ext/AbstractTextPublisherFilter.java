@@ -20,7 +20,6 @@
 package org.jumpmind.symmetric.ext;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +42,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     private boolean loadDataInTargetDatabase = true;
 
-    private Set<String> tableList;
+    protected String tableName;
 
     private boolean autoRegister = true;
 
@@ -72,7 +71,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     }
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
-        if (tableList != null && tableList.contains(ctx.getTableName())) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
             String msg = addTextElementForDelete(ctx, keys);
             if (msg != null) {
                 getFromCache(ctx).append(msg);
@@ -82,7 +81,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     }
 
     public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
-        if (tableList != null && tableList.contains(ctx.getTableName())) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
             String msg = addTextElementForUpdate(ctx, data, keys);
             if (msg != null) {
                 getFromCache(ctx).append(msg);
@@ -92,7 +91,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     }
 
     public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
-        if (tableList != null && tableList.contains(ctx.getTableName())) {
+        if (tableName != null && tableName.equals(ctx.getTableName())) {
             String msg = addTextElementForInsert(ctx, data);
             if (msg != null) {
                 getFromCache(ctx).append(msg);
@@ -155,10 +154,6 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
-    public void setTableList(Set<String> tableList) {
-        this.tableList = tableList;
-    }
-
     public void setPublisher(IPublisher publisher) {
         this.publisher = publisher;
     }
@@ -185,6 +180,10 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     public void setMinTimeInMsBetweenLogOutput(long timeInMsBetweenLogOutput) {
         this.minTimeInMsBetweenLogOutput = timeInMsBetweenLogOutput;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
 }
