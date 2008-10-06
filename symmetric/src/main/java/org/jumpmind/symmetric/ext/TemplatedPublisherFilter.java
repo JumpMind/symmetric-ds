@@ -153,9 +153,14 @@ public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
     }
 
     protected String replace(String template, String token, String value) {
-        if (template != null && value != null) {
+        if (value == null) {
+            value = "";
+        }
+        
+        if (template != null) {
             template = template.replace("%" + token + "%", value);
         }
+        
         return template;
     }
 
