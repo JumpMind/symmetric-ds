@@ -129,7 +129,6 @@ public class SymmetricFilter implements Filter {
         }
 
         public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-            // TODO: check to make sure its not an error status code!
             if (!response.isCommitted()) {
                 if (index < filters.size()) {
                     final Filter filter = filters.get(index++);

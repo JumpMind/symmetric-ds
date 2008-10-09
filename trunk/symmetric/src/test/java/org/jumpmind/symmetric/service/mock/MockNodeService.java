@@ -89,7 +89,6 @@ public class MockNodeService implements INodeService {
     }
 
     public Node findIdentity(boolean useCache) {
-        // TODO Auto-generated method stub
         return null;
     }
     
@@ -102,7 +101,5 @@ public class MockNodeService implements INodeService {
     }
 
     public void flushNodeAuthorizedCache() {
-        // TODO Auto-generated method stub
-        
     }
 }
