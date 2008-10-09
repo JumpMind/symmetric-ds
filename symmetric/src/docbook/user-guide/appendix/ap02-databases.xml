@@ -138,9 +138,12 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
 
             <programlisting>grant super on *.* to symmetric;</programlisting>
             
-            On MySQL 5.1, the SymmetricDS user needs the TRIGGER privilege in order to create triggers.
+            On MySQL 5.1, the SymmetricDS user needs the TRIGGER and CREATE ROUTINE privileges
+            in order to create triggers and functions.
 
             <programlisting>grant trigger on *.* to symmetric;</programlisting>
+            <programlisting>grant create routine on *.* to symmetric;</programlisting>
+
         </para>
     </section>
     <section>
