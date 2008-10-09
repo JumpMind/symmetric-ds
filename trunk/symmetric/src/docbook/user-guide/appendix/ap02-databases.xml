@@ -133,6 +133,15 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
             command:
             <programlisting>alter table t engine = innodb;</programlisting>            
         </para>
+        <para>
+            On MySQL 5.0, the SymmetricDS user needs the SUPER privilege in order to create triggers.
+
+            <programlisting>grant super on *.* to symmetric;</programlisting>
+            
+            On MySQL 5.1, the SymmetricDS user needs the TRIGGER privilege in order to create triggers.
+
+            <programlisting>grant trigger on *.* to symmetric;</programlisting>
+        </para>
     </section>
     <section>
         <title>PostgreSQL</title>
