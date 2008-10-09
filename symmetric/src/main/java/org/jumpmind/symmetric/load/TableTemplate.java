@@ -26,6 +26,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,6 +93,8 @@ public class TableTemplate {
     private List<IColumnFilter> columnFilters = new ArrayList<IColumnFilter>();
 
     private boolean dontIncludeKeysInUpdateStatement = false;
+    
+    private DecimalFormat decimalFormat;
 
     public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
             boolean dontIncludeKeysInUpdateStatement) {
@@ -110,6 +113,8 @@ public class TableTemplate {
         }
 
         resetMetaData();
+        decimalFormat = (DecimalFormat) DecimalFormat.getInstance(); 
+        decimalFormat.setParseBigDecimal(true); 
     }
 
     public void resetMetaData() {
@@ -305,8 +310,8 @@ public class TableTemplate {
                         objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
                     } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
                         objectValue = Integer.valueOf(value);
-                    } else if (type == Types.NUMERIC || type == Types.DECIMAL) {
-                        objectValue = new BigDecimal(value);
+                    } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT) {
+                        objectValue = getBigDecimal(value);
                     } else if (type == Types.BOOLEAN) {
                         objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
                     } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY) {
@@ -340,6 +345,14 @@ public class TableTemplate {
     private long getTime(String value, String[] pattern) {
         try {
             return DateUtils.parseDate(value, pattern).getTime();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private BigDecimal getBigDecimal(String value) {
+        try {
+            return new BigDecimal(decimalFormat.parse(value).toString());
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
