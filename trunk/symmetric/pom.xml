@@ -112,13 +112,13 @@
         <repository>
             <id>sourceforge.net</id>
             <name>SymmetricDS Repo</name>
-            <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+            <url>sftp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
         </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
             <id>sourceforge.net</id>
             <name>SymmetricDS Repo</name>
-            <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+            <url>sftp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
         </snapshotRepository>
     </distributionManagement>
  
