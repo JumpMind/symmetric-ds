@@ -137,4 +137,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public String getDefaultSchema() {
         return defaultSchema;
     }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.BASE64;
+    }
+
 }

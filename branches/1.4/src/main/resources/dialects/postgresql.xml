@@ -26,7 +26,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace(encode($(tableAlias).$(columnName), 'escape'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace(encode($(tableAlias).$(columnName), 'base64'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
