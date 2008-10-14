@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="incomingBatchServiceSql">
+    <entry key="findIncomingBatchSql">
+      <value>
+        select batch_id, node_id, status, create_time from ${sync.table.prefix}_incoming_batch where
+        batch_id = ? and node_id = ?
+      </value>
+    </entry>
+    <entry key="findIncomingBatchErrorsSql">
+      <value>
+        select batch_id, node_id, status, create_time from ${sync.table.prefix}_incoming_batch where
+        status = 'ER' order by batch_id
+      </value>
+    </entry>
+    <entry key="findIncomingBatchHistorySql">
+      <value>
+        select batch_id, node_id, status, start_time, end_time, failed_row_number, byte_count,
+        network_millis, filter_millis, database_millis, statement_count, fallback_insert_count,
+        fallback_update_count, missing_delete_count, sql_state, sql_code, sql_message from
+        ${sync.table.prefix}_incoming_batch_hist where batch_id = ? and node_id = ? order by
+        start_time
+      </value>
+    </entry>
+    <entry key="insertIncomingBatchSql">
+      <value>
+        insert into ${sync.table.prefix}_incoming_batch (batch_id, node_id, status, create_time)
+        values (?, ?, ?, current_timestamp)
+      </value>
+    </entry>
+    <entry key="updateIncomingBatchSql">
+      <value>
+        update ${sync.table.prefix}_incoming_batch set status = ? where batch_id = ? and node_id = ?
+        and status = ?
+      </value>
+    </entry>
+    <entry key="insertIncomingBatchHistorySql">
+      <value>
+        insert into ${sync.table.prefix}_incoming_batch_hist (batch_id, node_id, status,
+        network_millis, filter_millis, database_millis, host_name, byte_count, statement_count,
+        fallback_insert_count, fallback_update_count, missing_delete_count, failed_row_number,
+        start_time, end_time, sql_state, sql_code, sql_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      </value>
+    </entry>
+  </util:map>
+
+</beans>
