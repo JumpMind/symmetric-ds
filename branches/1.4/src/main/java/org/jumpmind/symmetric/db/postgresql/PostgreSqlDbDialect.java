@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.postgresql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.transaction.TransactionStatus;
