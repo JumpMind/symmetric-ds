@@ -17,6 +17,9 @@
             <action dev="erilong" type="fix" issue="aid=2001909&amp;atid=997724">
                 Support for boolean data type on all platforms (support for tinyint(1) on MySQL)
             </action>        
+            <action dev="erilong" type="fix" issue="aid=2174941&amp;atid=997724">
+                Support binary data in MySQL BLOB columns
+            </action>        
             <action dev="chenson42" type="fix">
                 Enhanced the RSS functionality a bit by adding published date field as the batch creation date, added
                 SQL error information if it exists and the number of times a batch errored out.
