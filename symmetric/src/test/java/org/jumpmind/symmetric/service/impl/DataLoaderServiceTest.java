@@ -64,8 +64,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test
     public void testStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
-        String[] updateValues = new String[11];
-        updateValues[0] = updateValues[10] = getNextId();
+        String[] updateValues = new String[TEST_COLUMNS.length + 1];
+        updateValues[0] = updateValues[updateValues.length - 1] = getNextId();
         updateValues[2] = updateValues[4] = "required string";
         String[] insertValues = (String[]) ArrayUtils.subarray(updateValues, 0, updateValues.length - 1);
 
@@ -116,7 +116,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
         assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
         assertEquals(history.getFailedRowNumber(), 8l, "Wrong failed row number. " + printDatabase());
-        assertEquals(history.getByteCount(), 317l, "Wrong byte count. " + printDatabase());
+        assertEquals(history.getByteCount(), 322l, "Wrong byte count. " + printDatabase());
         assertEquals(history.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
         assertEquals(history.getFallbackInsertCount(), 1l, "Wrong fallback insert count. " + printDatabase());
         assertEquals(history.getFallbackUpdateCount(), 2l, "Wrong fallback update count. " + printDatabase());
@@ -127,13 +127,13 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test
     public void testUpdateCollision() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
-        String[] insertValues = new String[11];
+        String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[0] = getNextId();
         insertValues[2] = insertValues[4] = "inserted row for testUpdateCollision";
 
-        String[] updateValues = new String[11];
+        String[] updateValues = new String[TEST_COLUMNS.length];
         updateValues[0] = getId();
-        updateValues[10] = getNextId();
+        updateValues[TEST_COLUMNS.length - 1] = getNextId();
         updateValues[2] = updateValues[4] = "update will become an insert that violates PK";
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -180,7 +180,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test
     public void testSqlStatistics() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
-        String[] insertValues = new String[10];
+        String[] insertValues = new String[TEST_COLUMNS.length];
         insertValues[2] = insertValues[4] = "sql stat test";
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -220,7 +220,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
         assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
         assertEquals(history.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        assertEquals(history.getByteCount(), 374l, "Wrong byte count. " + printDatabase());
+        assertEquals(history.getByteCount(), 390l, "Wrong byte count. " + printDatabase());
         assertEquals(history.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
         assertEquals(history.getFallbackInsertCount(), 0l, "Wrong fallback insert count. " + printDatabase());
         assertEquals(history.getFallbackUpdateCount(), 1l, "Wrong fallback update count. " + printDatabase());
@@ -233,7 +233,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     @Test
     public void testSkippingResentBatch() throws Exception {
         String[] values = { getNextId(), "resend string", "resend string not null", "resend char",
-                "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7", "10.10" };
+                "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7", "10.10",
+                "0.474"};
         getNextBatchId();
         for (int i = 0; i < 7; i++) {
             batchId--;
@@ -265,7 +266,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     public void testErrorWhileSkip() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
 
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
@@ -304,7 +305,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     public void testErrorWhileParsing() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "should not reach database", "string not null", "char", "char not null",
-                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+                "2007-01-02", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474"};
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -333,7 +334,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0",
-                "47", "67.89" };
+                "47", "67.89", "0.474" };
         getNextBatchId();
         int retries = 3;
         for (int i = 0; i < retries; i++) {
@@ -373,10 +374,10 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     public void testMultipleBatch() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(), "string", "string not null2", "char2", "char not null2",
-                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89" };
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
         String[] values2 = { getNextId(), "This string is too large and will cause the statement to fail",
                 "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0",
-                "47", "67.89" };
+                "47", "67.89", "0.474" };
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
