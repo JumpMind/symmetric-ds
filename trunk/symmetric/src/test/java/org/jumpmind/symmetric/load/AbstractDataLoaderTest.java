@@ -51,7 +51,8 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     protected final static String[] TEST_KEYS = { "id" };
 
     protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value", "char_value",
-            "char_required_value", "date_value", "time_value", "boolean_value", "integer_value", "decimal_value" };
+            "char_required_value", "date_value", "time_value", "boolean_value", "integer_value", "decimal_value",
+            "double_value"};
 
     protected static int batchId = 10000;
 
@@ -154,13 +155,15 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
                 Object resultObj = results.get(name[i]);
                 String resultValue = null;
                 if (resultObj instanceof BigDecimal && expected[i].indexOf(".") != -1) {
-                    DecimalFormat df = new DecimalFormat("#.00");
+                    DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
+                } else if (resultObj instanceof Double) {
+                    resultValue = resultObj.toString();
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }
