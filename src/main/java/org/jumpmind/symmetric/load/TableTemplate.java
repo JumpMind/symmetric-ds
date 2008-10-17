@@ -310,7 +310,7 @@ public class TableTemplate {
                         objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
                     } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
                         objectValue = Integer.valueOf(value);
-                    } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT) {
+                    } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE) {
                         objectValue = getBigDecimal(value);
                     } else if (type == Types.BOOLEAN) {
                         objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;

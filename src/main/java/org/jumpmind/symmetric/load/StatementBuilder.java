@@ -99,6 +99,8 @@ public class StatementBuilder {
                 type = Types.BINARY;
             } else if (type == Types.DATE && isDateOverrideToTimestamp) {
                 type = Types.TIMESTAMP;
+            } else if (type == Types.FLOAT || type == Types.DOUBLE) {
+                type = Types.DECIMAL;
             }
             types[index++] = type;
         }
