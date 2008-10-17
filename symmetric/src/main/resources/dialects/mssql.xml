@@ -9,7 +9,7 @@
     <bean id="msSqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' + replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"') + '"' end +','+]]>
+                <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' + replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') + '"' end +','+]]>
             </value>
         </constructor-arg>
     </bean>
@@ -46,28 +46,28 @@
                 <!-- TODO, We may have to make callbacks to the $(origTableAlias)inal table because SQL Server does not allow access to binary or clob data from a trigger -->
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias).$(columnName) is null then '' else '"' + replace(replace(cast($(origTableAlias).$(columnName) as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(cast($(origTableAlias)."$(columnName)" as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias).$(columnName) is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode($(origTableAlias).$(columnName)),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else ('"' + cast($(tableAlias).$(columnName) as varchar) + '"') end+','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + cast($(tableAlias)."$(columnName)" as varchar) + '"') end+','+]]>
                     </value>
                 </property>
                 <!-- TODO -->
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else ('"' + convert(varchar,$(tableAlias).$(columnName),121) + '"') end +','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else ('"' + convert(varchar,$(tableAlias)."$(columnName)",121) + '"') end +','+]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) = 1 then '"1"' else '"0"' end +','+]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" = 1 then '"1"' else '"0"' end +','+]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="+" />

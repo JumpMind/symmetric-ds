@@ -112,6 +112,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private int databaseMinorVersion;
     
     private String databaseProductVersion;
+    
+    private String identifierQuoteString;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -157,6 +159,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
         this.platform = pf;
         this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());
+        this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData meta = c.getMetaData();
@@ -908,6 +911,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    public void disableSyncTriggers(String nodeId) {
+        disableSyncTriggers();
+    }
+
     public boolean supportsTransactionId() {
         return false;
     }
@@ -970,6 +977,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public String getIdentifierQuoteString()
+    {
+        return identifierQuoteString;
     }
 
 }

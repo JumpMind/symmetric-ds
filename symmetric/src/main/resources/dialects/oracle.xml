@@ -74,27 +74,27 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',replace(replace($(tableAlias).$(columnName),'\','\\'),'"','\"')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"') end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[concat(concat('"',replace(replace($(tableAlias).$(columnName),to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"'))),'"') ||','||]]>
+                        <![CDATA[concat(concat('"',replace(replace($(tableAlias)."$(columnName)",to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"'))),'"') ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[fn_sym_blob2clob($(tableAlias).$(columnName))||','||]]>
+                        <![CDATA[fn_sym_blob2clob($(tableAlias)."$(columnName)")||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"'||cast($(tableAlias).$(columnName) as varchar(50))||'"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||cast($(tableAlias)."$(columnName)" as varchar(50))||'"' end ||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else concat(concat('"',to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>

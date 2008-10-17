@@ -16,32 +16,32 @@
                 <property name="triggerPrefix" value="${trigger.prefix}" />
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace($(tableAlias).$(columnName),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || replace(replace(encode($(tableAlias).$(columnName), 'base64'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(encode($(tableAlias)."$(columnName)", 'base64'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || cast($(tableAlias).$(columnName) as varchar) || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' when $(tableAlias).$(columnName) then '"1"' else '"0"' end||','||]]>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' when $(tableAlias)."$(columnName)" then '"1"' else '"0"' end||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias).$(columnName) is null then '' else '"' || to_char($(tableAlias).$(columnName), 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS') || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
