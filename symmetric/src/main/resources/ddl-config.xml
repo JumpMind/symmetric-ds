@@ -21,6 +21,10 @@
         <column name="pk_data" type="LONGVARCHAR" />
         <column name="trigger_hist_id" type="INTEGER" required="true" />
         <column name="create_time" type="TIMESTAMP" />
+        <!-- This helps the purge query -->
+        <index name="idx_data_create_time">
+            <index-column name="create_time" />
+        </index>        
     </table>
 
     <table name="event_status">
