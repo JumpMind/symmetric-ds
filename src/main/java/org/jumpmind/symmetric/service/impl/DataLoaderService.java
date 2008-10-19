@@ -219,6 +219,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (dataLoader != null && status != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
+                    history.setSqlMessage(e.getMessage());
                     statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
@@ -229,6 +230,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         history.setSqlCode(se.getErrorCode());
                         history.setSqlMessage(se.getMessage());
                     } else {
+                        history.setSqlMessage(e.getMessage());
                         statisticManager.getStatistic(StatisticName.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }

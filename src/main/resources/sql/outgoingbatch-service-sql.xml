@@ -47,7 +47,7 @@
     <entry key="selectOutgoingBatchSql">
       <value>
         select batch_id, node_id, channel_id, status, batch_type, create_time from
-        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in (?, ?, ?)
+        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in (?, ?, ?) order by batch_id asc
       </value>
     </entry>
     <entry key="selectOutgoingBatchRangeSql">

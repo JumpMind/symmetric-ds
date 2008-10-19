@@ -80,6 +80,7 @@
         <property name="sql" ref="outgoingBatchServiceSql"/>
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />        
         <property name="nodeService" ref="nodeService" />
         <property name="statisticManager" ref="statisticManager" />        
         <property name="dbDialect" ref="dbDialect" />
