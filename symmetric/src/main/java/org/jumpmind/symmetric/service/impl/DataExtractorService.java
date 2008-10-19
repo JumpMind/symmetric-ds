@@ -192,8 +192,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);
         }
 
-        List<OutgoingBatch> batches = filterMaxNumberOfOutgoingBatches(outgoingBatchService.getOutgoingBatches(node
-                .getNodeId()), channels);
+        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
 
         if (batches != null && batches.size() > 0) {
             OutgoingBatchHistory history = null;
@@ -210,12 +209,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             } catch (RuntimeException e) {
                 SQLException se = unwrapSqlException(e);
-                if (se != null && history != null) {
-                    history.setSqlState(se.getSQLState());
-                    history.setSqlCode(se.getErrorCode());
-                    history.setSqlMessage(se.getMessage());
-                }
                 if (history != null) {
+                    if (se != null) {
+                        history.setSqlState(se.getSQLState());
+                        history.setSqlCode(se.getErrorCode());
+                        history.setSqlMessage(se.getMessage());
+                    } else {
+                        history.setSqlMessage(e.getMessage());
+                    }
                     history.setStatus(OutgoingBatchHistory.Status.SE);
                     history.setEndTime(new Date());
                     outgoingBatchService.setBatchStatus(history.getBatchId(), Status.ER);
@@ -232,28 +233,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return true;
         }
         return false;
-    }
-
-    /**
-     * Filter out the maximum number of batches to send.
-     */
-    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatches(List<OutgoingBatch> batches, List<NodeChannel> channels) {
-        if (batches != null && batches.size() > 0) {
-            List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
-            for (NodeChannel channel : channels) {
-                int max = channel.getMaxBatchToSend();
-                int count = 0;
-                for (OutgoingBatch outgoingBatch : batches) {
-                    if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
-                        filtered.add(outgoingBatch);
-                        count++;
-                    }
-                }
-            }
-            return filtered;
-        } else {
-            return batches;
-        }
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
