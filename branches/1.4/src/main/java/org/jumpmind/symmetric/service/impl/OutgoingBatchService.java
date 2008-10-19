@@ -2,7 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- * Copyright (C) Eric Long <erilong@users.sourceforge.net>
+ *               Eric Long <erilong@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,389 +25,248 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.BatchType;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticName;
-import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
+import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.transaction.annotation.Transactional;
 
-public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
+public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
-    final static Log logger = LogFactory.getLog(OutgoingBatchService.class);
+    private IOutgoingBatchService batchService;
 
-    private INodeService nodeService;
+    private IDataService dataService;
 
-    private IDbDialect dbDialect;
+    private IAcknowledgeService ackService;
 
-    private IStatisticManager statisticManager;
+    private IConfigurationService configService;
 
-    /**
-     * Create a batch and mark events as tied to that batch. We iterate through
-     * all the events so we can find a transaction boundary to stop on. <p/>
-     * This method is currently non-transactional because of the fear of having
-     * to deal with large numbers of events as part of the same batch. This
-     * shouldn't be an issue in most cases other than possibly leaving a batch
-     * row w/out data every now and then or leaving a batch w/out the associated
-     * history row.
-     */
-    @Transactional
-    @Deprecated
-    public void buildOutgoingBatches(final String nodeId, final List<NodeChannel> channels) {
-        for (NodeChannel nodeChannel : channels) {
-            buildOutgoingBatches(nodeId, nodeChannel);
+    private int triggerHistId;
+
+    public OutgoingBatchServiceTest() throws Exception {
+        super();
+    }
+
+    public OutgoingBatchServiceTest(String dbName) {
+        super(dbName);
+    }
+
+    @Before
+    public void setUp() {
+        ackService = (IAcknowledgeService) find(Constants.ACKNOWLEDGE_SERVICE);
+        batchService = (IOutgoingBatchService) find(Constants.OUTGOING_BATCH_SERVICE);
+        dataService = (IDataService) find(Constants.DATA_SERVICE);
+        configService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
+        Set<Long> histKeys = configService.getHistoryRecords().keySet();
+        assertFalse(histKeys.isEmpty());
+        triggerHistId = histKeys.iterator().next().intValue();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void test() {
+        List<NodeChannel> channels = configService.getChannels();
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        // create a batch
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+        List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list != null);
+        assertEquals(list.size(), 1);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+
+        // create another batch
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list != null);
+        assertTrue(list.size() == 2);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+        assertTrue(list.get(1).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+
+        // mark the first batch as sent (should still be eligible to be resent)
+        batchService.markOutgoingBatchSent(list.get(0));
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list.size() == 2);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+        assertTrue(list.get(1).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+
+        // set the second batch status to ok
+        batchService.setBatchStatus(list.get(0).getBatchId(), Status.OK);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list.size() == 1);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+
+        // test for initial load (batch type == IL)
+        OutgoingBatch ilBatch = new OutgoingBatch();
+        ilBatch.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        ilBatch.setChannelId(TestConstants.TEST_CHANNEL_ID);
+        ilBatch.setBatchType(BatchType.INITIAL_LOAD);
+        batchService.insertOutgoingBatch(ilBatch);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list.size() == 2);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+        assertTrue(list.get(1).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+
+        // now mark the IL batch as complete
+        batchService.setBatchStatus(ilBatch.getBatchId(), Status.OK);
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertTrue(list.size() == 1);
+        assertTrue(list.get(0).getChannelId().equals(TestConstants.TEST_CHANNEL_ID));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testBatchBoundary() {
+        List<NodeChannel> channels = configService.getChannels();
+
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        int size = 50;
+        int count = 3; // must be <= size
+        assertTrue(count <= size);
+
+        for (int i = 0; i < size * count; i++) {
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                    TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        }
+
+        for (int i = 0; i < count; i++) {
+            batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+        }
+
+        List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(list);
+        assertEquals(list.size(), count);
+
+        for (int i = 0; i < count; i++) {
+            assertTrue(getBatchSize(list.get(i).getBatchId()) <= size + 1);
         }
     }
 
-    @Transactional
-    public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testMultipleChannels() {
+        List<NodeChannel> channels = configService.getChannels();
 
-        if (channel.isSuspended()) {
-            logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-        } else if (channel.isEnabled()) {
-            long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"), new Object[] { 0,
-                    nodeId, channel.getId() });
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        createDataEvent("Foo", triggerHistId, "testchannel", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        createDataEvent("Foo", triggerHistId, "config", DataEventType.INSERT, TestConstants.TEST_CLIENT_EXTERNAL_ID);
 
-            if (dataEventCount > channel.getMaxBatchSize()) {
-                buildOutgoingBatchesPeekAhead(nodeId, channel);
-            } else if (dataEventCount > 0) {
-                OutgoingBatch newBatch = new OutgoingBatch();
-                newBatch.setBatchType(BatchType.EVENTS);
-                newBatch.setChannelId(channel.getId());
-                newBatch.setNodeId(nodeId);
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
 
-                if (channel.isIgnored()) {
-                    newBatch.setStatus(Status.OK);
-                }
-
-                long startTime = System.currentTimeMillis();
-                insertOutgoingBatch(newBatch);
-                dataEventCount = jdbcTemplate.update(getSql("updateBatchedEventsMultiSql"), new Object[] {
-                        newBatch.getBatchId(), 1, 0, nodeId, newBatch.getChannelId() });
-                long databaseMillis = System.currentTimeMillis() - startTime;
-
-                OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
-                history.setEndTime(new Date());
-                history.setDataEventCount(dataEventCount);
-                history.setDatabaseMillis(databaseMillis);
-                insertOutgoingBatchHistory(history);
-                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(databaseMillis,
-                        dataEventCount);
-                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
-            }
-        }
+        List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(list);
+        assertEquals(list.size(), 2);
     }
 
-    @Transactional
-    private void buildOutgoingBatchesPeekAhead(final String nodeId, final NodeChannel channel) {
+    @Test
+    public void testDisabledChannel() {
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        int size = 50; // magic number
+        int count = 3; // must be <= size
+        assertTrue(count <= size);
 
-        final int batchSizePeekAhead = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
+        for (int i = 0; i < size * count; i++) {
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                    TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        }
 
-        jdbcTemplate.execute(new ConnectionCallback() {
+        List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(list);
+        assertEquals(list.size(), 0);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testErrorChannel() {
+        IConfigurationService configService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
+        List<NodeChannel> channels = configService.getChannels();
+
+        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
+                TestConstants.TEST_PREFIX + "outgoing_batch");
+        // Create data events for two different channels
+        createDataEvent("TestTable1", triggerHistId, "testchannel", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        // Build the batch, make sure this event gets its own batch
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+
+        createDataEvent("TestTable1", triggerHistId, "testchannel", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        createDataEvent("TestTable2", triggerHistId, "config", DataEventType.INSERT,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        // Build the batches, which should be one for each channel
+        batchService.buildOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID, channels);
+
+        // Make sure we got three batches
+        List<OutgoingBatch> batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batches);
+        assertEquals(batches.size(), 3);
+        long firstBatchId = batches.get(0).getBatchId();
+        long secondBatchId = batches.get(1).getBatchId();
+        long thirdBatchId = batches.get(2).getBatchId();
+
+        // Ack the first batch as an error, leaving the others as new
+        ackService.ack(new BatchInfo(firstBatchId, 1));
+
+        // Get the batches again. The error channel batches should be last
+        batches = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batches);
+        assertEquals(batches.size(), 3);
+        assertEquals(batches.get(0).getBatchId(), secondBatchId,
+                "Channel in error should have batches last - missing new batch");
+        assertEquals(batches.get(1).getBatchId(), thirdBatchId,
+                "Channel in error should have batches last - missing error batch");
+        assertEquals(batches.get(2).getBatchId(), firstBatchId,
+                "Channel in error should have batches last - missing new batch");
+
+    }
+
+    protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type, String nodeId) {
+        TriggerHistory audit = new TriggerHistory();
+        audit.setTriggerHistoryId(auditId);
+        Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
+        dataService.insertDataEvent(data, channelId, nodeId);
+    }
+
+    protected int getBatchSize(final long batchId) {
+        return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-
-                PreparedStatement update = null;
-                try {
-                    update = conn.prepareStatement(getSql("updateBatchedEventsSql"));
-
-                    update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-
-                    if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-                    } else if (channel.isEnabled()) {
-                        // determine which transactions will be part of this
-                        // batch on this channel
-                        PreparedStatement select = null;
-                        ResultSet results = null;
-
-                        try {
-
-                            select = conn.prepareStatement(getSql("selectEventsToBatchSql"));
-
-                            select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-
-                            select.setInt(1, 0);
-                            select.setString(2, nodeId);
-                            select.setString(3, channel.getId());
-                            results = select.executeQuery();
-
-                            int count = 0;
-                            long databaseMillis = 0;
-                            int dataEventCount = 0;
-                            boolean peekAheadMode = false;
-                            int peekAheadCountDown = batchSizePeekAhead;
-                            Set<String> transactionIds = new HashSet<String>();
-
-                            OutgoingBatch newBatch = new OutgoingBatch();
-                            newBatch.setBatchType(BatchType.EVENTS);
-                            newBatch.setChannelId(channel.getId());
-                            newBatch.setNodeId(nodeId);
-
-                            // node channel is setup to ignore, just mark the
-                            // batch as already processed.
-                            if (channel.isIgnored()) {
-                                newBatch.setStatus(Status.OK);
-                            }
-
-                            if (results.next()) {
-
-                                databaseMillis = 0;
-                                dataEventCount = 0;
-                                insertOutgoingBatch(newBatch);
-                                OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
-
-                                do {
-                                    String trxId = results.getString(1);
-
-                                    if (!peekAheadMode
-                                            || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
-                                        peekAheadCountDown = batchSizePeekAhead;
-
-                                        if (trxId != null) {
-                                            transactionIds.add(trxId);
-                                        }
-
-                                        int dataId = results.getInt(2);
-
-                                        update.clearParameters();
-                                        update.setLong(1, Long.valueOf(newBatch.getBatchId()));
-                                        update.setInt(2, 1);
-                                        update.setString(3, nodeId);
-                                        update.setLong(4, dataId);
-                                        update.addBatch();
-
-                                        count++;
-                                        dataEventCount++;
-
-                                    } else {
-                                        peekAheadCountDown--;
-                                    }
-
-                                    if (count > channel.getMaxBatchSize()) {
-                                        peekAheadMode = true;
-                                    }
-
-                                    // put this in so we don't build up too many
-                                    // statements to send to the server.
-                                    if (count
-                                            % parameterService
-                                                    .getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE) == 0) {
-                                        long startTime = System.currentTimeMillis();
-                                        update.executeBatch();
-                                        databaseMillis += (System.currentTimeMillis() - startTime);
-                                    }
-
-                                } while (results.next() && peekAheadCountDown != 0);
-
-                                long startTime = System.currentTimeMillis();
-                                update.executeBatch();
-                                databaseMillis += (System.currentTimeMillis() - startTime);
-
-                                history.setEndTime(new Date());
-                                history.setDataEventCount(dataEventCount);
-                                history.setDatabaseMillis(databaseMillis);
-                                insertOutgoingBatchHistory(history);
-                                statisticManager.getStatistic(StatisticName.OUTGOING_MS_PER_EVENT_BATCHED).add(
-                                        databaseMillis, dataEventCount);
-                                statisticManager.getStatistic(StatisticName.OUTGOING_EVENTS_PER_BATCH).add(
-                                        dataEventCount, 1);
-
-                            }
-
-                        } finally {
-                            JdbcUtils.closeResultSet(results);
-                            JdbcUtils.closeStatement(select);
-                        }
-
-                    }
-                } finally {
-                    JdbcUtils.closeStatement(update);
-                }
-                return null;
+                PreparedStatement s = conn.prepareStatement("select count(*) " + "from " + TestConstants.TEST_PREFIX
+                        + "data_event where batch_id = ?");
+                s.setLong(1, batchId);
+                ResultSet rs = s.executeQuery();
+                rs.next();
+                return rs.getInt(1);
             }
         });
-    }
-
-    public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
-        long batchId = dbDialect.insertWithGeneratedKey(getSql("createBatchSql"), SequenceIdentifier.OUTGOING_BATCH,
-                new PreparedStatementCallback() {
-                    public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
-                        ps.setString(1, outgoingBatch.getNodeId());
-                        ps.setString(2, outgoingBatch.getChannelId());
-                        ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setString(4, outgoingBatch.getBatchType().getCode());
-                        return null;
-                    }
-                });
-        outgoingBatch.setBatchId(batchId);
-    }
-
-    /**
-     * Select batches to process. Batches that are NOT in error will be returned
-     * first. They will be ordered by batch id as the batches will have already
-     * been created by {@link #buildOutgoingBatches(String)} in channel priority
-     * order.
-     */
-    @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
-        List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
-                new Object[] { nodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
-                        OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
-        final HashSet<String> errorChannels = new HashSet<String>();
-        for (OutgoingBatch batch : list) {
-            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
-                errorChannels.add(batch.getChannelId());
-            }
-        }
-        Collections.sort(list, new Comparator<OutgoingBatch>() {
-            public int compare(OutgoingBatch b1, OutgoingBatch b2) {
-                boolean isError1 = errorChannels.contains(b1.getChannelId());
-                boolean isError2 = errorChannels.contains(b2.getChannelId());
-                if (isError1 == isError2) {
-                    return b1.getBatchId() < b2.getBatchId() ? -1 : 1;
-                } else if (!isError1 && isError2) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-        });
-        return list;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] {
-                startBatchId, endBatchId }, new OutgoingBatchMapper());
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper());
-    }
-
-    // Moving away from SENT status to reduce updates to outgoing_batch table
-    @Deprecated
-    public void markOutgoingBatchSent(OutgoingBatch batch) {
-        setBatchStatus(batch.getBatchId(), batch.getStatus());
-    }
-
-    @Deprecated
-    public void setBatchStatus(long batchId, Status status) {
-        jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), batchId });
-    }
-
-    // TODO Should this move to DataService?
-    @SuppressWarnings("unchecked")
-    public boolean isInitialLoadComplete(String nodeId) {
-
-        NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-        if (security == null || security.isInitialLoadEnabled()) {
-            return false;
-        }
-
-        List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"),
-                new Object[] { nodeId }, String.class);
-        if (statuses == null || statuses.size() == 0) {
-            throw new RuntimeException("The initial load has not been started for " + nodeId);
-        }
-
-        for (String status : statuses) {
-            if (!Status.OK.name().equals(status)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
-        jdbcTemplate.update(getSql("insertOutgoingBatchHistorySql"), new Object[] { history.getBatchId(),
-                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
-                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
-                history.getDataEventCount(), history.getFailedDataId(), history.getStartTime(), history.getEndTime(),
-                history.getSqlState(), history.getSqlCode(), StringUtils.abbreviate(history.getSqlMessage(), 50) },
-                new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER,
-                        Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
-                        Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId) {
-        return (List<OutgoingBatchHistory>) jdbcTemplate.query(getSql("findOutgoingBatchHistorySql"), new Object[] {
-                batchId, nodeId }, new OutgoingBatchHistoryMapper());
-    }
-
-    class OutgoingBatchMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
-            OutgoingBatch batch = new OutgoingBatch();
-            batch.setBatchId(rs.getLong(1));
-            batch.setNodeId(rs.getString(2));
-            batch.setChannelId(rs.getString(3));
-            batch.setStatus(rs.getString(4));
-            batch.setBatchType(rs.getString(5));
-            batch.setCreateTime(rs.getTimestamp(6));
-            return batch;
-        }
-    }
-
-    class OutgoingBatchHistoryMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
-            OutgoingBatchHistory history = new OutgoingBatchHistory();
-            history.setBatchId(rs.getLong(1));
-            history.setNodeId(rs.getString(2));
-            history.setStatus(OutgoingBatchHistory.Status.valueOf(rs.getString(3)));
-            history.setNetworkMillis(rs.getLong(4));
-            history.setFilterMillis(rs.getLong(5));
-            history.setDatabaseMillis(rs.getLong(6));
-            history.setHostName(rs.getString(7));
-            history.setByteCount(rs.getLong(8));
-            history.setDataEventCount(rs.getLong(9));
-            history.setFailedDataId(rs.getLong(10));
-            history.setStartTime(rs.getTime(11));
-            history.setEndTime(rs.getTime(12));
-            history.setSqlState(rs.getString(13));
-            history.setSqlCode(rs.getInt(14));
-            history.setSqlMessage(rs.getString(15));
-            return history;
-        }
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
 
 }
