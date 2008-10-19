@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -45,6 +46,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -66,6 +68,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IDbDialect dbDialect;
 
     private IStatisticManager statisticManager;
+    
+    private IConfigurationService configurationService;
 
     /**
      * Create a batch and mark events as tied to that batch. We iterate through
@@ -284,12 +288,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 errorChannels.add(batch.getChannelId());
             }
         }
-        Collections.sort(list, new Comparator<OutgoingBatch>() {
-            public int compare(OutgoingBatch b1, OutgoingBatch b2) {
-                boolean isError1 = errorChannels.contains(b1.getChannelId());
-                boolean isError2 = errorChannels.contains(b2.getChannelId());
+        
+        List<NodeChannel> channels = configurationService.getChannels();
+        Collections.sort(channels, new Comparator<NodeChannel>() {
+            public int compare(NodeChannel b1, NodeChannel b2) {
+                boolean isError1 = errorChannels.contains(b1.getId());
+                boolean isError2 = errorChannels.contains(b2.getId());
                 if (isError1 == isError2) {
-                    return b1.getBatchId() < b2.getBatchId() ? -1 : 1;
+                    return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
@@ -297,7 +303,31 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             }
         });
-        return list;
+        
+       
+        return filterMaxNumberOfOutgoingBatchesByChannel(list, channels);
+    }
+    
+    /**
+     * Filter out the maximum number of batches to send.
+     */
+    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatchesByChannel(List<OutgoingBatch> batches, List<NodeChannel> channels) {
+        if (batches != null && batches.size() > 0) {
+            List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
+            for (NodeChannel channel : channels) {
+                int max = channel.getMaxBatchToSend();
+                int count = 0;
+                for (OutgoingBatch outgoingBatch : batches) {
+                    if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
+                        filtered.add(outgoingBatch);
+                        count++;
+                    }
+                }
+            }
+            return filtered;
+        } else {
+            return batches;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -408,6 +438,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setStatisticManager(IStatisticManager statisticManager) {
         this.statisticManager = statisticManager;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
 }
