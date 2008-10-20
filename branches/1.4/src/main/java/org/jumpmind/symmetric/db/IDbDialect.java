@@ -171,6 +171,8 @@ public interface IDbDialect {
      */
     public boolean isTransactionIdOverrideSupported();
 
+    public String getIdentifierQuoteString();
+    
     public void createTables(String xml);
 
     public String getSelectLastInsertIdSql(String sequenceName);

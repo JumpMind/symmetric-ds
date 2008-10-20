@@ -160,4 +160,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
+    
+    public String getIdentifierQuoteString()
+    {
+        return "";
+    }
+
 }

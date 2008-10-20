@@ -279,7 +279,8 @@ public class TableTemplate {
                 tableName = table.getCatalog() + "." + tableName;
             }
             st = new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
-                    .isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp());
+                    .isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(),
+                    dbDialect.getIdentifierQuoteString());
             statementMap.put(type, st);
         }
         return st;

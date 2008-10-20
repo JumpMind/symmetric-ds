@@ -113,6 +113,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     private String databaseProductVersion;
 
+    private String identifierQuoteString;
+    
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
         _defaultSizes.put(new Integer(1), "254");
@@ -157,6 +159,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.jdbcTemplate = new JdbcTemplate(pf.getDataSource());
         this.platform = pf;
         this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());
+        this.identifierQuoteString = "\"";
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData meta = c.getMetaData();
@@ -438,27 +441,18 @@ abstract public class AbstractDbDialect implements IDbDialect {
         for (int idx = 0; idx < columnsToCheck.length; idx++) {
             if (idx > 0)
                 query.append(",");
-            if (getPlatform().isDelimitedIdentifierModeOn())
-                query.append(platform.getPlatformInfo().getDelimiterToken());
-            query.append("t.").append(columnsToCheck[idx].getName());
-            if (getPlatform().isDelimitedIdentifierModeOn())
-                query.append(platform.getPlatformInfo().getDelimiterToken());
+            query.append("t.").append("\"").append(columnsToCheck[idx].getName()).append("\"");
         }
 
         query.append(" FROM ");
-        if (getPlatform().isDelimitedIdentifierModeOn()) {
-            query.append(platform.getPlatformInfo().getDelimiterToken());
-        }
         if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
             query.append(table.getCatalog() + ".");
         }
         if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
             query.append(table.getSchema() + ".");
         }
-        query.append(table.getName());
-        if (getPlatform().isDelimitedIdentifierModeOn())
-            query.append(platform.getPlatformInfo().getDelimiterToken());
-        query.append(" t WHERE 1 = 0");
+        query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
+
         final String finalQuery = query.toString();
         jdbcTemplate.execute(new StatementCallback() {
             public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
@@ -970,6 +964,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public String getIdentifierQuoteString()
+    {
+        return identifierQuoteString;
     }
 
 }
