@@ -41,9 +41,13 @@ public class StatementBuilder {
     protected String sql;
 
     protected int[] types;
+    
+    protected String quote;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
-            boolean isBlobOverrideToBinary, boolean isDateOverrideToTimestamp) {
+            boolean isBlobOverrideToBinary, boolean isDateOverrideToTimestamp,
+            String identifierQuoteString) {
+        quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
             types = buildTypes(columns, isBlobOverrideToBinary, isDateOverrideToTimestamp);
@@ -107,7 +111,7 @@ public class StatementBuilder {
         return types;
     }
 
-    public static String buildInsertSql(String tableName, String[] columnNames) {
+    public String buildInsertSql(String tableName, String[] columnNames) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
         appendColumns(sql, columnNames);
         sql.append(") values (");
@@ -116,7 +120,7 @@ public class StatementBuilder {
         return sql.toString();
     }
 
-    public static String buildInsertSql(String tableName, Column[] columns) {
+    public String buildInsertSql(String tableName, Column[] columns) {
         StringBuilder sql = new StringBuilder("insert into " + tableName + "(");
         int columnCount = appendColumns(sql, columns);
         sql.append(") values (");
@@ -125,7 +129,7 @@ public class StatementBuilder {
         return sql.toString();
     }
 
-    public static String buildUpdateSql(String tableName, String[] keyNames, String[] columnNames) {
+    public String buildUpdateSql(String tableName, String[] keyNames, String[] columnNames) {
         StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
         appendColumnEquals(sql, columnNames, ", ");
         sql.append(" where ");
@@ -133,7 +137,7 @@ public class StatementBuilder {
         return sql.toString();
     }
 
-    public static String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
+    public String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("update ").append(tableName).append(" set ");
         appendColumnEquals(sql, columns, ", ");
         sql.append(" where ");
@@ -141,56 +145,56 @@ public class StatementBuilder {
         return sql.toString();
     }
 
-    public static String buildDeleteSql(String tableName, String[] keyNames) {
+    public String buildDeleteSql(String tableName, String[] keyNames) {
         StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyNames, " and ");
         return sql.toString();
     }
 
-    public static String buildDeleteSql(String tableName, Column[] keyColumns) {
+    public String buildDeleteSql(String tableName, Column[] keyColumns) {
         StringBuilder sql = new StringBuilder("delete from ").append(tableName).append(" where ");
         appendColumnEquals(sql, keyColumns, " and ");
         return sql.toString();
     }
 
-    public static void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
+    public void appendColumnEquals(StringBuilder sql, String[] names, String separator) {
         for (int i = 0; i < names.length; i++) {
-            sql.append(names[i]).append(" = ?").append(i + 1 < names.length ? separator : "");
+            sql.append(quote).append(names[i]).append(quote).append(" = ?").append(i + 1 < names.length ? separator : "");
         }
     }
 
-    public static void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
+    public void appendColumnEquals(StringBuilder sql, Column[] columns, String separator) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (existingCount++ > 0) {
                     sql.append(separator);
                 }
-                sql.append(columns[i].getName()).append(" = ?");
+                sql.append(quote).append(columns[i].getName()).append(quote).append(" = ?");
             }
         }
     }
 
-    public static void appendColumns(StringBuilder sql, String[] names) {
+    public void appendColumns(StringBuilder sql, String[] names) {
         for (int i = 0; i < names.length; i++) {
-            sql.append(names[i]).append(i + 1 < names.length ? "," : "");
+            sql.append(quote).append(names[i]).append(quote).append(i + 1 < names.length ? "," : "");
         }
     }
 
-    public static int appendColumns(StringBuilder sql, Column[] columns) {
+    public int appendColumns(StringBuilder sql, Column[] columns) {
         int existingCount = 0;
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
                 if (existingCount++ > 0) {
                     sql.append(",");
                 }
-                sql.append(columns[i].getName());
+                sql.append(quote).append(columns[i].getName()).append(quote);
             }
         }
         return existingCount;
     }
 
-    public static void appendColumnQuestions(StringBuilder sql, int number) {
+    public void appendColumnQuestions(StringBuilder sql, int number) {
         for (int i = 0; i < number; i++) {
             sql.append("?").append(i + 1 < number ? "," : "");
         }
