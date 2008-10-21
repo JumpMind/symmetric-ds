@@ -8,7 +8,41 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Administration</title>
     <section>
-        <title>Rebuilding Triggers</title>
+        <title>Changing Triggers</title>
+        <para>
+            When changing an entry in the Trigger table, always set the last_updated_time field 
+            to a newer time in order for the change to be detected.  SymmetricDS will look for
+            changes each night or whenever the Sync Triggers Job is run (see next section).
+            For example, a change to place the table price_changes into the price channel
+            would be accomplished with the following statement:
+
+            <programlisting>
+<![CDATA[update SYM_TRIGGER
+set channel_id = 'price',
+    last_updated_by = 'jsmith',
+    last_updated_time = current_timestamp
+where source_table_name = 'price_changes';
+]]></programlisting>
+            
+            The Trigger entry can be inactivated, which would drop the triggers (and any functions 
+            used by them) from the database.  For example, dropping all the triggers used by the
+            client node group would be accomplished with the following statement:
+            
+            <programlisting>
+<![CDATA[update SYM_TRIGGER
+set inactive_time = current_timestamp,
+    last_updated_by = 'jsmith',
+    last_updated_time = current_timestamp
+where source_node_group_id = 'client';
+]]></programlisting>
+
+            Instead of waiting for the Sync Triggers Job to run overnight after making a Trigger
+            change, invoke the syncTriggers() method over JMX or simply restart the SymmetricDS
+            server.
+        </para>
+    </section>
+    <section>
+        <title>Sync Triggers Job</title>
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
             and the underlying tables to determine if database triggers need created or updated.
@@ -84,19 +118,51 @@
         </para>
     </section>
     <section>
-        <title>Opening Registration</title>
-        <para></para>
-    </section>
-    <section>
         <title>Enabling and Disabling Synchronization</title>
         <para></para>
     </section>
     <section>
-        <title>Viewing Batches</title>
+        <title>Java Management Extensions</title>
+        <para>
+          Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
+          SymmetricDS uses MX4J to expose JMX attributes and operations that can be accessed
+          from the built-in web console, Java's jconsole, or an application server.  
+          By default, the web management console can be opened from the following address:
+
+          <programlisting><![CDATA[http://localhost:31416/]]></programlisting>
+
+          Using the Java jconsole command, SymmetricDS is listed as a local process named SymmetricLauncher.
+          In jconsole, SymmetricDS appears under the MBeans tab as DefaultDomain.
+        </para>
+        <para>
+          The management interfaces under DefaultDomain are organized as follows:
+
+            <itemizedlist>
+                <listitem>
+                    <para>Node - administrative operations </para>
+                </listitem>
+                <listitem>
+                    <para>Incoming - statistics about incoming batches </para>
+                </listitem>
+                <listitem>
+                    <para>Outgoing - statistics about outgoing batches </para>
+                </listitem>
+                <listitem>
+                    <para>Parameters - access to properties set through the parameter service </para>
+                </listitem>
+                <listitem>
+                    <para>Notifications - setting thresholds and receiving notifications </para>
+                </listitem>
+            </itemizedlist>
+          
+        </para>
+    </section>
+    <section>
+        <title>Opening Registration</title>
         <para></para>
     </section>
     <section>
-        <title>JMX</title>
+        <title>Viewing Batches</title>
         <para></para>
     </section>
     <section>
