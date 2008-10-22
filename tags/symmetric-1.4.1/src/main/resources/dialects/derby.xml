@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd" default-lazy-init="true">
+
+    <bean id="derbyDialect" class="org.jumpmind.symmetric.db.derby.DerbyDbDialect"
+        scope="prototype">
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
+        <property name="sqlTemplate">
+            <bean class="org.jumpmind.symmetric.db.SqlTemplate">
+                <property name="triggerPrefix" value="${trigger.prefix}" />
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from sys.sysaliases where alias = '$(functionName)']]>
+                    </value>
+                </property>
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="FN_SYM_REPLACE">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_replace(STR VARCHAR(10000), OLD VARCHAR(10000), NEW VARCHAR(10000)) RETURNS
+                                VARCHAR(10000) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.apache.commons.lang.StringUtils.replace'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_TRANSACTION_ID">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_transaction_id() RETURNS
+                                varchar(100) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.getTransactionId'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_SYNC_TRIGGERS_DISABLED">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_sync_triggers_disabled() RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.isSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_SYNC_TRIGGERS_SET_DISABLED">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_sync_triggers_set_disabled(state integer) RETURNS
+                                integer PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncDisabled'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_CLOB_TO_STRING">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_clob_to_string(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.clobToString'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="FN_SYM_BLOB_TO_STRING">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_blob_to_string(columnName varchar(50),
+                                tableName varchar(50), whereClause varchar(8000)) RETURNS
+                                varchar(32672) PARAMETER STYLE JAVA READS SQL DATA LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.blobToString'
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="PROC_SYM_INSERT_DATA">
+                            <value>
+                                <![CDATA[ 
+                                CREATE PROCEDURE proc_sym_insert_data(schemaName varchar(50), prefixName varchar(50),
+                                tableName varchar(50), channelName varchar(50), dmlType varchar(1), triggerHistId int,
+                                transactionId varchar(1000), targetGroupId varchar(50), nodeSelectWhere varchar(1000),
+                                pkData varchar(32672), rowData varchar(32672))
+                                PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+                <property name="stringColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || fn_sym_replace(fn_sym_replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+                    </value>
+                </property>
+                <property name="clobColumnTemplate">
+                    <value>
+                        <![CDATA[fn_sym_clob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
+                    </value>
+                </property>
+                <property name="blobColumnTemplate">
+                    <value>
+                        <![CDATA[fn_sym_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
+                    </value>
+                </property>
+                <property name="numberColumnTemplate">
+                    <value>
+                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+                    </value>
+                </property>
+                <property name="datetimeColumnTemplate" >
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || rtrim(char($(tableAlias)."$(columnName)")) || '"' end ||','||]]>
+                    </value>
+                </property>
+                <property name="triggerConcatCharacter" value="||"/>
+                <property name="newTriggerValue" value="new"/>
+                <property name="oldTriggerValue" value="old"/>
+                <property name="sqlTemplates">
+                    <map>
+                        <entry key="insertTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER INSERT ON $(schemaName)$(tableName) 
+                                REFERENCING NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'I', $(triggerHistoryId), 
+                                  $(txIdExpression), 
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
+                                  null,
+                                  case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end)
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="updateTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName)
+                                AFTER UPDATE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD NEW AS NEW
+                                FOR EACH ROW MODE DB2SQL 
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'U', $(triggerHistoryId), 
+                                  $(txIdExpression),
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
+                                  $(oldKeys),
+                                  case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(columns)
+                                  else null end)
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="deleteTriggerTemplate">
+                            <value>
+                                <![CDATA[
+                                CREATE TRIGGER $(triggerName) 
+                                AFTER DELETE ON $(schemaName)$(tableName) 
+                                REFERENCING OLD AS OLD
+                                FOR EACH ROW MODE DB2SQL 
+                                call proc_sym_insert_data(
+                                  '$(defaultSchema)', '$(prefixName)', '$(targetTableName)',
+                                  '$(channelName)', 'D', $(triggerHistoryId), 
+                                  $(txIdExpression),
+                                  '$(targetGroupId)', '$(nodeSelectWhereEscaped)',
+                                  case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(oldKeys)
+                                  else null end,
+                                  null)
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="initialLoadSqlTemplate">
+                            <value>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+</beans>
