@@ -5,7 +5,7 @@
         <author email="chenson42@users.sourceforge.net">Chris Henson</author>
     </properties>
     <body>
-        <release version="1.4.1" date="2008-11-01" description="Patch Release">
+        <release version="1.4.1" date="2008-10-21" description="Patch Release">
             <action dev="chenson42" type="fix">
                 Batches were not being ordered correctly during the extraction when a channel was in error.
             </action>                
