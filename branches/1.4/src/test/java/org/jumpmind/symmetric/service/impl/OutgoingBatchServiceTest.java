@@ -242,9 +242,9 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         assertEquals(batches.size(), 3);
         assertEquals(batches.get(0).getBatchId(), secondBatchId,
                 "Channel in error should have batches last - missing new batch");
-        assertEquals(batches.get(1).getBatchId(), firstBatchId,
+        assertEquals(batches.get(1).getBatchId(), thirdBatchId,
                 "Channel in error should have batches last - missing error batch");
-        assertEquals(batches.get(2).getBatchId(), thirdBatchId,
+        assertEquals(batches.get(2).getBatchId(), firstBatchId,
                 "Channel in error should have batches last - missing new batch");
 
     }
