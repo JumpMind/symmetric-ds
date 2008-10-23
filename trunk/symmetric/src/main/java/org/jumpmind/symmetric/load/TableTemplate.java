@@ -118,7 +118,7 @@ public class TableTemplate {
     }
 
     public void resetMetaData() {
-        table = dbDialect.getMetaDataFor(null, schema, tableName, true);
+        table = dbDialect.getMetaDataFor(null, schema, tableName, false);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
         keyMetaData = null;
