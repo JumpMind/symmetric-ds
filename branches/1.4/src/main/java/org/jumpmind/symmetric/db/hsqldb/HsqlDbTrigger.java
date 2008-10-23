@@ -29,6 +29,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hsqldb.Token;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -110,18 +111,22 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
             for (String column : includedColumns) {
                 b.append("? as ");
-                b.append("new_");
-                b.append(column);
-                b.append(",");
+                if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
+                    b.append("\"new_").append(column).append("\",");
+                } else {
+                    b.append("new_").append(column).append(",");
+                }
             }
         }
 
         if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.DELETE) {
             for (String column : includedColumns) {
                 b.append("? as ");
-                b.append("old_");
-                b.append(column);
-                b.append(",");
+                if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
+                    b.append("\"old_").append(column).append("\",");
+                } else {
+                    b.append("old_").append(column).append(",");
+                }
             }
         }
         b.deleteCharAt(b.length() - 1);
