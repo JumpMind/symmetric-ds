@@ -339,6 +339,7 @@ public class CsvLoader implements IDataLoader {
             logger.debug("Running SQL: " + sql);
         }
         jdbcTemplate.execute(sql);
+        context.getTableTemplate().resetMetaData();
     }
 
     protected void runDdl(String xml) {
