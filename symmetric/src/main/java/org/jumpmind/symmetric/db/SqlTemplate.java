@@ -296,13 +296,8 @@ public class SqlTemplate {
     private String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
         for (Column column : columns) {
-            b.append(aliasOne);
-            b.append(".");
-            b.append(column.getName());
-            b.append("=");
-            b.append(aliasTwo);
-            b.append(".");
-            b.append(column.getName());
+            b.append(aliasOne).append(".\"").append(column.getName()).append("\"");
+            b.append("=").append(aliasTwo).append(".\"").append(column.getName()).append("\"");
             if (!column.equals(columns[columns.length - 1])) {
                 b.append(" and ");
             }
@@ -315,7 +310,7 @@ public class SqlTemplate {
     private String getPrimaryKeyWhereString(String alias, Column[] columns) {
         StringBuilder b = new StringBuilder();
         for (Column column : columns) {
-            b.append("'").append(column.getName()).append("=");
+            b.append("'\"").append(column.getName()).append("\"=");
             switch (column.getTypeCode()) {
             case Types.BIT:
             case Types.TINYINT:
@@ -329,20 +324,20 @@ public class SqlTemplate {
             case Types.DECIMAL:
             case Types.BOOLEAN:
                 b.append("'").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".").append(column.getName()).append("))");
+                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName()).append("\"))");
                 b.append(triggerConcatCharacter).append("'");
                 break;
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:
                 b.append("'''").append(triggerConcatCharacter);
-                b.append(alias).append(".").append(column.getName());
+                b.append(alias).append(".\"").append(column.getName()).append("\"");
                 b.append(triggerConcatCharacter).append("'''");
                 break;
             case Types.DATE:
             case Types.TIMESTAMP:
                 b.append("{ts '''").append(triggerConcatCharacter);
-                b.append("rtrim(char(").append(alias).append(".").append(column.getName()).append("))");
+                b.append("rtrim(char(").append(alias).append(".\"").append(column.getName()).append("\"))");
                 b.append(triggerConcatCharacter).append("'''}");
                 break;
             }

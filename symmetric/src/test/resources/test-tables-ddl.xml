@@ -55,6 +55,10 @@
         <column name="status" type="INTEGER" />
     </table>
 
+    <table name="test_key_word">
+        <column name="id" type="INTEGER" primaryKey="true" required="true" />
+    </table>
+
     <table name="test_customer">
         <column name="customer_id" type="INTEGER" primaryKey="true" required="true" />
         <column name="name" type="VARCHAR" size="50" required="true" />

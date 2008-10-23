@@ -36,6 +36,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -70,6 +71,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     static final String updateStoreStatusSql = "update test_store_status set status = ? where store_id = ? and register_id = ?";
 
     static final String selectStoreStatusSql = "select status from test_store_status where store_id = ? and register_id = ?";
+
+    static final String enableKeyWordTriggerSql = "update sym_trigger set sync_on_insert = 1, sync_on_update = 1, sync_on_delete = 1 where source_table_name = 'test_key_word'";
+    
+    static final String alterKeyWordSql = "alter table test_key_word add \"key word\" char(1)";
+    
+    static final String alterKeyWordSql2 = "alter table test_key_word add \"case\" char(1)";
+
+    static final String insertKeyWordSql = "insert into test_key_word (id, \"key word\", \"case\") values (?, ?, ?)";
+
+    static final String updateKeyWordSql = "update test_key_word set \"key word\" = ?, \"case\" = ? where id = ?";
+
+    static final String selectKeyWordSql = "select \"key word\", \"case\" from test_key_word where id = ?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
@@ -371,8 +384,36 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from NO_PRIMARY_KEY_TABLE"),
                 0, "Table was not deleted from");
-        
+    }
+    
+    @Test(timeout = 30000)
+    public void testReservedColumnNames() {
+        // MySQL does not allow reserved column names to be used even with special syntax
+        if (getRootDbDialect() instanceof MySqlDbDialect || getClientDbDialect() instanceof MySqlDbDialect) {
+            return;
+        }
+        // alter the table to have column names that are not usually allowed
+        rootJdbcTemplate.update(alterKeyWordSql);
+        rootJdbcTemplate.update(alterKeyWordSql2);
+        clientJdbcTemplate.update(alterKeyWordSql);
+        clientJdbcTemplate.update(alterKeyWordSql2);
 
+        // enable the trigger for the table and update the client with configuration
+        rootJdbcTemplate.update(enableKeyWordTriggerSql);
+        getRootEngine().syncTriggers();
+        getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        getClientEngine().pull();
+
+        rootJdbcTemplate.update(insertKeyWordSql, new Object[] { 1, "x", "a" });
+        getClientEngine().pull();
+
+        rootJdbcTemplate.update(updateKeyWordSql, new Object[] { "y", "b",  1 });
+        getClientEngine().pull();
+
+        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql, new Object[] { 1 });
+        Map columnMap = (Map) rowList.get(0);
+        assertEquals(columnMap.get("key word"), "y", "Wrong key word value in table");
+        assertEquals(columnMap.get("case"), "b", "Wrong case value in table");
     }
 
     protected void testDeletes() {

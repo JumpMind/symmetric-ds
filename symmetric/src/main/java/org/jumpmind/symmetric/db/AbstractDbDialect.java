@@ -441,27 +441,18 @@ abstract public class AbstractDbDialect implements IDbDialect {
         for (int idx = 0; idx < columnsToCheck.length; idx++) {
             if (idx > 0)
                 query.append(",");
-            if (getPlatform().isDelimitedIdentifierModeOn())
-                query.append(platform.getPlatformInfo().getDelimiterToken());
-            query.append("t.").append(columnsToCheck[idx].getName());
-            if (getPlatform().isDelimitedIdentifierModeOn())
-                query.append(platform.getPlatformInfo().getDelimiterToken());
+            query.append("t.").append("\"").append(columnsToCheck[idx].getName()).append("\"");
         }
 
         query.append(" FROM ");
-        if (getPlatform().isDelimitedIdentifierModeOn()) {
-            query.append(platform.getPlatformInfo().getDelimiterToken());
-        }
         if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
             query.append(table.getCatalog() + ".");
         }
         if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
             query.append(table.getSchema() + ".");
         }
-        query.append(table.getName());
-        if (getPlatform().isDelimitedIdentifierModeOn())
-            query.append(platform.getPlatformInfo().getDelimiterToken());
-        query.append(" t WHERE 1 = 0");
+        query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
+
         final String finalQuery = query.toString();
         jdbcTemplate.execute(new StatementCallback() {
             public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
@@ -601,6 +592,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml, trigger, audit,
                             tablePrefix, table, defaultCatalog, defaultSchema);
                     try {
+                        logger.debug(triggerSql);
                         stmt.executeUpdate(triggerSql);
                     } catch (SQLException ex) {
                         logger.error("Failed to create trigger: " + triggerSql);
