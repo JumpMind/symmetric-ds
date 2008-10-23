@@ -338,6 +338,10 @@ public class SymmetricEngine {
         return dataService.reloadNode(nodeId);
     }
 
+    public String sendSQL(String nodeId, String tableName, String sql) {
+        return dataService.sendSQL(nodeId, tableName, sql);
+    }
+
     /**
      * This can be called if the push job has not been enabled. It will perform
      * a push the same way the {@link PushJob} would have.
@@ -408,6 +412,10 @@ public class SymmetricEngine {
         registrationService.openRegistration(groupId, externalId);
     }
 
+    public void reOpenRegistration(String nodeId) {
+        registrationService.reOpenRegistration(nodeId);
+    }
+    
     /**
      * Check to see if this node has been registered.
      * 
