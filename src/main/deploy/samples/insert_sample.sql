@@ -55,6 +55,11 @@ insert into sym_trigger
 (source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
 values('sale_transaction', 'store', 'corp', 'sale_transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
 
+-- Example of a "dead" trigger, which is used to only sync the table during initial load
+insert into sym_trigger 
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
+values('sale_transaction', 'corp', 'store', 'sale_transaction', 0, 0, 0, 200, 'demo', current_timestamp, current_timestamp);
+
 insert into sym_trigger 
 (source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_updated_time, create_time)
 values('sale_return_line_item', 'store', 'corp', 'sale_transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
