@@ -215,7 +215,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (dataLoader != null && status != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
