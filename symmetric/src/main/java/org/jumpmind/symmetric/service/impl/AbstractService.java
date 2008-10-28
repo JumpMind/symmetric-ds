@@ -46,7 +46,7 @@ abstract class AbstractService {
     }
     
     @SuppressWarnings("unchecked")
-    protected SQLException unwrapSqlException(Exception e) {
+    protected SQLException unwrapSqlException(Throwable e) {
         List<Throwable> exs = ExceptionUtils.getThrowableList(e);
         for (Throwable throwable : exs) {
             if (throwable instanceof SQLException) {
