@@ -83,6 +83,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             // registration is not allowed until this node has an initial load
             NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
             if (security != null && security.getInitialLoadTime() == null) {
+                logger.warn("Registration is not allowed until this node has an initial load");
                 return false;
             }
         }
