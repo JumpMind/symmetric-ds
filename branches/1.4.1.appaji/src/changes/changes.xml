@@ -1,0 +1,342 @@
+<document>
+    <properties>
+        <title>SymmetricDS</title>
+        <author email="erilong@users.sourceforge.net">Eric Long</author>
+        <author email="chenson42@users.sourceforge.net">Chris Henson</author>
+    </properties>
+    <body>
+        <release version="1.4.1" date="2008-10-21" description="Patch Release">
+            <action dev="chenson42" type="fix">
+                Batches were not being ordered correctly during the extraction when a channel was in error.
+            </action>                  
+            <action dev="erilong" type="fix" issue="aid=2155736&amp;atid=997724">
+                Loss of precison with Float type on Oracle
+            </action>        
+            <action dev="erilong" type="fix" issue="aid=2037604&amp;atid=997724">
+                Support base64 encoding on PostgreSQL.
+            </action>        
+        </release>
+        <release version="1.4.0" date="2008-10-08" description="Lets add some polish">
+            <action dev="erilong" type="fix">
+                Added support for locale specific decimals numbers that use ',' for the decimal points.
+            </action>        
+            <action dev="erilong" type="fix" issue="aid=2001909&amp;atid=997724">
+                Support for boolean data type on all platforms (support for tinyint(1) on MySQL)
+            </action>        
+            <action dev="erilong" type="fix" issue="aid=2174941&amp;atid=997724">
+                Support binary data in MySQL BLOB columns
+            </action>        
+            <action dev="chenson42" type="fix">
+                Enhanced the RSS functionality a bit by adding published date field as the batch creation date, added
+                SQL error information if it exists and the number of times a batch errored out.
+            </action>
+            <action dev="chenson42" type="fix">
+                Log the SQL error code and message and mark the outgoing batch as in 'ER' if the error happens on the
+                extract side.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1917203&amp;atid=997724">
+                Clear out unsent events when an initial load is queue'd up.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1944227&amp;atid=997724">
+                Fixed trigger creation issue for tables with no primary keys.
+            </action>
+            <action dev="erilong" type="fix">Sorted outgoing batch in code to reduce stress on database.</action>
+            <action dev="erilong" type="fix">
+                Change index on sym_data_event to (batched, node_id, channel_id), which is how we are accessing the
+                table.
+            </action>
+            <action dev="erilong" type="fix">
+                Improve performance by doing a multi-row count and update during batching. If the count is greater than
+                the max batch size, then we fall back to the peek ahead result set scrolling.
+            </action>
+            <action dev="erilong" type="fix">
+                Cache channels query - we run this too much on high activity systems.
+            </action>
+            <action dev="erilong" type="fix">
+                Went through code to make sure ALL literals in SQL were parameterized (even the ones that are not
+                variable). This makes a big difference on Oracle.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1985814&amp;atid=997724">
+                By default, the DataLoader uses fallback logic. (If an insert violates the primary key, perform an
+                update instead. If an update affects no rows, perform an insert instead.) Addd a runtime property that
+                lets you disable the fallback logic.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1956188&amp;atid=997724">
+                Support an initial load pushed from client to server.
+            </action>
+            <action dev="chenson42" type="fix">
+                Inactivating a sym_trigger by setting the inactive_time column to a non-null value was fixed.
+            </action>
+            <action dev="chenson42" type="fix">
+                Fixed null pointer for blank my.url property. We now default my.url to blank in
+                symmetric-default.properties.
+            </action>
+            <action dev="dmichels2" type="add">Added IP address authorization.</action>
+            <action dev="chenson42" type="add">
+                Use MX4J's HTMLAdaptor for the stand-alone SymmetricDS instance so we have a nice JMX console.
+            </action>
+            <action dev="chenson42" type="add">
+                Added new extension architecture which allows extension points to be register automatically when they
+                are in the classpath and the META-INF/services/symmetric-*-ext.xml Spring file is found. Also added an
+                interface which allows extension points to be targeted for specific node groups.
+            </action>
+            <action dev="chenson42" type="add">
+                Change the property names to remove the inconsistent symmetric. and symmetric.runtime. prefixes. This
+                change keeps backwards compatibility with the old property names.
+            </action>
+            <action dev="chenson42" type="add">
+                Add the ability to override the Spring bean name used for an embedded DataSource. This allows users to
+                define their own DataSource.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1964509&amp;atid=997724">
+                Register from the pull thread if the pull job has been enabled. This will allow an unregistered
+                SymmetricDS client to fully deploy to an application server without being registered.
+            </action>
+            <action dev="chenson42" type="fix">
+                Drop foreign keys from the SymmetricDS configuration tables. They seem to get in the way for some
+                people.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1979581&amp;atid=997724">
+                Make a push a two step process. First use a HEAD to see if the server is available, next do the actual
+                PUT. This solves an issue we have observed where the client PUSHES an entire pay load before the
+                response is sent. This solution relies on HTTP keep-alive.
+            </action>
+            <action dev="chenson42" type="add">
+                Added a new plug-in point, the IBatchListener. This new interface gives the end user a chance to do
+                something with a group of data rows that are in the same batch. See XmlPublisherFilter for an usage
+                example.
+            </action>
+            <action dev="chenson42" type="add">
+                Added a new plug-in point, the IExtractorFilter. This new filter can be useful to capture and react to
+                application events (for example a store close.)
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1961240&amp;atid=997727">
+                Pass the IDataLoaderContext into the IColumnFilter interface.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1955378&amp;atid=997727">
+                Don't include the keys in data loader update statement if they haven't changed. This feature is turned
+                off by default and can be enabled by the new dont.include.keys.in.update.statement parameter.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1955383&amp;atid=997727">
+                Add a stop() method to the SymmetricEngine API.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=&amp;atid=997727">
+                Supported runtime configuration from the sym_parameters table and the periodic rereading of parameters
+                from the file system (as long as the ParameterService is being used.)
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1954979&amp;atid=997727">
+                When db is unavailable during startup, add retry logic
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1874255&amp;atid=997727">
+                Recorded the timezone in sym_node for reporting purposes
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1938886&amp;atid=997727">
+                Added configuration setting for https's HostnameVerifier
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1953442&amp;atid=997727">
+                Added support for configuring the source table's catalog.
+            </action>
+            <action dev="chenson42" type="add" issue="aid=1946085&amp;atid=997727">
+                Don't specify the schema in triggers if the schema/catalogs are specified in the trigger configuration.
+            </action>
+            <action dev="chenson42" type="add">Upgrade to Spring Framework 2.5.5.</action>
+            <action dev="knaas" type="add">
+                Make changes to the filter and servlet configuration so the web.xml does not contain dynamic
+                configuration information. From this point forward we will provide a standard web.xml and configuration
+                is in the same place as all the other SymmetricDS configuration.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1826895&amp;atid=997724">
+                Support BLOB syncing on Oracle.
+            </action>
+            <action dev="chenson42" type="fix">Handle Oracle TIMESTAMP(9) data types.</action>
+            <action dev="chenson42" type="fix">
+                Fixed a bug with the SQL Server filter that removes identity columns from updates. When syncing from
+                other databases the column case may not match. We need to try to match regardless of case on the
+                columns.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1916017&amp;atid=997724">
+                Preserved the original case of table names, table prefix, and foreign keys.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1940365&amp;atid=997724">
+                Fixed the update trigger and the initial load for the HSQLDB dialect.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1944507&amp;atid=997724">
+                Bug in selectDataIdSql. data_id was not qualified.
+            </action>
+        </release>
+        <release version="1.3.4" date="2008-07-31" description="Patch release">
+            <action dev="chenson42" type="fix" issue="aid=1950045&amp;atid=997724">
+                Fixed peek ahead logic so that the max batch size limit is respected.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=2025080&amp;atid=997724">
+                Create function error on MySQL version before 5.019
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1963349&amp;atid=997724">
+                Use target schema when loading data across schemas
+            </action>
+        </release>
+        <release version="1.3.3" date="2008-04-22" description="Patch release">
+            <action dev="chenson42" type="fix" issue="aid=1945207&amp;atid=997724">
+                Removed extra comma in mssql.xml trigger text.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1948790&amp;atid=997724">
+                Multi-row updates don't work for the Sql Server Dialect.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1948109&amp;atid=997724">
+                Time portion of DATE column not syncing.
+            </action>
+        </release>
+        <release version="1.3.2" date="2008-04-01" description="Patch release">
+            <action dev="chenson42" type="fix" issue="aid=1930496&amp;atid=997724">
+                Make buildOutgoingBatches use only one connection from the connection pool vs the previous two it used.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1929400&amp;atid=997724">
+                Don't put all ACKs in the same transaction.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1929395&amp;atid=997724">
+                Introduce a compression filter that does not read an entire stream into memory before compressing.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1918310&amp;atid=997724">
+                Fixed the isInitialLoadComplete JMX method so it works with the new asynchronous reload.
+            </action>
+        </release>
+        <release version="1.3.1" date="2008-03-29" description="a brave new frontier, patched">
+            <action dev="erilong" type="fix" issue="aid=1924351&amp;atid=997724">
+                Queries need to alias columns on PostgreSQL in case reserved words like "limit" are used as a column
+                name. Fixes synchronization for Adempiere.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1922524&amp;atid=997724">
+                Fixed the PostgreSQL dialect to query for existence of triggers correctly, which was causing it to try
+                creating them on every startup.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1913260&amp;atid=997724">
+                Fixed the population of the failed_data_id on sym_outgoing_batch_hist, which was always zero. It should
+                link to the sym_data.
+            </action>
+            <action dev="chenson42" type="fix" issue="aid=1914242&amp;atid=997724">
+                The oracle dialect should select from user_objects vs. all_objects to determine if the package variable
+                has been installed.
+            </action>
+        </release>
+        <release version="1.3.0" date="2008-03-12" description="a brave new frontier">
+            <action dev="chenson42" type="add">
+                Changed Version.java to reference the pom.properties version that is packaged in the jar during a Maven
+                build.
+            </action>
+            <action dev="chenson42" type="add">Only log node concurrency rejects every 10 minutes.</action>
+            <action dev="chenson42" type="add">
+                Log fallback update/deletes at debug level instead of at the warn level.
+            </action>
+            <action dev="chenson42" type="add">
+                Don't log socket exceptions and HTTP 503 errors as stack traces, instead log as warnings.
+            </action>
+            <action dev="chenson42" type="add">
+                Make DataService.reloadNode(node_id) transactional. If it isn't we run the risk of inserting only half
+                of an initial load.
+            </action>
+            <action dev="chenson42" type="add">
+                Added an additional optional properties file that can put in the classpath to override properties values
+                called symmetric-override.properties.
+            </action>
+            <action dev="chenson42" type="add">
+                Moved channel_id and transaction_id from the data table to the data_event table. It makes it much more
+                efficient to create batches when data is backed up because you don't need to join between data and
+                data_event.
+            </action>
+            <action dev="chenson42" type="add">
+                Added the configurable number of times to attempt a 'resend' of the 'status' on a pull.
+            </action>
+            <action dev="chenson42" type="add">
+                Added the removal of all incoming batch rows when reloading a node. This is to prevent the loss of data
+                should the symmetric.runtime.incoming.batches.skip.duplicates property be set to true.
+            </action>
+            <action dev="chenson42" type="add">
+                Made the purge of incoming and outgoing batches exclusive. Also made sure if one fails, the other will
+                still be able to run.
+            </action>
+            <action dev="kbajaj01" type="add">
+                Make the AbstractJob configurable so that it can reschedule itself. If we do this, then we get natural
+                randomness in the push, pull cycles.
+            </action>
+            <action dev="chenson42" type="fix">
+                Transaction ids can be interleaved by different processes. The batching algorithm needs to take this
+                into account. Also, cap the max number of batches that can be sent per channel in one sweep.
+            </action>
+            <action dev="chenson42" type="fix">
+                We had a few places where we were not closing Statements and ResultSets.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1891508&amp;atid=997724">
+                Fixed integrity violation when updating a primary key with an empty value between database systems that
+                handle char padding differently
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1903641&amp;atid=997724">
+                Fixed SafetySwitch error when parsing large columns
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1903635&amp;atid=997724">
+                Fixed cross schema trigger creation for PostgreSQL
+            </action>
+            <action dev="erilong" type="add" issue="aid=1903649&amp;atid=997727">
+                reloadTable() JMX function to delete and reload a table for a node
+            </action>
+            <action dev="erilong" type="add" issue="aid=190874&amp;atid=997727">
+                Timings for network, filter, and database on incoming batches.
+            </action>
+            <action dev="erilong" type="add" issue="aid=1861766&amp;atid=997727">
+                Addition of optional compression on push.
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1907627&amp;atid=997724">
+                Case sensitive schema and table names on MySQL for Unix
+            </action>
+            <action dev="erilong" type="fix" issue="aid=1907658&amp;atid=997724">
+                Extract can send batches out of order when channel is in error
+            </action>
+        </release>
+        <release version="1.2.0" date="2008-01-23" description="New dialects and bug fix release">
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1825801">
+                Add support to auto create the tables that are being synced
+            </action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861088">Implement the HSQLDB Dialect</action>
+            <action dev="erilong" type="add" issue=" atid=997727&amp;aid=1825799">
+                Implement the Apache Derby Dialect
+            </action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1877262">
+                Make the concurrent worker count by servlet instead of across all servlets
+            </action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1861764">
+                Support the automatic detection of http compression
+            </action>
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1852586">
+                Add support for automatically sending initial load
+            </action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1851161">
+                Add cluster support by providing a ClusterService
+            </action>
+            <action dev="erilong" type="add" issue="atid=997727&amp;aid=1851159">
+                Add promiscuous registration mode
+            </action>
+            <action dev="chenson42" type="add" issue="atid=997727&amp;aid=1849379">
+                Add curTriggerValue variable for use in sym_trigger definitions
+            </action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1861090">
+                To many data events can be purged in the same transaction
+            </action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1858083">
+                SQL Server Initial Load broke when 'text' fields are used
+            </action>
+            <action dev="erilong" type="fix" issue="atid=997724&amp;aid=1854418">
+                The JMX showBatch and writeBatchRangeToFile broken in 1.1
+            </action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1851065">Trigger name is too long ...</action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1861090">
+                To many data events can be purged in the same transaction
+            </action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1849767">
+                Don't output a WARN if the sync_url is null
+            </action>
+            <action dev="chenson42" type="fix" issue="atid=997724&amp;aid=1849763">
+                Bug introduced in refactoring of SqlScript
+            </action>
+        </release>
+
+    </body>
+</document>

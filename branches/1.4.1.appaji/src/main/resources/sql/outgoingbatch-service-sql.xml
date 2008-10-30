@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="outgoingBatchServiceSql">
+    <entry key="initialLoadStatusSql">
+      <value>
+        select status from ${sync.table.prefix}_outgoing_batch where channel_id='reload' and
+        node_id=?
+      </value>
+    </entry>
+    <entry key="selectEventsToBatchCountSql">
+      <value>
+        select count(*) from ${sync.table.prefix}_data_event where batched = ? and node_id = ? and
+        channel_id = ?
+      </value>
+    </entry>
+    <entry key="selectEventsToBatchSql">
+      <value>
+        select transaction_id, data_id from ${sync.table.prefix}_data_event where batched = ? and
+        node_id = ? and channel_id = ? order by data_id asc
+      </value>
+    </entry>
+    <entry key="createBatchSql">
+      <value>
+        insert into ${sync.table.prefix}_outgoing_batch (batch_id, node_id, channel_id, status,
+        batch_type, create_time) values (null, ?, ?, ?, ?, current_timestamp)
+      </value>
+    </entry>
+    <entry key="updateBatchedEventsMultiSql">
+      <value>
+        update ${sync.table.prefix}_data_event set batch_id = ?, batched = ? where batched = ?
+        and node_id = ? and channel_id = ?
+      </value>
+    </entry>
+    <entry key="updateBatchedEventsSql">
+      <value>
+        update ${sync.table.prefix}_data_event set batch_id = ?, batched = ? where node_id = ? and
+        data_id = ?
+      </value>
+    </entry>
+    <entry key="selectOutgoingBatchSql">
+      <value>
+        select batch_id, node_id, channel_id, status, batch_type, create_time from
+        ${sync.table.prefix}_outgoing_batch where node_id = ? and status in (?, ?, ?) order by batch_id asc
+      </value>
+    </entry>
+    <entry key="selectOutgoingBatchRangeSql">
+      <value>
+        select batch_id, node_id, channel_id, status, batch_type, create_time from
+        ${sync.table.prefix}_outgoing_batch where batch_id between ? and ? order by batch_id
+      </value>
+    </entry>
+    <entry key="selectOutgoingBatchErrorsSql">
+      <value>
+        select batch_id, node_id, channel_id, status, batch_type, create_time from
+        ${sync.table.prefix}_outgoing_batch where status = 'ER' order by batch_id
+      </value>
+    </entry>
+    <entry key="changeBatchStatusSql">
+      <value>update ${sync.table.prefix}_outgoing_batch set status=? where batch_id=?</value>
+    </entry>
+    <entry key="findOutgoingBatchHistorySql">
+      <value>
+        select batch_id, node_id, status, network_millis, filter_millis, database_millis, host_name,
+        byte_count, data_event_count, failed_data_id, start_time, end_time, sql_state, sql_code,
+        sql_message from ${sync.table.prefix}_outgoing_batch_hist where batch_id = ? and node_id = ?
+        order by start_time
+      </value>
+    </entry>
+    <entry key="insertOutgoingBatchHistorySql">
+      <value>
+        insert into ${sync.table.prefix}_outgoing_batch_hist (batch_id, node_id, status,
+        network_millis, filter_millis, database_millis, host_name, byte_count, data_event_count,
+        failed_data_id, start_time, end_time, sql_state, sql_code, sql_message) values (?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      </value>
+    </entry>
+
+  </util:map>
+
+</beans>
