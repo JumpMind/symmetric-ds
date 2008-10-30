@@ -265,10 +265,17 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.write(CsvConstants.UPDATE);
         writer.writeRecord(updateValues, true);
 
+        // update a single column
+        columns = new String[] { "id", "char_value" };
+        writeTable(writer, TEST_TABLE, TEST_KEYS, columns);
+        writer.write(CsvConstants.UPDATE);
+        writer.writeRecord(updateValues, true);
+
         writer.close();
         load(out);
 
         insertValues[1] = updateValues[1];
+        insertValues[3] = updateValues[1];
         assertTestTableEquals(insertValues[0], insertValues);
     }
 
