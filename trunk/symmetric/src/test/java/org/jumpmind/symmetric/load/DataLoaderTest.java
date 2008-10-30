@@ -240,6 +240,39 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     }
 
     @Test
+    public void testColumnLevelSync() throws Exception {
+        String[] insertValues = new String[TEST_COLUMNS.length];
+        insertValues[2] = insertValues[4] = "column sync";
+        insertValues[0] = getNextId();
+        String[] updateValues = new String[3];
+        updateValues[0] = updateValues[2] = insertValues[0];
+        updateValues[1] = "new value";
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        String nextBatchId = getNextBatchId();
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+
+        // Clean insert
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(insertValues, true);
+
+        // update a single column
+        String[] columns = { "id", "string_value" };
+        writeTable(writer, TEST_TABLE, TEST_KEYS, columns);
+        writer.write(CsvConstants.UPDATE);
+        writer.writeRecord(updateValues, true);
+
+        writer.close();
+        load(out);
+
+        insertValues[1] = updateValues[1];
+        assertTestTableEquals(insertValues[0], insertValues);
+    }
+
+    @Test
     public void testBenchmark() throws Exception {
         ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream("/test-data-loader-benchmark.zip"));
         in.getNextEntry();
