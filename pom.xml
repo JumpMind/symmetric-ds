@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
@@ -13,8 +14,12 @@
         centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0</developerConnection>
+        <connection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0
+        </connection>
+        <developerConnection>
+            scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0
+        </developerConnection>
         <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0</url>
     </scm>
     <issueManagement>
@@ -102,7 +107,7 @@
             <timezone>-5</timezone>
         </contributor>
     </contributors>
-    
+
     <distributionManagement>
         <site>
             <id>sourceforge.net</id>
@@ -121,7 +126,7 @@
             <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
         </snapshotRepository>
     </distributionManagement>
- 
+
     <properties>
         <wtpVersion>1.5</wtpVersion>
         <springframework-release-version>2.5.5</springframework-release-version>
@@ -485,6 +490,12 @@
             <groupId>rome</groupId>
             <artifactId>rome</artifactId>
             <version>0.9</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.1</version>
             <optional>true</optional>
         </dependency>
         <!-- Databases -->
