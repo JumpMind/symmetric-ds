@@ -94,4 +94,12 @@
         <column name="Name" type="VARCHAR" size="50" required="true" />
     </table>
 
+    <table name="TEST_XML_PUBLISHER">
+        <column name="ID1" type="INTEGER" primaryKey="true" required="true" />
+        <column name="ID2" type="INTEGER" required="true" />
+        <column name="DATA1" type="VARCHAR" size="10" />
+        <column name="DATA2" type="INTEGER" />
+        <column name="DATA3" type="TIMESTAMP" />
+    </table>
+
 </database>
