@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,11 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -37,11 +43,9 @@ import org.jumpmind.symmetric.model.IncomingBatchHistory;
 /**
  * This is an optional data loader filter/listener that is capable of
  * translating table data to XML and publishing it to JMS for consumption by the
- * enterprise.
+ * enterprise. It uses JDOM internally to create an XML representation of
+ * SymmetricDS data.
  * </p>
- * This class must be configured in the same context that SymmetricDS is running
- * in. Simply inject the IDataLoaderService and it will register itself with the
- * SymmetricDS engine.
  */
 public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
 
@@ -62,6 +66,19 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     private boolean loadDataInTargetDatabase = true;
 
     private boolean autoRegister = true;
+    
+    private Format xmlFormat;
+
+    private ITimeGenerator timeStringGenerator = new ITimeGenerator() {
+        public String getTime() {
+            return Long.toString(System.currentTimeMillis());
+        }
+    };
+    
+    public XmlPublisherFilter() {
+        xmlFormat = Format.getCompactFormat();
+        xmlFormat.setOmitDeclaration(true);
+    }
 
     public boolean isAutoRegister() {
         return autoRegister;
@@ -73,7 +90,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            StringBuilder xml = getXmlFromCache(ctx, null, keys);
+            Element xml = getXmlFromCache(ctx, null, keys);
             if (xml != null) {
                 toXmlElement(DataEventType.UPDATE, xml, ctx, null, keys);
             }
@@ -83,7 +100,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            StringBuilder xml = getXmlFromCache(ctx, data, keys);
+            Element xml = getXmlFromCache(ctx, data, keys);
             if (xml != null) {
                 toXmlElement(DataEventType.UPDATE, xml, ctx, data, keys);
             }
@@ -93,7 +110,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            StringBuilder xml = getXmlFromCache(ctx, data, null);
+            Element xml = getXmlFromCache(ctx, data, null);
             if (xml != null) {
                 toXmlElement(DataEventType.INSERT, xml, ctx, data, null);
             }
@@ -101,25 +118,25 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         return loadDataInTargetDatabase;
     }
 
-    private StringBuilder getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
-        StringBuilder xml = null;
-        Map<String, StringBuilder> ctxCache = getXmlCache(ctx);
+    private Element getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
+        Element xml = null;
+        Map<String, Element> ctxCache = getXmlCache(ctx);
         String txId = toXmlGroupId(ctx, data, keys);
         if (txId != null) {
             xml = ctxCache.get(txId);
             if (xml == null) {
-                xml = new StringBuilder();
-                xml.append("<");
-                xml.append(xmlTagNameToUseForGroup);
-                xml.append(" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' id='");
-                xml.append(txId);
-                xml.append("' ");
+                xml = new Element(xmlTagNameToUseForGroup);
+                xml.addNamespaceDeclaration(getXmlNamespace());
+                xml.setAttribute("id", txId);
                 addFormattedExtraGroupAttributes(ctx, xml);
-                xml.append(">");
                 ctxCache.put(txId, xml);
             }
         }
         return xml;
+    }
+
+    private final static Namespace getXmlNamespace() {
+        return Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
     }
 
     /**
@@ -131,20 +148,19 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
      * @param xml
      *                append XML attributes to this buffer
      */
-    protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, StringBuilder xml) {
-        xml.append("nodeid='");
-        xml.append(ctx.getNodeId());
-        xml.append("' time='");
-        xml.append(System.currentTimeMillis());
-        xml.append("'");
+    protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, Element xml) {
+        xml.setAttribute("nodeid", ctx.getNodeId());
+        if (timeStringGenerator != null) {
+            xml.setAttribute("time", timeStringGenerator.getTime());
+        }
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, StringBuilder> getXmlCache(IDataLoaderContext ctx) {
+    protected Map<String, Element> getXmlCache(IDataLoaderContext ctx) {
         Map<String, Object> cache = ctx.getContextCache();
-        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) cache.get(XML_CACHE);
+        Map<String, Element> xmlCache = (Map<String, Element>) cache.get(XML_CACHE);
         if (xmlCache == null) {
-            xmlCache = new HashMap<String, StringBuilder>();
+            xmlCache = new HashMap<String, Element>();
             cache.put(XML_CACHE, xmlCache);
         }
         return xmlCache;
@@ -157,12 +173,11 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         return xmlCache != null && xmlCache.size() > 0;
     }
 
-    private void toXmlElement(DataEventType dml, StringBuilder xml, IDataLoaderContext ctx, String[] data, String[] keys) {
-        xml.append("<row entity='");
-        xml.append(ctx.getTableName());
-        xml.append("' dml='");
-        xml.append(dml.getCode());
-        xml.append("'>");
+    private void toXmlElement(DataEventType dml, Element xml, IDataLoaderContext ctx, String[] data, String[] keys) {
+        Element row = new Element("row");
+        xml.addContent(row);
+        row.setAttribute("entity", ctx.getTableName());
+        row.setAttribute("dml", dml.getCode());
 
         String[] colNames = null;
 
@@ -175,19 +190,15 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
         for (int i = 0; i < data.length; i++) {
             String col = colNames[i];
-            xml.append("<data key='");
-            xml.append(col);
-            xml.append("'");
-
-            if (data[i] == null) {
-                xml.append(" xsi:nil='true'/>");
+            Element dataElement = new Element("data");
+            row.addContent(dataElement);
+            dataElement.setAttribute("key", col);
+            if (data[i] != null) {
+                dataElement.setText(data[i]);
             } else {
-                xml.append(">");
-                xml.append(data[i]);
-                xml.append("</data>");
+                dataElement.setAttribute("nil", "true", getXmlNamespace());
             }
         }
-        xml.append("</row>");
     }
 
     private String toXmlGroupId(IDataLoaderContext ctx, String[] data, String[] keys) {
@@ -222,25 +233,24 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
             if (id.length() > 0) {
                 return id.toString().replaceAll("-", "");
             }
+        } else {
+            logger.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
     }
 
     private void finalizeXmlAndPublish(IDataLoaderContext ctx) {
-        Map<String, StringBuilder> ctxCache = getXmlCache(ctx);
-        Collection<StringBuilder> buffers = ctxCache.values();
-        for (Iterator<StringBuilder> iterator = buffers.iterator(); iterator.hasNext();) {
-            StringBuilder xml = iterator.next();
-            xml.append("</");
-            xml.append(xmlTagNameToUseForGroup);
-            xml.append(">");
+        Map<String, Element> ctxCache = getXmlCache(ctx);
+        Collection<Element> buffers = ctxCache.values();
+        for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
+            String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
             if (logger.isDebugEnabled()) {
                 logger.debug("Sending XML to IPublisher -> " + xml);
             }
             iterator.remove();
-            publisher.publish(ctx, xml.toString());            
+            publisher.publish(ctx, xml.toString());
         }
-        
+
     }
 
     public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
@@ -253,11 +263,20 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     public void setTableNamesToPublishAsGroup(Set<String> tableNamesToPublishAsGroup) {
         this.tableNamesToPublishAsGroup = tableNamesToPublishAsGroup;
     }
+    
+    public void setTableNameToPublish(String tableName) {
+        this.tableNamesToPublishAsGroup = new HashSet<String>(1);
+        this.tableNamesToPublishAsGroup.add(tableName);
+    }
 
     public void setXmlTagNameToUseForGroup(String xmlTagNameToUseForGroup) {
         this.xmlTagNameToUseForGroup = xmlTagNameToUseForGroup;
     }
 
+    /**
+     * This attribute is required.  It needs to identify the columns that will be used to key on
+     * rows in the specified tables that need to be grouped together in an 'XML batch.'
+     */
     public void setGroupByColumnNames(List<String> groupByColumnNames) {
         this.groupByColumnNames = groupByColumnNames;
     }
@@ -276,6 +295,21 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
+    }
+
+    interface ITimeGenerator {
+        public String getTime();
+    }
+
+    /**
+     * Used to populate the time attribute of an XML message.
+     */
+    public void setTimeStringGenerator(ITimeGenerator timeStringGenerator) {
+        this.timeStringGenerator = timeStringGenerator;
+    }
+
+    public void setXmlFormat(Format xmlFormat) {
+        this.xmlFormat = xmlFormat;
     }
 
 }

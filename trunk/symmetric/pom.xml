@@ -487,6 +487,12 @@
             <version>0.9</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.1</version>
+            <optional>true</optional>
+        </dependency>        
         <!-- Databases -->
         <dependency>
             <groupId>org.apache.derby</groupId>
