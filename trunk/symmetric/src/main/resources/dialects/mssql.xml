@@ -86,8 +86,8 @@
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
-                                  $(syncOnIncomingBatchCondition) 
-                                  if (@SyncEnabled <> 0x1) begin
+                                  select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID
+                                  if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                     $(if:containsBlobClobColumns)
                                        select $(columns) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)
@@ -122,8 +122,8 @@
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
-                                  $(syncOnIncomingBatchCondition) 
-                                  if (@SyncEnabled <> 0x1) begin
+                                  select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID
+                                  if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                     $(if:containsBlobClobColumns)
                                        select $(columns), $(oldKeys) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)
@@ -157,8 +157,8 @@
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
-                                  $(syncOnIncomingBatchCondition) 
-                                  if (@SyncEnabled <> 0x1) begin
+                                  select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID
+                                  if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                       select $(oldKeys) from deleted where $(syncOnDeleteCondition)
                                       open DataCursor
