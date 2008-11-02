@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.ext.NodeGroupTestDataLoaderFilter;
 import org.jumpmind.symmetric.ext.TestDataLoaderFilter;
@@ -36,6 +37,7 @@ import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.junit.Test;
@@ -301,6 +303,53 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         setLoggingLevelForTest(old);
     }
 
+    @Test
+    public void testDataIntregrityError() throws Exception {
+        Level old = setLoggingLevelForTest(Level.OFF);
+        String[] values = { getNextId(), "string3", "string not null3", "char3", "char not null3",
+                "2007-01-02 00:00:00.0", "2007-02-03 04:05:06.0", "0", "47", "67.89", "0.474" };
+
+        IParameterService paramService = (IParameterService) find(Constants.PARAMETER_SERVICE);
+        paramService.saveParameter("dataloader.enable.fallback.update", "false");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writer.writeRecord(new String[] { CsvConstants.BATCH, getNextBatchId() });
+        writeTable(writer, TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(values, true);
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(values, true);
+        writer.writeRecord(new String[] { CsvConstants.COMMIT, getBatchId() });
+        writer.close();
+        load(out);
+
+        assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
+                IncomingBatch.Status.ER, "Wrong status");
+        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(
+                batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertEquals(list.size(), 1, "Wrong number of history");
+        IncomingBatchHistory history = list.get(0);
+        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+        assertEquals(history.getFailedRowNumber(), 2l, "Wrong failed row number");
+        assertEquals(history.getStatementCount(), 2l, "Wrong statement count");
+
+        load(out);
+        assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
+                IncomingBatch.Status.ER, "Wrong status");
+        list = getIncomingBatchService().findIncomingBatchHistory(
+                batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertEquals(list.size(), 2, "Wrong number of history");
+        history = list.get(1);
+        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+        assertEquals(history.getFailedRowNumber(), 2l, "Wrong failed row number");
+        assertEquals(history.getStatementCount(), 2l, "Wrong statement count");
+
+        paramService.saveParameter("dataloader.enable.fallback.update", "true");
+        setLoggingLevelForTest(old);
+    }
+
+    
     @Test
     public void testErrorWhileParsing() throws Exception {
         Level old = setLoggingLevelForTest(Level.OFF);
