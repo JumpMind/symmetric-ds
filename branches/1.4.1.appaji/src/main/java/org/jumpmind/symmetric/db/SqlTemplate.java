@@ -219,6 +219,12 @@ public class SqlTemplate {
         Column[] columns = trigger.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, columns);
         ddl = replace("columns", columnsText, ddl);
+        if (trigger.isSyncColumnLevel()) {
+            columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
+        } else {
+            columnsText = "null";
+        }
+        ddl = replace("oldColumns", columnsText, ddl);
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName

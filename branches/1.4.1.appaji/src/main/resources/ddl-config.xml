@@ -19,6 +19,7 @@
         <column name="event_type" type="CHAR" size="1" />
         <column name="row_data" type="LONGVARCHAR" />
         <column name="pk_data" type="LONGVARCHAR" />
+        <column name="old_data" type="LONGVARCHAR" />
         <column name="trigger_hist_id" type="INTEGER" required="true" />
         <column name="create_time" type="TIMESTAMP" />
     </table>
@@ -151,6 +152,7 @@
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0" />
+        <column name="sync_column_level" type="BOOLEANINT" size="1" required="true" default="0" />
         <column name="name_for_update_trigger" type="VARCHAR" size="50" />
         <column name="name_for_insert_trigger" type="VARCHAR" size="50" />
         <column name="name_for_delete_trigger" type="VARCHAR" size="50" />

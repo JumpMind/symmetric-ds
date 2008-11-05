@@ -56,6 +56,10 @@ insert into sym_trigger
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
 values('NO_PRIMARY_KEY_TABLE','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
 
+insert into sym_trigger 
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_column_level,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
+values('test_sync_column_level','test-root-group','test-node-group','testchannel', 1, 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+
 insert into test_customer
 (customer_id, name, is_active, address, city, state, zip, entry_time)
 values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '2007-01-02 11:30:00'});
@@ -67,3 +71,7 @@ values('1', 100, null, {d '2007-01-02'});
 insert into test_order_detail
 (order_id, line_number, item_type, item_id, quantity, price)
 values('1', 1, 'STCK', '110000055', 5, 1.29);
+
+insert into test_sync_column_level
+(id, string_value, time_value, date_value, boolean_value, bigint_value, decimal_value)
+values (1, 'data', {ts '2008-01-02 03:04:05'}, {d '2008-01-02'}, 1, 100, 123.45);

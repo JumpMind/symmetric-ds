@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.test;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +72,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     static final String updateStoreStatusSql = "update test_store_status set status = ? where store_id = ? and register_id = ?";
 
     static final String selectStoreStatusSql = "select status from test_store_status where store_id = ? and register_id = ?";
+
+    static final String nullSyncColumnLevelSql = "update test_sync_column_level set string_value = null, time_value = null, date_value = null, boolean_value = null, bigint_value = null, decimal_value = null where id = ?"; 
+
+    static final String deleteSyncColumnLevelSql = "delete from test_sync_column_level where id = ?"; 
+
+    static final String updateSyncColumnLevelSql = "update test_sync_column_level set $(column) = ? where id = ?"; 
+
+    static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?"; 
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
@@ -373,6 +383,85 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 0, "Table was not deleted from");
         
 
+    }
+
+    @Test(timeout = 30000)
+    @SuppressWarnings("unchecked")
+    public void testSyncColumnLevel() throws ParseException {
+        int id = 1;
+        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
+                "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "moredata", new Date(), new Date(), Boolean.FALSE, 600,
+                new BigDecimal("34.10") };
+        
+        // Null out columns, change each column and sync one at a time
+        clientJdbcTemplate.update(nullSyncColumnLevelSql, new Object[] { id });
+
+        for (int i = 1; i < columns.length; i++) {
+            rootJdbcTemplate.update(replace("column", columns[i], updateSyncColumnLevelSql), new Object[] {
+                    values[i], id });
+            getClientEngine().pull();
+            assertEquals(clientJdbcTemplate.queryForInt(replace("column", columns[i],
+                    selectSyncColumnLevelSql), new Object[] { id, values[i] }), 1,
+                    "Table was not updated for column " + columns[i]);
+        }
+    }
+
+    @Test(timeout = 30000)
+    @SuppressWarnings("unchecked")
+    public void testSyncColumnLevelTogether() throws ParseException {
+        int id = 1;
+        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
+                "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "moredata", new Date(), new Date(), Boolean.FALSE, 600,
+                new BigDecimal("34.10") };
+        
+        // Null out columns, change all columns, sync all together
+        rootJdbcTemplate.update(nullSyncColumnLevelSql, new Object[] { id });
+
+        for (int i = 1; i < columns.length; i++) {
+            rootJdbcTemplate.update(replace("column", columns[i], updateSyncColumnLevelSql), new Object[] {
+                    values[i], id });
+        }
+        getClientEngine().pull();
+    }
+
+    public void testSyncColumnLevelFallback() throws ParseException {
+        int id = 1;
+        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
+                "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "fallback on insert", new Date(), new Date(), Boolean.FALSE,
+                600, new BigDecimal("34.10") };
+        
+        // Force a fallback of an update to insert the row
+        clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
+        rootJdbcTemplate.update(replace("column", "string_value", updateSyncColumnLevelSql), new Object[] {
+                values[1], id });
+        getClientEngine().pull();
+
+        for (int i = 1; i < columns.length; i++) {
+            assertEquals(clientJdbcTemplate.queryForInt(replace("column", columns[i],
+                    selectSyncColumnLevelSql), new Object[] { id, values[i] }), 1,
+                    "Table was not updated for column " + columns[i]);
+        }
+    }
+
+    @Test(timeout = 30000)
+    @SuppressWarnings("unchecked")
+    public void testSyncColumnLevelNoChange() throws ParseException {
+        int id = 1;
+        
+        // Change a column to the same value, which on some systems will be captured
+        rootJdbcTemplate.update(replace("column", "string_value", updateSyncColumnLevelSql), new Object[] {
+                "same", id });
+        rootJdbcTemplate.update(replace("column", "string_value", updateSyncColumnLevelSql), new Object[] {
+                "same", id });
+        clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
+        getClientEngine().pull();
+    }
+
+    private String replace(String prop, String replaceWith, String sourceString) {
+        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
     protected void testDeletes() {

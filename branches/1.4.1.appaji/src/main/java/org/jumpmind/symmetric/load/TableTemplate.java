@@ -76,6 +76,8 @@ public class TableTemplate {
 
     private String[] columnNames;
 
+    private String[] oldData;
+
     private Map<String, Column> allMetaData;
 
     private Column[] keyMetaData;
@@ -165,7 +167,26 @@ public class TableTemplate {
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
         StatementBuilder st = null;
         Column[] metaData = null;
-        if (dontIncludeKeysInUpdateStatement) {
+        if (oldData != null) {
+            ArrayList<String> changedColumnNameList = new ArrayList<String>();
+            ArrayList<String> changedColumnValueList = new ArrayList<String>();
+            ArrayList<Column> changedColumnMetaList = new ArrayList<Column>();
+            for (int i = 0; i < columnValues.length; i++) {
+                if (! StringUtils.equals(columnValues[i], oldData[i])) {
+                    changedColumnNameList.add(columnNames[i]);
+                    changedColumnMetaList.add(allMetaData.get(columnNames[i].trim().toUpperCase()));
+                    changedColumnValueList.add(columnValues[i]);
+                }
+            }
+            if (changedColumnNameList.size() > 0) {
+                String[] changedColumnNames = changedColumnNameList.toArray(new String[0]);
+                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNames, encoding);
+                columnValues = (String[]) changedColumnValueList.toArray(new String[0]);
+                Column[] changedColumnMetaData = (Column[]) changedColumnMetaList.toArray(new Column[0]);
+                metaData = (Column[]) ArrayUtils.addAll(changedColumnMetaData, keyMetaData);
+            }
+            oldData = null;
+        } else if (dontIncludeKeysInUpdateStatement) {
             String[] values = removeKeysFromColumnValuesIfSame(ctx, keyValues, columnValues);
             if (values != null) {
                 columnValues = values;
@@ -253,37 +274,41 @@ public class TableTemplate {
     private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type, BinaryEncoding encoding) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
-            String[] filteredColumnNames = columnNames;
-            if (columnFilters != null) {
-                for (IColumnFilter columnFilter : columnFilters) {
-                    filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), columnNames);
-                }
-            }
-            if (keyMetaData == null) {
-                keyMetaData = getColumnMetaData(keyNames);
-            }
-            if (columnMetaData == null) {
-                columnMetaData = getColumnMetaData(columnNames);
-            }
-            if (columnKeyMetaData == null) {
-                columnKeyMetaData = (Column[]) ArrayUtils.addAll(columnMetaData, keyMetaData);
-            }
-
-            String tableName = table.getName();
-            if (table.getSchema() != null && dbDialect.getDefaultSchema() != null
-                    && !table.getSchema().equals(dbDialect.getDefaultSchema())) {
-                tableName = table.getSchema() + "." + tableName;
-            }
-            if (table.getCatalog() != null && dbDialect.getDefaultCatalog() != null
-                    && !table.getCatalog().equals(dbDialect.getDefaultCatalog())) {
-                tableName = table.getCatalog() + "." + tableName;
-            }
-            st = new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
-                    .isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(),
-                    dbDialect.getIdentifierQuoteString());
+            st = createStatementBuilder(ctx, type, columnNames, encoding);
             statementMap.put(type, st);
         }
         return st;
+    }
+
+    private StatementBuilder createStatementBuilder(IDataLoaderContext ctx, DmlType type,
+            String[] filteredColumnNames, BinaryEncoding encoding) {
+        if (columnFilters != null) {
+            for (IColumnFilter columnFilter : columnFilters) {
+                filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), filteredColumnNames);
+            }
+        }
+        if (keyMetaData == null) {
+            keyMetaData = getColumnMetaData(keyNames);
+        }
+        if (columnMetaData == null) {
+            columnMetaData = getColumnMetaData(columnNames);
+        }
+        if (columnKeyMetaData == null) {
+            columnKeyMetaData = (Column[]) ArrayUtils.addAll(columnMetaData, keyMetaData);
+        }
+
+        String tableName = table.getName();
+        if (table.getSchema() != null && dbDialect.getDefaultSchema() != null
+                && !table.getSchema().equals(dbDialect.getDefaultSchema())) {
+            tableName = table.getSchema() + "." + tableName;
+        }
+        if (table.getCatalog() != null && dbDialect.getDefaultCatalog() != null
+                && !table.getCatalog().equals(dbDialect.getDefaultCatalog())) {
+            tableName = table.getCatalog() + "." + tableName;
+        }
+        return new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames),
+                dbDialect.isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(), dbDialect
+                        .getIdentifierQuoteString());
     }
 
     private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData,
@@ -374,6 +399,7 @@ public class TableTemplate {
         keyMetaData = null;
         columnMetaData = null;
         columnKeyMetaData = null;
+        oldData = null;
     }
 
     private Column[] getColumnMetaData(String[] names) {
@@ -390,6 +416,10 @@ public class TableTemplate {
 
     public String[] getColumnNames() {
         return columnNames;
+    }
+
+    public void setOldData(String[] oldData) {
+        this.oldData = oldData;
     }
 
     public Table getTable() {

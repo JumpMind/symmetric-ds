@@ -137,6 +137,8 @@ public class CsvLoader implements IDataLoader {
                     if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                         delete(tokens);
                     }
+                } else if (tokens[0].equals(CsvConstants.OLD)) {
+                    context.setOldData((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
                 } else if (isMetaTokenParsed(tokens)) {
                     continue;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {

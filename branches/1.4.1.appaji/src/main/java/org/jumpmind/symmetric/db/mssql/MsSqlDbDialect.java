@@ -139,7 +139,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "select @SyncEnabled = context_info from master.dbo.sysprocesses where spid=@@SPID";
+        return "@SyncEnabled <> 0x1";
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {

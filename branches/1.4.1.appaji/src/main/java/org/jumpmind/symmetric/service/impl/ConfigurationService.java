@@ -372,6 +372,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setSyncOnUpdate(rs.getBoolean("sync_on_update"));
             trig.setSyncOnDelete(rs.getBoolean("sync_on_delete"));
             trig.setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
+            trig.setSyncColumnLevel(rs.getBoolean("sync_column_level"));
             trig.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trig.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trig.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
