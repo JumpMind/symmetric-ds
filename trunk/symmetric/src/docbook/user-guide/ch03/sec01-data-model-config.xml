@@ -649,6 +649,21 @@
                             </entry>
                         </row>
                         <row>
+                            <entry>sync_column_level</entry>
+                            <entry>booleanint</entry>
+                            <entry>N</entry>
+                            <entry></entry>
+                            <entry>0</entry>
+                            <entry>
+                                Perform column level synchronization for updates, so only the
+                                fields that changed are updated on the target database.
+                                When updates come from multiple sources at the same time,
+                                this enables merging of changes that do not conflict.
+                                The entire change row is still sent, which preserves the ability
+                                to fallback to an insert if the row does not exist.
+                            </entry>
+                        </row>
+                        <row>
                             <entry>name_for_update_trigger</entry>
                             <entry>varchar(30)</entry>
                             <entry>Y</entry>

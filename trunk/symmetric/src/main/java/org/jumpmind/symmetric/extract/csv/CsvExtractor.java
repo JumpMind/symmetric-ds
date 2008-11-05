@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
@@ -96,6 +97,10 @@ public class CsvExtractor implements IDataExtractor {
             context.getAuditRecordsWritten().add(auditKey);
         } else if (!context.isLastTable(data.getTableName())) {
             Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            out.newLine();
+        }
+        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
+            Util.write(out, CsvConstants.OLD, ", ", data.getOldData());
             out.newLine();
         }
 

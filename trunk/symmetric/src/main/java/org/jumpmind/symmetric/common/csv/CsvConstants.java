@@ -41,6 +41,8 @@ public class CsvConstants {
 
     public static final String UPDATE = "update";
 
+    public static final String OLD = "old";
+
     public static final String DELETE = "delete";
 
     public static final String COMMIT = "commit";

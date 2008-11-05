@@ -67,6 +67,16 @@
             </list>
         </constructor-arg>
     </bean>    
+
+    <!-- Upgrade version 1.4 to current version -->
+    <bean id="upgrade1.4" class="java.util.ArrayList">
+        <constructor-arg>
+            <list>
+                <ref bean="changes-1.5" />
+                <ref bean="changes-1.5-might-fail" />
+            </list>
+        </constructor-arg>
+    </bean>    
     
     <!-- Changes made in version 1.1 -->
     <bean id="changes-1.1" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
@@ -387,5 +397,20 @@
             </list>
         </property>
     </bean>
+
+    <!-- Changes made in version 1.5 -->
+    <bean id="changes-1.5" class="org.jumpmind.symmetric.upgrade.SqlUpgradeTask">
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="sqlList">
+            <list>
+                <value>
+                    alter table ${sync.table.prefix}_data add old_data varchar(2000)
+                </value>
+                <value>
+                    alter table ${sync.table.prefix}_trigger add sync_column_level numeric(1)
+                </value>
+            </list>
+        </property>
+    </bean>        
     
 </beans>
