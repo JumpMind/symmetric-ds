@@ -10,6 +10,12 @@
                 Use JDOM in XmlPublisherFilter to formatting the XML document.  If you are upgrading and are currently doing the escaping characters for
                 XML, you'll probably want to remove that logic.        
             </action>                           
+            <action dev="erilong" type="fix" issue="aid=2216936&amp;atid=997724">
+                The SQL-Server dialect was broken for the sync_on_incoming_batch feature.
+            </action>                
+            <action dev="erilong" type="fix">
+                The sample database was missing a trigger that prevented the demo initial load.
+            </action>                
         </release>    
         <release version="1.4.1" date="2008-10-21" description="Patch Release">
             <action dev="chenson42" type="fix">
