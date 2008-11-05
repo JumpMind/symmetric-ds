@@ -41,6 +41,13 @@ public class Data {
      * Comma deliminated row data.
      */
     private String rowData;
+    
+    /**
+     * To support column-level sync and conflict resolution.
+     * Comma delimited old row data from an update.
+     */
+
+    private String oldData;
 
     /**
      * This is a reference to the audit row the trigger refered to when the data
@@ -132,6 +139,14 @@ public class Data {
 
     public void setAudit(TriggerHistory audit) {
         this.audit = audit;
+    }
+
+    public String getOldData() {
+        return oldData;
+    }
+
+    public void setOldData(String oldData) {
+        this.oldData = oldData;
     }
 
 }

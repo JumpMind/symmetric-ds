@@ -70,6 +70,8 @@ public class Trigger {
     private boolean syncOnDelete = true;
 
     private boolean syncOnIncomingBatch = false;
+    
+    private boolean syncColumnLevel = false;
 
     private String nameForInsertTrigger;
 
@@ -451,6 +453,14 @@ public class Trigger {
 
     public void setSourceCatalogName(String sourceCatalogName) {
         this.sourceCatalogName = sourceCatalogName;
+    }
+
+    public boolean isSyncColumnLevel() {
+        return syncColumnLevel;
+    }
+
+    public void setSyncColumnLevel(boolean syncColumnLevel) {
+        this.syncColumnLevel = syncColumnLevel;
     }
 
 }

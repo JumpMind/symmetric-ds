@@ -128,6 +128,10 @@ public class DataLoaderContext implements IDataLoaderContext {
         tableTemplate.setColumnNames(columnNames);
     }
 
+    public void setOldData(String[] oldData) {
+        tableTemplate.setOldData(oldData);
+    }
+
     public String[] getKeyNames() {
         return tableTemplate.getKeyNames();
     }

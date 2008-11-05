@@ -297,9 +297,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         DataEventType eventType = DataEventType.getEventType(results.getString(3));
         String rowData = results.getString(4);
         String pk = results.getString(5);
+        String oldData = results.getString(6);
         Date created = results.getDate(7);
         TriggerHistory audit = configurationService.getHistoryRecordFor(results.getInt(8));
-        return new Data(dataId, pk, rowData, eventType, tableName, created, audit);
+        Data data = new Data(dataId, pk, rowData, eventType, tableName, created, audit);
+        data.setOldData(oldData);
+        return data;
     }
 
     public void setOutgoingBatchService(IOutgoingBatchService batchBuilderService) {
