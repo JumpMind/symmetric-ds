@@ -25,6 +25,7 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
@@ -92,6 +93,10 @@ public class PushService extends AbstractService implements IPushService {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Reading ack: " + ackString);
                     logger.debug("Reading extended ack: " + ackExtendedString);
+                }
+                
+                if (StringUtils.isBlank(ackString)) {
+                    logger.error("Did not receive an acknowledgement for the batches sent.");
                 }
 
                 List<BatchInfo> batches = transportManager.readAcknowledgement(ackString, ackExtendedString);
