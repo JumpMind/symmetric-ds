@@ -104,11 +104,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         String beanName = Constants.DATA_EXTRACTOR;
         if (version != null) {
             int[] versions = Version.parseVersion(version);
-            // TODO: this should be versions[1] == 0 for 1.2 release
-            if (versions[0] == 1 && versions[1] <= 1) {
-                beanName += "10";
-            } else if (versions[0] == 1 && versions[1] <= 3) {
-                beanName += "13";
+            if (versions[0] == 1) {
+                if (versions[1] <= 2) {
+                    beanName += "10";
+                } else if (versions[1] <= 3) {
+                    beanName += "13";
+                } else if (versions[1] <= 4) {
+                    beanName += "14";
+                }                
             }
         }
         return (IDataExtractor) beanFactory.getBean(beanName);

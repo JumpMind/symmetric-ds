@@ -225,6 +225,41 @@
         </property>
     </bean>
 
+    <bean id="dataExtractor14" class="org.jumpmind.symmetric.extract.csv.CsvExtractor14">
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionary">
+            <map>
+                <entry key="I">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                </entry>
+                <entry key="U">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                </entry>
+                <entry key="D">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                </entry>
+                <entry key="V">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
+                </entry>
+                <entry key="R">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
+                        <property name="dataExtractorService" ref="dataExtractorService" />
+                        <property name="configurationService" ref="configurationService" />
+                        <property name="nodeService" ref="nodeService" />
+                    </bean>
+                </entry>
+                <entry key="S">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
+                </entry>
+                <entry key="C">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
     <bean id="dataExtractor13" class="org.jumpmind.symmetric.extract.csv.CsvExtractor13">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
