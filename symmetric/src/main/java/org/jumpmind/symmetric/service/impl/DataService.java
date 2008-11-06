@@ -124,7 +124,8 @@ public class DataService extends AbstractService implements IDataService {
                         ps.setString(2, data.getEventType().getCode());
                         ps.setString(3, data.getRowData());
                         ps.setString(4, data.getPkData());
-                        ps.setLong(5, data.getAudit().getTriggerHistoryId());
+                        ps.setString(5, data.getOldData());
+                        ps.setLong(6, data.getAudit().getTriggerHistoryId());
                         return null;
                     }
                 });

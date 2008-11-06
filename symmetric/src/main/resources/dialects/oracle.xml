@@ -129,13 +129,14 @@
                                  create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'U',
                                       $(triggerHistoryId),
                                       $(oldKeys),
                                       $(columns),
+                                      $(oldColumns),
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL,'$(channelName)',$(txIdExpression) from $(prefixName)_node c where 

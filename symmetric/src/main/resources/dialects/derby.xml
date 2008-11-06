@@ -83,7 +83,7 @@
                                 CREATE PROCEDURE proc_sym_insert_data(schemaName varchar(50), prefixName varchar(50),
                                 tableName varchar(50), channelName varchar(50), dmlType varchar(1), triggerHistId int,
                                 transactionId varchar(1000), targetGroupId varchar(50), nodeSelectWhere varchar(1000),
-                                pkData varchar(32672), rowData varchar(32672))
+                                pkData varchar(32672), rowData varchar(32672), oldRowData varchar(32672))
                                 PARAMETER STYLE JAVA LANGUAGE JAVA MODIFIES SQL DATA EXTERNAL NAME
                                 'org.jumpmind.symmetric.db.derby.DerbyFunctions.insertData'
                                 ]]>
@@ -136,7 +136,8 @@
                                   null,
                                   case when $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)
                                   then $(columns)
-                                  else null end)
+                                  else null end,
+                                  null)
                                 ]]>
                             </value>
                         </entry>
@@ -155,6 +156,9 @@
                                   $(oldKeys),
                                   case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)
                                   then $(columns)
+                                  else null end,
+                                  case when $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)
+                                  then $(oldColumns)
                                   else null end)
                                 ]]>
                             </value>
@@ -174,7 +178,7 @@
                                   case when $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)
                                   then $(oldKeys)
                                   else null end,
-                                  null)
+                                  null, null)
                                 ]]>
                             </value>
                         </entry>

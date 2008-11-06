@@ -11,7 +11,7 @@
     <entry key="insertIntoDataSql">
       <value>
         insert into ${sync.table.prefix}_data (data_id, table_name, event_type, row_data, pk_data,
-        trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?, current_timestamp)
+        old_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
     <entry key="insertIntoDataEventSql">

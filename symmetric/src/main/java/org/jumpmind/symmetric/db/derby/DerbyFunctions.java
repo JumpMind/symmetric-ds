@@ -48,19 +48,20 @@ public class DerbyFunctions {
 
     public static void insertData(String schemaName, String prefixName, String tableName, String channelName,
             String dmlType, long triggerHistId, String transactionId, String targetGroupId, String nodeSelectWhere,
-            String pkData, String rowData) throws SQLException {
+            String pkData, String rowData, String oldRowData) throws SQLException {
         if (((dmlType.equals("I") || dmlType.equals("U")) && rowData != null)
                 || (dmlType.equals("D") && pkData != null)) {
             Connection conn = DriverManager.getConnection(CURRENT_CONNECTION_URL);
             String sql = "insert into " + schemaName + prefixName + "_data "
-                    + "(table_name, event_type, trigger_hist_id, pk_data, row_data, create_time) "
-                    + "values (?, ?, ?, ?, ?, current_timestamp)";
+                    + "(table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time) "
+                    + "values (?, ?, ?, ?, ?, ?, current_timestamp)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, tableName);
             ps.setString(2, dmlType);
             ps.setLong(3, triggerHistId);
             ps.setString(4, pkData);
             ps.setString(5, rowData);
+            ps.setString(6, oldRowData);
             ps.executeUpdate();
             ps.close();
             sql = "insert into " + schemaName + prefixName
