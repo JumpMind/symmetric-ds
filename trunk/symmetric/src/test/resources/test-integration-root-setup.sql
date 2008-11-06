@@ -78,5 +78,5 @@ insert into test_order_detail
 values('1', 1, 'STCK', '110000055', 5, 1.29);
 
 insert into test_sync_column_level
-(id, string_value, time_value, date_value, boolean_value, bigint_value, decimal_value)
-values (1, 'data', {ts '2008-01-02 03:04:05'}, {d '2008-01-02'}, 1, 100, 123.45);
+(id, string_value, time_value, date_value, bigint_value, decimal_value)
+values (1, 'data', {ts '2008-01-02 03:04:05'}, {d '2008-01-02'}, 100, 123.45);
