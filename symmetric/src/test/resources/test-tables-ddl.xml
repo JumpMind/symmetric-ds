@@ -98,7 +98,6 @@
         <column name="string_value" type="VARCHAR" size="50" />
         <column name="time_value" type="TIMESTAMP" />
         <column name="date_value" type="DATE" />
-        <column name="boolean_value" type="BIT" size="1" />
         <column name="bigint_value" type="BIGINT" />
         <column name="decimal_value" type="DECIMAL" size="10,2" />
     </table>
