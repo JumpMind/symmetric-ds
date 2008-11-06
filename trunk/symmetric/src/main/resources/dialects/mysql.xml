@@ -107,7 +107,7 @@
                                 create trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, create_time)
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'U',
@@ -115,6 +115,8 @@
                                       concat($(oldKeys)
                                        ),
                                       concat($(columns)
+                                       ),
+                                      concat($(oldColumns)
                                        ),
                                       CURRENT_TIMESTAMP
                                     );

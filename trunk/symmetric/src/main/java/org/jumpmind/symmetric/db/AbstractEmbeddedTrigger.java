@@ -154,6 +154,9 @@ public abstract class AbstractEmbeddedTrigger {
         Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
                 .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
                 triggerHistory);
+        if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
+            data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
+        }
         return data;
     }
 

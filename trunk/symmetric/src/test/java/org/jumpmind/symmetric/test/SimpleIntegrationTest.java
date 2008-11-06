@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String selectKeyWordSql = "select \"key word\", \"case\" from test_key_word where id = ?";
 
-    static final String nullSyncColumnLevelSql = "update test_sync_column_level set string_value = null, time_value = null, date_value = null, boolean_value = null, bigint_value = null, decimal_value = null where id = ?"; 
+    static final String nullSyncColumnLevelSql = "update test_sync_column_level set string_value = null, time_value = null, date_value = null, bigint_value = null, decimal_value = null where id = ?"; 
 
     static final String deleteSyncColumnLevelSql = "delete from test_sync_column_level where id = ?"; 
 
@@ -430,9 +431,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     public void testSyncColumnLevel() throws ParseException {
         int id = 1;
-        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
-                "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "moredata", new Date(), new Date(), Boolean.FALSE, 600,
+        String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "moredata", getCurrentTime(), getCurrentDate(), 600,
                 new BigDecimal("34.10") };
         
         // Null out columns, change each column and sync one at a time
@@ -452,9 +452,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     public void testSyncColumnLevelTogether() throws ParseException {
         int id = 1;
-        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
-                "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "moredata", new Date(), new Date(), Boolean.FALSE, 600,
+        String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "moredata", getCurrentTime(), getCurrentDate(), 600,
                 new BigDecimal("34.10") };
         
         // Null out columns, change all columns, sync all together
@@ -467,11 +466,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
+    @Test(timeout = 30000)
     public void testSyncColumnLevelFallback() throws ParseException {
         int id = 1;
-        String[] columns = { "id", "string_value", "time_value", "date_value", "boolean_value",
-                "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "fallback on insert", new Date(), new Date(), Boolean.FALSE,
+        String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
+        Object[] values = new Object[] { id, "fallback on insert", getCurrentTime(), getCurrentDate(),
                 600, new BigDecimal("34.10") };
         
         // Force a fallback of an update to insert the row
@@ -503,6 +502,22 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     private String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+    }
+
+    private Date getCurrentDate() {
+        Calendar cal = Calendar.getInstance();
+        if (!getClientDbDialect().isDateOverrideToTimestamp() || !getRootDbDialect().isDateOverrideToTimestamp()) {
+            cal.set(Calendar.HOUR, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+        }
+        return cal.getTime();
+    }
+
+    private Date getCurrentTime() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 
     protected void testDeletes() {
