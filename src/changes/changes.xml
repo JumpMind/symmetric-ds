@@ -15,7 +15,10 @@
             </action>                
             <action dev="erilong" type="fix">
                 The sample database was missing a trigger that prevented the demo initial load.
-            </action>                
+            </action>        
+            <action dev="erilong" type="fix" issue="aid=2171726&amp;atid=997724">
+                Quote column names so keyword names can be used
+            </action>                        
         </release>    
         <release version="1.4.1" date="2008-10-21" description="Patch Release">
             <action dev="chenson42" type="fix">
@@ -37,7 +40,10 @@
             </action>        
             <action dev="erilong" type="fix" issue="aid=2174941&amp;atid=997724">
                 Support binary data in MySQL BLOB columns
-            </action>        
+            </action> 
+            <action dev="erilong" type="fix" issue="aid=2221304&amp;atid=997724">
+                Fix batch errors hiding actual error on Postgres
+            </action>               
             <action dev="chenson42" type="fix">
                 Enhanced the RSS functionality a bit by adding published date field as the batch creation date, added
                 SQL error information if it exists and the number of times a batch errored out.
