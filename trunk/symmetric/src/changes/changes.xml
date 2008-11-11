@@ -24,6 +24,9 @@
             <action dev="erilong" type="fix" issue="aid=2171726&amp;atid=997724">
                 Quote column names so keyword names can be used
             </action>                
+            <action dev="erilong" type="fix" issue="aid=2263359&amp;atid=997724">
+                Use UTF-8 for transport reader to support Chinese and other charsets
+            </action>                
         </release>
         <release version="1.4.1" date="2008-10-21" description="Patch Release">
             <action dev="chenson42" type="fix">
