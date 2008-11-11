@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -432,8 +431,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void testSyncColumnLevel() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "moredata", getCurrentTime(), getCurrentDate(), 600,
-                new BigDecimal("34.10") };
+        Object[] values = new Object[] { id, "moredata", getDate("2008-01-02 03:04:05"), 
+                getDate("2008-02-01 05:03:04"), 600, new BigDecimal("34.10") };
         
         // Null out columns, change each column and sync one at a time
         clientJdbcTemplate.update(nullSyncColumnLevelSql, new Object[] { id });
@@ -453,8 +452,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void testSyncColumnLevelTogether() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "moredata", getCurrentTime(), getCurrentDate(), 600,
-                new BigDecimal("34.10") };
+        Object[] values = new Object[] { id, "moredata", getDate("2008-01-02 03:04:05"), 
+                getDate("2008-02-01 05:03:04"), 600, new BigDecimal("34.10") };
         
         // Null out columns, change all columns, sync all together
         rootJdbcTemplate.update(nullSyncColumnLevelSql, new Object[] { id });
@@ -466,13 +465,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test
-    //(timeout = 30000)
+    @Test(timeout = 30000)
     public void testSyncColumnLevelFallback() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
-        Object[] values = new Object[] { id, "fallback on insert", getCurrentTime(), getCurrentDate(),
-                600, new BigDecimal("34.10") };
+        Object[] values = new Object[] { id, "fallback on insert", getDate("2008-01-02 03:04:05"), 
+                getDate("2008-02-01 05:03:04"), 600, new BigDecimal("34.10") };
         
         // Force a fallback of an update to insert the row
         clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
@@ -505,21 +503,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
-    private Date getCurrentDate() {
-        Calendar cal = Calendar.getInstance();
+    private Date getDate(String dateString) throws ParseException {
         if (!getClientDbDialect().isDateOverrideToTimestamp() || !getRootDbDialect().isDateOverrideToTimestamp()) {
-            cal.set(Calendar.HOUR, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
+            return DateUtils.parseDate(dateString.split(" ")[0], new String[] { "yyyy-MM-dd" });
+        } else {
+            return DateUtils.parseDate(dateString, new String[] { "yyyy-MM-dd HH:mm:ss" });
         }
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
-    }
-
-    private Date getCurrentTime() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
     }
 
     protected void testDeletes() {
