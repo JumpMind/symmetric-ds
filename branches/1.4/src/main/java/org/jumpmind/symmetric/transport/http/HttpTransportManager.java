@@ -143,7 +143,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         if (!StringUtils.isBlank(type) && type.equals("gzip")) {
             in = new GZIPInputStream(in);
         }
-        return new BufferedReader(new InputStreamReader(in));
+        return new BufferedReader(new InputStreamReader(in, "UTF-8"));
     }
 
     /**
