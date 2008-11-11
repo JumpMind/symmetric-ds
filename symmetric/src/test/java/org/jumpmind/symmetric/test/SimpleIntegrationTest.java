@@ -466,7 +466,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
     }
 
-    @Test(timeout = 30000)
+    @Test
+    //(timeout = 30000)
     public void testSyncColumnLevelFallback() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
@@ -511,6 +512,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             cal.set(Calendar.MINUTE, 0);
             cal.set(Calendar.SECOND, 0);
         }
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
 
