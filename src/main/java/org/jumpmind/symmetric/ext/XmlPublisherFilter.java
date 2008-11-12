@@ -51,7 +51,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     private static final Log logger = LogFactory.getLog(XmlPublisherFilter.class);
 
-    private static final String XML_CACHE = "XML_CACHE";
+    private final String XML_CACHE = "XML_CACHE_" + this.hashCode();
 
     protected IPublisher publisher;
 
