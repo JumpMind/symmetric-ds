@@ -32,7 +32,7 @@ public class RegistrationResourceHandler extends AbstractTransportResourceHandle
     private IRegistrationService registrationService;
 
     public boolean registerNode(Node node, OutputStream outputStream) throws IOException {
-        return getRegistrationService().registerNode(node, outputStream);
+        return getRegistrationService().registerNode(node, outputStream, true);
     }
 
     private IRegistrationService getRegistrationService() {

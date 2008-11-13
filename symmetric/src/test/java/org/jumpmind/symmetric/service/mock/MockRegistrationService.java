@@ -40,7 +40,7 @@ public class MockRegistrationService implements IRegistrationService {
 
     }
 
-    public boolean registerNode(Node node, OutputStream out) throws IOException {
+    public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
         return false;
     }
 
