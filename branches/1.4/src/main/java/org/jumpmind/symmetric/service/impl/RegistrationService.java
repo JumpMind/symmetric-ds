@@ -77,8 +77,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * Register a node for the given domain name and domain ID if the
      * registration is open.
+     * @param isRequestedRegistration An indicator that registration has been requested by the remote client
      */
-    public boolean registerNode(Node node, OutputStream out) throws IOException {
+    public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
         if (!configurationService.isRegistrationServer()) {
             // registration is not allowed until this node has an initial load
             NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
@@ -107,9 +108,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         boolean success = writeConfiguration(node, out);
         if (success && parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
-            // only send automatic initial load once
+            // only send automatic initial load once or if the client is really re-registering
             NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
-            if (security != null && security.getInitialLoadTime() == null) {
+            if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 dataService.reloadNode(node.getNodeId());
             }
         }

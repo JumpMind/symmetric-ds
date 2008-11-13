@@ -59,7 +59,6 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     static final Log logger = LogFactory.getLog(InternalTransportManager.class);
 
-    @SuppressWarnings("unused")
     private IParameterService parameterServer;
 
     private INodeService nodeService;
@@ -120,7 +119,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 // This should be basically what the registration servlet does
                 // ...
                 IRegistrationService service = (IRegistrationService) factory.getBean(Constants.REGISTRATION_SERVICE);
-                service.registerNode(client, os);
+                service.registerNode(client, os, false);
             }
         });
         return new InternalIncomingTransport(respIs);
