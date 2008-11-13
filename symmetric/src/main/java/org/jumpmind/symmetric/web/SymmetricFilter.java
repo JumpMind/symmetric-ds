@@ -35,6 +35,7 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -90,8 +91,13 @@ public class SymmetricFilter implements Filter {
                 logger.info(String.format("Initializing filter %s", filterEntry.getKey()));
             }
             final Filter filter = filterEntry.getValue();
-            filter.init(filterConfig);
-            filters.add(filter);
+            if (filter instanceof IExtensionPoint) {
+                filter.init(filterConfig);
+                filters.add(filter);
+            } else {
+                logger
+                        .info("Found a Spring filter that does not implement IExtensionPoint.  NOT adding it as a SymmetricFilter.");
+            }
         }
     }
 

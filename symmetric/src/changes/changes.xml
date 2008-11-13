@@ -12,7 +12,11 @@
         </release>
         <release version="1.4.2" date="2008-11-xx" description="Patch Release">
             <action dev="chenson42" type="fix">
-                Use JDOM in XmlPublisherFilter to formatting the XML document.  If you are upgrading and are currently doing the escaping characters for
+                Only add javax.servlet.Filter classes that implement IExtensionPoint to the list of SymmmetricFilter filters.  This should help applications
+                that have their own Spring context that includes Spring managed Filters.       
+            </action>                                   
+            <action dev="chenson42" type="fix">
+                Use JDOM in XmlPublisherFilter to format the XML document.  If you are upgrading and are currently doing the escaping characters for
                 XML, you'll probably want to remove that logic.        
             </action>                           
             <action dev="erilong" type="fix" issue="aid=2216936&amp;atid=997724">
