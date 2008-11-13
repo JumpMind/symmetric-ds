@@ -7,6 +7,10 @@
     <body>
         <release version="1.4.2" date="2008-11-xx" description="Patch Release">
             <action dev="chenson42" type="fix">
+                If auto.reload is set to true and the client requests a new registration request this means that the client will also be 
+                expecting a new reload, even if the client has previously received one.  
+            </action>          
+            <action dev="chenson42" type="fix">
                 Only add javax.servlet.Filter classes that implement IExtensionPoint to the list of SymmmetricFilter filters.  This should help applications
                 that have their own Spring context that includes Spring managed Filters.       
             </action>           

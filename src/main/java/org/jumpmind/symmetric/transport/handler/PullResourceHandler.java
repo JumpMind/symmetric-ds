@@ -50,7 +50,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
-                getRegistrationService().registerNode(nodeService.findNode(nodeId), outputStream);
+                getRegistrationService().registerNode(nodeService.findNode(nodeId), outputStream, false);
             } else {
                 if (nodeSecurity.isInitialLoadEnabled()) {
                     getDataService().insertReloadEvent(nodeService.findNode(nodeId));
