@@ -25,6 +25,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
+import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
 
@@ -34,7 +35,7 @@ import org.springframework.beans.BeanUtils;
  * 
  * @since 1.4.0
  */
-public abstract class AbstractFilter extends ServletResourceTemplate implements Filter {
+public abstract class AbstractFilter extends ServletResourceTemplate implements Filter, IExtensionPoint {
 
     protected abstract Log getLogger();
 
@@ -52,5 +53,9 @@ public abstract class AbstractFilter extends ServletResourceTemplate implements 
                 this.refresh();
             }
         }
+    }
+    
+    public boolean isAutoRegister() {
+        return true;
     }
 }
