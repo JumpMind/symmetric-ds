@@ -6,7 +6,7 @@
     <title>Configuration Data Model</title>
     <para>
         The configuration is entered by the user into the data model to control the behavior of what
-        data is sychronized to which nodes. To ease management of several databases, nodes are put
+        data is synchronized to which nodes. To ease management of several databases, nodes are put
         into groups, and groups are linked together for synchronization. A trigger captures data for
         a table, which can include conditions and criteria for subsets. Triggers are grouped into
         channels for prioritization and control of data flow.
@@ -244,7 +244,46 @@
                 </tgroup>
             </table>
         </para>
-
+    </section>
+    <section>
+        <title>Node Identity</title>
+        <para>
+            After registration, this table will have one row representing the identity of the node.
+            For a root node, the row is entered by the user.
+        </para>
+        <para>
+            <table>
+                <title>Node Security</title>
+                <tgroup cols="6">
+                    <colspec colwidth="115px" />
+                    <colspec colwidth="65px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="40px" />
+                    <colspec colwidth="250px" />
+                    <thead>
+                        <row>
+                            <entry>Column Name</entry>
+                            <entry>Type</entry>
+                            <entry>Null</entry>
+                            <entry>Key</entry>
+                            <entry>Default</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>node_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>PK FK</entry>
+                            <entry></entry>
+                            <entry>Unique identifier for a node</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </para>
     </section>
     <section>
         <title>Node Group</title>
