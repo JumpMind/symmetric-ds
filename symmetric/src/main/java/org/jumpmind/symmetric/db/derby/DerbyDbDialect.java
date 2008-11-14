@@ -69,12 +69,17 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return BinaryEncoding.BASE64;
     }
 
-    public void disableSyncTriggers() {
+    public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.queryForInt("values fn_sym_sync_triggers_set_disabled(1)");
+        if (nodeId != null) {
+            jdbcTemplate.queryForObject("values fn_sym_sync_node_set_disabled('" + nodeId + "')",
+                    String.class);
+        }
     }
 
     public void enableSyncTriggers() {
         jdbcTemplate.queryForInt("values fn_sym_sync_triggers_set_disabled(0)");
+        jdbcTemplate.queryForInt("values fn_sym_sync_node_set_disabled(null)");
     }
 
     public String getSyncTriggersExpression() {

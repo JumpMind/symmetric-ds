@@ -57,6 +57,15 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="FN_SYM_SYNC_NODE_SET_DISABLED">
+                            <value>
+                                <![CDATA[ 
+                                CREATE FUNCTION fn_sym_sync_node_set_disabled(nodeId varchar(50)) RETURNS
+                                varchar(50) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.setSyncNodeDisabled'
+                                ]]>
+                            </value>
+                        </entry>
                         <entry key="FN_SYM_CLOB_TO_STRING">
                             <value>
                                 <![CDATA[ 

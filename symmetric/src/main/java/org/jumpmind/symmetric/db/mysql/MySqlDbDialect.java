@@ -38,6 +38,8 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
+    
+    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
 
     private boolean supportsTransactionId = false;
 
@@ -83,12 +85,16 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void disableSyncTriggers() {
+    public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
+        if (nodeId != null) {
+            jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+        }
     }
 
     public void enableSyncTriggers() {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
+        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
     public String getSyncTriggersExpression() {

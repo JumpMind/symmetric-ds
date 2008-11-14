@@ -132,8 +132,12 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName }) > 0;
     }
 
-    public void disableSyncTriggers() {
-        jdbcTemplate.update("set context_info 0x1");
+    public void disableSyncTriggers(String nodeId) {
+        if (nodeId == null) {
+            nodeId = "";
+        }
+        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
+                + "' as varbinary(128));" + "SET context_info @CI;");
     }
 
     public void enableSyncTriggers() {
@@ -141,7 +145,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "@SyncEnabled <> 0x1";
+        return "dbo.fn_sym_triggers_disabled() = 0";
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {

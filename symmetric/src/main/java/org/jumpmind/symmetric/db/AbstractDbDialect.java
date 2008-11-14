@@ -903,8 +903,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
 
-    public void disableSyncTriggers(String nodeId) {
-        disableSyncTriggers();
+    public void disableSyncTriggers() {
+        disableSyncTriggers(null);
     }
 
     public boolean supportsTransactionId() {

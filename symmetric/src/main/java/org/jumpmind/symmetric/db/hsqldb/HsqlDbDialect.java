@@ -52,6 +52,13 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     };
 
+    ThreadLocal<String> syncNodeDisabled = new ThreadLocal<String>() {
+        @Override
+        protected String initialValue() {
+            return null;
+        }
+    };
+
     protected void initForSpecificDialect() {
         if (initializeDatabase) {
             if (!hsqldbInitialized) {
@@ -127,12 +134,18 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return syncEnabled.get();
     }
 
-    public void disableSyncTriggers() {
+    public String getSyncNodeDisabled() {
+        return syncNodeDisabled.get();
+    }
+
+    public void disableSyncTriggers(String nodeId) {
         syncEnabled.set(Boolean.FALSE);
+        syncNodeDisabled.set(nodeId);
     }
 
     public void enableSyncTriggers() {
         syncEnabled.set(Boolean.TRUE);
+        syncNodeDisabled.set(null);
     }
 
     public String getSyncTriggersExpression() {

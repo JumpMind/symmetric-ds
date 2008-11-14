@@ -95,7 +95,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultCatalog)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression)  from $(defaultCatalog)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (@sync_node_disabled is null or @sync_node_disabled != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
@@ -121,7 +121,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultCatalog)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression) from $(defaultCatalog)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (@sync_node_disabled is null or @sync_node_disabled != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
@@ -143,7 +143,7 @@
                                       CURRENT_TIMESTAMP
                                     );
                                     insert into $(defaultCatalog)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, last_insert_id(), '$(channelName)', $(txIdExpression) from $(defaultCatalog)$(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (@sync_node_disabled is null or @sync_node_disabled != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end
                                 ]]>
