@@ -14,6 +14,47 @@
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
                 <property name="triggerPrefix" value="${trigger.prefix}" />
+                <property name="functionInstalledSql">
+                    <value>
+                        <![CDATA[select count(*) from information_schema.routines where routine_name = '$(functionName)']]>
+                    </value>
+                </property>               
+                <property name="functionTemplatesToInstall">
+                    <map>
+                        <entry key="fn_sym_trigger_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE or REPLACE FUNCTION fn_sym_trigger_disabled() RETURNS INTEGER AS $$
+                                DECLARE
+                                  triggerDisabled INTEGER;
+                                BEGIN
+                                  select current_setting('symmetric.trigger_disabled') into triggerDisabled;
+                                  return triggerDisabled;
+                                EXCEPTION WHEN OTHERS THEN
+                                  return 0;
+                                END;
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                        <entry key="fn_sym_node_disabled">
+                            <value>
+                                <![CDATA[ 
+                                CREATE or REPLACE FUNCTION fn_sym_node_disabled() RETURNS VARCHAR AS $$
+                                DECLARE
+                                  nodeId VARCHAR(50);
+                                BEGIN
+                                  select current_setting('symmetric.node_disabled') into nodeId;
+                                  return nodeId;
+                                EXCEPTION WHEN OTHERS THEN
+                                  return '';
+                                END;
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
+                    </map>
+                </property>
                 <property name="stringColumnTemplate" >
                     <value>
                         <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
@@ -67,7 +108,7 @@
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
                                     (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;
@@ -103,7 +144,7 @@
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
                                     (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;
@@ -137,7 +178,7 @@
                                     insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
                                     (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 $(nodeSelectWhere));
+                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;

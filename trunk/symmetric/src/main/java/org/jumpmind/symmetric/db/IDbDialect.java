@@ -138,8 +138,10 @@ public interface IDbDialect {
 
     public void disableSyncTriggers();
 
-    public void enableSyncTriggers();
+    public void disableSyncTriggers(String nodeId);
 
+    public void enableSyncTriggers();
+    
     public String getSyncTriggersExpression();
 
     public String getDefaultSchema();

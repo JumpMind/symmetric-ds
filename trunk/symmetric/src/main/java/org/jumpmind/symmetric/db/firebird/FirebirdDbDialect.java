@@ -83,6 +83,9 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         // to off");
     }
 
+    public void disableSyncTriggers(String nodeId) {
+    }
+
     public void enableSyncTriggers() {
         // jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "
         // to on");
@@ -136,4 +139,5 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     public String getDefaultSchema() {
         return null;
     }
+
 }

@@ -73,6 +73,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
+    static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)"; 
+
     public DbTriggerTest() throws Exception {
         super();
     }
@@ -250,6 +252,17 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         
     }    
 
+    @Test
+    public void syncIncomingBatchTest() throws Exception {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        getDbDialect().disableSyncTriggers("00010");
+        jdbcTemplate.update(insertSyncIncomingBatchSql, new Object[] { 1, "testing" });
+        getDbDialect().enableSyncTriggers();
+        List<String> nodeList = getNextDataEvents();
+        assertTrue(nodeList.size() == 1);
+        assertTrue(nodeList.contains("00011"));
+    }    
+
     private int[] filterTypes(int[] types) {
         boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
         int[] filteredTypes = new int[types.length];
@@ -291,6 +304,15 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 .queryForObject("select table_name from " + TestConstants.TEST_PREFIX
                         + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
                         String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getNextDataEvents() {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        return (List<String>) jdbcTemplate.queryForList("select node_id from " + TestConstants.TEST_PREFIX
+                + "data_event where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX
+                + "data)", String.class);
+
     }
 
 }

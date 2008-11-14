@@ -139,12 +139,16 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         jdbcTemplate.update("purge recyclebin");
     }
 
-    public void disableSyncTriggers() {
+    public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.update("call pack_symmetric.setValue(1)");
+        if (nodeId != null) {
+            jdbcTemplate.update("call pack_symmetric.setNodeValue('" + nodeId + "')");
+        }
     }
 
     public void enableSyncTriggers() {
         jdbcTemplate.update("call pack_symmetric.setValue(null)");
+        jdbcTemplate.update("call pack_symmetric.setNodeValue(null)");
     }
 
     public String getSyncTriggersExpression() {

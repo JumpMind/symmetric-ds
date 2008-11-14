@@ -26,8 +26,6 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -35,7 +33,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
+    static final String SYNC_TRIGGERS_DISABLED_VARIABLE = "symmetric.triggers_disabled";
+    
+    static final String SYNC_NODE_DISABLED_VARIABLE = "symmetric.node_disabled";
 
     private boolean supportsTransactionId = false;
 
@@ -48,6 +48,12 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             logger.info("Enabling transaction ID support");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
+        }
+        try {
+            enableSyncTriggers();
+        } catch (Exception e) {
+            logger.error("Please add \"custom_variable_classes = 'symmetric'\" to your postgresql.conf file");
+            throw new RuntimeException("Missing custom variable class 'symmetric'", e);
         }
         defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);        
     }
@@ -74,22 +80,21 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         }
     }
 
-    public void disableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " to off");
+    public void disableSyncTriggers(String nodeId) {
+        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '1', false)");
+        if (nodeId == null) {
+            nodeId = "";
+        }
+        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '" + nodeId + "', false)");
     }
 
     public void enableSyncTriggers() {
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                if (!transactionstatus.isRollbackOnly()) {
-                    jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " to on");
-                }
-            }
-        });
+        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
+        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '', false)");
     }
 
     public String getSyncTriggersExpression() {
-        return "current_setting('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') = 'on'";
+        return "fn_sym_trigger_disabled() = 0";
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {

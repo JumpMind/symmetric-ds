@@ -24,6 +24,8 @@ public class DerbyFunctions {
 
     private static Hashtable<String, Boolean> syncDisabledTable = new Hashtable<String, Boolean>();
 
+    private static Hashtable<String, String> syncNodeDisabledTable = new Hashtable<String, String>();
+
     public static String getTransactionId() throws SQLException {
         return getLanguageConnection().getTransactionExecute().getTransactionIdString();
     }
@@ -34,6 +36,18 @@ public class DerbyFunctions {
 
     public static int isSyncDisabled() throws SQLException {
         return syncDisabledTable.get(getSessionId()) != null ? 1 : 0;
+    }
+
+    public static String getSyncNodeDisabled() throws SQLException {
+        return syncNodeDisabledTable.get(getSessionId());
+    }
+
+    public static String setSyncNodeDisabled(String nodeId) throws SQLException {
+        if (nodeId == null) {
+            return syncNodeDisabledTable.remove(getSessionId());
+        } else {
+            return syncNodeDisabledTable.put(getSessionId(), nodeId);
+        }
     }
 
     public static int setSyncDisabled(int disabledIndicator) throws SQLException {
@@ -64,10 +78,15 @@ public class DerbyFunctions {
             ps.setString(6, oldRowData);
             ps.executeUpdate();
             ps.close();
+            String where = "";
+            String disabledNodeId = getSyncNodeDisabled();
+            if (disabledNodeId != null) {
+                where = "and c.node_id != '" + disabledNodeId + "' ";
+            }
             sql = "insert into " + schemaName + prefixName
                     + "_data_event (node_id, data_id, channel_id, transaction_id) "
                     + "select node_id, IDENTITY_VAL_LOCAL(),'" + channelName + "','" + transactionId + "' from "
-                    + prefixName + "_node c where (c.node_group_id = ? and c.sync_enabled = 1) " + nodeSelectWhere;
+                    + prefixName + "_node c where (c.node_group_id = ? and c.sync_enabled = 1) " + where + nodeSelectWhere;
             ps = conn.prepareStatement(sql);
             ps.setString(1, targetGroupId);
             ps.executeUpdate();
