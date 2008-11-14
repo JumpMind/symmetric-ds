@@ -97,6 +97,7 @@ public class CsvLoader implements IDataLoader {
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(new Long(tokens[1]));
                 stats = new DataLoaderStatistics();
+                prepareTableForDataLoad();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
@@ -200,11 +201,17 @@ public class CsvLoader implements IDataLoader {
                             .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE)));
         }
 
-        dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
+        prepareTableForDataLoad();
+    }
+    
+    protected void prepareTableForDataLoad() {
+        if (context != null && context.getTableTemplate() != null) {
+            dbDialect.prepareTableForDataLoad(context.getTableTemplate().getTable());
+        }
     }
 
     protected void cleanupAfterDataLoad() {
-        if (context != null && context.getTableName() != null) {
+        if (context != null && context.getTableTemplate() != null) {
             dbDialect.cleanupAfterDataLoad(context.getTableTemplate().getTable());
         }
     }
