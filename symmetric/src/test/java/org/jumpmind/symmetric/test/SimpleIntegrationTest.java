@@ -292,7 +292,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    @SuppressWarnings("unchecked")
     public void ignoreNodeChannel() {
         INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
         IConfigurationService configService = (IConfigurationService) getRootEngine().getApplicationContext().getBean(
@@ -311,7 +310,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    @SuppressWarnings("unchecked")
     public void syncUpdateWithEmptyKey() {
         if (getClientDbDialect().isEmptyStringNulled()) {
             return;
@@ -396,6 +394,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 0, "Table was not deleted from");
     }
     
+    @SuppressWarnings("unchecked")
     @Test(timeout = 30000)
     public void testReservedColumnNames() {
         // MySQL does not allow reserved column names to be used even with special syntax
@@ -427,7 +426,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    @SuppressWarnings("unchecked")
     public void testSyncColumnLevel() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
@@ -448,7 +446,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    @SuppressWarnings("unchecked")
     public void testSyncColumnLevelTogether() throws ParseException {
         int id = 1;
         String[] columns = { "id", "string_value", "time_value", "date_value", "bigint_value", "decimal_value" };
@@ -486,7 +483,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    @SuppressWarnings("unchecked")
     public void testSyncColumnLevelNoChange() throws ParseException {
         int id = 1;
         
