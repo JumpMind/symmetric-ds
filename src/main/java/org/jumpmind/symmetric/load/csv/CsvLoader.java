@@ -140,6 +140,7 @@ public class CsvLoader implements IDataLoader {
                 } else if (isMetaTokenParsed(tokens)) {
                     continue;
                 } else if (tokens[0].equals(CsvConstants.COMMIT)) {
+                    cleanupAfterDataLoad();
                     break;
                 } else if (tokens[0].equals(CsvConstants.SQL)) {
                     if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
@@ -387,8 +388,6 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void close() {
-
-        cleanupAfterDataLoad();
 
         if (csvReader != null) {
             csvReader.close();
