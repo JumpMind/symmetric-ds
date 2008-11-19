@@ -84,6 +84,10 @@ public class Node {
         this.schemaVersion = version;
     }
 
+    public boolean equals(Object n) {
+        return n != null && n instanceof Node && nodeId != null && nodeId.equals(((Node) n).getNodeId());
+    }
+    
     public String getNodeId() {
         return nodeId;
     }
