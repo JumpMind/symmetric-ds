@@ -32,10 +32,6 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(HsqlDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "";
-
     public static String DUAL_TABLE = "DUAL";
 
     private boolean initializeDatabase;
