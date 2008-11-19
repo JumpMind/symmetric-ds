@@ -152,6 +152,18 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
             Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
         </para>
         <para>
+            In order to function properly, SymmetricDS needs to use session variables.
+            On PostgreSQL, session variables are enabled using a custom variable class.
+            Add the following line to the <filename>postgresql.conf</filename> file
+            of PostgreSQL server:
+            
+            <programlisting><![CDATA[
+custom_variable_classes = 'symmetric'
+]]></programlisting>
+
+            This setting is required, and SymmetricDS will log an error and exit if it is not present.
+        </para>
+        <para>
             Before database triggers can be created by in PostgreSQL,
             the plpgsql language handler must be installed on the database.
             The following statements should be run by the administrator on the database:
