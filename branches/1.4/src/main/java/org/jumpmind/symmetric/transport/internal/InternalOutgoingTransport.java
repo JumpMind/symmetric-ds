@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -34,8 +35,8 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
 
     boolean open = true;
 
-    public InternalOutgoingTransport(OutputStream pushOs) {
-        writer = new BufferedWriter(new OutputStreamWriter(pushOs));
+    public InternalOutgoingTransport(OutputStream pushOs) throws UnsupportedEncodingException {
+        writer = new BufferedWriter(new OutputStreamWriter(pushOs, "UTF-8"));
     }
 
     public InternalOutgoingTransport(BufferedWriter writer) {
