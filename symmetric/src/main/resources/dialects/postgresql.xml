@@ -21,14 +21,14 @@
                 </property>               
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="fn_sym_trigger_disabled">
+                        <entry key="fn_sym_triggers_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE or REPLACE FUNCTION fn_sym_trigger_disabled() RETURNS INTEGER AS $$
+                                CREATE or REPLACE FUNCTION fn_sym_triggers_disabled() RETURNS INTEGER AS $$
                                 DECLARE
                                   triggerDisabled INTEGER;
                                 BEGIN
-                                  select current_setting('symmetric.trigger_disabled') into triggerDisabled;
+                                  select current_setting('symmetric.triggers_disabled') into triggerDisabled;
                                   return triggerDisabled;
                                 EXCEPTION WHEN OTHERS THEN
                                   return 0;
