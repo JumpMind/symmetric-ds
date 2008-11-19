@@ -63,7 +63,9 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 List<Node> nodes = findTargetNodes(oldRow, newRow);
                 String disabledNodeId = dialect.getSyncNodeDisabled();
                 if (disabledNodeId != null) {
-                    nodes.remove(disabledNodeId);
+                    Node disabledNode = new Node();
+                    disabledNode.setNodeId(disabledNodeId);
+                    nodes.remove(disabledNode);
                 }
                 if (nodes != null) {
                     dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow), nodes);
