@@ -102,6 +102,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IDataExtractor getDataExtractor(String version) {
         String beanName = Constants.DATA_EXTRACTOR;
+        // Version 1.4.1-appaji accepts "old" token, so it's like a 1.5 version
         if (version != null) {
             int[] versions = Version.parseVersion(version);
             if (versions[0] == 1) {
@@ -109,7 +110,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     beanName += "10";
                 } else if (versions[1] <= 3) {
                     beanName += "13";
-                } else if (versions[1] <= 4) {
+                } else if (versions[1] <= 4 && ! version.equals("1.4.1-appaji")) {
                     beanName += "14";
                 }                
             }
