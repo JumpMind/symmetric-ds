@@ -93,11 +93,9 @@ public class CsvLoader implements IDataLoader {
     public boolean hasNext() throws IOException {
         while (csvReader.readRecord()) {
             String[] tokens = csvReader.getValues();
-
             if (tokens[0].equals(CsvConstants.BATCH)) {
                 context.setBatchId(new Long(tokens[1]));
                 stats = new DataLoaderStatistics();
-                prepareTableForDataLoad();
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
@@ -119,49 +117,52 @@ public class CsvLoader implements IDataLoader {
     }
 
     public void load() throws IOException {
-        BinaryEncoding encoding = BinaryEncoding.NONE;
-        while (csvReader.readRecord()) {
-            String[] tokens = csvReader.getValues();
-            stats.incrementLineCount();
-            if (tokens != null && tokens.length > 0 && tokens[0] != null) {
-                stats.incrementByteCount(csvReader.getRawRecord().length());
-
-                if (tokens[0].equals(CsvConstants.INSERT)) {
-                    if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                        insert(tokens, encoding);
+        try {
+            prepareTableForDataLoad();
+            BinaryEncoding encoding = BinaryEncoding.NONE;
+            while (csvReader.readRecord()) {
+                String[] tokens = csvReader.getValues();
+                stats.incrementLineCount();
+                if (tokens != null && tokens.length > 0 && tokens[0] != null) {
+                    stats.incrementByteCount(csvReader.getRawRecord().length());
+                    if (tokens[0].equals(CsvConstants.INSERT)) {
+                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            insert(tokens, encoding);
+                        }
+                    } else if (tokens[0].equals(CsvConstants.UPDATE)) {
+                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            update(tokens, encoding);
+                        }
+                    } else if (tokens[0].equals(CsvConstants.DELETE)) {
+                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            delete(tokens);
+                        }
+                    } else if (isMetaTokenParsed(tokens)) {
+                        continue;
+                    } else if (tokens[0].equals(CsvConstants.COMMIT)) {
+                        break;
+                    } else if (tokens[0].equals(CsvConstants.SQL)) {
+                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            runSql(tokens[1]);
+                        }
+                    } else if (tokens[0].equals(CsvConstants.CREATE)) {
+                        if (!context.isSkipping()) {
+                            runDdl(tokens[1]);
+                        }
+                    } else if (tokens[0].equals(CsvConstants.BINARY)) {
+                        try {
+                            encoding = BinaryEncoding.valueOf(tokens[1]);
+                        } catch (Exception ex) {
+                            logger.warn("Unsupported binary encoding value of " + tokens[1]);
+                        }
+                    } else {
+                        throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
+                                + stats.getLineCount() + " of batch " + context.getBatchId());
                     }
-                } else if (tokens[0].equals(CsvConstants.UPDATE)) {
-                    if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                        update(tokens, encoding);
-                    }
-                } else if (tokens[0].equals(CsvConstants.DELETE)) {
-                    if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                        delete(tokens);
-                    }
-                } else if (isMetaTokenParsed(tokens)) {
-                    continue;
-                } else if (tokens[0].equals(CsvConstants.COMMIT)) {
-                    cleanupAfterDataLoad();
-                    break;
-                } else if (tokens[0].equals(CsvConstants.SQL)) {
-                    if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                        runSql(tokens[1]);
-                    }
-                } else if (tokens[0].equals(CsvConstants.CREATE)) {
-                    if (!context.isSkipping()) {
-                        runDdl(tokens[1]);
-                    }
-                } else if (tokens[0].equals(CsvConstants.BINARY)) {
-                    try {
-                        encoding = BinaryEncoding.valueOf(tokens[1]);
-                    } catch (Exception ex) {
-                        logger.warn("Unsupported binary encoding value of " + tokens[1]);
-                    }
-                } else {
-                    throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line " + stats.getLineCount()
-                            + " of batch " + context.getBatchId());
                 }
             }
+        } finally {
+            cleanupAfterDataLoad();
         }
     }
 
