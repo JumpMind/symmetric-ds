@@ -17,7 +17,7 @@
                 off.
             </action>
         </release>        
-        <release version="1.4.2" date="2008-11-xx" description="Patch Release">
+        <release version="1.4.2" date="2008-11-20" description="Patch Release">
             <action dev="chenson42" type="fix">
                 cleanupAfterDataLoad() at the batch commit instead of in close() in the CsvLoader.  close() is called outside the 
                 transaction and could be called on a different connection altogether in the connection pool.
