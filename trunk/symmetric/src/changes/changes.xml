@@ -10,6 +10,13 @@
                 Column level synchronization to merge rows that do not conflict.
             </action>                
         </release>
+        <release version="1.4.3" date="2008-11-2x" description="Patch Release">
+            <action dev="chenson42" type="fix">
+                "prepare" and "clean up" in the load() method of the IDataLoader as it is transactional. This is in
+                support of fixing the MSSQL to not leave a tables identity insert state in the identity insert state of
+                off.
+            </action>
+        </release>        
         <release version="1.4.2" date="2008-11-xx" description="Patch Release">
             <action dev="chenson42" type="fix">
                 cleanupAfterDataLoad() at the batch commit instead of in close() in the CsvLoader.  close() is called outside the 
