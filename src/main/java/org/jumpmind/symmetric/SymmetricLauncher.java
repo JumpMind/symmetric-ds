@@ -87,6 +87,8 @@ public class SymmetricLauncher {
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
+    private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
+
     public static void main(String[] args) throws Exception {
 
         CommandLineParser parser = new PosixParser();
@@ -167,7 +169,9 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_START_SERVER)) {
-                testConnection();
+                if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
+                    testConnection();
+                }
                 new SymmetricWebServer().start(serverPort);
                 return;
             }
@@ -240,7 +244,12 @@ public class SymmetricLauncher {
         options.addOption("d", OPTION_DUMP_BATCH, true,
                 "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
         options.addOption("b", OPTION_LOAD_BATCH, true, "Load the CSV contents of the specfied file.");
-
+        options
+                .addOption(
+                        "i",
+                        OPTION_SKIP_DB_VALIDATION,
+                        false,
+                        "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
         return options;
     }
 
