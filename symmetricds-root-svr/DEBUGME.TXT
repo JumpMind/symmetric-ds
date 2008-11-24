@@ -1,3 +1,0 @@
-To debug this project in Eclipse:
-1. Run the External Tool shortcut called 'symmetricds-root-svr mvn jetty'
-2. Run the Debug shortcut called 'symmetricds-root-svr debug jetty'
