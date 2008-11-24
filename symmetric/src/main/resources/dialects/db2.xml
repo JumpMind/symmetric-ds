@@ -6,7 +6,7 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd" default-lazy-init="true">
 
-    <bean id="db2Dialect" class="org.jumpmind.symmetric.db.derby.Db2DbDialect"
+    <bean id="db2Dialect" class="org.jumpmind.symmetric.db.db2.Db2DbDialect"
         scope="prototype">
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="parameterService" ref="parameterService" />
@@ -61,7 +61,6 @@
                                 ]]>
                             </value>
                         </entry>
-                        -->
                     </map>
                 </property>
                 <property name="stringColumnTemplate" >
