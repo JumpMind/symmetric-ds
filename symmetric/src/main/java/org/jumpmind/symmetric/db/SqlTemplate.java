@@ -293,6 +293,8 @@ public class SqlTemplate {
             case Types.CLOB:
             case Types.BLOB:
             case Types.BINARY:
+            // SQL-Server ntext binary type
+            case -10:
                 return true;
             }
         }
@@ -383,6 +385,8 @@ public class SqlTemplate {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            // SQL-Server ntext binary type
+            case -10:
                 templateToUse = blobColumnTemplate;
                 break;
             case Types.DATE:
