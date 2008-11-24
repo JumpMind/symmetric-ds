@@ -114,5 +114,10 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     public String getDefaultSchema() {
         return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
     }
+    
+    public String getIdentifierQuoteString()
+    {
+        return "";
+    }
 }
 
