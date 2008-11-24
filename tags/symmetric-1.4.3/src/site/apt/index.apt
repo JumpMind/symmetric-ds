@@ -1,0 +1,50 @@
+ ------
+ SymmetricDS
+ ------
+ ------
+ Date
+ ------
+
+Overview
+
+ SymmetricDS is web-enabled, database independent, data synchronization/replication software.
+ It uses web and database technologies to replicate tables between relational databases in near real time. 
+ The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
+ and withstand periods of network outage.
+
+ By using database triggers, SymmetricDS guarantees that data changes are captured and atomicity is preserved.
+ Support for database vendors is provided through a Database Dialect layer,
+ with implementations for MySQL, Oracle, SQL Server, PostgreSQL, HSQLDB, and Apache Derby included.
+
+[images/n-tier-sync.gif]
+ 
+ Synchronization can be configured to push data (trickle-back) or pull data (trickle-poll) at an interval.
+ SymmetricDS allows for 2-tier and even n-tier synchronization, such as the following:
+
+    * A farm of web server nodes fronting an enterprise-class general office database
+    
+    * A handful of regional servers for synchronizing from the general office to remote geographical areas
+     
+    * 1000(s) of store server nodes using a departmental class database to sync with a regional node
+    
+    * 10(s) of Point of Sale (POS) register nodes using an embedded database to sync with a store server
+ 
+ Deployment options include the following:
+ 
+    * Web application archive (WAR) deployed to an application server such as Tomcat, Jetty, or JBoss
+    
+    * Standalone service
+    
+    * Embedded in an application
+ 
+ SymmetricDS is written in Java and licensed as open source software under the 
+ {{{license.html}GNU Lesser General Public License}} (LGPL).
+
+Background
+ 
+ While implementing a commercial Point of Sale (POS) system for a large retailer, the
+ development team concluded that the software available for trickling back
+ transactions to the general office did not meet the project needs. 
+ The team created a custom solution that met the requirements and made the project
+ successful. From this initial challenge came the knowledge and experience that
+ SymmetricDS benefits from today.
