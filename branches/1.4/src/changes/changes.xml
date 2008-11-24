@@ -11,6 +11,9 @@
                 support of fixing the MSSQL to not leave a tables identity insert state in the identity insert state of
                 off.
             </action>
+            <action dev="erilong" type="fix" issue="aid=2322967&amp;atid=997724">
+                Support ntext binary data type on SQL-Server
+            </action>
         </release>
         <release version="1.4.2" date="2008-11-20" description="Patch Release">
             <action dev="chenson42" type="fix">
