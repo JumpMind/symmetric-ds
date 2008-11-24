@@ -87,6 +87,8 @@ public class SymmetricLauncher {
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
+    private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
+
     public static void main(String[] args) throws Exception {
 
         CommandLineParser parser = new PosixParser();
@@ -97,33 +99,39 @@ public class SymmetricLauncher {
             int serverPort = 31415;
 
             if (line.hasOption(OPTION_PORT_SERVER)) {
-                serverPort = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+                serverPort = new Integer(line
+                        .getOptionValue(OPTION_PORT_SERVER));
             }
 
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
-                generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
+                generateDefaultProperties(line
+                        .getOptionValue(OPTION_PROPERTIES_GEN));
                 return;
             }
 
             // validate that block-size has been set
             if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, "file:"
-                        + line.getOptionValue(OPTION_PROPERTIES_FILE));
-                if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                    throw new ParseException("Could not find the properties file specified: "
-                            + line.getOptionValue(OPTION_PROPERTIES_FILE));
+                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1,
+                        "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE));
+                if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE))
+                        .exists()) {
+                    throw new ParseException(
+                            "Could not find the properties file specified: "
+                                    + line
+                                            .getOptionValue(OPTION_PROPERTIES_FILE));
                 }
 
             }
 
             if (line.hasOption(OPTION_DDL_GEN)) {
-                generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
+                generateDDL(new SymmetricEngine(), line
+                        .getOptionValue(OPTION_DDL_GEN));
                 return;
             }
 
             if (line.hasOption(OPTION_PURGE)) {
-                ((IPurgeService) new SymmetricEngine().getApplicationContext().getBean(Constants.PURGE_SERVICE))
-                        .purge();
+                ((IPurgeService) new SymmetricEngine().getApplicationContext()
+                        .getBean(Constants.PURGE_SERVICE)).purge();
                 return;
             }
 
@@ -153,21 +161,26 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
-                runDdlXml(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_DDL_XML));
+                runDdlXml(new SymmetricEngine(), line
+                        .getOptionValue(OPTION_RUN_DDL_XML));
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_SQL)) {
-                runSql(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
+                runSql(new SymmetricEngine(), line
+                        .getOptionValue(OPTION_RUN_SQL));
                 return;
             }
 
             if (line.hasOption(OPTION_LOAD_BATCH)) {
-                loadBatch(new SymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
+                loadBatch(new SymmetricEngine(), line
+                        .getOptionValue(OPTION_LOAD_BATCH));
             }
 
             if (line.hasOption(OPTION_START_SERVER)) {
-                testConnection();
+                if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
+                    testConnection();
+                }
                 new SymmetricWebServer().start(serverPort);
                 return;
             }
@@ -180,7 +193,8 @@ public class SymmetricLauncher {
         } catch (Exception ex) {
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            System.err.println("  An exception occurred.  Please see the following for details: ");
+            System.err
+                    .println("  An exception occurred.  Please see the following for details: ");
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
 
@@ -196,9 +210,11 @@ public class SymmetricLauncher {
     }
 
     private static void testConnection() throws Exception {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
-                "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
-        BasicDataSource ds = (BasicDataSource) ctx.getBean(Constants.DATA_SOURCE);
+        ApplicationContext ctx = new ClassPathXmlApplicationContext(
+                new String[] { "classpath:/symmetric-properties.xml",
+                        "classpath:/symmetric-database.xml" });
+        BasicDataSource ds = (BasicDataSource) ctx
+                .getBean(Constants.DATA_SOURCE);
         Connection c = ds.getConnection();
         c.close();
         ds.close();
@@ -206,11 +222,16 @@ public class SymmetricLauncher {
 
     private static Options buildOptions() {
         Options options = new Options();
-        options.addOption("S", OPTION_START_SERVER, false, "Start an embedded instance of symmetric.");
-        options.addOption("P", OPTION_PORT_SERVER, true,
-                "Optionally pass in the HTTP port number to use for the server instance.");
+        options.addOption("S", OPTION_START_SERVER, false,
+                "Start an embedded instance of symmetric.");
         options
-                .addOption("c", OPTION_DDL_GEN, true,
+                .addOption("P", OPTION_PORT_SERVER, true,
+                        "Optionally pass in the HTTP port number to use for the server instance.");
+        options
+                .addOption(
+                        "c",
+                        OPTION_DDL_GEN,
+                        true,
                         "Output the DDL to create the symmetric tables.  Takes an argument of the name of the file to write the ddl to.");
         options
                 .addOption(
@@ -218,43 +239,71 @@ public class SymmetricLauncher {
                         OPTION_PROPERTIES_FILE,
                         true,
                         "Takes an argument with the path to the properties file that will drive symmetric.  If this is not provided, symmetric will use defaults, then override with the first symmetric.properties in your classpath, then override with symmetric.properties values in your user.home directory.");
-        options.addOption("X", OPTION_PURGE, false,
-                "Will simply run the purge process against the currently configured database.");
         options
-                .addOption("g", OPTION_PROPERTIES_GEN, true,
+                .addOption("X", OPTION_PURGE, false,
+                        "Will simply run the purge process against the currently configured database.");
+        options
+                .addOption(
+                        "g",
+                        OPTION_PROPERTIES_GEN,
+                        true,
                         "Takes an argument with the path to a file which all the default overrideable properties will be written.");
         options
-                .addOption("r", OPTION_RUN_DDL_XML, true,
+                .addOption(
+                        "r",
+                        OPTION_RUN_DDL_XML,
+                        true,
                         "Takes an argument of a DdlUtils xml file and applies it to the database configured in your symmetric properties file.");
         options
-                .addOption("s", OPTION_RUN_SQL, true,
+                .addOption(
+                        "s",
+                        OPTION_RUN_SQL,
+                        true,
                         "Takes an argument of a .sql file and runs it against the database configured in your symmetric properties file.");
 
-        options.addOption("a", OPTION_AUTO_CREATE, false,
-                "Attempts to create the symmetric tables in the configured database.");
         options
-                .addOption("R", OPTION_OPEN_REGISTRATION, true,
+                .addOption("a", OPTION_AUTO_CREATE, false,
+                        "Attempts to create the symmetric tables in the configured database.");
+        options
+                .addOption(
+                        "R",
+                        OPTION_OPEN_REGISTRATION,
+                        true,
                         "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
-        options.addOption("l", OPTION_RELOAD_NODE, true,
-                "Send an initial load of data to reload the passed in node id.");
-        options.addOption("d", OPTION_DUMP_BATCH, true,
-                "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
-        options.addOption("b", OPTION_LOAD_BATCH, true, "Load the CSV contents of the specfied file.");
-
+        options
+                .addOption("l", OPTION_RELOAD_NODE, true,
+                        "Send an initial load of data to reload the passed in node id.");
+        options
+                .addOption(
+                        "d",
+                        OPTION_DUMP_BATCH,
+                        true,
+                        "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
+        options.addOption("b", OPTION_LOAD_BATCH, true,
+                "Load the CSV contents of the specfied file.");
+        options
+                .addOption(
+                        "i",
+                        OPTION_SKIP_DB_VALIDATION,
+                        false,
+                        "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
         return options;
     }
 
-    private static void dumpBatch(SymmetricEngine engine, String batchId) throws Exception {
-        IDataExtractorService dataExtractorService = (IDataExtractorService) engine.getApplicationContext().getBean(
-                Constants.DATAEXTRACTOR_SERVICE);
+    private static void dumpBatch(SymmetricEngine engine, String batchId)
+            throws Exception {
+        IDataExtractorService dataExtractorService = (IDataExtractorService) engine
+                .getApplicationContext().getBean(
+                        Constants.DATAEXTRACTOR_SERVICE);
         IOutgoingTransport transport = new InternalOutgoingTransport(System.out);
         dataExtractorService.extractBatchRange(transport, batchId, batchId);
         transport.close();
     }
 
-    private static void loadBatch(SymmetricEngine engine, String fileName) throws Exception {
-        IDataLoaderService service = (IDataLoaderService) engine.getApplicationContext().getBean(
-                Constants.DATALOADER_SERVICE);
+    private static void loadBatch(SymmetricEngine engine, String fileName)
+            throws Exception {
+        IDataLoaderService service = (IDataLoaderService) engine
+                .getApplicationContext().getBean(Constants.DATALOADER_SERVICE);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
             FileInputStream in = new FileInputStream(file);
@@ -271,34 +320,43 @@ public class SymmetricLauncher {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
-            throw new IllegalArgumentException("Check the argument you passed in.  --" + OPTION_OPEN_REGISTRATION
-                    + " takes an argument of {groupId},{externalId}");
+            throw new IllegalArgumentException(
+                    "Check the argument you passed in.  --"
+                            + OPTION_OPEN_REGISTRATION
+                            + " takes an argument of {groupId},{externalId}");
         }
         String nodeGroupId = argument.substring(0, index).trim();
         String externalId = argument.substring(index + 1).trim();
-        IRegistrationService registrationService = (IRegistrationService) engine.getApplicationContext().getBean(
-                Constants.REGISTRATION_SERVICE);
+        IRegistrationService registrationService = (IRegistrationService) engine
+                .getApplicationContext()
+                .getBean(Constants.REGISTRATION_SERVICE);
         registrationService.openRegistration(nodeGroupId, externalId);
     }
 
     private static String reloadNode(SymmetricEngine engine, String argument) {
-        IDataService dataService = (IDataService) engine.getApplicationContext().getBean(Constants.DATA_SERVICE);
+        IDataService dataService = (IDataService) engine
+                .getApplicationContext().getBean(Constants.DATA_SERVICE);
         return dataService.reloadNode(argument);
     }
 
-    private static void generateDDL(SymmetricEngine engine, String fileName) throws IOException {
+    private static void generateDDL(SymmetricEngine engine, String fileName)
+            throws IOException {
         File file = new File(fileName);
         file.getParentFile().mkdirs();
         FileWriter os = new FileWriter(file, false);
-        os.write(((IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT)).getCreateSymmetricDDL());
+        os.write(((IDbDialect) engine.getApplicationContext().getBean(
+                Constants.DB_DIALECT)).getCreateSymmetricDDL());
         os.close();
     }
 
-    private static void generateDefaultProperties(String fileName) throws IOException {
+    private static void generateDefaultProperties(String fileName)
+            throws IOException {
         File file = new File(fileName);
         file.getParentFile().mkdirs();
-        BufferedReader is = new BufferedReader(new InputStreamReader(SymmetricLauncher.class
-                .getResourceAsStream("/symmetric-default.properties"), Charset.defaultCharset()));
+        BufferedReader is = new BufferedReader(new InputStreamReader(
+                SymmetricLauncher.class
+                        .getResourceAsStream("/symmetric-default.properties"),
+                Charset.defaultCharset()));
         FileWriter os = new FileWriter(file, false);
         String line = is.readLine();
         while (line != null) {
@@ -311,13 +369,15 @@ public class SymmetricLauncher {
     }
 
     private static void autoCreateDatabase(SymmetricEngine engine) {
-        IBootstrapService bootstrapService = (IBootstrapService) engine.getApplicationContext().getBean(
-                Constants.BOOTSTRAP_SERVICE);
+        IBootstrapService bootstrapService = (IBootstrapService) engine
+                .getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
         bootstrapService.setupDatabase(true);
     }
 
-    private static void runDdlXml(SymmetricEngine engine, String fileName) throws FileNotFoundException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+    private static void runDdlXml(SymmetricEngine engine, String fileName)
+            throws FileNotFoundException {
+        IDbDialect dialect = (IDbDialect) engine.getApplicationContext()
+                .getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
             Platform pf = dialect.getPlatform();
@@ -328,12 +388,14 @@ public class SymmetricLauncher {
         }
     }
 
-    private static void runSql(SymmetricEngine engine, String fileName) throws FileNotFoundException,
-            MalformedURLException {
-        IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+    private static void runSql(SymmetricEngine engine, String fileName)
+            throws FileNotFoundException, MalformedURLException {
+        IDbDialect dialect = (IDbDialect) engine.getApplicationContext()
+                .getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURL(), dialect.getPlatform().getDataSource());
+            SqlScript script = new SqlScript(file.toURL(), dialect
+                    .getPlatform().getDataSource());
             script.execute();
         } else {
             throw new FileNotFoundException("Could not find " + fileName);
