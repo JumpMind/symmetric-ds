@@ -51,7 +51,7 @@
 
     <table name="test_store_status">
         <column name="store_id" type="CHAR" size="5" primaryKey="true" required="true" />
-        <column name="register_id" type="CHAR" size="3" primaryKey="true" />
+        <column name="register_id" type="CHAR" size="3" primaryKey="true" required="true" />
         <column name="status" type="INTEGER" />
     </table>
 
