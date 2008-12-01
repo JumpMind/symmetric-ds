@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -264,7 +265,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }    
 
     private int[] filterTypes(int[] types) {
-        boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
+        boolean isBooleanSupported = !((getDbDialect() instanceof OracleDbDialect)||(getDbDialect() instanceof Db2DbDialect));
         int[] filteredTypes = new int[types.length];
         for (int i = 0; i < types.length; i++) {
             if (types[i] == Types.BOOLEAN && !isBooleanSupported) {
@@ -277,7 +278,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private Object[] filterValues(Object[] values) {
-        boolean isBooleanSupported = !(getDbDialect() instanceof OracleDbDialect);
+        boolean isBooleanSupported = !((getDbDialect() instanceof OracleDbDialect)||(getDbDialect() instanceof Db2DbDialect));
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof Boolean && !isBooleanSupported) {
