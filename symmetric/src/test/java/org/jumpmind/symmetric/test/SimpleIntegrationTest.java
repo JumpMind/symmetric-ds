@@ -94,7 +94,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?";
     
-    static final String isRegistrationOpenSql = "select registration_enabled from sym_node_security where node_id=?";
+    static final String isRegistrationOpenSql = "select count(*) from sym_node_security where registration_enabled='0' and node_id=?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
