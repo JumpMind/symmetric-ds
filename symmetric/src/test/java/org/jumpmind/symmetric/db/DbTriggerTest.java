@@ -48,33 +48,33 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);
 
-    private static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
+    public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
-    final static String INSERT = "insert into "
+    public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
             + " (string_One_Value,string_Two_Value,long_String_Value,time_Value,date_Value,boolean_Value,bigInt_Value,decimal_Value) "
             + "values(?,?,?,?,?,?,?,?)"; // '\\\\','\"','\"1\"',null,null,1,1,1)";
 
-    final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+    public final static int[] INSERT_TYPES = new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
             Types.DATE, Types.BOOLEAN, Types.INTEGER, Types.DECIMAL };
 
-    final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
+    public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
 
-    final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
+    public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
     
-    final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE, 1, 1 };
+    public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE, 1, 1 };
 
-    final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
+    public final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
-    final static String EXPECTED_INSERT2_CSV_ENDSWITH = "\"here\",\"here\",\"1\",,,\"1\",\"1\"";
+    public final static String EXPECTED_INSERT2_CSV_ENDSWITH = "\"here\",\"here\",\"1\",,,\"1\",\"1\"";
     
-    final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
+    public final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
 
-    final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
+    public final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
-    static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)"; 
+    public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)"; 
 
     public DbTriggerTest() throws Exception {
         super();
@@ -123,7 +123,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void validateTestTableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
 
-        int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
+        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
 
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
@@ -157,7 +157,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         transactionTemplate.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 jdbcTemplate.update("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
-                jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES));
+                insert(INSERT2_VALUES, jdbcTemplate, getDbDialect());               
                 return null;
             }
         });
@@ -194,7 +194,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
+        assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
 
         String csvString = getNextDataRow(getSymmetricEngine());
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -205,7 +205,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         getDbDialect().disableSyncTriggers();
-        int count = jdbcTemplate.update(INSERT, filterValues(INSERT1_VALUES), filterTypes(INSERT_TYPES));
+        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect()); 
         getDbDialect().enableSyncTriggers();
         assert count == 1;
         String csvString = getNextDataRow(getSymmetricEngine());
@@ -236,7 +236,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
-        assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT2_VALUES), filterTypes(INSERT_TYPES)));
+        assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
 
         String tableName = getNextDataRowTableName(getSymmetricEngine());
         assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
@@ -247,7 +247,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set inactive_time=current_timestamp where source_table_name='"+TEST_TRIGGERS_TABLE+"'");
         getSymmetricEngine().syncTriggers();
-        Assert.assertEquals(1, jdbcTemplate.update(INSERT, filterValues(INSERT3_VALUES), filterTypes(INSERT_TYPES)));
+        
+        Assert.assertEquals(1, insert(INSERT3_VALUES, jdbcTemplate, getDbDialect()));
         String csvString = getNextDataRow(getSymmetricEngine());
         Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString, "Data was captured when it should not have been");
         
@@ -264,8 +265,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         assertTrue(nodeList.contains("00011"));
     }    
 
-    private int[] filterTypes(int[] types) {
-        boolean isBooleanSupported = !((getDbDialect() instanceof OracleDbDialect)||(getDbDialect() instanceof Db2DbDialect));
+    protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
+        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect)||(dbDialect instanceof Db2DbDialect));
         int[] filteredTypes = new int[types.length];
         for (int i = 0; i < types.length; i++) {
             if (types[i] == Types.BOOLEAN && !isBooleanSupported) {
@@ -276,9 +277,13 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         }
         return filteredTypes;
     }
+    
+    public static int insert(Object[] values, JdbcTemplate jdbcTemplate, IDbDialect dbDialect) {
+        return jdbcTemplate.update(INSERT, filterValues(values, dbDialect), filterTypes(INSERT_TYPES, dbDialect));
+    }
 
-    private Object[] filterValues(Object[] values) {
-        boolean isBooleanSupported = !((getDbDialect() instanceof OracleDbDialect)||(getDbDialect() instanceof Db2DbDialect));
+    protected static Object[] filterValues(Object[] values, IDbDialect dbDialect) {
+        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect)||(dbDialect instanceof Db2DbDialect));
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof Boolean && !isBooleanSupported) {
