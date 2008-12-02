@@ -13,30 +13,7 @@
 		<property name="tablePrefix" value="${sync.table.prefix}" />
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"
-			value="${db.jdbc.streaming.results.fetch.size}" />		
-		<!-- <property name="envVariableInstalledSql">
-			<value>
-				<![CDATA[set $(schemaName)$(varName) = null]]>
-			</value>
-		</property>
-		<property name="envVariablesToInstall">
-			<map>
-				<entry key="ENV_VAR_SYM_SYNC_TRIGGERS_DISABLED_USER">
-					<value>
-						<![CDATA[ 
-                                CREATE VARIABLE sync_triggers_disabled CHAR(1) DEFAULT ‘N’
-                                ]]>
-					</value>
-				</entry>
-				<entry key="ENV_VAR_SYM_SYNC_TRIGGERS_DISABLED_NODE">
-					<value>
-						<![CDATA[ 
-                                CREATE VARIABLE sync_node_disabled VARCHAR(50) DEFAULT null
-                                ]]>
-					</value>
-				</entry>
-			</map>
-		</property>-->
+			value="${db.jdbc.streaming.results.fetch.size}" />				
 		<property name="sqlTemplate">
 			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
 				<property name="triggerPrefix"
@@ -68,27 +45,6 @@
                                 ]]>
 							</value>
 						</entry>
-						<entry key="FN_SYM_SYNC_TRIGGERS_DISABLED">
-							<value>
-								<![CDATA[ 
-                                CREATE FUNCTION fn_sym_sync_triggers_disabled() RETURNS integer
-                                BEGIN ATOMIC
-                                    return 0;
-                                END
-                                ]]>
-							</value>
-						</entry>
-						<entry
-							key="FN_SYM_SYNC_TRIGGERS_SET_DISABLED">
-							<value>
-								<![CDATA[ 
-                                CREATE FUNCTION fn_sym_sync_triggers_set_disabled(state integer) RETURNS integer
-                                BEGIN ATOMIC
-                                    return 0;
-                                END
-                                ]]>
-							</value>
-						</entry>
 					</map>
 				</property>
 				<property name="stringColumnTemplate">
@@ -98,13 +54,13 @@
 				</property>
 				<property name="clobColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ||','||]]>
 					</value>
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
 						<!-- <![CDATA[fn_sym_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>-->
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ||','||]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
