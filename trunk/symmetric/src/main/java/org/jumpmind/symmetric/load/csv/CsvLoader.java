@@ -146,7 +146,7 @@ public class CsvLoader implements IDataLoader {
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
-                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable()) && !context.isSkipping()) {
                             runSql(tokens[1]);
                         }
                     } else if (tokens[0].equals(CsvConstants.CREATE)) {
@@ -351,7 +351,9 @@ public class CsvLoader implements IDataLoader {
             logger.debug("Running SQL: " + sql);
         }
         jdbcTemplate.execute(sql);
-        context.getTableTemplate().resetMetaData();
+        if (context.getTableTemplate() != null) {
+            context.getTableTemplate().resetMetaData();
+        }
     }
 
     protected void runDdl(String xml) {

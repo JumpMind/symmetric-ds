@@ -20,6 +20,12 @@
         batch_id, batched) values(?, ?, ?, ?, ?, ?)
       </value>
     </entry>
+    <entry key="updateNodeHeartbeatSql">
+      <value>
+        update ${sync.table.prefix}_node set heartbeat_time=current_timestamp where node_id=
+      </value>
+    </entry>    
+    
   </util:map>
 
 </beans>

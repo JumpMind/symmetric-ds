@@ -65,6 +65,11 @@ public class TriggerHistory {
      * changes.
      */
     private int tableHash;
+    
+    /**
+     * This is a hash based on the values in the trigger configuration table.
+     */
+    private long triggerRowHash;
 
     private TriggerReBuildReason lastTriggerBuildReason;
 
@@ -76,6 +81,10 @@ public class TriggerHistory {
         this.sourceTableName = tableName;
         this.pkColumnNames = pkColumnNames;
         this.columnNames = columnNames;
+    }
+    
+    public TriggerHistory(Table table, Trigger trigger) {
+        this(table,trigger,null,null,null,null);
     }
 
     public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason, String nameForInsertTrigger,
@@ -91,6 +100,7 @@ public class TriggerHistory {
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
+        this.triggerRowHash = trigger.getHashedValue();
         // set primary key equal to all the columns to make data sync work for
         // tables
         // with no primary keys
@@ -258,6 +268,14 @@ public class TriggerHistory {
 
     public void setSourceCatalogName(String sourceCatalogName) {
         this.sourceCatalogName = sourceCatalogName;
+    }
+
+    public long getTriggerRowHash() {
+        return triggerRowHash;
+    }
+
+    public void setTriggerRowHash(long triggerRowHash) {
+        this.triggerRowHash = triggerRowHash;
     }
 
 }

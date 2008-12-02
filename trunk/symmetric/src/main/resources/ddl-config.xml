@@ -98,6 +98,7 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"
             primaryKey="true" />
         <column name="data_event_action" type="CHAR" size="1" default="W" required="true" />
+        <column name="resync_config_enabled" type="BOOLEANINT" size="1" default="0" />
     </table>
 
     <table name="node">
@@ -135,6 +136,7 @@
         <column name="registration_time" type="TIMESTAMP" required="false" />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="initial_load_time" type="TIMESTAMP" required="false" />
+        <column name="resend_config" type="BOOLEANINT" size="1" default="0" />
     </table>
 
     <table name="node_identity">
@@ -185,6 +187,7 @@
         <column name="name_for_insert_trigger" type="VARCHAR" size="50" required="true" />
         <column name="name_for_delete_trigger" type="VARCHAR" size="50" required="true" />
         <column name="table_hash" type="BIGINT" required="true" />
+        <column name="trigger_row_hash" type="BIGINT" required="true" />
         <column name="column_names" type="LONGVARCHAR" required="true" />
         <column name="pk_column_names" type="LONGVARCHAR" required="true" />
         <column name="last_trigger_build_reason" size="1" type="CHAR" required="true" />

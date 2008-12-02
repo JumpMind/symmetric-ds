@@ -46,21 +46,21 @@ public class CsvExtractor13 implements IDataExtractor {
     private String tablePrefix;
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, parameterService
+        Util.write(writer, CsvConstants.NODEID, Util.DELIMITER, parameterService
                 .getString(ParameterConstants.EXTERNAL_ID));
         writer.newLine();
     }
 
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
+        Util.write(writer, CsvConstants.BATCH, Util.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding()
+        Util.write(writer, CsvConstants.BINARY, Util.DELIMITER, dbDialect.getBinaryEncoding()
                 .name());
         writer.newLine();
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
+        Util.write(writer, CsvConstants.COMMIT, Util.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 

@@ -50,20 +50,20 @@ public class CsvExtractor14 implements IDataExtractor {
         Node nodeIdentity = nodeService.findIdentity();
         String nodeId = (nodeIdentity == null) ? parameterService.getString(ParameterConstants.EXTERNAL_ID)
                 : nodeIdentity.getNodeId();
-        Util.write(writer, CsvConstants.NODEID, AbstractStreamDataCommand.DELIMITER, nodeId);
+        Util.write(writer, CsvConstants.NODEID, Util.DELIMITER, nodeId);
         writer.newLine();
     }
 
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.BATCH, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
+        Util.write(writer, CsvConstants.BATCH, Util.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, AbstractStreamDataCommand.DELIMITER, dbDialect.getBinaryEncoding()
+        Util.write(writer, CsvConstants.BINARY, Util.DELIMITER, dbDialect.getBinaryEncoding()
                 .name());
         writer.newLine();
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, AbstractStreamDataCommand.DELIMITER, Long.toString(batch.getBatchId()));
+        Util.write(writer, CsvConstants.COMMIT, Util.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 

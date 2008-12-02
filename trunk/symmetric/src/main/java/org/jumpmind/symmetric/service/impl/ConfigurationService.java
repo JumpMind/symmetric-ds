@@ -115,34 +115,27 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getId() });
     }
 
-    public void initTriggerRowsForConfigChannel() {
-        if (StringUtils.isEmpty(parameterService.getRegistrationUrl())) {
-            initSystemChannels();
-            for (NodeGroupLink link : getGroupLinks()) {
-                initTriggerRowsForConfigChannel(link.getSourceGroupId(), link.getTargetGroupId());
-            }
-        }
-    }
-
-    private void initTriggerRowsForConfigChannel(String sourceGroupId, String targetGroupId) {
+    public List<Trigger> getConfigurationTriggers(String sourceGroupId,
+            String targetGroupId) {
         int initialLoadOrder = 1;
-        for (String tableName : getRootConfigChannelTableNames()) {
-            Trigger trigger = getTriggerForTarget(tableName, sourceGroupId, targetGroupId, Constants.CHANNEL_CONFIG);
-            if (trigger == null) {
-                String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
-                trigger = new Trigger();
-                trigger.setSyncOnDelete(false);
-                trigger.setSyncOnInsert(false);
-                trigger.setSyncOnUpdate(false);
-                trigger.setSourceTableName(tableName);
-                trigger.setSourceGroupId(sourceGroupId);
-                trigger.setTargetGroupId(targetGroupId);
-                trigger.setChannelId(Constants.CHANNEL_CONFIG);
-                trigger.setInitialLoadOrder(initialLoadOrder++);
-                trigger.setInitialLoadSelect(initialLoadSelect);
-                insert(trigger);
-            }
+        List<String> tables = getRootConfigChannelTableNames();
+        List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
+        for (String tableName : tables) {
+            String initialLoadSelect = rootConfigChannelInitialLoadSelect
+                    .get(tableName);
+            Trigger trigger = new Trigger();
+            trigger.setSyncOnDelete(false);
+            trigger.setSyncOnInsert(false);
+            trigger.setSyncOnUpdate(false);
+            trigger.setSourceTableName(tableName);
+            trigger.setSourceGroupId(sourceGroupId);
+            trigger.setTargetGroupId(targetGroupId);
+            trigger.setChannelId(Constants.CHANNEL_CONFIG);
+            trigger.setInitialLoadOrder(initialLoadOrder++);
+            trigger.setInitialLoadSelect(initialLoadSelect);
+            triggers.add(trigger);
         }
+        return triggers;
     }
 
     @Deprecated
@@ -184,7 +177,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    @SuppressWarnings("unchecked")
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId) {
         String code = (String) jdbcTemplate.queryForObject(getSql("selectDataEventActionsByIdSql"), new Object[] {
                 sourceGroupId, targetGroupId }, String.class);
@@ -266,9 +258,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 newHistRecord.getColumnNames(), newHistRecord.getPkColumnNames(),
                 newHistRecord.getLastTriggerBuildReason().getCode(), newHistRecord.getNameForDeleteTrigger(),
                 newHistRecord.getNameForInsertTrigger(), newHistRecord.getNameForUpdateTrigger(),
-                newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName() }, new int[] { Types.INTEGER,
+                newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(), newHistRecord.getTriggerRowHash() }, new int[] { Types.INTEGER,
                 Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
     }
 
     public void insert(Trigger trigger) {
@@ -352,6 +344,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             hist.setNameForUpdateTrigger(rs.getString(11));
             hist.setSourceSchemaName(rs.getString(12));
             hist.setSourceCatalogName(rs.getString(13));
+            hist.setTriggerRowHash(rs.getLong(14));
             if (this.retMap != null) {
                 this.retMap.put((long) hist.getTriggerHistoryId(), hist);
             }

@@ -92,6 +92,10 @@ public class MockDataService implements IDataService {
 
     }
 
+    public void insertSqlEvent(Node targetNode, String sql) {
+        
+    }
+    
     public String reloadNode(String nodeId) {
 
         return null;

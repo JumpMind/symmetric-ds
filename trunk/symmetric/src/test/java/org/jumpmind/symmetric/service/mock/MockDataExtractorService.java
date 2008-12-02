@@ -22,6 +22,9 @@
  */
 package org.jumpmind.symmetric.service.mock;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
@@ -63,6 +66,11 @@ public class MockDataExtractorService implements IDataExtractorService {
     }
 
     public void addExtractorFilter(IExtractorFilter extractorFilter) {
+    }
+    
+    public void extractConfiguration(Node node, OutputStream out,
+            boolean autoAck) throws IOException {
+        
     }
 
 }
