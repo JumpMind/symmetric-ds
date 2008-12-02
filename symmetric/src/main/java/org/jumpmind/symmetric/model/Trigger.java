@@ -462,5 +462,76 @@ public class Trigger {
     public void setSyncColumnLevel(boolean syncColumnLevel) {
         this.syncColumnLevel = syncColumnLevel;
     }
+    
+    public long getHashedValue() {
+        long hashedValue = triggerId;
+        if (null != sourceTableName) {
+            hashedValue += sourceTableName.hashCode();
+        }
+
+        if (null != targetTableName ) {
+            hashedValue += targetTableName.hashCode();
+        }
+
+        if (null != sourceGroupId) {
+            hashedValue += sourceGroupId.hashCode();
+        }
+
+        if (null != channelId) {
+            hashedValue += channelId.hashCode();
+        }
+
+        if (null != targetGroupId) {
+            hashedValue += targetGroupId.hashCode();
+        }
+
+        if (null != sourceSchemaName) {
+            hashedValue += sourceSchemaName.hashCode();
+        }
+
+        if (null != sourceCatalogName) {
+            hashedValue += sourceCatalogName.hashCode();
+        }
+
+        if (null != targetSchemaName) {
+            hashedValue += targetSchemaName.hashCode();
+        }
+
+        hashedValue += syncOnUpdate ? 1 : 0;
+        hashedValue += syncOnInsert ? 1 : 0;
+        hashedValue += syncOnDelete ? 1 : 0;
+        hashedValue += syncOnIncomingBatch ? 1 : 0;
+        hashedValue += syncColumnLevel ? 1 : 0;
+
+        if (null != nameForInsertTrigger) {
+            hashedValue += nameForInsertTrigger.hashCode();
+        }
+
+        if (null != nameForUpdateTrigger) {
+            hashedValue += nameForUpdateTrigger.hashCode();
+        }
+
+        if (null != nameForDeleteTrigger) {
+            hashedValue += nameForDeleteTrigger.hashCode();
+        }
+
+        if (null != syncOnUpdateCondition) {
+            hashedValue += syncOnUpdateCondition.hashCode();
+        }
+
+        if (null != syncOnInsertCondition) {
+            hashedValue += syncOnInsertCondition.hashCode();
+        }
+
+        if (null != syncOnDeleteCondition)  {
+            hashedValue += syncOnDeleteCondition.hashCode();
+        }
+
+        if (null != excludedColumnNames)  {
+            hashedValue += excludedColumnNames.hashCode();
+        }
+        
+        return hashedValue;
+    }
 
 }

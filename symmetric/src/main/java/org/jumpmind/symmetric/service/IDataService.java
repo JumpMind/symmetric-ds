@@ -45,6 +45,8 @@ public interface IDataService {
     public void insertPurgeEvent(Node targetNode, Trigger trigger);
 
     public void insertSqlEvent(Node targetNode, Trigger trigger, String sql);
+    
+    public void insertSqlEvent(final Node targetNode, String sql);
 
     public void insertCreateEvent(Node targetNode, Trigger trigger, String xml);
 

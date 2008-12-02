@@ -5,10 +5,10 @@ insert into sym_node_group values ('symmetric','a group representing symmetric c
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group values ('test-node-group2','another test config');
-insert into sym_node_group_link values ('test-root-group','test-root-group', 'P');
-insert into sym_node_group_link values ('test-root-group','test-root-group2', 'P');
-insert into sym_node_group_link values ('test-node-group','test-root-group', 'W');
-insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
+insert into sym_node_group_link values ('test-root-group','test-root-group', 'P', 0);
+insert into sym_node_group_link values ('test-root-group','test-root-group2', 'P', 1);
+insert into sym_node_group_link values ('test-node-group','test-root-group', 'W', 1);
+insert into sym_node_group_link values ('symmetric','test-root-group', 'P', 0);
 insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','MySQL', '5.0', current_timestamp, null);
 insert into sym_node values ('1', 'test-node-group', '1', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','MySQL', '5.0', current_timestamp, null);
 insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'MySQL', '5.0', current_timestamp, null);

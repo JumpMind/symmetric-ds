@@ -244,6 +244,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
     }
+    
+    public Table getMetaDataFor(Trigger trigger, boolean useCache) {
+        return getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName(),useCache);
+    }
 
     /**
      * This method uses the ddlutil's model reader which uses the jdbc metadata

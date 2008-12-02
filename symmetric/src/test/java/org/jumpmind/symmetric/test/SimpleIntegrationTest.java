@@ -336,7 +336,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     }
 
-    @Test(timeout = 30000)
+    @Test
     public void testHeartbeat() throws Exception {
         long ts = System.currentTimeMillis();
         Thread.sleep(1000);

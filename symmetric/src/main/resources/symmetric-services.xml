@@ -71,6 +71,7 @@
                 <value>${sync.table.prefix}_channel</value>
                 <value>${sync.table.prefix}_node_channel_ctl</value>
                 <value>${sync.table.prefix}_trigger</value>
+                <value>${sync.table.prefix}_node_identity</value>
             </list>
         </property>
     </bean>
@@ -90,10 +91,10 @@
         class="org.jumpmind.symmetric.service.impl.DataExtractorService">
         <property name="sql" ref="dataExtractorServiceSql"/>
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="parameterService" ref="parameterService" />
         <property name="dbDialect" ref="dbDialect" />
-        <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="context" ref="extractorContext" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
     </bean>
@@ -168,7 +169,6 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
         <property name="clusterService" ref="clusterService" />
-        <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="configurationService" ref="configurationService" />
         <property name="dbDialect" ref="dbDialect" />        

@@ -123,7 +123,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
-                configurationService.initTriggerRowsForConfigChannel();
                 removeInactiveTriggers();
                 updateOrCreateTriggers();
             } finally {
@@ -178,10 +177,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
                         forceRebuildOfTriggers = true;
 
-                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())) {
+                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime()) || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
-                    }
+                    } 
 
                     // TODO should probably check to see if the time stamp on
                     // the symmetric-dialects.xml is newer than the

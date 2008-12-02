@@ -108,6 +108,11 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, history);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
+    
+    public void insertSqlEvent(final Node targetNode, String sql) {
+        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null);
+        insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
+    }    
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
@@ -125,7 +130,7 @@ public class DataService extends AbstractService implements IDataService {
                         ps.setString(3, data.getRowData());
                         ps.setString(4, data.getPkData());
                         ps.setString(5, data.getOldData());
-                        ps.setLong(6, data.getAudit().getTriggerHistoryId());
+                        ps.setLong(6, data.getAudit() != null ? data.getAudit().getTriggerHistoryId() : -1);
                         return null;
                     }
                 });
@@ -283,12 +288,13 @@ public class DataService extends AbstractService implements IDataService {
      * @param node
      */
     public void insertHeartbeatEvent(Node node) {
-        Data data = createData(tablePrefix + "_node", " t.node_id = '" + node.getNodeId() + "'");
-        if (data != null && data.getAudit() != null) {
-            insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
-        } else {
-            logger
-                    .info("Not generating data/data events for node because a trigger is not created for that table yet.");
+        StringBuilder sql = new StringBuilder(getSql("updateNodeHeartbeatSql"));
+        sql.append("'");
+        sql.append(node.getNodeId());
+        sql.append("'");
+        List<Node> targets = nodeService.findNodesToPushTo();
+        for (Node targetNode : targets) {
+            insertSqlEvent(targetNode, sql.toString());
         }
     }
 

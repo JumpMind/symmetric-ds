@@ -84,6 +84,8 @@ public interface IDbDialect {
     public BinaryEncoding getBinaryEncoding();
 
     public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
+    
+    public Table getMetaDataFor(Trigger trigger, boolean useCache);
 
     public String getTransactionTriggerExpression(Trigger trigger);
 

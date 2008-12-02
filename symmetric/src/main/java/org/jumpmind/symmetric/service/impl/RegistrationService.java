@@ -25,19 +25,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.sql.Types;
-import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -45,9 +40,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 
 // TODO: NodeService already does all this DML. Should use NodeService or move
@@ -59,8 +52,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodeService nodeService;
 
     private IDataExtractorService dataExtractorService;
-
-    private IAcknowledgeService acknowledgeService;
 
     private IConfigurationService configurationService;
 
@@ -168,30 +159,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * Synchronize node configuration.
      */
+    @Deprecated
     protected boolean writeConfiguration(Node node, OutputStream out) throws IOException {
-        boolean written = false;
-        IOutgoingTransport transport = new InternalOutgoingTransport(out);
-        List<String> tableNames = configurationService.getRootConfigChannelTableNames();
-        if (tableNames != null && tableNames.size() > 0) {
-            for (String tableName : tableNames) {
-                Trigger trigger = configurationService.getTriggerForTarget(tableName,
-                        parameterService.getNodeGroupId(), node.getNodeGroupId(), Constants.CHANNEL_CONFIG);
-                if (trigger != null) {
-                    OutgoingBatch batch = dataExtractorService.extractInitialLoadFor(node, trigger, transport);
-                    // acknowledge right away, because the acknowledgment is not
-                    // build into the registration
-                    // protocol.
-                    acknowledgeService.ack(batch.getBatchInfo());
-                }
-            }
-            acknowledgeService.ack(dataExtractorService.extractNodeIdentityFor(node, transport).getBatchInfo());
-            written = true;
-        } else {
-            logger
-                    .error("There were no configuration tables to return to the node.  There is a good chance that the system is configured incorrectly.");
-        }
-        transport.close();
-        return written;
+        dataExtractorService.extractConfiguration(node, out, true);
+        return true;
     }
 
     /**
@@ -210,7 +181,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
                 jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
-            }
+            } 
+        } else {
+            logger.warn("There was no row with a node id of " + nodeId + " to 'reopen' registration for.");
         }
     }
 
@@ -227,6 +200,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId });
         jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
+        logger.info("Just opened registration for external id of " + externalId + " and a node group of " + nodeGroup);
     }
 
     public void setNodeService(INodeService nodeService) {
@@ -239,10 +213,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
-    }
-
-    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
-        this.acknowledgeService = acknowledgeService;
     }
 
     public void setClusterService(IClusterService clusterService) {

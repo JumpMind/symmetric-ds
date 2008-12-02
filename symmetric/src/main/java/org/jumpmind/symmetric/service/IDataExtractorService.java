@@ -21,6 +21,9 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
@@ -30,7 +33,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
 
-    public OutgoingBatch extractNodeIdentityFor(Node node, IOutgoingTransport transport);
+    public void extractConfiguration(Node node, OutputStream out, boolean autoAck) throws IOException;
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 

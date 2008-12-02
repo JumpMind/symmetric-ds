@@ -25,11 +25,14 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.csv.CsvConstants;
 
 public class Util {
 
     static final Log logger = LogFactory.getLog(Util.class);
-
+    
+    public static final String DELIMITER = ", ";
+    
     public static void write(BufferedWriter writer, String... data) throws IOException {
         StringBuilder buffer = new StringBuilder();
         for (String string : data) {
@@ -40,5 +43,10 @@ public class Util {
         if (logger.isDebugEnabled()) {
             logger.debug("writing: " + buffer);
         }
+    }
+    
+    public static void writeSql(String sql, BufferedWriter writer) throws IOException {
+        Util.write(writer, CsvConstants.SQL, DELIMITER, sql);
+        writer.newLine();
     }
 }

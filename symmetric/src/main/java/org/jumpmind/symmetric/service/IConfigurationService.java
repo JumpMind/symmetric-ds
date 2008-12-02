@@ -42,8 +42,6 @@ public interface IConfigurationService {
 
     public List<String> getRootConfigChannelTableNames();
 
-    public void initTriggerRowsForConfigChannel();
-
     public void saveChannel(Channel channel);
 
     public void deleteChannel(Channel channel);
@@ -83,5 +81,8 @@ public interface IConfigurationService {
     public void insert(Trigger trigger);
 
     public boolean isRegistrationServer();
+    
+    public List<Trigger> getConfigurationTriggers(String sourceGroupId,
+            String targetGroupId);
 
 }

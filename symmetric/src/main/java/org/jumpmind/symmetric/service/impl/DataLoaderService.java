@@ -341,7 +341,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * @param out
      * @throws IOException
      */
-    @SuppressWarnings("unchecked")
     public void loadData(InputStream in, OutputStream out) throws IOException {
         List<IncomingBatchHistory> list = loadDataAndReturnBatches(new InternalIncomingTransport(in));
         transportManager.writeAcknowledgement(out, list);
