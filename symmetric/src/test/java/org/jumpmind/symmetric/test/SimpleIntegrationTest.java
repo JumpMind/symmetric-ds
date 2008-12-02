@@ -92,7 +92,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String updateSyncColumnLevelSql = "update test_sync_column_level set $(column) = ? where id = ?"; 
 
-    static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?"; 
+    static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?";
+    
+    static final String isRegistrationOpenSql = "select registration_enabled from sym_node_security where node_id=?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
@@ -142,7 +144,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(rootJdbcTemplate
                 .queryForInt("select count(*) from sym_node_security where initial_load_enabled=1"), 0,
                 "Initial load was not successful accordign to the root");
-    }
+    }        
 
     private void insertIntoTestTriggerTable(IDbDialect dialect, Object[] values) {
         Table testTriggerTable = dialect.getMetaDataFor(null, null, "test_triggers_table", true);
@@ -202,6 +204,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "select count(*) from test_triggers_table where string_one_value=?", new Object[] { NEW_VALUE });
         assertEquals(syncCount, 3, syncCount + " of the rows were updated");
     }
+    
+    @Test(timeout = 30000)
+    public void reopenRegistration() {
+        getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        getClientEngine().pull();
+        Assert.assertEquals(0, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationOpenSql, new Object[] {TestConstants.TEST_CLIENT_EXTERNAL_ID}, new int[] {Types.INTEGER}));        
+    }
 
     private void assertEquals(Object actual, Object expected, String failureMessage) {
         Assert.assertEquals(failureMessage, expected, actual);
@@ -254,8 +263,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // TODO: make sure event did not fire
     }
 
-    @Test
-    // (timeout = 30000)
+    @Test (timeout = 30000)
     public void oneColumnTableWithPrimaryKeyUpdate() throws Exception {
         boolean oldValue = turnOnNoKeysInUpdateParameter(true);
         rootJdbcTemplate.update("insert into ONE_COLUMN_TABLE values(1)");
