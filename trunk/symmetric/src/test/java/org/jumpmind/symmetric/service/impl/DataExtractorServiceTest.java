@@ -24,9 +24,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -37,6 +39,7 @@ import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.mock.MockOutgoingTransport;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
@@ -75,13 +78,22 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
     public void testInitialLoadExtract() throws Exception {
         ((IBootstrapService) find(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
-        dataExtractorService.extractInitialLoadFor(node, configurationService.getTriggerFor(TestConstants.TEST_PREFIX
-                + "node_group", TestConstants.TEST_CONTINUOUS_NODE_GROUP), mockTransport);
+        JdbcTemplate template = getJdbcTemplate();
+        template.update("delete from " + DbTriggerTest.TEST_TRIGGERS_TABLE);
+        Trigger trigger = configurationService.getTriggerFor(DbTriggerTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        dataExtractorService.extractInitialLoadFor(node, trigger, mockTransport);
         String loadResults = mockTransport.toString();
-        assertEquals(9, countLines(loadResults), "Unexpected number of lines in the csv result: " + loadResults);
-        assertTrue(loadResults.contains("insert, \"test-root-group\",\"a test config\""),
-                "Did not find expected insert for CORP");
+        assertEquals(countLines(loadResults), 4, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
+        
+        DbTriggerTest.insert(DbTriggerTest.INSERT1_VALUES, template, getDbDialect());
+        DbTriggerTest.insert(DbTriggerTest.INSERT2_VALUES, template, getDbDialect());
+        
+        dataExtractorService.extractInitialLoadFor(node, trigger, mockTransport);
+        loadResults = mockTransport.toString();
+        assertEquals(countLines(loadResults), 13, "Unexpected number of lines in the csv result: " + loadResults);
+        
+        
     }
 
     @Test
