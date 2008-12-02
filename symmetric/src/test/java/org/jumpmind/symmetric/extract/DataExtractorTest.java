@@ -263,8 +263,8 @@ public class DataExtractorTest extends AbstractDatabaseTest {
     }
 
     private TriggerHistory makeTableSyncAuditId(final String pk, final String col) {
-        String sql = "insert into sym_trigger_hist (trigger_hist_id, source_table_name, source_schema_name, trigger_id, column_names, pk_column_names,name_for_update_trigger,name_for_delete_trigger, name_for_insert_trigger,table_hash,last_trigger_build_reason,create_time) values (null, '"
-                + TABLE_NAME + "','symmetric',1,'" + col + "' , '" + pk + "','a','b','c',1,'T',current_timestamp)";
+        String sql = "insert into sym_trigger_hist (trigger_hist_id, source_table_name, source_schema_name, trigger_id, column_names, pk_column_names,name_for_update_trigger,name_for_delete_trigger, name_for_insert_trigger,table_hash,trigger_row_hash,last_trigger_build_reason,create_time) values (null, '"
+                + TABLE_NAME + "','symmetric',1,'" + col + "' , '" + pk + "','a','b','c',1,1,'T',current_timestamp)";
         long key = dbDialect.insertWithGeneratedKey(sql, SequenceIdentifier.TRIGGER_HIST);
         TriggerHistory audit = new TriggerHistory(TABLE_NAME, pk, col);
         audit.setTriggerHistoryId((int) key);
