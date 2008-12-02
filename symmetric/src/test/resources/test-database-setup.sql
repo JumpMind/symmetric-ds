@@ -16,9 +16,9 @@ insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null,
 insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'MySql', '4', current_timestamp, null);
 insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null);
 insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null);
-insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'});
-insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null);
-insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'});
+insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, 0);
+insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null, 0);
+insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, 0);
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
