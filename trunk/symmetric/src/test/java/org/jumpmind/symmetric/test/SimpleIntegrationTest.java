@@ -209,7 +209,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void reopenRegistration() {
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().pull();
-        Assert.assertEquals(1, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationClosedSql, new Object[] {TestConstants.TEST_CLIENT_EXTERNAL_ID}, new int[] {Types.INTEGER}));        
+        Assert.assertEquals(1, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationClosedSql, new Object[] {TestConstants.TEST_CLIENT_EXTERNAL_ID}, new int[] {Types.VARCHAR}));        
     }
 
     private void assertEquals(Object actual, Object expected, String failureMessage) {
