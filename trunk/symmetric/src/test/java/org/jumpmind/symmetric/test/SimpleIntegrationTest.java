@@ -94,7 +94,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?";
     
-    static final String isRegistrationClosedSql = "select count(*) from sym_node_security where registration_enabled='0' and node_id=?";
+    static final String isRegistrationClosedSql = "select count(*) from sym_node_security where registration_enabled=0 and node_id=?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
@@ -209,7 +209,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void reopenRegistration() {
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().pull();
-        Assert.assertEquals(0, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationClosedSql, new Object[] {TestConstants.TEST_CLIENT_EXTERNAL_ID}, new int[] {Types.INTEGER}));        
+        Assert.assertEquals(1, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationClosedSql, new Object[] {TestConstants.TEST_CLIENT_EXTERNAL_ID}, new int[] {Types.INTEGER}));        
     }
 
     private void assertEquals(Object actual, Object expected, String failureMessage) {
