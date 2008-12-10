@@ -59,8 +59,7 @@
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-						<!-- <![CDATA[fn_sym_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>-->
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || cast($(tableAlias)."$(columnName)" as varchar(32672)) || '"' end ||','||]]>
+                        <![CDATA[fn_sym_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
@@ -96,7 +95,7 @@
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled != c.node_id)
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
@@ -113,14 +112,14 @@
                                 BEGIN ATOMIC
                                     IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
                                         INSERT into $(defaultSchema)$(prefixName)_data 
-                                            (table_name, event_type, trigger_hist_id,  create_time)
+                                            (table_name, event_type, trigger_hist_id, create_time)
                                         VALUES('$(targetTableName)', 'U', $(triggerHistoryId),                                            
                                             CURRENT_TIMESTAMP);
                                         INSERT into $(defaultSchema)$(prefixName)_data_event
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
@@ -140,11 +139,12 @@
                                             (table_name, event_type, trigger_hist_id, pk_data, create_time)
                                         VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),
                                             $(oldKeys),
-                                            CURRENT_TIMESTAMP);                                        INSERT into $(defaultSchema)$(prefixName)_data_event
+                                            CURRENT_TIMESTAMP);
+                                        INSERT into $(defaultSchema)$(prefixName)_data_event
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
@@ -153,7 +153,7 @@
 						</entry>
 						<entry key="initialLoadSqlTemplate">
 							<value>
-								<![CDATA[select $(columns) from $(schemaName)$(tableName) t  where $(whereClause)]]>
+								<![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
 							</value>
 						</entry>
 					</map>
