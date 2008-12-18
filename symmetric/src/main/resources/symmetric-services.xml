@@ -221,6 +221,12 @@
                 <entry key="C">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
                 </entry>
+                <entry key="X">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamConfigDataCommand">
+                        <property name="dataExtractorService" ref="dataExtractorService" />
+                        <property name="nodeService" ref="nodeService" />
+                    </bean>
+                </entry>                
             </map>
         </property>
     </bean>

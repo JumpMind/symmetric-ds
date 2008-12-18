@@ -22,6 +22,7 @@
  */
 package org.jumpmind.symmetric.service.mock;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -35,6 +36,9 @@ import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class MockDataExtractorService implements IDataExtractorService {
+    
+    public void extractConfiguration(Node node, BufferedWriter out, boolean autoAck) throws IOException {
+    }
 
     public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
         return false;
@@ -67,10 +71,9 @@ public class MockDataExtractorService implements IDataExtractorService {
 
     public void addExtractorFilter(IExtractorFilter extractorFilter) {
     }
-    
-    public void extractConfiguration(Node node, OutputStream out,
-            boolean autoAck) throws IOException {
-        
+
+    public void extractConfiguration(Node node, OutputStream out, boolean autoAck) throws IOException {
+
     }
 
 }
