@@ -24,12 +24,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.TransportUtils;
 
 public class InternalOutgoingWithResponseTransport implements IOutgoingWithResponseTransport {
 
@@ -39,9 +38,9 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
 
     boolean open = true;
 
-    InternalOutgoingWithResponseTransport(OutputStream pushOs, InputStream respIs) {
-        writer = new BufferedWriter(new OutputStreamWriter(pushOs));
-        reader = new BufferedReader(new InputStreamReader(respIs));
+    InternalOutgoingWithResponseTransport(OutputStream pushOs, InputStream respIs) throws IOException {
+        writer = TransportUtils.toWriter(pushOs);
+        reader = TransportUtils.toReader(respIs);
     }
 
     public BufferedReader readResponse() throws IOException {

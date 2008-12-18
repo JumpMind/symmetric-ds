@@ -29,14 +29,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.web.WebConstants;
 
 abstract public class AbstractTransportManager {
-
-    protected static final String ENCODING = "UTF-8";
 
     protected String getAcknowledgementData(String nodeId, List<IncomingBatchHistory> list) throws IOException {
         StringBuilder builder = new StringBuilder();
@@ -80,7 +79,7 @@ abstract public class AbstractTransportManager {
         if (value == null) {
             value = "";
         }
-        builder.append(name).append("=").append(URLEncoder.encode(value.toString(), ENCODING));
+        builder.append(name).append("=").append(URLEncoder.encode(value.toString(), Constants.ENCODING));
     }
 
     public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
@@ -129,7 +128,7 @@ abstract public class AbstractTransportManager {
         for (String param : tokens) {
             String[] nameValuePair = param.split("=");
             if (nameValuePair.length == 2) {
-                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], ENCODING));
+                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], Constants.ENCODING));
             }
         }
         return parameters;

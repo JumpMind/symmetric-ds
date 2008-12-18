@@ -147,7 +147,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
         pw.println(getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
         pw.close();
     }

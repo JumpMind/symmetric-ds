@@ -32,6 +32,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -115,7 +116,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (useCompression) {
             out = new GZIPOutputStream(out);
         }
-        OutputStreamWriter wout = new OutputStreamWriter(out, "UTF-8");
+        OutputStreamWriter wout = new OutputStreamWriter(out, Constants.ENCODING);
         writer = new BufferedWriter(wout);
         return writer;
     }

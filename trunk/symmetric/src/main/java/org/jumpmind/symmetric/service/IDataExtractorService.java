@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -34,6 +35,8 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 public interface IDataExtractorService {
 
     public void extractConfiguration(Node node, OutputStream out, boolean autoAck) throws IOException;
+
+    public void extractConfiguration(Node node, BufferedWriter out, boolean autoAck) throws IOException;
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport);
 

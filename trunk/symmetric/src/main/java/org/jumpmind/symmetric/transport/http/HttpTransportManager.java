@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.transport.http;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -46,6 +45,7 @@ import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 /**
@@ -96,7 +96,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
         pw.println(data);
         pw.close();
     }
@@ -143,7 +143,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         if (!StringUtils.isBlank(type) && type.equals("gzip")) {
             in = new GZIPInputStream(in);
         }
-        return new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        return TransportUtils.toReader(in);
     }
 
     /**

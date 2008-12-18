@@ -21,13 +21,22 @@
 package org.jumpmind.symmetric.transport;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+
+import org.jumpmind.symmetric.common.Constants;
 
 public class TransportUtils {
 
     public static BufferedReader toReader(InputStream is) throws IOException {
-        return new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        return new BufferedReader(new InputStreamReader(is, Constants.ENCODING));
+    }
+    
+    public static BufferedWriter toWriter(OutputStream os) throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(os, Constants.ENCODING));
     }
 }
