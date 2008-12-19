@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
@@ -48,7 +47,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
             trigger.setInitialLoadSelect(data.getRowData());
         }
         Node node = nodeService.findNode(context.getBatch().getNodeId());
-        dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, new InternalOutgoingTransport(out),
+        dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out,
                 context);
         out.flush();
     }

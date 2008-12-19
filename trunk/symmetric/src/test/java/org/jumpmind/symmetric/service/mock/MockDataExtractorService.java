@@ -37,7 +37,10 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class MockDataExtractorService implements IDataExtractorService {
     
-    public void extractConfiguration(Node node, BufferedWriter out, boolean autoAck) throws IOException {
+    public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
+    }
+    
+    public void extractConfigurationStandalone(Node node, BufferedWriter out) throws IOException {
     }
 
     public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
@@ -57,11 +60,11 @@ public class MockDataExtractorService implements IDataExtractorService {
         return false;
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, IOutgoingTransport transport) {
+    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, BufferedWriter writer) {
         return null;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger, IOutgoingTransport transport,
+    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger, BufferedWriter writer,
             DataExtractorContext ctx) {
     }
 
@@ -72,7 +75,7 @@ public class MockDataExtractorService implements IDataExtractorService {
     public void addExtractorFilter(IExtractorFilter extractorFilter) {
     }
 
-    public void extractConfiguration(Node node, OutputStream out, boolean autoAck) throws IOException {
+    public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
 
     }
 

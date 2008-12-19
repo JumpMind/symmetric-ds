@@ -38,10 +38,10 @@ class StreamConfigDataCommand extends AbstractStreamDataCommand {
 
     private INodeService nodeService;
 
-    public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
+    public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
         Node node = nodeService.findNode(context.getBatch().getNodeId());
-        dataExtractorService.extractConfiguration(node, out, false);
-        out.flush();
+        dataExtractorService.extractConfiguration(node, writer, context);
+        writer.flush();
     }
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
