@@ -59,7 +59,13 @@ public enum DataEventType implements ICoded {
     /**
      * An event that indicates that the data payload is a table creation.
      */
-    CREATE("C");
+    CREATE("C"),
+
+    /**
+     * An event that indicates that all SymmetricDS configuration table data
+     * should be streamed to the client.
+     */
+    CONFIG("X");
 
     private String code;
 
@@ -72,18 +78,20 @@ public enum DataEventType implements ICoded {
     }
 
     public static DataEventType getEventType(String s) {
-        if (s.equals("I")) {
-            return DataEventType.INSERT;
-        } else if (s.equals("U")) {
-            return DataEventType.UPDATE;
-        } else if (s.equals("D")) {
-            return DataEventType.DELETE;
-        } else if (s.equals("R")) {
-            return DataEventType.RELOAD;
-        } else if (s.equals("S")) {
-            return DataEventType.SQL;
-        } else if (s.equals("C")) {
-            return DataEventType.CREATE;
+        if (s.equals(INSERT.getCode())) {
+            return INSERT;
+        } else if (s.equals(UPDATE.getCode())) {
+            return UPDATE;
+        } else if (s.equals(DELETE.getCode())) {
+            return DELETE;
+        } else if (s.equals(RELOAD.getCode())) {
+            return RELOAD;
+        } else if (s.equals(SQL.getCode())) {
+            return SQL;
+        } else if (s.equals(CREATE.getCode())) {
+            return CREATE;
+        } else if (s.equals(CONFIG.getCode())) {
+            return CONFIG;
         }
         return null;
     }
