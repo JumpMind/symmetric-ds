@@ -171,7 +171,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private void updateOrCreateTriggers() {
         
-        //updateOrCreateConfigurationTriggers();
+        updateOrCreateConfigurationTriggers();
 
         List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
                 .getString(ParameterConstants.NODE_GROUP_ID));
