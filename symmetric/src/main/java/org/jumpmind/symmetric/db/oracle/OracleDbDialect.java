@@ -103,7 +103,13 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
 
+    @Override
     public boolean supportsTransactionId() {
+        return true;
+    }
+    
+    @Override
+    public boolean supportsAutoConfigSynchronization() {
         return true;
     }
 
@@ -163,5 +169,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return (String) jdbcTemplate.queryForObject("SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",
                 String.class);
     }
+    
+    
 
 }

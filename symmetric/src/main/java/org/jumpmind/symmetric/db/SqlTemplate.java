@@ -205,7 +205,7 @@ public class SqlTemplate {
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
-        ddl = replace("triggerHistoryId", Integer.toString(history.getTriggerHistoryId()), ddl);
+        ddl = replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(trigger);
         if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
             triggerExpression = trigger.getTxIdExpression();
@@ -232,10 +232,12 @@ public class SqlTemplate {
         ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
-        ddl = replace("tableName", history.getSourceTableName(), ddl);
-        ddl = replace("schemaName", resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history
+        ddl = replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);
+        ddl = replace("schemaName", (history == null ? (resolveSchemaAndCatalogs && trigger.getSourceSchemaName() != null ? trigger
                 .getSourceSchemaName()
-                + "." : "", ddl);
+                + "." : "") : (resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history
+                .getSourceSchemaName()
+                + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
         columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);

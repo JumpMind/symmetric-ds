@@ -102,6 +102,12 @@ public interface IDbDialect {
     public boolean isCharSpaceTrimmed();
 
     public boolean isEmptyStringNulled();
+    
+    /**
+     * Indicate whether triggers will be added to the configuration tables
+     * to force configuration changes down to the client automatically.
+     */
+    public boolean supportsAutoConfigSynchronization();
 
     /**
      * Get the maximum size the name of a trigger can be for the database

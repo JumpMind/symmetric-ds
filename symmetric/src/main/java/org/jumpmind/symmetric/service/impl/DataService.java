@@ -78,7 +78,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         insertReloadEvent(targetNode, trigger, null);
     }
-
+    
     public void insertReloadEvent(final Node targetNode, final Trigger trigger, final String overrideInitialLoadSelect) {
         TriggerHistory history = lookupTriggerHistory(trigger);
         // initial_load_select for table can be overridden by populating the
@@ -87,6 +87,11 @@ public class DataService extends AbstractService implements IDataService {
                 history);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
+    
+    public void insertSendConfigEvent(final Node targetNode) {
+        Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null);
+        insertDataEvent(data, Constants.CHANNEL_CONFIG, targetNode.getNodeId());
+    }    
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());

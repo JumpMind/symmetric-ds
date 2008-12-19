@@ -580,7 +580,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Create the configured trigger. The catalog will be changed to the source
      * schema if the source schema is configured.
      */
-    public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory audit,
+    public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
             final String tablePrefix, final Table table) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
@@ -593,7 +593,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 try {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
                     Statement stmt = con.createStatement();
-                    String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml, trigger, audit,
+                    String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml, trigger, hist,
                             tablePrefix, table, defaultCatalog, defaultSchema);
                     try {
                         logger.debug(triggerSql);
@@ -602,7 +602,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         logger.error("Failed to create trigger: " + triggerSql);
                         throw ex;
                     }
-                    String postTriggerDml = createPostTriggerDDL(dml, trigger, audit, tablePrefix, table);
+                    String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, tablePrefix, table);
                     if (postTriggerDml != null) {
                         try {
                             stmt.executeUpdate(postTriggerDml);
@@ -630,9 +630,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public String createPostTriggerDDL(DataEventType dml, Trigger config, TriggerHistory audit, String tablePrefix,
+    public String createPostTriggerDDL(DataEventType dml, Trigger config, TriggerHistory hist, String tablePrefix,
             Table table) {
-        return sqlTemplate.createPostTriggerDDL(this, dml, config, audit, tablePrefix, table, getDefaultCatalog(),
+        return sqlTemplate.createPostTriggerDDL(this, dml, config, hist, tablePrefix, table, getDefaultCatalog(),
                 getDefaultSchema());
     }
 
@@ -912,6 +912,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public boolean supportsTransactionId() {
+        return false;
+    }
+    
+    public boolean supportsAutoConfigSynchronization() {
         return false;
     }
 
