@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.io.BufferedWriter;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -78,10 +79,11 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
     public void testInitialLoadExtract() throws Exception {
         ((IBootstrapService) find(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
+        BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + DbTriggerTest.TEST_TRIGGERS_TABLE);
         Trigger trigger = configurationService.getTriggerFor(DbTriggerTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        dataExtractorService.extractInitialLoadFor(node, trigger, mockTransport);
+        dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 4, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
@@ -89,7 +91,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         DbTriggerTest.insert(DbTriggerTest.INSERT1_VALUES, template, getDbDialect());
         DbTriggerTest.insert(DbTriggerTest.INSERT2_VALUES, template, getDbDialect());
         
-        dataExtractorService.extractInitialLoadFor(node, trigger, mockTransport);
+        dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 13, "Unexpected number of lines in the csv result: " + loadResults);
         

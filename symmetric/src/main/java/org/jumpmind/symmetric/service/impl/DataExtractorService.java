@@ -58,7 +58,6 @@ import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
-import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -87,63 +86,63 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     /**
      * Extract the SymmetricDS configuration for the passed in {@link Node}.
      */
-    public void extractConfiguration(Node node, OutputStream out, boolean autoAck) throws IOException {
-        this.extractConfiguration(node, TransportUtils.toWriter(out), autoAck);
+    public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
+        this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
 
     /**
      * Extract the SymmetricDS configuration for the passed in {@link Node}.
      */
-    public void extractConfiguration(Node node, BufferedWriter out, boolean autoAck) throws IOException {
+    public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
 
-        IOutgoingTransport transport = new InternalOutgoingTransport(out);
         try {
-            List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(),
-                    node.getNodeGroupId());
             OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
             outgoingBatchService.insertOutgoingBatch(batch);
             OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
 
             final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             final DataExtractorContext ctxCopy = context.copy(dataExtractor);
-            final BufferedWriter writer = transport.open();
 
             dataExtractor.init(writer, ctxCopy);
             dataExtractor.begin(batch, writer);
 
-            for (int i = triggers.size() - 1; i >= 0; i--) {
-                Trigger trigger = triggers.get(i);
-                String sql = dbDialect.createPurgeSqlFor(node, trigger, null);
-                Util.writeSql(sql, writer);
-            }
-
-            for (int i = 0; i < triggers.size(); i++) {
-                Trigger trigger = triggers.get(i);
-                TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
-                hist.setTriggerHistoryId(i);
-                if (!trigger.getSourceTableName().endsWith("_node_identity")) {
-                    writeInitialLoad(node, trigger, hist, transport, null, ctxCopy);
-                } else {
-                    Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
-                            null, hist);
-                    dataExtractor.write(writer, data, ctxCopy);
-                }
-            }
+            extractConfiguration(node, writer, ctxCopy);
 
             dataExtractor.commit(batch, writer);
 
             history.setStatus(OutgoingBatchHistory.Status.SE);
             history.setEndTime(new Date());
             outgoingBatchService.insertOutgoingBatchHistory(history);
-            if (autoAck) {
-                // acknowledge right away, because the acknowledgment is not
-                // build into the registration
-                // protocol.
-                acknowledgeService.ack(batch.getBatchInfo());
-            }
+
+            // acknowledge right away, because the acknowledgment is not
+            // build into the registration protocol.
+            acknowledgeService.ack(batch.getBatchInfo());
 
         } finally {
-            transport.close();
+            writer.flush();
+        }
+    }
+
+    public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
+        List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(), node
+                .getNodeGroupId());
+        for (int i = triggers.size() - 1; i >= 0; i--) {
+            Trigger trigger = triggers.get(i);
+            String sql = dbDialect.createPurgeSqlFor(node, trigger, null);
+            Util.writeSql(sql, writer);
+        }
+
+        for (int i = 0; i < triggers.size(); i++) {
+            Trigger trigger = triggers.get(i);
+            TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
+            hist.setTriggerHistoryId(i);
+            if (!trigger.getSourceTableName().endsWith("_node_identity")) {
+                writeInitialLoad(node, trigger, hist, writer, null, ctx);
+            } else {
+                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
+                        null, hist);
+                ctx.getDataExtractor().write(writer, data, ctx);
+            }
         }
     }
 
@@ -165,27 +164,27 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return (IDataExtractor) beanFactory.getBean(beanName);
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, final Trigger trigger, final IOutgoingTransport transport) {
+    public OutgoingBatch extractInitialLoadFor(Node node, Trigger trigger, BufferedWriter writer) {
 
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
         OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
-        writeInitialLoad(node, trigger, transport, batch, null);
+        writeInitialLoad(node, trigger, writer, batch, null);
         history.setStatus(OutgoingBatchHistory.Status.SE);
         history.setEndTime(new Date());
         outgoingBatchService.insertOutgoingBatchHistory(history);
         return batch;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, final IOutgoingTransport transport,
+    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, BufferedWriter writer,
             DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, transport, null, ctx);
+        writeInitialLoad(node, trigger, writer, null, ctx);
     }
 
-    protected void writeInitialLoad(Node node, final Trigger trigger, final IOutgoingTransport transport,
-            final OutgoingBatch batch, final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, configurationService.getLatestHistoryRecordFor(trigger.getTriggerId()),
-                transport, batch, ctx);
+    protected void writeInitialLoad(Node node, Trigger trigger, BufferedWriter writer, final OutgoingBatch batch,
+            final DataExtractorContext ctx) {
+        writeInitialLoad(node, trigger, configurationService.getLatestHistoryRecordFor(trigger.getTriggerId()), writer,
+                batch, ctx);
     }
 
     /**
@@ -200,7 +199,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * @param ctx
      */
     protected void writeInitialLoad(Node node, final Trigger trigger, final TriggerHistory audit,
-            final IOutgoingTransport transport, final OutgoingBatch batch, final DataExtractorContext ctx) {
+            final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
 
@@ -217,7 +216,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                         rs = st.executeQuery();
-                        final BufferedWriter writer = transport.open();
                         final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
                         if (batch != null) {
                             dataExtractor.init(writer, ctxCopy);

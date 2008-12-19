@@ -161,7 +161,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     @Deprecated
     protected boolean writeConfiguration(Node node, OutputStream out) throws IOException {
-        dataExtractorService.extractConfiguration(node, out, true);
+        dataExtractorService.extractConfigurationStandalone(node, out);
         return true;
     }
 
