@@ -78,7 +78,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     public void setupDatabase() {
         setupDatabase(false);
     }
-    
+
     public void setupDatabase(boolean force) {
         if (!initialized || force) {
             if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
@@ -138,7 +138,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
-            if (history != null) {                
+            if (history != null) {
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
                         .getNameForInsertTrigger(), trigger.getSourceTableName());
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
@@ -152,7 +152,27 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
+    private void updateOrCreateConfigurationTriggers() {
+        if (dbDialect.supportsAutoConfigSynchronization()) {
+            Node me = nodeService.findIdentity();
+            List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(),
+                    me.getNodeGroupId());
+            for (Trigger trigger : triggers) {
+                String triggerName = trigger.getTriggerName(DataEventType.CONFIG, null, dbDialect
+                        .getMaxTriggerNameLength());
+                if (!dbDialect.doesTriggerExist(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(), trigger
+                        .getSourceTableName(), triggerName)) {
+                    dbDialect.initTrigger(DataEventType.CONFIG, trigger, null, tablePrefix, dbDialect.getMetaDataFor(
+                            trigger, true));
+                }
+            }
+        }
+    }
+
     private void updateOrCreateTriggers() {
+        
+        //updateOrCreateConfigurationTriggers();
+
         List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
                 .getString(ParameterConstants.NODE_GROUP_ID));
 
@@ -177,14 +197,15 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
                         forceRebuildOfTriggers = true;
 
-                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime()) || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
+                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())
+                            || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
-                    } 
+                    }
 
                     // TODO should probably check to see if the time stamp on
                     // the symmetric-dialects.xml is newer than the
-                    // create time on the audit record.
+                    // create time on the hist record.
 
                     TriggerHistory newestHistory = rebuildTriggerIfNecessary(forceRebuildOfTriggers, trigger,
                             DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(
@@ -228,7 +249,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 logger
                         .info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");
                 // TODO
-                //nodeService.insertIdentity();
+                // nodeService.insertIdentity();
             }
         } else {
             throw new IllegalStateException(
@@ -299,7 +320,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private TriggerHistory rebuildTriggerIfNecessary(boolean forceRebuild, Trigger trigger, DataEventType dmlType,
-            TriggerReBuildReason reason, TriggerHistory oldAudit, TriggerHistory audit, boolean create, Table table) {
+            TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist, boolean create, Table table) {
 
         boolean triggerExists = false;
 
@@ -312,11 +333,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         String oldTriggerName = null;
         String oldSourceSchema = null;
         String oldCatalogName = null;
-        if (oldAudit != null) {
-            oldTriggerName = oldAudit.getTriggerNameForDmlType(dmlType);
-            oldSourceSchema = oldAudit.getSourceSchemaName();
-            oldCatalogName = oldAudit.getSourceCatalogName();
-            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldAudit.getSourceTableName(),
+        if (oldhist != null) {
+            oldTriggerName = oldhist.getTriggerNameForDmlType(dmlType);
+            oldSourceSchema = oldhist.getSourceSchemaName();
+            oldCatalogName = oldhist.getSourceCatalogName();
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldhist.getSourceTableName(),
                     oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as
@@ -340,16 +361,16 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
 
-        if (audit == null && (oldAudit == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
+        if (hist == null && (oldhist == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
             configurationService.insert(newTriggerHist);
-            audit = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            hist = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
 
         if (!triggerExists && create) {
-            dbDialect.initTrigger(dmlType, trigger, audit, tablePrefix, table);
+            dbDialect.initTrigger(dmlType, trigger, hist, tablePrefix, table);
         }
 
-        return audit;
+        return hist;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

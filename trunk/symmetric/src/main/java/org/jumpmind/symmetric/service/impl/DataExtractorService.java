@@ -84,14 +84,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private List<IExtractorFilter> extractorFilters;
 
     /**
-     * Extract the SymmetricDS configuration for the passed in {@link Node}.
+     * @see DataExtractorService#extractConfigurationStandalone(Node, BufferedWriter)
      */
     public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
 
     /**
-     * Extract the SymmetricDS configuration for the passed in {@link Node}.
+     * Extract the SymmetricDS configuration for the passed in {@link Node}.  Note that this method will
+     * insert an already acknowledged batch to indicate that the configuration was sent.  If the configuration 
+     * fails to load for some reason on the client the batch status will NOT reflect the failure.
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
 
@@ -115,7 +117,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             outgoingBatchService.insertOutgoingBatchHistory(history);
 
             // acknowledge right away, because the acknowledgment is not
-            // build into the registration protocol.
+            // built into the registration protocol.
             acknowledgeService.ack(batch.getBatchInfo());
 
         } finally {

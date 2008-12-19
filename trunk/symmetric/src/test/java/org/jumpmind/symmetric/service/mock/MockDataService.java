@@ -130,5 +130,8 @@ public class MockDataService implements IDataService {
     public String sendSQL(String nodeId, String tableName, String sql) {
         return null;
     }
+    
+    public void insertSendConfigEvent(Node targetNode) {
+    }
 
 }

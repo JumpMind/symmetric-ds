@@ -12,10 +12,14 @@
             <action dev="chenson42" type="add">
                 Send all of SymmetricDS configuration in one batch.  Purge configuration tables before inserts so we do not rely on fallback for
                 configuration updates.  Also removed the requirement for SymmetricDS configuration table rows in sym_trigger.
-            </action>                         
+            </action>  
             <action dev="erilong" type="fix" issue="aid=2450121&amp;atid=997724">
                 Prevent registration before the node itself is registered
-            </action>                
+            </action>              
+            <action dev="chenson42" type="add">
+                Added a hash of the trigger table row values into the trigger_hist table so if the trigger table values change triggers will be 
+                regenerated.
+            </action>                                      
         </release>
         <release version="1.4.3" date="2008-11-2x" description="Patch Release">
             <action dev="chenson42" type="fix">
