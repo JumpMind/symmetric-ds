@@ -79,7 +79,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private BeanFactory beanFactory;
 
-    private DataExtractorContext context;
+    private DataExtractorContext clonableContext;
 
     private List<IExtractorFilter> extractorFilters;
 
@@ -103,7 +103,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
 
             final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
-            final DataExtractorContext ctxCopy = context.copy(dataExtractor);
+            final DataExtractorContext ctxCopy = clonableContext.copy(dataExtractor);
 
             dataExtractor.init(writer, ctxCopy);
             dataExtractor.begin(batch, writer);
@@ -137,13 +137,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = 0; i < triggers.size(); i++) {
             Trigger trigger = triggers.get(i);
             TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
-            hist.setTriggerHistoryId(i);
+            hist.setTriggerHistoryId(Integer.MAX_VALUE-i);
             if (!trigger.getSourceTableName().endsWith("_node_identity")) {
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
                         null, hist);
-                ctx.getDataExtractor().write(writer, data, ctx);
+                ctx.getDataExtractor().write(writer, data, ctx);                
             }
         }
     }
@@ -167,7 +167,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger trigger, BufferedWriter writer) {
-
         OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
         OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
@@ -193,14 +192,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * 
      * @param node
      * @param trigger
-     * @param audit
+     * @param hist
      * @param transport
      * @param batch
      *                If null, then assume this 'initial load' is part of
      *                another batch.
      * @param ctx
      */
-    protected void writeInitialLoad(Node node, final Trigger trigger, final TriggerHistory audit,
+    protected void writeInitialLoad(Node node, final Trigger trigger, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
 
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
@@ -218,14 +217,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 java.sql.ResultSet.CONCUR_READ_ONLY);
                         st.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                         rs = st.executeQuery();
-                        final DataExtractorContext ctxCopy = ctx == null ? context.copy(dataExtractor) : ctx;
+                        final DataExtractorContext ctxCopy = ctx == null ? clonableContext.copy(dataExtractor) : ctx;
                         if (batch != null) {
                             dataExtractor.init(writer, ctxCopy);
                             dataExtractor.begin(batch, writer);
                         }
                         while (rs.next()) {
-                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, audit
-                                    .getSourceTableName(), null, audit), ctxCopy);
+                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
+                                    .getSourceTableName(), null, hist), ctxCopy);
                         }
                         if (batch != null) {
                             dataExtractor.commit(batch, writer);
@@ -367,8 +366,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         String pk = results.getString(5);
         String oldData = results.getString(6);
         Date created = results.getDate(7);
-        TriggerHistory audit = configurationService.getHistoryRecordFor(results.getInt(8));
-        Data data = new Data(dataId, pk, rowData, eventType, tableName, created, audit);
+        TriggerHistory hist = configurationService.getHistoryRecordFor(results.getInt(8));
+        Data data = new Data(dataId, pk, rowData, eventType, tableName, created, hist);
         data.setOldData(oldData);
         return data;
     }
@@ -378,7 +377,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void setContext(DataExtractorContext context) {
-        this.context = context;
+        this.clonableContext = context;
     }
 
     public void setDbDialect(IDbDialect dialect) {
@@ -425,7 +424,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public void init() throws Exception {
             this.writer = transport.open();
-            this.context = DataExtractorService.this.context.copy(dataExtractor);
+            this.context = DataExtractorService.this.clonableContext.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }
 

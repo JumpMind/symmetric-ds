@@ -502,6 +502,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
         getClientEngine().pull();
     }
+    
+    @Test(timeout=30000) 
+    public void cleanupAfterTests () {
+        getClientEngine().pull();
+        getClientEngine().purge();
+        getRootEngine().purge();
+    }
 
     private String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
@@ -514,7 +521,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             return DateUtils.parseDate(dateString, new String[] { "yyyy-MM-dd HH:mm:ss" });
         }
     }
-
+    
     protected void testDeletes() {
     }
 

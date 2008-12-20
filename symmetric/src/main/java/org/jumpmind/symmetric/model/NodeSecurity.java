@@ -34,6 +34,8 @@ public class NodeSecurity {
     private boolean registrationEnabled;
 
     private Date registrationTime;
+    
+    private boolean resendConfig;
 
     private boolean initialLoadEnabled;
 
@@ -85,6 +87,14 @@ public class NodeSecurity {
 
     public void setInitialLoadTime(Date initialLoadTime) {
         this.initialLoadTime = initialLoadTime;
+    }
+
+    public boolean isResendConfig() {
+        return resendConfig;
+    }
+
+    public void setResendConfig(boolean resendConfig) {
+        this.resendConfig = resendConfig;
     }
 
 }

@@ -44,14 +44,14 @@
     <entry key="findNodeSecuritySql">
       <value>
         select node_id, node_password, registration_enabled, registration_time,
-        initial_load_enabled, initial_load_time from ${sync.table.prefix}_node_security where
+        initial_load_enabled, initial_load_time, resend_config from ${sync.table.prefix}_node_security where
         node_id = ?
       </value>
     </entry>
     <entry key="findAllNodeSecuritySql">
       <value>
         select node_id, node_password, registration_enabled, registration_time,
-        initial_load_enabled, initial_load_time from ${sync.table.prefix}_node_security
+        initial_load_enabled, initial_load_time, resend_config from ${sync.table.prefix}_node_security
       </value>
     </entry>
     <entry key="findNodeIdentitySql">
@@ -90,7 +90,7 @@
     <entry key="updateNodeSecuritySql">
       <value>
         update ${sync.table.prefix}_node_security set node_password = ?, registration_enabled = ?,
-        registration_time = ?, initial_load_enabled = ?, initial_load_time = ? where node_id = ?
+        registration_time = ?, initial_load_enabled = ?, initial_load_time = ?, resend_config = ? where node_id = ?
       </value>
     </entry>
     <entry key="insertNodeSecuritySql">

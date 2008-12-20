@@ -131,7 +131,7 @@ public class MockDataService implements IDataService {
         return null;
     }
     
-    public void insertSendConfigEvent(Node targetNode) {
+    public void insertResendConfigEvent(Node targetNode) {
     }
 
 }

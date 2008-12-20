@@ -203,11 +203,11 @@ public class NodeService extends AbstractService implements INodeService {
         flushNodeAuthorizedCache();
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getNodeId() },
+                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.isResendConfig() ? 1 : 0, security.getNodeId() },
                 new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP,
-                        Types.VARCHAR, }) == 1;
+                        Types.VARCHAR, Types.INTEGER }) == 1;
     }
-
+    
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
         NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
         if (nodeSecurity != null) {
@@ -273,6 +273,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
             nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
+            nodeSecurity.setResendConfig(rs.getBoolean(7));
             return nodeSecurity;
         }
     }
