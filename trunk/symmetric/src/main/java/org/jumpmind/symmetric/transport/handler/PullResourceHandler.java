@@ -27,6 +27,7 @@ import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -45,18 +46,30 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     private IRegistrationService registrationService;
 
+    private IDbDialect dbDialect;
+
     public void pull(String nodeId, OutputStream outputStream) throws Exception {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
-                getRegistrationService().registerNode(nodeService.findNode(nodeId), outputStream, false);
+                registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
             } else {
+                if (nodeSecurity.isResendConfig()) {
+                    try {
+                        dbDialect.disableSyncTriggers();
+                        dataService.insertResendConfigEvent(nodeService.findNode(nodeId));
+                        nodeSecurity.setResendConfig(false);
+                        nodeService.updateNodeSecurity(nodeSecurity);
+                    } finally {
+                        dbDialect.enableSyncTriggers();
+                    }
+                }
                 if (nodeSecurity.isInitialLoadEnabled()) {
-                    getDataService().insertReloadEvent(nodeService.findNode(nodeId));
+                    dataService.insertReloadEvent(nodeService.findNode(nodeId));
                 }
                 IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream);
-                getDataExtractorService().extract(nodeService.findNode(nodeId), outgoingTransport);
+                dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);
                 outgoingTransport.close();
             }
         } else {
@@ -74,27 +87,19 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
         this.nodeService = nodeService;
     }
 
-    private IRegistrationService getRegistrationService() {
-        return registrationService;
-    }
-
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
-    }
-
-    private IDataService getDataService() {
-        return dataService;
     }
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
 
-    private IDataExtractorService getDataExtractorService() {
-        return dataExtractorService;
-    }
-
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
+    }
+
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
     }
 }

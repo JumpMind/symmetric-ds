@@ -74,12 +74,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         try {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { Constants.CHANNEL_CONFIG, 0, 100, 100, 1 });
         } catch (DataIntegrityViolationException ex) {
-            logger.debug("Channel " + Constants.CHANNEL_CONFIG + " already created.");
+            logger.info("Channel " + Constants.CHANNEL_CONFIG + " already created.");
         }
         try {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { Constants.CHANNEL_RELOAD, 1, 1, 10, 1 });
         } catch (DataIntegrityViolationException ex) {
-            logger.debug("Channel " + Constants.CHANNEL_RELOAD + " already created.");
+            logger.info("Channel " + Constants.CHANNEL_RELOAD + " already created.");
         }
     }
 
@@ -289,7 +289,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public TriggerHistory getHistoryRecordFor(int auditId) {
         TriggerHistory history = historyMap.get(auditId);
-        if (history == null) {
+        if (history == null && auditId > 0) {
             try {
                 history = (TriggerHistory) jdbcTemplate.queryForObject(getSql("triggerHistSql"),
                         new Object[] { auditId }, new TriggerHistoryMapper());

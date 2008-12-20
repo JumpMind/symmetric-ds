@@ -88,7 +88,7 @@ public class DataService extends AbstractService implements IDataService {
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
     
-    public void insertSendConfigEvent(final Node targetNode) {
+    public void insertResendConfigEvent(final Node targetNode) {
         Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null);
         insertDataEvent(data, Constants.CHANNEL_CONFIG, targetNode.getNodeId());
     }    
