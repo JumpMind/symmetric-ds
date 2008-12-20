@@ -123,8 +123,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
+                updateOrCreateConfigurationTriggers();
                 removeInactiveTriggers();
-                updateOrCreateTriggers();
+                updateOrCreateSymTriggers();
             } finally {
                 clusterService.unlock(LockAction.SYNCTRIGGERS);
                 logger.info("Done synchronizing triggers.");
@@ -152,38 +153,48 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
+    /**
+     * Create triggers on SymmetricDS tables so changes to configuration can be
+     * synchronized.
+     */
     private void updateOrCreateConfigurationTriggers() {
-        if (dbDialect.supportsAutoConfigSynchronization()) {
-            Node me = nodeService.findIdentity();
-            List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(),
-                    me.getNodeGroupId());
-            for (Trigger trigger : triggers) {
-                String triggerName = trigger.getTriggerName(DataEventType.CONFIG, null, dbDialect
-                        .getMaxTriggerNameLength());
-                if (!dbDialect.doesTriggerExist(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(), trigger
-                        .getSourceTableName(), triggerName)) {
-                    dbDialect.initTrigger(DataEventType.CONFIG, trigger, null, tablePrefix, dbDialect.getMetaDataFor(
-                            trigger, true));
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+            if (dbDialect.supportsAutoConfigSynchronization()) {
+                Node me = nodeService.findIdentity();
+                List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService
+                        .getNodeGroupId(), me.getNodeGroupId());
+                for (Trigger trigger : triggers) {
+                    String triggerName = trigger.getTriggerName(DataEventType.CONFIG, null, dbDialect
+                            .getMaxTriggerNameLength());
+                    if (!dbDialect.doesTriggerExist(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(),
+                            trigger.getSourceTableName(), triggerName)) {
+                        dbDialect.initTrigger(DataEventType.CONFIG, trigger, null, tablePrefix, dbDialect
+                                .getMetaDataFor(trigger, true));
+                    }
                 }
             }
+        } else {
+            logger
+                    .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
         }
     }
 
-    private void updateOrCreateTriggers() {
-        
-        updateOrCreateConfigurationTriggers();
+    private void updateOrCreateSymTriggers() {
 
         List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
                 .getString(ParameterConstants.NODE_GROUP_ID));
 
         for (Trigger trigger : triggers) {
 
+            String schemaPlusTriggerName = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "")
+            + trigger.getSourceTableName();
+            
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
                 Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
-
+                
                 if (table != null) {
                     TriggerHistory latestHistoryBeforeRebuild = configurationService.getLatestHistoryRecordFor(trigger
                             .getTriggerId());
@@ -221,10 +232,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
                 } else {
                     logger.error("The configured table does not exist in the datasource that is configured: "
-                            + trigger.getSourceTableName());
+                            + schemaPlusTriggerName);
                 }
             } catch (Exception ex) {
-                logger.error("Failed to synchronize trigger for " + trigger.getSourceTableName(), ex);
+                logger.error("Failed to synchronize trigger for " + schemaPlusTriggerName, ex);
             }
 
         }
