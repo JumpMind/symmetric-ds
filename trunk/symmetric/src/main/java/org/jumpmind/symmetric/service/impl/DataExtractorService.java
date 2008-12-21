@@ -366,7 +366,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         String pk = results.getString(5);
         String oldData = results.getString(6);
         Date created = results.getDate(7);
-        TriggerHistory hist = configurationService.getHistoryRecordFor(results.getInt(8));
+        int histId = results.getInt(8);
+        TriggerHistory hist = configurationService.getHistoryRecordFor(histId);
         Data data = new Data(dataId, pk, rowData, eventType, tableName, created, hist);
         data.setOldData(oldData);
         return data;
