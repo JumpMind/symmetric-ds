@@ -287,13 +287,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return retMap;
     }
 
-    public TriggerHistory getHistoryRecordFor(int auditId) {
-        TriggerHistory history = historyMap.get(auditId);
-        if (history == null && auditId > 0) {
+    public TriggerHistory getHistoryRecordFor(int histId) {
+        TriggerHistory history = historyMap.get(histId);
+        if (history == null && histId >= 0) {
             try {
                 history = (TriggerHistory) jdbcTemplate.queryForObject(getSql("triggerHistSql"),
-                        new Object[] { auditId }, new TriggerHistoryMapper());
-                historyMap.put(auditId, history);
+                        new Object[] { histId }, new TriggerHistoryMapper());
+                historyMap.put(histId, history);
             } catch (EmptyResultDataAccessException ex) {
             }
         }
