@@ -67,17 +67,16 @@
             </roles>
             <timezone>-5</timezone>
         </developer>
-        <developer>
-            <id>andrewbwilcox</id>
+    </developers>
+    <contributors>
+        <contributor>
             <name>Andrew Wilcox</name>
             <email>andrewbwilcox@users.sourceforge.net</email>
             <roles>
                 <role>developer</role>
             </roles>
             <timezone>-5</timezone>
-        </developer>
-    </developers>
-    <contributors>
+        </contributor>    
         <contributor>
             <name>Megha Shetty</name>
             <email>megha_s@users.sourceforge.net</email>
