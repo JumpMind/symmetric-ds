@@ -11,4 +11,10 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
 
+    <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.SyncTriggersRequiredFilter">
+        <property name="bootstrapService" ref="bootstrapService" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
+    </bean>
+
 </beans>
