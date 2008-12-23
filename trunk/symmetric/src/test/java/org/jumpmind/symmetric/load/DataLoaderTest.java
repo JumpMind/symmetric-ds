@@ -76,6 +76,16 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     }
 
     @Test
+    public void testDecimalLocale() throws Exception {
+        String[] values = new String[TEST_COLUMNS.length];
+        values[0] = getNextId();
+        values[10] = "123456,99";
+        String[] expectedValues = (String[]) ArrayUtils.clone(values);
+        massageExpectectedResultsForDialect(expectedValues);
+        testSimple(CsvConstants.INSERT, values, expectedValues);
+    }
+
+    @Test
     public void testUpdateNotExisting() throws Exception {
         String id = getNextId();
         String[] values = { id, "it's /a/  string", "it's  -not-  null", "You're a \"character\"", "Where are you?",
@@ -235,7 +245,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
                 scale = 16;
             }
             DecimalFormat df = new DecimalFormat("0.00####################################");
-            values[10] = df.format(new BigDecimal(values[10]).setScale(scale, RoundingMode.DOWN));
+            values[10] = df.format(new BigDecimal(values[10].replace(',', '.')).setScale(scale, RoundingMode.DOWN));
         }
     }
 
