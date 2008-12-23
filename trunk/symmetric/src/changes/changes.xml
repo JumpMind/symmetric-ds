@@ -20,6 +20,9 @@
                 Added a hash of the trigger table row values into the trigger_hist table so if the trigger table values change triggers will be 
                 regenerated.
             </action>                                      
+            <action dev="erilong" type="fix" issue="aid=2162610&amp;atid=997724">
+                Fix decimal support between two servers with different locales
+            </action>
         </release>
         <release version="1.4.3" date="2008-11-2x" description="Patch Release">
             <action dev="chenson42" type="fix">
@@ -29,9 +32,6 @@
             </action>
             <action dev="erilong" type="fix" issue="aid=2322967&amp;atid=997724">
                 Support ntext binary data type on SQL-Server
-            </action>
-            <action dev="erilong" type="fix" issue="aid=2162610&amp;atid=997724">
-                Fix decimal support between two servers with different locales
             </action>
         </release>        
         <release version="1.4.2" date="2008-11-20" description="Patch Release">
