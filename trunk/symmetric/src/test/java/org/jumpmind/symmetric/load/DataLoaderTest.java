@@ -239,6 +239,9 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         if (values[5] != null && (!(getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
+        if (values[10] != null) {
+            values[10] = values[10].replace(',', '.');
+        }
         if (values[10] != null && !(getDbDialect() instanceof OracleDbDialect)) {
             int scale = 17;
             if (getDbDialect() instanceof MySqlDbDialect || getDbDialect() instanceof PostgreSqlDbDialect) {
