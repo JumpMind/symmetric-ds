@@ -34,10 +34,6 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     protected void initForSpecificDialect() {
     }
 
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        return true;
-    }
-
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",

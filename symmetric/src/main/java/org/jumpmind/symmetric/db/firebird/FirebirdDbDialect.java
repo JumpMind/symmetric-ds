@@ -45,20 +45,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
          */
     }
 
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        /*
-         * long lastModified =
-         * getTransactionIdSqlUrl().openConnection().getLastModified(); String
-         * checkSchema = (getDefaultSchema() != null &&
-         * getDefaultSchema().length() > 0) ? " and routine_schema = '" +
-         * getDefaultSchema() + "'" : ""; return jdbcTemplate.queryForInt(
-         * "select count(*) from information_schema.routines where created >= ?
-         * and routine_name = ?" + checkSchema, new Object[] { new
-         * Date(lastModified), name }) > 0;
-         */
-        return false;
-    }
-
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
