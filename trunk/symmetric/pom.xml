@@ -183,7 +183,7 @@
                             ${user.home}\.symmetricds\lib\ojdbc14.jar
                         </additionalClasspathElement>
                         <additionalClasspathElement>
-                            ${user.home}/.symmetricds/lib/db2jcc.jar
+                            ${user.home}\.symmetricds\lib\db2jcc.jar
                         </additionalClasspathElement>
                     </additionalClasspathElements>
                     <includes>
