@@ -22,14 +22,10 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         try {
             logger.info("Creating environment variables " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
                     + " and " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-            new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), '/').execute();
+            new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
         } catch (Exception ex) {
-            logger.error("Error while initializing Oracle.", ex);
+            logger.error("Error while initializing DB2 dialect.", ex);
         }
-    }
-
-    public boolean isFunctionUpToDate(String name) throws Exception {
-        return true;
     }
 
     private URL getSqlScriptUrl() {
@@ -58,7 +54,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isBlobSyncSupported() {
-        // TODO:
         return false;
     }
 
@@ -88,7 +83,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {
-        return "fn_sym_transaction_id()";
+        return "nullif('','')";
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
@@ -112,7 +107,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean supportsGetGeneratedKeys() {
-        // TODO:
         return false;
     }
 
