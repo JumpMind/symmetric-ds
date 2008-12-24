@@ -23,30 +23,6 @@
 						<![CDATA[select count(*) from syscat.functions where funcname = '$(functionName)']]>
 					</value>
 				</property>
-				<property name="functionTemplatesToInstall">
-					<map>
-						<entry key="FN_SYM_BLOB_TO_STRING">
-							<value>
-								<![CDATA[ 
-                                CREATE FUNCTION fn_sym_blob_to_string(data BLOB) RETURNS varchar(32672)
-                                BEGIN ATOMIC
-                                    return null;
-                                END
-                                ]]>
-							</value>
-						</entry>
-						<entry key="FN_SYM_TRANSACTION_ID">
-							<value>
-								<![CDATA[ 
-                                CREATE FUNCTION fn_sym_transaction_id() RETURNS varchar(100)
-                                BEGIN ATOMIC
-                                    return null;
-                                END
-                                ]]>
-							</value>
-						</entry>
-					</map>
-				</property>
 				<property name="stringColumnTemplate">
 					<value>
 						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
@@ -59,7 +35,7 @@
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-                        <![CDATA[fn_sym_blob_to_string('"$(columnName)"', '$(schemaName)$(tableName)', $(primaryKeyWhereString) )||','||]]>
+                        <![CDATA[ nullif('','')||','||]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
