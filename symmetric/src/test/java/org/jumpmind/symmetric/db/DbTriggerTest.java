@@ -125,11 +125,12 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
 
-        assert count == 1;
+        assertTrue(count == 1);
         String csvString = getNextDataRow(getSymmetricEngine());
-        boolean match = false;
-        match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
-        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH;
+        // DB2 captures decimal differently
+        csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+        boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
     
     @SuppressWarnings("unchecked")
@@ -143,6 +144,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);
+        // DB2 captures decimal differently
+        csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         assertTrue(csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH), "Received " + csvString
                 + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
@@ -197,8 +200,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
 
         String csvString = getNextDataRow(getSymmetricEngine());
+        // DB2 captures decimal differently
+        csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH);
     }
 
     @Test
@@ -207,10 +212,12 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         getDbDialect().disableSyncTriggers();
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect()); 
         getDbDialect().enableSyncTriggers();
-        assert count == 1;
+        assertTrue(count == 1);
         String csvString = getNextDataRow(getSymmetricEngine());
+        // DB2 captures decimal differently
+        csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-        assert match : "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH;
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH);
     }
 
     @Test
