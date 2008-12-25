@@ -78,7 +78,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=0");
+        jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=null");
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "=null");
     }
 
