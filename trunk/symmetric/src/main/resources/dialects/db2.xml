@@ -35,7 +35,7 @@
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-                        <![CDATA[ nullif('','')||','||]]>
+                        <![CDATA[ ''||','||]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">
