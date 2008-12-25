@@ -44,7 +44,6 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -69,19 +68,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
      * grow big so this should be OK.
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
-
-    protected void initSystemChannels() {
-        try {
-            jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { Constants.CHANNEL_CONFIG, 0, 100, 100, 1 });
-        } catch (DataIntegrityViolationException ex) {
-            logger.info("Channel " + Constants.CHANNEL_CONFIG + " already created.");
-        }
-        try {
-            jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { Constants.CHANNEL_RELOAD, 1, 1, 10, 1 });
-        } catch (DataIntegrityViolationException ex) {
-            logger.info("Channel " + Constants.CHANNEL_RELOAD + " already created.");
-        }
-    }
 
     public void inactivateTriggerHistory(TriggerHistory history) {
         jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history.getTriggerHistoryId() });

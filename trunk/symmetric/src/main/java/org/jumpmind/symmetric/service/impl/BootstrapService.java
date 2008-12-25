@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -72,6 +73,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IRegistrationService registrationService;
 
     private String triggerPrefix;
+    
+    private List<Channel> defaultChannels;
 
     private boolean initialized = false;
 
@@ -84,11 +87,18 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
                 logger.info("Initializing SymmetricDS database.");
                 dbDialect.initConfigDb();
+                if (defaultChannels != null) {
+                    logger.info("Setting up "+defaultChannels.size()+" default channels");
+                    for (Channel defaultChannel : defaultChannels) {
+                        configurationService.saveChannel(defaultChannel);
+                    }
+                }
                 parameterService.rereadParameters();
                 logger.info("Done initializing SymmetricDS database.");
             } else {
                 logger.info("SymmetricDS is not configured to auto create the database.");
             }
+            
 
             if (upgradeService.isUpgradeNecessary()) {
                 if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
@@ -418,6 +428,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
+    }
+
+    public void setDefaultChannels(List<Channel> defaultChannels) {
+        this.defaultChannels = defaultChannels;
     }
 
 }
