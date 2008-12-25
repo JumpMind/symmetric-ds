@@ -71,7 +71,7 @@
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and (sync_node_disabled is null or sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
@@ -95,7 +95,7 @@
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and (sync_node_disabled is null or sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
@@ -120,7 +120,7 @@
                                             (node_id, data_id, channel_id, transaction_id)
                                         SELECT node_id, $(defaultSchema)IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
-                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and ($(defaultSchema)sync_node_disabled is null or $(defaultSchema)sync_node_disabled != c.node_id))
+                                            where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1 and (sync_node_disabled is null or sync_node_disabled != c.node_id))
                                             $(nodeSelectWhere);
                                     END IF;
                                 END
