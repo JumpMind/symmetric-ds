@@ -12,19 +12,23 @@ import org.jumpmind.symmetric.model.Trigger;
 
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "db2admin.sync_triggers_disabled";
+    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
-    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "db2admin.sync_node_disabled";
+    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     static final Log logger = LogFactory.getLog(Db2DbDialect.class);
 
     protected void initForSpecificDialect() {
         try {
-            logger.info("Creating environment variables " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                    + " and " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-            new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
-        } catch (Exception ex) {
-            logger.error("Error while initializing DB2 dialect.", ex);
+            enableSyncTriggers();
+        } catch (Exception e) {
+            try {
+                logger.info("Creating environment variables " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+                        + " and " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
+                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
+            } catch (Exception ex) {
+                logger.error("Error while initializing DB2 dialect.", ex);
+            }
         }
     }
 
