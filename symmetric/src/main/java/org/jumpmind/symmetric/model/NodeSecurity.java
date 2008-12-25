@@ -35,11 +35,11 @@ public class NodeSecurity {
 
     private Date registrationTime;
     
-    private boolean resendConfig;
-
     private boolean initialLoadEnabled;
 
     private Date initialLoadTime;
+    
+    private String createdByNodeId;
 
     public String getNodeId() {
         return nodeId;
@@ -89,12 +89,12 @@ public class NodeSecurity {
         this.initialLoadTime = initialLoadTime;
     }
 
-    public boolean isResendConfig() {
-        return resendConfig;
+    public String getCreatedByNodeId() {
+        return createdByNodeId;
     }
 
-    public void setResendConfig(boolean resendConfig) {
-        this.resendConfig = resendConfig;
+    public void setCreatedByNodeId(String createdByNodeId) {
+        this.createdByNodeId = createdByNodeId;
     }
 
 }

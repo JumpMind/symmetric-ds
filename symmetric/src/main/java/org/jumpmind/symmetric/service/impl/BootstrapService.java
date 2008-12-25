@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -73,7 +75,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IRegistrationService registrationService;
 
     private String triggerPrefix;
-    
+
     private List<Channel> defaultChannels;
 
     private boolean initialized = false;
@@ -88,7 +90,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 logger.info("Initializing SymmetricDS database.");
                 dbDialect.initConfigDb();
                 if (defaultChannels != null) {
-                    logger.info("Setting up "+defaultChannels.size()+" default channels");
+                    logger.info("Setting up " + defaultChannels.size() + " default channels");
                     for (Channel defaultChannel : defaultChannels) {
                         configurationService.saveChannel(defaultChannel);
                     }
@@ -98,7 +100,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             } else {
                 logger.info("SymmetricDS is not configured to auto create the database.");
             }
-            
 
             if (upgradeService.isUpgradeNecessary()) {
                 if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
@@ -133,7 +134,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
-                updateOrCreateConfigurationTriggers();
                 removeInactiveTriggers();
                 updateOrCreateSymTriggers();
             } finally {
@@ -167,44 +167,37 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.
      */
-    private void updateOrCreateConfigurationTriggers() {
+    private List<Trigger> getConfigurationTriggers() {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            if (dbDialect.supportsAutoConfigSynchronization()) {
-                Node me = nodeService.findIdentity();
-                List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService
-                        .getNodeGroupId(), me.getNodeGroupId());
-                for (Trigger trigger : triggers) {
-                    String triggerName = trigger.getTriggerName(DataEventType.CONFIG, null, dbDialect
-                            .getMaxTriggerNameLength());
-                    if (!dbDialect.doesTriggerExist(dbDialect.getDefaultCatalog(), dbDialect.getDefaultSchema(),
-                            trigger.getSourceTableName(), triggerName)) {
-                        dbDialect.initTrigger(DataEventType.CONFIG, trigger, null, tablePrefix, dbDialect
-                                .getMetaDataFor(trigger, true));
-                    }
-                }
-            }
+            Node me = nodeService.findIdentity();
+            return configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(),
+                    me.getNodeGroupId(), false);
+
         } else {
             logger
                     .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
+            return Collections.emptyList();
         }
     }
 
     private void updateOrCreateSymTriggers() {
-
-        List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
-                .getString(ParameterConstants.NODE_GROUP_ID));
+        List<Trigger> triggers = new ArrayList<Trigger>();
+        triggers.addAll(getConfigurationTriggers());
+        triggers.addAll(configurationService.getActiveTriggersForSourceNodeGroup(parameterService
+                .getString(ParameterConstants.NODE_GROUP_ID)));
 
         for (Trigger trigger : triggers) {
 
-            String schemaPlusTriggerName = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "")
-            + trigger.getSourceTableName();
-            
+            String schemaPlusTriggerName = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "."
+                    : "")
+                    + trigger.getSourceTableName();
+
             try {
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
                 Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
-                
+
                 if (table != null) {
                     TriggerHistory latestHistoryBeforeRebuild = configurationService.getLatestHistoryRecordFor(trigger
                             .getTriggerId());

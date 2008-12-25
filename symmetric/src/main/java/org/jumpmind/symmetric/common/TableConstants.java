@@ -30,4 +30,10 @@ public class TableConstants {
     public static final String SYM_NODE_GROUP = "node_group";
     public static final String SYM_NODE_GROUP_LINK = "node_group_link";
     
+    
+    public static String[] NODE_TABLES = {SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY};
+    
+    public static String getTableName(String tablePrefix, String tableSuffix) {
+        return String.format("%s_%s", tablePrefix, tableSuffix);
+    }
 }

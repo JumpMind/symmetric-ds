@@ -98,7 +98,6 @@
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"
             primaryKey="true" />
         <column name="data_event_action" type="CHAR" size="1" default="W" required="true" />
-        <column name="resync_config_enabled" type="BOOLEANINT" size="1" default="0" />
     </table>
 
     <table name="node">
@@ -113,6 +112,7 @@
         <column name="database_version" type="VARCHAR" size="50" />
         <column name="heartbeat_time" type="TIMESTAMP" />
         <column name="timezone_offset" type="VARCHAR" size="6" />
+        <column name="created_at_node_id" type="VARCHAR" size="50" required="true" />        
     </table>
     
     <table name="lock">
@@ -136,7 +136,7 @@
         <column name="registration_time" type="TIMESTAMP" required="false" />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="initial_load_time" type="TIMESTAMP" required="false" />
-        <column name="resend_config" type="BOOLEANINT" size="1" default="0" />
+        <column name="created_at_node_id" type="VARCHAR" size="50" required="true" />
     </table>
 
     <table name="node_identity">

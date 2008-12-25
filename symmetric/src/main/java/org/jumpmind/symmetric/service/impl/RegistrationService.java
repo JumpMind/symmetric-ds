@@ -195,10 +195,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * this node group and external ID will be given this information.
      */
     public void openRegistration(String nodeGroup, String externalId) {
+        Node me = nodeService.findIdentity();
         String nodeId = nodeService.generateNodeId(nodeGroup, externalId);
         String password = nodeService.generatePassword();
-        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId });
-        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
+        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId, me.getNodeId() });
+        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password, me.getNodeId() });
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
         logger.info("Just opened registration for external id of " + externalId + " and a node group of " + nodeGroup);
     }

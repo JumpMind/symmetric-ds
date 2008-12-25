@@ -27,7 +27,6 @@ import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -46,8 +45,6 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     private IRegistrationService registrationService;
 
-    private IDbDialect dbDialect;
-
     public void pull(String nodeId, OutputStream outputStream) throws Exception {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
@@ -55,16 +52,6 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
             if (nodeSecurity.isRegistrationEnabled()) {
                 registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
             } else {
-                if (nodeSecurity.isResendConfig()) {
-                    try {
-                        dbDialect.disableSyncTriggers();
-                        dataService.insertResendConfigEvent(nodeService.findNode(nodeId));
-                        nodeSecurity.setResendConfig(false);
-                        nodeService.updateNodeSecurity(nodeSecurity);
-                    } finally {
-                        dbDialect.enableSyncTriggers();
-                    }
-                }
                 if (nodeSecurity.isInitialLoadEnabled()) {
                     dataService.insertReloadEvent(nodeService.findNode(nodeId));
                 }
@@ -99,7 +86,4 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
         this.dataExtractorService = dataExtractorService;
     }
 
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
-    }
 }

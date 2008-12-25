@@ -69,7 +69,7 @@ public class SyncTriggersRequiredFilter implements IDataLoaderFilter, IBatchList
     }
 
     private boolean matchesTable(IDataLoaderContext context, String tableSuffix) {
-        return context.getTableName().equalsIgnoreCase(String.format("%s_%s", tablePrefix, tableSuffix));
+        return context.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, tableSuffix));
     }
 
     public boolean isAutoRegister() {

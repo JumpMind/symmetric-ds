@@ -111,14 +111,14 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword() });
+        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword(), findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
                 node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
                 node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
-                node.getTimezoneOffset(), node.getNodeId() }) == 1;
+                node.getTimezoneOffset(), node.getCreatedByNodeId(), node.getNodeId() }) == 1;
         return updated;
     }
 
@@ -204,8 +204,8 @@ public class NodeService extends AbstractService implements INodeService {
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                 security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
-                security.isResendConfig() ? 1 : 0, security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER,
-                Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR }) == 1;
+                security.getCreatedByNodeId(), security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER,
+                Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
     }
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
@@ -260,6 +260,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDatabaseType(rs.getString(7));
             node.setDatabaseVersion(rs.getString(8));
             node.setSymmetricVersion(rs.getString(9));
+            node.setCreatedByNodeId(rs.getString(10));
             return node;
         }
     }
@@ -273,7 +274,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
             nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
-            nodeSecurity.setResendConfig(rs.getBoolean(7));
+            nodeSecurity.setCreatedByNodeId(rs.getString(7));
             return nodeSecurity;
         }
     }

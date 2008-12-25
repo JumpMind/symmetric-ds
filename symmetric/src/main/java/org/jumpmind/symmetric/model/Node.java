@@ -65,6 +65,8 @@ public class Node {
     private String timezoneOffset;
 
     private Date heartbeatTime = new Date();
+    
+    private String createdByNodeId;
 
     public Node() {
     }
@@ -178,6 +180,14 @@ public class Node {
 
     public void setTimezoneOffset(String timezoneOffset) {
         this.timezoneOffset = timezoneOffset;
+    }
+
+    public String getCreatedByNodeId() {
+        return createdByNodeId;
+    }
+
+    public void setCreatedByNodeId(String createdByNodeId) {
+        this.createdByNodeId = createdByNodeId;
     }
     
     
