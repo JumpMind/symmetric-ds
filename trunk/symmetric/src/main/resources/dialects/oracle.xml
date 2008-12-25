@@ -102,20 +102,6 @@
                 <property name="oldTriggerValue" value=":old"/>
                 <property name="sqlTemplates">
                     <map>
-                        <entry key="configTriggerTemplate">
-                            <value>
-                                <![CDATA[
-                                create or replace trigger $(triggerName) after insert or update or delete on $(schemaName)$(tableName)
-                                begin
-                                  if $(syncOnIncomingBatchCondition) then
-                                    pack_symmetric.setValue(1);
-                                    update $(defaultSchema)$(prefixName)_node_security set resend_config=1 where node_id not in (select node_id from $(defaultSchema)$(prefixName)_node_identity);
-                                    pack_symmetric.setValue(null);
-                                  end if;
-                                end;
-                                ]]>
-                            </value>
-                        </entry>                    
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[

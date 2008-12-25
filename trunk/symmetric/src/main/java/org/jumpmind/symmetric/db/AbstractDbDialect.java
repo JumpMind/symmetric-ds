@@ -915,10 +915,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return false;
     }
     
-    public boolean supportsAutoConfigSynchronization() {
-        return false;
-    }
-
     public boolean isBlobSyncSupported() {
         return true;
     }

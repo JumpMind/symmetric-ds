@@ -83,6 +83,6 @@ public interface IConfigurationService {
     public boolean isRegistrationServer();
     
     public List<Trigger> getConfigurationTriggers(String sourceGroupId,
-            String targetGroupId);
+            String targetGroupId, boolean includeNodes);
 
 }

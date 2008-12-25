@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -62,6 +63,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
+    
+    private String tablePrefix;
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -102,11 +105,18 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public List<Trigger> getConfigurationTriggers(String sourceGroupId,
-            String targetGroupId) {
+            String targetGroupId, boolean includeNodes) {
         int initialLoadOrder = 1;
         List<String> tables = getRootConfigChannelTableNames();
         List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
         for (String tableName : tables) {
+            if (!includeNodes) {
+                for (String nodeTable : TableConstants.NODE_TABLES) {
+                    if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix, nodeTable))) {
+                        
+                    }
+                }
+            }
             String initialLoadSelect = rootConfigChannelInitialLoadSelect
                     .get(tableName);
             Trigger trigger = new Trigger();
@@ -412,6 +422,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
 
 }

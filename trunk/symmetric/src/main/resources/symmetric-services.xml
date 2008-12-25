@@ -74,6 +74,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
         <property name="dbDialect" ref="dbDialect" />
+        <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="sql" ref="configurationServiceSql" />
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect" />
         <property name="rootConfigChannelTableNames">

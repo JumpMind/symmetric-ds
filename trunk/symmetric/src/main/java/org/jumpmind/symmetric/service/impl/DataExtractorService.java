@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
@@ -127,7 +128,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
         List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(), node
-                .getNodeGroupId());
+                .getNodeGroupId(), true);
         for (int i = triggers.size() - 1; i >= 0; i--) {
             Trigger trigger = triggers.get(i);
             String sql = dbDialect.createPurgeSqlFor(node, trigger, null);
@@ -138,7 +139,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             Trigger trigger = triggers.get(i);
             TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
             hist.setTriggerHistoryId(Integer.MAX_VALUE-i);
-            if (!trigger.getSourceTableName().endsWith("_node_identity")) {
+            if (!trigger.getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),

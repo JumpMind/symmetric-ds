@@ -410,13 +410,11 @@
                     alter table ${sync.table.prefix}_trigger add sync_column_level numeric(1)
                 </value>
                 <value>
-                    alter table ${sync.table.prefix}_node_security 
-                    add resend_config numeric(1) default 0
-                </value>  
+                    alter table ${sync.table.prefix}_node_security add created_at_node_id varchar(50) default '00000'
+                </value>
                 <value>
-                    alter table ${sync.table.prefix}_node_group_link 
-                    add resend_config_enabled numeric(1) default 0
-                </value>  
+                    alter table ${sync.table.prefix}_node add created_at_node_id varchar(50) default '00000'
+                </value>                    
                 <value>
                     alter table ${sync.table.prefix}_trigger
                     add trigger_row_hash numeric(22) default 0

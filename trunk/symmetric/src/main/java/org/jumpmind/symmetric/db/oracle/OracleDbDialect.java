@@ -109,11 +109,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    public boolean supportsAutoConfigSynchronization() {
-        return true;
-    }
-
-    @Override
     protected String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
         case OUTGOING_BATCH:
