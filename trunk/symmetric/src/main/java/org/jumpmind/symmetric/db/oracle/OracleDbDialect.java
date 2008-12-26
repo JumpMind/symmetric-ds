@@ -88,10 +88,12 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public void removeTrigger(String schemaName, String triggerName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
+        triggerName = schemaName + triggerName;
+        try {            
+            jdbcTemplate.update("drop trigger " + triggerName);
+            logger.info("Removed trigger " + triggerName);
         } catch (Exception e) {
-            logger.warn("Trigger does not exist");
+            logger.warn("Trigger " + triggerName + " could not be removed.  It does not exist");
         }
     }
 
