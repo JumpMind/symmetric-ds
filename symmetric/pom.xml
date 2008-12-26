@@ -172,6 +172,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>always</forkMode>
+                    <argLine>-Djavax.net.debug=true</argLine>
                     <additionalClasspathElements>
                         <additionalClasspathElement>
                             ${user.home}\.symmetricds\lib\ojdbc6.jar
