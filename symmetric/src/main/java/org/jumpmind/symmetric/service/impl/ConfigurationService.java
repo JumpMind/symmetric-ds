@@ -29,10 +29,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -53,9 +55,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     final static Log logger = LogFactory.getLog(ConfigurationService.class);
 
     private static final long MAX_CHANNEL_CACHE_TIME = 60000;
-    
+
     private static List<NodeChannel> channelCache;
-    
+
     private static long channelCacheTime;
 
     private List<String> rootConfigChannelTableNames;
@@ -63,7 +65,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
-    
+
     private String tablePrefix;
 
     /**
@@ -104,31 +106,33 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getId() });
     }
 
-    public List<Trigger> getConfigurationTriggers(String sourceGroupId,
-            String targetGroupId, boolean includeNodes) {
+    public List<Trigger> getConfigurationTriggers(String sourceGroupId, String targetGroupId, boolean includeNodes) {
         int initialLoadOrder = 1;
         List<String> tables = getRootConfigChannelTableNames();
         List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
-        for (String tableName : tables) {
+        for (int j = 0; j < tables.size(); j++) {
+            String tableName = tables.get(j);
             if (!includeNodes) {
-                for (String nodeTable : TableConstants.NODE_TABLES) {
-                    if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix, nodeTable))) {
-                        
-                    }
+                Set<String> notIncluded = TableConstants.getNodeTablesAsSet(tablePrefix);
+                if (notIncluded.contains(tableName)) {
+                    continue;
                 }
             }
-            String initialLoadSelect = rootConfigChannelInitialLoadSelect
-                    .get(tableName);
+            String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
             Trigger trigger = new Trigger();
-            trigger.setSyncOnDelete(false);
-            trigger.setSyncOnInsert(false);
-            trigger.setSyncOnUpdate(false);
+            trigger.setTriggerId(Integer.MAX_VALUE - j);
+            trigger.setSyncOnDelete(true);
+            trigger.setSyncOnInsert(true);
+            trigger.setSyncOnUpdate(true);
             trigger.setSourceTableName(tableName);
             trigger.setSourceGroupId(sourceGroupId);
             trigger.setTargetGroupId(targetGroupId);
             trigger.setChannelId(Constants.CHANNEL_CONFIG);
             trigger.setInitialLoadOrder(initialLoadOrder++);
             trigger.setInitialLoadSelect(initialLoadSelect);
+            // little trick to force the rebuild of sym triggers every time
+            // there is a new version of symmetricds
+            trigger.setLastModifiedTime(new Date(Version.version().hashCode()));
             triggers.add(trigger);
         }
         return triggers;
@@ -138,7 +142,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist) {
         return getChannels();
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannels() {
         if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
@@ -160,7 +164,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return channelCache;
     }
-    
+
     public void flushChannels() {
         channelCache = null;
     }
@@ -254,9 +258,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 newHistRecord.getColumnNames(), newHistRecord.getPkColumnNames(),
                 newHistRecord.getLastTriggerBuildReason().getCode(), newHistRecord.getNameForDeleteTrigger(),
                 newHistRecord.getNameForInsertTrigger(), newHistRecord.getNameForUpdateTrigger(),
-                newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(), newHistRecord.getTriggerRowHash() }, new int[] { Types.INTEGER,
-                Types.VARCHAR, Types.BIGINT, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
+                newHistRecord.getSourceSchemaName(), newHistRecord.getSourceCatalogName(),
+                newHistRecord.getTriggerRowHash() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.BIGINT,
+                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
     }
 
     public void insert(Trigger trigger) {

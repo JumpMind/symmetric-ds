@@ -19,6 +19,9 @@
  */
 package org.jumpmind.symmetric.common;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class TableConstants {
 
     public static final String SYM_TRIGGER = "trigger";
@@ -29,10 +32,17 @@ public class TableConstants {
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_GROUP = "node_group";
     public static final String SYM_NODE_GROUP_LINK = "node_group_link";
-    
-    
-    public static String[] NODE_TABLES = {SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY};
-    
+
+    public static String[] NODE_TABLES = { SYM_NODE, SYM_NODE_SECURITY, SYM_NODE_IDENTITY };
+
+    public static final Set<String> getNodeTablesAsSet(String tablePrefix) {
+        Set<String> tables = new HashSet<String>();
+        tables.add(getTableName(tablePrefix, SYM_NODE));
+        tables.add(getTableName(tablePrefix, SYM_NODE_SECURITY));
+        tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
+        return tables;
+    }
+
     public static String getTableName(String tablePrefix, String tableSuffix) {
         return String.format("%s_%s", tablePrefix, tableSuffix);
     }

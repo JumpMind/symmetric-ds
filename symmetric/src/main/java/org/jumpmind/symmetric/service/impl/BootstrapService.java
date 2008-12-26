@@ -24,7 +24,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -38,8 +37,10 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
@@ -168,16 +169,23 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * synchronized.
      */
     private List<Trigger> getConfigurationTriggers() {
+        List<Trigger> triggers = new ArrayList<Trigger>();
         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
+
             Node me = nodeService.findIdentity();
-            return configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(),
-                    me.getNodeGroupId(), false);
+            List<NodeGroupLink> links = configurationService.getGroupLinksFor(me.getNodeGroupId());
+            for (NodeGroupLink nodeGroupLink : links) {
+                if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_POLL)) {
+                    triggers.addAll(configurationService.getConfigurationTriggers(nodeGroupLink.getSourceGroupId(),
+                            nodeGroupLink.getTargetGroupId(), false));
+                }
+            }
 
         } else {
             logger
                     .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
-            return Collections.emptyList();
         }
+        return triggers;
     }
 
     private void updateOrCreateSymTriggers() {
@@ -193,6 +201,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     + trigger.getSourceTableName();
 
             try {
+
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
                 Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
