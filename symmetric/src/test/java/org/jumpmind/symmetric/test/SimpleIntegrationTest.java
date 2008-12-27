@@ -38,6 +38,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -408,7 +409,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 30000)
     public void testReservedColumnNames() {
         // MySQL does not allow reserved column names to be used even with special syntax
-        if (getRootDbDialect() instanceof MySqlDbDialect || getClientDbDialect() instanceof MySqlDbDialect) {
+        if (getRootDbDialect() instanceof MySqlDbDialect || getClientDbDialect() instanceof MySqlDbDialect ||
+                getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect) {
             return;
         }
         // alter the table to have column names that are not usually allowed
