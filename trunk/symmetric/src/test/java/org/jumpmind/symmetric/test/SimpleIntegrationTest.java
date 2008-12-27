@@ -335,9 +335,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 30000)
     public void testPurge() throws Exception {
-        Thread.sleep(1000);
         // do an extra pull to make sure we have events cleared out
         getClientEngine().pull();
+        Thread.sleep(1000);        
         getRootEngine().purge();
         getClientEngine().purge();
         assertEquals(rootJdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "data"), 0,
