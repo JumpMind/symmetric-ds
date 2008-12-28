@@ -39,9 +39,11 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * This class implements the functionality needed by (most) java-based symmetric
@@ -56,6 +58,8 @@ public abstract class AbstractEmbeddedTrigger {
     protected IDataService dataService;
 
     protected IConfigurationService configurationService;
+    
+    protected IBootstrapService bootstrapService;
 
     protected INodeService nodeService;
 
@@ -79,12 +83,13 @@ public abstract class AbstractEmbeddedTrigger {
         this.triggerType = triggerType;
         this.tableName = tableName;
         SymmetricEngine engine = SymmetricEngine.findEngineByName(getEngineName().toLowerCase());
-        this.dataService = getDataService(engine);
+        this.dataService = getDataService(engine);        
+        this.bootstrapService = getBootstrapService(engine);
         this.configurationService = getConfigurationService(engine);
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
         this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
-        this.trigger = configurationService.getTriggerById(triggerHistory.getTriggerId());
+        this.trigger = bootstrapService.getCachedTriggers(false).get(triggerHistory.getTriggerId());
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
         initColumnNames(trigger);
     }
@@ -205,19 +210,23 @@ public abstract class AbstractEmbeddedTrigger {
     }
 
     private IDbDialect getDbDialect(SymmetricEngine engine) {
-        return (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+        return AppUtils.find(Constants.DB_DIALECT, engine);
     }
 
     private IConfigurationService getConfigurationService(SymmetricEngine engine) {
-        return (IConfigurationService) engine.getApplicationContext().getBean(Constants.CONFIG_SERVICE);
+        return AppUtils.find(Constants.CONFIG_SERVICE, engine);
     }
 
     private INodeService getNodeService(SymmetricEngine engine) {
-        return (INodeService) engine.getApplicationContext().getBean(Constants.NODE_SERVICE);
+        return AppUtils.find(Constants.NODE_SERVICE, engine);
+    }
+    
+    private IBootstrapService getBootstrapService(SymmetricEngine engine) {
+        return AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
     }
 
     private IDataService getDataService(SymmetricEngine engine) {
-        return (IDataService) engine.getApplicationContext().getBean(Constants.DATA_SERVICE);
+        return AppUtils.find(Constants.DATA_SERVICE, engine);
     }
 
 }
