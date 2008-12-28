@@ -24,8 +24,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -81,10 +84,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private boolean initialized = false;
 
+    private Map<Integer,Trigger> triggerCache;
+    
     public void setupDatabase() {
         setupDatabase(false);
     }
-
+    
     public void setupDatabase(boolean force) {
         if (!initialized || force) {
             if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
@@ -171,7 +176,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private List<Trigger> getConfigurationTriggers() {
         List<Trigger> triggers = new ArrayList<Trigger>();
         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-
             Node me = nodeService.findIdentity();
             List<NodeGroupLink> links = configurationService.getGroupLinksFor(me.getNodeGroupId());
             for (NodeGroupLink nodeGroupLink : links) {
@@ -180,19 +184,33 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             nodeGroupLink.getTargetGroupId(), false));
                 }
             }
-
         } else {
             logger
                     .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
         }
         return triggers;
     }
+    
+    public Map<Integer,Trigger> getCachedTriggers(boolean refreshCache) {
+        if (triggerCache == null || refreshCache) {
+            synchronized (this) {
+                triggerCache = new HashMap<Integer, Trigger>();
+                List<Trigger> triggers = new ArrayList<Trigger>();
+                triggers.addAll(getConfigurationTriggers());
+                triggers.addAll(configurationService.getActiveTriggersForSourceNodeGroup(parameterService
+                        .getString(ParameterConstants.NODE_GROUP_ID)));
+                for (Trigger trigger : triggers) {
+                    triggerCache.put(trigger.getTriggerId(), trigger);
+                }               
+            }
+        }
+        return triggerCache;
+    }
+
+    
 
     private void updateOrCreateSymTriggers() {
-        List<Trigger> triggers = new ArrayList<Trigger>();
-        triggers.addAll(getConfigurationTriggers());
-        triggers.addAll(configurationService.getActiveTriggersForSourceNodeGroup(parameterService
-                .getString(ParameterConstants.NODE_GROUP_ID)));
+        Collection<Trigger> triggers = getCachedTriggers(true).values();
 
         for (Trigger trigger : triggers) {
 

@@ -20,6 +20,10 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.Map;
+
+import org.jumpmind.symmetric.model.Trigger;
+
 /**
  * Provides methods to setup the runtime for data synchronization based on
  * {@link IConfigurationService}.
@@ -38,5 +42,7 @@ public interface IBootstrapService {
     public void validateConfiguration();
 
     public void heartbeat();
+    
+    public Map<Integer,Trigger> getCachedTriggers(boolean refreshCache);
 
 }
