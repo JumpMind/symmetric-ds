@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -105,17 +106,18 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName }) > 0;
     }
 
-    public void removeTrigger(String schemaName, String triggerName) {
+    public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
+        triggerName = schemaName + triggerName;
         try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
+            jdbcTemplate.update(new String("drop trigger " + triggerName + "_" + getEngineName() + "_" + hist.getTriggerHistoryId()).toUpperCase());
         } catch (Exception e) {
-            logger.warn("Trigger does not exist");
+            logger.warn("Error removing " + triggerName + ": " + e.getMessage());
         }
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
-        removeTrigger(schemaName, triggerName);
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+        removeTrigger(schemaName, triggerName, oldHistory);
     }
 
     public boolean isBlobSyncSupported() {

@@ -41,7 +41,7 @@ public interface IDbDialect {
      */
     public String getEngineName();
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName);
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
@@ -200,4 +200,5 @@ public interface IDbDialect {
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
             String targetString);
 
+    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger, TriggerHistory hist);
 }

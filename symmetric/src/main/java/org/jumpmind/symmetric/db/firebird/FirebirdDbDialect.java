@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -55,7 +56,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);

@@ -39,8 +39,6 @@ public class Trigger {
 
     static final Log logger = LogFactory.getLog(Trigger.class);
 
-    private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
-
     private static final long serialVersionUID = 8947288471097851573L;
 
     private static final String DEFAULT_CONDITION = "1=1";
@@ -192,62 +190,6 @@ public class Trigger {
         } else {
             return Collections.EMPTY_LIST;
         }
-    }
-
-    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength) {
-        String triggerName = null;
-        if (triggerPrefix == null) {
-            triggerPrefix = "";
-        }
-        switch (dml) {
-        case INSERT:
-            if (nameForInsertTrigger != null) {
-                triggerName = getNameForInsertTrigger();
-            }
-            break;
-        case UPDATE:
-            if (nameForUpdateTrigger != null) {
-                triggerName = getNameForUpdateTrigger();
-            }
-            break;
-        case DELETE:
-            if (nameForDeleteTrigger != null) {
-                triggerName = getNameForDeleteTrigger();
-            }
-            break;
-        }
-        if (triggerName == null) {
-            triggerName = triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName();
-        }
-
-        if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
-            triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
-            logger.warn("We just truncated the trigger name for the " + dml.name().toLowerCase() + " trigger id="
-                    + triggerId
-                    + ".  You might want to consider manually providing a name for the trigger that is les than "
-                    + maxTriggerNameLength + " characters long.");
-        }
-        return triggerName;
-    }
-
-    private String getShortTableName() {
-        StringBuilder shortName = new StringBuilder();
-        String table = getSourceTableName();
-        if (table.toUpperCase().startsWith(DEFAULT_SYMMETRIC_TABLE_PREFIX)) {
-            table = table.substring(DEFAULT_SYMMETRIC_TABLE_PREFIX.length() + 1);
-        }
-        CharSequence seq = table;
-        char previousChar = ' ';
-        for (int i = 0; i < seq.length(); i++) {
-            char c = seq.charAt(i);
-            if (i == 0
-                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
-                            || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
-                shortName.append(c);
-            }
-            previousChar = c;
-        }
-        return shortName.toString();
     }
 
     public boolean hasChangedSinceLastTriggerBuild(Date lastTriggerBuildTime) {

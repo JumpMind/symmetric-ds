@@ -79,7 +79,7 @@ public abstract class AbstractEmbeddedTrigger {
 
     protected List<String> includedColumns;
 
-    protected void initialize(DataEventType triggerType, String tableName) {
+    protected boolean initialize(DataEventType triggerType, String tableName) {
         this.triggerType = triggerType;
         this.tableName = tableName;
         SymmetricEngine engine = SymmetricEngine.findEngineByName(getEngineName().toLowerCase());
@@ -90,8 +90,13 @@ public abstract class AbstractEmbeddedTrigger {
         this.dbDialect = getDbDialect(engine);
         this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
         this.trigger = bootstrapService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
+        if (trigger == null) {
+            logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.", triggerType.name(), tableName, getTriggerHistId()));
+            return false;
+        }
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
         initColumnNames(trigger);
+        return true;
     }
 
     protected abstract String getEngineName();

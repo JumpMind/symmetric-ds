@@ -21,6 +21,10 @@
     <priority value="ERROR" />
   </category>
   
+  <category name="org.jumpmind.symmetric.db.SqlScript">
+    <priority value="ERROR" />
+  </category>  
+  
   <!-- Enable this to see extract output
   <category name="org.jumpmind.symmetric.extract.csv">
     <priority value="DEBUG" />

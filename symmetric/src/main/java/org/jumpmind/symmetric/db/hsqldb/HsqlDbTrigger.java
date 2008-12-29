@@ -54,21 +54,26 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     static long lastTransactionIdUpdate;
 
+    boolean initialized = false;
+
     public void fire(int type, String triggerName, String tableName, Object[] oldRow, Object[] newRow) {
         try {
             init(type, triggerName, tableName);
-            HsqlDbDialect dialect = getDbDialect();
-            if (trigger.isSyncOnIncomingBatch() || dialect.isSyncEnabled() && isInsertDataEvent(oldRow, newRow)) {
-                Data data = createData(oldRow, newRow);
-                List<Node> nodes = findTargetNodes(oldRow, newRow);
-                String disabledNodeId = dialect.getSyncNodeDisabled();
-                if (disabledNodeId != null) {
-                    Node disabledNode = new Node();
-                    disabledNode.setNodeId(disabledNodeId);
-                    nodes.remove(disabledNode);
-                }
-                if (nodes != null) {
-                    dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow), nodes);
+            if (initialized) {
+                HsqlDbDialect dialect = getDbDialect();
+                if (trigger.isSyncOnIncomingBatch() || dialect.isSyncEnabled() && isInsertDataEvent(oldRow, newRow)) {
+                    Data data = createData(oldRow, newRow);
+                    List<Node> nodes = findTargetNodes(oldRow, newRow);
+                    String disabledNodeId = dialect.getSyncNodeDisabled();
+                    if (disabledNodeId != null) {
+                        Node disabledNode = new Node();
+                        disabledNode.setNodeId(disabledNodeId);
+                        nodes.remove(disabledNode);
+                    }
+                    if (nodes != null) {
+                        dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow),
+                                nodes);
+                    }
                 }
             }
         } catch (RuntimeException ex) {
@@ -100,14 +105,16 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     }
 
     private void init(int type, String triggerName, String tableName) {
-        if (this.triggerName == null) {
+        if (!initialized) {
             this.triggerName = triggerName;
-            this.initialize(getDataEventType(type), tableName);
-            buildDataSelectSql();
-            buildNodeSelectSql();
-            buildTransactionIdSql();
-            if (logger.isDebugEnabled()) {
-                logger.debug("initializing " + triggerName + " for " + triggerType);
+            if (initialize(getDataEventType(type), tableName)) {
+                buildDataSelectSql();
+                buildNodeSelectSql();
+                buildTransactionIdSql();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("initializing " + triggerName + " for " + triggerType);
+                }
+                initialized = true;
             }
         }
     }
