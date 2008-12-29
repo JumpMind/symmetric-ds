@@ -89,7 +89,7 @@ public abstract class AbstractEmbeddedTrigger {
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
         this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
-        this.trigger = bootstrapService.getCachedTriggers(false).get(triggerHistory.getTriggerId());
+        this.trigger = bootstrapService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
         initColumnNames(trigger);
     }
