@@ -172,7 +172,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>always</forkMode>
-                    <jvm>-Xms512m -Xmx1024</jvm>
+                    <argLine>-Xms512m -Xmx1024</argLine>
                     <additionalClasspathElements>
                         <additionalClasspathElement>
                             ${user.home}\.symmetricds\lib\ojdbc6.jar
