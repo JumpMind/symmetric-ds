@@ -382,7 +382,7 @@ public class SymmetricLauncher {
         if (file.exists() && file.isFile()) {
             Platform pf = dialect.getPlatform();
             Database db = new DatabaseIO().read(new File(fileName));
-            pf.createTables(db, true, true);
+            pf.createTables(db, false, true);
         } else {
             throw new FileNotFoundException("Could not find " + fileName);
         }
