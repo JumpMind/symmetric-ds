@@ -112,7 +112,7 @@
         <column name="database_version" type="VARCHAR" size="50" />
         <column name="heartbeat_time" type="TIMESTAMP" />
         <column name="timezone_offset" type="VARCHAR" size="6" />
-        <column name="created_at_node_id" type="VARCHAR" size="50" required="true" />        
+        <column name="created_at_node_id" type="VARCHAR" size="50" />        
     </table>
     
     <table name="lock">
