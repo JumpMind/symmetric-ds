@@ -24,6 +24,9 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Filter compiler for IPv4 addresses.
  * 
@@ -31,6 +34,8 @@ import java.net.UnknownHostException;
  */
 public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorizerCompiler
 {
+    private static final Log logger = LogFactory.getLog(Inet4AddressAuthorizerCompiler.class);
+    
     public static final String IPv4_OCTET_SEPARATOR = ".";
 
     public static final String BROADCAST_OCTET = "255";
@@ -180,9 +185,9 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
     {
         filter = filter.trim();
 
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.info("Compiling IPv4 filter string: " + filter);
+            logger.debug("Compiling IPv4 filter string: " + filter);
         }
 
         filter = replaceSymbols(filter);
@@ -194,9 +199,9 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
                 "Invalid IPv4 filter. Must have 4 octects separated by: '%s'. Provided: %s Length: %s",
                 IPv4_OCTET_SEPARATOR, filter, octets.length));
         }
-        if (logger.isInfoEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.info("Checking for Range values on filter: " + filter);
+            logger.debug("Checking for Range values on filter: " + filter);
         }
 
         if (filter.contains(CIDR_TOKEN))

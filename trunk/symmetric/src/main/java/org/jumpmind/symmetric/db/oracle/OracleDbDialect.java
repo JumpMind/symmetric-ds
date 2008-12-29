@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -97,7 +98,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
         removeTrigger(schemaName, triggerName);
     }
 

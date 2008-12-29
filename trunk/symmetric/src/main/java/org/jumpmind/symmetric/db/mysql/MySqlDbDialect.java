@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -76,7 +77,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     // TODO this belongs in SqlTemplate
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
         catalogName = catalogName == null ? "" : (catalogName + ".");
         try {
             jdbcTemplate.update("drop trigger " + catalogName + triggerName);

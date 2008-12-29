@@ -78,8 +78,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private IRegistrationService registrationService;
 
-    private String triggerPrefix;
-
     private List<Channel> defaultChannels;
 
     private boolean initialized = false;
@@ -157,11 +155,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
             if (history != null) {
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForInsertTrigger(), trigger.getSourceTableName());
+                        .getNameForInsertTrigger(), trigger.getSourceTableName(), history);
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForDeleteTrigger(), trigger.getSourceTableName());
+                        .getNameForDeleteTrigger(), trigger.getSourceTableName(), history);
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForUpdateTrigger(), trigger.getSourceTableName());
+                        .getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
                 configurationService.inactivateTriggerHistory(history);
             } else {
                 logger.info("A trigger was inactivated that had not yet been built.  Taking no action.");
@@ -365,11 +363,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         boolean triggerExists = false;
 
-        int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
-        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason, trigger.getTriggerName(
-                DataEventType.INSERT, triggerPrefix, maxTriggerNameLength).toUpperCase(), trigger.getTriggerName(
-                DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength).toUpperCase(), trigger.getTriggerName(
-                DataEventType.DELETE, triggerPrefix, maxTriggerNameLength).toUpperCase());
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -396,13 +390,24 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if ((forceRebuild || !create) && triggerExists) {
-            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName());
+            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(), oldhist);
             triggerExists = false;
         }
 
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
 
         if (hist == null && (oldhist == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
+            int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
+            String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
+
+            newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix, maxTriggerNameLength,
+                    trigger, hist).toUpperCase());
+            newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength,
+                    trigger, hist).toUpperCase());
+            newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLength,
+                    trigger, hist).toUpperCase());
+
+            
             configurationService.insert(newTriggerHist);
             hist = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
@@ -432,10 +437,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
-    }
-
-    public void setTriggerPrefix(String triggerPrefix) {
-        this.triggerPrefix = triggerPrefix;
     }
 
     public void setUpgradeService(IUpgradeService upgradeService) {

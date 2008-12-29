@@ -81,6 +81,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(AbstractDbDialect.class);
 
+    private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
+
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected JdbcTemplate jdbcTemplate;
@@ -110,9 +112,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private int databaseMajorVersion;
 
     private int databaseMinorVersion;
-    
+
     private String databaseProductVersion;
-    
+
     private String identifierQuoteString;
 
     protected AbstractDbDialect() {
@@ -244,9 +246,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
     }
-    
+
     public Table getMetaDataFor(Trigger trigger, boolean useCache) {
-        return getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName(),useCache);
+        return getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
+                .getSourceTableName(), useCache);
     }
 
     /**
@@ -312,14 +315,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 } finally {
                     JdbcUtils.closeResultSet(tableData);
                 }
-                
+
                 makeAllColumnsPrimaryKeysIfNoPrimaryKeysFound(table);
-                
+
                 return table;
             }
         });
     }
-    
+
     /**
      * Treat tables with no primary keys as a table with all primary keys.
      */
@@ -351,7 +354,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             for (Iterator it = primaryKeys.iterator(); it.hasNext(); table.findColumn((String) it.next(), true)
                     .setPrimaryKey(true))
                 ;
-            
+
             if (this instanceof MsSqlDbDialect) {
                 determineAutoIncrementFromResultSetMetaData(table, table.getColumns());
             }
@@ -587,6 +590,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 String sourceCatalogName = trigger.getSourceCatalogName();
                 logger.info("Creating " + dml.toString() + " trigger for "
                         + (sourceCatalogName != null ? (sourceCatalogName + ".") : "") + trigger.getSourceTableName());
+
                 String previousCatalog = null;
                 String defaultCatalog = getDefaultCatalog();
                 String defaultSchema = getDefaultSchema();
@@ -658,8 +662,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String getCreateTableXML(Trigger trig) {
         Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
         Database db = new Database();
-        db.setName(trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() : getDefaultSchema() != null
-                ? getDefaultSchema() : getDefaultCatalog());
+        db.setName(trig.getSourceSchemaName() != null ? trig.getSourceSchemaName()
+                : getDefaultSchema() != null ? getDefaultSchema() : getDefaultCatalog());
         db.addTable(table);
         StringWriter buffer = new StringWriter();
         DatabaseIO xmlWriter = new DatabaseIO();
@@ -914,7 +918,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return false;
     }
-    
+
     public boolean isBlobSyncSupported() {
         return true;
     }
@@ -975,9 +979,65 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.parameterService = parameterService;
     }
 
-    public String getIdentifierQuoteString()
-    {
+    public String getIdentifierQuoteString() {
         return identifierQuoteString;
+    }
+
+    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger,
+            TriggerHistory history) {
+        String triggerName = null;
+        if (triggerPrefix == null) {
+            triggerPrefix = "";
+        }
+        switch (dml) {
+        case INSERT:
+            if (trigger.getNameForInsertTrigger() != null) {
+                triggerName = trigger.getNameForInsertTrigger();
+            }
+            break;
+        case UPDATE:
+            if (trigger.getNameForUpdateTrigger() != null) {
+                triggerName = trigger.getNameForUpdateTrigger();
+            }
+            break;
+        case DELETE:
+            if (trigger.getNameForDeleteTrigger() != null) {
+                triggerName = trigger.getNameForDeleteTrigger();
+            }
+            break;
+        }
+        if (triggerName == null) {
+            triggerName = triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName(trigger);
+        }
+
+        if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
+            triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
+            logger.warn("We just truncated the trigger name for the " + dml.name().toLowerCase() + " trigger id="
+                    + trigger.getTriggerId()
+                    + ".  You might want to consider manually providing a name for the trigger that is les than "
+                    + maxTriggerNameLength + " characters long.");
+        }
+        return triggerName;
+    }
+
+    private String getShortTableName(Trigger trigger) {
+        StringBuilder shortName = new StringBuilder();
+        String table = trigger.getSourceTableName();
+        if (table.toUpperCase().startsWith(DEFAULT_SYMMETRIC_TABLE_PREFIX)) {
+            table = table.substring(DEFAULT_SYMMETRIC_TABLE_PREFIX.length() + 1);
+        }
+        CharSequence seq = table;
+        char previousChar = ' ';
+        for (int i = 0; i < seq.length(); i++) {
+            char c = seq.charAt(i);
+            if (i == 0
+                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
+                            || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
+                shortName.append(c);
+            }
+            previousChar = c;
+        }
+        return shortName.toString();
     }
 
 }

@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -204,7 +205,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         try {
             jdbcTemplate.update("drop trigger " + schemaName + triggerName);

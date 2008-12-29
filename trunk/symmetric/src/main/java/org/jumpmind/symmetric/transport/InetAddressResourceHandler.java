@@ -40,8 +40,7 @@ import org.jumpmind.symmetric.transport.handler.AbstractTransportResourceHandler
 /**
  * @author dmichels2
  */
-public class InetAddressResourceHandler extends AbstractTransportResourceHandler implements IInetAddressAuthorizer
-{
+public class InetAddressResourceHandler extends AbstractTransportResourceHandler implements IInetAddressAuthorizer {
     private static final Log logger = LogFactory.getLog(InetAddressResourceHandler.class);
 
     public static final String FILTER_DELIMITER = ",";
@@ -57,8 +56,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
     /**
      * 
      */
-    public void clearFilters()
-    {
+    public void clearFilters() {
         filters = null;
     }
 
@@ -66,16 +64,12 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
      * @param filterString
      * @throws UnknownHostException
      */
-    public synchronized void setAddressFilters(final String filterString) throws UnknownHostException
-    {
+    public synchronized void setAddressFilters(final String filterString) throws UnknownHostException {
         String[] filtersTokens = null;
-        if (StringUtils.isBlank(filterString))
-        {
+        if (StringUtils.isBlank(filterString)) {
             filters = Collections.emptyList();
             logger.warn("No address filters were provided to be compiled");
-        }
-        else
-        {
+        } else {
             filtersTokens = filterString.split(FILTER_DELIMITER);
             filters = addressCompiler.compile(filtersTokens);
         }
@@ -86,16 +80,13 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
      * @return
      * @throws UnknownHostException
      */
-    public boolean isAuthorized(final String sourceAddress)
-    {
-        try
-        {
+    public boolean isAuthorized(final String sourceAddress) {
+        try {
             final InetAddress inetAddress = InetAddress.getByName(sourceAddress);
             return isAuthorized(inetAddress);
-        }
-        catch (final UnknownHostException uhe)
-        {
-            // TODO if we don't have a valid host/ip, should we just return 'false'?
+        } catch (final UnknownHostException uhe) {
+            // TODO if we don't have a valid host/ip, should we just return
+            // 'false'?
             throw new IllegalArgumentException(uhe.getMessage(), uhe);
         }
 
@@ -105,40 +96,33 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
      * @param checkAddress
      * @return
      */
-    public boolean isAuthorized(final InetAddress checkAddress)
-    {
-        if (filters == null)
-        {
+    public boolean isAuthorized(final InetAddress checkAddress) {
+        if (filters == null) {
             final String filterString = parameterService.getString(ParameterConstants.IP_FILTERS);
-            logger.info("Extracted IP filter string from ParameterService as: " + filterString);
-            try
-            {
-                setAddressFilters(filterString);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Extracted IP filter string from ParameterService as: " + filterString);
             }
-            catch (final UnknownHostException e)
-            {
+            try {
+                setAddressFilters(filterString);
+            } catch (final UnknownHostException e) {
                 throw new IllegalStateException("Could not initialize address filter string");
             }
         }
         final boolean isMulticast = isMulticastAddress(checkAddress);
 
-        if (isMulticast && !isMulicastAllowed)
-        {
+        if (isMulticast && !isMulicastAllowed) {
             logger.info("Allow multicast is 'false'. Denying multicast address: " + checkAddress.toString());
 
             return false;
         }
 
         final byte[] addressBytes = checkAddress.getAddress();
-        for (final IRawInetAddressAuthorizer filter : filters)
-        {
-            if (filter.isAuthorized(addressBytes))
-            {
+        for (final IRawInetAddressAuthorizer filter : filters) {
+            if (filter.isAuthorized(addressBytes)) {
                 return true;
             }
         }
-        if (logger.isInfoEnabled())
-        {
+        if (logger.isInfoEnabled()) {
             logger.info("Denying Address: " + checkAddress.toString());
         }
         return false;
@@ -147,32 +131,31 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
     /**
      * @return the isMulicastAllowed.
      */
-    public boolean isMulicastAllowed()
-    {
+    public boolean isMulicastAllowed() {
         return isMulicastAllowed;
     }
 
     /**
-     * @param isMulicastAllowed the isMulicastAllowed to set
+     * @param isMulicastAllowed
+     *                the isMulicastAllowed to set
      */
-    public void setMulicastAllowed(final boolean isMulicastAllowed)
-    {
+    public void setMulicastAllowed(final boolean isMulicastAllowed) {
         this.isMulicastAllowed = isMulicastAllowed;
     }
 
     /**
-     * @param addressCompiler the addressCompiler to set
+     * @param addressCompiler
+     *                the addressCompiler to set
      */
-    public void setAddressCompiler(final IInetAddressAuthorizerCompiler addressCompiler)
-    {
+    public void setAddressCompiler(final IInetAddressAuthorizerCompiler addressCompiler) {
         this.addressCompiler = addressCompiler;
     }
 
     /**
-     * @param parameterService the parameterService to set
+     * @param parameterService
+     *                the parameterService to set
      */
-    public void setParameterService(final IParameterService parameterService)
-    {
+    public void setParameterService(final IParameterService parameterService) {
         this.parameterService = parameterService;
     }
 
@@ -180,17 +163,13 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
      * @param checkAddress
      * @return
      */
-    private boolean isMulticastAddress(final InetAddress checkAddress)
-    {
+    private boolean isMulticastAddress(final InetAddress checkAddress) {
         // Have to cast as the address type as the default
         // InetAddress.isMulticastAddress() always returns 'false'
-        if (checkAddress instanceof Inet4Address)
-        {
+        if (checkAddress instanceof Inet4Address) {
             final Inet4Address ip4Addr = (Inet4Address) checkAddress;
             return ip4Addr.isMulticastAddress();
-        }
-        else if (checkAddress instanceof Inet6Address)
-        {
+        } else if (checkAddress instanceof Inet6Address) {
             final Inet6Address ip6Addr = (Inet6Address) checkAddress;
             return ip6Addr.isMulticastAddress();
         }

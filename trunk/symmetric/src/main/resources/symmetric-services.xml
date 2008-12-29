@@ -6,7 +6,7 @@
     <import resource="classpath:/sql/*-service-sql.xml" />
 
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />        
     </bean>
 
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
@@ -33,7 +33,6 @@
     </bean>
 
     <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService" scope="singleton">
-        <property name="triggerPrefix" value="${trigger.prefix}" />
         <property name="tablePrefix" value="${sync.table.prefix}" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />

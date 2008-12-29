@@ -52,7 +52,7 @@ public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddr
      */
     public static final String CIDR_TOKEN = "/";
 
-    protected static final Log logger = LogFactory.getLog(AbstractInetAddressAuthorizerCompiler.class);
+    private static final Log logger = LogFactory.getLog(AbstractInetAddressAuthorizerCompiler.class);
 
     /**
      * Filter string primary compilation entry point.
@@ -66,7 +66,7 @@ public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddr
         final List<IRawInetAddressAuthorizer> rawFilters = new ArrayList<IRawInetAddressAuthorizer>();
         for (final String filter : filterStrings)
         {
-            logger.info("Compiling filter string: " + filter);
+            logger.debug("Compiling filter string: " + filter);
             rawFilters.add(compileForIpVersion(filter));
         }
 
@@ -96,7 +96,7 @@ public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddr
                 }
             }
             filter = filter.replaceAll('\\' + ANY_TOKEN, getBroadcastString());
-            logger.info("Replaced wildcard filter to: " + filter);
+            logger.debug("Replaced wildcard filter to: " + filter);
         }
         return filter;
     }

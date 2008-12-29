@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -49,7 +50,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
         removeTrigger(schemaName, triggerName);
     }
 

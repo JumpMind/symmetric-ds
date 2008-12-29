@@ -84,17 +84,13 @@ public class TriggerHistory {
     }
     
     public TriggerHistory(Table table, Trigger trigger) {
-        this(table,trigger,null,null,null,null);
+        this(table,trigger,null);
     }
 
-    public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason, String nameForInsertTrigger,
-            String nameForUpdateTrigger, String nameForDeleteTrigger) {
+    public TriggerHistory(Table table, Trigger trigger, TriggerReBuildReason reason) {
         this();
         this.sourceTableName = table.getName();
         this.lastTriggerBuildReason = reason;
-        this.nameForDeleteTrigger = nameForDeleteTrigger;
-        this.nameForInsertTrigger = nameForInsertTrigger;
-        this.nameForUpdateTrigger = nameForUpdateTrigger;
         this.columnNames = getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.getSourceSchemaName();
         this.sourceCatalogName = trigger.getSourceCatalogName();
