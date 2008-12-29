@@ -173,8 +173,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      */
     private List<Trigger> getConfigurationTriggers() {
         List<Trigger> triggers = new ArrayList<Trigger>();
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            Node me = nodeService.findIdentity();
+        Node me = nodeService.findIdentity();
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION) && me != null) {
             List<NodeGroupLink> links = configurationService.getGroupLinksFor(me.getNodeGroupId());
             for (NodeGroupLink nodeGroupLink : links) {
                 if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_POLL)) {
