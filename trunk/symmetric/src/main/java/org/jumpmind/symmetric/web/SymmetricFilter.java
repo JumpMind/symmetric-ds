@@ -87,8 +87,8 @@ public class SymmetricFilter implements Filter {
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
         for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("Initializing filter %s", filterEntry.getKey()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Initializing filter %s", filterEntry.getKey()));
             }
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
