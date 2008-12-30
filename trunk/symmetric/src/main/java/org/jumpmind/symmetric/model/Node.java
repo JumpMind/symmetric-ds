@@ -65,7 +65,7 @@ public class Node {
     private String timezoneOffset;
 
     private Date heartbeatTime = new Date();
-    
+
     private String createdByNodeId;
 
     public Node() {
@@ -89,7 +89,7 @@ public class Node {
     public boolean equals(Object n) {
         return n != null && n instanceof Node && nodeId != null && nodeId.equals(((Node) n).getNodeId());
     }
-    
+
     public String getNodeId() {
         return nodeId;
     }
@@ -189,6 +189,26 @@ public class Node {
     public void setCreatedByNodeId(String createdByNodeId) {
         this.createdByNodeId = createdByNodeId;
     }
-    
-    
+
+    public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {
+        if (symmetricVersion != null) {
+            if (symmetricVersion.equals("development")) {
+                return true;
+            }
+            int[] currentVersion = Version.parseVersion(symmetricVersion);
+            for (int i = 0; i < currentVersion.length; i++) {
+                int j = currentVersion[i];
+                if (targetVersion.length > i) {
+                    if (j > targetVersion[i]) {
+                        return true;
+                    } else if (j < targetVersion[i]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

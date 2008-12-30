@@ -364,7 +364,15 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         boolean triggerExists = false;
 
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
-
+        int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
+        String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
+        newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix, maxTriggerNameLength,
+                trigger, hist).toUpperCase());
+        newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength,
+                trigger, hist).toUpperCase());
+        newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLength,
+                trigger, hist).toUpperCase());
+        
         String oldTriggerName = null;
         String oldSourceSchema = null;
         String oldCatalogName = null;
@@ -397,17 +405,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
 
         if (hist == null && (oldhist == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
-            int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
-            String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
-
-            newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix, maxTriggerNameLength,
-                    trigger, hist).toUpperCase());
-            newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength,
-                    trigger, hist).toUpperCase());
-            newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLength,
-                    trigger, hist).toUpperCase());
-
-            
             configurationService.insert(newTriggerHist);
             hist = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
