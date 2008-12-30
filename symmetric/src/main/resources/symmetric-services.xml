@@ -106,6 +106,7 @@
         <property name="sql" ref="dataExtractorServiceSql" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
+        <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="parameterService" ref="parameterService" />
         <property name="dbDialect" ref="dbDialect" />

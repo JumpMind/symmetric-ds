@@ -13,6 +13,7 @@
     <priority value="WARN" />
   </category>  
   
+  
   <category name="org.jumpmind">
     <priority value="INFO" />
   </category>
@@ -21,6 +22,10 @@
     <priority value="ERROR" />
   </category>
   
+  <category name="org.apache.ddlutils.platform.derby">
+    <priority value="ERROR" />
+  </category>  
+
   <category name="org.jumpmind.symmetric.db.SqlScript">
     <priority value="ERROR" />
   </category>  

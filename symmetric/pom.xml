@@ -188,7 +188,7 @@
                         </additionalClasspathElement>
                     </additionalClasspathElements>
                     <includes>
-                        <include>**/*TestSuite.java</include>
+                        <include>**/*TestSuite.java,**/*UnitTest.java</include>
                     </includes>
                 </configuration>
             </plugin>

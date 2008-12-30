@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
@@ -76,6 +77,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IAcknowledgeService acknowledgeService;
 
+    private INodeService nodeService;
+
     private IDbDialect dbDialect;
 
     private BeanFactory beanFactory;
@@ -85,16 +88,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private List<IExtractorFilter> extractorFilters;
 
     /**
-     * @see DataExtractorService#extractConfigurationStandalone(Node, BufferedWriter)
+     * @see DataExtractorService#extractConfigurationStandalone(Node,
+     *      BufferedWriter)
      */
     public void extractConfigurationStandalone(Node node, OutputStream out) throws IOException {
         this.extractConfigurationStandalone(node, TransportUtils.toWriter(out));
     }
 
     /**
-     * Extract the SymmetricDS configuration for the passed in {@link Node}.  Note that this method will
-     * insert an already acknowledged batch to indicate that the configuration was sent.  If the configuration 
-     * fails to load for some reason on the client the batch status will NOT reflect the failure.
+     * Extract the SymmetricDS configuration for the passed in {@link Node}.
+     * Note that this method will insert an already acknowledged batch to
+     * indicate that the configuration was sent. If the configuration fails to
+     * load for some reason on the client the batch status will NOT reflect the
+     * failure.
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
 
@@ -129,22 +135,37 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
         List<Trigger> triggers = configurationService.getConfigurationTriggers(parameterService.getNodeGroupId(), node
                 .getNodeGroupId(), true);
-        for (int i = triggers.size() - 1; i >= 0; i--) {
-            Trigger trigger = triggers.get(i);
-            String sql = dbDialect.createPurgeSqlFor(node, trigger, null);
-            Util.writeSql(sql, writer);
+        if (node != null && node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
+            for (int i = triggers.size() - 1; i >= 0; i--) {
+                Trigger trigger = triggers.get(i);
+                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger, null));
+                addPurgeCriteriaToConfigurationTables(trigger.getSourceTableName(), sql);
+                Util.writeSql(sql.toString(), writer);
+            }
         }
 
         for (int i = 0; i < triggers.size(); i++) {
             Trigger trigger = triggers.get(i);
             TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
-            hist.setTriggerHistoryId(Integer.MAX_VALUE-i);
+            hist.setTriggerHistoryId(Integer.MAX_VALUE - i);
             if (!trigger.getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
                         null, hist);
-                ctx.getDataExtractor().write(writer, data, ctx);                
+                ctx.getDataExtractor().write(writer, data, ctx);
+            }
+        }
+    }
+
+    private void addPurgeCriteriaToConfigurationTables(String sourceTableName, StringBuilder sql) {
+        if ((TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE)
+                .equalsIgnoreCase(sourceTableName))
+                || TableConstants.getTableName(dbDialect.getTablePrefix(), TableConstants.SYM_NODE_SECURITY)
+                        .equalsIgnoreCase(sourceTableName)) {
+            Node me = nodeService.findIdentity();
+            if (me != null) {
+                sql.append(String.format(" where created_at_node_id='%s'", me.getNodeId()));
             }
         }
     }
@@ -454,6 +475,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
         this.acknowledgeService = acknowledgeService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }
