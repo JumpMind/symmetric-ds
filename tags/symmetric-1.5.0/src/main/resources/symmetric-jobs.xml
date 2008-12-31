@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+    default-lazy-init="true">
+
+    <bean id="randomTimeSlot" class="org.jumpmind.symmetric.util.RandomTimeSlot">
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+    
+    <bean id="afterMidnightTimeSlot" class="org.jumpmind.symmetric.util.AfterMidnightTimeSlot">
+        <property name="parameterService" ref="parameterService" />
+    </bean>    
+
+    <util:property-path id="delayBeforeStartTimeSlotPush"
+        path="randomTimeSlot.randomValueSeededByDomainId" />
+        
+    <util:property-path id="delayBeforeStartTimeSlotPull"
+        path="randomTimeSlot.randomValueSeededByDomainId" />
+
+    <util:property-path id="delayBeforeStartTimeSlotPurge"
+        path="randomTimeSlot.randomValueSeededByDomainId" />
+        
+    <util:property-path id="millisecondsUntilTargetTime"
+        path="afterMidnightTimeSlot.millisecondsUntilTargetTime" />        
+        
+    <bean id="pushJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <!-- Random wait before start to stagger load -->
+                    <property name="delay" ref="delayBeforeStartTimeSlotPush" />
+                    <property name="timerTask" ref="pushTimerTask" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="pushTimerTask" class="org.jumpmind.symmetric.job.PushJob" scope="prototype">
+        <property name="parameterService" ref="parameterService" />
+        <property name="pushService" ref="pushService" />
+        <property name="needsRescheduled" value="true" />
+        <property name="rescheduleDelayParameter" value="job.push.period.time.ms" />
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="pullJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <!-- Random wait before start to stagger load -->
+                    <property name="delay" ref="delayBeforeStartTimeSlotPull" />
+                    <property name="timerTask" ref="pullTimerTask" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="pullTimerTask" class="org.jumpmind.symmetric.job.PullJob" scope="prototype">
+        <property name="requiresRegistration" value="false"/>
+        <property name="pullService" ref="pullService" />
+        <property name="needsRescheduled" value="true" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="rescheduleDelayParameter" value="job.pull.period.time.ms" />
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <bean id="purgeJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <!-- Random wait before start to stagger load -->
+                    <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
+                    <property name="period" value="${job.purge.period.time.ms}" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.PurgeJob">
+                            <property name="purgeService" ref="purgeService" />
+                            <property name="dataSource" ref="dataSource"/>
+                            <property name="parameterService" ref="parameterService" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="statisticFlushJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <!-- Random wait before start to stagger load -->
+                    <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
+                    <property name="period" value="${job.stat.flush.period.time.ms}" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
+                            <property name="statisticManager" ref="statisticManager" />
+                            <property name="parameterService" ref="parameterService" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>    
+    
+    <bean id="syncTriggersJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <property name="delay" ref="millisecondsUntilTargetTime" />
+                    <!-- Run once per day -->
+                    <property name="period" value="86400000" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.SyncTriggersJob">
+                            <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="dataSource" ref="dataSource"/>
+                            <property name="parameterService" ref="parameterService" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="heartbeatJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+        <property name="scheduledTimerTasks">
+            <list>
+                <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
+                    <property name="delay" value="900000" />
+                    <property name="period" value="900000" />
+                    <property name="timerTask">
+                        <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
+                            <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="dataSource" ref="dataSource"/>
+                            <property name="parameterService" ref="parameterService" />
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>     
+         
+
+</beans>

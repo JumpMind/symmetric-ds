@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:util="http://www.springframework.org/schema/util"
+  xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+  default-lazy-init="true">
+
+  <util:map id="clusterServiceSql">
+    <entry key="aquireLockSql">
+      <value>
+        update ${sync.table.prefix}_lock set locking_server_id=?, lock_time=current_timestamp where
+        lock_id=? and lock_action=? and (lock_time is null or lock_time &lt; ?)
+      </value>
+    </entry>
+    <entry key="releaseLockSql">
+      <value>
+        update ${sync.table.prefix}_lock set lock_time=null where lock_id=? and lock_action=? and
+        locking_server_id=?
+      </value>
+    </entry>
+    <entry key="insertLockSql">
+      <value>insert into ${sync.table.prefix}_lock (lock_id, lock_action) values(?,?)</value>
+    </entry>
+  </util:map>
+
+</beans>
