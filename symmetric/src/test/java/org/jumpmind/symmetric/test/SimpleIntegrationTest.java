@@ -39,7 +39,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
-import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -408,17 +407,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 30000)
     public void testReservedColumnNames() {
-        // MySQL does not allow reserved column names to be used even with
-        // special syntax
-        if (getRootDbDialect() instanceof MySqlDbDialect || getClientDbDialect() instanceof MySqlDbDialect
-                || getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect) {
+        if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect) {
             return;
         }
         // alter the table to have column names that are not usually allowed
-        rootJdbcTemplate.update(alterKeyWordSql);
-        rootJdbcTemplate.update(alterKeyWordSql2);
-        clientJdbcTemplate.update(alterKeyWordSql);
-        clientJdbcTemplate.update(alterKeyWordSql2);
+        String rquote = getRootDbDialect().getIdentifierQuoteString();
+        String cquote = getClientDbDialect().getIdentifierQuoteString();
+        rootJdbcTemplate.update(alterKeyWordSql.replaceAll("\"", rquote));
+        rootJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", rquote));
+        clientJdbcTemplate.update(alterKeyWordSql.replaceAll("\"", cquote));
+        clientJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", cquote));
 
         // enable the trigger for the table and update the client with
         // configuration
@@ -427,13 +425,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().pull();
 
-        rootJdbcTemplate.update(insertKeyWordSql, new Object[] { 1, "x", "a" });
+        rootJdbcTemplate.update(insertKeyWordSql.replaceAll("\"", rquote), new Object[] { 1, "x", "a" });
         getClientEngine().pull();
 
-        rootJdbcTemplate.update(updateKeyWordSql, new Object[] { "y", "b", 1 });
+        rootJdbcTemplate.update(updateKeyWordSql.replaceAll("\"", rquote), new Object[] { "y", "b", 1 });
         getClientEngine().pull();
 
-        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql, new Object[] { 1 });
+        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote),
+                new Object[] { 1 });
         Map columnMap = (Map) rowList.get(0);
         assertEquals(columnMap.get("key word"), "y", "Wrong key word value in table");
         assertEquals(columnMap.get("case"), "b", "Wrong case value in table");

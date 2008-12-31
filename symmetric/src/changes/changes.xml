@@ -23,6 +23,9 @@
             <action dev="erilong" type="fix" issue="aid=2162610&amp;atid=997724">
                 Fix decimal support between two servers with different locales
             </action>
+            <action dev="erilong" type="fix" issue="aid=2478888&amp;atid=997724">
+                Support reserved column names on MySQL by quoting identifiers with a backtick (`)
+            </action>
         </release>
         <release version="1.4.3" date="2008-11-2x" description="Patch Release">
             <action dev="chenson42" type="fix">

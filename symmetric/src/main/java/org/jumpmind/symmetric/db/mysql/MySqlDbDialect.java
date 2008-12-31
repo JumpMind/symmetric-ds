@@ -170,7 +170,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     
     public String getIdentifierQuoteString()
     {
-        return "";
+        return "`";
     }
 
 }
