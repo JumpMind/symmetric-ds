@@ -9,7 +9,7 @@
     <bean id="mysqlStringTemplate" class="java.lang.String">
         <constructor-arg>
             <value>
-                <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',replace(replace($(tableAlias).$(columnName),'\\','\\\\'),'"','\\"'),'"')),',',]]>
+                <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',replace(replace($(tableAlias).`$(columnName)`,'\\','\\\\'),'"','\\"'),'"')),',',]]>
             </value>
         </constructor-arg>
     </bean>
@@ -56,22 +56,22 @@
                 <property name="clobColumnTemplate" ref="mysqlStringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(hex($(tableAlias).$(columnName)),''),',',]]>
+                        <![CDATA[coalesce(hex($(tableAlias).`$(columnName)`),''),',',]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as char),'"')),',',]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate">
                     <value>
-                        <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as char),'"')),',',]]>
                     </value>
                 </property>
                 <property name="booleanColumnTemplate">
                     <value>
-                        <![CDATA[if($(tableAlias).$(columnName) is null,'',concat('"',cast($(tableAlias).$(columnName) as char),'"')),',',]]>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',cast($(tableAlias).`$(columnName)` as char),'"')),',',]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value=","/>
