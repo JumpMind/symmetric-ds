@@ -10,12 +10,10 @@
     <section>
         <title>Changing Triggers</title>
         <para>
-            When changing an entry in the Trigger table, always set the last_updated_time field 
-            to a newer time in order for the change to be detected.  SymmetricDS will look for
-            changes each night or whenever the Sync Triggers Job is run (see next section).
-            For example, a change to place the table price_changes into the price channel
-            would be accomplished with the following statement:
-
+            A trigger row may be updated using SQL to change a synchronization definition.
+            SymmetricDS will look for changes each night or whenever the Sync Triggers Job 
+            is run (see next section).  For example, a change to place the table price_changes 
+            into the price channel would be accomplished with the following statement:
             <programlisting>
 <![CDATA[update SYM_TRIGGER
 set channel_id = 'price',
@@ -35,7 +33,12 @@ set inactive_time = current_timestamp,
     last_updated_time = current_timestamp
 where source_node_group_id = 'client';
 ]]></programlisting>
-
+            All configuration should be managed centrally at the registration node.  If enabled, configuration 
+            changes will be synchronized out to client nodes.  When trigger changes reach the client
+            nodes the Sync Triggers process will run automatically.
+         </para>
+         <para>   
+            Centrally, the trigger changes will not take effect until the Sync Triggers Job runs.
             Instead of waiting for the Sync Triggers Job to run overnight after making a Trigger
             change, invoke the syncTriggers() method over JMX or simply restart the SymmetricDS
             server.
@@ -79,7 +82,6 @@ where source_node_group_id = 'client';
             (multiple instances of the same Node running against the same database), then locking
             should be enable to prevent database contention.  The following runtime properties
             control the behavior of the process.
-
             <variablelist>
                 <varlistentry>
                     <term>

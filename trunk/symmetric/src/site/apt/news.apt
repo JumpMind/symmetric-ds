@@ -7,6 +7,10 @@
 
 News
 
+* Jan, 2009: Release 1.5.0
+
+ This release contains the DB2 database dialect.  It also contains SymmetricDS configuration table synchronization and optional column level synchronization.
+ 
 * October, 2008: Release 1.4.0
 
  We have released version 1.4.0.  1.4.0 includes many new features and bug fixes. 
