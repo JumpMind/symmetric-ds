@@ -222,6 +222,19 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>auto.sync.configuration</command>
+                </term>
+                <listitem>
+                    <para>
+                        If this is true, create triggers for the SymmetricDS configuration table that 
+                        will synchronize changes to node groups that pull from the node where this 
+                        property is set.
+                        [&#xA0;Default:&#xA0;true&#xA0;]
+                    </para>
+                </listitem>
+            </varlistentry>            
+            <varlistentry>
+                <term>
                     <command>http.download.rate.kb</command>
                 </term>
                 <listitem>
