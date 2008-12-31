@@ -35,7 +35,7 @@
 				</property>
 				<property name="blobColumnTemplate">
 					<value>
-                        <![CDATA[ ''||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else hex(cast($(tableAlias)."$(columnName)" as varchar(16336) for bit data)) end||','||]]>
 					</value>
 				</property>
 				<property name="numberColumnTemplate">

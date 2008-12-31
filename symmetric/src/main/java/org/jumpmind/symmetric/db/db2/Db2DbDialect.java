@@ -59,7 +59,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isBlobSyncSupported() {
-        return false;
+        return true;
     }
 
     public boolean isClobSyncSupported() {
