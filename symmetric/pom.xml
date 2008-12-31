@@ -67,6 +67,15 @@
             </roles>
             <timezone>-5</timezone>
         </developer>
+        <developer>
+            <id>eweimer</id>
+            <name>Eric Weimer</name>
+            <email>eweimer@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>        
     </developers>
     <contributors>
         <contributor>
@@ -100,7 +109,7 @@
                 <role>developer</role>
             </roles>
             <timezone>-5</timezone>
-        </contributor>
+        </contributor>       
     </contributors>
     
     <distributionManagement>
