@@ -124,6 +124,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trigger.setSyncOnDelete(true);
             trigger.setSyncOnInsert(true);
             trigger.setSyncOnUpdate(true);
+            trigger.setSyncOnIncomingBatch(true);
             trigger.setSourceTableName(tableName);
             trigger.setSourceGroupId(sourceGroupId);
             trigger.setTargetGroupId(targetGroupId);
