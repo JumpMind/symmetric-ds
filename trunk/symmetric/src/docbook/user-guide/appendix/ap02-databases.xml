@@ -88,7 +88,16 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>                    
+                    </row>      
+                    <row>
+                        <entry>IBM DB2</entry>
+                        <entry>9.5</entry>
+                        <entry>N</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>N</entry>
+                        <entry>N</entry>
+                    </row>                                    
                 </tbody>
             </tgroup>
         </table>
@@ -215,5 +224,24 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             commons-lang.jar.
         </para>
     </section>    
+    <section>
+        <title>IBM DB2</title>
+        <para>
+            DB2 uses global variables to enable and disable node and trigger synchronization using the following variables names and grants:
+            <programlisting><![CDATA[
+CREATE VARIABLE sync_node_disabled VARCHAR(50);
+GRANT READ on VARIABLE sync_node_disabled TO PUBLIC;
+GRANT WRITE on VARIABLE sync_node_disabled TO PUBLIC;
+CREATE VARIABLE sync_triggers_disabled INTEGER;
+GRANT READ on VARIABLE sync_triggers_disabled TO PUBLIC;
+GRANT WRITE on VARIABLE sync_triggers_disabled TO PUBLIC;]]></programlisting>
+			The above examples are also included with the dialect included in the resources of the symmetric project.
+            This dialect requires user supplied DB2 driver and license jar files.
+        </para>
+        <para>
+            The current DB2 Dialect for SymmetricDS does not provide support for transaction support or large objects (LOB).
+            The current features in the DB2 dialect have been tested using DB2 9.5 on Linux and Windows operating systems.
+        </para>        
+    </section>      
 
 </appendix>
