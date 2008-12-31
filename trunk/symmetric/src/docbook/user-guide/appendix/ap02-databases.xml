@@ -6,7 +6,7 @@
          xmlns:ns="http://docbook.org/ns/docbook"
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Database Notes</title>
+    <title id="databases">Database Notes</title>
     <para>
         Each database management system has its own characteristics that results in
         feature coverage in SymmetricDS.  The following table shows which features are available

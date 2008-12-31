@@ -8,11 +8,16 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Introduction</title>
     <section>
-        <title>The Problem of Synchronization</title>
-        <para>
-            SymmetricDS includes features that solve a particular set of synchronization
-            problems.
-        </para>
+        <title>Introduction</title>
+        <section>
+            <title>What is SymmetricDS?</title>
+            <para>
+                SymmetricDS is asynchronous data replication software supporting multiple subscribers and bi-directional
+                synchronization. 
+                 It uses web and database technologies to replicate tables between relational databases in near real time. 
+                 The software was designed to scale for a large number of databases, work across low-bandwidth connections, and withstand periods of network outage.
+            </para>
+        </section>
         <section>
             <title>Notification Schemes</title>
             <para>
@@ -144,7 +149,7 @@
             Any database with trigger technology and a JDBC driver has the potential to run
             SymmetricDS. The database is abstracted through a Database Dialect in order to
             support specific features of each database. The following Database Dialects have
-            been included with release 1.0:
+            been included with this release:
         </para>
         <itemizedlist>
             <listitem>
@@ -165,7 +170,14 @@
             <listitem>
                 <para>Apache Derby 10.3.2.1 and above</para>
             </listitem>            
+            <listitem>
+                <para>IBM DB2 9.5</para>
+            </listitem>            
         </itemizedlist>
+        <para>
+            See the appendix <link linkend="databases">Database Notes</link> for compatibility notes and
+            other details for your specific database.
+        </para>
     </section>
     <section>
         <title>Background</title>
@@ -207,21 +219,6 @@
             The team created a custom solution that met the requirements and made the project
             successful. From this initial challenge came the knowledge and experience that
             SymmetricDS benefits from today.
-        </para>
-    </section>
-    <section>
-        <title>Version Numbering</title>
-        <para>
-            The software is released with a version number based on the
-            <ulink url="http://apr.apache.org/versioning.html">
-                Apache Portable Runtime Project
-            </ulink>
-            version guidelines. In summary, the version is denoted as three integers in the
-            format of MAJOR.MINOR.PATCH. Major versions are incompatible at the API level, and
-            they can include any kind of change. Minor versions are compatible with older
-            versions at the API and binary level, and they can intoduce new functions or remove
-            old ones. Patch versions are perfectly compatible, and they are released to fix
-            defects.
         </para>
     </section>
 </chapter>
