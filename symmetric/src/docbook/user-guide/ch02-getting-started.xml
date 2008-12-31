@@ -38,7 +38,7 @@
                 <para>
                     Download the
                     <ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470">
-                        symmetric-ds-1.4.X.zip
+                        symmetric-ds-1.5.X.zip
                     </ulink>
                     file from
                     <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
@@ -47,7 +47,7 @@
             <step>
                 <para>
                     Unzip the file in any directory you choose.  This will create a
-                    <filename class="directory">symmetric-ds-1.4.X</filename>
+                    <filename class="directory">symmetric-ds-1.5.X</filename>
                     subdirectory, which corresponds to the version you downloaded.
                 </para>
             </step>
