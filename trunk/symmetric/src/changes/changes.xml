@@ -5,21 +5,28 @@
         <author email="chenson42@users.sourceforge.net">Chris Henson</author>
     </properties>
     <body>
-        <release version="1.5.0" date="2008-12-01" description="">
+        <release version="1.5.0" date="2008-12-31" description="Column level synchronization support, DB2 dialect and synchronize configuration out to nodes">
             <action dev="erilong" type="add" issue="aid=1945266&amp;atid=997727">
                 Column level synchronization to merge rows that do not conflict.
-            </action>      
+            </action>
             <action dev="chenson42" type="add">
-                Send all of SymmetricDS configuration in one batch.  Purge configuration tables before inserts so we do not rely on fallback for
-                configuration updates.  Also removed the requirement for SymmetricDS configuration table rows in sym_trigger.
-            </action>  
+                Send all of SymmetricDS configuration in one batch during registration. Purge configuration tables
+                before inserts so we do not rely on fallback for configuration updates. Also removed the requirement for
+                SymmetricDS configuration table rows in sym_trigger.
+            </action>
+            <action dev="chenson42" type="add">
+                All SymmetricDS configuration tables (with the exception of node, node_security and node_identity) now
+                have SymmetricDS triggers created for them. A new out-of-the-box filter has been added to the data
+                loader to detect changes to the trigger table. If changes are detected triggers will be synchronized
+                automatically.
+            </action>
             <action dev="erilong" type="fix" issue="aid=2450121&amp;atid=997724">
                 Prevent registration before the node itself is registered
-            </action>              
+            </action>
             <action dev="chenson42" type="add">
-                Added a hash of the trigger table row values into the trigger_hist table so if the trigger table values change triggers will be 
-                regenerated.
-            </action>                                      
+                Added a hash of the trigger table row values into the trigger_hist table so if the trigger table values
+                change triggers will be regenerated.
+            </action>
             <action dev="erilong" type="fix" issue="aid=2162610&amp;atid=997724">
                 Fix decimal support between two servers with different locales
             </action>
@@ -36,61 +43,62 @@
             <action dev="erilong" type="fix" issue="aid=2322967&amp;atid=997724">
                 Support ntext binary data type on SQL-Server
             </action>
-        </release>        
+        </release>
         <release version="1.4.2" date="2008-11-20" description="Patch Release">
             <action dev="chenson42" type="fix">
-                cleanupAfterDataLoad() at the batch commit instead of in close() in the CsvLoader.  close() is called outside the 
-                transaction and could be called on a different connection altogether in the connection pool.
-            </action>          
+                cleanupAfterDataLoad() at the batch commit instead of in close() in the CsvLoader. close() is called
+                outside the transaction and could be called on a different connection altogether in the connection pool.
+            </action>
             <action dev="chenson42" type="fix">
-                If auto.reload is set to true and the 'client requests' a new registration this means that the client will also be 
-                expecting a new reload, even if the client has previously received one.  
-            </action>           
+                If auto.reload is set to true and the 'client requests' a new registration this means that the client
+                will also be expecting a new reload, even if the client has previously received one.
+            </action>
             <action dev="chenson42" type="fix">
-                Only add javax.servlet.Filter classes that implement IExtensionPoint to the list of SymmmetricFilter filters.  This should help applications
-                that have their own Spring context that includes Spring managed Filters.       
-            </action>                                   
+                Only add javax.servlet.Filter classes that implement IExtensionPoint to the list of SymmmetricFilter
+                filters. This should help applications that have their own Spring context that includes Spring managed
+                Filters.
+            </action>
             <action dev="chenson42" type="fix">
-                Use JDOM in XmlPublisherFilter to format the XML document.  If you are upgrading and are currently doing the escaping characters for
-                XML, you'll probably want to remove that logic.        
-            </action>                           
+                Use JDOM in XmlPublisherFilter to format the XML document. If you are upgrading and are currently doing
+                the escaping characters for XML, you'll probably want to remove that logic.
+            </action>
             <action dev="erilong" type="fix" issue="aid=2216936&amp;atid=997724">
                 The SQL-Server dialect was broken for the sync_on_incoming_batch feature.
-            </action>                
+            </action>
             <action dev="erilong" type="fix">
                 The sample database was missing a trigger that prevented the demo initial load.
-            </action>                
+            </action>
             <action dev="erilong" type="fix" issue="aid=2171726&amp;atid=997724">
                 Quote column names so keyword names can be used
-            </action>                
+            </action>
             <action dev="erilong" type="fix" issue="aid=2263359&amp;atid=997724">
                 Use UTF-8 for transport reader to support Chinese and other charsets
-            </action>                
+            </action>
         </release>
         <release version="1.4.1" date="2008-10-21" description="Patch Release">
             <action dev="chenson42" type="fix">
                 Batches were not being ordered correctly during the extraction when a channel was in error.
-            </action>                
+            </action>
             <action dev="erilong" type="fix" issue="aid=2155736&amp;atid=997724">
                 Loss of precison with Float type on Oracle
-            </action>        
+            </action>
             <action dev="erilong" type="fix" issue="aid=2037604&amp;atid=997724">
                 Support base64 encoding on PostgreSQL.
-            </action>        
+            </action>
         </release>
         <release version="1.4.0" date="2008-10-08" description="Lets add some polish">
             <action dev="erilong" type="fix">
                 Added support for locale specific decimals numbers that use ',' for the decimal points.
-            </action>        
+            </action>
             <action dev="erilong" type="fix" issue="aid=2001909&amp;atid=997724">
                 Support for boolean data type on all platforms (support for tinyint(1) on MySQL)
-            </action>        
+            </action>
             <action dev="erilong" type="fix" issue="aid=2174941&amp;atid=997724">
                 Support binary data in MySQL BLOB columns
-            </action>        
+            </action>
             <action dev="erilong" type="fix" issue="aid=2221304&amp;atid=997724">
                 Fix batch errors hiding actual error on Postgres
-            </action>        
+            </action>
             <action dev="chenson42" type="fix">
                 Enhanced the RSS functionality a bit by adding published date field as the batch creation date, added
                 SQL error information if it exists and the number of times a batch errored out.

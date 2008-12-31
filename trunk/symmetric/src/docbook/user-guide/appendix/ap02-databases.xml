@@ -227,13 +227,12 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
     <section>
         <title>IBM DB2</title>
         <para>
-            The DB2 Dialect uses global variables to enable and disable node and trigger synchronization,
-            which are created automatically during the first startup.  The script for the variables are found
-            in the "dialects/db2.sql" script.
-            The user must supply the DB2 JDBC driver and license jar files, which can be placed in the "lib" folder.
+            The DB2 Dialect uses global variables to enable and disable node and trigger synchronization.
+            These variables are created automatically during the first startup.  
+            The DB2 JDBC driver should be placed in the "lib" folder.
         </para>
         <para>
-            The current DB2 Dialect for SymmetricDS does not provide support for transaction ID.
+            Currently, the DB2 Dialect for SymmetricDS does not provide support for transactional synchronization.
             Large objects (LOB) are supported, but are limited to 16,336 bytes in size.
             The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.
         </para>        
