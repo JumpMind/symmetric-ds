@@ -381,10 +381,10 @@ public class SqlTemplate {
                 break;
             case Types.CHAR:
             case Types.VARCHAR:
-            case Types.LONGVARCHAR:
                 templateToUse = stringColumnTemplate;
                 break;
             case Types.CLOB:
+            case Types.LONGVARCHAR:
                 templateToUse = clobColumnTemplate;
                 break;
             case Types.BLOB:
