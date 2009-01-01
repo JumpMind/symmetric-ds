@@ -31,25 +31,17 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(FirebirdDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
-    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "explain_pretty_print";
+    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
+    
+    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     protected void initForSpecificDialect() {
-        /*
-         * try { if (!isFunctionUpToDate(TRANSACTION_ID_FUNCTION_NAME)) {
-         * logger.info("Creating function " + TRANSACTION_ID_FUNCTION_NAME); new
-         * SqlScript(getTransactionIdSqlUrl(), getPlatform().getDataSource(),
-         * '/') .execute(); } } catch (Exception e) {
-         * 
-         * logger.error("Error while initializing PostgreSql.", e); }
-         */
     }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
-                new Object[] { triggerName }) > 0;
+                new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName) {
@@ -65,31 +57,32 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
-    public void disableSyncTriggers() {
-        // jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "
-        // to off");
-    }
-
     public void disableSyncTriggers(String nodeId) {
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "',1) from rdb$database");
+        if (nodeId != null) {
+            jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from rdb$database");
+        }
     }
 
     public void enableSyncTriggers() {
-        // jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "
-        // to on");
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "',null) from rdb$database");
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "',null) from rdb$database");
     }
 
     public String getSyncTriggersExpression() {
-        // return "current_setting('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE +
-        // "') = 'on'";
-        return "1 = 1";
+        return "rdb$get_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {
-        return "null";
+        return "current_transaction||''";
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select gen_id(gen_" + sequenceName + ", 1) from rdb$database";
+    }
+
+    public boolean isBlobSyncSupported() {
+        return false;
     }
 
     public boolean isCharSpacePadded() {
