@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -36,6 +37,14 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     protected void initForSpecificDialect() {
+        try {
+            jdbcTemplate.queryForInt("select char_length(sym_escape('')) from rdb$database");
+        } catch (UncategorizedSQLException e) {
+            if (e.getSQLException().getErrorCode() == -804) {
+                logger.error("Please install the sym_udf.so/dll to your {firebird_home}/UDF folder.");
+            }
+            throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
+        }
     }
 
     @Override

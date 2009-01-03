@@ -16,21 +16,27 @@
                 <property name="triggerPrefix" value="${trigger.prefix}" />
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from rdb$functions where rdb$function_name = $(functionName)']]>
+                        <![CDATA[select count(*) from rdb$functions where rdb$function_name = '$(functionName)']]>
                     </value>
                 </property>               
                 <property name="functionTemplatesToInstall">
                     <map>
+                        <entry key="SYM_ESCAPE">
+                            <value>
+                                declare external function sym_escape cstring(32660)
+                                returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'
+                            </value>
+                        </entry>
                     </map>
                 </property>                                   
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $(tableAlias).$(columnName) || '"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || sym_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || substring($(tableAlias).$(columnName) from 1) || '"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || sym_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
