@@ -37,6 +37,10 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     protected void initForSpecificDialect() {
+    }
+
+    protected void createRequiredFunctions() {
+        super.createRequiredFunctions();
         try {
             jdbcTemplate.queryForInt("select char_length(sym_escape('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
@@ -111,7 +115,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     protected boolean allowsNullForIdentityColumn() {
-        return false;
+        return true;
     }
 
     public void purge() {
