@@ -63,12 +63,15 @@
                             <value>
                                 <![CDATA[
                                 create trigger $(triggerName) for $(schemaName)$(tableName) after insert as
+                                declare variable id bigint;
                                 begin
                                   if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)) then
                                   begin
+                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, row_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, row_data, create_time)
                                     values(
+                                      :id,
                                       '$(targetTableName)',
                                       'I',
                                       $(triggerHistoryId),
@@ -77,7 +80,7 @@
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event
                                     (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 0), '$(channelName)', $(txIdExpression)
+                                    select node_id, :id, '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
                                     where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
@@ -89,12 +92,15 @@
                             <value>
                                 <![CDATA[
                                 create trigger $(triggerName) for $(schemaName)$(tableName) after update as
+                                declare variable id bigint;
                                 begin
                                   if ($(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)) then
                                   begin
+                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
                                     values(
+                                      :id,
                                       '$(targetTableName)',
                                       'U',
                                       $(triggerHistoryId),
@@ -105,7 +111,7 @@
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event
                                     (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 0), '$(channelName)', $(txIdExpression)
+                                    select node_id, :id, '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
                                     where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
@@ -117,12 +123,15 @@
                             <value>
                                 <![CDATA[
                                 create trigger  $(triggerName) for $(schemaName)$(tableName) after delete as
+                                declare variable id bigint;
                                 begin
                                   if ($(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)) then
                                   begin
+                                    select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, pk_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, create_time)
                                     values(
+                                      :id,
                                       '$(targetTableName)',
                                       'D',
                                       $(triggerHistoryId),
@@ -131,7 +140,7 @@
                                     );
                                     insert into $(defaultSchema)$(prefixName)_data_event
                                     (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 0), '$(channelName)', $(txIdExpression)
+                                    select node_id, :id, '$(channelName)', $(txIdExpression)
                                     from $(prefixName)_node c
                                     where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
