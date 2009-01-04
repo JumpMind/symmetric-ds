@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
+import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -407,7 +408,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 30000)
     public void testReservedColumnNames() {
-        if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect) {
+        if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect ||
+                getRootDbDialect() instanceof FirebirdDbDialect || getClientDbDialect() instanceof FirebirdDbDialect) {
             return;
         }
         // alter the table to have column names that are not usually allowed
