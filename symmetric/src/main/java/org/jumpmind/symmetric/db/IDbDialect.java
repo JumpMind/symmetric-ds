@@ -179,6 +179,10 @@ public interface IDbDialect {
     
     public void createTables(String xml);
 
+    public boolean supportsGetGeneratedKeys();
+    
+    public boolean supportsReturningKeys();
+    
     public String getSelectLastInsertIdSql(String sequenceName);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);

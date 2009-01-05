@@ -90,10 +90,14 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return "current_transaction||''";
     }
 
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select gen_id(gen_" + sequenceName + ", 1) from rdb$database";
+    protected String getTableNamePattern(String tableName) {
+        return tableName.replaceAll("\\_", "\\\\_");
     }
-
+    
+    public boolean supportsReturningKeys() {
+        return true;
+    }
+    
     public boolean isBlobSyncSupported() {
         return false;
     }
