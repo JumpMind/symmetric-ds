@@ -31,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
@@ -120,7 +119,6 @@ public class CsvLoader implements IDataLoader {
     public void load() throws IOException {
         try {
             prepareTableForDataLoad();
-            BinaryEncoding encoding = BinaryEncoding.NONE;
             while (csvReader.readRecord()) {
                 String[] tokens = csvReader.getValues();
                 stats.incrementLineCount();
@@ -129,11 +127,11 @@ public class CsvLoader implements IDataLoader {
 
                     if (tokens[0].equals(CsvConstants.INSERT)) {
                         if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                            insert(tokens, encoding);
+                            insert(tokens);
                         }
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                         if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
-                            update(tokens, encoding);
+                            update(tokens);
                         }
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
                         if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
@@ -154,11 +152,7 @@ public class CsvLoader implements IDataLoader {
                             runDdl(tokens[1]);
                         }
                     } else if (tokens[0].equals(CsvConstants.BINARY)) {
-                        try {
-                            encoding = BinaryEncoding.valueOf(tokens[1]);
-                        } catch (Exception ex) {
-                            logger.warn("Unsupported binary encoding value of " + tokens[1]);
-                        }
+                        context.setBinaryEncodingType(tokens[1]);
                     } else {
                         throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
                                 + stats.getLineCount() + " of batch " + context.getBatchId());
@@ -220,7 +214,7 @@ public class CsvLoader implements IDataLoader {
         }
     }
 
-    protected int insert(String[] tokens, BinaryEncoding encoding) {
+    protected int insert(String[] tokens) {
         stats.incrementStatementCount();
         String[] columnValues = parseColumns(tokens, 1);
         int rows = 0;
@@ -242,7 +236,7 @@ public class CsvLoader implements IDataLoader {
                 if (enableFallbackUpdate) {
                     savepoint = dbDialect.createSavepointForFallback();
                 }
-                rows = context.getTableTemplate().insert(context, columnValues, encoding);
+                rows = context.getTableTemplate().insert(context, columnValues);
                 dbDialect.releaseSavepoint(savepoint);
             } catch (DataIntegrityViolationException e) {
                 // TODO: modify sql-error-codes.xml for unique constraint vs
@@ -255,7 +249,7 @@ public class CsvLoader implements IDataLoader {
                     }
                     String keyValues[] = parseKeys(tokens, 1);
                     stats.incrementFallbackUpdateCount();
-                    rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
+                    rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
                         throw new RuntimeException("Unable to update " + context.getTableName() + ": "
                                 + ArrayUtils.toString(tokens), e);
@@ -271,7 +265,7 @@ public class CsvLoader implements IDataLoader {
         return rows;
     }
 
-    protected int update(String[] tokens, BinaryEncoding encoding) {
+    protected int update(String[] tokens) {
         stats.incrementStatementCount();
         String columnValues[] = parseColumns(tokens, 1);
         String keyValues[] = parseKeys(tokens, 1 + columnValues.length);
@@ -288,7 +282,7 @@ public class CsvLoader implements IDataLoader {
         if (continueToLoad) {
             boolean enableFallbackInsert = parameterService.is(ParameterConstants.DATA_LOADER_ENABLE_FALLBACK_INSERT);
             stats.startTimer();
-            rows = context.getTableTemplate().update(context, columnValues, keyValues, encoding);
+            rows = context.getTableTemplate().update(context, columnValues, keyValues);
             if (rows == 0) {
                 if (enableFallbackInsert) {
                     if (logger.isDebugEnabled()) {
@@ -296,7 +290,7 @@ public class CsvLoader implements IDataLoader {
                                 + ArrayUtils.toString(tokens));
                     }
                     stats.incrementFallbackInsertCount();
-                    rows = context.getTableTemplate().insert(context, columnValues, encoding);
+                    rows = context.getTableTemplate().insert(context, columnValues);
                 } else {
                     // TODO: log the PK information as an ERROR level.
                     stats.incrementDatabaseMillis(stats.endTimer());

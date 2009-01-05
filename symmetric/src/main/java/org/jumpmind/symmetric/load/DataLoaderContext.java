@@ -25,9 +25,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 
 public class DataLoaderContext implements IDataLoaderContext {
+
+    static final Log logger = LogFactory.getLog(DataLoaderContext.class);
 
     private String version;
 
@@ -44,6 +49,8 @@ public class DataLoaderContext implements IDataLoaderContext {
     private TableTemplate tableTemplate;
 
     private Map<String, Object> contextCache = new HashMap<String, Object>();
+    
+    private BinaryEncoding binaryEncoding = BinaryEncoding.NONE;
 
     public DataLoaderContext() {
         this.tableTemplateMap = new HashMap<String, TableTemplate>();
@@ -147,6 +154,25 @@ public class DataLoaderContext implements IDataLoaderContext {
      */
     public Map<String, Object> getContextCache() {
         return contextCache;
+    }
+
+    public BinaryEncoding getBinaryEncoding()
+    {
+        return binaryEncoding;
+    }
+
+    public void setBinaryEncoding(BinaryEncoding binaryEncoding)
+    {
+        this.binaryEncoding = binaryEncoding;
+    }
+
+    public void setBinaryEncodingType(String encoding)
+    {
+        try {
+            this.binaryEncoding = BinaryEncoding.valueOf(encoding);
+        } catch (Exception ex) {
+            logger.warn("Unsupported binary encoding value of " + encoding);
+        }
     }
 
 }
