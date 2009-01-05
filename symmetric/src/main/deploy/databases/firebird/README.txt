@@ -1,6 +1,6 @@
 This folder contains a user defined function (UDF) library that must be installed in the Firebird 2.0
-database for SymmetricDS to work properly.  It includes a sym_escape() function used by the database
-triggers to escape strings.
+database for SymmetricDS to work properly.  It includes the sym_escape() and sym_hex() functions used
+by the database triggers to escape strings and BLOBs.
 
 The following files are included:
 

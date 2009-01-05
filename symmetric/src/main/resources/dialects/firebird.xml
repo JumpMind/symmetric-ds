@@ -27,6 +27,12 @@
                                 returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'
                             </value>
                         </entry>
+                        <entry key="SYM_HEX">
+                            <value>
+                                declare external function sym_hex blob
+                                returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'
+                            </value>
+                        </entry>
                     </map>
                 </property>                                   
                 <property name="stringColumnTemplate" >
@@ -41,7 +47,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[''||','||]]>
+                        <![CDATA[sym_hex($(tableAlias).$(columnName))||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
