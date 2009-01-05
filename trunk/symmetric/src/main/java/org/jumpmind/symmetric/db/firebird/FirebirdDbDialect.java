@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.firebird;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -99,7 +100,11 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     public boolean isBlobSyncSupported() {
-        return false;
+        return true;
+    }
+    
+    public BinaryEncoding getBinaryEncoding() {
+        return BinaryEncoding.HEX;
     }
 
     public boolean isCharSpacePadded() {
