@@ -307,7 +307,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
                 ResultSet tableData = null;
                 try {
-                    tableData = metaData.getTables(tableName);
+                    tableData = metaData.getTables(getTableNamePattern(tableName));
                     while (tableData != null && tableData.next()) {
                         Map<String, Object> values = readColumns(tableData, initColumnsForTable());
                         table = readTable(metaData, values);
@@ -323,6 +323,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         });
     }
 
+    protected String getTableNamePattern(String tableName) {
+        return tableName;
+    }
+    
     /**
      * Treat tables with no primary keys as a table with all primary keys.
      */
@@ -399,7 +403,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected Collection<Column> readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         ResultSet columnData = null;
         try {
-            columnData = metaData.getColumns(tableName, null);
+            columnData = metaData.getColumns(getTableNamePattern(tableName), null);
             List<Column> columns = new ArrayList<Column>();
             Map values = null;
             for (; columnData.next(); columns.add(readColumn(metaData, values))) {
@@ -491,7 +495,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             List<String> pks = new ArrayList<String>();
             Map values;
-            for (pkData = metaData.getPrimaryKeys(tableName); pkData.next(); pks.add(readPrimaryKeyName(metaData,
+            for (pkData = metaData.getPrimaryKeys(getTableNamePattern(tableName)); pkData.next(); pks.add(readPrimaryKeyName(metaData,
                     values))) {
                 values = readColumns(pkData, initColumnsForPK());
             }
@@ -529,7 +533,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         ResultSet indexData = null;
 
         try {
-            indexData = metaData.getIndices(tableName, false, false);
+            indexData = metaData.getIndices(getTableNamePattern(tableName), false, false);
 
             while (indexData.next()) {
                 Map values = readColumns(indexData, initColumnsForIndex());
@@ -790,6 +794,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return supportsGetGeneratedKeys;
     }
 
+    public boolean supportsReturningKeys() {
+        return false;
+    }
+    
     public String getSelectLastInsertIdSql(String sequenceName) {
         throw new UnsupportedOperationException();
     }
@@ -810,6 +818,18 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    protected String getSequenceKeyName(SequenceIdentifier identifier) {
+        switch (identifier) {
+        case OUTGOING_BATCH:
+            return "batch_id";
+        case DATA:
+            return "data_id";
+        case TRIGGER_HIST:
+            return "trigger_hist_id";
+        }
+        return null;
+    }
+
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback callback) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {
@@ -819,9 +839,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 PreparedStatement ps = null;
                 try {
                     boolean supportsGetGeneratedKeys = supportsGetGeneratedKeys();
+                    boolean supportsReturningKeys = supportsReturningKeys();
                     if (allowsNullForIdentityColumn()) {
                         if (supportsGetGeneratedKeys) {
                             ps = conn.prepareStatement(sql, new int[] { 1 });
+                        } else if (supportsReturningKeys) {
+                            ps = conn.prepareStatement(sql + " returning " + getSequenceKeyName(sequenceId));
                         } else {
                             ps = conn.prepareStatement(sql);
                         }
@@ -838,10 +861,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         callback.doInPreparedStatement(ps);
                     }
 
-                    ps.executeUpdate();
-
+                    ResultSet rs = null;
                     if (supportsGetGeneratedKeys) {
-                        ResultSet rs = null;
+                        ps.executeUpdate();
                         try {
                             rs = ps.getGeneratedKeys();
                             if (rs.next()) {
@@ -850,9 +872,18 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         } finally {
                             JdbcUtils.closeResultSet(rs);
                         }
+                    } else if (supportsReturningKeys) {
+                        try {
+                            rs = ps.executeQuery();
+                            if (rs.next()) {
+                                key = rs.getLong(1);
+                            }
+                        } finally {
+                            JdbcUtils.closeResultSet(rs);
+                        }
                     } else {
                         Statement st = null;
-                        ResultSet rs = null;
+                        ps.executeUpdate();
                         try {
                             st = conn.createStatement();
                             rs = st.executeQuery(getSelectLastInsertIdSql(getSequenceName(sequenceId)));
