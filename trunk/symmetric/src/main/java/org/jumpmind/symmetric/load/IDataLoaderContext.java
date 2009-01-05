@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.load;
 import java.util.Map;
 
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 
 public interface IDataLoaderContext {
 
@@ -46,5 +47,9 @@ public interface IDataLoaderContext {
     public Table[] getAllTablesProcessed();
 
     public Map<String, Object> getContextCache();
+    
+    public TableTemplate getTableTemplate();
+    
+    public BinaryEncoding getBinaryEncoding();
 
 }

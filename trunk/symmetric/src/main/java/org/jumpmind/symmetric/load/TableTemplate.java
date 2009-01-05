@@ -147,19 +147,11 @@ public class TableTemplate {
     }
 
     public int insert(IDataLoaderContext ctx, String[] columnValues) {
-        return insert(ctx, columnValues, BinaryEncoding.NONE);
-    }
-
-    public int insert(IDataLoaderContext ctx, String[] columnValues, BinaryEncoding encoding) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT, encoding);
-        return execute(ctx, st, columnValues, columnMetaData, encoding);
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.INSERT);
+        return execute(ctx, st, columnValues, columnMetaData);
     }
 
     public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues) {
-        return update(ctx, columnValues, keyValues, BinaryEncoding.NONE);
-    }
-
-    public int update(IDataLoaderContext ctx, String[] columnValues, String[] keyValues, BinaryEncoding encoding) {
         StatementBuilder st = null;
         Column[] metaData = null;
         if (oldData != null) {
@@ -175,7 +167,7 @@ public class TableTemplate {
             }
             if (changedColumnNameList.size() > 0) {
                 String[] changedColumnNames = changedColumnNameList.toArray(new String[0]);
-                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNames, encoding);
+                st = createStatementBuilder(ctx, DmlType.UPDATE, changedColumnNames);
                 columnValues = (String[]) changedColumnValueList.toArray(new String[0]);
                 Column[] changedColumnMetaData = (Column[]) changedColumnMetaList.toArray(new Column[0]);
                 metaData = (Column[]) ArrayUtils.addAll(changedColumnMetaData, keyMetaData);
@@ -185,17 +177,17 @@ public class TableTemplate {
             String[] values = removeKeysFromColumnValuesIfSame(ctx, keyValues, columnValues);
             if (values != null) {
                 columnValues = values;
-                st = getStatementBuilder(ctx, DmlType.UPDATE_NO_KEYS, encoding);
+                st = getStatementBuilder(ctx, DmlType.UPDATE_NO_KEYS);
                 metaData = noKeyColumnPlusKeyMetaData;
             }
         }
 
         if (st == null) {
-            st = getStatementBuilder(ctx, DmlType.UPDATE, encoding);
+            st = getStatementBuilder(ctx, DmlType.UPDATE);
             metaData = columnKeyMetaData;
         }
         String[] values = (String[]) ArrayUtils.addAll(columnValues, keyValues);
-        return execute(ctx, st, values, metaData, encoding);
+        return execute(ctx, st, values, metaData);
     }
 
     /**
@@ -266,21 +258,21 @@ public class TableTemplate {
     }
 
     public int delete(IDataLoaderContext ctx, String[] keyValues) {
-        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE, BinaryEncoding.NONE);
-        return execute(ctx, st, keyValues, keyMetaData, BinaryEncoding.NONE);
+        StatementBuilder st = getStatementBuilder(ctx, DmlType.DELETE);
+        return execute(ctx, st, keyValues, keyMetaData);
     }
 
-    private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type, BinaryEncoding encoding) {
+    private StatementBuilder getStatementBuilder(IDataLoaderContext ctx, DmlType type) {
         StatementBuilder st = statementMap.get(type);
         if (st == null) {
-            st = createStatementBuilder(ctx, type, columnNames, encoding);
+            st = createStatementBuilder(ctx, type, columnNames);
             statementMap.put(type, st);
         }
         return st;
     }
 
     private StatementBuilder createStatementBuilder(IDataLoaderContext ctx, DmlType type,
-            String[] filteredColumnNames, BinaryEncoding encoding) {
+            String[] filteredColumnNames) {
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 filteredColumnNames = columnFilter.filterColumnsNames(ctx, type, getTable(), filteredColumnNames);
@@ -310,8 +302,7 @@ public class TableTemplate {
                         .getIdentifierQuoteString());
     }
 
-    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData,
-            BinaryEncoding encoding) {
+    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -341,6 +332,7 @@ public class TableTemplate {
                     } else if (type == Types.BOOLEAN) {
                         objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
                     } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY) {
+                        BinaryEncoding encoding = ctx.getBinaryEncoding();
                         if (encoding == BinaryEncoding.NONE) {
                             objectValue = value.getBytes();
                         } else if (encoding == BinaryEncoding.BASE64) {
