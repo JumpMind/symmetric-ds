@@ -18,20 +18,14 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include "ibase.h"
-#include "ib_util.h"
-
-static char backslash_chr = '\\';
-static char quote_chr = '"';
-static char *empty_str = "";
-
-char *sym_escape(char *str);
-char *sym_hex(BLOBCALLBACK blob);
+#include "sym_udf.h"
 
 char *sym_escape(char *str)
 {
    int len = 0, count = 0;
+   int i, j;
+   char *result;
+
    if (str != NULL)
    {
       for (; str[len] != NULL; len++)
@@ -43,13 +37,12 @@ char *sym_escape(char *str)
       }
    }
 
-   char *result = (char *) ib_util_malloc(count + len + 1);
+   result = (char *) ib_util_malloc(count + len + 1);
    if (result == NULL)
    {
       return empty_str;
    }
 
-   int i, j;
    for (i = 0, j = 0; i < len; i++, j++)
    {
       if (str[i] == quote_chr || str[i] == backslash_chr)
@@ -74,8 +67,10 @@ char *sym_escape(char *str)
 char *sym_hex(BLOBCALLBACK blob)
 {
    char *result, *hex_result;
+   int hex_result_size;
    long bytes_read;
    long bytes_left, total_bytes_read;
+   int i, j;
 
    bytes_read = 0;
    total_bytes_read = 0;
@@ -103,10 +98,9 @@ char *sym_hex(BLOBCALLBACK blob)
       }
    }
 
-   int hex_result_size = (total_bytes_read * 2) + 1;
+   hex_result_size = (total_bytes_read * 2) + 1;
    hex_result = (char *) ib_util_malloc(hex_result_size);
    memset(hex_result, 0, hex_result_size);
-   int i, j;
    for (i = 0, j = 0; j < hex_result_size; i++, j += 2)
    {
       sprintf(hex_result + j, "%02x", result[i]); 
