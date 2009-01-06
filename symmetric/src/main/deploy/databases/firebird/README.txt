@@ -1,14 +1,37 @@
+Symmetric UDF for Firebird
+--------------------------
 This folder contains a user defined function (UDF) library that must be installed in the Firebird 2.0
 database for SymmetricDS to work properly.  It includes the sym_escape() and sym_hex() functions used
 by the database triggers to escape strings and BLOBs.
 
-The following files are included:
+How to Install
+--------------
+The sym_udf library is copied to the UDF folder under the Firebird installation directory.
 
-* sym_udf.c   - The C program implementing the user defined functions
-* build.sh    - A shell program that compiles and links the sym_udf library
-* sym_udf.so  - A compiled Linux shared object library
-* sym_udf.dll - A compiled Windows shared object library
+For Linux users:
 
-Linux users will copy the sym_udf.so file into the Firebird installation directory, while Windows
-users will copy the sym_udf.dll file.  The file is copied to the "UDF" folder under the Firebird
-installation home directory.
+   Copy sym_udf.so to /opt/firebird/UDF
+
+For Windows users:
+
+   Copy sym_udf.dll to C:\Program Files\Firebird\Firebird_2_1\UDF
+
+When SymmetricDS starts up for the first time, it will enable the functions (using the
+"create external function" command) and test that they are working.
+
+How to Build
+------------
+If you want to the build the library yourself, the following files are included:
+
+Source files:
+* sym_udf.c      - The C program implementing the user defined functions
+* sym_udf.h      - The header file with function declarations
+
+For Unix users:
+* build.sh       - A shell program for Unix that compiles and links the sym_udf library
+
+For Windows users:
+* sym_udf.vcproj - A project file for Microsoft Visual Studio
+* sym_udf.sln    - A solution file for Microsoft Visual Studio
+* sym_udf.def    - A DLL definition file for Microsoft Visual Studio
+
