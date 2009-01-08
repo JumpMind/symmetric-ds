@@ -444,11 +444,14 @@
                     alter table ${sync.table.prefix}_trigger_hist add trigger_row_hash numeric(22) default 0
                 </value>
                 <value>
-                    drop package pack_symmetric;
+                    drop package pack_symmetric
                 </value>
                 <value>
-                    drop package body pack_symmetric;
+                    drop package body pack_symmetric
                 </value>
+                <value>
+                    delete from sym_trigger where source_table_name like 'sym%'
+                </value>                
             </list>
         </property>
     </bean>
