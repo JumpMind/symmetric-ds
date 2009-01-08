@@ -416,8 +416,7 @@
                     alter table ${sync.table.prefix}_node add created_at_node_id varchar(50) default '00000'
                 </value>                    
                 <value>
-                    alter table ${sync.table.prefix}_trigger
-                    add trigger_row_hash numeric(22) default 0
+                    alter table ${sync.table.prefix}_trigger_hist add trigger_row_hash numeric(22) default 0
                 </value>                                                
             </list>
         </property>
