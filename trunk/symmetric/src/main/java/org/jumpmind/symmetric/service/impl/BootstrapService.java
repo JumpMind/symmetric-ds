@@ -82,33 +82,39 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     private boolean initialized = false;
 
-    private Map<Integer,Trigger> triggerCache;
-    
+    private Map<Integer, Trigger> triggerCache;
+
     public void setupDatabase() {
         setupDatabase(false);
     }
-    
+
+    private void autoConfigDatabase(boolean force) {
+        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
+            logger.info("Initializing SymmetricDS database.");
+            dbDialect.initConfigDb();
+            if (defaultChannels != null) {
+                logger.info("Setting up " + defaultChannels.size() + " default channels");
+                for (Channel defaultChannel : defaultChannels) {
+                    configurationService.saveChannel(defaultChannel);
+                }
+            }
+            parameterService.rereadParameters();
+            logger.info("Done initializing SymmetricDS database.");
+        } else {
+            logger.info("SymmetricDS is not configured to auto create the database.");
+        }
+    }
+
     public void setupDatabase(boolean force) {
         if (!initialized || force) {
-            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-                logger.info("Initializing SymmetricDS database.");
-                dbDialect.initConfigDb();
-                if (defaultChannels != null) {
-                    logger.info("Setting up " + defaultChannels.size() + " default channels");
-                    for (Channel defaultChannel : defaultChannels) {
-                        configurationService.saveChannel(defaultChannel);
-                    }
-                }
-                parameterService.rereadParameters();
-                logger.info("Done initializing SymmetricDS database.");
-            } else {
-                logger.info("SymmetricDS is not configured to auto create the database.");
-            }
-
+            autoConfigDatabase(force);
             if (upgradeService.isUpgradeNecessary()) {
                 if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
                     try {
                         upgradeService.upgrade();
+                        // rerun the auto configuration to make sure things are
+                        // kosher after the upgrade
+                        autoConfigDatabase(force);
                     } catch (RuntimeException ex) {
                         logger
                                 .fatal(
@@ -188,8 +194,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
         return triggers;
     }
-    
-    public Map<Integer,Trigger> getCachedTriggers(boolean refreshCache) {
+
+    public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache) {
         if (triggerCache == null || refreshCache) {
             synchronized (this) {
                 triggerCache = new HashMap<Integer, Trigger>();
@@ -199,13 +205,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         .getString(ParameterConstants.NODE_GROUP_ID)));
                 for (Trigger trigger : triggers) {
                     triggerCache.put(trigger.getTriggerId(), trigger);
-                }               
+                }
             }
         }
         return triggerCache;
     }
-
-    
 
     private void updateOrCreateSymTriggers() {
         Collection<Trigger> triggers = getCachedTriggers(true).values();
@@ -366,13 +370,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
         int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
         String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
-        newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix, maxTriggerNameLength,
-                trigger, hist).toUpperCase());
-        newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix, maxTriggerNameLength,
-                trigger, hist).toUpperCase());
-        newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix, maxTriggerNameLength,
-                trigger, hist).toUpperCase());
-        
+        newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+        newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+        newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+
         String oldTriggerName = null;
         String oldSourceSchema = null;
         String oldCatalogName = null;
@@ -398,7 +402,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if ((forceRebuild || !create) && triggerExists) {
-            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(), oldhist);
+            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(),
+                    oldhist);
             triggerExists = false;
         }
 
