@@ -450,7 +450,7 @@
                     drop package body pack_symmetric
                 </value>
                 <value>
-                    delete from sym_trigger where source_table_name like 'sym%'
+                    delete from ${sync.table.prefix}_trigger where source_table_name like 'sym%'
                 </value>                
             </list>
         </property>
