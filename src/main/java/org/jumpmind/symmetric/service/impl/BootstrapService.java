@@ -88,27 +88,32 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         setupDatabase(false);
     }
     
+    private void autoConfigDatabase(boolean force) {
+        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
+            logger.info("Initializing SymmetricDS database.");
+            dbDialect.initConfigDb();
+            if (defaultChannels != null) {
+                logger.info("Setting up " + defaultChannels.size() + " default channels");
+                for (Channel defaultChannel : defaultChannels) {
+                    configurationService.saveChannel(defaultChannel);
+                }
+            }
+            parameterService.rereadParameters();
+            logger.info("Done initializing SymmetricDS database.");
+        } else {
+            logger.info("SymmetricDS is not configured to auto create the database.");
+        }
+    }
+    
     public void setupDatabase(boolean force) {
         if (!initialized || force) {
-            if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-                logger.info("Initializing SymmetricDS database.");
-                dbDialect.initConfigDb();
-                if (defaultChannels != null) {
-                    logger.info("Setting up " + defaultChannels.size() + " default channels");
-                    for (Channel defaultChannel : defaultChannels) {
-                        configurationService.saveChannel(defaultChannel);
-                    }
-                }
-                parameterService.rereadParameters();
-                logger.info("Done initializing SymmetricDS database.");
-            } else {
-                logger.info("SymmetricDS is not configured to auto create the database.");
-            }
+            autoConfigDatabase(force);
 
             if (upgradeService.isUpgradeNecessary()) {
                 if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
                     try {
                         upgradeService.upgrade();
+                        autoConfigDatabase(force);
                     } catch (RuntimeException ex) {
                         logger
                                 .fatal(
