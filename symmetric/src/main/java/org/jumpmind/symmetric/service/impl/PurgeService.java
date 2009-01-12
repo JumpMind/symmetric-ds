@@ -180,8 +180,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         return new NodeBatchRange(rs.getString(1), rs.getInt(2), rs.getInt(3));
                     }
                 });
-        purgeByNodeBatchRangeList(getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
         purgeByNodeBatchRangeList(getSql("deleteIncomingBatchHistSql"), nodeBatchRangeList);
+        purgeByNodeBatchRangeList(getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
     }
 
     private void purgeByNodeBatchRangeList(String deleteSql, List<NodeBatchRange> nodeBatchRangeList) {
