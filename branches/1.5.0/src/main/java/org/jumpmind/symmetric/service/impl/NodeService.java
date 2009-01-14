@@ -53,6 +53,10 @@ public class NodeService extends AbstractService implements INodeService {
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
+    
+    public String findSymmetricVersion() {
+        return (String)jdbcTemplate.queryForObject("findSymmetricVersionSql", String.class);
+    }
 
     /**
      * Lookup a node in the database, which contains information for syncing
@@ -91,8 +95,7 @@ public class NodeService extends AbstractService implements INodeService {
     /**
      * Lookup a node_security in the database, which contains private
      * information used to authenticate.
-     */
-    @SuppressWarnings("unchecked")
+     */ 
     public NodeSecurity findNodeSecurity(String id) {
         return findNodeSecurity(id, false);
     }

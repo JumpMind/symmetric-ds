@@ -32,6 +32,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
+    public String findSymmetricVersion() {
+        return null;
+    }
+    
     public Node findNode(String nodeId) {
         return null;
     }
