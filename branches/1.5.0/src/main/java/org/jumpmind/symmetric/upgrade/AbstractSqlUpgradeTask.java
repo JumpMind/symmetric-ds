@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.upgrade;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 abstract public class AbstractSqlUpgradeTask implements IUpgradeTask {
@@ -37,11 +37,11 @@ abstract public class AbstractSqlUpgradeTask implements IUpgradeTask {
     public void upgrade(int[] fromVersion) {
     }
 
-    protected String prepareSql(Node node, String sql) {
+    protected String prepareSql(String nodeId, IParameterService parameterService, String sql) {
         if (useReplacement) {
-            sql = replace("groupId", node.getNodeGroupId(), sql);
-            sql = replace("externalId", node.getExternalId(), sql);
-            sql = replace("nodeId", node.getNodeId(), sql);
+            sql = replace("groupId", parameterService.getNodeGroupId(), sql);
+            sql = replace("externalId", parameterService.getExternalId(), sql);
+            sql = replace("nodeId", nodeId, sql);
         }
         return sql;
     }

@@ -36,6 +36,10 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    public String findMyNodeId() {
+        return null;
+    }
+    
     public Node findNode(String nodeId) {
         return null;
     }

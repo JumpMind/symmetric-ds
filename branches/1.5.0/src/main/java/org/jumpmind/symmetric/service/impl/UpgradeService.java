@@ -52,12 +52,13 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
     }
 
     public void upgrade() {
-        Node node = nodeService.findIdentity();
-        if (node != null) {
-            int[] fromVersion = Version.parseVersion(node.getSymmetricVersion());
-
-            if (Version.isOlderMinorVersion(node.getSymmetricVersion())) {
-                runUpgrade(node, fromVersion);
+        String symmetricVersion = nodeService.findSymmetricVersion();
+        String nodeId = nodeService.findMyNodeId();
+        if (symmetricVersion != null && nodeId != null) {
+            int[] fromVersion = Version.parseVersion(symmetricVersion);
+            if (Version.isOlderMinorVersion(symmetricVersion)) {
+                runUpgrade(nodeId, fromVersion);
+                Node node = nodeService.findIdentity();
                 node.setSymmetricVersion(Version.version());
                 nodeService.updateNode(node);
             }
@@ -66,7 +67,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         }
     }
 
-    private void runUpgrade(Node node, int[] fromVersion) {
+    private void runUpgrade(String nodeId, int[] fromVersion) {
         String majorMinorVersion = fromVersion[0] + "." + fromVersion[1];
         List<IUpgradeTask> upgradeTaskList = upgradeTaskMap.get(majorMinorVersion);
         logger.warn("Starting upgrade from version " + majorMinorVersion + " to " + Version.version());
@@ -75,7 +76,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
             for (IUpgradeTask upgradeTask : upgradeTaskList) {
                 if ((isRegistrationServer && upgradeTask.isUpgradeRegistrationServer())
                         || (!isRegistrationServer && upgradeTask.isUpgradeNonRegistrationServer())) {
-                    upgradeTask.upgrade(node, fromVersion);
+                    upgradeTask.upgrade(nodeId, parameterService, fromVersion);
                 }
             }
         }
