@@ -30,6 +30,8 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 
 public interface INodeService {
 
+    public String findSymmetricVersion();
+    
     public Node findNode(String nodeId);
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId);

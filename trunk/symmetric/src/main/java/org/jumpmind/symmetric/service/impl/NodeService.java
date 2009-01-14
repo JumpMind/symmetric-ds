@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -53,7 +54,15 @@ public class NodeService extends AbstractService implements INodeService {
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
-
+    
+    public String findSymmetricVersion() {
+        try {
+            return (String) jdbcTemplate.queryForObject(getSql("findSymmetricVersionSql"), String.class);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }
+    
     /**
      * Lookup a node in the database, which contains information for syncing
      * with it.
@@ -92,7 +101,6 @@ public class NodeService extends AbstractService implements INodeService {
      * Lookup a node_security in the database, which contains private
      * information used to authenticate.
      */
-    @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String id) {
         return findNodeSecurity(id, false);
     }
