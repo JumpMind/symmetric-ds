@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -53,9 +54,13 @@ public class NodeService extends AbstractService implements INodeService {
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
-    
+
     public String findSymmetricVersion() {
-        return (String)jdbcTemplate.queryForObject("findSymmetricVersionSql", String.class);
+        try {
+            return (String) jdbcTemplate.queryForObject(getSql("findSymmetricVersionSql"), String.class);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
     }
 
     /**
@@ -95,7 +100,7 @@ public class NodeService extends AbstractService implements INodeService {
     /**
      * Lookup a node_security in the database, which contains private
      * information used to authenticate.
-     */ 
+     */
     public NodeSecurity findNodeSecurity(String id) {
         return findNodeSecurity(id, false);
     }
@@ -114,7 +119,8 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword(), findIdentity().getNodeId() });
+        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword(),
+                findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
@@ -206,9 +212,9 @@ public class NodeService extends AbstractService implements INodeService {
         flushNodeAuthorizedCache();
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
-                security.getCreatedByNodeId(), security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER,
-                Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
+                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedByNodeId(),
+                security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
+                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
     }
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled) {
