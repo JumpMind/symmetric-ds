@@ -37,6 +37,8 @@ public interface INodeService {
     public NodeSecurity findNodeSecurity(String nodeId);
     
     public String findSymmetricVersion();
+    
+    public String findMyNodeId();
 
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
 

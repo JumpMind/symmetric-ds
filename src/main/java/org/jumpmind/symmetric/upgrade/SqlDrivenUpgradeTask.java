@@ -25,7 +25,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
@@ -36,8 +36,8 @@ public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
 
     protected String updateSql;
 
-    public void upgrade(final Node node, int[] fromVersion) {
-        String sql = prepareSql(node, driverSql);
+    public void upgrade(final String nodeId, final IParameterService parameterService, int[] fromVersion) {
+        String sql = prepareSql(nodeId, parameterService, driverSql);
         logger.warn("Upgrade for each: " + sql);
         logger.warn("Upgrade do: " + updateSql);
         jdbcTemplate.query(sql, new RowCallbackHandler() {
@@ -47,7 +47,7 @@ public class SqlDrivenUpgradeTask extends AbstractSqlUpgradeTask {
                 for (int i = 0; i < count; i++) {
                     params[i] = rs.getObject(i + 1);
                 }
-                jdbcTemplate.update(prepareSql(node, updateSql), params);
+                jdbcTemplate.update(prepareSql(nodeId, parameterService, updateSql), params);
             }
         });
     }

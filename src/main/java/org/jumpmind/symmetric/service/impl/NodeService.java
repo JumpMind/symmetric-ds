@@ -62,6 +62,14 @@ public class NodeService extends AbstractService implements INodeService {
             return null;
         }
     }
+    
+    public String findMyNodeId() {
+        try {
+            return (String) jdbcTemplate.queryForObject(getSql("findMyNodeIdSql"), String.class);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }    
 
     /**
      * Lookup a node in the database, which contains information for syncing
