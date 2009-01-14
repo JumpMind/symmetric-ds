@@ -1,0 +1,27 @@
+ ------
+ Roadmap
+ ------
+ ------
+ Date
+ ------
+ 
+Development Roadmap
+
+* Ongoing
+
+  * <<User Guide Documentation>> - Please check back frequently.  We are updating the documentation on an ongoing basis.
+  
+* Future Releases
+
+  * <<GUI Configuration Application>>
+
+  * <<Refactored Data Event>> - Remove the inline overhead of inserting into data_event
+
+  * <<Firebird Dialect>>
+
+  * <<DB2 Dialect>>
+
+  * <<Conflict Resolution Strategies>>
+   
+  * <<{{{http://sourceforge.net/tracker/?group_id=206470&amp;atid=997727}Feature Requests}}>> - Prioritized by community requests
+  
