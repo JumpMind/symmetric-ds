@@ -12,7 +12,12 @@
       <value>
         select symmetric_version from ${sync.table.prefix}_node where node_id in (select node_id from ${sync.table.prefix}_node_identity)
       </value>
-    </entry>    
+    </entry>  
+    <entry key="findMyNodeIdSql">
+      <value>
+        select node_id from ${sync.table.prefix}_node_identity
+      </value>
+    </entry>          
     <entry key="nodeChannelControlIgnoreSql">
       <value>
         update ${sync.table.prefix}_node_channel_ctl set ignore_enabled=? where node_id=? and
