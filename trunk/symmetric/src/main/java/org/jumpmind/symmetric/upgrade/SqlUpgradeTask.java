@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 
@@ -46,10 +46,10 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
         }
     }
 
-    public void upgrade(Node node, int[] fromVersion) {
+    public void upgrade(String nodeId, IParameterService parameterService, int[] fromVersion) {
         if (dialectName == null || (dbDialect != null && dbDialect.getName().equalsIgnoreCase((dialectName)))) {
             for (String sql : sqlList) {
-                sql = prepareSql(node, sql);
+                sql = prepareSql(nodeId, parameterService, sql);
                 logger.warn("Upgrade: " + sql);
                 if (ignoreFailure) {
                     try {

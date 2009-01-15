@@ -35,7 +35,11 @@ public class MockNodeService implements INodeService {
     public String findSymmetricVersion() {
         return null;
     }
-
+    
+    public String findMyNodeId() {
+        return null;
+    }
+    
     public Node findNode(String nodeId) {
         return null;
     }
@@ -95,11 +99,11 @@ public class MockNodeService implements INodeService {
     public Node findIdentity(boolean useCache) {
         return null;
     }
-
+    
     public String generateNodeId(String nodeGroupId, String externalId) {
         return null;
     }
-
+    
     public String generatePassword() {
         return null;
     }
