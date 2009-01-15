@@ -57,8 +57,7 @@ public class CsvExtractor14 implements IDataExtractor {
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
         Util.write(writer, CsvConstants.BATCH, Util.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, Util.DELIMITER, dbDialect.getBinaryEncoding()
-                .name());
+        Util.write(writer, CsvConstants.BINARY, Util.DELIMITER, dbDialect.getBinaryEncoding().name());
         writer.newLine();
     }
 
@@ -80,26 +79,23 @@ public class CsvExtractor14 implements IDataExtractor {
      * @param out
      */
     public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
+        if (data.getAudit() != null) {
+            String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
+            if (!context.getAuditRecordsWritten().contains(auditKey)) {
+                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+                out.newLine();
+                Util.write(out, CsvConstants.KEYS, ", ", data.getAudit().getPkColumnNames());
+                out.newLine();
+                Util.write(out, CsvConstants.COLUMNS, ", ", data.getAudit().getColumnNames());
+                out.newLine();
+                context.getAuditRecordsWritten().add(auditKey);
+            } else if (!context.isLastTable(data.getTableName())) {
+                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+                out.newLine();
+            }
 
-        if (data.getAudit() == null) {
-            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
-                    + ": try running syncTriggers() or restarting SymmetricDS");
+            context.setLastTableName(data.getTableName());
         }
-        String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
-        if (!context.getAuditRecordsWritten().contains(auditKey)) {
-            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-            out.newLine();
-            Util.write(out, CsvConstants.KEYS, ", ", data.getAudit().getPkColumnNames());
-            out.newLine();
-            Util.write(out, CsvConstants.COLUMNS, ", ", data.getAudit().getColumnNames());
-            out.newLine();
-            context.getAuditRecordsWritten().add(auditKey);
-        } else if (!context.isLastTable(data.getTableName())) {
-            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-            out.newLine();
-        }
-
-        context.setLastTableName(data.getTableName());
     }
 
     public void setDictionary(Map<String, IStreamDataCommand> dictionary) {
