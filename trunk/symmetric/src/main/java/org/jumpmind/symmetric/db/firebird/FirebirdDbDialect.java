@@ -142,4 +142,8 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    public boolean supportsOpenCursorsAcrossCommit() {
+        return false;
+    }
+
 }
