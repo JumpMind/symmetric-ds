@@ -98,6 +98,15 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                     </row>                                    
+                    <row>
+                        <entry>Firebird</entry>
+                        <entry>2.0</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>                                    
                 </tbody>
             </tgroup>
         </table>
@@ -236,6 +245,59 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             Large objects (LOB) are supported, but are limited to 16,336 bytes in size.
             The current features in the DB2 Dialect have been tested using DB2 9.5 on Linux and Windows operating systems.
         </para>        
+    </section>      
+    <section>
+        <title>Firebird</title>
+        <para>
+            The Firebird Dialect requires the installation of a User Defined Function (UDF) library
+            in order to provide functionality needed by the database triggers.
+            SymmetricDS includes the required UDF library, called SYM_UDF, in both source form 
+            (as a C program) and as pre-compiled libraries for both Windows and Linux.  
+            The SYM_UDF library is copied into the UDF folder within the Firebird installation directory.
+        </para>
+        <para>
+            For Linux users: 
+        </para>
+        <para>
+            <command>cp databases/firebird/sym_udf.so /opt/firebird/UDF</command>
+        </para>
+        <para>
+            For Windows users: 
+        </para>
+        <para>
+            <command>copy databases\firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF</command>        
+        </para>
+        <para>
+            The
+            <ulink url="http://www.firebirdsql.org/index.php?op=devel&amp;sub=jdbc">
+                Jaybird JDBC driver
+            </ulink>
+            was used during testing, but the user must download the driver
+            and place it in the SymmetricDS "lib" folder.
+        </para>
+        <para>
+            The following limitations currently exist for this dialect:
+        </para>
+        <para>
+          <itemizedlist spacing="compact">
+              <listitem>
+                  <para>
+                      The outgoing batch does not honor the channel size, and all 
+                      outstanding data events are included in a batch.
+                  </para>
+              </listitem>
+              <listitem>
+                  <para>
+                      Syncing of Binary Large Object (BLOB) is limited to 16K bytes per column.
+                  </para>
+              </listitem>
+              <listitem>
+                  <para>
+                      Syncing of character data is limited to 32K bytes per column.
+                  </para>
+              </listitem>
+          </itemizedlist>
+        </para>
     </section>      
 
 </appendix>

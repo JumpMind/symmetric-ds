@@ -173,6 +173,9 @@
             <listitem>
                 <para>IBM DB2 9.5</para>
             </listitem>            
+            <listitem>
+                <para>Firebird 2.0 and above</para>
+            </listitem>            
         </itemizedlist>
         <para>
             See the appendix <link linkend="databases">Database Notes</link> for compatibility notes and
