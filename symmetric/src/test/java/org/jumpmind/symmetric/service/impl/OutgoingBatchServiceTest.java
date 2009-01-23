@@ -146,6 +146,11 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         int size = 50;
         int count = 3; // must be <= size
+        
+        if (! getDbDialect().supportsOpenCursorsAcrossCommit()) {
+            count = 1;
+        }
+        
         assertTrue(count <= size);
 
         for (int i = 0; i < size * count; i++) {

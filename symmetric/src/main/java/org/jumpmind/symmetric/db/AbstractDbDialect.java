@@ -1071,4 +1071,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return shortName.toString();
     }
 
+    public boolean supportsOpenCursorsAcrossCommit() {
+        return true;
+    }
 }

@@ -97,7 +97,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"), new Object[] { 0,
                     nodeId, channel.getId() });
 
-            if (dataEventCount > channel.getMaxBatchSize()) {
+            if (dataEventCount > channel.getMaxBatchSize() && dbDialect.supportsOpenCursorsAcrossCommit()) {
                 buildOutgoingBatchesPeekAhead(nodeId, channel);
             } else if (dataEventCount > 0) {
                 OutgoingBatch newBatch = new OutgoingBatch();

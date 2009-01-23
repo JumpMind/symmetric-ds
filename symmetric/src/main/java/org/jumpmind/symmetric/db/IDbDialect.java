@@ -205,4 +205,6 @@ public interface IDbDialect {
             String targetString);
 
     public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger, TriggerHistory hist);
+
+    public boolean supportsOpenCursorsAcrossCommit();
 }
