@@ -36,12 +36,10 @@
         <menu name="Community">
             <item name="SourceForge Home" href="http://sourceforge.net/projects/symmetricds/" />
             <item name="Forums" href="http://sourceforge.net/forum/?group_id=206470" />
-            <item name="Bugs"
+            <item name="Defects"
                 href="http://jira.codehaus.org/browse/SYMMETRICDS" />
             <item name="Feature Requests"
-                href="http://jira.codehaus.org/secure/IssueNavigator.jspa?reset=true&amp;fixfor=-2&amp;type=2&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC" />
-            <item name="Support Requests"
-                href="http://jira.codehaus.org/secure/IssueNavigator.jspa?reset=true&amp;fixfor=-2&amp;type=3&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC" />
+                href="http://jira.codehaus.org/secure/IssueNavigator.jspa?reset=true&&type=2&pid=11906&sorter/field=issuekey&sorter/order=DESC" />
         </menu>
 
         <menu name="Code">
