@@ -37,6 +37,7 @@ import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.oracle.Oracle10Platform;
 import org.apache.ddlutils.platform.oracle.Oracle8Platform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.symmetric.db.h2.H2Platform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -67,6 +68,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
+        PlatformFactory.registerPlatform("H21", H2Platform.class);
+        PlatformFactory.registerPlatform("H2", H2Platform.class);
         Platform pf = PlatformFactory.createNewPlatformInstance(productString);
         if (pf == null) {
             pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
@@ -88,6 +91,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
             dialect = (AbstractDbDialect) beanFactory.getBean("postgresqlDialect");
         } else if (pf instanceof DerbyPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("derbyDialect");
+        } else if (pf instanceof H2Platform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("h2Dialect");
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
