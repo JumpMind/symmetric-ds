@@ -19,6 +19,9 @@
  */
 package org.jumpmind.symmetric.db;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
@@ -52,38 +56,25 @@ import org.jumpmind.symmetric.util.AppUtils;
 public abstract class AbstractEmbeddedTrigger {
 
     protected static final Log logger = LogFactory.getLog(AbstractEmbeddedTrigger.class);
-
     protected static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
-
     protected IDataService dataService;
-
     protected IConfigurationService configurationService;
-    
     protected IBootstrapService bootstrapService;
-
     protected INodeService nodeService;
-
     protected IDbDialect dbDialect;
-
     protected Table table;
-
     protected TriggerHistory triggerHistory;
-
     protected Trigger trigger;
-
     protected DataEventType triggerType;
-
     protected String tableName;
-
     protected Set<String> excludedColumns;
-
     protected List<String> includedColumns;
 
     protected boolean initialize(DataEventType triggerType, String tableName) {
         this.triggerType = triggerType;
         this.tableName = tableName;
         SymmetricEngine engine = SymmetricEngine.findEngineByName(getEngineName().toLowerCase());
-        this.dataService = getDataService(engine);        
+        this.dataService = getDataService(engine);
         this.bootstrapService = getBootstrapService(engine);
         this.configurationService = getConfigurationService(engine);
         this.nodeService = getNodeService(engine);
@@ -128,8 +119,7 @@ public abstract class AbstractEmbeddedTrigger {
                 if (object != null) {
                     if (object instanceof String) {
                         b.append("\"");
-                        b.append(StringUtils
-                                .replace(StringUtils.replace(object.toString(), "\\", "\\\\"), "\"", "\\\""));
+                        b.append(StringUtils.replace(StringUtils.replace(object.toString(), "\\", "\\\\"), "\"", "\\\""));
                         b.append("\"");
                     } else if (object instanceof Number) {
                         b.append("\"");
@@ -148,9 +138,24 @@ public abstract class AbstractEmbeddedTrigger {
                         b.append("\"");
                     } else if (object instanceof Boolean) {
                         b.append(((Boolean) object) ? "\"1\"" : "\"0\"");
+                    } else if (object instanceof BufferedReader) { // clob in h2
+                        b.append("\"");
+                        try {
+                            b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\", "\\\\"), "\"", "\\\""));
+                        } catch (IOException ex) {
+                            throw new IllegalStateException("Unable to read CLOB");
+                        }
+                        b.append("\"");
+                    } else if (object instanceof ByteArrayInputStream) { // blob in h2
+                        b.append("\"");
+                        try {
+                            b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream)object))));
+                        } catch (IOException ex) {
+                            throw new IllegalStateException("Unable to read CLOB");
+                        }
+                        b.append("\"");
                     } else {
-                        throw new IllegalStateException("Could not format " + object + " which is of type "
-                                + object.getClass().getName());
+                        throw new IllegalStateException("Could not format " + object + " which is of type " + object.getClass().getName());
                     }
                 }
                 b.append(",");
@@ -160,13 +165,14 @@ public abstract class AbstractEmbeddedTrigger {
         return b.toString();
     }
 
-    protected Data createData(Object[] oldRow, Object[] newRow) {
-        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
-                .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
+    protected Data createData(
+            Object[] oldRow, Object[] newRow) {
+        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger.getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
                 triggerHistory);
         if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
             data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
         }
+
         return data;
     }
 
@@ -175,10 +181,13 @@ public abstract class AbstractEmbeddedTrigger {
         if (keys == null) {
             keys = table.getColumns();
         }
+
         Object[] keyValues = new Object[keys.length];
-        for (int i = 0; i < keys.length; i++) {
+        for (int i = 0; i <
+                keys.length; i++) {
             keyValues[i] = allValues[table.getColumnIndex(keys[i])];
         }
+
         return keyValues;
     }
 
@@ -186,10 +195,12 @@ public abstract class AbstractEmbeddedTrigger {
         Column[] columns = table.getColumns();
         Object[] values = new Object[columns.length - excludedColumns.size()];
         int x = 0;
-        for (int i = 0; i < columns.length; i++) {
+        for (int i = 0; i <
+                columns.length; i++) {
             if (!excludedColumns.contains(columns[i].getName().toLowerCase())) {
                 values[x++] = allValues[i];
             }
+
         }
         return values;
     }
@@ -202,15 +213,18 @@ public abstract class AbstractEmbeddedTrigger {
             for (String string : values) {
                 excludedColumns.add(string.toLowerCase());
             }
+
         }
 
         includedColumns = new ArrayList<String>();
         Column[] columns = table.getColumns();
-        for (int i = 0; i < columns.length; i++) {
+        for (int i = 0; i <
+                columns.length; i++) {
             String name = columns[i].getName().toLowerCase();
             if (!excludedColumns.contains(name)) {
                 includedColumns.add(name);
             }
+
         }
     }
 
@@ -225,7 +239,7 @@ public abstract class AbstractEmbeddedTrigger {
     private INodeService getNodeService(SymmetricEngine engine) {
         return AppUtils.find(Constants.NODE_SERVICE, engine);
     }
-    
+
     private IBootstrapService getBootstrapService(SymmetricEngine engine) {
         return AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
     }
@@ -233,5 +247,4 @@ public abstract class AbstractEmbeddedTrigger {
     private IDataService getDataService(SymmetricEngine engine) {
         return AppUtils.find(Constants.DATA_SERVICE, engine);
     }
-
 }

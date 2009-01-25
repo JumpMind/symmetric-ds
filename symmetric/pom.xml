@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
@@ -49,7 +50,8 @@
             <id>chenson42</id>
             <name>Chris Henson</name>
             <email>chenson42@users.sourceforge.net</email>
-            <url><![CDATA[http://www.linkedin.com/profile?trk=tab_pro&key=17076974&viewProfile=]]></url>
+            <url><![CDATA[http://www.linkedin.com/profile?trk=tab_pro&key=17076974&viewProfile=]]>
+            </url>
             <roles>
                 <role>developer</role>
                 <role>architect</role>
@@ -75,7 +77,18 @@
                 <role>developer</role>
             </roles>
             <timezone>-5</timezone>
-        </developer>        
+        </developer>
+        <developer>
+            <name>Keith Naas</name>
+            <email>knaas@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+            <url>http://www.linkedin.com/in/keithnaas</url>
+            <organization>30xi</organization>
+            <organizationUrl>http://30xi.com</organizationUrl>
+        </developer>
     </developers>
     <contributors>
         <contributor>
@@ -85,7 +98,7 @@
                 <role>developer</role>
             </roles>
             <timezone>-5</timezone>
-        </contributor>    
+        </contributor>
         <contributor>
             <name>Megha Shetty</name>
             <email>megha_s@users.sourceforge.net</email>
@@ -102,20 +115,13 @@
             </roles>
             <timezone>-5</timezone>
         </contributor>
-        <contributor>
-            <name>Keith Naas</name>
-            <email>knaas@users.sourceforge.net</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </contributor>       
+             
     </contributors>
     
     <distributionManagement>
         <site>
             <id>dav.codehaus.org</id>
-            <url>dav:https://dav.codehaus.org/symmetricds/</url>            
+            <url>dav:https://dav.codehaus.org/symmetricds/</url>
         </site>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
@@ -510,7 +516,7 @@
             <artifactId>jdom</artifactId>
             <version>1.1</version>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
         <!-- Databases -->
         <dependency>
             <groupId>org.apache.derby</groupId>
@@ -548,6 +554,13 @@
             <version>1.8.0.7</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.1.106</version>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 
     <profiles>

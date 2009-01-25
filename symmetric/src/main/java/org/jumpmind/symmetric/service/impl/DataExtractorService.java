@@ -256,6 +256,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         JdbcUtils.closeStatement(st);
                     }
                     return null;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e.getSQLState() + "Error during SQL: " + sql, e);
                 } catch (Exception e) {
                     throw new RuntimeException("Error during SQL: " + sql, e);
                 }
