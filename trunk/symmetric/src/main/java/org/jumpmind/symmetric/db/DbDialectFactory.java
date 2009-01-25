@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -55,6 +56,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private BeanFactory beanFactory;
 
+    private Map<String, Class> customPlatforms;
+
     public Object getObject() throws Exception {
 
         waitForAvailableDatabase();
@@ -68,8 +71,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
-        PlatformFactory.registerPlatform("H21", H2Platform.class);
-        PlatformFactory.registerPlatform("H2", H2Platform.class);
+        initPlatforms();
+       
         Platform pf = PlatformFactory.createNewPlatformInstance(productString);
         if (pf == null) {
             pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
@@ -106,6 +109,17 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         dialect.init(pf);
         dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
         return dialect;
+    }
+
+    private void initPlatforms() throws IllegalStateException {
+        if (customPlatforms != null) {
+            for (Map.Entry<String, Class> entry : customPlatforms.entrySet()) {
+                if (!Platform.class.isAssignableFrom(entry.getValue())) {
+                    throw new IllegalStateException("Platform is not valid:" + entry.getValue());
+                }
+                PlatformFactory.registerPlatform(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private void waitForAvailableDatabase() {
@@ -161,6 +175,11 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+
+    public void setCustomPlatforms(Map<String, Class> customPlatforms) {
+        this.customPlatforms = customPlatforms;
     }
 
 }

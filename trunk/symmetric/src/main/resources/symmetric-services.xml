@@ -6,7 +6,13 @@
     <import resource="classpath:/sql/*-service-sql.xml" />
 
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />        
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="customPlatforms">
+            <map key-type="java.lang.String" value-type="java.lang.Class">
+                <entry key="H21" value="org.jumpmind.symmetric.db.h2.H2Platform"/>
+                <entry key="H2" value="org.jumpmind.symmetric.db.h2.H2Platform"/>
+            </map>
+        </property>
     </bean>
 
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
