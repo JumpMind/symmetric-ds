@@ -171,7 +171,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isCharSpaceTrimmed() {
-        return false;
+        return true;
     }
 
     public boolean isEmptyStringNulled() {

@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *                Keith Naas <knaas@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,8 @@
  */
 package org.jumpmind.symmetric.db.hsqldb;
 
-import org.apache.commons.codec.binary.Base64;
+import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
 
-public class HsqlDbFunctions {
+public class HsqlDbFunctions extends EmbeddedDbFunctions{
 
-    public static String encodeBase64(byte[] binaryData) {
-        return new String(Base64.encodeBase64(binaryData));
-    }
 }

@@ -18,14 +18,20 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.h2.engine.Session;
+import org.h2.jdbc.JdbcConnection;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 
 /**
  *
@@ -62,7 +68,7 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         }
 
         createDummyDualTable();
-
+        
         jdbcTemplate.update("CREATE ALIAS IF NOT EXISTS BASE64_ENCODE for \"org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64\"");
     }
 
@@ -155,7 +161,7 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isCharSpaceTrimmed() {
-        return false;
+        return true;
     }
 
     public boolean isEmptyStringNulled() {

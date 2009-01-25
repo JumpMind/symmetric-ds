@@ -79,7 +79,16 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
-                    </row>                    
+                    </row>
+                    <row>
+                        <entry>H2</entry>
+                        <entry>1.1</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                        <entry>Y</entry>
+                    </row>
                     <row>
                         <entry>Apache Derby</entry>
                         <entry>10.3.2.1</entry>
@@ -221,7 +230,21 @@ CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql
             last trigger fired.  If a trigger fired within X milliseconds of the previous firing, then the current event gets the same 
             transaction identifier as the last.  If the time window has passed, then a new transaction identifier is generated.
         </para>        
-    </section>    
+    </section>
+  <section>
+        <title>H2</title>
+        <para>
+            H2 was implemented with the intention that the database be run embedded in the same JVM process
+            as SymmetricDS.  Instead of dynamically generating static SQL-based triggers like the other databases, H2
+            triggers are Java classes that re-use existing SymmetricDS services to read the configuration and insert data events
+            accordingly.  SymmetricDS supports in memory or file based databases.
+        </para>
+        <para>
+            The transaction identifier support is based on SQL events that happen in a 'window' of time.  The trigger(s) track when the
+            last trigger fired.  If a trigger fired within X milliseconds of the previous firing, then the current event gets the same
+            transaction identifier as the last.  If the time window has passed, then a new transaction identifier is generated.
+        </para>
+    </section>
     <section>
         <title>Apache Derby</title>
         <para>

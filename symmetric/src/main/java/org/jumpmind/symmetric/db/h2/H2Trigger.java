@@ -107,7 +107,6 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
     private void initializeMetadata(Connection conn) {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-
             keywords = new HashSet(Arrays.asList(metaData.getSQLKeywords().split(",")));
         } catch (SQLException ex) {
             throw new IllegalStateException("Unable to fetch keywords", ex);

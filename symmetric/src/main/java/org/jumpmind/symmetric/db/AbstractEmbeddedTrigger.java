@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -138,7 +139,7 @@ public abstract class AbstractEmbeddedTrigger {
                         b.append("\"");
                     } else if (object instanceof Boolean) {
                         b.append(((Boolean) object) ? "\"1\"" : "\"0\"");
-                    } else if (object instanceof BufferedReader) { // clob in h2
+                    } else if (object instanceof Reader) { // clob in h2
                         b.append("\"");
                         try {
                             b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\", "\\\\"), "\"", "\\\""));
@@ -151,7 +152,7 @@ public abstract class AbstractEmbeddedTrigger {
                         try {
                             b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream)object))));
                         } catch (IOException ex) {
-                            throw new IllegalStateException("Unable to read CLOB");
+                            throw new IllegalStateException("Unable to read BLOB");
                         }
                         b.append("\"");
                     } else {

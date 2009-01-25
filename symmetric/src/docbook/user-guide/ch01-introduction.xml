@@ -166,7 +166,10 @@
             </listitem>
             <listitem>
                 <para>HSQLDB 1.8</para>
-            </listitem>            
+            </listitem>
+            <listitem>
+                <para>H2 1.1</para>
+            </listitem>
             <listitem>
                 <para>Apache Derby 10.3.2.1 and above</para>
             </listitem>            
