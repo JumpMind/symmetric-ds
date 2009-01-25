@@ -275,7 +275,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
                 <configuration>
-                    <issueLinkTemplate>%URL%/index.php?func=detail&amp;group_id=206470&amp;%ISSUE%</issueLinkTemplate>
+                    <issueLinkTemplate>%URL%/SYMMETRICDS-%ISSUE%</issueLinkTemplate>
                 </configuration>
                 <reportSets>
                     <reportSet>

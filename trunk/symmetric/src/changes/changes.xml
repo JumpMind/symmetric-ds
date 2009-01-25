@@ -3,8 +3,20 @@
         <title>SymmetricDS</title>
         <author email="erilong@users.sourceforge.net">Eric Long</author>
         <author email="chenson42@users.sourceforge.net">Chris Henson</author>
+        <author email="knaas@users.sourceforge.net">Keith Naas</author>
     </properties>
     <body>
+        <release version="1.6.0" date="2009-xx-xx" description="Next Release">
+            <action dev="erilong" type="add" issue="20">
+               Add Firebird Dialect.    
+            </action>
+            <action dev="knaas" type="add" issue="15">
+               Add H2 Dialect.
+            </action> 
+            <action dev="chenson42" type="fix" issue="37">
+               Include the trigger id in the trigger name so an auto-generated trigger name is unique.
+            </action>
+        </release>     
         <release version="1.5.1" date="2008-12-31" description="Patch">
             <action dev="chenson42" type="fix">
                 Fixed the 1.5 upgrade.
