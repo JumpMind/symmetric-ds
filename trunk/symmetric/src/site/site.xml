@@ -47,7 +47,7 @@
             <item name="Download"
                 href="http://sourceforge.net/project/showfiles.php?group_id=206470" />
             <item name="Source Repository" href="http://sourceforge.net/svn/?group_id=206470" />
-            <item name="Developing with Eclipse" href="http://docs.codehaus.org/display/SYMMETRICDS/Developing+with+Eclipse" />
+            <item name="Development Setup" href="http://docs.codehaus.org/display/SYMMETRICDS/Development+Setup" />
             <item name="Maven Repository" href="http://repository.codehaus.org/org/jumpmind/symmetric/" />
             <item name="Maven Snapshot Repository" href="http://snapshots.repository.codehaus.org/org/jumpmind/symmetric/" />
             <item name="Browsable Source Code" href="/jxr.html" />
