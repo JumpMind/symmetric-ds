@@ -590,7 +590,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String sourceCatalogName = trigger.getSourceCatalogName();
-                logger.info("Creating " + dml.toString() + " trigger for "
+                logger.info("Creating " + hist.getTriggerNameForDmlType(dml) + " trigger for "
                         + (sourceCatalogName != null ? (sourceCatalogName + ".") : "") + trigger.getSourceTableName());
 
                 String previousCatalog = null;
