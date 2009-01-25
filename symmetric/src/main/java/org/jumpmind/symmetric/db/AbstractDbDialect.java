@@ -81,8 +81,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(AbstractDbDialect.class);
 
-    private static final String DEFAULT_SYMMETRIC_TABLE_PREFIX = "SYM";
-
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected JdbcTemplate jdbcTemplate;
@@ -1038,7 +1036,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             break;
         }
         if (triggerName == null) {
-            triggerName = triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_to_" + getShortTableName(trigger);
+            triggerName = triggerPrefix + "on_" + dml.getCode().toLowerCase() + "_for_" + trigger.getTriggerId();
         }
 
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
@@ -1049,26 +1047,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     + maxTriggerNameLength + " characters long.");
         }
         return triggerName;
-    }
-
-    private String getShortTableName(Trigger trigger) {
-        StringBuilder shortName = new StringBuilder();
-        String table = trigger.getSourceTableName();
-        if (table.toUpperCase().startsWith(DEFAULT_SYMMETRIC_TABLE_PREFIX)) {
-            table = table.substring(DEFAULT_SYMMETRIC_TABLE_PREFIX.length() + 1);
-        }
-        CharSequence seq = table;
-        char previousChar = ' ';
-        for (int i = 0; i < seq.length(); i++) {
-            char c = seq.charAt(i);
-            if (i == 0
-                    || !(c == previousChar || c == 'y' || c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
-                            || c == 'Y' || c == 'A' || c == 'E' || c == 'I' || c == 'O' || c == 'U')) {
-                shortName.append(c);
-            }
-            previousChar = c;
-        }
-        return shortName.toString();
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {
