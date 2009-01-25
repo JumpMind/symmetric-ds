@@ -39,7 +39,7 @@
             <item name="Defects"
                 href="http://jira.codehaus.org/browse/SYMMETRICDS" />
             <item name="Feature Requests"
-                href="http://jira.codehaus.org/secure/IssueNavigator.jspa?reset=true&&type=2&pid=11906&sorter/field=issuekey&sorter/order=DESC" />
+                href="http://jira.codehaus.org/secure/IssueNavigator.jspa?reset=true&amp;type=2&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC" />
         </menu>
 
         <menu name="Code">
