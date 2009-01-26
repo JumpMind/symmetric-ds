@@ -77,13 +77,13 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public Node findNode(String id) {
-        List<Node> list = jdbcTemplate.query(getSql("findNodeSql"), new Object[] { id }, new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeSql"), new Object[] { id }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
     @SuppressWarnings("unchecked")
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
-        List<Node> list = jdbcTemplate.query(getSql("findNodeByExternalIdSql"),
+        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeByExternalIdSql"),
                 new Object[] { nodeGroupId, externalId }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
@@ -180,7 +180,7 @@ public class NodeService extends AbstractService implements INodeService {
     @SuppressWarnings("unchecked")
     public Node findIdentity(boolean useCache) {
         if (nodeIdentity == null || useCache == false) {
-            List<Node> list = jdbcTemplate.query(getSql("findNodeIdentitySql"), new NodeRowMapper());
+            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeIdentitySql"), new NodeRowMapper());
             nodeIdentity = (Node) getFirstEntry(list);
         }
         return nodeIdentity;
@@ -198,7 +198,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findSourceNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("findNodesWhoTargetMeSql"), new Object[] { node.getNodeGroupId(),
+            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] { node.getNodeGroupId(),
                     eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
@@ -209,7 +209,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findTargetNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("findNodesWhoITargetSql"), new Object[] { node.getNodeGroupId(),
+            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] { node.getNodeGroupId(),
                     eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();

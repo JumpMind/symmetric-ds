@@ -39,16 +39,12 @@
     </entry>
     <entry key="findNodeSql">
       <value>
-        select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-        database_type, database_version, symmetric_version, created_at_node_id from ${sync.table.prefix}_node where
-        node_id = ?
+        where node_id = ?
       </value>
     </entry>
     <entry key="findNodeByExternalIdSql">
       <value>
-        select node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version,
-        database_type, database_version, symmetric_version, created_at_node_id from ${sync.table.prefix}_node where
-        node_group_id = ? and external_id = ? order by node_id
+        where node_group_id = ? and external_id = ? order by node_id
       </value>
     </entry>
     <entry key="findNodeSecuritySql">
@@ -66,9 +62,7 @@
     </entry>
     <entry key="findNodeIdentitySql">
       <value>
-        select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id from
-        ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_identity i on c.node_id =
+        inner join ${sync.table.prefix}_node_identity i on c.node_id =
         i.node_id
       </value>
     </entry>
@@ -81,22 +75,25 @@
     </entry>
     <entry key="findNodesWhoTargetMeSql">
       <value>
-        select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id from
-        ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+        inner join ${sync.table.prefix}_node_group_link d on
         c.node_group_id = d.source_node_group_id where d.target_node_group_id = ? and
         d.data_event_action = ?
       </value>
     </entry>
     <entry key="findNodesWhoITargetSql">
       <value>
-        select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id from
-        ${sync.table.prefix}_node c inner join ${sync.table.prefix}_node_group_link d on
+        inner join ${sync.table.prefix}_node_group_link d on
         c.node_group_id = d.target_node_group_id where d.source_node_group_id = ? and
         d.data_event_action = ?
       </value>
     </entry>
+    <entry key="selectNodePrefixSql">
+      <value>
+        select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
+        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id from
+        ${sync.table.prefix}_node c
+      </value>
+    </entry>    
     <entry key="updateNodeSecuritySql">
       <value>
         update ${sync.table.prefix}_node_security set node_password = ?, registration_enabled = ?,
