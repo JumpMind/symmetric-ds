@@ -24,13 +24,17 @@ import java.net.URL;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.db.SqlScript;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.BadSqlGrammarException;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -54,6 +58,26 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
+    
+    @Override
+    public void initTrigger(DataEventType dml, Trigger trigger,
+            TriggerHistory hist, String tablePrefix, Table table) {
+        try {
+        super.initTrigger(dml, trigger, hist, tablePrefix, table);
+        } catch (BadSqlGrammarException ex) {
+            if (ex.getSQLException().getErrorCode() == 4095) {                
+                try {
+                    // a trigger of the same name must already exist on a table
+                    logger.warn("A trigger already exists for that name.  Details are as follows: " + jdbcTemplate.queryForMap(
+                            "select * from user_triggers where trigger_name like upper(?)",
+                            new Object[] { hist.getTriggerNameForDmlType(dml) }));
+                } catch (DataAccessException e) {
+                }
+            }
+            throw ex;
+        }
+    }
+    
     private URL getSqlScriptUrl() {
         return getClass().getResource("/dialects/oracle.sql");
     }
