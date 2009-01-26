@@ -75,7 +75,17 @@
             <title>Web Archive</title>
             <para>
                 As a web application archive, a WAR or EAR file is deployed to an application server,
-                such as Tomcat, Jetty, or JBoss.  The <filename>WEB-INF/web.xml</filename> file
+                such as Tomcat, Jetty, or JBoss.  The structure of the archive should have a web.xml
+                file in the WEB-INF folder, the symmetric.properties file in the WEB-INF/classes folder,
+                and the required JAR files in the WEB-INF/lib folder.
+            </para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/symmetric_war.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+            <para>
+                The <filename>WEB-INF/web.xml</filename> file
                 is configured with a <literal>SymmetricEngineContextLoaderListener</literal>
                 the required SymmetricFilter mapping, and the required SymmetricServlet mapping.
                 Note that this was changed in version 1.4.0 to make it easier to configure
