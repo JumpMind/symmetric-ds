@@ -45,9 +45,9 @@ public class AbstractDatabaseTest {
 
     public AbstractDatabaseTest() throws Exception {
         if (!standalone) {
-            logger.info("Running test in standalone mode");
-            standalone = true;
             database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
+            logger.info("Running test in standalone mode against " + database);
+            standalone = true;            
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT,
                     null, database);
         }
