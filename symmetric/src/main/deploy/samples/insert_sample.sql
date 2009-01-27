@@ -25,8 +25,8 @@ values ('store', 'corp', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
 values ('corp', 'store', 'W');
 
-insert into sym_node (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
-values ('00000', 'corp', '00000', 1, '1.5.0');
+insert into sym_node (node_id, node_group_id, external_id, sync_enabled)
+values ('00000', 'corp', '00000', 1);
 insert into sym_node_identity values ('00000');
 
 --
