@@ -70,6 +70,8 @@ public class SymmetricLauncher {
     private static final String OPTION_AUTO_CREATE = "auto-create";
 
     private static final String OPTION_PORT_SERVER = "port";
+    
+    private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
 
@@ -84,6 +86,10 @@ public class SymmetricLauncher {
     private static final String OPTION_PROPERTIES_FILE = "properties";
 
     private static final String OPTION_START_SERVER = "server";
+    
+    private static final String OPTION_START_SECURE_SERVER = "secure-server";
+    
+    private static final String OPTION_START_MIXED_SERVER = "mixed-server";
 
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
@@ -96,11 +102,14 @@ public class SymmetricLauncher {
         try {
             CommandLine line = parser.parse(options, args);
 
-            int serverPort = 31415;
+            int port = 31415;
+            int securePort = 31417;
 
             if (line.hasOption(OPTION_PORT_SERVER)) {
-                serverPort = new Integer(line
-                        .getOptionValue(OPTION_PORT_SERVER));
+                port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
+            }
+            if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
+                securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
             }
 
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
@@ -177,11 +186,20 @@ public class SymmetricLauncher {
                         .getOptionValue(OPTION_LOAD_BATCH));
             }
 
-            if (line.hasOption(OPTION_START_SERVER)) {
+            if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER) ||
+                    line.hasOption(OPTION_START_MIXED_SERVER)) {
                 if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
                     testConnection();
                 }
-                new SymmetricWebServer().start(serverPort);
+                if (line.hasOption(OPTION_START_SERVER)) {
+                    new SymmetricWebServer().start(port);
+                }
+                else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
+                    new SymmetricWebServer().startSecure(securePort);
+                }
+                else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
+                    new SymmetricWebServer().startMixed(port, securePort);
+                }
                 return;
             }
 
@@ -223,10 +241,16 @@ public class SymmetricLauncher {
     private static Options buildOptions() {
         Options options = new Options();
         options.addOption("S", OPTION_START_SERVER, false,
-                "Start an embedded instance of symmetric.");
-        options
-                .addOption("P", OPTION_PORT_SERVER, true,
-                        "Optionally pass in the HTTP port number to use for the server instance.");
+                "Start an embedded instance of SymmetricDS that accepts HTTP.");
+        options.addOption("T", OPTION_START_SECURE_SERVER, false, 
+                "Start an embedded instance of SymmetricDS that accepts HTTPS.");
+        options.addOption("U", OPTION_START_MIXED_SERVER, false, 
+                "Start an embedded instance of SymmetricDS that accepts HTTP/HTTPS.");
+        options.addOption("P", OPTION_PORT_SERVER, true,
+                "Optionally pass in the HTTP port number to use for the server instance.");
+        options.addOption("Q", OPTION_SECURE_PORT_SERVER, true,
+                "Optionally pass in the HTTPS port number to use for the server instance.");
+
         options
                 .addOption(
                         "c",

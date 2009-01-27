@@ -19,6 +19,8 @@
  */
 package org.jumpmind.symmetric;
 
+import java.util.ArrayList;
+
 import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -38,6 +40,7 @@ import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 
@@ -49,6 +52,10 @@ import org.mortbay.jetty.servlet.ServletHolder;
 public class SymmetricWebServer {
 
     protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
+    
+    public enum Mode {
+        HTTP, HTTPS, MIXED;
+    }
 
     protected SymmetricEngineContextLoaderListener contextListener;
 
@@ -77,10 +84,20 @@ public class SymmetricWebServer {
     }
 
     public void start(int port) throws Exception {
+        start(port, 0, Mode.HTTP);
+    }
+
+    public void startSecure(int port) throws Exception {
+        start(0, port, Mode.HTTPS);
+    }
+
+    public void startMixed(int port, int securePort) throws Exception {
+        start(port, securePort, Mode.MIXED);
+    }
+
+    public void start(int port, int securePort, Mode mode) throws Exception {
         server = new Server();
-        Connector connector = new SelectChannelConnector();
-        connector.setPort(port);
-        server.setConnectors(new Connector[] { connector });
+        server.setConnectors(getConnectors(port, securePort, mode));
 
         Context webContext = new Context(server, webHome, Context.NO_SESSIONS);
 
@@ -97,17 +114,37 @@ public class SymmetricWebServer {
         webContext.addServlet(servletHolder, "/*");
 
         server.addHandler(webContext);
-
-        logger.info("About to start SymmetricDS web server on port " + port);
         server.start();
 
-        registerHttpJmxAdaptor(port + 1);
+        int httpJmxPort = port != 0 ? port + 1 : securePort + 1; 
+        registerHttpJmxAdaptor(httpJmxPort);
 
         if (join) {
             server.join();
         }
     }
 
+    protected Connector[] getConnectors(int port, int securePort, Mode mode) {
+        ArrayList<Connector> connectors = new ArrayList<Connector>();
+        String keyStoreFile = System.getProperty("sym.keystore.file");
+
+        if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
+            Connector connector = new SelectChannelConnector();
+            connector.setPort(port);
+            connectors.add(connector);
+            logger.info("About to start SymmetricDS web server on port " + port);
+        }
+        if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
+            Connector connector = new SslSocketConnector();    
+            ((SslSocketConnector) connector).setKeystore(keyStoreFile);
+            ((SslSocketConnector) connector).setPassword("changeit");
+            connector.setPort(securePort);
+            connectors.add(connector);
+            logger.info("About to start SymmetricDS web server on secure port " + securePort);
+        }
+        return connectors.toArray(new Connector[connectors.size()]);
+    }
+    
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
         if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {

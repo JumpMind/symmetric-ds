@@ -35,4 +35,4 @@ done
 
 #echo $CLASSPATH
 
-exec "$RUNJAVA" -Dlog4j.configuration=file:log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"
+exec "$RUNJAVA" -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dlog4j.configuration=file:log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"

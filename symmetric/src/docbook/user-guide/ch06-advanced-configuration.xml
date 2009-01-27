@@ -196,6 +196,157 @@ values
     </section>
     <section>
         <title>Secure Transport</title>
-        <para></para>
+        <para>
+            By specifying the "https" protocol for a URL, SymmetricDS will communicate over
+            Secure Sockets Layer (SSL) for an encrypted transport.  The following properties
+            need to be set with "https" in the URL:
+            <variablelist>
+                <varlistentry>
+                    <term>
+                        <command>my.url</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the URL of the current node, so if you want to force other
+                            nodes to communicate over SSL with this node, you specify "https" in the URL.
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>registration.url</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the URL where the node will connect for registration when it 
+                            first starts up.  To protect the registration with SSL, you specify
+                            "https" in the URL.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            For incoming HTTPS connections, SymmetricDS depends on the webserver where
+            it is deployed, so the webserver must be configured for HTTPS.
+            As a standalone deployment, the "sym" launcher command provides options for 
+            enabling HTTPS support.
+        </para>
+        <section>
+            <title>Sym Launcher</title>
+            <para>
+                The "sym" launch command uses Jetty as an embedded web server.
+                Using command line options, the web server can be told to listen for 
+                HTTP, HTTPS, or both.
+            </para>
+            <para>
+                <command>sym --port 8080 --server</command>
+            </para>
+            <para>
+                <command>sym --secure-port 8443 --secure-server</command>
+            </para>
+            <para>
+                <command>sym --port 8080 --secure-port 8443 --mixed-server</command>
+            </para>
+        </section>
+        <section>
+            <title>Tomcat</title>
+            <para>
+                If you deploy SymmetricDS to Apache Tomcat, it can be secured by editing the
+                <filename class="filename">TOMCAT_HOME/conf/server.xml</filename>
+                configuration file.  There is already a line that can be uncommented
+                and changed to the following:
+                
+                <programlisting>
+<![CDATA[<Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true" 
+  maxThreads="150" scheme="https" secure="true" 
+  clientAuth="false" sslProtocol="TLS"
+  keystoreFile="/symmetric-ds-1.x.x/security/keystore" />]]></programlisting>
+            </para>
+        </section>
+        <section>
+            <title>Keystores</title>
+            <para>
+                When SymmetricDS connects to a URL with HTTPS, Java checks the validity of the
+                certificate using the built-in trusted keystore located at
+                <filename class="filename">JRE_HOME/lib/security/cacerts</filename>.
+                The "sym" launcher command overrides the trusted keystore to use its own
+                trusted keystore instead, which is located at
+                <filename class="filename">security/cacerts</filename>.
+                This keystore contains the certificate aliased as "sym" for use in testing
+                and easing deployments.                
+                The trusted keystore can be overridden
+                by specifying the "javax.net.ssl.trustStore" system property.
+            </para>
+            <para>
+                When SymmetricDS is run as a secure server with the "sym" launcher,
+                it accepts incoming requests using the key installed in the keystore
+                located at
+                <filename class="filename">security/keystore</filename>.
+                The default key is provided for convenience of testing, but should be
+                re-generated for security.
+            </para>
+        </section>
+        <section>
+            <title>Generating Keys</title>
+            <para>
+                To generate new keys and install a server certificate, use the
+                following steps:
+            </para>
+            <procedure>
+                <step>
+                    <para>
+                        Open a command prompt and navigate to the
+                        <filename class="directory">security</filename>
+                        subdirectory of your SymmetricDS installation.
+                    </para>
+                </step>
+                <step>
+                    <para>Delete the old key pair and certificate.</para>
+                    <para>
+                        <command>keytool -keystore keystore -delete -alias sym</command>
+                    </para>
+                    <para>
+                        <command>keytool -keystore cacerts -delete -alias sym</command>
+                    </para>
+                    <programlisting><![CDATA[Enter keystore password:  changeit]]></programlisting>
+                </step>
+                <step>
+                    <para>Generate a new key pair.</para>
+                    <para>
+                        <command>keytool -keystore keystore -alias sym -genkey -keyalg RSA -validity 10950</command>
+                    </para>
+                    <programlisting>
+<![CDATA[Enter keystore password:  changeit
+What is your first and last name?
+  [Unknown]:  localhost
+What is the name of your organizational unit?
+  [Unknown]:  SymmetricDS
+What is the name of your organization?
+  [Unknown]:  JumpMind
+What is the name of your City or Locality?
+  [Unknown]:
+What is the name of your State or Province?
+  [Unknown]:
+What is the two-letter country code for this unit?
+  [Unknown]:
+Is CN=localhost, OU=SymmetricDS, O=JumpMind, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+
+Enter key password for <sym>
+        (RETURN if same as keystore password):]]></programlisting>
+                </step>
+                <step>
+                    <para>Export the certificate from the private keystore.</para>
+                    <para>
+                        <command>keytool -keystore keystore -export -alias sym -rfc -file sym.cer</command>
+                    </para>
+                </step>
+                <step>
+                    <para>Install the certificate in the trusted keystore.</para>
+                    <para>
+                        <command>keytool -keystore cacerts -import -alias sym -file sym.cer</command>
+                    </para>
+                </step>
+            </procedure>
+        </section>
     </section>
 </chapter>
