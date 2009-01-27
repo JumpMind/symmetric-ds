@@ -59,6 +59,7 @@
         </property>
     </bean>
 
+
     <bean id="H2" class="org.springframework.jdbc.support.SQLErrorCodes">
         <property name="badSqlGrammarCodes">
             <value>42000,42001,42101,42102,42111,42112,42121,42122,42132</value>
@@ -67,7 +68,7 @@
             <value>90046,90100,90117,90121,90126</value>
         </property>
         <property name="dataIntegrityViolationCodes">
-            <value>22003,22012,22025,23000,23001</value>
+            <value>22003,22012,22025,23000,23001,90005</value>
         </property>
     </bean>
 
