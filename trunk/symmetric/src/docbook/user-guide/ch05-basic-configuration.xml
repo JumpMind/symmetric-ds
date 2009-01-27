@@ -360,9 +360,9 @@ values
             
             <programlisting>
 <![CDATA[insert into SYM_NODE 
-  (node_id, node_group_id, external_id, sync_enabled, symmetric_version)
+  (node_id, node_group_id, external_id, sync_enabled)
 values
-  ('00000', 'corp', '00000', 1, '1.4.0');
+  ('00000', 'corp', '00000', 1);
 
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
