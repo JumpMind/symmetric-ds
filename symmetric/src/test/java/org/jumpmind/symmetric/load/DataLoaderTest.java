@@ -305,7 +305,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         dataLoader.close();
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         // TODO: this used to run in 1 second; can we do some optimization?
-        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 12.0);
+        Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 15.0);
     }
 
     protected void load(ByteArrayOutputStream out) throws Exception {
