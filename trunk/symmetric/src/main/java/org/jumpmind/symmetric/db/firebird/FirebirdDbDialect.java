@@ -92,6 +92,12 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     protected String getTableNamePattern(String tableName) {
+        /*
+         * When looking up a table definition, Jaybird treats underscore (_) in
+         * the table name as a wildcard, so it needs to be escaped, or you'll
+         * get back column names for more than one table. Example:
+         * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
+         */
         return tableName.replaceAll("\\_", "\\\\_");
     }
     
