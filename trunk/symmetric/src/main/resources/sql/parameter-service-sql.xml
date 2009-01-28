@@ -10,19 +10,19 @@
   <util:map id="parameterServiceSql">
     <entry key="updateParameterSql">
       <value>
-        update ${sync.table.prefix}_parameter set param_value=? where external_id=? and node_group_id=?
+        update $[sym.sync.table.prefix]_parameter set param_value=? where external_id=? and node_group_id=?
         and param_key=?
       </value>
     </entry>
     <entry key="insertParameterSql">
       <value>
-        insert into ${sync.table.prefix}_parameter (external_id, node_group_id, param_key, param_value)
+        insert into $[sym.sync.table.prefix]_parameter (external_id, node_group_id, param_key, param_value)
         values(?, ?, ?, ?)
       </value>
     </entry>
     <entry key="selectParametersSql">
       <value>
-        select param_key, param_value from ${sync.table.prefix}_parameter where external_id=? and
+        select param_key, param_value from $[sym.sync.table.prefix]_parameter where external_id=? and
         node_group_id=?
       </value>
     </entry>

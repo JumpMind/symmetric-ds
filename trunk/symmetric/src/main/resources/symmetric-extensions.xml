@@ -14,7 +14,7 @@
     <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.SyncTriggersRequiredFilter">
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="parameterService" ref="parameterService" />
-        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 
 </beans>

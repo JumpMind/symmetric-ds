@@ -159,7 +159,7 @@
         <property name="uriPattern" value="/batch/*" />
         <property name="transportResourceHandler"
             ref="batchResourceHandler" />
-        <property name="enabled" value="${web.batch.servlet.enable}"/>            
+        <property name="enabled" value="$[sym.web.batch.servlet.enable]"/>            
     </bean>    
 
 </beans>

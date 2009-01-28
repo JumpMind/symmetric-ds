@@ -10,14 +10,14 @@
 	<bean id="db2Dialect"
 		class="org.jumpmind.symmetric.db.db2.Db2DbDialect"
 		scope="prototype">
-		<property name="tablePrefix" value="${sync.table.prefix}" />
+		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"
-			value="${db.jdbc.streaming.results.fetch.size}" />				
+			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
 		<property name="sqlTemplate">
 			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
 				<property name="triggerPrefix"
-					value="${trigger.prefix}" />
+					value="$[sym.trigger.prefix]" />
 				<property name="functionInstalledSql">
 					<value>
 						<![CDATA[select count(*) from syscat.functions where funcname = '$(functionName)']]>

@@ -8,12 +8,12 @@
 
     <bean id="postgresqlDialect" class="org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect"
         scope="prototype">
-        <property name="tablePrefix" value="${sync.table.prefix}" />
+        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
-        <property name="streamingResultsFetchSize" value="${db.jdbc.streaming.results.fetch.size}" />
+        <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">            
-                <property name="triggerPrefix" value="${trigger.prefix}" />
+                <property name="triggerPrefix" value="$[sym.trigger.prefix]" />
                 <property name="functionInstalledSql">
                     <value>
                         <![CDATA[select count(*) from information_schema.routines where routine_name = '$(functionName)']]>

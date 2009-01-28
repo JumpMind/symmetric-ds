@@ -10,7 +10,7 @@
   <util:map id="acknowledgeServiceSql">
     <entry key="selectDataIdSql">
       <value>
-        select data_id from ${sync.table.prefix}_data_event b where batch_id = ? order by data_id
+        select data_id from $[sym.sync.table.prefix]_data_event b where batch_id = ? order by data_id
       </value>
     </entry>
   </util:map>
