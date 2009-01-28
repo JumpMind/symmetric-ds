@@ -231,7 +231,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         return oldValue;
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void syncToRoot() throws ParseException {
         turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });

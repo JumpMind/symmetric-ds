@@ -18,8 +18,12 @@
     <priority value="INFO" />
   </category>
   
-  <category name="org.springframework">
+  <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">
     <priority value="ERROR" />
+  </category>
+  
+  <category name="org.springframework">
+    <priority value="INFO" />
   </category>
   
   <category name="org.apache.ddlutils.platform.derby">

@@ -7,9 +7,13 @@
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
     default-lazy-init="true">
 
+    <!-- The list of properties file names need to be singletons because we rely on System properties which can be swapped out at runtime. -->
+    <bean id="dynamicPropertiesFiles" class="org.jumpmind.symmetric.config.DynamicPropertiesFiles"/>
+    
     <bean id="properties" class="org.jumpmind.symmetric.config.PropertiesFactoryBean" scope="prototype">
         <property name="ignoreResourceNotFound" value="true" />
-        <!--  Allow for the (optional) override of these properties -->
+        <property name="dynamicPropertiesFiles" ref="dynamicPropertiesFiles"/>
+        <!--  Allow for the (optional) override of these properties -->        
         <property name="locations">
             <list>
                 <value>classpath:/symmetric-default.properties</value>
