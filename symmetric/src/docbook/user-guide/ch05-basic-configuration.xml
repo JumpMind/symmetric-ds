@@ -7,146 +7,31 @@
     <para>
         To get an instance of SymmetricDS running, it needs to be given an identity and know how
         to connect to the database it will manage.  A basic way to specify this is to place properties
-        in the symmetric.properties file.  After connecting to the database, the Node reads its
-        configuration and current status.  If the configuration tables are missing, they are created
-        automatically, unless that feature is disabled.  A basic configuration describes the
+        in the symmetric.properties file.  When started up, the SymmetricDS reads the configuration
+        and state from the database.  If the configuration tables are missing, they are created
+        automatically (auto creation can be disabled).  A basic configuration describes the
         following:
             <itemizedlist>
                 <listitem>
-                    <para>Node Groups - each Node belongs to a group</para>
+                    <para><emphasis role="bold">Node Group</emphasis> - each Node belongs to a group</para>
                 </listitem>
                 <listitem>
-                    <para>Node Group Links - two Nodes Groups are linked together for synchronization</para>
+                    <para><emphasis role="bold">Node Group Link</emphasis> - two Nodes Groups are linked together for synchronization</para>
                 </listitem>
                 <listitem>
-                    <para>Nodes - each instance of Symmetric has an identity</para>
+                    <para><emphasis role="bold">Node</emphasis> - an instance of SymmetricDS</para>
                 </listitem>
                 <listitem>
-                    <para>Channels - data is categorized to synchronize independently</para>
+                    <para><emphasis role="bold">Channel</emphasis> - data is categorized to synchronize independently</para>
                 </listitem>
                 <listitem>
-                    <para>Triggers - specify which changes in the database are captured</para>
+                    <para><emphasis role="bold">Trigger</emphasis> - specify which changes in the database are captured</para>
                 </listitem>
             </itemizedlist>
-        During initialization, the Triggers are verified against the database, and database triggers
+        During start up, the Triggers are verified against the database, and database triggers
         are installed on tables that require data changes to be captured.  The PullJob and PushJob
         begin running as required to synchronize changes with other Nodes.
     </para>
-    <section>
-        <title>Setting Startup Parameters</title>
-        <para>
-            As of 1.4 most system parameters are accessed using the <literal>ParameterService</literal>.  The 
-            <literal>ParameterService</literal> looks for parameters in a hierarchy of properties files and 
-            in a database table.  Parameters are re-queried from their source at a configured interval and can 
-            also be refreshed on demand by using the JMX API.  The following table defines the way parameters may be defined. 
-            <table>
-                <title>Parameter Locations</title>
-                <tgroup cols="3">
-                    <colspec colwidth="115px" />
-                    <colspec colwidth="50px" />
-                    <colspec colwidth="250px" />
-                    <thead>
-                        <row>
-                            <entry>Location</entry>
-                            <entry>Required</entry>
-                            <entry>Description</entry>
-                        </row>
-                    </thead>
-                    <tbody>
-                        <row>
-                            <entry>
-                                <emphasis>symmetric-default.properties</emphasis>
-                            </entry>
-                            <entry>Y</entry>
-                            <entry>
-                                Packaged inside symmetric-ds.jar file. This file has all the default
-                                settings along with descriptions.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>symmetric.properties</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                Provided by the end user on the classpath. The first
-                                symmetric.properties found on the classpath will be used.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>symmetric.properties</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                Provided by the end user in the current system user's user.home
-                                directory.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>named properties file 1</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                Provided by the end user as a Java system property (i.e.
-                                -Dsymmetric.override.properties.file.1=file://my.properties) or in
-                                the constructor of a
-                                <literal>SymmetricEngine</literal>
-                                .
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>named properties file 2</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                Provided by the end user as a Java system property (i.e.
-                                -Dsymmetric.override.properties.file.2=classpath://my.properties) or
-                                in the constructor of a
-                                <literal>SymmetricEngine</literal>
-                                .
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>Java System Properties</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                Any SymmetricDS property can be passed in as a -D property to the
-                                runtime. It will take precedence over any properties file property.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>Parameter table</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                A table which contains SymmetricDS parameters. Parameters can be targeted at a specific node group and
-                                even at a specific external id.  These settings will take precedence over all of the above.
-                            </entry>
-                        </row>
-                        <row>
-                            <entry>
-                                <emphasis>IParameterFilter</emphasis>
-                            </entry>
-                            <entry>N</entry>
-                            <entry>
-                                An extension point which allows parameters to be sourced from another location or customized.  
-                                These settings will take precedence over all of the above.
-                            </entry>
-                        </row>                        
-                    </tbody>
-                </tgroup>
-            </table>
-            
-            Also see the appendix on <emphasis>Startup Parameters</emphasis> to see all the possible
-            properties and their defaults.
-        </para>
-    </section>
     <section>
         <title>Basic Properties</title>
         <para>
