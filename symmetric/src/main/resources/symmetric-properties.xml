@@ -7,23 +7,15 @@
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
     default-lazy-init="true">
 
-    <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean" scope="prototype">
-        <property name="properties">
-            <props>
-                <prop key="symmetric.override.properties.file.1"></prop>
-                <prop key="symmetric.override.properties.file.2"></prop>
-            </props>
-        </property>
+    <bean id="properties" class="org.jumpmind.symmetric.config.PropertiesFactoryBean" scope="prototype">
         <property name="ignoreResourceNotFound" value="true" />
         <!--  Allow for the (optional) override of these properties -->
         <property name="locations">
             <list>
                 <value>classpath:/symmetric-default.properties</value>
                 <value>classpath:/symmetric.properties</value>                
-                <value>file:$[sym.user.home]/symmetric.properties</value>
                 <value>classpath:/symmetric-override.properties</value>
-                <value>$[sym.symmetric.override.properties.file.1]</value>
-                <value>$[sym.symmetric.override.properties.file.2]</value>
+                <!-- dynamic properties files -->
                 <!-- database configuration -->
             </list>
         </property>
@@ -36,6 +28,6 @@
         <property name="properties" ref="properties" />
         <!-- This means that any system properties set on the command line will take precedence over those set locally or in a properties file. -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
-    </bean>
+    </bean>  
 
 </beans>

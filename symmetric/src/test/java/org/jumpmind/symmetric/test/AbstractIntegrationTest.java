@@ -48,10 +48,10 @@ public class AbstractIntegrationTest {
 
     public AbstractIntegrationTest() throws Exception {
         if (!standalone) {
-            logger.info("Running test in standalone mode");
-            standalone = true;
             String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator()
-                    .next();
+            .next();
+            logger.info("Running test in standalone mode with databases " + databases[0] + " and " + databases[1]);
+            standalone = true;
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
         }
     }
