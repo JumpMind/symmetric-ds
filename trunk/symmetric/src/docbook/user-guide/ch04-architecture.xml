@@ -93,48 +93,49 @@
             </para>
             <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
 
-	<display-name>sync</display-name>
-
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<!-- Optionally specify other spring xml files that are loaded in the same context -->
-		<param-value>classpath:additional-spring.xml</param-value>
-	</context-param>
-
-	<filter>
-		<filter-name>SymmetricFilter</filter-name>
-		<filter-class>
-			org.jumpmind.symmetric.web.SymmetricFilter
-		</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>SymmetricFilter</filter-name>
-		<servlet-name>/*</servlet-name>
-	</filter-mapping>
-	
-	<listener>
-		<listener-class>
-			org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
-		</listener-class>
-	</listener>
-	
-	<servlet>
-		<servlet-name>SymmetricServlet</servlet-name>
-		<servlet-class>
-			org.jumpmind.symmetric.web.SymmetricServlet
-		</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>SymmetricServlet</servlet-name>
-		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
+    <display-name>sync</display-name>
+    
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <!-- Optional: specify other Spring files to load into same context -->
+        <param-value>classpath:additional-spring.xml</param-value>
+    </context-param>
+    
+    <filter>
+        <filter-name>SymmetricFilter</filter-name>
+        <filter-class>
+            org.jumpmind.symmetric.web.SymmetricFilter
+        </filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>SymmetricFilter</filter-name>
+        <servlet-name>/*</servlet-name>
+    </filter-mapping>
+    
+    <listener>
+        <listener-class>
+            org.jumpmind.symmetric.SymmetricEngineContextLoaderListener
+        </listener-class>
+    </listener>
+    
+    <servlet>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <servlet-class>
+            org.jumpmind.symmetric.web.SymmetricServlet
+        </servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>SymmetricServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>]]></programlisting>
             <para>
@@ -170,13 +171,12 @@ public class StartSymmetricDSEngine {
     public static void main(String[] args) throws Exception {
         String workingDirectory = System.getProperty("user.dir");
 
-        SymmetricEngine engine = new SymmetricEngine("classpath://my-application.properties", "file://"
-                + workingDirectory + "/my-environment.properties");
+        SymmetricEngine engine = new SymmetricEngine(
+            "classpath://my-application.properties",
+            "file://" + workingDirectory + "/my-environment.properties");
 
         // this will create the database, sync triggers, start jobs running
         engine.start();
-        
-        ....
         
         // this will stop the engine
         engine.stop();
