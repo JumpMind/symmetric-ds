@@ -74,7 +74,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
-                    <property name="period" value="${job.purge.period.time.ms}" />
+                    <property name="period" value="$[sym.job.purge.period.time.ms]" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.PurgeJob">
                             <property name="purgeService" ref="purgeService" />
@@ -93,7 +93,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- Random wait before start to stagger load -->
                     <property name="delay" ref="delayBeforeStartTimeSlotPurge" />
-                    <property name="period" value="${job.stat.flush.period.time.ms}" />
+                    <property name="period" value="$[sym.job.stat.flush.period.time.ms]" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
                             <property name="statisticManager" ref="statisticManager" />

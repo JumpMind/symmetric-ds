@@ -10,19 +10,19 @@
   <util:map id="dataServiceSql">
     <entry key="insertIntoDataSql">
       <value>
-        insert into ${sync.table.prefix}_data (data_id, table_name, event_type, row_data, pk_data,
+        insert into $[sym.sync.table.prefix]_data (data_id, table_name, event_type, row_data, pk_data,
         old_data, trigger_hist_id, create_time) values(null, ?, ?, ?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
     <entry key="insertIntoDataEventSql">
       <value>
-        insert into ${sync.table.prefix}_data_event (data_id, node_id, channel_id, transaction_id,
+        insert into $[sym.sync.table.prefix]_data_event (data_id, node_id, channel_id, transaction_id,
         batch_id, batched) values(?, ?, ?, ?, ?, ?)
       </value>
     </entry>
     <entry key="updateNodeHeartbeatSql">
       <value>
-        update ${sync.table.prefix}_node set heartbeat_time=current_timestamp where node_id=
+        update $[sym.sync.table.prefix]_node set heartbeat_time=current_timestamp where node_id=
       </value>
     </entry>    
     

@@ -20,10 +20,10 @@
             <list>
                 <value>classpath:/symmetric-default.properties</value>
                 <value>classpath:/symmetric.properties</value>                
-                <value>file:${user.home}/symmetric.properties</value>
+                <value>file:$[sym.user.home]/symmetric.properties</value>
                 <value>classpath:/symmetric-override.properties</value>
-                <value>${symmetric.override.properties.file.1}</value>
-                <value>${symmetric.override.properties.file.2}</value>
+                <value>$[sym.symmetric.override.properties.file.1]</value>
+                <value>$[sym.symmetric.override.properties.file.2]</value>
                 <!-- database configuration -->
             </list>
         </property>
@@ -31,6 +31,8 @@
        
     <bean id="propertyPlaceholderConfigurer"
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="placeholderPrefix" value="$[sym."/>
+        <property name="placeholderSuffix" value="]"/>
         <property name="properties" ref="properties" />
         <!-- This means that any system properties set on the command line will take precedence over those set locally or in a properties file. -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
