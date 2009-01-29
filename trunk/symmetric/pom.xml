@@ -134,6 +134,7 @@
             <id>dav.codehaus.org</id>
             <name>SymmetricDS Repo</name>
             <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/</url>
+            <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
  
