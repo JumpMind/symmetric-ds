@@ -25,18 +25,23 @@ package org.jumpmind.symmetric.db.h2;
  */
 
 import java.io.IOException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.alteration.AddColumnChange;
 import org.apache.ddlutils.alteration.RemoveColumnChange;
 import org.apache.ddlutils.alteration.TableChange;
+import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
+import org.apache.ddlutils.model.ModelException;
 import org.apache.ddlutils.model.Table;
+import org.apache.ddlutils.model.TypeMap;
 import org.apache.ddlutils.platform.SqlBuilder;
 
 /**
@@ -80,6 +85,7 @@ public class H2Builder extends SqlBuilder
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel,
                                                 Database desiredModel,
                                                 Table    sourceTable,
@@ -182,4 +188,56 @@ public class H2Builder extends SqlBuilder
         printEndOfStatement();
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
+    
+    @Override
+    protected void writeColumnDefaultValueStmt(Table table, Column column) throws IOException
+    {
+        Object parsedDefault = column.getParsedDefaultValue();
+
+        if (parsedDefault != null)
+        {
+            if (!getPlatformInfo().isDefaultValuesForLongTypesSupported() && 
+                ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR)))
+            {
+                throw new ModelException("The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
+            }
+            // we write empty default value strings only if the type is not a numeric or date/time type
+            if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode()))
+            {
+                print(" DEFAULT ");
+                writeColumnDefaultValue(table, column);
+            }
+        }
+        else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement())
+        {
+            print(" DEFAULT ");
+            writeColumnDefaultValue(table, column);
+        } else if (!StringUtils.isBlank(column.getDefaultValue())) {
+            print(" DEFAULT ");
+            writeColumnDefaultValue(table, column);            
+        }
+    }    
+    
+    @Override
+    protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException
+    {
+        if (defaultValue != null)
+        {
+            String  defaultValueStr = defaultValue.toString();
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode) && !defaultValueStr.startsWith("TO_DATE(") && !defaultValue.equals("CURRENT_TIMESTAMP") && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");;
+    
+            if (shouldUseQuotes)
+            {
+                // characters are only escaped when within a string literal 
+                print(getPlatformInfo().getValueQuoteToken());
+                print(escapeStringValue(defaultValueStr));
+                print(getPlatformInfo().getValueQuoteToken());
+            }
+            else
+            {
+                print(defaultValueStr);
+            }
+        }
+    }
+        
 }
