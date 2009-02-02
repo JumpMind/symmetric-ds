@@ -72,6 +72,8 @@ public class SymmetricLauncher {
     private static final String OPTION_PORT_SERVER = "port";
     
     private static final String OPTION_SECURE_PORT_SERVER = "secure-port";
+    
+    private static final String OPTION_MAX_IDLE_TIME = "max-idle-time";
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
 
@@ -104,12 +106,16 @@ public class SymmetricLauncher {
 
             int port = 31415;
             int securePort = 31417;
+            int maxIdleTime = 900000;
 
             if (line.hasOption(OPTION_PORT_SERVER)) {
                 port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
             }
             if (line.hasOption(OPTION_SECURE_PORT_SERVER)) {
                 securePort = new Integer(line.getOptionValue(OPTION_SECURE_PORT_SERVER));
+            }
+            if (line.hasOption(OPTION_MAX_IDLE_TIME)) {
+                maxIdleTime = new Integer(line.getOptionValue(OPTION_MAX_IDLE_TIME));
             }
 
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
@@ -192,13 +198,13 @@ public class SymmetricLauncher {
                     testConnection();
                 }
                 if (line.hasOption(OPTION_START_SERVER)) {
-                    new SymmetricWebServer().start(port);
+                    new SymmetricWebServer(maxIdleTime).start(port);
                 }
                 else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    new SymmetricWebServer().startSecure(securePort);
+                    new SymmetricWebServer(maxIdleTime).startSecure(securePort);
                 }
                 else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                    new SymmetricWebServer().startMixed(port, securePort);
+                    new SymmetricWebServer(maxIdleTime).startMixed(port, securePort);
                 }
                 return;
             }
@@ -250,6 +256,8 @@ public class SymmetricLauncher {
                 "Optionally pass in the HTTP port number to use for the server instance.");
         options.addOption("Q", OPTION_SECURE_PORT_SERVER, true,
                 "Optionally pass in the HTTPS port number to use for the server instance.");
+        options.addOption("I", OPTION_MAX_IDLE_TIME, true,
+                "Max idle time in milliseconds when a connection is forced to close [900000].");
 
         options
                 .addOption(

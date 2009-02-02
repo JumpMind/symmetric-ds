@@ -64,12 +64,19 @@ public class SymmetricWebServer {
     protected boolean join = true;
 
     protected String webHome = "/sync";
+    
+    protected int maxIdleTime = 900000;
 
     public SymmetricWebServer() {}
     
     public SymmetricWebServer(SymmetricEngine engine) {
         this.contextListener = new SymmetricEngineContextLoaderListener(engine);
     }
+    
+    public SymmetricWebServer(int maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
+    }
+    
     public void start(int port, String propertiesUrl) throws Exception {
         System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
         start(port);
@@ -131,6 +138,7 @@ public class SymmetricWebServer {
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = new SelectChannelConnector();
             connector.setPort(port);
+            ((SelectChannelConnector) connector).setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
             logger.info("About to start SymmetricDS web server on port " + port);
         }
@@ -138,6 +146,7 @@ public class SymmetricWebServer {
             Connector connector = new SslSocketConnector();    
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setPassword("changeit");
+            ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
             connector.setPort(securePort);
             connectors.add(connector);
             logger.info("About to start SymmetricDS web server on secure port " + securePort);
@@ -218,6 +227,14 @@ public class SymmetricWebServer {
 
     public void setWebHome(String webHome) {
         this.webHome = webHome;
+    }
+
+    public int getMaxIdleTime() {
+        return maxIdleTime;
+    }
+
+    public void setMaxIdleTime(int maxIdleTime) {
+        this.maxIdleTime = maxIdleTime;
     }
 
 }
