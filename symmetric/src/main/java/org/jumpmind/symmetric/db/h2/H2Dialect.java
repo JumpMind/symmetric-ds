@@ -18,23 +18,17 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
-import org.h2.engine.Session;
-import org.h2.jdbc.JdbcConnection;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
 
 /**
- *
+ * 
  * @author knaas@users.sourceforge.net
  */
 public class H2Dialect extends AbstractDbDialect implements IDbDialect {
@@ -44,13 +38,14 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
     private boolean initializeDatabase;
     private static boolean h2Initialized = false;
     private boolean storesUpperCaseNames = true;
+    
     private ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
-
         @Override
         protected Boolean initialValue() {
             return Boolean.TRUE;
         }
     };
+    
     private ThreadLocal<String> syncNodeDisabled = new ThreadLocal<String>() {
 
         @Override
@@ -68,8 +63,9 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         }
 
         createDummyDualTable();
-        
-        jdbcTemplate.update("CREATE ALIAS IF NOT EXISTS BASE64_ENCODE for \"org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64\"");
+
+        jdbcTemplate
+                .update("CREATE ALIAS IF NOT EXISTS BASE64_ENCODE for \"org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64\"");
     }
 
     /**
@@ -89,22 +85,23 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt(
-                "select count(*) from INFORMATION_SCHEMA.TRIGGERS where trigger_name = ?",
-                new Object[]{triggerName}) > 0;
+        return jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS where trigger_name = ?",
+                new Object[] { triggerName }) > 0;
     }
 
     public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         triggerName = schemaName + triggerName;
         try {
-            jdbcTemplate.update(new String("drop trigger " + triggerName + "_" + getEngineName() + "_" + hist.getTriggerHistoryId()).toUpperCase());
+            jdbcTemplate.update(new String("drop trigger " + triggerName + "_" + getEngineName() + "_"
+                    + hist.getTriggerHistoryId()).toUpperCase());
         } catch (Exception e) {
             logger.warn("Error removing " + triggerName + ": " + e.getMessage());
         }
     }
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName,
+            TriggerHistory oldHistory) {
         removeTrigger(schemaName, triggerName, oldHistory);
     }
 
@@ -174,7 +171,12 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     public boolean supportsGetGeneratedKeys() {
         return false;
-    }
+    }    
+    
+    @Override
+    public boolean supportsTransactionId() {
+        return true;
+    }    
 
     protected boolean allowsNullForIdentityColumn() {
         return false;

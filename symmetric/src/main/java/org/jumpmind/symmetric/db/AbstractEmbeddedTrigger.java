@@ -95,8 +95,6 @@ public abstract class AbstractEmbeddedTrigger {
 
     protected abstract int getTriggerHistId();
 
-    protected abstract String getTransactionId(Object[] oldRow, Object[] newRow);
-
     protected String formatRowData(Object[] oldRow, Object[] newRow) {
         if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
             return formatAsCsv(getOrderedColumnValues(newRow));

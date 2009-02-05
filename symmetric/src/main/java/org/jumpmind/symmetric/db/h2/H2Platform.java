@@ -30,26 +30,25 @@ import org.apache.ddlutils.platform.PlatformImplBase;
  * From patch at <a href="https://issues.apache.org/jira/browse/DDLUTILS-185">https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  * @version $Revision: 231306 $
  */
-public class H2Platform extends PlatformImplBase implements Platform
-{
+public class H2Platform extends PlatformImplBase implements Platform {
+    
     /** Database name of this platform. */
-    public static final String DATABASENAME     = "H2";
+    public static final String DATABASENAME = "H2";
     /** The standard H2 driver. */
-    public static final String JDBC_DRIVER      = "org.h2.Driver";
+    public static final String JDBC_DRIVER = "org.h2.Driver";
     /** The subprotocol used by the H2 driver. */
     public static final String JDBC_SUBPROTOCOL = "h2";
 
     /**
      * Creates a new instance of the H2 platform.
      */
-    public H2Platform()
-    {
+    public H2Platform() {
         PlatformInfo info = getPlatformInfo();
 
         info.setNonPKIdentityColumnsSupported(false);
         info.setIdentityOverrideAllowed(false);
         info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-
+        info.setNullAsDefaultValueRequired(false);
         info.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.DISTINCT, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
@@ -78,8 +77,7 @@ public class H2Platform extends PlatformImplBase implements Platform
     /**
      * {@inheritDoc}
      */
-    public String getName()
-    {
+    public String getName() {
         return DATABASENAME;
     }
 
