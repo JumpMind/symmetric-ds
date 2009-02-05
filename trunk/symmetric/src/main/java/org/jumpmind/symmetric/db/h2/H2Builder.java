@@ -27,10 +27,9 @@ package org.jumpmind.symmetric.db.h2;
 import java.io.IOException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.Platform;
@@ -42,6 +41,7 @@ import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.ModelException;
 import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.model.TypeMap;
+import org.apache.ddlutils.platform.CreationParameters;
 import org.apache.ddlutils.platform.SqlBuilder;
 
 /**
@@ -50,15 +50,9 @@ import org.apache.ddlutils.platform.SqlBuilder;
  * @author knaas@users.sourceforge.net
  * @version $Revision: 518485 $
  */
-public class H2Builder extends SqlBuilder
-{
-    /**
-     * Creates a new builder instance.
-     *
-     * @param platform The plaftform this builder belongs to
-     */
-    public H2Builder(Platform platform)
-    {
+public class H2Builder extends SqlBuilder {
+
+    public H2Builder(Platform platform) {
         super(platform);
         addEscapedCharSequence("'", "''");
     }
@@ -66,41 +60,25 @@ public class H2Builder extends SqlBuilder
     /**
      * {@inheritDoc}
      */
-    public void dropTable(Table table) throws IOException
-    {
+    public void dropTable(Table table) throws IOException {
         print("DROP TABLE ");
         printIdentifier(getTableName(table));
         print(" IF EXISTS");
         printEndOfStatement();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String getSelectLastIdentityValues(Table table)
-    {
+    public String getSelectLastIdentityValues(Table table) {
         return "CALL IDENTITY()";
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
-    protected void processTableStructureChanges(Database currentModel,
-                                                Database desiredModel,
-                                                Table    sourceTable,
-                                                Table    targetTable,
-                                                Map      parameters,
-                                                List     changes) throws IOException
-    {
+    protected void processTableStructureChanges(Database currentModel, Database desiredModel,
+            CreationParameters params, Collection changes) throws IOException {
         // Only drop columns that are not part of a primary key
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();)
-        {
-            TableChange change = (TableChange)changeIt.next();
+        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = (TableChange) changeIt.next();
 
-            if ((change instanceof RemoveColumnChange) &&
-                ((RemoveColumnChange)change).getColumn().isPrimaryKey())
-            {
+            if ((change instanceof RemoveColumnChange) && ((RemoveColumnChange) change).getColumn().isPrimaryKey()) {
                 return;
             }
         }
@@ -112,31 +90,26 @@ public class H2Builder extends SqlBuilder
         // iterate backwards
         ArrayList addColumnChanges = new ArrayList();
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();)
-        {
-            TableChange change = (TableChange)changeIt.next();
+        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = (TableChange) changeIt.next();
 
-            if (change instanceof AddColumnChange)
-            {
+            if (change instanceof AddColumnChange) {
                 addColumnChanges.add(change);
                 changeIt.remove();
             }
         }
-        for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();)
-        {
-            AddColumnChange addColumnChange = (AddColumnChange)changeIt.previous();
+        for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
+            AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
 
             processChange(currentModel, desiredModel, addColumnChange);
             changeIt.remove();
         }
 
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();)
-        {
-            TableChange change = (TableChange)changeIt.next();
+        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = (TableChange) changeIt.next();
 
-            if (change instanceof RemoveColumnChange)
-            {
-                RemoveColumnChange removeColumnChange = (RemoveColumnChange)change;
+            if (change instanceof RemoveColumnChange) {
+                RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
 
                 processChange(currentModel, desiredModel, removeColumnChange);
                 changeIt.remove();
@@ -146,22 +119,22 @@ public class H2Builder extends SqlBuilder
 
     /**
      * Processes the addition of a column to a table.
-     *
-     * @param currentModel The current database schema
-     * @param desiredModel The desired database schema
-     * @param change       The change object
+     * 
+     * @param currentModel
+     *            The current database schema
+     * @param desiredModel
+     *            The desired database schema
+     * @param change
+     *            The change object
      */
-    protected void processChange(Database        currentModel,
-                                 Database        desiredModel,
-                                 AddColumnChange change) throws IOException
-    {
+    protected void processChange(Database currentModel, Database desiredModel, AddColumnChange change)
+            throws IOException {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
         print("ADD COLUMN ");
         writeColumn(change.getChangedTable(), change.getNewColumn());
-        if (change.getNextColumn() != null)
-        {
+        if (change.getNextColumn() != null) {
             print(" BEFORE ");
             printIdentifier(getColumnName(change.getNextColumn()));
         }
@@ -171,15 +144,16 @@ public class H2Builder extends SqlBuilder
 
     /**
      * Processes the removal of a column from a table.
-     *
-     * @param currentModel The current database schema
-     * @param desiredModel The desired database schema
-     * @param change       The change object
+     * 
+     * @param currentModel
+     *            The current database schema
+     * @param desiredModel
+     *            The desired database schema
+     * @param change
+     *            The change object
      */
-    protected void processChange(Database           currentModel,
-                                 Database           desiredModel,
-                                 RemoveColumnChange change) throws IOException
-    {
+    protected void processChange(Database currentModel, Database desiredModel, RemoveColumnChange change)
+            throws IOException {
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(change.getChangedTable()));
         printIndent();
@@ -188,56 +162,47 @@ public class H2Builder extends SqlBuilder
         printEndOfStatement();
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
-    
-    @Override
-    protected void writeColumnDefaultValueStmt(Table table, Column column) throws IOException
-    {
+
+    protected void writeColumnDefaultValueStmt(Table table, Column column) throws IOException {
         Object parsedDefault = column.getParsedDefaultValue();
 
-        if (parsedDefault != null)
-        {
-            if (!getPlatformInfo().isDefaultValuesForLongTypesSupported() && 
-                ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR)))
-            {
-                throw new ModelException("The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
+        if (parsedDefault != null) {
+            if (!getPlatformInfo().isDefaultValuesForLongTypesSupported()
+                    && ((column.getTypeCode() == Types.LONGVARBINARY) || (column.getTypeCode() == Types.LONGVARCHAR))) {
+                throw new ModelException(
+                        "The platform does not support default values for LONGVARCHAR or LONGVARBINARY columns");
             }
-            // we write empty default value strings only if the type is not a numeric or date/time type
-            if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode()))
-            {
+            // we write empty default value strings only if the type is not a
+            // numeric or date/time type
+            if (isValidDefaultValue(column.getDefaultValue(), column.getTypeCode())) {
                 print(" DEFAULT ");
                 writeColumnDefaultValue(table, column);
             }
-        }
-        else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement())
-        {
+        } else if (getPlatformInfo().isDefaultValueUsedForIdentitySpec() && column.isAutoIncrement()) {
             print(" DEFAULT ");
             writeColumnDefaultValue(table, column);
         } else if (!StringUtils.isBlank(column.getDefaultValue())) {
             print(" DEFAULT ");
-            writeColumnDefaultValue(table, column);            
+            writeColumnDefaultValue(table, column);
         }
-    }    
-    
-    @Override
-    protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException
-    {
-        if (defaultValue != null)
-        {
-            String  defaultValueStr = defaultValue.toString();
-            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode) && !defaultValueStr.startsWith("TO_DATE(") && !defaultValue.equals("CURRENT_TIMESTAMP") && !defaultValue.equals("CURRENT_TIME") && !defaultValue.equals("CURRENT_DATE");;
-    
-            if (shouldUseQuotes)
-            {
-                // characters are only escaped when within a string literal 
+    }
+
+    protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException {
+        if (defaultValue != null) {
+            String defaultValueStr = defaultValue.toString();
+            boolean shouldUseQuotes = !TypeMap.isNumericType(typeCode) && !defaultValueStr.startsWith("TO_DATE(")
+                    && !defaultValue.equals("CURRENT_TIMESTAMP") && !defaultValue.equals("CURRENT_TIME")
+                    && !defaultValue.equals("CURRENT_DATE");
+            ;
+
+            if (shouldUseQuotes) {
+                // characters are only escaped when within a string literal
                 print(getPlatformInfo().getValueQuoteToken());
                 print(escapeStringValue(defaultValueStr));
                 print(getPlatformInfo().getValueQuoteToken());
-            }
-            else
-            {
+            } else {
                 print(defaultValueStr);
             }
         }
     }
-        
 }

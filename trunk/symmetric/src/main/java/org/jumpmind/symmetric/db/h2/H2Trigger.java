@@ -28,13 +28,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.Set;
+
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.h2.engine.Session;
+import org.h2.jdbc.JdbcConnection;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -44,19 +45,16 @@ import org.springframework.jdbc.core.RowMapper;
 public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Trigger {
 
     static final Log logger = LogFactory.getLog(H2Trigger.class);
-    private String triggerName;
-    private String schemaName;
-    private String dataSelectSql;
-    private String nodeSelectSql;
-    private String transactionIdSql;
-    private boolean conditionalExists;
-    private static String transactionId;
-    private static long lastTransactionIdUpdate;
-    private boolean initialized = false;
-    private Set<String> keywords;
+    protected String triggerName;
+    protected String schemaName;
+    protected String dataSelectSql;
+    protected String nodeSelectSql;
+    protected String transactionIdSql;
+    protected boolean conditionalExists;
+    protected boolean initialized = false;
+    protected Set<String> keywords;
 
-    public void fire(Connection conn,
-            Object[] oldRow, Object[] newRow) {
+    public void fire(Connection conn, Object[] oldRow, Object[] newRow) {
         try {
             if (initialized) {
                 H2Dialect dialect = getDbDialect();
@@ -70,16 +68,13 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
                         nodes.remove(disabledNode);
                     }
                     if (nodes != null) {
-                        dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow),
-                                nodes);
+                        dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(conn, oldRow, newRow), nodes);
                     }
                 }
             }
         } catch (RuntimeException ex) {
             logger.error(ex, ex);
             throw ex;
-        } finally {
-            lastTransactionIdUpdate = System.currentTimeMillis();
         }
     }
 
@@ -96,7 +91,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
                 });
     }
 
-    private boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
+    protected boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
         if (conditionalExists) {
             return getDbDialect().getJdbcTemplate().queryForInt(fillVirtualTableSql(dataSelectSql, oldRow, newRow)) > 0;
         } else {
@@ -104,10 +99,10 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         }
     }
 
-    private void initializeMetadata(Connection conn) {
+    protected void initializeMetadata(Connection conn) {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-            keywords = new HashSet(Arrays.asList(metaData.getSQLKeywords().split(",")));
+            keywords = new HashSet<String>(Arrays.asList(metaData.getSQLKeywords().split(",")));
         } catch (SQLException ex) {
             throw new IllegalStateException("Unable to fetch keywords", ex);
         }
@@ -130,7 +125,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         }
     }
 
-    private String buildVirtualTableSql() {
+    protected String buildVirtualTableSql() {
         StringBuilder b = new StringBuilder("(select ");
         if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
             for (String column : includedColumns) {
@@ -158,28 +153,29 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         return b.toString();
     }
 
-    private void buildTransactionIdSql() {
+    protected void buildTransactionIdSql() {
         if (!StringUtils.isBlank(trigger.getTxIdExpression())) {
-            transactionIdSql = "select " + replaceOldNewTriggerTokens(trigger.getTxIdExpression()) + " from " + buildVirtualTableSql();
+            transactionIdSql = "select " + replaceOldNewTriggerTokens(trigger.getTxIdExpression()) + " from "
+                    + buildVirtualTableSql();
         }
     }
 
     /**
-     * I wanted to do this as a preparedstatement but h2 doesn't seem to
-     * support it.
+     * I wanted to do this as a preparedstatement but h2 doesn't seem to support
+     * it.
      */
-    private String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
+    protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
         Object[] values = null;
         switch (triggerType) {
-            case INSERT:
-                values = getOrderedColumnValues(newRow);
-                break;
-            case UPDATE:
-                values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
-                break;
-            case DELETE:
-                values = getOrderedColumnValues(oldRow);
-                break;
+        case INSERT:
+            values = getOrderedColumnValues(newRow);
+            break;
+        case UPDATE:
+            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
+            break;
+        case DELETE:
+            values = getOrderedColumnValues(oldRow);
+            break;
         }
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
@@ -206,7 +202,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         return out.toString();
     }
 
-    private void buildNodeSelectSql() {
+    protected void buildNodeSelectSql() {
         StringBuilder b = new StringBuilder("select node_id from ");
         b.append(dbDialect.getTablePrefix());
         b.append("_node c, ");
@@ -218,37 +214,37 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         this.nodeSelectSql = b.toString();
     }
 
-    private void buildDataSelectSql() {
+    protected void buildDataSelectSql() {
         StringBuilder b = new StringBuilder("select count(*) from ");
         b.append(buildVirtualTableSql());
         switch (triggerType) {
-            case INSERT:
-                if (!StringUtils.isBlank(trigger.getSyncOnInsertCondition())) {
-                    conditionalExists = true;
-                    b.append("where ");
-                    b.append(trigger.getSyncOnInsertCondition());
-                }
-                break;
-            case UPDATE:
-                if (!StringUtils.isBlank(trigger.getSyncOnUpdateCondition())) {
-                    conditionalExists = true;
-                    b.append("where ");
-                    b.append(trigger.getSyncOnUpdateCondition());
-                }
-                break;
-            case DELETE:
-                if (!StringUtils.isBlank(trigger.getSyncOnDeleteCondition())) {
-                    conditionalExists = true;
-                    b.append("where ");
-                    b.append(trigger.getSyncOnDeleteCondition());
-                }
-                break;
+        case INSERT:
+            if (!StringUtils.isBlank(trigger.getSyncOnInsertCondition())) {
+                conditionalExists = true;
+                b.append("where ");
+                b.append(trigger.getSyncOnInsertCondition());
+            }
+            break;
+        case UPDATE:
+            if (!StringUtils.isBlank(trigger.getSyncOnUpdateCondition())) {
+                conditionalExists = true;
+                b.append("where ");
+                b.append(trigger.getSyncOnUpdateCondition());
+            }
+            break;
+        case DELETE:
+            if (!StringUtils.isBlank(trigger.getSyncOnDeleteCondition())) {
+                conditionalExists = true;
+                b.append("where ");
+                b.append(trigger.getSyncOnDeleteCondition());
+            }
+            break;
         }
 
         this.dataSelectSql = replaceOldNewTriggerTokens(b.toString());
     }
 
-    private String replaceOldNewTriggerTokens(String targetString) {
+    protected String replaceOldNewTriggerTokens(String targetString) {
         // This is a little hack to allow us to replace not only the old/new
         // alias's, but also the column prefix for
         // use in a virtual table we can match SQL expressions against.
@@ -258,20 +254,20 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         return dbDialect.replaceTemplateVariables(triggerType, trigger, triggerHistory, targetString);
     }
 
-    private DataEventType getDataEventType(int type) {
+    protected DataEventType getDataEventType(int type) {
         switch (type) {
-            case org.h2.api.Trigger.INSERT:
-                return DataEventType.INSERT;
-            case org.h2.api.Trigger.UPDATE:
-                return DataEventType.UPDATE;
-            case org.h2.api.Trigger.DELETE:
-                return DataEventType.DELETE;
-            default:
-                throw new IllegalStateException("Unexpected trigger type: " + type);
+        case org.h2.api.Trigger.INSERT:
+            return DataEventType.INSERT;
+        case org.h2.api.Trigger.UPDATE:
+            return DataEventType.UPDATE;
+        case org.h2.api.Trigger.DELETE:
+            return DataEventType.DELETE;
+        default:
+            throw new IllegalStateException("Unexpected trigger type: " + type);
         }
     }
 
-    private H2Dialect getDbDialect() {
+    protected H2Dialect getDbDialect() {
         return (H2Dialect) dbDialect;
     }
 
@@ -286,16 +282,15 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
     }
 
-    @Override
-    protected String getTransactionId(Object[] oldRow, Object[] newRow) {
-        if (System.currentTimeMillis() - lastTransactionIdUpdate > 5000) {
-            transactionId = RandomStringUtils.randomAlphanumeric(12);
-        }
-
-        if (transactionIdSql != null) {
-            transactionId = (String) getDbDialect().getJdbcTemplate().queryForObject(
+    protected String getTransactionId(Connection c, Object[] oldRow, Object[] newRow) {
+        if (transactionIdSql == null) {
+            JdbcConnection con = (JdbcConnection) c;
+            Session session = (Session) con.getSession();
+            return StringUtils.leftPad(Integer.toString(session.getId()), 3, "0") + "-"
+                    + session.getFirstUncommittedLog() + "-" + session.getFirstUncommittedPos();
+        } else {
+            return (String) getDbDialect().getJdbcTemplate().queryForObject(
                     fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class);
         }
-        return transactionId;
     }
 }

@@ -61,20 +61,21 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public final static Object[] INSERT1_VALUES = new Object[] { "\\\\", "\"", "\"1\"", null, null, Boolean.TRUE, 1, 1 };
 
     public final static Object[] INSERT2_VALUES = new Object[] { "here", "here", "1", null, null, Boolean.TRUE, 1, 1 };
-    
-    public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE, 1, 1 };
+
+    public final static Object[] INSERT3_VALUES = new Object[] { "inactive", "inactive", "0", null, null, Boolean.TRUE,
+            1, 1 };
 
     public final static String EXPECTED_INSERT1_CSV_ENDSWITH = "\"\\\\\\\\\",\"\\\"\",\"\\\"1\\\"\",,,\"1\",\"1\",\"1\"";
 
     public final static String EXPECTED_INSERT2_CSV_ENDSWITH = "\"here\",\"here\",\"1\",,,\"1\",\"1\"";
-    
+
     public final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
 
     public final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
             + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
             + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
-    public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)"; 
+    public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)";
 
     public DbTriggerTest() throws Exception {
         super();
@@ -115,8 +116,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate()
-                .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
+        return getJdbcTemplate().queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
     }
 
     @Test
@@ -130,9 +130,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
-        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with "
+                + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testInitialLoadSql() throws Exception {
@@ -154,23 +155,29 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     @ParameterExcluder("postgres")
     @SuppressWarnings("unchecked")
     public void validateTransactionFunctionailty() throws Exception {
+        final String SQL = "select transaction_id from " + TestConstants.TEST_PREFIX
+                + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
+        
         final JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        List<String> batchIdList = (List<String>) jdbcTemplate.queryForList(SQL, String.class);
+
+        int currentNumberOfTransactions = batchIdList.size();
+
         TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
                 getDataSource()));
         transactionTemplate.execute(new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
                 jdbcTemplate.update("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
-                insert(INSERT2_VALUES, jdbcTemplate, getDbDialect());               
+                insert(INSERT2_VALUES, jdbcTemplate, getDbDialect());
                 return null;
             }
         });
-        String sql = "select transaction_id from " + TestConstants.TEST_PREFIX
-                + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
-        List<String> batchIdList = (List<String>) jdbcTemplate.queryForList(sql, String.class);
+
+        batchIdList = (List<String>) jdbcTemplate.queryForList(SQL, String.class);
 
         IDbDialect dbDialect = getDbDialect();
         if (dbDialect.supportsTransactionId()) {
-            assertTrue(batchIdList != null && batchIdList.size() == 1);
+            assertTrue(batchIdList != null && batchIdList.size()-currentNumberOfTransactions == 1);
             assertNotNull(batchIdList.get(0));
         }
     }
@@ -203,21 +210,23 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH);
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with "
+                + EXPECTED_INSERT2_CSV_ENDSWITH);
     }
 
     @Test
     public void testDisableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         getDbDialect().disableSyncTriggers();
-        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect()); 
+        int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
         getDbDialect().enableSyncTriggers();
         assertTrue(count == 1);
         String csvString = getNextDataRow(getSymmetricEngine());
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-        assertTrue(match, "Received " + csvString + ", Expected the string to end with " + EXPECTED_INSERT2_CSV_ENDSWITH);
+        assertTrue(match, "Received " + csvString + ", Expected the string to end with "
+                + EXPECTED_INSERT2_CSV_ENDSWITH);
     }
 
     @Test
@@ -248,18 +257,20 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         String tableName = getNextDataRowTableName(getSymmetricEngine());
         assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
     }
-    
+
     @Test
     public void inactivateTriggersTest() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set inactive_time=current_timestamp where source_table_name='"+TEST_TRIGGERS_TABLE+"'");
+        jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
+                + "trigger set inactive_time=current_timestamp where source_table_name='" + TEST_TRIGGERS_TABLE + "'");
         getSymmetricEngine().syncTriggers();
-        
+
         Assert.assertEquals(1, insert(INSERT3_VALUES, jdbcTemplate, getDbDialect()));
         String csvString = getNextDataRow(getSymmetricEngine());
-        Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString, "Data was captured when it should not have been");
-        
-    }    
+        Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString,
+                "Data was captured when it should not have been");
+
+    }
 
     @Test
     public void syncIncomingBatchTest() throws Exception {
@@ -270,10 +281,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         List<String> nodeList = getNextDataEvents();
         assertTrue(nodeList.size() == 1);
         assertTrue(nodeList.contains("00011"));
-    }    
+    }
 
     protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
-        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect)||(dbDialect instanceof Db2DbDialect));
+        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
         int[] filteredTypes = new int[types.length];
         for (int i = 0; i < types.length; i++) {
             if (types[i] == Types.BOOLEAN && !isBooleanSupported) {
@@ -284,13 +295,13 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         }
         return filteredTypes;
     }
-    
+
     public static int insert(Object[] values, JdbcTemplate jdbcTemplate, IDbDialect dbDialect) {
         return jdbcTemplate.update(INSERT, filterValues(values, dbDialect), filterTypes(INSERT_TYPES, dbDialect));
     }
 
     protected static Object[] filterValues(Object[] values, IDbDialect dbDialect) {
-        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect)||(dbDialect instanceof Db2DbDialect));
+        boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof Boolean && !isBooleanSupported) {
@@ -323,8 +334,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     private List<String> getNextDataEvents() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         return (List<String>) jdbcTemplate.queryForList("select node_id from " + TestConstants.TEST_PREFIX
-                + "data_event where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX
-                + "data)", String.class);
+                + "data_event where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
+                String.class);
 
     }
 

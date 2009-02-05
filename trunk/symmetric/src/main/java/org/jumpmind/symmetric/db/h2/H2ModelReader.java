@@ -53,6 +53,7 @@ public class H2ModelReader extends JdbcModelReader
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException
     {
         Column column = super.readColumn(metaData, values);

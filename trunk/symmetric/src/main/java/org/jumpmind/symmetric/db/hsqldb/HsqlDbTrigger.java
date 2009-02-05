@@ -276,7 +276,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
         return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
     }
 
-    @Override
     protected String getTransactionId(Object[] oldRow, Object[] newRow) {
         if (System.currentTimeMillis() - lastTransactionIdUpdate > 5000) {
             transactionId = RandomStringUtils.randomAlphanumeric(12);
