@@ -68,7 +68,8 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
                         nodes.remove(disabledNode);
                     }
                     if (nodes != null) {
-                        dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(conn, oldRow, newRow), nodes);
+                        dataService.insertDataEvent(data, trigger.getChannelId(),
+                                getTransactionId(conn, oldRow, newRow), nodes);
                     }
                 }
             }
@@ -286,8 +287,8 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         if (transactionIdSql == null) {
             JdbcConnection con = (JdbcConnection) c;
             Session session = (Session) con.getSession();
-            return StringUtils.leftPad(Integer.toString(session.getId()), 3, "0") + "-"
-                    + session.getFirstUncommittedLog() + "-" + session.getFirstUncommittedPos();
+            return String.format("%s-%s-%s", session.getId(), session.getFirstUncommittedLog(), session
+                    .getFirstUncommittedPos());
         } else {
             return (String) getDbDialect().getJdbcTemplate().queryForObject(
                     fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class);
