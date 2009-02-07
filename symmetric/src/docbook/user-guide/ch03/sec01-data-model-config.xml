@@ -590,7 +590,10 @@
                             <entry>Y</entry>
                             <entry></entry>
                             <entry></entry>
-                            <entry>The schema name where the source table resides.</entry>
+                            <entry>
+                                The schema name where the source table resides.  The database trigger
+                                will be created for the source_table_name in this schema. 
+                            </entry>
                         </row>
                         <row>
                             <entry>source_table_name</entry>
@@ -609,7 +612,11 @@
                             <entry>Y</entry>
                             <entry></entry>
                             <entry></entry>
-                            <entry>The schema name where the target table resides.</entry>
+                            <entry>
+                                The schema name where the target table resides.  When data is sent
+                                to the remote database, the SQL statements used to load the data
+                                will qualify the target_table_name with this schema.                                 
+                            </entry>
                         </row>
                         <row>
                             <entry>target_table_name</entry>
