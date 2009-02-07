@@ -338,27 +338,34 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     @Transactional
     public void heartbeat() {
-        Node node = nodeService.findIdentity();
-        if (node != null) {
+        List<Node> heartbeatNodesToPush = new ArrayList<Node>();
+        Node me = nodeService.findIdentity();
+        if (me != null) {
             logger.info("Updating my node information and heartbeat time.");
-            node.setHeartbeatTime(new Date());
-            node.setTimezoneOffset(AppUtils.getTimezoneOffset());
-            node.setDatabaseType(dbDialect.getName());
-            node.setDatabaseVersion(dbDialect.getVersion());
-            node.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-            node.setExternalId(parameterService.getExternalId());
-            node.setNodeGroupId(parameterService.getNodeGroupId());
-            node.setSymmetricVersion(Version.version());
+            me.setHeartbeatTime(new Date());
+            me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+            me.setDatabaseType(dbDialect.getName());
+            me.setDatabaseVersion(dbDialect.getVersion());
+            me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+            me.setExternalId(parameterService.getExternalId());
+            me.setNodeGroupId(parameterService.getNodeGroupId());
+            me.setSymmetricVersion(Version.version());
             if (!StringUtils.isBlank(parameterService.getMyUrl())) {
-                node.setSyncURL(parameterService.getMyUrl());
+                me.setSyncURL(parameterService.getMyUrl());
             } else {
-                node.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
+                me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
             }
-            nodeService.updateNode(node);
+            nodeService.updateNode(me);
             logger.info("Done updating my node information and heartbeat time.");
+            heartbeatNodesToPush.add(me);
+            heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
+        }
+        
+        for (Node node : heartbeatNodesToPush) {           
             if (!configurationService.isRegistrationServer()) {
                 dataService.insertHeartbeatEvent(node);
             }
+            
         }
     }
 

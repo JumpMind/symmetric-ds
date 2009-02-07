@@ -47,6 +47,11 @@
         where node_group_id = ? and external_id = ? order by node_id
       </value>
     </entry>
+    <entry key="findNodesCreatedByMeSql">
+      <value>
+        where created_at_node_id=? and created_at_node_id != node_id
+      </value>
+    </entry>    
     <entry key="findNodeSecuritySql">
       <value>
         select node_id, node_password, registration_enabled, registration_time,
