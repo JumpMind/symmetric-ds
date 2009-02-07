@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.mock;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
@@ -28,6 +29,11 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
+
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
+        return null;
+    }
+    
     public Node findIdentity() {
         return null;
     }

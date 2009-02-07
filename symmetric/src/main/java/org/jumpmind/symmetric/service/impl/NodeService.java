@@ -28,8 +28,10 @@ import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +72,19 @@ public class NodeService extends AbstractService implements INodeService {
             return null;
         }
     }    
+    
+    @SuppressWarnings("unchecked")
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {   
+        Set<Node> all = new HashSet<Node>();
+        List<Node> list = jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"), getSql("findNodesCreatedByMeSql")), new Object[] { originalNodeId }, new NodeRowMapper());        
+        if (list.size() > 0) {
+            all.addAll(list);
+            for (Node node : list) {
+               all.addAll(findNodesThatOriginatedFromNodeId(node.getNodeId()));
+            }
+        }
+        return all;
+    }
 
     /**
      * Lookup a node in the database, which contains information for syncing

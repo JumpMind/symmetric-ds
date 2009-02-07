@@ -21,7 +21,9 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
@@ -29,6 +31,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -127,6 +130,24 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     public void testFindPushNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPushTo();
         assertEquals(list.size(), 1, "Wrong number of push nodes");
+    }
+    
+    @Test
+    public void testFindNodesThatOriginatedHere() throws Exception {
+        Set<Node> nodes = nodeService.findNodesThatOriginatedFromNodeId("00011");
+        Assert.assertEquals(4, nodes.size());
+        Set<String> expectedIds = new HashSet<String>();
+        expectedIds.add("44001");
+        expectedIds.add("44003");
+        expectedIds.add("44005");
+        expectedIds.add("44006");
+        for (Node n : nodes) {
+            Assert.assertTrue(expectedIds.contains(n.getNodeId()));
+        }
+        
+        nodes = nodeService.findNodesThatOriginatedFromNodeId("00001");
+        Assert.assertEquals(0, nodes.size());
+        
     }
 
 }
