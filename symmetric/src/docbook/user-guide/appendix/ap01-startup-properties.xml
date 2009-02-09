@@ -493,6 +493,52 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>dataloader.lookup.target.schema</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Use the target schema specified on sym_trigger when loading data.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>dataloader.enable.fallback.update</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If an insert is received, but the row already exists, then
+                            try an update instead.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>dataloader.enable.fallback.insert/command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If an update is received, but it affects no rows, then try to insert
+                            instead.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>dataloader.allow.missing.delete/command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If a delete is received, but it affects no rows, then continue.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
                         <command>cluster.server.id</command>
                     </term>
                     <listitem>
