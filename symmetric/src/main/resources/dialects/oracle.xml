@@ -74,7 +74,7 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"') end ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')),'"')) ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
@@ -89,12 +89,12 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias)."$(columnName)" is null then '' else '"'||cast($(tableAlias)."$(columnName)" as varchar(50))||'"' end ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as varchar(50))||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"') end ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', concat(concat('"',to_char($(tableAlias)."$(columnName)", 'YYYY-MM-DD HH24:MI:SS')),'"')) ||','||]]>
                     </value>
                 </property>
                 <property name="triggerConcatCharacter" value="||"/>
