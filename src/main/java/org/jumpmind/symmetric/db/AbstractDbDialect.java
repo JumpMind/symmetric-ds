@@ -423,6 +423,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         } else {
             column.setTypeCode(((Integer) values.get("DATA_TYPE")).intValue());
         }
+        // This is for Oracle's NVARCHAR type
+        if (typeName != null && typeName.startsWith("NVARCHAR")) {
+            column.setTypeCode(Types.VARCHAR);
+        }
 
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
         String size = (String) values.get("COLUMN_SIZE");
