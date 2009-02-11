@@ -516,7 +516,7 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>dataloader.enable.fallback.insert/command>
+                        <command>dataloader.enable.fallback.insert</command>
                     </term>
                     <listitem>
                         <para>
@@ -528,7 +528,7 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>dataloader.allow.missing.delete/command>
+                        <command>dataloader.allow.missing.delete</command>
                     </term>
                     <listitem>
                         <para>
