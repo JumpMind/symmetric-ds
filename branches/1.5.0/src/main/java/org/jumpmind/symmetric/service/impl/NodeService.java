@@ -133,9 +133,12 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
-                node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
-                node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
-                node.getTimezoneOffset(), node.getCreatedByNodeId(), node.getNodeId() }) == 1;
+            node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
+            node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncURL(),
+            node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(),
+            node.getCreatedByNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
+            Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
         return updated;
     }
 
