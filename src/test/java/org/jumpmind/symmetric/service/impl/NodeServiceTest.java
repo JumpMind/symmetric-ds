@@ -62,6 +62,20 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     }
 
     @Test
+    public void testUpdateNode() throws Exception {
+        Node node = nodeService.findNode("00001");
+        nodeService.updateNode(node);
+        node = nodeService.findNode("00001");
+        assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
+        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong node group id");
+        assertEquals(node.getExternalId(), "00001", "Wrong external id");
+        assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
+        assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
+        assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
+        assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
+    }
+
+    @Test
     public void testFindNodeFail() throws Exception {
         Node node = nodeService.findNode("00004");
         assertNull(node, "Should not find node");
