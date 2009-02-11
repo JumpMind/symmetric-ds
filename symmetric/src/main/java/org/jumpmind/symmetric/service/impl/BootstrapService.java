@@ -158,8 +158,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 .getString(ParameterConstants.NODE_GROUP_ID));
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-            logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
             if (history != null) {
+                logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
                         .getNameForInsertTrigger(), trigger.getSourceTableName(), history);
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
