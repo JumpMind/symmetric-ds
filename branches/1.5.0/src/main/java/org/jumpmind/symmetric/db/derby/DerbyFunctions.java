@@ -31,7 +31,7 @@ public class DerbyFunctions {
     }
 
     public static String getSessionId() throws SQLException {
-        return Integer.toString(getLanguageConnection().getInstanceNumber());
+    	return getLanguageConnection().getDbname() + "-" + getLanguageConnection().getInstanceNumber();
     }
 
     public static int isSyncDisabled() throws SQLException {
