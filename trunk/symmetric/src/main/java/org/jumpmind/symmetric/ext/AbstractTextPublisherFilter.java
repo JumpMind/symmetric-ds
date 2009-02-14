@@ -110,7 +110,6 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         return msgCache;
     }
 
-    @SuppressWarnings("unchecked")
     protected boolean doesTextExistToPublish(IDataLoaderContext ctx) {
         Map<String, Object> cache = ctx.getContextCache();
         StringBuilder msgCache = (StringBuilder) cache.get(MSG_CACHE);
