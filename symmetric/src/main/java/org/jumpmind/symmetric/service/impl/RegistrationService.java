@@ -66,7 +66,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IDbDialect dbDialect;
 
     /**
-     * Register a node for the given domain name and domain ID if the
+     * Register a node for the given group name and external id if the
      * registration is open.
      * @param isRequestedRegistration An indicator that registration has been requested by the remote client
      */
@@ -93,19 +93,26 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return false;
         }
         node.setNodeId(nodeId);
-        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node.getNodeId() });
-        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
-                node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
-        boolean success = writeConfiguration(node, out);
-        if (success && parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
+        markNodeAsRegistered(node);
+        dataExtractorService.extractConfigurationStandalone(node, out);
+        if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once or if the client is really re-registering
             NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
             if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 dataService.reloadNode(node.getNodeId());
             }
         }
-        return success;
+        return true;
+    }
+    
+    /**
+     * 
+     */
+    public void markNodeAsRegistered(Node node) {
+        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node.getNodeId() });
+        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
+                node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
 
     private String findNodeToRegister(String nodeGroupId, String externald) {
@@ -154,15 +161,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             }
         }
-    }
-
-    /**
-     * Synchronize node configuration.
-     */
-    @Deprecated
-    protected boolean writeConfiguration(Node node, OutputStream out) throws IOException {
-        dataExtractorService.extractConfigurationStandalone(node, out);
-        return true;
     }
 
     /**

@@ -44,7 +44,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         boolean isUpgradeNecessary = false;
         String symmetricVersion = nodeService.findSymmetricVersion();
         if (!StringUtils.isBlank(symmetricVersion) && !symmetricVersion.equals("development")) {
-            if (Version.isOlderMinorVersion(symmetricVersion)) {
+            if (Version.isOlderVersion(symmetricVersion)) {
                 isUpgradeNecessary = true;
             }
         }
@@ -56,7 +56,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
         String nodeId = nodeService.findMyNodeId();
         if (symmetricVersion != null && nodeId != null) {
             int[] fromVersion = Version.parseVersion(symmetricVersion);
-            if (Version.isOlderMinorVersion(symmetricVersion)) {
+            if (Version.isOlderVersion(symmetricVersion)) {
                 runUpgrade(nodeId, fromVersion);
                 Node node = nodeService.findIdentity();
                 node.setSymmetricVersion(Version.version());

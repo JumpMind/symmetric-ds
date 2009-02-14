@@ -73,7 +73,7 @@ final public class Version {
         }
         return versions;
     }
-
+    
     private static int parseVersionComponent(String versionComponent) {
         int version = 0;
         try {
@@ -83,11 +83,11 @@ final public class Version {
         return version;
     }
 
-    public static boolean isOlderMajorVersion(String version) {
+    protected static boolean isOlderMajorVersion(String version) {
         return isOlderMajorVersion(parseVersion(version));
     }
 
-    public static boolean isOlderMajorVersion(int[] versions) {
+    protected static boolean isOlderMajorVersion(int[] versions) {
         int[] softwareVersion = parseVersion(version());
         if (versions[MAJOR_INDEX] < softwareVersion[MAJOR_INDEX]) {
             return true;
@@ -95,16 +95,21 @@ final public class Version {
         return false;
     }
 
-    public static boolean isOlderMinorVersion(String version) {
-        return isOlderMinorVersion(parseVersion(version));
+    public static boolean isOlderVersion(String version) {
+        return isOlderThanVersion(version, version());
     }
-
-    public static boolean isOlderMinorVersion(int[] versions) {
-        int[] softwareVersion = parseVersion(version());
-        if (versions[0] < softwareVersion[MAJOR_INDEX]) {
+    
+    public static boolean isOlderThanVersion(String checkVersion, String targetVersion) {
+        int[] checkVersions = parseVersion(checkVersion);
+        int[] targetVersions = parseVersion(targetVersion);
+        if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
-        } else if (versions[MAJOR_INDEX] == softwareVersion[MAJOR_INDEX]
-                && versions[MINOR_INDEX] < softwareVersion[MINOR_INDEX]) {
+        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX] &&
+                checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
+            return true;
+        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX] &&
+                checkVersions[MINOR_INDEX] == targetVersions[MINOR_INDEX] &&
+                checkVersions[PATCH_INDEX] < targetVersions[PATCH_INDEX]) {
             return true;
         }
         return false;
