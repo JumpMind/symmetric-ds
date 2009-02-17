@@ -67,20 +67,24 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public boolean acquireIncomingBatch(final IncomingBatch status) {
-        Object savepoint = dbDialect.createSavepointForFallback();
         boolean okayToProcess = true;
-        try {
-            insertIncomingBatch(status);
-            dbDialect.releaseSavepoint(savepoint);
-        } catch (DataIntegrityViolationException e) {
-            dbDialect.rollbackToSavepoint(savepoint);
-            status.setRetry(true);
-            okayToProcess = updateIncomingBatch(status) > 0
-                    || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
-            if (okayToProcess) {
-                logger.warn("Retrying batch " + status.getNodeBatchId());
-            } else {
-                logger.warn("Skipping batch " + status.getNodeBatchId());
+        if (status.isPersistable()) {
+            Object savepoint = dbDialect.createSavepointForFallback();
+
+            try {
+                insertIncomingBatch(status);
+                dbDialect.releaseSavepoint(savepoint);
+            } catch (DataIntegrityViolationException e) {
+                dbDialect.rollbackToSavepoint(savepoint);
+                status.setRetry(true);
+                okayToProcess = updateIncomingBatch(status) > 0
+                        || (!parameterService
+                                .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
+                if (okayToProcess) {
+                    logger.warn("Retrying batch " + status.getNodeBatchId());
+                } else {
+                    logger.warn("Skipping batch " + status.getNodeBatchId());
+                }
             }
         }
         return okayToProcess;

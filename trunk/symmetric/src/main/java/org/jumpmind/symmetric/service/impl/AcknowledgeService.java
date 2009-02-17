@@ -31,12 +31,15 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.transaction.annotation.Transactional;
 
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
     private IOutgoingBatchService outgoingBatchService;
+    
+    private IRegistrationService registrationService;
 
     @Deprecated
     public void ack(final List<BatchInfo> batches) {
@@ -47,17 +50,26 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     @Transactional
     public void ack(final BatchInfo batch) {
-        OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
-        outgoingBatchService.setBatchStatus(batch.getBatchId(), batch.isOk() ? Status.OK : Status.ER);
+        if (batch.getBatchId() == BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            if (batch.isOk()) {
+                registrationService.markNodeAsRegistered(batch.getNodeId());
+            }
+        } else {
+            OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+            outgoingBatchService.setBatchStatus(batch.getBatchId(), batch
+                    .isOk() ? Status.OK : Status.ER);
 
-        if (!batch.isOk() && batch.getErrorLine() != 0) {
-            CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-            jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { history.getBatchId() }, handler);
-            history.setFailedDataId(handler.getDataId());
+            if (!batch.isOk() && batch.getErrorLine() != 0) {
+                CallBackHandler handler = new CallBackHandler(batch
+                        .getErrorLine());
+                jdbcTemplate.query(getSql("selectDataIdSql"),
+                        new Object[] { history.getBatchId() }, handler);
+                history.setFailedDataId(handler.getDataId());
+            }
+
+            history.setEndTime(new Date());
+            outgoingBatchService.insertOutgoingBatchHistory(history);
         }
-
-        history.setEndTime(new Date());
-        outgoingBatchService.insertOutgoingBatchHistory(history);
     }
 
     class CallBackHandler implements RowCallbackHandler {
@@ -84,6 +96,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
     }
 
 }

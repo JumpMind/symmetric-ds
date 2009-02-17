@@ -43,7 +43,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
@@ -177,17 +177,17 @@ public class NodeManagementService {
 
     @ManagedAttribute(description = "This is a count of nodes who connected to push or pull data and were rejected because the server was too busy")
     public long getNumOfNodesWhoConnectedAndWereRejectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
+        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_TOO_BUSY_COUNT).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "This is a count of the number of reservations that were handled by this instance")
     public long getNumOfNodesWhoConnectedForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
+        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_REQUESTED).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "This is a count of the number of reservations that handed out by this instance")
     public long getNumOfNodesWhoReservedConnectionsForInstanceLifetime() {
-        return statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_CONNECTION_RESERVED).getLifetimeCount();
+        return statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_CONNECTION_RESERVED).getLifetimeCount();
     }
 
     @ManagedAttribute(description = "The group this node belongs to")

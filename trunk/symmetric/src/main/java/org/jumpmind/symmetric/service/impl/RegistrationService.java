@@ -29,6 +29,7 @@ import java.sql.Types;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -41,7 +42,9 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.springframework.transaction.annotation.Transactional;
 
 // TODO: NodeService already does all this DML. Should use NodeService or move
 // methods to there.
@@ -93,7 +96,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
             return false;
         }
         node.setNodeId(nodeId);
-        markNodeAsRegistered(node);
+        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
+            node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
+            new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+        if (Version.isOlderThanVersion(node.getSymmetricVersion(), UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
+            markNodeAsRegistered(nodeId);
+        }
         dataExtractorService.extractConfigurationStandalone(node, out);
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once or if the client is really re-registering
@@ -106,13 +114,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
     
     /**
-     * 
+     * @see IRegistrationService#markNodeAsRegistered(Node)
      */
-    public void markNodeAsRegistered(Node node) {
-        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { node.getNodeId() });
-        jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
-                node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
-                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+    @Transactional
+    public void markNodeAsRegistered(String nodeId) {
+        jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
+
     }
 
     private String findNodeToRegister(String nodeGroupId, String externald) {
@@ -199,7 +206,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, nodeGroup, externalId, me.getNodeId() });
         jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password, me.getNodeId() });
         clusterService.initLockTableForNode(nodeService.findNode(nodeId));
-        logger.info("Just opened registration for external id of " + externalId + " and a node group of " + nodeGroup);
+        logger.info("Just opened registration for external id of " + externalId + " and a node group of " + nodeGroup + " and a node id of " + nodeId);
     }
 
     public void setNodeService(INodeService nodeService) {

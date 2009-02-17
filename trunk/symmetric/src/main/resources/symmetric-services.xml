@@ -197,6 +197,7 @@
     <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="registrationService" ref="registrationService" />
         <property name="parameterService" ref="parameterService" />
         <property name="sql" ref="acknowledgeServiceSql" />
     </bean>

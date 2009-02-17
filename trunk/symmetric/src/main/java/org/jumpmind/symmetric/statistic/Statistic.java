@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class Statistic {
 
-    private StatisticName name;
+    private String name;
 
     private String nodeId;
 
@@ -37,32 +37,22 @@ public class Statistic {
 
     private long count;
 
-    private static Map<StatisticName, BigDecimal> lifeTimeTotal = new HashMap<StatisticName, BigDecimal>(StatisticName
-            .values().length);
+    private static Map<String, BigDecimal> lifeTimeTotal = new HashMap<String, BigDecimal>();
 
-    private static Map<StatisticName, Long> lifeTimeCount = new HashMap<StatisticName, Long>(
-            StatisticName.values().length);
+    private static Map<String, Long> lifeTimeCount = new HashMap<String, Long>();
 
-    static {
-        StatisticName[] allStatistics = StatisticName.values();
-        for (StatisticName statisticName : allStatistics) {
-            lifeTimeCount.put(statisticName, new Long(0));
-            lifeTimeTotal.put(statisticName, BigDecimal.ZERO);
-        }
-    }
-
-    public Statistic(StatisticName name, String nodeId) {
+    public Statistic(String name, String nodeId) {
         this(name, nodeId, new Date());
     }
 
-    public Statistic(StatisticName name, String nodeId, Date startTime) {
+    public Statistic(String name, String nodeId, Date startTime) {
         this.name = name;
         this.nodeId = nodeId;
         this.captureStartTimeMs = startTime;
         this.total = BigDecimal.ZERO;
     }
 
-    public StatisticName getName() {
+    public String getName() {
         return name;
     }
 
@@ -118,8 +108,11 @@ public class Statistic {
         synchronized (name) {
             this.total = this.total.add(new BigDecimal(v));
             this.count += count;
-            lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
-            lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(new BigDecimal(v)));
+            lifeTimeCount.put(name, new Long((lifeTimeCount.containsKey(name) ? lifeTimeCount.get(name)
+                            : 0l) + count));
+            lifeTimeTotal.put(name,
+                    lifeTimeTotal.containsKey(name) ? lifeTimeTotal.get(name)
+                            .add(new BigDecimal(v)) : new BigDecimal(v));
         }
     }
 
@@ -127,8 +120,10 @@ public class Statistic {
         synchronized (name) {
             this.total = this.total.add(new BigDecimal(v));
             this.count += count;
-            lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
-            lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(new BigDecimal(v)));
+            lifeTimeCount.put(name, new Long((lifeTimeCount.containsKey(name) ? lifeTimeCount.get(name)
+                    : 0l) + count));
+            lifeTimeTotal.put(name, lifeTimeTotal.containsKey(name) ? lifeTimeTotal.get(name)
+                    .add(new BigDecimal(v)) : new BigDecimal(v));
         }
     }
 
@@ -136,8 +131,10 @@ public class Statistic {
         synchronized (name) {
             this.total = this.total.add(v);
             this.count += count;
-            lifeTimeCount.put(name, new Long(lifeTimeCount.get(name) + count));
-            lifeTimeTotal.put(name, lifeTimeTotal.get(name).add(v));
+            lifeTimeCount.put(name, new Long((lifeTimeCount.containsKey(name) ? lifeTimeCount.get(name)
+                    : 0l) + count));
+            lifeTimeTotal.put(name, lifeTimeTotal.containsKey(name) ? lifeTimeTotal.get(name)
+                    .add(v) : v);
         }
     }
 

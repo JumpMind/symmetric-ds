@@ -28,7 +28,6 @@ import javax.management.Notification;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INotificationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -36,7 +35,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 
 public class StatisticManager implements IStatisticManager {
 
-    Map<StatisticName, Statistic> statistics;
+    Map<String, Statistic> statistics;
 
     INodeService nodeService;
 
@@ -45,6 +44,8 @@ public class StatisticManager implements IStatisticManager {
     INotificationService notificationService;
 
     IParameterService parameterService;
+    
+    Date lastCaptureEndTime;
 
     synchronized public void init() {
         if (statistics == null) {
@@ -70,7 +71,7 @@ public class StatisticManager implements IStatisticManager {
             List<StatisticAlertThresholds> thresholds = statisticService.getAlertThresholds();
             if (thresholds != null) {
                 for (StatisticAlertThresholds statisticAlertThresholds : thresholds) {
-                    StatisticName name = StatisticName.valueOf(statisticAlertThresholds.getStatisticName());
+                    String name = statisticAlertThresholds.getStatisticName();
                     if (name != null) {
                         Notification event = statisticAlertThresholds.outsideOfBoundsNotification(statistics.get(name));
                         if (event != null) {
@@ -84,28 +85,26 @@ public class StatisticManager implements IStatisticManager {
 
     synchronized protected void refresh(Date lastCaptureEndTime) {
         if (statistics == null) {
-            statistics = new HashMap<StatisticName, Statistic>();
+            statistics = new HashMap<String, Statistic>();
         }
-
+        this.lastCaptureEndTime = lastCaptureEndTime;
         statistics.clear();
-
-        Node node = nodeService.findIdentity();
-        String nodeId = "Unknown";
-        if (node != null) {
-            nodeId = node.getNodeId();
-        }
-
-        StatisticName[] all = StatisticName.values();
-        for (StatisticName statisticName : all) {
-            statistics.put(statisticName, new Statistic(statisticName, nodeId, lastCaptureEndTime == null ? new Date()
-                    : lastCaptureEndTime));
-        }
-
     }
 
-    public Statistic getStatistic(StatisticName statisticName) {
+    public Statistic getStatistic(String statisticName) {
         this.init();
-        return statistics.get(statisticName);
+        Statistic statistic = statistics.get(statisticName);
+        if (statistic == null) {
+            Node node = nodeService.findIdentity();
+            String nodeId = "Unknown";
+            if (node != null) {
+                nodeId = node.getNodeId();
+            }
+            statistic = new Statistic(statisticName, nodeId, lastCaptureEndTime == null ? new Date()
+            : lastCaptureEndTime);
+            statistics.put(statisticName, statistic);
+        }
+        return statistic;
     }
 
     public void setNodeService(INodeService nodeService) {

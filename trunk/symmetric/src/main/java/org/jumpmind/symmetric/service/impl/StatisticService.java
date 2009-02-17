@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.Statistic;
+import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -38,7 +38,7 @@ public class StatisticService extends AbstractService implements IStatisticServi
         if (stats != null) {
             for (Statistic statistic : stats) {
                 jdbcTemplate.update(getSql("insertStatisticSql"), new Object[] { statistic.getNodeId(),
-                        AppUtils.getServerId(), statistic.getName().name(), statistic.getCaptureStartTimeMs(),
+                        AppUtils.getServerId(), statistic.getName(), statistic.getCaptureStartTimeMs(),
                         captureEndTime, statistic.getTotal(), statistic.getCount() });
             }
         }

@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.model;
 
 public class BatchInfo {
 
+    public static long VIRTUAL_BATCH_FOR_REGISTRATION = -9999;
+    
     private long batchId;
 
     private String nodeId;

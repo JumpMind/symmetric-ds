@@ -21,8 +21,7 @@
 
 package org.jumpmind.symmetric.common;
 
-public class Constants
-{
+public class Constants {
 
     public static final String ENCODING = "UTF-8";
     

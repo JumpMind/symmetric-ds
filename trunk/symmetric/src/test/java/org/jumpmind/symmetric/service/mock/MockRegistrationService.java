@@ -36,6 +36,10 @@ public class MockRegistrationService implements IRegistrationService {
 
     }
 
+    public void markNodeAsRegistered(String nodeId) {
+        
+    }
+    
     public void reOpenRegistration(String nodeId) {
 
     }
