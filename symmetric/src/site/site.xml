@@ -27,7 +27,7 @@
         </menu>
 
         <menu name="Documentation">
-            <item name="Getting Started" href="getting_started.html" />
+            <item name="Users Guide" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
             <item name="JavaDoc" href="apidocs/index.html" />
             <item name="Changes" href="/changes-report.html" />
