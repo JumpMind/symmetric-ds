@@ -34,6 +34,12 @@ public interface IRegistrationService {
 
     public void reOpenRegistration(String nodeId);
 
+    /**
+     * Mark the passed in node as registered in node_security
+     * @param nodeId is the node that has just finished 'successfully' registering
+     */
+    public void markNodeAsRegistered(String nodeId);
+    
     public boolean isAutoRegistration();
 
     public void registerWithServer();

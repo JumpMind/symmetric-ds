@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.extract.csv.Util;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -60,6 +61,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -106,8 +108,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         try {
             OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
-            outgoingBatchService.insertOutgoingBatch(batch);
-            OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+            if (Version.isOlderThanVersion(node.getSymmetricVersion(), UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
+                outgoingBatchService.insertOutgoingBatch(batch);
+                OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
+                history.setStatus(OutgoingBatchHistory.Status.SE);
+                history.setEndTime(new Date());
+                outgoingBatchService.insertOutgoingBatchHistory(history);
+
+                // acknowledge right away, because the acknowledgment is not
+                // built into the registration protocol.
+                acknowledgeService.ack(batch.getBatchInfo());
+            } else {
+                batch.setBatchId(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION);
+            }
 
             final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             final DataExtractorContext ctxCopy = clonableContext.copy(dataExtractor);
@@ -119,13 +132,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             dataExtractor.commit(batch, writer);
 
-            history.setStatus(OutgoingBatchHistory.Status.SE);
-            history.setEndTime(new Date());
-            outgoingBatchService.insertOutgoingBatchHistory(history);
-
-            // acknowledge right away, because the acknowledgment is not
-            // built into the registration protocol.
-            acknowledgeService.ack(batch.getBatchInfo());
 
         } finally {
             writer.flush();

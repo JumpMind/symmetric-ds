@@ -17,7 +17,7 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.model;
+package org.jumpmind.symmetric.statistic;
 
 import java.math.BigDecimal;
 
@@ -25,7 +25,6 @@ import javax.management.Notification;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.jumpmind.symmetric.statistic.Statistic;
 
 public class StatisticAlertThresholds {
 
@@ -95,7 +94,7 @@ public class StatisticAlertThresholds {
     }
 
     public Notification outsideOfBoundsNotification(Statistic stats) {
-        if (stats != null && stats.getName().name().equals(statisticName)) {
+        if (stats != null && stats.getName().equals(statisticName)) {
             boolean createNotification = false;
             StringBuilder msg = new StringBuilder(statisticName);
             long count = stats.getCount();

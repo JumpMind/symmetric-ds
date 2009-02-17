@@ -9,7 +9,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 
 public class ConcurrentConnectionManager implements IConcurrentConnectionManager {
 
@@ -85,11 +85,11 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                     .currentTimeMillis()
                     + timeout : Long.MAX_VALUE));
             statisticManager.getStatistic(
-                    reservationRequest == ReservationType.HARD ? StatisticName.NODE_CONCURRENCY_RESERVATION_REQUESTED
-                            : StatisticName.NODE_CONCURRENCY_CONNECTION_RESERVED).increment();
+                    reservationRequest == ReservationType.HARD ? StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_REQUESTED
+                            : StatisticNameConstants.NODE_CONCURRENCY_CONNECTION_RESERVED).increment();
             return true;
         } else {
-            statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_TOO_BUSY_COUNT).increment();
+            statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_TOO_BUSY_COUNT).increment();
             return false;
         }
     }
@@ -100,7 +100,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
             String nodeId = iterator.next();
             Reservation reservation = reservations.get(nodeId);
             if (reservation.timeToLiveInMs < currentTime) {
-                statisticManager.getStatistic(StatisticName.NODE_CONCURRENCY_RESERVATION_TIMEOUT_COUNT).increment();
+                statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_TIMEOUT_COUNT).increment();
                 reservations.remove(nodeId);
             }
         }

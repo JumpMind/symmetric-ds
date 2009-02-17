@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.statistic.Statistic;
+import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface IStatisticService {

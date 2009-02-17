@@ -45,8 +45,10 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.RowMapper;
@@ -108,9 +110,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 30000)
     public void registerClientWithRoot() {
+        INodeService rootNodeService = AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        Assert.assertTrue("The registration for the client should be opened now.", rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClientEngine().start();
-        Assert.assertTrue("The client did not register.", getClientEngine().isRegistered());
+        getClientEngine().pull();
+        Assert.assertTrue("The client did not register.", getClientEngine().isRegistered());        
+        Assert.assertFalse("The registration for the client should be closed now.", rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         IStatisticManager statMgr = (IStatisticManager) getClientEngine().getApplicationContext().getBean(
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();

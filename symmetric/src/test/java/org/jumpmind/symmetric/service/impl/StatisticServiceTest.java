@@ -6,10 +6,10 @@ import java.util.List;
 import javax.management.Notification;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.model.StatisticAlertThresholds;
 import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.Statistic;
-import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
+import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Before;
@@ -88,8 +88,8 @@ public class StatisticServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testNotificationCreationForTotals() throws Exception {
-        Statistic stat = new Statistic(StatisticName.INCOMING_BATCH_COUNT, "010101");
-        StatisticAlertThresholds thresholds = new StatisticAlertThresholds(StatisticName.INCOMING_BATCH_COUNT.name(),
+        Statistic stat = new Statistic(StatisticNameConstants.INCOMING_BATCH_COUNT, "010101");
+        StatisticAlertThresholds thresholds = new StatisticAlertThresholds(StatisticNameConstants.INCOMING_BATCH_COUNT,
                 new BigDecimal(10), null, new BigDecimal(1), null, null, null);
         assertNotNull(thresholds.outsideOfBoundsNotification(stat));
         stat.add(new BigDecimal(1));
@@ -98,7 +98,7 @@ public class StatisticServiceTest extends AbstractDatabaseTest {
         assertNull(thresholds.outsideOfBoundsNotification(stat));stat.add(new BigDecimal(1));
         Notification event = thresholds.outsideOfBoundsNotification(stat);
         assertNotNull(event);
-        String expectedMsg = stat.getName().name() + ":total=11";
+        String expectedMsg = stat.getName() + ":total=11";
         assertEquals(event.getMessage(), expectedMsg);      
     }
 }

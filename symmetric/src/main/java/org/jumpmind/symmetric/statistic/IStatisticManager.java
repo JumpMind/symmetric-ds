@@ -20,7 +20,7 @@
 package org.jumpmind.symmetric.statistic;
 
 public interface IStatisticManager {
-    public Statistic getStatistic(StatisticName name);
+    public Statistic getStatistic(String name);
 
     public void flush();
 }

@@ -87,6 +87,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
 
+        registrationService.markNodeAsRegistered("00002");
+        
         node = nodeService.findNode("00002");
         assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
@@ -125,6 +127,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
 
+        registrationService.markNodeAsRegistered("00008");
+        
         node = nodeService.findNode("00008");
         assertEquals(node.getNodeId(), "00008", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
@@ -195,6 +199,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
 
+        registrationService.markNodeAsRegistered("00003");
+        
         node = nodeService.findNode("00003");
         assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
@@ -247,6 +253,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setSyncURL("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        registrationService.markNodeAsRegistered("00006");
         assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
     }
 
@@ -260,7 +267,24 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setSyncURL("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        registrationService.markNodeAsRegistered("00007");
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        registrationService.markNodeAsRegistered("00007-0");
+        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
+    }
+    
+    @Test
+    public void testOpenRegistrationOfOlderVersionClient() throws Exception {
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00012");
+        Node node = new Node();
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        node.setExternalId("00012");
+        node.setSymmetricVersion("1.5.0");
+        node.setSyncURL("http://127.0.0.1");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        // older versions of software to not ack.  let's simulate this by not marking the node as registered
+        //registrationService.markNodeAsRegistered("00006");
         assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
     }
 

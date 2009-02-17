@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticName;
+import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -204,15 +204,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw ex;
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
-            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
+            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (UnknownHostException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());
-            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
+            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
         } catch (RegistrationNotOpenException ex) {
             logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
         } catch (ConnectionRejectedException ex) {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
-            statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
+            statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Throwable e) {
@@ -220,18 +220,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
                     history.setSqlMessage(e.getMessage());
-                    statisticManager.getStatistic(StatisticName.INCOMING_TRANSPORT_ERROR_COUNT).increment();
+                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
-                        statisticManager.getStatistic(StatisticName.INCOMING_DATABASE_ERROR_COUNT).increment();
+                        statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
                         history.setSqlState(se.getSQLState());
                         history.setSqlCode(se.getErrorCode());
                         history.setSqlMessage(se.getMessage());
                     } else {
                         history.setSqlMessage(e.getMessage());
-                        statisticManager.getStatistic(StatisticName.INCOMING_OTHER_ERROR_COUNT).increment();
+                        statisticManager.getStatistic(StatisticNameConstants.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }
                 history.setValues(dataLoader.getStatistics(), false);
@@ -254,13 +254,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private void recordStatistics(List<IncomingBatchHistory> list) {
         if (list != null) {
-            statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).add(list.size());
+            statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).add(list.size());
             for (IncomingBatchHistory incomingBatchHistory : list) {
-                statisticManager.getStatistic(StatisticName.INCOMING_MS_PER_ROW).add(
+                statisticManager.getStatistic(StatisticNameConstants.INCOMING_MS_PER_ROW).add(
                         incomingBatchHistory.getDatabaseMillis(), incomingBatchHistory.getStatementCount());
-                statisticManager.getStatistic(StatisticName.INCOMING_BATCH_COUNT).increment();
+                statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).increment();
                 if (IncomingBatchHistory.Status.SK.equals(incomingBatchHistory.getStatus())) {
-                    statisticManager.getStatistic(StatisticName.INCOMING_SKIP_BATCH_COUNT).increment();
+                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_SKIP_BATCH_COUNT).increment();
                 }
             }
         }
@@ -293,7 +293,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     }
                     history.setValues(dataLoader.getStatistics(), true);
                     fireBatchComplete(dataLoader, history);
-                    incomingBatchService.insertIncomingBatchHistory(history);
+                    if (status.isPersistable()) {
+                        incomingBatchService
+                                .insertIncomingBatchHistory(history);
+                    }
                 } catch (IOException e) {
                     throw new TransportException(e);
                 } finally {

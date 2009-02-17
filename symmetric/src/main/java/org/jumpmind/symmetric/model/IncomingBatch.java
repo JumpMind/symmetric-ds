@@ -96,5 +96,13 @@ public class IncomingBatch implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+    
+    /**
+     * An indicator to the incoming batch service as to whether this batch should be saved off.
+     * @return
+     */
+    public boolean isPersistable() {
+        return batchId >= 0;
+    }
 
 }
