@@ -284,7 +284,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             public void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
                 try {
-                    dbDialect.disableSyncTriggers();
+                    dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
                     if (incomingBatchService.acquireIncomingBatch(status)) {
                         dataLoader.load();
                     } else {
