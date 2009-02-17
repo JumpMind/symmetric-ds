@@ -45,6 +45,18 @@ where source_node_group_id = 'client';
         </para>
     </section>
     <section>
+        <title>Changing Configuration</title>
+        <para>
+            The configuration of the your system as defined in the sym_* tables may be modified at runtime.  By default any changes made to 
+            the sym_* tables (with the exception of sym_node) should be made at the registration server.  The changes will
+            be synchronized out to the leaf nodes by SymmetricDS triggers that are automatically created on the tables.
+         </para>
+         <para>   
+            If this behavior is not desired, the feature can be turned off using a parameter.  Custom triggers may be added
+            to the sym_* tables when the auto syncing feature is disabled.
+        </para>
+    </section>    
+    <section>
         <title>Sync Triggers Job</title>
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
