@@ -94,12 +94,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private void purgeOutgoingBatch(final Calendar time) {
         logger.info("Getting range for outgoing batch");
         int[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"), new Object[] { time.getTime() });
-        int maxNumOfDataIdsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         int maxNumOfBatchIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
-        purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfBatchIdsToPurgeInTx);
-        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), false, maxNumOfDataIdsToPurgeInTx);
+        int maxNumOfDataEventsToPurgeInTx = parameterService
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
+        purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfDataEventsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), false, maxNumOfBatchIdsToPurgeInTx);
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), true, maxNumOfBatchIdsToPurgeInTx);
     }
 
@@ -202,7 +202,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private int purgeByNodeBatchRange(String deleteSql, NodeBatchRange nodeBatchRange) {
         int maxNumOfDataIdsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int minBatchId = nodeBatchRange.getMinBatchId();
         int purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
         int totalCount = 0;
