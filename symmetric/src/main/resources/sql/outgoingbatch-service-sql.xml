@@ -14,6 +14,11 @@
         node_id=?
       </value>
     </entry>
+    <entry key="unbatchedCountForNodeIdChannelIdSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_data_event where node_id=? and channel_id=? and batched=0
+      </value>
+    </entry>    
     <entry key="selectEventsToBatchCountSql">
       <value>
         select count(*) from $[sym.sync.table.prefix]_data_event where batched = ? and node_id = ? and

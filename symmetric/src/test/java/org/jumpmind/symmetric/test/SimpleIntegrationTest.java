@@ -40,12 +40,12 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -129,16 +129,28 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Santa Claus", "IN", 90009, new Date(), "This is a test", BINARY_DATA });
         insertIntoTestTriggerTable(rootDialect, new Object[] { 1, "wow", "mom" });
         insertIntoTestTriggerTable(rootDialect, new Object[] { 2, "mom", "wow" });
-        INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean(
-                Constants.NODE_SERVICE);
-        String nodeId = nodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
+
+        INodeService rootNodeService =  AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
+        INodeService clientNodeService = AppUtils.find(Constants.NODE_SERVICE, getClientEngine());        
+        String nodeId = rootNodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
+        
         getRootEngine().reloadNode(nodeId);
-        IOutgoingBatchService outgoingBatchService = (IOutgoingBatchService) getRootEngine().getApplicationContext()
-                .getBean(Constants.OUTGOING_BATCH_SERVICE);
-        Assert.assertFalse(outgoingBatchService.isInitialLoadComplete(nodeId));
-        getClientEngine().pull();
-        Assert.assertTrue(outgoingBatchService.isInitialLoadComplete(nodeId));
+        IOutgoingBatchService rootOutgoingBatchService =  AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getRootEngine());
+        Assert.assertFalse(rootOutgoingBatchService.isInitialLoadComplete(nodeId));
+        
+        Assert.assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isInitialLoadEnabled());
+        
+        while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId)) {
+            getClientEngine().pull();    
+        }
+        
+        Assert.assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isInitialLoadEnabled());
+        
+        NodeSecurity clientNodeSecurity = clientNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID);        
+        Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
+        Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
+        
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status='ER'"), 0,
                 "The initial load errored out." + printRootAndClientDatabases());
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_triggers_table"), 2,

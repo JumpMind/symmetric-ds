@@ -37,6 +37,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -366,6 +367,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 new Object[] { nodeId }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
+        }
+        
+        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {nodeId, Constants.CHANNEL_RELOAD});
+        if (unbatchedCount > 0) {
+            logger.warn("Unbatched events on the reload channel found.");
+            return false;
         }
 
         for (String status : statuses) {

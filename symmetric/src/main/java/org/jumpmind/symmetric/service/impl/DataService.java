@@ -187,7 +187,7 @@ public class DataService extends AbstractService implements IDataService {
         // outgoing data events are pointless because we are reloading all data
         purgeService.purgeAllOutgoingEventsForNode(targetNode.getNodeId());
 
-        insertNodeSecurityUpdate(targetNode);
+        //insertNodeSecurityUpdate(targetNode);
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
 
