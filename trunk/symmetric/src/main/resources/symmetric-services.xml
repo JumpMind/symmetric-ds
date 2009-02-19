@@ -78,6 +78,7 @@
         scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService"/>
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="sql" ref="configurationServiceSql" />

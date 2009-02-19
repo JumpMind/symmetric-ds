@@ -40,10 +40,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
@@ -173,34 +171,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
-    /**
-     * Create triggers on SymmetricDS tables so changes to configuration can be
-     * synchronized.
-     */
-    private List<Trigger> getConfigurationTriggers() {
-        List<Trigger> triggers = new ArrayList<Trigger>();
-        Node me = nodeService.findIdentity();
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION) && me != null) {
-            List<NodeGroupLink> links = configurationService.getGroupLinksFor(me.getNodeGroupId());
-            for (NodeGroupLink nodeGroupLink : links) {
-                if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_POLL)) {
-                    triggers.addAll(configurationService.getConfigurationTriggers(nodeGroupLink.getSourceGroupId(),
-                            nodeGroupLink.getTargetGroupId(), false));
-                }
-            }
-        } else {
-            logger
-                    .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
-        }
-        return triggers;
-    }
-
     public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache) {
         if (triggerCache == null || refreshCache) {
             synchronized (this) {
                 triggerCache = new HashMap<Integer, Trigger>();
                 List<Trigger> triggers = new ArrayList<Trigger>();
-                triggers.addAll(getConfigurationTriggers());
+                triggers.addAll(configurationService.getConfigurationTriggers());
                 triggers.addAll(configurationService.getActiveTriggersForSourceNodeGroup(parameterService
                         .getString(ParameterConstants.NODE_GROUP_ID)));
                 for (Trigger trigger : triggers) {
