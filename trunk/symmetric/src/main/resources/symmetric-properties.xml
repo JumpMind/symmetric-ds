@@ -10,7 +10,7 @@
     <!-- The list of properties file names need to be singletons because we rely on System properties which can be swapped out at runtime. -->
     <bean id="dynamicPropertiesFiles" class="org.jumpmind.symmetric.config.DynamicPropertiesFiles"/>
     
-    <bean id="properties" class="org.jumpmind.symmetric.config.PropertiesFactoryBean" scope="prototype">
+    <bean id="symmetricProperties" class="org.jumpmind.symmetric.config.PropertiesFactoryBean" scope="prototype">
         <property name="ignoreResourceNotFound" value="true" />
         <property name="dynamicPropertiesFiles" ref="dynamicPropertiesFiles"/>
         <!--  Allow for the (optional) override of these properties -->        
@@ -29,7 +29,7 @@
         class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="placeholderPrefix" value="$[sym."/>
         <property name="placeholderSuffix" value="]"/>
-        <property name="properties" ref="properties" />
+        <property name="properties" ref="symmetricProperties" />
         <!-- This means that any system properties set on the command line will take precedence over those set locally or in a properties file. -->
         <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
     </bean>  
