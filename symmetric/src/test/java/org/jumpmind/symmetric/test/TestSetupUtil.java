@@ -61,10 +61,12 @@ public class TestSetupUtil {
 
     static final Log logger = LogFactory.getLog(TestSetupUtil.class);
 
-    static private SymmetricEngine clientEngine;
+    private static SymmetricEngine clientEngine;
 
-    static private SymmetricWebServer rootServer;
+    private static SymmetricWebServer rootServer;
 
+    public static final int TEST_PORT = 31415;
+    
     public static Collection<String[]> lookupDatabasePairs(String testPrefix) {
         Properties properties = getTestProperties(testPrefix);
         String[] clientDatabaseTypes = StringUtils.split(properties.getProperty(testPrefix + ".client"), ",");
@@ -133,7 +135,7 @@ public class TestSetupUtil {
             new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), (DataSource) rootServer.getEngine()
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             rootServer.setJoin(false);
-            rootServer.start(8888);
+            rootServer.start(TEST_PORT);
         }
 
         if (clientDb != null) {
@@ -223,9 +225,9 @@ public class TestSetupUtil {
                 newProperties.setProperty(ParameterConstants.EXTERNAL_ID,
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty(ParameterConstants.MY_URL, "http://localhost:8888/sync");
+                newProperties.setProperty(ParameterConstants.MY_URL, "http://localhost:"+TEST_PORT+"/sync");
                 newProperties.setProperty(ParameterConstants.REGISTRATION_URL,
-                        databaseRole == DatabaseRole.CLIENT ? "http://localhost:8888/sync" : "");
+                        databaseRole == DatabaseRole.CLIENT ? "http://localhost:"+TEST_PORT+"/sync" : "");
                 newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
