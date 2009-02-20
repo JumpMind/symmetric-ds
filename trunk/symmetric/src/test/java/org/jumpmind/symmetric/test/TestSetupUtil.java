@@ -65,7 +65,7 @@ public class TestSetupUtil {
 
     private static SymmetricWebServer rootServer;
 
-    public static final int TEST_PORT = 31415;
+    public static final int TEST_PORT = 51413;
     
     public static Collection<String[]> lookupDatabasePairs(String testPrefix) {
         Properties properties = getTestProperties(testPrefix);
