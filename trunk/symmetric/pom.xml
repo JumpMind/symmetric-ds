@@ -510,13 +510,11 @@
             <groupId>rome</groupId>
             <artifactId>rome</artifactId>
             <version>0.9</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
             <version>1.1</version>
-            <optional>true</optional>
         </dependency>
         <!-- Databases -->
         <dependency>
@@ -558,7 +556,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.1.106</version>
+            <version>1.1.107</version>
             <optional>true</optional>
         </dependency>
 
