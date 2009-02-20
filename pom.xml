@@ -114,20 +114,21 @@
     
     <distributionManagement>
         <site>
-            <id>sourceforge.net</id>
-            <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs</url>
+            <id>dav.codehaus.org</id>
+            <url>dav:https://dav.codehaus.org/symmetricds/</url>
         </site>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
-            <id>sourceforge.net</id>
+            <id>dav.codehaus.org</id>
             <name>SymmetricDS Repo</name>
-            <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+            <url>dav:https://dav.codehaus.org/repository/symmetricds/</url>
         </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
-            <id>sourceforge.net</id>
+            <id>dav.codehaus.org</id>
             <name>SymmetricDS Repo</name>
-            <url>scp://web.sourceforge.net/home/groups/s/sy/symmetricds/htdocs/repo</url>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/</url>
+            <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
  
