@@ -246,6 +246,15 @@ public class SqlTemplate {
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
         ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(newTriggerValue, columns), ddl);
 
+        ddl = replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"), ddl);
+        ddl = replace("oldKeyNames", buildColumnNameString(oldTriggerValue, columns), ddl);
+        ddl = replace("newKeyNames", buildColumnNameString(newTriggerValue, columns), ddl);
+        ddl = replace("oldKeyVariables", buildKeyVariablesString(columns, "old"), ddl);
+        ddl = replace("newKeyVariables", buildKeyVariablesString(columns, "new"), ddl);
+        ddl = replace("varNewPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
+        ddl = replace("varOldPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", columns), ddl);        
+        
         // replace $(newTriggerValue) and $(oldTriggerValue)
         ddl = replace("newTriggerValue", newTriggerValue, ddl);
         ddl = replace("oldTriggerValue", oldTriggerValue, ddl);
@@ -318,6 +327,18 @@ public class SqlTemplate {
         }
 
         return b.toString();
+    }
+
+    private String aliasedPrimaryKeyJoinVar(String alias, String prefix, Column[] columns) {
+        String text = "";
+        for (int i = 0; i < columns.length; i++) {
+            text += alias + ".\"" + columns[i].getName() + "\"";
+            text += "=@" + prefix + "pk" + i;
+            if (i + 1 < columns.length) {
+                text += " and ";
+            }
+        }
+        return text;
     }
 
     // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
@@ -433,6 +454,80 @@ public class SqlTemplate {
         columnsText = replace("origTableAlias", origTableAlias, columnsText);
         return replace("tableAlias", tableAlias, columnsText);
 
+    }
+
+    private String buildColumnNameString(String tableAlias, Column[] columns) {
+        String columnsText = "";
+        for (int i = 0; i < columns.length; i++) {
+            columnsText += tableAlias + ".\"" + columns[i].getName() + "\"";
+            if (i + 1 < columns.length) {
+                columnsText += ", ";
+            }
+        }
+        return columnsText;
+    }
+
+    private String buildKeyVariablesDeclare(Column[] columns, String prefix) {
+        String text = "";
+        for (int i = 0; i < columns.length; i++) {
+            text += "declare @" + prefix + "pk" + i + " ";
+            switch (columns[i].getTypeCode()) {
+            case Types.TINYINT:
+            case Types.SMALLINT:
+            case Types.INTEGER:
+            case Types.BIGINT:
+                text += "bigint\n";
+                break;
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                text += "decimal\n";
+                break;
+            case Types.FLOAT:
+            case Types.REAL:
+            case Types.DOUBLE:
+                text += "float\n";
+                break;
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:
+                text += "varchar(1000)\n";
+                break;
+            case Types.DATE:
+                text += "date\n";
+                break;
+            case Types.TIME:
+                text += "time\n";
+                break;
+            case Types.TIMESTAMP:
+                text += "datetime\n";
+                break;
+            case Types.BOOLEAN:
+            case Types.BIT:
+                text += "bit\n";
+                break;
+            case Types.NULL:
+            case Types.OTHER:
+            case Types.JAVA_OBJECT:
+            case Types.DISTINCT:
+            case Types.STRUCT:
+            case Types.REF:
+            case Types.DATALINK:
+                throw new NotImplementedException(columns[i] + " is of type " + columns[i].getType());
+            }
+        }
+
+        return text;
+    }
+
+    private String buildKeyVariablesString(Column[] columns, String prefix) {
+        String text = "";
+        for (int i = 0; i < columns.length; i++) {
+            text += "@" + prefix + "pk" + i;
+            if (i + 1 < columns.length) {
+                text += ", ";
+            }
+        }
+        return text;
     }
 
     private String replace(String prop, String replaceWith, String sourceString) {
