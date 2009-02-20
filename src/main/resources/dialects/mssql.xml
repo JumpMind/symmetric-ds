@@ -108,24 +108,28 @@
                                 begin
                                   declare @TransactionId varchar(1000)
                                   declare @DataRow varchar(max)
+                                  $(declareNewKeyVariables)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                     $(if:containsBlobClobColumns)
-                                       select $(columns) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)
+                                       select $(columns), $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)
                                     $(else:containsBlobClobColumns)
-                                       select $(columns) from inserted where $(syncOnInsertCondition)                                    
+                                       select $(columns), $(newKeyNames) from inserted where $(syncOnInsertCondition)                                    
                                     $(end:containsBlobClobColumns)                                    
                                        open DataCursor
-                                       fetch next from DataCursor into @DataRow                                       
+                                       fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin
                                            insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time) 
                                              values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, current_timestamp)                                   
-                                           insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                             c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id) $(nodeSelectWhere))
-                                           fetch next from DataCursor into @DataRow
+                                           insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
+                                             select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
+                                             from $(defaultSchema)$(prefixName)_node c, inserted
+                                             where $(varNewPrimaryKeyJoin)
+                                             and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
+                                           fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        end
                                        close DataCursor
                                        deallocate DataCursor
@@ -143,24 +147,29 @@
                                   declare @DataRow varchar(max)
                                   declare @OldPk varchar(2000)
                                   declare @OldDataRow varchar(max)
+                                  $(declareOldKeyVariables)
+                                  $(declareNewKeyVariables)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                     $(if:containsBlobClobColumns)
-                                       select $(columns), $(oldKeys), $(oldColumns) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)
                                     $(else:containsBlobClobColumns)
-                                       select $(columns), $(oldKeys), $(oldColumns) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)                                    
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)                                    
                                     $(end:containsBlobClobColumns)
                                        open DataCursor
-                                       fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow
+                                       fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin                                   
                                          insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, create_time) 
                                            values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, current_timestamp)
-                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                           c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id) $(nodeSelectWhere))
-                                         fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow
+                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
+                                         select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
+                                         from $(defaultSchema)$(prefixName)_node c, inserted, deleted
+                                         where $(varOldPrimaryKeyJoin) and $(varNewPrimaryKeyJoin)
+                                         and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
+                                         fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        end
                                        close DataCursor
                                        deallocate DataCursor
@@ -176,20 +185,24 @@
                                 begin
                                   declare @TransactionId varchar(1000)
                                   declare @OldPk varchar(2000)
+                                  $(declareOldKeyVariables)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
-                                      select $(oldKeys) from deleted where $(syncOnDeleteCondition)
+                                      select $(oldKeys), $(oldKeyNames) from deleted where $(syncOnDeleteCondition)
                                       open DataCursor
-                                       fetch next from DataCursor into @OldPk                                       
+                                       fetch next from DataCursor into @OldPk, $(oldKeyVariables)
                                        while @@FETCH_STATUS = 0 begin 
                                          insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time) 
                                            values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, current_timestamp)
-                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, @@IDENTITY, '$(channelName)', $(txIdExpression) from $(defaultSchema)$(prefixName)_node c where 
-                                           c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id) $(nodeSelectWhere))
-                                         fetch next from DataCursor into @OldPk
+                                         insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
+                                         select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
+                                         from $(defaultSchema)$(prefixName)_node c, deleted
+                                         where $(varOldPrimaryKeyJoin)
+                                         and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
+                                         fetch next from DataCursor into @OldPk, $(oldKeyVariables)
                                        end
                                        close DataCursor
                                        deallocate DataCursor
