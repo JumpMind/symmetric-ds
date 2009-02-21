@@ -98,6 +98,10 @@ public class SymmetricEngine {
     private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
     public SymmetricEngine(String... overridePropertiesResources) {
+        this(null, overridePropertiesResources);
+    }
+    
+    public SymmetricEngine(ApplicationContext parentContext, String... overridePropertiesResources) {
         String one = null;
         String two = null;
         if (overridePropertiesResources.length > 0) {
@@ -106,14 +110,14 @@ public class SymmetricEngine {
                 two = overridePropertiesResources[1];
             }
         }
-        init(one, two);
+        init(parentContext, one, two);
     }
 
     /**
      * Create a symmetric node
      */
     public SymmetricEngine() {
-        init(createContext());
+        init(createContext(null));
     }
 
     /**
@@ -121,7 +125,7 @@ public class SymmetricEngine {
      * configuration for required Symmetric services.
      * 
      * @param ctx
-     *                A Spring framework context
+     *                A Spring framework context to use for this SymmetricEngine
      */
     protected SymmetricEngine(ApplicationContext ctx) {
         init(ctx);
@@ -162,8 +166,8 @@ public class SymmetricEngine {
         }
     }
 
-    private ApplicationContext createContext() {
-        return new ClassPathXmlApplicationContext("classpath:/symmetric.xml");
+    private ApplicationContext createContext(ApplicationContext parentContext) {
+        return new ClassPathXmlApplicationContext(new String[] {"classpath:/symmetric.xml"}, parentContext);
     }
 
     /**
@@ -174,7 +178,7 @@ public class SymmetricEngine {
      *                Provide a Spring resource path to a properties file to be
      *                used for configuration
      */
-    private void init(String overridePropertiesResource1, String overridePropertiesResource2) {
+    private void init(ApplicationContext parentContext, String overridePropertiesResource1, String overridePropertiesResource2) {
         // Setting system properties is probably not the best way to accomplish
         // this setup.
         // Synchronizing on the class so creating multiple engines is thread
@@ -184,7 +188,7 @@ public class SymmetricEngine {
                     : overridePropertiesResource1);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
                     : overridePropertiesResource2);
-            this.init(createContext());
+            this.init(createContext(parentContext));
         }
     }
 

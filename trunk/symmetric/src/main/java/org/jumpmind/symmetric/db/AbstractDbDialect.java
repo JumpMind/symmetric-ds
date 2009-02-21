@@ -1000,7 +1000,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getEngineName() {
-        return parameterService.getString(ParameterConstants.ENGINE_NAME);
+        return parameterService.getString(ParameterConstants.ENGINE_NAME).toLowerCase();
     }
 
     public String getTablePrefix() {

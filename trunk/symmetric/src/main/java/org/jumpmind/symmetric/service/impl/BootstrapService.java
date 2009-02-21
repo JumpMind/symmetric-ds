@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.Platform;
+import org.apache.ddlutils.io.DatabaseIO;
+import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
@@ -264,12 +268,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
             heartbeat();
         } else if (node == null) {
-            if (!loadFromScriptIfProvided()) {
-                logger
-                        .info("Could not find my identity in the database and this node is configured as a registration server.  We are auto inserting the required rows to begin operation.");
-                // TODO
-                // nodeService.insertIdentity();
-            }
+            buildTablesFromDdlUtilXmlIfProvided();
+            loadFromScriptIfProvided();
         } else {
             throw new IllegalStateException(
                     "The configured state does not match recorded database state.  The recorded external id is "
@@ -280,8 +280,40 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
+    private boolean buildTablesFromDdlUtilXmlIfProvided() {
+        boolean loaded = false;
+        String xml = parameterService
+                .getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML);
+        if (!StringUtils.isBlank(xml)) {
+            File file = new File(xml);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(xml);
+            }
+
+            if (fileUrl != null) {
+                try {
+                    logger.info("Building database schema from: " + xml);
+                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl.openStream()));
+                    Platform platform = dbDialect.getPlatform();
+                    platform.createTables(database, false, true);
+                    loaded = true;
+                } catch (Exception e) {
+                    logger.error(e, e);
+                }
+            }
+        }
+        return loaded;
+    }
+
     /**
-     * Give the end use the option to provide a script that will load a
+     * Give the end user the option to provide a script that will load a
      * registration server with an initial SymmetricDS setup.
      * 
      * Look first on the file system, then in the classpath for the SQL file.
@@ -305,6 +337,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             }
 
             if (fileUrl != null) {
+                logger.info("Running the following SQL script: " + sqlScript);
                 new SqlScript(fileUrl, jdbcTemplate.getDataSource(), true).execute();
                 loaded = true;
             }
@@ -336,12 +369,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             heartbeatNodesToPush.add(me);
             heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
         }
-        
-        for (Node node : heartbeatNodesToPush) {           
+
+        for (Node node : heartbeatNodesToPush) {
             if (!configurationService.isRegistrationServer()) {
                 dataService.insertHeartbeatEvent(node);
             }
-            
+
         }
     }
 

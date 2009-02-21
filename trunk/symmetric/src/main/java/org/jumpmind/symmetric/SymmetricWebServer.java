@@ -43,16 +43,18 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
  * 
  * @see SymmetricLauncher#main(String[])
  */
-public class SymmetricWebServer {
+public class SymmetricWebServer implements ApplicationContextAware {
 
     protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
-    
+
     public enum Mode {
         HTTP, HTTPS, MIXED;
     }
@@ -63,30 +65,57 @@ public class SymmetricWebServer {
 
     protected boolean join = true;
 
+    protected boolean createJmxServer = true;
+
     protected String webHome = "/sync";
-    
+
     protected int maxIdleTime = 900000;
 
-    public SymmetricWebServer() {}
-    
+    protected int httpPort = -1;
+
+    protected int httpsPort = -1;
+
+    protected String propertiesFile;
+
+    /**
+     * This will only be set if the SymmetricWebServer itself is created from a
+     * Spring context.
+     */
+    protected ApplicationContext parentContext;
+
+    public SymmetricWebServer() {
+    }
+
     public SymmetricWebServer(SymmetricEngine engine) {
         this.contextListener = new SymmetricEngineContextLoaderListener(engine);
     }
-    
+
     public SymmetricWebServer(int maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
     }
-    
+
     public void start(int port, String propertiesUrl) throws Exception {
         System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
         start(port);
     }
 
     public SymmetricEngine getEngine() {
-        if (contextListener != null) {
-            return contextListener.getEngine();
+        if (contextListener == null) {
+            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext,
+                    propertiesFile));
+        }
+        return contextListener.getEngine();
+    }
+
+    public void start() throws Exception {
+        if (httpPort > 0 && httpsPort > 0) {
+            startMixed(httpPort, httpsPort);
+        } else if (httpPort > 0) {
+            start(httpPort);
+        } else if (httpsPort > 0) {
+            startSecure(httpsPort);
         } else {
-            return null;
+            throw new IllegalStateException("Either an http or https port needs to be set before starting the server.");
         }
     }
 
@@ -103,6 +132,7 @@ public class SymmetricWebServer {
     }
 
     public void start(int port, int securePort, Mode mode) throws Exception {
+        getEngine();
         server = new Server();
         server.setConnectors(getConnectors(port, securePort, mode));
 
@@ -123,8 +153,10 @@ public class SymmetricWebServer {
         server.addHandler(webContext);
         server.start();
 
-        int httpJmxPort = port != 0 ? port + 1 : securePort + 1; 
-        registerHttpJmxAdaptor(httpJmxPort);
+        if (createJmxServer) {
+            int httpJmxPort = port != 0 ? port + 1 : securePort + 1;
+            registerHttpJmxAdaptor(httpJmxPort);
+        }
 
         if (join) {
             server.join();
@@ -143,7 +175,7 @@ public class SymmetricWebServer {
             logger.info("About to start SymmetricDS web server on port " + port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
-            Connector connector = new SslSocketConnector();    
+            Connector connector = new SslSocketConnector();
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setPassword("changeit");
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
@@ -153,7 +185,7 @@ public class SymmetricWebServer {
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
-    
+
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
         if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
@@ -172,11 +204,10 @@ public class SymmetricWebServer {
     protected ObjectName getHttpJmxAdaptorName() throws MalformedObjectNameException {
         return new ObjectName("Server:name=HttpAdaptor");
     }
-    
+
     protected ObjectName getXslJmxAdaptorName() throws MalformedObjectNameException {
         return new ObjectName("Server:name=XSLTProcessor");
     }
-    
 
     protected void removeHttpJmxAdaptor() {
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
@@ -193,7 +224,9 @@ public class SymmetricWebServer {
 
     public void stop() throws Exception {
         if (server != null) {
-            removeHttpJmxAdaptor();
+            if (createJmxServer) {
+                removeHttpJmxAdaptor();
+            }
             server.stop();
         }
     }
@@ -207,7 +240,7 @@ public class SymmetricWebServer {
      * default context listener.
      * 
      * @param contextListener
-     *                Usually an overridden instance
+     *            Usually an overridden instance
      */
     public void setContextListener(SymmetricEngineContextLoaderListener contextListener) {
         this.contextListener = contextListener;
@@ -235,6 +268,29 @@ public class SymmetricWebServer {
 
     public void setMaxIdleTime(int maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
+    }
+
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+
+    public void setHttpsPort(int httpsPort) {
+        this.httpsPort = httpsPort;
+    }
+
+    public void setPropertiesFile(String propertiesFile) {
+        this.propertiesFile = propertiesFile;
+    }
+
+    /**
+     * @see ApplicationContextAware
+     */
+    public void setApplicationContext(ApplicationContext context) {
+        this.parentContext = context;
+    }
+
+    public void setCreateJmxServer(boolean createJmxServer) {
+        this.createJmxServer = createJmxServer;
     }
 
 }
