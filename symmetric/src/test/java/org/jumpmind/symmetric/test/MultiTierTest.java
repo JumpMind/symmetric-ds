@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.test;
 
 import java.io.File;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -25,14 +26,25 @@ public class MultiTierTest {
 
     @Resource
     protected SymmetricWebServer region01Server;
-    
+
     @Resource
-    protected SymmetricWebServer workstation01Server;
+    protected SymmetricWebServer region02Server;
+
+    @Resource
+    protected SymmetricWebServer workstation000101;
+
+    @Resource
+    protected SymmetricWebServer workstation000102;
+
+    @Resource
+    protected Map<String, String> unitTestSql;
 
     @BeforeClass
     public static void setup() throws Exception {
         logger.info("Setting up the multi-tiered test");
+        File databaseDir = new File("target/multi-tier");
         FileUtils.deleteDirectory(new File("target/multi-tier"));
+        logger.info("Just deleted " + databaseDir.getAbsolutePath());
     }
 
     @Test
@@ -41,7 +53,37 @@ public class MultiTierTest {
     }
 
     @Test
-    public void registerRegion01() {
+    public void attemptToLoadWorkstation000101BeforeRegion01IsRegistered() {
+
+    }
+
+    @Test
+    public void registerAndLoadRegion01() {
+
+    }
+
+    @Test
+    public void registerAndLoadRegion02() {
+
+    }
+
+    @Test
+    public void registerAndLoadWorkstation000101DirectlyWithRegion01() {
+
+    }
+
+    @Test
+    public void registerAndLoadWorkstation000102WithHomeServer() {
+
+    }
+
+    @Test
+    public void sendDataFromHomeToAllWorkstations() {
+
+    }
+
+    @Test
+    public void sendDataFromHomeToWorkstation000101Only() {
 
     }
 
