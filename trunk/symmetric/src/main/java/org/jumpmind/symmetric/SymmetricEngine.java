@@ -179,10 +179,8 @@ public class SymmetricEngine {
      *                used for configuration
      */
     private void init(ApplicationContext parentContext, String overridePropertiesResource1, String overridePropertiesResource2) {
-        // Setting system properties is probably not the best way to accomplish
-        // this setup.
-        // Synchronizing on the class so creating multiple engines is thread
-        // safe.
+        // Setting system properties is probably not the best way to accomplish this setup.
+        // Synchronizing on the class so creating multiple engines is thread safe.
         synchronized (SymmetricEngine.class) {
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
                     : overridePropertiesResource1);
@@ -292,6 +290,13 @@ public class SymmetricEngine {
         return p;
     }
 
+    /**
+     * @return The lower case representation of the engine name as setup in the
+     *         symmetric.properties file. We always use a lower case
+     *         representation because there are times the engine name is used in
+     *         triggers at which point you can lose the original case
+     *         representation.
+     */
     public String getEngineName() {
         return dbDialect.getEngineName();
     }
@@ -464,8 +469,11 @@ public class SymmetricEngine {
         return registeredEnginesByUrl.get(url);
     }
 
+    /**
+     * Locate a {@link SymmetricEngine} in the same JVM
+     */
     public static SymmetricEngine findEngineByName(String name) {
-        return registeredEnginesByName.get(name);
+        return registeredEnginesByName.get(name.toLowerCase());
     }
 
 }
