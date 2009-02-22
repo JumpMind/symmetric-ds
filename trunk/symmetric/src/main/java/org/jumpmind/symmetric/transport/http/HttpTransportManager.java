@@ -113,7 +113,12 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
-        StringBuilder builder = new StringBuilder(parameterService.getRegistrationUrl() + "/registration?");
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(parameterService.getRegistrationUrl(), node))));
+    }
+    
+    public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
+        StringBuilder builder = new StringBuilder(baseUrl);
+        builder.append("/registration?");
         append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
         append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
         append(builder, WebConstants.SYNC_URL, node.getSyncURL());
@@ -121,7 +126,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
         append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
         append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(builder.toString())));
+        return builder.toString();
     }
 
     private HttpURLConnection createGetConnectionFor(URL url) throws IOException {

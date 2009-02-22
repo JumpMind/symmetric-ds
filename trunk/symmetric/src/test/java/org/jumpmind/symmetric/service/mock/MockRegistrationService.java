@@ -54,4 +54,8 @@ public class MockRegistrationService implements IRegistrationService {
     public boolean isRegisteredWithServer() {
         return true;
     }
+    
+    public void saveRegistrationRedirect(String externalIdToRedirect,
+            String nodeIdToRedirectTo) {
+    }
 }

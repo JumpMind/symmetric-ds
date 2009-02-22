@@ -49,10 +49,7 @@ abstract public class AbstractTransportManager {
             append(builder, WebConstants.ACK_BATCH_NAME + status.getBatchId(), value);
         }
 
-        // For backwards compatibility with 1.3 and earlier, the first line is
-        // the
-        // original acknowledgement data and the second line contains more
-        // information
+        // For backwards compatibility with 1.3 and earlier, the first line is the original acknowledgment data and the second line contains more information
         builder.append("\n");
         for (IncomingBatchHistory status : list) {
             long batchId = status.getBatchId();
@@ -71,7 +68,7 @@ abstract public class AbstractTransportManager {
         return builder.toString();
     }
 
-    protected void append(StringBuilder builder, String name, Object value) throws IOException {
+    protected static void append(StringBuilder builder, String name, Object value) throws IOException {
         int len = builder.length();
         if (len > 0 && builder.charAt(len - 1) != '?') {
             builder.append("&");

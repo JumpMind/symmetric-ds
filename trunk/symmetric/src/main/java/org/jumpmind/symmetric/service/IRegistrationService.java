@@ -45,5 +45,10 @@ public interface IRegistrationService {
     public void registerWithServer();
 
     public boolean isRegisteredWithServer();
+    
+    /**
+     * Add an entry to the registation_redirect table so that if a node tries to register here.  It will be redirected to the correct node.
+     */
+    public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);
 
 }

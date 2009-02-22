@@ -14,6 +14,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
@@ -78,46 +79,33 @@ public class MultiTierTest {
 
     @Test
     public void registerAndLoadRegion01() {
-        registerAndLoad(MultiTierTestConstants.NODE_ID_REGION_1, region01Server);
+        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_1,
+                region01Server, MultiTierTestConstants.NODE_GROUP_REGION,
+                false, false);
     }
 
     @Test
     public void registerAndLoadRegion02() {
-        registerAndLoad(MultiTierTestConstants.NODE_ID_REGION_2, region02Server);
-    }
-
-    protected void registerAndLoad(String regionalNodeId,
-            SymmetricWebServer regionalServer) {
-        homeServer.getEngine().openRegistration(
-                MultiTierTestConstants.NODE_GROUP_REGION, regionalNodeId);
-        regionalServer.getEngine().pull();
-        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
-                regionalServer);
-        Node node = nodeService.findIdentity();
-        Assert.assertNotNull(node);
-        Assert.assertEquals(node.getNodeId(), regionalNodeId);
-        homeServer.getEngine().reloadNode(regionalNodeId);
-
-        IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
-                Constants.OUTGOING_BATCH_SERVICE, homeServer);
-        while (!homeOutgoingBatchService.isInitialLoadComplete(regionalNodeId)) {
-            regionalServer.getEngine().pull();
-        }
-
-        NodeSecurity clientNodeSecurity = nodeService
-                .findNodeSecurity(regionalNodeId);
-        Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
-        Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
+        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_2,
+                region02Server, MultiTierTestConstants.NODE_GROUP_REGION,
+                false, false);
     }
 
     @Test
     public void registerAndLoadWorkstation000101DirectlyWithRegion01() {
-
+        registerAndLoad(region01Server, MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_001,
+                workstation000101, MultiTierTestConstants.NODE_GROUP_WORKSTATION,
+                true, true);
     }
 
+    /**
+     * Test the redirect
+     */
     @Test
     public void registerAndLoadWorkstation000102WithHomeServer() {
-
+        IRegistrationService registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, homeServer);
+        registrationService.saveRegistrationRedirect(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002, MultiTierTestConstants.NODE_ID_REGION_1);
+        workstation000102.getEngine().pull();
     }
 
     @Test
@@ -128,6 +116,34 @@ public class MultiTierTest {
     @Test
     public void sendDataFromHomeToWorkstation000101Only() {
 
+    }
+    
+    protected void registerAndLoad(SymmetricWebServer registrationServer, String externalId,
+            SymmetricWebServer clientNode, String nodeGroupId,
+            boolean autoRegister, boolean autoReload) {
+        if (!autoRegister) {
+            registrationServer.getEngine().openRegistration(nodeGroupId, externalId);
+        }
+        clientNode.getEngine().pull();
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
+                clientNode);
+        Node node = nodeService.findIdentity();
+        Assert.assertNotNull(node);
+        Assert.assertEquals(node.getNodeId(), externalId);
+        if (!autoReload) {
+            registrationServer.getEngine().reloadNode(externalId);
+        }
+
+        IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
+                Constants.OUTGOING_BATCH_SERVICE, registrationServer);
+        while (!homeOutgoingBatchService.isInitialLoadComplete(externalId)) {
+            clientNode.getEngine().pull();
+        }
+
+        NodeSecurity clientNodeSecurity = nodeService
+                .findNodeSecurity(externalId);
+        Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
+        Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
     }
 
 }

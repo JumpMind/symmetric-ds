@@ -33,7 +33,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
+import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
 public class RegistrationServlet extends AbstractTransportResourceServlet<RegistrationResourceHandler> {
 
@@ -50,12 +52,16 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Node node = transform(req);
 
-        OutputStream outputStream = createOutputStream(resp);
-        if (!getTransportResourceHandler().registerNode(node, outputStream)) {
-            if (logger.isWarnEnabled()) {
-                logger.warn(String.format("%s was not allowed to register.", node));
+        try {
+            OutputStream outputStream = createOutputStream(resp);
+            if (!getTransportResourceHandler().registerNode(node, outputStream)) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(String.format("%s was not allowed to register.", node));
+                }
+                sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.", node));
             }
-            sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.", node));
+        } catch (RegistrationRedirectException e) {
+            resp.sendRedirect(HttpTransportManager.buildRegistrationUrl(e.getRedirectionUrl(), node));
         }
     }
 
