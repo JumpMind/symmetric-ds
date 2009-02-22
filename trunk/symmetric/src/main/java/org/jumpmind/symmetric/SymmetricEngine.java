@@ -323,6 +323,7 @@ public class SymmetricEngine {
                 bootstrapService.validateConfiguration();
                 registerEngine();
                 startDefaultServerJMXExport();
+                heartbeat();
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
