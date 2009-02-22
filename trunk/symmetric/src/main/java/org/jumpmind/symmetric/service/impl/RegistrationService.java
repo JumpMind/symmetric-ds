@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
@@ -65,6 +66,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IDataLoaderService dataLoaderService;
 
     private ITransportManager transportManager;
+    
+    private RandomTimeSlot randomTimeSlot;
 
     private IDbDialect dbDialect;
 
@@ -75,8 +78,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
         if (!configurationService.isRegistrationServer()) {
-            // registration is not allowed until this node has an initial load
-            NodeSecurity security = nodeService.findNodeSecurity(nodeService.findIdentity().getNodeId());
+            // registration is not allowed until this node has an identity and an initial load
+            Node identity = nodeService.findIdentity();
+            NodeSecurity security = identity == null ? null : nodeService.findNodeSecurity(identity.getNodeId());
             if (security == null || security.getInitialLoadTime() == null) {
                 logger.warn("Registration is not allowed until this node has an initial load");
                 return false;
@@ -129,9 +133,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private void sleepBeforeRegistrationRetry() {
         try {
-            RandomTimeSlot randomSleepTimeSlot = new RandomTimeSlot(parameterService
-                    .getString(ParameterConstants.EXTERNAL_ID), 60);
-            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomSleepTimeSlot.getRandomValueSeededByDomainId();
+            long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomTimeSlot.getRandomValueSeededByDomainId();
             logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
@@ -142,11 +144,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return nodeService.findIdentity() != null;
     }
 
+    /**
+     * Client method which attempts to register with the registration.url to
+     * pull configuration if the node has not already been registered. If the
+     * registration server cannot be reach this method will continue to try with
+     * random sleep periods up to one minute up until the registration succeeds
+     * or the maximum number of attempts has been reached.
+     */
     public void registerWithServer() {
         boolean registered = isRegisteredWithServer();
-        // If we cannot contact the server to register, we simply must wait and
-        // try again.
-        while (!registered) {
+        int maxNumberOfAttempts = parameterService.getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
+        while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             try {
                 logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
                 registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
@@ -156,8 +164,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } catch (Exception e) {
                 logger.error(e, e);
             }
+            
+            maxNumberOfAttempts--;
 
-            if (!registered) {
+            if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
                 sleepBeforeRegistrationRetry();
             } else {
                 Node node = nodeService.findIdentity();
@@ -167,6 +177,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     logger.error("Node registration is unavailable");
                 }
             }
+        }
+        
+        if (!registered) {
+            throw new RegistrationFailedException();
         }
     }
 
@@ -243,6 +257,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
+    }
+
+    public void setRandomTimeSlot(RandomTimeSlot randomTimeSlot) {
+        this.randomTimeSlot = randomTimeSlot;
     }
 
 }

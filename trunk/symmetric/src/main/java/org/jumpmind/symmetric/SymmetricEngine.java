@@ -316,27 +316,29 @@ public class SymmetricEngine {
      * Must be called to start symmetric.
      */
     public synchronized void start() {
-        if (!starting && !started) {
-            starting = true;
-            setup();
-            registerEngine();
-            startDefaultServerJMXExport();
-            Node node = nodeService.findIdentity();
-            if (node != null) {
-                logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
-                        + ", externalId=" + node.getExternalId() + "]");
-            } else {
-                logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId() + ", externalId="
-                        + parameterService.getExternalId() + "]");
+        if (!starting && !started) {                      
+            try {
+                starting = true;
+                setup();
+                bootstrapService.validateConfiguration();
+                registerEngine();
+                startDefaultServerJMXExport();
+                Node node = nodeService.findIdentity();
+                if (node != null) {
+                    logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
+                            + ", externalId=" + node.getExternalId() + "]");
+                } else {
+                    logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId() + ", externalId="
+                            + parameterService.getExternalId() + "]");
+                }
+                bootstrapService.syncTriggers();
+                startJobs();                
+                logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
+                        + Version.version() + " database=" + dbDialect.getName());
+                started = true;
+            } finally {
+                starting = false;
             }
-            bootstrapService.validateConfiguration();
-            bootstrapService.syncTriggers();
-            startJobs();
-            started = true;
-            logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
-                    + Version.version() + " database=" + dbDialect.getName());
-            starting = false;
-
         }
     }
 

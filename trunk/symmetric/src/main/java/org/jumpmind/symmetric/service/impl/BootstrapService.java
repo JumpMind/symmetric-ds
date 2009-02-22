@@ -54,7 +54,6 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -77,8 +76,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IDataService dataService;
 
     private IUpgradeService upgradeService;
-
-    private IRegistrationService registrationService;
 
     private List<Channel> defaultChannels;
 
@@ -129,6 +126,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             + "Please set auto.upgrade property to true for an automated upgrade.");
                 }
             }
+            
+            if (nodeService.findIdentity() == null) {
+                buildTablesFromDdlUtilXmlIfProvided();
+                loadFromScriptIfProvided();
+            }
+            
             initialized = true;
 
         }
@@ -258,26 +261,22 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         validateConfiguration();
     }
 
+    /**
+     * Simply check and make sure that this node is all configured properly for operation.
+     */
     public void validateConfiguration() {
         Node node = nodeService.findIdentity();
-        if (node == null && !configurationService.isRegistrationServer()) {
-            if (!parameterService.is(ParameterConstants.START_PULL_JOB)) {
-                registrationService.registerWithServer();
-            }
-        } else if (node != null && parameterService.getExternalId().equals(node.getExternalId())
-                && parameterService.getNodeGroupId().equals(node.getNodeGroupId())) {
-            heartbeat();
-        } else if (node == null) {
-            buildTablesFromDdlUtilXmlIfProvided();
-            loadFromScriptIfProvided();
-        } else {
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())) {
+            throw new IllegalStateException(String.format("Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.", ParameterConstants.REGISTRATION_URL));       
+        } else if (node != null && (!node.getExternalId().equals(parameterService.getExternalId()) || !node.getNodeGroupId().equals(parameterService.getNodeGroupId()))) {
             throw new IllegalStateException(
                     "The configured state does not match recorded database state.  The recorded external id is "
                             + node.getExternalId() + " while the configured external id is "
                             + parameterService.getExternalId() + ".  The recorded node group id is "
                             + node.getNodeGroupId() + " while the configured node group id is "
                             + parameterService.getNodeGroupId());
-        }
+        } 
+        // TODO Add more validation checks to make sure that the system is configured correctly
     }
 
     private boolean buildTablesFromDdlUtilXmlIfProvided() {
@@ -463,10 +462,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
-    }
-
-    public void setRegistrationService(IRegistrationService registrationService) {
-        this.registrationService = registrationService;
     }
 
     public void setDefaultChannels(List<Channel> defaultChannels) {

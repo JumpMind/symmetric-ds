@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.service.IParameterService;
  */
 public class RandomTimeSlot {
 
-    int maxValue = 1000;
+    int maxValue = -1;
 
     Random random;
 
@@ -41,15 +41,28 @@ public class RandomTimeSlot {
 
     public RandomTimeSlot(String externalId, int maxValue) {
         this.maxValue = maxValue;
-        random = new Random(externalId.hashCode());
+        random = new Random(fromExternalId(externalId));
+    }
+
+    private long fromExternalId(String externalId) {
+        return Math.abs(externalId.hashCode());
     }
 
     public void setParameterService(IParameterService s) {
-        random = new Random(s.getExternalId().hashCode());
-        maxValue = s.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
+        long seed = fromExternalId(s.getExternalId());
+        random = new Random(seed);
+        if (maxValue < 0) {
+            maxValue = s
+                    .getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
+        }
     }
 
     public int getRandomValueSeededByDomainId() {
-        return random.nextInt(maxValue);
+        int nextValue = random.nextInt(maxValue);
+        return nextValue == 0 ? 1 : nextValue;
+    }
+
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
     }
 }
