@@ -231,7 +231,7 @@
         <column name="node_id" type="VARCHAR" size="50" />
         <column name="host_name" type="VARCHAR" size="50" />
         <column name="statistic_name" type="VARCHAR" size="50" />
-        <column name="statistic_total" type="DECIMAL" />
+        <column name="statistic_total" type="DECIMAL" size="20" />
         <column name="statistic_count" type="BIGINT" />
         <column name="capture_start_time" type="TIMESTAMP" />
         <column name="capture_end_time" type="TIMESTAMP" />
