@@ -11,7 +11,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
@@ -61,7 +64,7 @@ public class MultiTierTest {
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(),
-                MultiTierTestConstants.HOME_NODE_ID);
+                MultiTierTestConstants.NODE_ID_HOME);
     }
 
     @Test
@@ -76,12 +79,36 @@ public class MultiTierTest {
 
     @Test
     public void registerAndLoadRegion01() {
-
+        registerAndLoad(MultiTierTestConstants.NODE_ID_REGION_1, region01Server);
     }
 
     @Test
     public void registerAndLoadRegion02() {
+        registerAndLoad(MultiTierTestConstants.NODE_ID_REGION_2, region02Server);
+    }
 
+    protected void registerAndLoad(String regionalNodeId,
+            SymmetricWebServer regionalServer) {
+        homeServer.getEngine().openRegistration(
+                MultiTierTestConstants.NODE_GROUP_REGION, regionalNodeId);
+        regionalServer.getEngine().pull();
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
+                regionalServer);
+        Node node = nodeService.findIdentity();
+        Assert.assertNotNull(node);
+        Assert.assertEquals(node.getNodeId(), regionalNodeId);
+        homeServer.getEngine().reloadNode(regionalNodeId);
+
+        IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
+                Constants.OUTGOING_BATCH_SERVICE, homeServer);
+        while (!homeOutgoingBatchService.isInitialLoadComplete(regionalNodeId)) {
+            regionalServer.getEngine().pull();
+        }
+
+        NodeSecurity clientNodeSecurity = nodeService
+                .findNodeSecurity(regionalNodeId);
+        Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
+        Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
     }
 
     @Test
