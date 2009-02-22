@@ -23,12 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayOutputStream;
 
+import junit.framework.Assert;
+
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Before;
@@ -38,7 +40,9 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     protected INodeService nodeService;
 
-    protected IRegistrationService registrationService;
+    protected RegistrationService registrationService;
+
+    protected IParameterService parameterService;
 
     public RegistrationServiceTest() throws Exception {
         super();
@@ -50,8 +54,9 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
     @Before
     public void setUp() {
-        nodeService = (INodeService) find(Constants.NODE_SERVICE);
-        registrationService = (IRegistrationService) find(Constants.REGISTRATION_SERVICE);
+        nodeService = find(Constants.NODE_SERVICE);
+        registrationService = find(Constants.REGISTRATION_SERVICE);
+        parameterService = find(Constants.PARAMETER_SERVICE);
     }
 
     @Test
@@ -286,6 +291,20 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         // older versions of software to not ack.  let's simulate this by not marking the node as registered
         //registrationService.markNodeAsRegistered("00006");
         assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
+    }
+    
+    @Test
+    public void testGetRedirectionUrlFor() throws Exception {
+        final String EXPECTED_REDIRECT_URL = "http://snoopdog.com";
+        registrationService.saveRegistrationRedirect("4444", "55555");
+        String url = registrationService.getRedirectionUrlFor("4444");
+        Assert.assertEquals(EXPECTED_REDIRECT_URL, url);
+        url = registrationService.getRedirectionUrlFor("44445");
+        Assert.assertNull(url);
+        
+        registrationService.saveRegistrationRedirect("4444%", "55555");        
+        url = registrationService.getRedirectionUrlFor("44445");
+        Assert.assertEquals(EXPECTED_REDIRECT_URL, url);
     }
 
 }

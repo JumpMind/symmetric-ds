@@ -17,6 +17,8 @@ insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://loc
 insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
 insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
 
+insert into sym_node values ('55555', 'test-node-group2', '00011', 1, 'http://snoopdog.com', null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
+
 -- For testFindNodesThatOriginatedHere
 insert into sym_node values ('44001', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '00011');
 insert into sym_node values ('44002', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '00012');

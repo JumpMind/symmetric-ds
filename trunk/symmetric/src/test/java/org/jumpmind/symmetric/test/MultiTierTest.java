@@ -99,13 +99,18 @@ public class MultiTierTest {
     }
 
     /**
-     * Test the redirect
+     * Test the registration redirect
      */
     @Test
     public void registerAndLoadWorkstation000102WithHomeServer() {
         IRegistrationService registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, homeServer);
         registrationService.saveRegistrationRedirect(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002, MultiTierTestConstants.NODE_ID_REGION_1);
         workstation000102.getEngine().pull();
+        IOutgoingBatchService outgoingBatchService = AppUtils.find(
+                Constants.OUTGOING_BATCH_SERVICE, region01Server);
+        while (!outgoingBatchService.isInitialLoadComplete(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002)) {
+            workstation000102.getEngine().pull();
+        }
     }
 
     @Test
