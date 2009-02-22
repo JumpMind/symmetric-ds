@@ -261,5 +261,10 @@
         <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" />
         <column name="param_value" type="VARCHAR" size="1000" />
     </table>
+    
+    <table name="registration_redirect">
+        <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
+        <column name="registry_node_id" type="VARCHAR" size="50" required="true" />
+    </table>
 
 </database>
