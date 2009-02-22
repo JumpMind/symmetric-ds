@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.management.Notification;
@@ -84,6 +86,16 @@ public class StatisticServiceTest extends AbstractDatabaseTest {
         assertTrue(list.contains(thresholds));
 
         statisticService.removeStatisticAlertThresholds(TEST_STAT_NAME);
+    }
+    
+    @Test
+    public void testSaveAlertBoundaries() throws Exception {
+        List<Statistic> stats = new ArrayList<Statistic>();
+        Statistic stat = new Statistic("test", "test");
+        System.err.print(Long.toString(Long.MAX_VALUE).length());
+        stat.add(new BigDecimal(Long.MAX_VALUE));
+        stats.add(stat);
+        statisticService.save(stats, new Date());
     }
 
     @Test
