@@ -44,7 +44,21 @@
         registration_enabled, created_at_node_id) values (?, ?, 1, ?)
       </value>
     </entry>
-
+    <entry key="getRegistrationRedirectUrlSql">
+      <value>
+        select sync_url from $[sym.sync.table.prefix]_node n inner join $[sym.sync.table.prefix]_registration_redirect r on n.node_id=r.registration_node_id where r.registrant_external_id=?
+      </value>
+    </entry>
+     <entry key="insertRegistrationRedirectUrlSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_registration_redirect (registration_node_id, registrant_external_id) values (?, ?)
+      </value>
+    </entry>
+     <entry key="updateRegistrationRedirectUrlSql">
+      <value>
+        update $[sym.sync.table.prefix]_registration_redirect set registration_node_id=? where registrant_external_id=?
+      </value>
+    </entry>    
   </util:map>
 
 </beans>

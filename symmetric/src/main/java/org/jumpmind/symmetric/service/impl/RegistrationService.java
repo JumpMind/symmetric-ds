@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.sql.Types;
+import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -42,13 +43,14 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.RegistrationFailedException;
+import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO: NodeService already does all this DML. Should use NodeService or move
-// methods to there.
+// TODO: NodeService already does all this DML. Should we use the NodeService or move
+// methods to there?
 public class RegistrationService extends AbstractService implements IRegistrationService {
 
     protected static final Log logger = LogFactory.getLog(RegistrationService.class);
@@ -86,6 +88,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 return false;
             }
         }
+        
+        String redirectUrl = getRedirectionUrlFor(node.getExternalId());
+        if (redirectUrl != null) {
+            logger.info(String.format("Redirecting %s to %s for registration.", node.getExternalId(), redirectUrl));
+            throw new RegistrationRedirectException(redirectUrl);
+        }
+        
         String nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
         if (nodeId == null && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
             Node existingNode = nodeService.findNodeByExternalId(node.getNodeGroupId(), node.getExternalId());
@@ -96,17 +105,21 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 nodeId = findNodeToRegister(node.getNodeGroupId(), node.getExternalId());
             }
         }
+        
         if (nodeId == null) {
             return false;
-        }
+        }        
         node.setNodeId(nodeId);
+        
         jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
             node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
             new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         if (Version.isOlderThanVersion(node.getSymmetricVersion(), UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
             markNodeAsRegistered(nodeId);
         }
+        
         dataExtractorService.extractConfigurationStandalone(node, out);
+        
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once or if the client is really re-registering
             NodeSecurity security = nodeService.findNodeSecurity(node.getNodeId());
@@ -115,6 +128,23 @@ public class RegistrationService extends AbstractService implements IRegistratio
             }
         }
         return true;
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected String getRedirectionUrlFor(String externalId) {
+        List<String> list = jdbcTemplate.queryForList(getSql("getRegistrationRedirectUrlSql"), new Object[] {externalId}, new int[] {Types.VARCHAR}, String.class);
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
+    
+    public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo) {
+        int count = jdbcTemplate.update(getSql("updateRegistrationRedirectUrlSql"), new Object[] {nodeIdToRedirectTo, externalIdToRedirect}, new int[] {Types.VARCHAR, Types.VARCHAR});
+        if (count == 0) {
+            jdbcTemplate.update(getSql("insertRegistrationRedirectUrlSql"), new Object[] {nodeIdToRedirectTo, externalIdToRedirect}, new int[] {Types.VARCHAR, Types.VARCHAR});
+        }
     }
     
     /**
@@ -172,7 +202,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             } else {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
-                    logger.info("Successfully registered node [id=" + node.getNodeId() + "]");
+                    logger.info(String.format("Successfully registered node [id=%s]", node.getNodeId()));
                 } else {
                     logger.error("Node registration is unavailable");
                 }
@@ -180,7 +210,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }
         
         if (!registered) {
-            throw new RegistrationFailedException();
+            throw new RegistrationFailedException(String.format("Failed after trying to register %s times.", parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
         }
     }
 
