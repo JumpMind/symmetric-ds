@@ -32,6 +32,8 @@ public class ParameterConstants {
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
     public final static String JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN = "job.synctriggers.aftermidnight.minutes";
 
+    public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
+    
     public final static String REGISTRATION_URL = "registration.url";
     public final static String MY_URL = "my.url";
     public final static String ENGINE_NAME = "engine.name";

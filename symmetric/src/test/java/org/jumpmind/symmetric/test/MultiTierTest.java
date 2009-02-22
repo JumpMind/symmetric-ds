@@ -9,6 +9,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricWebServer;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.RegistrationFailedException;
+import org.jumpmind.symmetric.util.AppUtils;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,12 +55,23 @@ public class MultiTierTest {
 
     @Test
     public void validateHomeServerStartup() {
-
+        Assert.assertTrue(homeServer.getEngine().isStarted());
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
+                homeServer);
+        Node node = nodeService.findIdentity();
+        Assert.assertNotNull(node);
+        Assert.assertEquals(node.getNodeId(),
+                MultiTierTestConstants.HOME_NODE_ID);
     }
 
     @Test
     public void attemptToLoadWorkstation000101BeforeRegion01IsRegistered() {
+        try {
+            workstation000101.getEngine().pull();
+            Assert.fail("Registration should have failed.");
+        } catch (RegistrationFailedException ex) {
 
+        }
     }
 
     @Test

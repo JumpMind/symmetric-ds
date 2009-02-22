@@ -45,7 +45,6 @@
         <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="configurationService" ref="configurationService" />
-        <property name="registrationService" ref="registrationService" />
         <property name="dataService" ref="dataService" />
         <property name="upgradeService" ref="upgradeService" />
         <property name="clusterService" ref="clusterService" />
@@ -193,6 +192,12 @@
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
+        <property name="randomTimeSlot">
+            <bean class="org.jumpmind.symmetric.util.RandomTimeSlot">
+                <property name="parameterService" ref="parameterService"/>
+                <property name="maxValue" value="60"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService" scope="singleton">
