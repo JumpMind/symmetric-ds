@@ -279,8 +279,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         jdbcTemplate.update(insertSyncIncomingBatchSql, new Object[] { 1, "testing" });
         getDbDialect().enableSyncTriggers();
         List<String> nodeList = getNextDataEvents();
-        assertTrue(nodeList.size() == 1);
-        assertTrue(nodeList.contains("00011"));
+        Assert.assertEquals(2, nodeList.size());
+        Assert.assertEquals("00011", nodeList.get(0));
     }
 
     protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
