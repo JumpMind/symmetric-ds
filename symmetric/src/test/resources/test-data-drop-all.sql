@@ -18,3 +18,4 @@ drop table sym_event_status;
 drop table sym_parameter;
 drop table sym_statistic;
 drop table sym_statistic_alert;
+drop table sym_registration_redirect;
