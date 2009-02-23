@@ -199,6 +199,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
             if (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
                 sleepBeforeRegistrationRetry();
+                registered = isRegisteredWithServer();
             } else {
                 Node node = nodeService.findIdentity();
                 if (node != null) {
