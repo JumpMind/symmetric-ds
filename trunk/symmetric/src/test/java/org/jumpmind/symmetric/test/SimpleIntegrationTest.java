@@ -367,12 +367,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testHeartbeat() throws Exception {
+        final String checkHeartbeatSql = "select heartbeat_time from " + TestConstants.TEST_PREFIX
+        + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
         long ts = System.currentTimeMillis();
         Thread.sleep(1000);
         getClientEngine().heartbeat();
+        Date time = (Date) clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
+        Assert.assertTrue("The heartbeat time was not updated locally.", time != null
+                && time.getTime() > ts);
         getClientEngine().push();
-        Date time = (Date) rootJdbcTemplate.queryForObject("select heartbeat_time from " + TestConstants.TEST_PREFIX
-                + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'", Timestamp.class);
+        time = (Date) rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
         Assert.assertTrue("The client node was not sync'd to the root as expected.", time != null
                 && time.getTime() > ts);
     }

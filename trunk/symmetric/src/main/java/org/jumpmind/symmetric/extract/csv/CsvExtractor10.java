@@ -72,13 +72,13 @@ public class CsvExtractor10 implements IDataExtractor {
      */
     public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
 
-        String auditKey = Integer.toString(data.getAudit().getTriggerHistoryId()).intern();
+        String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {
             Util.write(out, "table, ", data.getTableName());
             out.newLine();
-            Util.write(out, "keys, ", data.getAudit().getPkColumnNames());
+            Util.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
-            String columns = data.getAudit().getColumnNames();
+            String columns = data.getTriggerHistory().getColumnNames();
             if (data.getTableName().equalsIgnoreCase(tablePrefix + "_node_security")) {
                 // In 1.4 the column named changed to "node_password", but old
                 // clients need "password"

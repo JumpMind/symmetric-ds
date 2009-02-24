@@ -67,7 +67,9 @@ public interface IConfigurationService {
     public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 
     public TriggerHistory getHistoryRecordFor(int auditId);
-
+    
+    public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName);
+    
     public Trigger getTriggerFor(String table, String sourceNodeGroupId);
 
     public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetDomainName, String channel);

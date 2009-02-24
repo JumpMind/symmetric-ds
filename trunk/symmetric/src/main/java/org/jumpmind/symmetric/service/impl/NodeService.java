@@ -205,7 +205,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public List<Node> findNodesToPull() {
-        return findSourceNodesFor(DataEventAction.WAIT_FOR_POLL);
+        return findSourceNodesFor(DataEventAction.WAIT_FOR_PULL);
     }
 
     public List<Node> findNodesToPushTo() {
