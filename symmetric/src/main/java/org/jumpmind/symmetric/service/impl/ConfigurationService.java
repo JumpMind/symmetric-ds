@@ -118,16 +118,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             String tableName = tables.get(j);
             boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);
             String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
-            Trigger trigger = new Trigger();
-            trigger.setTriggerId(Integer.MAX_VALUE - j);
-            trigger.setSyncOnDelete(syncChanges);
-            trigger.setSyncOnInsert(syncChanges);
-            trigger.setSyncOnUpdate(syncChanges);
-            trigger.setSyncOnIncomingBatch(true);
-            trigger.setSourceTableName(tableName);
-            trigger.setSourceGroupId(sourceGroupId);
-            trigger.setTargetGroupId(targetGroupId);
-            trigger.setChannelId(Constants.CHANNEL_CONFIG);
+            Trigger trigger = buildConfigTrigger(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
             trigger.setInitialLoadSelect(initialLoadSelect);
             // little trick to force the rebuild of sym triggers every time
@@ -136,6 +127,20 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             triggers.add(trigger);
         }
         return triggers;
+    }
+    
+    protected Trigger buildConfigTrigger(String tableName, boolean syncChanges, String sourceGroupId, String targetGroupId) {
+        Trigger trigger = new Trigger();
+        trigger.setTriggerId(Math.abs(tableName.hashCode()));
+        trigger.setSyncOnDelete(syncChanges);
+        trigger.setSyncOnInsert(syncChanges);
+        trigger.setSyncOnUpdate(syncChanges);
+        trigger.setSyncOnIncomingBatch(true);
+        trigger.setSourceTableName(tableName);
+        trigger.setSourceGroupId(sourceGroupId);
+        trigger.setTargetGroupId(targetGroupId);
+        trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        return trigger;
     }
 
     @Deprecated
@@ -194,9 +199,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION) && me != null) {
             List<NodeGroupLink> links = getGroupLinksFor(me.getNodeGroupId());
             for (NodeGroupLink nodeGroupLink : links) {
-                if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_POLL)) {
+                if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
                     triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(),
                             nodeGroupLink.getTargetGroupId()));
+                } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
+                    triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE), false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
                 }
             }
         } else {
@@ -316,6 +323,18 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
         jdbcTemplate.query(getSql("allTriggerHistSql"), new TriggerHistoryMapper(retMap));
         return retMap;
+    }
+    
+    public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName) {
+        final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
+        jdbcTemplate.query(String.format("%s%s", getSql("allTriggerHistSql"),
+                getSql("triggerHistBySourceTableWhereSql")), new Object[] {sourceTableName}, new int[] {Types.VARCHAR},
+                new TriggerHistoryMapper(retMap));
+        if (retMap.size() > 0) {
+            return retMap.values().iterator().next();
+        } else {
+            return null;
+        }
     }
 
     public TriggerHistory getHistoryRecordFor(int histId) {

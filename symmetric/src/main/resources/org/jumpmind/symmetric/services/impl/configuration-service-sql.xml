@@ -43,7 +43,7 @@
       <value>
         channel_id in (select channel_id from $[sym.sync.table.prefix]_trigger where
         source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
-        or channel_id = 'reload'
+        or channel_id = 'reload' or channel_id = 'config'
       </value>
     </entry>
     <entry key="$[sym.sync.table.prefix]_node_channel_ctl">
@@ -130,11 +130,12 @@
     </entry>
     <entry key="allTriggerHistSql">
       <value>
-        select
-        trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash
-        from $[sym.sync.table.prefix]_trigger_hist
-      </value>
+        select trigger_hist_id,trigger_id,source_table_name,table_hash,create_time,pk_column_names,column_names,last_trigger_build_reason,name_for_delete_trigger,name_for_insert_trigger,name_for_update_trigger,source_schema_name,source_catalog_name,trigger_row_hash
+        from $[sym.sync.table.prefix]_trigger_hist </value>
     </entry>
+    <entry key="triggerHistBySourceTableWhereSql">
+      <value>where source_table_name=? and inactive_time is null</value>
+    </entry>    
     <entry key="latestTriggerHistSql">
       <value>
         select

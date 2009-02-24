@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -135,7 +136,7 @@ public class DataService extends AbstractService implements IDataService {
                         ps.setString(3, data.getRowData());
                         ps.setString(4, data.getPkData());
                         ps.setString(5, data.getOldData());
-                        ps.setLong(6, data.getAudit() != null ? data.getAudit().getTriggerHistoryId() : -1);
+                        ps.setLong(6, data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1);
                         return null;
                     }
                 });
@@ -295,13 +296,14 @@ public class DataService extends AbstractService implements IDataService {
      * @param node
      */
     public void insertHeartbeatEvent(Node node) {
-        StringBuilder sql = new StringBuilder(getSql("updateNodeHeartbeatSql"));
-        sql.append("'");
-        sql.append(node.getNodeId());
-        sql.append("'");
-        List<Node> targets = nodeService.findNodesToPushTo();
-        for (Node targetNode : targets) {
-            insertSqlEvent(targetNode, sql.toString());
+        String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
+        Trigger trigger = new Trigger(tableName);
+        Data data = createData(trigger, String.format(" t.node_id = '%s'", node.getNodeId()));
+        if (data != null) {
+            insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
+        } else {
+            logger
+                    .info("Not generating data/data events for node because a trigger is not created for that table yet.");
         }
     }
 
@@ -313,6 +315,14 @@ public class DataService extends AbstractService implements IDataService {
         Data data = null;
         Trigger trigger = configurationService.getTriggerFor(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
+            data = createData(trigger, whereClause);
+        }
+        return data;
+    }
+    
+    public Data createData(Trigger trigger, String whereClause) {
+        Data data = null;
+        if (trigger != null) {
             String rowData = null;
             String pkData = null;
             if (whereClause != null) {
@@ -322,6 +332,9 @@ public class DataService extends AbstractService implements IDataService {
                         String.class);
             }
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            if (history == null) {
+                history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());                
+            }
             data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history);
         }
         return data;
@@ -329,7 +342,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();
-        String[] columnNames = CsvUtil.tokenizeCsvData(data.getAudit().getColumnNames());
+        String[] columnNames = CsvUtil.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
         String[] columnData = CsvUtil.tokenizeCsvData(data.getRowData());
         for (int i = 0; i < columnNames.length; i++) {
             map.put(columnNames[i].toLowerCase(), columnData[i]);
@@ -338,7 +351,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void setRowDataFromMap(Data data, Map<String, String> map) {
-        String[] columnNames = CsvUtil.tokenizeCsvData(data.getAudit().getColumnNames());
+        String[] columnNames = CsvUtil.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);

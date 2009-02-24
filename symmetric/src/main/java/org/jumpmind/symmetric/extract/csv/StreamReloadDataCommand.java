@@ -41,7 +41,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
     private INodeService nodeService;
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        Trigger trigger = configurationService.getTriggerById(data.getAudit().getTriggerId());
+        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
         // The initial_load_select can be overridden
         if (data.getRowData() != null) {
             trigger.setInitialLoadSelect(data.getRowData());

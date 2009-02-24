@@ -118,6 +118,10 @@ public class Trigger {
 
     public Trigger() {
     }
+    
+    public Trigger(String tableName) {
+        this.sourceTableName = tableName;
+    }
 
     public Trigger(String tableName, boolean syncOnUpdate, boolean syncOnInsert, boolean syncOnDelete,
             String configurationId, String channelId, String syncOnUpdateCondition, String syncOnInsertCondition,

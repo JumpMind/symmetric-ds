@@ -28,7 +28,7 @@ public class NodeGroupLink {
 
     private String targetGroupId;
 
-    private DataEventAction dataEventAction = DataEventAction.WAIT_FOR_POLL;
+    private DataEventAction dataEventAction = DataEventAction.WAIT_FOR_PULL;
 
     public DataEventAction getDataEventAction() {
         return dataEventAction;

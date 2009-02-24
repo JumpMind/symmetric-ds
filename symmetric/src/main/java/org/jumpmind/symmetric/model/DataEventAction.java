@@ -28,7 +28,7 @@ import org.jumpmind.symmetric.util.ICoded;
  */
 public enum DataEventAction implements ICoded {
 
-    PUSH("P"), WAIT_FOR_POLL("W");
+    PUSH("P"), WAIT_FOR_PULL("W");
 
     private String code;
 
@@ -44,8 +44,8 @@ public enum DataEventAction implements ICoded {
         if (code != null && code.length() > 0) {
             if (PUSH.code.equals(code)) {
                 return PUSH;
-            } else if (WAIT_FOR_POLL.code.equals(code)) {
-                return WAIT_FOR_POLL;
+            } else if (WAIT_FOR_PULL.code.equals(code)) {
+                return WAIT_FOR_PULL;
             }
         }
         return null;

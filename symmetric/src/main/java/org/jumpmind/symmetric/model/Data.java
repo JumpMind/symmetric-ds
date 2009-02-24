@@ -53,7 +53,7 @@ public class Data {
      * This is a reference to the audit row the trigger refered to when the data
      * event fired.
      */
-    private TriggerHistory audit;
+    private TriggerHistory triggerHistory;
 
     private DataEventType eventType;
 
@@ -74,7 +74,7 @@ public class Data {
         this.eventType = eventType;
         this.tableName = tableName;
         this.createTime = createTime;
-        this.audit = audit;
+        this.triggerHistory = audit;
     }
 
     public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory audit) {
@@ -82,7 +82,7 @@ public class Data {
         this.eventType = eventType;
         this.rowData = rowData;
         this.pkData = pkData;
-        this.audit = audit;
+        this.triggerHistory = audit;
     }
 
     public long getDataId() {
@@ -133,12 +133,12 @@ public class Data {
         this.createTime = createTime;
     }
 
-    public TriggerHistory getAudit() {
-        return audit;
+    public TriggerHistory getTriggerHistory() {
+        return triggerHistory;
     }
 
-    public void setAudit(TriggerHistory audit) {
-        this.audit = audit;
+    public void setTriggerHistory(TriggerHistory audit) {
+        this.triggerHistory = audit;
     }
 
     public String getOldData() {

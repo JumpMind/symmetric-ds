@@ -116,7 +116,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate().queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist");
+        return getJdbcTemplate().queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id < 100");
     }
 
     @Test
@@ -280,8 +280,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         getDbDialect().enableSyncTriggers();
         List<String> nodeList = getNextDataEvents();
         Assert.assertEquals(2, nodeList.size());
-        Assert.assertEquals("00011", nodeList.get(0));
-    }
+        Assert.assertEquals("00011", nodeList.get(0));    }
 
     protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
         boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
