@@ -46,7 +46,7 @@
     </entry>
     <entry key="getRegistrationRedirectUrlSql">
       <value>
-        select sync_url from $[sym.sync.table.prefix]_node n inner join $[sym.sync.table.prefix]_registration_redirect r on n.node_id=r.registration_node_id where ? like r.registrant_external_id
+        select sync_url from $[sym.sync.table.prefix]_node n inner join $[sym.sync.table.prefix]_registration_redirect r on n.node_id=r.registration_node_id where r.registrant_external_id=?
       </value>
     </entry>
      <entry key="insertRegistrationRedirectUrlSql">

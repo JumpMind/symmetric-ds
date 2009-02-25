@@ -37,7 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
-import org.hsqldb.types.Binary;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
@@ -110,52 +109,55 @@ public abstract class AbstractEmbeddedTrigger {
             return null;
         }
     }
+    
+    protected boolean toCsv(Object object, StringBuilder b) {
+        boolean handled = true;
+        if (object != null) {
+            if (object instanceof String) {
+                b.append("\"");
+                b.append(StringUtils.replace(StringUtils.replace(object.toString(), "\\", "\\\\"), "\"", "\\\""));
+                b.append("\"");
+            } else if (object instanceof Number) {
+                b.append("\"");
+                b.append(object);
+                b.append("\"");
+            } else if (object instanceof Date) {
+                b.append(dateFormatter.format((Date) object));
+            } else if (object instanceof byte[]) {
+                b.append("\"");
+                b.append(Base64.encodeBase64((byte[]) object));
+                b.append("\"");
+            } else if (object instanceof Boolean) {
+                b.append(((Boolean) object) ? "\"1\"" : "\"0\"");
+            } else if (object instanceof Reader) { // clob in h2
+                b.append("\"");
+                try {
+                    b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\", "\\\\"), "\"", "\\\""));
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Unable to read CLOB");
+                }
+                b.append("\"");
+            } else if (object instanceof ByteArrayInputStream) { // blob in h2
+                b.append("\"");
+                try {
+                    b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream)object))));
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Unable to read BLOB");
+                }
+                b.append("\"");
+            } else {
+                handled = false;
+            }
+        }
+        return handled;
+    }
 
     protected String formatAsCsv(Object[] data) {
         StringBuilder b = new StringBuilder();
         if (data != null) {
             for (Object object : data) {
-                if (object != null) {
-                    if (object instanceof String) {
-                        b.append("\"");
-                        b.append(StringUtils.replace(StringUtils.replace(object.toString(), "\\", "\\\\"), "\"", "\\\""));
-                        b.append("\"");
-                    } else if (object instanceof Number) {
-                        b.append("\"");
-                        b.append(object);
-                        b.append("\"");
-                    } else if (object instanceof Date) {
-                        b.append(dateFormatter.format((Date) object));
-                    } else if (object instanceof byte[]) {
-                        b.append("\"");
-                        b.append(Base64.encodeBase64((byte[]) object));
-                        b.append("\"");
-                    } else if (object instanceof Binary) {
-                        b.append("\"");
-                        Binary d = (Binary) object;
-                        b.append(new String(Base64.encodeBase64(d.getBytes())));
-                        b.append("\"");
-                    } else if (object instanceof Boolean) {
-                        b.append(((Boolean) object) ? "\"1\"" : "\"0\"");
-                    } else if (object instanceof Reader) { // clob in h2
-                        b.append("\"");
-                        try {
-                            b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\", "\\\\"), "\"", "\\\""));
-                        } catch (IOException ex) {
-                            throw new IllegalStateException("Unable to read CLOB");
-                        }
-                        b.append("\"");
-                    } else if (object instanceof ByteArrayInputStream) { // blob in h2
-                        b.append("\"");
-                        try {
-                            b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream)object))));
-                        } catch (IOException ex) {
-                            throw new IllegalStateException("Unable to read BLOB");
-                        }
-                        b.append("\"");
-                    } else {
-                        throw new IllegalStateException("Could not format " + object + " which is of type " + object.getClass().getName());
-                    }
+                if (!toCsv(object, b)) {
+                    throw new IllegalStateException("Could not format " + object + " which is of type " + object.getClass().getName());
                 }
                 b.append(",");
             }

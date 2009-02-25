@@ -300,11 +300,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         String url = registrationService.getRedirectionUrlFor("4444");
         Assert.assertEquals(EXPECTED_REDIRECT_URL, url);
         url = registrationService.getRedirectionUrlFor("44445");
-        Assert.assertNull(url);
-        
-        registrationService.saveRegistrationRedirect("4444%", "55555");        
-        url = registrationService.getRedirectionUrlFor("44445");
-        Assert.assertEquals(EXPECTED_REDIRECT_URL, url);
+        Assert.assertNull(url);        
     }
 
 }
