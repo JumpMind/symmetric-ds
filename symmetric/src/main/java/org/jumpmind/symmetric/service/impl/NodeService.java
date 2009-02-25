@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -51,11 +53,16 @@ public class NodeService extends AbstractService implements INodeService {
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
 
-    private Node nodeIdentity;
+    private Node cachedNodeIdentity;
 
     private Map<String, NodeSecurity> securityCache;
 
     private long securityCacheTime;
+
+    /**
+     * This is the default implementation of the node generator
+     */
+    private INodeIdGenerator nodeIdGenerator = new DefaultNodeIdGenerator();
 
     public String findSymmetricVersion() {
         try {
@@ -64,23 +71,24 @@ public class NodeService extends AbstractService implements INodeService {
             return null;
         }
     }
-    
+
     public String findMyNodeId() {
         try {
             return (String) jdbcTemplate.queryForObject(getSql("findMyNodeIdSql"), String.class);
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
-    }    
-    
+    }
+
     @SuppressWarnings("unchecked")
-    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {   
+    public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         Set<Node> all = new HashSet<Node>();
-        List<Node> list = jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"), getSql("findNodesCreatedByMeSql")), new Object[] { originalNodeId }, new NodeRowMapper());        
+        List<Node> list = jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"),
+                getSql("findNodesCreatedByMeSql")), new Object[] { originalNodeId }, new NodeRowMapper());
         if (list.size() > 0) {
             all.addAll(list);
             for (Node node : list) {
-               all.addAll(findNodesThatOriginatedFromNodeId(node.getNodeId()));
+                all.addAll(findNodesThatOriginatedFromNodeId(node.getNodeId()));
             }
         }
         return all;
@@ -92,7 +100,8 @@ public class NodeService extends AbstractService implements INodeService {
      */
     @SuppressWarnings("unchecked")
     public Node findNode(String id) {
-        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeSql"), new Object[] { id }, new NodeRowMapper());
+        List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeSql"),
+                new Object[] { id }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
@@ -142,18 +151,17 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, generatePassword(),
-                findIdentity().getNodeId() });
+        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id,
+                nodeIdGenerator.generatePassword(new Node(id, null, null)), findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
-                node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(),
-                node.getSchemaVersion(), node.getSymmetricVersion(), node.getSyncURL(),
-                node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0, node.getTimezoneOffset(),
-                node.getCreatedByNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
+                node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
+                node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
+                node.getTimezoneOffset(), node.getCreatedByNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
         return updated;
     }
 
@@ -197,11 +205,12 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public Node findIdentity(boolean useCache) {
-        if (nodeIdentity == null || useCache == false) {
-            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeIdentitySql"), new NodeRowMapper());
-            nodeIdentity = (Node) getFirstEntry(list);
+        if (cachedNodeIdentity == null || useCache == false) {
+            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeIdentitySql"),
+                    new NodeRowMapper());
+            cachedNodeIdentity = (Node) getFirstEntry(list);
         }
-        return nodeIdentity;
+        return cachedNodeIdentity;
     }
 
     public List<Node> findNodesToPull() {
@@ -216,8 +225,8 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findSourceNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] { node.getNodeGroupId(),
-                    eventAction.getCode() }, new NodeRowMapper());
+            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] {
+                    node.getNodeGroupId(), eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
         }
@@ -227,8 +236,8 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findTargetNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
-            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] { node.getNodeGroupId(),
-                    eventAction.getCode() }, new NodeRowMapper());
+            return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] {
+                    node.getNodeGroupId(), eventAction.getCode() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
         }
@@ -255,32 +264,6 @@ public class NodeService extends AbstractService implements INodeService {
             return updateNodeSecurity(nodeSecurity);
         }
         return false;
-    }
-
-    /**
-     * Generate a secure random password for a node.
-     */
-    // TODO: nodeGenerator.generatePassword();
-    public String generatePassword() {
-        return new RandomDataImpl().nextSecureHexString(30);
-    }
-
-    /**
-     * Generate the next node ID that is available. Try to use the domain ID as
-     * the node ID.
-     */
-    // TODO: nodeGenerator.generateNodeId();
-    public String generateNodeId(String nodeGroupId, String externalId) {
-        String nodeId = externalId;
-        int maxTries = 100;
-        for (int sequence = 0; sequence < maxTries; sequence++) {
-            if (findNode(nodeId) == null) {
-                return nodeId;
-            }
-            nodeId = externalId + "-" + sequence;
-        }
-        throw new RuntimeException("Could not find nodeId for externalId of " + externalId + " after " + maxTries
-                + " tries.");
     }
 
     class NodeRowMapper implements RowMapper {
@@ -330,5 +313,56 @@ public class NodeService extends AbstractService implements INodeService {
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId) {
         return jdbcTemplate.queryForInt(getSql("isNodeRegisteredSql"), new Object[] { nodeGroupId, externalId }) > 0;
     }
+
+    public INodeIdGenerator getNodeIdGenerator() {
+        return nodeIdGenerator;
+    }
+
+    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) {
+        this.nodeIdGenerator = nodeIdGenerator;
+    }
+
+    class DefaultNodeIdGenerator implements INodeIdGenerator {
+
+        public boolean isAutoRegister() {
+            return true;
+        }
+
+        public String selectNodeId(Node node) {
+            if (StringUtils.isBlank(node.getNodeId())) {
+                String nodeId = node.getExternalId();
+                int maxTries = 100;
+                for (int sequence = 0; sequence < maxTries; sequence++) {
+                    NodeSecurity security = findNodeSecurity(nodeId);
+                    if (security != null && security.isRegistrationEnabled()) {
+                        return nodeId;
+                    }
+                    nodeId = node.getExternalId() + "-" + sequence;
+                }
+            }
+            return node.getNodeId();
+        }
+
+        public String generateNodeId(Node node) {
+            if (StringUtils.isBlank(node.getNodeId())) {
+                String nodeId = node.getExternalId();
+                int maxTries = 100;
+                for (int sequence = 0; sequence < maxTries; sequence++) {
+                    if (findNode(nodeId) == null) {
+                        return nodeId;
+                    }
+                    nodeId = node.getExternalId() + "-" + sequence;
+                }
+                throw new RuntimeException("Could not find nodeId for externalId of " + node.getExternalId()
+                        + " after " + maxTries + " tries.");
+            } else {
+                return node.getNodeId();
+            }
+        }
+
+        public String generatePassword(Node node) {
+            return new RandomDataImpl().nextSecureHexString(30);
+        }
+    };
 
 }

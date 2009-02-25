@@ -1,3 +1,22 @@
+/*
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.jumpmind.symmetric.ext;
 
 import java.util.Map;
@@ -14,6 +33,7 @@ import org.jumpmind.symmetric.load.ITableColumnFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -30,6 +50,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IDataExtractorService dataExtractorService;
 
     IParameterService parameterService;
+    
+    INodeService nodeService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -97,6 +119,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof IExtractorFilter) {
             dataExtractorService.addExtractorFilter((IExtractorFilter) ext);
         }
+        
+        if (ext instanceof INodeIdGenerator) {
+            nodeService.setNodeIdGenerator((INodeIdGenerator)ext);
+        }
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
@@ -113,6 +139,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }

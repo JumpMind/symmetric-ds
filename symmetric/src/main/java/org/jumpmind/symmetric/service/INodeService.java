@@ -25,12 +25,14 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 import java.util.Set;
 
+import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 
 /**
- * This service provides an API to access {@link Node}s and Node related information.
+ * This service provides an API to access {@link Node}s and Node related
+ * information.
  */
 public interface INodeService {
 
@@ -39,20 +41,22 @@ public interface INodeService {
     public Node findNodeByExternalId(String nodeGroupId, String externalId);
 
     /**
-     * Find a list of {@link Node}s that were create at the passed in node or were created at a node that was created by the passed in node (recursively).
+     * Find a list of {@link Node}s that were create at the passed in node or
+     * were created at a node that was created by the passed in node
+     * (recursively).
      */
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
-    
+
     public NodeSecurity findNodeSecurity(String nodeId);
-    
+
     public String findSymmetricVersion();
-    
+
     public String findMyNodeId();
 
     public void ignoreNodeChannelForExternalId(boolean ignore, String channelId, String nodeGroupId, String externalId);
 
     public boolean isNodeAuthorized(String nodeId, String password);
-    
+
     public void flushNodeAuthorizedCache();
 
     public boolean isRegistrationEnabled(String nodeId);
@@ -76,13 +80,9 @@ public interface INodeService {
     public boolean updateNodeSecurity(NodeSecurity security);
 
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled);
-    
-    public String generatePassword();
 
-    /**
-     * Generate the next node ID that is available. Try to use the domain ID as
-     * the node ID.
-     */
-    public String generateNodeId(String nodeGroupId, String externalId);
+    public INodeIdGenerator getNodeIdGenerator();
+
+    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
 
 }

@@ -8,6 +8,7 @@
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="dataService" ref="dataService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
+        <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
     </bean>
 

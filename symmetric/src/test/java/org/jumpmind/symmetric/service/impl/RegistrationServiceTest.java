@@ -273,6 +273,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
         registrationService.markNodeAsRegistered("00007");
+        node.setNodeId(null);
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
         registrationService.markNodeAsRegistered("00007-0");
         assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
