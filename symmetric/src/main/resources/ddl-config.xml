@@ -265,7 +265,6 @@
     <table name="registration_redirect">
         <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
         <column name="registration_node_id" type="VARCHAR" size="50" required="true" />
-        <column name="alias" type="VARCHAR" size="50" />
     </table>
 
 </database>

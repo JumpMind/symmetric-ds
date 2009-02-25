@@ -55,7 +55,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * This is the preferred way to create, configure, start and manage an instance
  * of Symmetric. The engine will bootstrap the symmetric.xml Spring context.
- * <p/> The Symmetric instance is configured by properties configuration files.
+ * <p/> 
+ * The Symmetric instance is configured by properties configuration files.
  * By default the engine will look for and override existing properties with
  * ones found in the properties files. Symmetric looks for: symmetric.properties
  * in the classpath (it will use the first one it finds), and then for a

@@ -85,16 +85,26 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS where trigger_name = ?",
-                new Object[] { triggerName }) > 0;
+        String triggerExpression = triggerName + "_%";
+        triggerExpression = triggerExpression.replace("_", "\\_");
+        return jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS where trigger_name like ?",
+                new Object[] { triggerExpression }) > 0;
+    }
+    
+    protected String getModifiedTriggerName(String triggerName, TriggerHistory hist) {
+        return (triggerName + "_" + getEngineName() + "_"
+        + hist.getTriggerHistoryId()).toUpperCase();
     }
 
     public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         triggerName = schemaName + triggerName;
+        triggerName = getModifiedTriggerName(triggerName, hist);
         try {
-            jdbcTemplate.update(new String("drop trigger " + triggerName + "_" + getEngineName() + "_"
-                    + hist.getTriggerHistoryId()).toUpperCase());
+            int count = jdbcTemplate.update(String.format("drop trigger %s", triggerName));
+            if (count > 0) {
+                logger.info(String.format("Just droped trigger %s", triggerName));
+            }
         } catch (Exception e) {
             logger.warn("Error removing " + triggerName + ": " + e.getMessage());
         }

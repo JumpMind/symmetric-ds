@@ -24,12 +24,14 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hsqldb.Token;
+import org.hsqldb.types.Binary;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -274,6 +276,20 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     @Override
     protected int getTriggerHistId() {
         return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
+    }
+    
+    @Override
+    protected boolean toCsv(Object object, StringBuilder b) {
+        boolean handled = true;
+        if (object instanceof Binary) {
+            b.append("\"");
+            Binary d = (Binary) object;
+            b.append(new String(Base64.encodeBase64(d.getBytes())));
+            b.append("\"");
+        } else {
+            handled = super.toCsv(object, b);
+        }
+        return handled;
     }
 
     protected String getTransactionId(Object[] oldRow, Object[] newRow) {
