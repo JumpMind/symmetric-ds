@@ -134,7 +134,7 @@
         from $[sym.sync.table.prefix]_trigger_hist </value>
     </entry>
     <entry key="triggerHistBySourceTableWhereSql">
-      <value>where source_table_name=? and inactive_time is null</value>
+      <value> where source_table_name=? and inactive_time is null</value>
     </entry>    
     <entry key="latestTriggerHistSql">
       <value>
