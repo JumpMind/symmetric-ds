@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -126,15 +127,21 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementByteCount(csvReader.getRawRecord().length());
 
                     if (tokens[0].equals(CsvConstants.INSERT)) {
-                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        if (context.getTableTemplate() == null) {
+                          throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
+                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             insert(tokens);
                         }
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
-                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        if (context.getTableTemplate() == null) {
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
+                          } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             update(tokens);
                         }
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
-                        if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                        if (context.getTableTemplate() == null) {
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
+                          } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             delete(tokens);
                         }
                     } else if (tokens[0].equals(CsvConstants.OLD)) {
