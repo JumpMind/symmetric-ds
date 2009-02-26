@@ -31,4 +31,6 @@ public class ErrorConstants {
     final public static String NOT_AUTHENTICATED = "Could not authenticate with node.";
 
     final public static String REGISTRATION_NOT_OPEN = "Registration attempt failed.  Registration was not open for the node.";
+    
+    final public static String METADATA_MISSING = "The table metadata was missing from the protocol.  Please turn on debug level logging to analyze the CSV data.";
 }

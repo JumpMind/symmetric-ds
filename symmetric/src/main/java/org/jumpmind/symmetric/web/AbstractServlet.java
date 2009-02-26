@@ -44,6 +44,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     protected abstract Log getLogger();
 
     protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {

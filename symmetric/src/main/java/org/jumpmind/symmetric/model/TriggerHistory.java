@@ -98,8 +98,7 @@ public class TriggerHistory {
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
         this.triggerRowHash = trigger.getHashedValue();
         // set primary key equal to all the columns to make data sync work for
-        // tables
-        // with no primary keys
+        // tables with no primary keys
         if (pkColumnNames == null) {
             pkColumnNames = columnNames;
         }
