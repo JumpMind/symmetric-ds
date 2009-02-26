@@ -83,7 +83,6 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
     protected List<Node> findTargetNodes(Object[] oldRow, Object[] newRow) {
         return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, oldRow, newRow),
                 new RowMapper() {
-
                     public Object mapRow(ResultSet rs, int index) throws SQLException {
                         Node node = new Node();
                         node.setNodeId(rs.getString(1));
@@ -210,7 +209,7 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         b.append(buildVirtualTableSql());
         b.append("where c.node_group_id='");
         b.append(trigger.getTargetGroupId());
-        b.append("' and c.sync_enabled=1");
+        b.append("' and c.sync_enabled=1 ");
         b.append(replaceOldNewTriggerTokens(trigger.getNodeSelect()));
         this.nodeSelectSql = b.toString();
     }
@@ -245,13 +244,13 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         this.dataSelectSql = replaceOldNewTriggerTokens(b.toString());
     }
 
-    protected String replaceOldNewTriggerTokens(String targetString) {
+    protected String replaceOldNewTriggerTokens(String targetString) {       
         // This is a little hack to allow us to replace not only the old/new
         // alias's, but also the column prefix for
         // use in a virtual table we can match SQL expressions against.
         targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
         targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");
-        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");
+        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");        
         return dbDialect.replaceTemplateVariables(triggerType, trigger, triggerHistory, targetString);
     }
 
