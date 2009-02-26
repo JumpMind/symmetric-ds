@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -364,5 +365,43 @@ public class NodeService extends AbstractService implements INodeService {
             return new RandomDataImpl().nextSecureHexString(30);
         }
     };
+    
+    public boolean isDataLoadComplete() {
+        return getDataLoadStatus() == NodeStatus.DATA_LOAD_COMPLETED;
+    }
 
+    public boolean isDataLoadStarted() {
+        return getDataLoadStatus() == NodeStatus.DATA_LOAD_STARTED;
+    }
+
+    @SuppressWarnings("unchecked")
+    private NodeStatus getDataLoadStatus() {
+
+        class DataLoadStatus {
+            int initialLoadEnabled;
+            Date initialLoadTime;
+        }
+
+        List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
+            public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                DataLoadStatus status = new DataLoadStatus();
+                status.initialLoadEnabled = rs.getInt(1);
+                status.initialLoadTime = rs.getTimestamp(2);
+                return status;
+            }
+        });
+
+        if (results.size() > 0) {
+            if (results.get(0).initialLoadEnabled == 0) {
+                return NodeStatus.DATA_LOAD_NOT_STARTED;
+            } else {
+                if (results.get(0).initialLoadTime == null) {
+                    return NodeStatus.DATA_LOAD_STARTED;
+                } else {
+                    return NodeStatus.DATA_LOAD_COMPLETED;
+                }
+            }
+        }
+        return NodeStatus.DATA_LOAD_NOT_STARTED;
+    }
 }
