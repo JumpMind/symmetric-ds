@@ -403,8 +403,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     oldTriggerName);
         } else {
             // We had no trigger_hist row, lets validate that the trigger as
-            // defined in the trigger
-            // does not exist as well.
+            // defined in the trigger row data does not exist as well.
             oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
             oldSourceSchema = trigger.getSourceSchemaName();
             oldCatalogName = trigger.getSourceCatalogName();

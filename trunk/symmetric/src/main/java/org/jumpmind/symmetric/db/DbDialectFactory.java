@@ -56,7 +56,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private BeanFactory beanFactory;
 
-    private Map<String, Class> customPlatforms;
+    private Map<String, Class<Platform>> customPlatforms;
 
     public Object getObject() throws Exception {
 
@@ -113,7 +113,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private void initPlatforms() throws IllegalStateException {
         if (customPlatforms != null) {
-            for (Map.Entry<String, Class> entry : customPlatforms.entrySet()) {
+            for (Map.Entry<String, Class<Platform>> entry : customPlatforms.entrySet()) {
                 if (!Platform.class.isAssignableFrom(entry.getValue())) {
                     throw new IllegalStateException("Platform is not valid:" + entry.getValue());
                 }
@@ -178,7 +178,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     }
 
 
-    public void setCustomPlatforms(Map<String, Class> customPlatforms) {
+    public void setCustomPlatforms(Map<String, Class<Platform>> customPlatforms) {
         this.customPlatforms = customPlatforms;
     }
 

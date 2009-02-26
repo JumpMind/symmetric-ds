@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 public abstract class AbstractTransportResourceServlet<T extends ITransportResourceHandler> extends
         AbstractResourceServlet<T> implements ITransportResource<T> {
 
+    private static final long serialVersionUID = 1L;
     private T transportResourceHandler;
 
     public void setTransportResourceHandler(T transportResourceHandler) {

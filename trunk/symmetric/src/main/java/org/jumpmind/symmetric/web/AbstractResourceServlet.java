@@ -38,6 +38,8 @@ import org.springframework.beans.BeanUtils;
  */
 public abstract class AbstractResourceServlet<T extends ITransportResourceHandler> extends AbstractServlet implements
         IServletResource {
+
+    private static final long serialVersionUID = 1L;
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
 
     /**

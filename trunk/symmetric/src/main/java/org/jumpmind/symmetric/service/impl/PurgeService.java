@@ -40,7 +40,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IClusterService clusterService;
 
-    @SuppressWarnings("unchecked")
     public void purge() {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE, -parameterService
