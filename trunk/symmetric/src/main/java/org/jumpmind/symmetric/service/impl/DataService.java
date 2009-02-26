@@ -333,7 +333,10 @@ public class DataService extends AbstractService implements IDataService {
             }
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history == null) {
-                history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());                
+                history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
+                if (history == null) {
+                    history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
+                }
             }
             data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history);
         }
