@@ -110,7 +110,12 @@
         insert into $[sym.sync.table.prefix]_node_security (node_id, node_password, created_at_node_id) values (?, ?, ?)
       </value>
     </entry>
-    
+    <entry key="getDataLoadStatusSql">
+      <value>
+        select initial_load_enabled, initial_load_time from $[sym.sync.table.prefix]_node_security ns,
+        $[sym.sync.table.prefix]_node_identity ni where ns.node_id=ni.node_id; 
+      </value>
+    </entry>   
   </util:map>
 
 </beans>
