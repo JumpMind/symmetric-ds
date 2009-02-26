@@ -277,6 +277,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             + parameterService.getNodeGroupId());
         } 
         // TODO Add more validation checks to make sure that the system is configured correctly
+        
+        // TODO Add method to configuration service to validate triggers and call from here.
+        // Make sure there are not duplicate trigger rows with the same name
     }
 
     private boolean buildTablesFromDdlUtilXmlIfProvided() {
@@ -378,7 +381,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     private TriggerHistory rebuildTriggerIfNecessary(boolean forceRebuild, Trigger trigger, DataEventType dmlType,
-            TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist, boolean create, Table table) {
+            TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist, boolean triggerIsActive, Table table) {
 
         boolean triggerExists = false;
 
@@ -415,7 +418,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             reason = TriggerReBuildReason.TRIGGERS_MISSING;
         }
 
-        if ((forceRebuild || !create) && triggerExists) {
+        if ((forceRebuild || !triggerIsActive) && triggerExists) {
             dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(),
                     oldhist);
             triggerExists = false;
@@ -423,12 +426,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
         boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
 
-        if (hist == null && (oldhist == null || (!triggerExists && create) || (isDeadTrigger && forceRebuild))) {
+        if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
             configurationService.insert(newTriggerHist);
             hist = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         }
 
-        if (!triggerExists && create) {
+        if (!triggerExists && triggerIsActive) {
             dbDialect.initTrigger(dmlType, trigger, hist, tablePrefix, table);
         }
 
