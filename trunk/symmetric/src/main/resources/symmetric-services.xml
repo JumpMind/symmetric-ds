@@ -9,8 +9,8 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="customPlatforms">
             <map key-type="java.lang.String" value-type="java.lang.Class">
-                <entry key="H21" value="org.jumpmind.symmetric.db.h2.H2Platform"/>
-                <entry key="H2" value="org.jumpmind.symmetric.db.h2.H2Platform"/>
+                <entry key="H21" value="org.jumpmind.symmetric.db.h2.H2Platform" />
+                <entry key="H2" value="org.jumpmind.symmetric.db.h2.H2Platform" />
             </map>
         </property>
     </bean>
@@ -32,8 +32,7 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
 
-    <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean"
-        scope="singleton">
+    <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean" scope="singleton">
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
     </bean>
@@ -73,11 +72,10 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
     </bean>
 
-    <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService"
-        scope="singleton">
+    <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
-        <property name="nodeService" ref="nodeService"/>
+        <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="sql" ref="configurationServiceSql" />
@@ -97,8 +95,7 @@
         </property>
     </bean>
 
-    <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService"
-        scope="singleton">
+    <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService" scope="singleton">
         <property name="sql" ref="outgoingBatchServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
@@ -168,8 +165,7 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
 
-    <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService"
-        scope="singleton">
+    <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="sql" ref="incomingBatchServiceSql" />
@@ -180,7 +176,11 @@
         <property name="sql" ref="nodeServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
+        <property name="nodeIdGenerator">
+            <bean class="org.jumpmind.symmetric.util.DefaultNodeIdGenerator" />
+        </property>
     </bean>
+
 
     <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService" scope="singleton">
         <property name="sql" ref="registrationServiceSql" />
@@ -196,8 +196,8 @@
         <property name="dataService" ref="dataService" />
         <property name="randomTimeSlot">
             <bean class="org.jumpmind.symmetric.util.RandomTimeSlot">
-                <property name="parameterService" ref="parameterService"/>
-                <property name="maxValue" value="60"/>
+                <property name="parameterService" ref="parameterService" />
+                <property name="maxValue" value="60" />
             </bean>
         </property>
     </bean>
