@@ -115,20 +115,19 @@ public class SymmetricEngine {
     }
 
     /**
-     * Create a symmetric node
+     * Create a SymmetricDS node
      */
     public SymmetricEngine() {
         init(createContext(null));
     }
 
     /**
-     * Pass in the Spring context to be used. This had better include the Spring
-     * configuration for required Symmetric services.
+     * Pass in the Spring context to be used. The context needs to load classpath:/symmetric.xml.
      * 
      * @param ctx
      *                A Spring framework context to use for this SymmetricEngine
      */
-    protected SymmetricEngine(ApplicationContext ctx) {
+    public SymmetricEngine(ApplicationContext ctx) {
         init(ctx);
     }
 
@@ -303,7 +302,7 @@ public class SymmetricEngine {
     }
 
     /**
-     * Will setup the symmetric tables, if not already setup and if the engine
+     * Will setup the SymmetricDS tables, if not already setup and if the engine
      * is configured to do so.
      */
     public synchronized void setup() {
@@ -407,7 +406,7 @@ public class SymmetricEngine {
     }
 
     /**
-     * Push a copy of the node onto the push queue so the symmetric node
+     * Push a copy of the node onto the push queue so the SymmetricDS node
      * 'checks' in with it's root node.
      * 
      * @see IBootstrapService#heartbeat()
