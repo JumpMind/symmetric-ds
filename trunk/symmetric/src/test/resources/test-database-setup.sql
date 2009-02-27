@@ -30,6 +30,7 @@ insert into sym_node values ('44006', 'unit-test-only', '44001', 1, null, null, 
 insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
 insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null, '00000');
 insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
+insert into sym_node_security values ('00000', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, null, '00000');
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
