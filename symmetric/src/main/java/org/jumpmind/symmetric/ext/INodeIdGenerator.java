@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.ext;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.INodeService;
 
 /**
  * An {@link IExtensionPoint} that allows SymmetricDS users to implement their
@@ -32,15 +33,15 @@ public interface INodeIdGenerator extends IExtensionPoint {
      * Based on the node parameters passed in generate an expected node id. This
      * is used in an attempt to match a registration request.
      */
-    public String selectNodeId(Node node);
+    public String selectNodeId(INodeService nodeService, Node node);
 
     /**
      * Based on the node parameters passed in generate a brand new node id.
      */
-    public String generateNodeId(Node node);
+    public String generateNodeId(INodeService nodeService, Node node);
 
     /**
      * Generate a password to use when opening registration
      */
-    public String generatePassword(Node node);
+    public String generatePassword(INodeService nodeService, Node node);
 }

@@ -33,10 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -60,10 +58,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     private long securityCacheTime;
 
-    /**
-     * This is the default implementation of the node generator
-     */
-    private INodeIdGenerator nodeIdGenerator = new DefaultNodeIdGenerator();
+    private INodeIdGenerator nodeIdGenerator;
 
     public String findSymmetricVersion() {
         try {
@@ -153,7 +148,7 @@ public class NodeService extends AbstractService implements INodeService {
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
         jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id,
-                nodeIdGenerator.generatePassword(new Node(id, null, null)), findIdentity().getNodeId() });
+                nodeIdGenerator.generatePassword(this, new Node(id, null, null)), findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
@@ -354,51 +349,9 @@ public class NodeService extends AbstractService implements INodeService {
                 return NodeStatus.DATA_LOAD_STARTED;
             } else if (status.initialLoadTime != null) {
                 return NodeStatus.DATA_LOAD_COMPLETED;
-            } 
+            }
         }
         return NodeStatus.DATA_LOAD_NOT_STARTED;
     }
-    
-    class DefaultNodeIdGenerator implements INodeIdGenerator {
 
-        public boolean isAutoRegister() {
-            return true;
-        }
-
-        public String selectNodeId(Node node) {
-            if (StringUtils.isBlank(node.getNodeId())) {
-                String nodeId = node.getExternalId();
-                int maxTries = 100;
-                for (int sequence = 0; sequence < maxTries; sequence++) {
-                    NodeSecurity security = findNodeSecurity(nodeId);
-                    if (security != null && security.isRegistrationEnabled()) {
-                        return nodeId;
-                    }
-                    nodeId = node.getExternalId() + "-" + sequence;
-                }
-            }
-            return node.getNodeId();
-        }
-
-        public String generateNodeId(Node node) {
-            if (StringUtils.isBlank(node.getNodeId())) {
-                String nodeId = node.getExternalId();
-                int maxTries = 100;
-                for (int sequence = 0; sequence < maxTries; sequence++) {
-                    if (findNode(nodeId) == null) {
-                        return nodeId;
-                    }
-                    nodeId = node.getExternalId() + "-" + sequence;
-                }
-                throw new RuntimeException("Could not find nodeId for externalId of " + node.getExternalId()
-                        + " after " + maxTries + " tries.");
-            } else {
-                return node.getNodeId();
-            }
-        }
-
-        public String generatePassword(Node node) {
-            return new RandomDataImpl().nextSecureHexString(30);
-        }
-    }    
 }
