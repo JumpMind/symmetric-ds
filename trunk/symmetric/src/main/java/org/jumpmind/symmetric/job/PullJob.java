@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.job;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 
 public class PullJob extends AbstractJob {
@@ -29,10 +30,18 @@ public class PullJob extends AbstractJob {
     private static final Log logger = LogFactory.getLog(PushJob.class);
 
     private IPullService pullService;
+    
+    private INodeService nodeService;
 
     @Override
     public void doJob() throws Exception {
         pullService.pullData();
+
+        // Reschedule immediately if we are in the middle of an initial load
+        // so that the initial load completes as quickly as possible.
+        if (nodeService.isDataLoadStarted()) {
+            rescheduleImmediately = true;
+        }
     }
 
     public void setPullService(IPullService service) {
@@ -42,5 +51,9 @@ public class PullJob extends AbstractJob {
     @Override
     Log getLogger() {
         return logger;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 }
