@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -115,7 +116,8 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_ROOT_NODE_GROUP, "Wrong node group id");
         assertEquals(node.getExternalId(), TestConstants.TEST_ROOT_EXTERNAL_ID, "Wrong external id");
-        assertEquals(node.getSyncURL().toString(), "http://localhost:"+TestSetupUtil.TEST_PORT+"/sync", "Wrong syncUrl");
+        assertEquals(node.getSyncURL().toString(), "http://localhost:" + TestSetupUtil.TEST_PORT + "/sync",
+                "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "?", "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), getDbDialect().getName(), "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), getDbDialect().getVersion(), "Wrong databaseVersion");
@@ -132,7 +134,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         List<Node> list = nodeService.findNodesToPushTo();
         assertEquals(list.size(), 1, "Wrong number of push nodes");
     }
-    
+
     @Test
     public void testFindNodesThatOriginatedHere() throws Exception {
         Set<Node> nodes = nodeService.findNodesThatOriginatedFromNodeId("00011");
@@ -145,10 +147,58 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         for (Node n : nodes) {
             Assert.assertTrue(expectedIds.contains(n.getNodeId()));
         }
-        
+
         nodes = nodeService.findNodesThatOriginatedFromNodeId("00001");
         Assert.assertEquals(0, nodes.size());
-        
+
     }
 
+    @Test
+    public void testIsDataLoadStartedOrCompleted() throws Exception {
+        Node node = nodeService.findIdentity();
+        NodeSecurity originalNodeSecurity = nodeService.findNodeSecurity(node.getNodeId());
+
+        try {
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(node.getNodeId());
+            nodeSecurity.setNodeId(node.getNodeId());
+
+            // Fresh node
+
+            nodeSecurity.setInitialLoadEnabled(false);
+            nodeSecurity.setInitialLoadTime(null);
+            nodeService.updateNodeSecurity(nodeSecurity);
+            Assert.assertFalse(nodeService.isDataLoadStarted());
+            Assert.assertFalse(nodeService.isDataLoadCompleted());
+
+            // Initial load started but not completed.
+
+            nodeSecurity.setInitialLoadEnabled(true);
+            nodeSecurity.setInitialLoadTime(null);
+            nodeService.updateNodeSecurity(nodeSecurity);
+            Assert.assertTrue(nodeService.isDataLoadStarted());
+            Assert.assertFalse(nodeService.isDataLoadCompleted());
+
+            // Initial load completed.
+
+            nodeSecurity.setInitialLoadEnabled(false);
+            nodeSecurity.setInitialLoadTime(Calendar.getInstance().getTime());
+            nodeService.updateNodeSecurity(nodeSecurity);
+            Assert.assertFalse(nodeService.isDataLoadStarted());
+            Assert.assertTrue(nodeService.isDataLoadCompleted());
+
+            // Erroneous configuration - if load is complete, time should be set
+            // and enabled should be 0
+            // Expected behavior is to report it as data load started but not
+            // completed.
+
+            nodeSecurity.setInitialLoadEnabled(true);
+            nodeSecurity.setInitialLoadTime(Calendar.getInstance().getTime());
+            nodeService.updateNodeSecurity(nodeSecurity);
+            Assert.assertTrue(nodeService.isDataLoadStarted());
+            Assert.assertFalse(nodeService.isDataLoadCompleted());
+
+        } finally {
+            nodeService.updateNodeSecurity(originalNodeSecurity);
+        }
+    }
 }
