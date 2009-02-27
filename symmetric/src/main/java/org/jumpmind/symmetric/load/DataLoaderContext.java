@@ -110,6 +110,10 @@ public class DataLoaderContext implements IDataLoaderContext {
         this.tableName = tableName;
         this.tableTemplate = tableTemplateMap.get(tableName);
     }
+    
+    public String[] getOldData() {
+        return this.tableTemplate != null ? this.tableTemplate.getOldData() : null;
+    }
 
     public String getVersion() {
         return version;

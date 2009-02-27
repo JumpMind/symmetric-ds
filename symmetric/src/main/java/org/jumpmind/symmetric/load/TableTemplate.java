@@ -409,5 +409,9 @@ public class TableTemplate {
     public Table getTable() {
         return table;
     }
+    
+    public String[] getOldData() {
+        return oldData;
+    }    
 
 }

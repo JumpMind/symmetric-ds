@@ -39,6 +39,8 @@ public interface IDataLoaderContext {
     public boolean isSkipping();
 
     public String[] getColumnNames();
+    
+    public String[] getOldData();
 
     public String[] getKeyNames();
     
