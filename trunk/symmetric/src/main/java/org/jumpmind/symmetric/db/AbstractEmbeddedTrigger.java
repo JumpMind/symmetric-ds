@@ -82,7 +82,8 @@ public abstract class AbstractEmbeddedTrigger {
         this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
         this.trigger = bootstrapService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
-            logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.", triggerType.name(), tableName, getTriggerHistId()));
+            logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.",
+                    triggerType.name(), tableName, getTriggerHistId()));
             return false;
         }
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
@@ -109,7 +110,7 @@ public abstract class AbstractEmbeddedTrigger {
             return null;
         }
     }
-    
+
     protected boolean toCsv(Object object, StringBuilder b) {
         boolean handled = true;
         if (object != null) {
@@ -132,7 +133,8 @@ public abstract class AbstractEmbeddedTrigger {
             } else if (object instanceof Reader) { // clob in h2
                 b.append("\"");
                 try {
-                    b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\", "\\\\"), "\"", "\\\""));
+                    b.append(StringUtils.replace(StringUtils.replace(IOUtils.toString((BufferedReader) object), "\\",
+                            "\\\\"), "\"", "\\\""));
                 } catch (IOException ex) {
                     throw new IllegalStateException("Unable to read CLOB");
                 }
@@ -140,7 +142,7 @@ public abstract class AbstractEmbeddedTrigger {
             } else if (object instanceof ByteArrayInputStream) { // blob in h2
                 b.append("\"");
                 try {
-                    b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream)object))));
+                    b.append(new String(Base64.encodeBase64(IOUtils.toByteArray((ByteArrayInputStream) object))));
                 } catch (IOException ex) {
                     throw new IllegalStateException("Unable to read BLOB");
                 }
@@ -157,7 +159,8 @@ public abstract class AbstractEmbeddedTrigger {
         if (data != null) {
             for (Object object : data) {
                 if (!toCsv(object, b)) {
-                    throw new IllegalStateException("Could not format " + object + " which is of type " + object.getClass().getName());
+                    throw new IllegalStateException("Could not format " + object + " which is of type "
+                            + object.getClass().getName());
                 }
                 b.append(",");
             }
@@ -166,9 +169,9 @@ public abstract class AbstractEmbeddedTrigger {
         return b.toString();
     }
 
-    protected Data createData(
-            Object[] oldRow, Object[] newRow) {
-        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger.getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
+    protected Data createData(Object[] oldRow, Object[] newRow) {
+        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
+                .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
                 triggerHistory);
         if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
             data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
@@ -184,8 +187,7 @@ public abstract class AbstractEmbeddedTrigger {
         }
 
         Object[] keyValues = new Object[keys.length];
-        for (int i = 0; i <
-                keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             keyValues[i] = allValues[table.getColumnIndex(keys[i])];
         }
 
@@ -196,12 +198,14 @@ public abstract class AbstractEmbeddedTrigger {
         Column[] columns = table.getColumns();
         Object[] values = new Object[columns.length - excludedColumns.size()];
         int x = 0;
-        for (int i = 0; i <
-                columns.length; i++) {
+        for (int i = 0; i < columns.length; i++) {
             if (!excludedColumns.contains(columns[i].getName().toLowerCase())) {
-                values[x++] = allValues[i];
+                if (allValues != null && allValues.length > i) {
+                    values[x++] = allValues[i];
+                } else {
+                    values[x++] = null;
+                }
             }
-
         }
         return values;
     }
@@ -219,8 +223,7 @@ public abstract class AbstractEmbeddedTrigger {
 
         includedColumns = new ArrayList<String>();
         Column[] columns = table.getColumns();
-        for (int i = 0; i <
-                columns.length; i++) {
+        for (int i = 0; i < columns.length; i++) {
             String name = columns[i].getName().toLowerCase();
             if (!excludedColumns.contains(name)) {
                 includedColumns.add(name);
