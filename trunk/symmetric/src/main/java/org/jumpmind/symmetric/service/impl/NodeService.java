@@ -323,6 +323,42 @@ public class NodeService extends AbstractService implements INodeService {
         this.nodeIdGenerator = nodeIdGenerator;
     }
 
+    public boolean isDataLoadCompleted() {
+        return getDataLoadStatus() == NodeStatus.DATA_LOAD_COMPLETED;
+    }
+
+    public boolean isDataLoadStarted() {
+        return getDataLoadStatus() == NodeStatus.DATA_LOAD_STARTED;
+    }
+
+    @SuppressWarnings("unchecked")
+    private NodeStatus getDataLoadStatus() {
+
+        class DataLoadStatus {
+            int initialLoadEnabled;
+            Date initialLoadTime;
+        }
+
+        List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
+            public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                DataLoadStatus status = new DataLoadStatus();
+                status.initialLoadEnabled = rs.getInt(1);
+                status.initialLoadTime = rs.getTimestamp(2);
+                return status;
+            }
+        });
+
+        if (results.size() > 0) {
+            DataLoadStatus status = results.get(0);
+            if (status.initialLoadEnabled == 1) {
+                return NodeStatus.DATA_LOAD_STARTED;
+            } else if (status.initialLoadTime != null) {
+                return NodeStatus.DATA_LOAD_COMPLETED;
+            } 
+        }
+        return NodeStatus.DATA_LOAD_NOT_STARTED;
+    }
+    
     class DefaultNodeIdGenerator implements INodeIdGenerator {
 
         public boolean isAutoRegister() {
@@ -364,41 +400,5 @@ public class NodeService extends AbstractService implements INodeService {
         public String generatePassword(Node node) {
             return new RandomDataImpl().nextSecureHexString(30);
         }
-    };
-    
-    public boolean isDataLoadCompleted() {
-        return getDataLoadStatus() == NodeStatus.DATA_LOAD_COMPLETED;
-    }
-
-    public boolean isDataLoadStarted() {
-        return getDataLoadStatus() == NodeStatus.DATA_LOAD_STARTED;
-    }
-
-    @SuppressWarnings("unchecked")
-    private NodeStatus getDataLoadStatus() {
-
-        class DataLoadStatus {
-            int initialLoadEnabled;
-            Date initialLoadTime;
-        }
-
-        List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
-            public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-                DataLoadStatus status = new DataLoadStatus();
-                status.initialLoadEnabled = rs.getInt(1);
-                status.initialLoadTime = rs.getTimestamp(2);
-                return status;
-            }
-        });
-
-        if (results.size() > 0) {
-            DataLoadStatus status = results.get(0);
-            if (status.initialLoadEnabled == 1) {
-                return NodeStatus.DATA_LOAD_STARTED;
-            } else if (status.initialLoadTime != null) {
-                return NodeStatus.DATA_LOAD_COMPLETED;
-            } 
-        }
-        return NodeStatus.DATA_LOAD_NOT_STARTED;
-    }
+    }    
 }
