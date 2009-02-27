@@ -125,7 +125,7 @@ public class MockNodeService implements INodeService {
     public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) { 
     }
 
-    public boolean isDataLoadComplete() {
+    public boolean isDataLoadCompleted() {
         return false;
     }
 

@@ -366,7 +366,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     };
     
-    public boolean isDataLoadComplete() {
+    public boolean isDataLoadCompleted() {
         return getDataLoadStatus() == NodeStatus.DATA_LOAD_COMPLETED;
     }
 
