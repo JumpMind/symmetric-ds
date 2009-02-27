@@ -88,7 +88,7 @@ public interface INodeService {
     /**
      * Returns true if a data load has occurred and has been completed.
      */
-    public boolean isDataLoadComplete();
+    public boolean isDataLoadCompleted();
 
     /**
      * Returns true if a data load has started but not yet completed.
