@@ -29,10 +29,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
@@ -47,38 +49,43 @@ public class PullService extends AbstractService implements IPullService {
 
     private IRegistrationService registrationService;
     
-    public void pullData() {
+    private IClusterService clusterService;
+    
+    synchronized public void pullData() {
+        if (clusterService.lock(LockAction.PULL)) {
+            // register if we haven't already been registered
+            if (!registrationService.isRegisteredWithServer()) {
+                registrationService.registerWithServer();
+            }
 
-        // register if we haven't already been registered
-        if (!registrationService.isRegisteredWithServer()) {
-            registrationService.registerWithServer();
-        }
-
-        List<Node> nodes = nodeService.findNodesToPull();
-        if (nodes != null && nodes.size() > 0) {
-            for (Node node : nodes) {
-                String nodeName = " for " + node;
-                try {
-                    logger.info("Pull requested" + nodeName);
-                    if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
-                        logger.info("Pull data received" + nodeName);
-                    } else {
-                        logger.info("Pull no data received" + nodeName);
+            List<Node> nodes = nodeService.findNodesToPull();
+            if (nodes != null && nodes.size() > 0) {
+                for (Node node : nodes) {
+                    String nodeName = " for " + node;
+                    try {
+                        logger.info("Pull requested" + nodeName);
+                        if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
+                            logger.info("Pull data received" + nodeName);
+                        } else {
+                            logger.info("Pull no data received" + nodeName);
+                        }
+                    } catch (ConnectException ex) {
+                        logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
+                    } catch (ConnectionRejectedException ex) {
+                        logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+                    } catch (AuthenticationException ex) {
+                        logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+                    } catch (SocketException ex) {
+                        logger.warn(ex.getMessage());
+                    } catch (TransportException ex) {
+                        logger.warn(ex.getMessage());
+                    } catch (IOException e) {
+                        logger.error(e, e);
                     }
-                } catch (ConnectException ex) {
-                    logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
-                } catch (ConnectionRejectedException ex) {
-                    logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
-                } catch (AuthenticationException ex) {
-                    logger.warn(ErrorConstants.NOT_AUTHENTICATED);
-                } catch (SocketException ex) {
-                    logger.warn(ex.getMessage());
-                } catch (TransportException ex) {
-                    logger.warn(ex.getMessage());
-                } catch (IOException e) {
-                    logger.error(e, e);
                 }
             }
+        } else {
+            logger.warn("Did not run the pull process because the cluster service has it locked");
         }
     }
 
@@ -93,5 +100,11 @@ public class PullService extends AbstractService implements IPullService {
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
     }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
+    }
+    
+    
 
 }

@@ -313,7 +313,7 @@ public class SymmetricEngine {
     }
 
     /**
-     * Must be called to start symmetric.
+     * Must be called to start SymmetricDS.
      */
     public synchronized void start() {
         if (!starting && !started) {                      
@@ -355,17 +355,12 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called if the push job has not been enabled. It will perform
-     * a push the same way the {@link PushJob} would have.
+     * Will perform a push the same way the {@link PushJob} would have.
      * 
      * @see IPushService#pushData()
      */
     public void push() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
-            ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
-        } else {
-            throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
-        }
+        ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
     }
 
     /**
@@ -378,17 +373,12 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called if the pull job has not been enabled. It will perform
-     * a pull the same way the {@link PullJob} would have.
+     * Will perform a pull the same way the {@link PullJob} would have.
      * 
      * @see IPullService#pullData()
      */
     public void pull() {
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
-            ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
-        } else {
-            throw new UnsupportedOperationException("Cannot actuate a push if it is already scheduled.");
-        }
+        ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
     }
 
     /**
@@ -459,7 +449,7 @@ public class SymmetricEngine {
     /**
      * Expose access to the Spring context. This is for advanced use only.
      * 
-     * @return
+     * @return the Spring application context that SymmetricDS runs in
      */
     public ApplicationContext getApplicationContext() {
         return applicationContext;
@@ -477,6 +467,23 @@ public class SymmetricEngine {
      */
     public static SymmetricEngine findEngineByName(String name) {
         return registeredEnginesByName.get(name.toLowerCase());
+    }
+    
+    /**
+     * Locate the one and only registered {@link SymmetricEngine}.  Use {@link #findEngineByName(String)} or
+     * {@link #findEngineByUrl(String) if there is more than on engine registered.
+     * @throws IllegalStateException This exception happens if more than one engine is 
+     * registered  
+     */
+    public static SymmetricEngine getEngine() {
+        int numberOfEngines = registeredEnginesByName.size();
+        if (numberOfEngines == 0) {
+            return null;
+        } else if (numberOfEngines > 1) {
+            throw new IllegalStateException("More than one SymmetricEngine is currently registered");
+        } else {
+            return registeredEnginesByName.values().iterator().next();
+        }
     }
 
 }

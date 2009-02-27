@@ -22,6 +22,10 @@
     <priority value="ERROR" />
   </category>
   
+  <category name="org.jumpmind.symmetric.service.impl.ParameterService">
+    <priority value="ERROR" />
+  </category>  
+  
   <category name="org.springframework">
     <priority value="WARN" />
   </category>

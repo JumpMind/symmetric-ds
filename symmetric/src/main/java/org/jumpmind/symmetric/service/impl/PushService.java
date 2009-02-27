@@ -33,10 +33,12 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
+import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -57,17 +59,23 @@ public class PushService extends AbstractService implements IPushService {
 
     private IDataService dataService;
 
-    public void pushData() {
-        List<Node> nodes = nodeService.findNodesToPushTo();
-        if (nodes != null && nodes.size() > 0) {
-            for (Node node : nodes) {
-                logger.info("Push requested for " + node);
-                if (pushToNode(node)) {
-                    logger.info("Push completed for " + node);
-                } else {
-                    logger.info("Push unsuccessful for " + node);
+    private IClusterService clusterService;
+    
+    synchronized public void pushData() {
+        if (clusterService.lock(LockAction.PUSH)) {
+            List<Node> nodes = nodeService.findNodesToPushTo();
+            if (nodes != null && nodes.size() > 0) {
+                for (Node node : nodes) {
+                    logger.info("Push requested for " + node);
+                    if (pushToNode(node)) {
+                        logger.info("Push completed for " + node);
+                    } else {
+                        logger.info("Push unsuccessful for " + node);
+                    }
                 }
             }
+        } else {
+            logger.warn("Did not run the push process because the cluster service has it locked");
         }
     }
 
@@ -152,4 +160,10 @@ public class PushService extends AbstractService implements IPushService {
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
+
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
+    }
+    
+    
 }
