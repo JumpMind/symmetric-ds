@@ -64,6 +64,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="pullService" ref="pullService" />
         <property name="needsRescheduled" value="true" />
         <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService"/>
         <property name="rescheduleDelayParameter" value="job.pull.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
     </bean>
