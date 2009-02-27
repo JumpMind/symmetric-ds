@@ -123,25 +123,21 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     private String buildVirtualTableSql() {
         StringBuilder b = new StringBuilder("(select ");
-        if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
-            for (String column : includedColumns) {
-                b.append("? as ");
-                if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
-                    b.append("\"new_").append(column).append("\",");
-                } else {
-                    b.append("new_").append(column).append(",");
-                }
+        for (String column : includedColumns) {
+            b.append("? as ");
+            if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
+                b.append("\"new_").append(column).append("\",");
+            } else {
+                b.append("new_").append(column).append(",");
             }
         }
 
-        if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.DELETE) {
-            for (String column : includedColumns) {
-                b.append("? as ");
-                if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
-                    b.append("\"old_").append(column).append("\",");
-                } else {
-                    b.append("old_").append(column).append(",");
-                }
+        for (String column : includedColumns) {
+            b.append("? as ");
+            if (Token.isKeyword(column) || column.indexOf(" ") != -1) {
+                b.append("\"old_").append(column).append("\",");
+            } else {
+                b.append("old_").append(column).append(",");
             }
         }
         b.deleteCharAt(b.length() - 1);
@@ -161,18 +157,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
      * support it.
      */
     private String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
-        Object[] values = null;
-        switch (triggerType) {
-        case INSERT:
-            values = getOrderedColumnValues(newRow);
-            break;
-        case UPDATE:
-            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
-            break;
-        case DELETE:
-            values = getOrderedColumnValues(oldRow);
-            break;
-        }
+        Object[] values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
         for (int i = 0; i < tokens.length; i++) {
@@ -277,7 +262,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     protected int getTriggerHistId() {
         return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
     }
-    
+
     @Override
     protected boolean toCsv(Object object, StringBuilder b) {
         boolean handled = true;

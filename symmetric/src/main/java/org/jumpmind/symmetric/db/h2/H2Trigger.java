@@ -127,25 +127,21 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
 
     protected String buildVirtualTableSql() {
         StringBuilder b = new StringBuilder("(select ");
-        if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.INSERT) {
-            for (String column : includedColumns) {
-                b.append("? as ");
-                if (keywords.contains(column) || column.indexOf(" ") != -1) {
-                    b.append("\"new_").append(column).append("\",");
-                } else {
-                    b.append("new_").append(column).append(",");
-                }
+        for (String column : includedColumns) {
+            b.append("? as ");
+            if (keywords.contains(column) || column.indexOf(" ") != -1) {
+                b.append("\"new_").append(column).append("\",");
+            } else {
+                b.append("new_").append(column).append(",");
             }
         }
 
-        if (triggerType == DataEventType.UPDATE || triggerType == DataEventType.DELETE) {
-            for (String column : includedColumns) {
-                b.append("? as ");
-                if (keywords.contains(column) || column.indexOf(" ") != -1) {
-                    b.append("\"old_").append(column).append("\",");
-                } else {
-                    b.append("old_").append(column).append(",");
-                }
+        for (String column : includedColumns) {
+            b.append("? as ");
+            if (keywords.contains(column) || column.indexOf(" ") != -1) {
+                b.append("\"old_").append(column).append("\",");
+            } else {
+                b.append("old_").append(column).append(",");
             }
         }
         b.deleteCharAt(b.length() - 1);
@@ -162,21 +158,10 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
 
     /**
      * I wanted to do this as a preparedstatement but h2 doesn't seem to support
-     * it.
+     * it???
      */
     protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
-        Object[] values = null;
-        switch (triggerType) {
-        case INSERT:
-            values = getOrderedColumnValues(newRow);
-            break;
-        case UPDATE:
-            values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
-            break;
-        case DELETE:
-            values = getOrderedColumnValues(oldRow);
-            break;
-        }
+        Object[] values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
         for (int i = 0; i < tokens.length; i++) {
@@ -197,6 +182,8 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
                     // anything else is unsupported
                     out.append("null");
                 }
+            } else {
+                out.append("");
             }
         }
         return out.toString();
@@ -244,13 +231,13 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
         this.dataSelectSql = replaceOldNewTriggerTokens(b.toString());
     }
 
-    protected String replaceOldNewTriggerTokens(String targetString) {       
+    protected String replaceOldNewTriggerTokens(String targetString) {
         // This is a little hack to allow us to replace not only the old/new
         // alias's, but also the column prefix for
         // use in a virtual table we can match SQL expressions against.
         targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
         targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");
-        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");        
+        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");
         return dbDialect.replaceTemplateVariables(triggerType, trigger, triggerHistory, targetString);
     }
 

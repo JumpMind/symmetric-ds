@@ -38,6 +38,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 
 abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
+    
     DataSource dataSource;
 
     protected static final Log logger = LogFactory.getLog(AbstractJob.class);
