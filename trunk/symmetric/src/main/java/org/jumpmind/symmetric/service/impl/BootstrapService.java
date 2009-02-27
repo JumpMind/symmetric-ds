@@ -145,7 +145,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * efficient). If the trigger is created for the first time (no previous
      * trigger existed), then should we auto-resync data?
      */
-    public void syncTriggers() {
+    synchronized public void syncTriggers() {
         if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
@@ -153,8 +153,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 updateOrCreateSymTriggers();
             } finally {
                 clusterService.unlock(LockAction.SYNCTRIGGERS);
-                logger.info("Done synchronizing triggers.");
+                logger.info("Done synchronizing triggers");
             }
+        } else {
+            logger.warn("Did not run the syncTriggers process because the cluster service has it locked");
         }
     }
 
@@ -173,7 +175,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         .getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
                 configurationService.inactivateTriggerHistory(history);
             } else {
-                logger.info("A trigger was inactivated that had not yet been built.  Taking no action.");
+                logger.info("A trigger was inactivated that had not yet been built, taking no action");
             }
         }
     }

@@ -63,7 +63,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 }
 
             } else {
-                logger.info("Could not get a lock to run an statistic purge.");
+                logger.warn("Did not run the purge process because the cluster service has it locked.");
             }
         } catch (Exception ex) {
             logger.error(ex, ex);

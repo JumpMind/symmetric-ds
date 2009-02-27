@@ -139,6 +139,7 @@
         <property name="dataService" ref="dataService" />
         <property name="ackService" ref="acknowledgeService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="clusterService" ref="clusterService" />
     </bean>
 
     <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService">
@@ -146,6 +147,7 @@
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="clusterService" ref="clusterService" />
     </bean>
 
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton">

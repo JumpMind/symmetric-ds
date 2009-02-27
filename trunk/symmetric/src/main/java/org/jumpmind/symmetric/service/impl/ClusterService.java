@@ -69,9 +69,15 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable(final LockAction action, final String lockId) {
         try {
             jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action.name() });
-            logger.debug("Inserted into the node_lock table for " + lockId + ".");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Inserted into the node_lock table for " + lockId + ".");
+            }
         } catch (final DataIntegrityViolationException ex) {
-            logger.debug("Failed to insert to the node_lock table for " + lockId + ".  Must be intialized already.");
+            if (logger.isDebugEnabled()) {
+                logger
+                        .debug("Failed to insert to the node_lock table for " + lockId
+                                + ".  Must be intialized already.");
+            }
         }
     }
 
