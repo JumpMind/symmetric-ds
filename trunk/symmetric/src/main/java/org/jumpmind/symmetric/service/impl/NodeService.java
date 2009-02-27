@@ -392,15 +392,12 @@ public class NodeService extends AbstractService implements INodeService {
         });
 
         if (results.size() > 0) {
-            if (results.get(0).initialLoadEnabled == 0) {
-                return NodeStatus.DATA_LOAD_NOT_STARTED;
-            } else {
-                if (results.get(0).initialLoadTime == null) {
-                    return NodeStatus.DATA_LOAD_STARTED;
-                } else {
-                    return NodeStatus.DATA_LOAD_COMPLETED;
-                }
-            }
+            DataLoadStatus status = results.get(0);
+            if (status.initialLoadEnabled == 1) {
+                return NodeStatus.DATA_LOAD_STARTED;
+            } else if (status.initialLoadTime != null) {
+                return NodeStatus.DATA_LOAD_COMPLETED;
+            } 
         }
         return NodeStatus.DATA_LOAD_NOT_STARTED;
     }
