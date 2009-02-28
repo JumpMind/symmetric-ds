@@ -49,7 +49,6 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class NodeService extends AbstractService implements INodeService {
 
-    @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(NodeService.class);
 
     private Node cachedNodeIdentity;
@@ -134,15 +133,21 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @SuppressWarnings("unchecked")
-    public NodeSecurity findNodeSecurity(String id, boolean createIfNotFound) {
-        List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { id }, new int[] {Types.VARCHAR},
-                new NodeSecurityRowMapper());
-        NodeSecurity security = (NodeSecurity) getFirstEntry(list);
-        if (security == null && createIfNotFound) {
-            insertNodeSecurity(id);
-            security = findNodeSecurity(id, false);
+    public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
+        if (nodeId != null) {
+            List<NodeSecurity> list = jdbcTemplate.query(
+                    getSql("findNodeSecuritySql"), new Object[] { nodeId },
+                    new int[] { Types.VARCHAR }, new NodeSecurityRowMapper());
+            NodeSecurity security = (NodeSecurity) getFirstEntry(list);
+            if (security == null && createIfNotFound) {
+                insertNodeSecurity(nodeId);
+                security = findNodeSecurity(nodeId, false);
+            }
+            return security;
+        } else {
+            logger.warn("A 'null' node id was passed into findNodeSecurity");
+            return null;
         }
-        return security;
     }
 
     public void insertNodeSecurity(String id) {
