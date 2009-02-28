@@ -22,7 +22,7 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
                 if (security != null && security.isRegistrationEnabled()) {
                     return nodeId;
                 }
-                nodeId = nodeId + "-" + sequence;
+                nodeId = buildNodeId(nodeService, node) + "-" + sequence;
             }
         }
         return node.getNodeId();
@@ -36,7 +36,7 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
                 if (nodeService.findNode(nodeId) == null) {
                     return nodeId;
                 }
-                nodeId = nodeId + "-" + sequence;
+                nodeId = buildNodeId(nodeService, node) + "-" + sequence;
             }
             throw new RuntimeException("Could not find nodeId for externalId of " + node.getExternalId() + " after "
                     + maxTries + " tries.");
@@ -45,7 +45,7 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
         }
     }
 
-    public String buildNodeId(INodeService nodeService, Node node) {
+    protected String buildNodeId(INodeService nodeService, Node node) {
         return node.getExternalId();
     }
 
