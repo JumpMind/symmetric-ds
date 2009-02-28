@@ -59,6 +59,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 public class TestSetupUtil {
 
+    private static final String CLIENT = ".client";
+
+    private static final String ROOT = ".root";
+
     static final Log logger = LogFactory.getLog(TestSetupUtil.class);
 
     private static SymmetricEngine clientEngine;
@@ -69,7 +73,7 @@ public class TestSetupUtil {
     
     public static Collection<String[]> lookupDatabasePairs(String testPrefix) {
         Properties properties = getTestProperties(testPrefix);
-        String[] clientDatabaseTypes = StringUtils.split(properties.getProperty(testPrefix + ".client"), ",");
+        String[] clientDatabaseTypes = StringUtils.split(properties.getProperty(testPrefix + CLIENT), ",");
         String[] rootDatabaseTypes = getRootDbTypes(testPrefix);
 
         String[][] clientAndRootCombos = new String[rootDatabaseTypes.length * clientDatabaseTypes.length][2];
@@ -265,6 +269,15 @@ public class TestSetupUtil {
                 logger.info("Could not find " + propertiesFile.getAbsolutePath()
                         + ". Using all of the default properties");
             }
+            
+            String rootDbs = System.getProperty(testPrefix + ROOT);
+            String clientDbs = System.getProperty(testPrefix + CLIENT);
+            if (!StringUtils.isBlank(rootDbs) && !rootDbs.startsWith("${")) {
+                properties.setProperty(testPrefix + ROOT, rootDbs);
+            }
+            if (!StringUtils.isBlank(clientDbs) && !clientDbs.startsWith("${")) {
+                properties.setProperty(testPrefix + CLIENT, clientDbs);
+            }
             return properties;
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -273,7 +286,7 @@ public class TestSetupUtil {
 
     protected static String[] getRootDbTypes(String testPrefix) {
         Properties properties = getTestProperties(testPrefix);
-        return StringUtils.split(properties.getProperty(testPrefix + ".root"), ",");
+        return StringUtils.split(properties.getProperty(testPrefix + ROOT), ",");
     }
 
     public static MockHttpServletRequest createMockHttpServletRequest(ServletContext servletContext, String method,
