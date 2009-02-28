@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -134,6 +135,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
+        try {
         if (nodeId != null) {
             List<NodeSecurity> list = jdbcTemplate.query(
                     getSql("findNodeSecuritySql"), new Object[] { nodeId },
@@ -147,6 +149,10 @@ public class NodeService extends AbstractService implements INodeService {
         } else {
             logger.warn("A 'null' node id was passed into findNodeSecurity");
             return null;
+        }
+        } catch (DataIntegrityViolationException ex) {
+            logger.error("Could not find a node security row for " + nodeId);
+            throw ex;
         }
     }
 
