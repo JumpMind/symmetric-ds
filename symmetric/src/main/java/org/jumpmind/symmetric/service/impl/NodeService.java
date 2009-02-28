@@ -135,7 +135,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String id, boolean createIfNotFound) {
-        List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { id },
+        List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { id }, new int[] {Types.VARCHAR},
                 new NodeSecurityRowMapper());
         NodeSecurity security = (NodeSecurity) getFirstEntry(list);
         if (security == null && createIfNotFound) {
