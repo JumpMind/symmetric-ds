@@ -1,5 +1,6 @@
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
@@ -115,9 +116,9 @@
             </roles>
             <timezone>-5</timezone>
         </contributor>
-             
+
     </contributors>
-    
+
     <distributionManagement>
         <site>
             <id>dav.codehaus.org</id>
@@ -137,7 +138,7 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
- 
+
     <properties>
         <wtp.version>1.5</wtp.version>
         <springframework.version>2.5.5</springframework.version>
@@ -189,6 +190,16 @@
                 <configuration>
                     <forkMode>always</forkMode>
                     <argLine>-Xms512m -Xmx1024m</argLine>
+                    <systemProperties>
+                        <property>
+                            <name>test.root</name>
+                            <value>${test.root}</value>
+                        </property>
+                        <property>
+                            <name>test.client</name>
+                            <value>${test.client}</value>
+                        </property>
+                    </systemProperties>
                     <additionalClasspathElements>
                         <additionalClasspathElement>
                             ${user.home}\.symmetricds\lib\ojdbc6.jar
