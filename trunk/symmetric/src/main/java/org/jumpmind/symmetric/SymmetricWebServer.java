@@ -93,9 +93,14 @@ public class SymmetricWebServer implements ApplicationContextAware {
     public SymmetricWebServer(int maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
     }
+    
+    public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
+        this.propertiesFile = propertiesUrl;
+        this.maxIdleTime = maxIdleTime;
+    }    
 
     public void start(int port, String propertiesUrl) throws Exception {
-        System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesUrl);
+        this.propertiesFile = propertiesUrl;
         start(port);
     }
 
