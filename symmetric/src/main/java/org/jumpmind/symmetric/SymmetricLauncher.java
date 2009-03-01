@@ -96,9 +96,8 @@ public class SymmetricLauncher {
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
     private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
-
-    public static void main(String[] args) throws Exception {
-
+    
+    public static void main(String[] args) throws Exception {        
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
@@ -107,6 +106,7 @@ public class SymmetricLauncher {
             int port = 31415;
             int securePort = 31417;
             int maxIdleTime = 900000;
+            String propertiesFile = null;
 
             if (line.hasOption(OPTION_PORT_SERVER)) {
                 port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
@@ -126,8 +126,8 @@ public class SymmetricLauncher {
 
             // validate that block-size has been set
             if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1,
-                        "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE));
+                propertiesFile =
+                        "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE))
                         .exists()) {
                     throw new ParseException(
@@ -198,13 +198,13 @@ public class SymmetricLauncher {
                     testConnection();
                 }
                 if (line.hasOption(OPTION_START_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime).start(port);
+                    new SymmetricWebServer(maxIdleTime, propertiesFile).start(port);
                 }
                 else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime).startSecure(securePort);
+                    new SymmetricWebServer(maxIdleTime, propertiesFile).startSecure(securePort);
                 }
                 else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime).startMixed(port, securePort);
+                    new SymmetricWebServer(maxIdleTime, propertiesFile).startMixed(port, securePort);
                 }
                 return;
             }
