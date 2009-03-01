@@ -136,20 +136,22 @@ public class NodeService extends AbstractService implements INodeService {
     @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
         try {
-        if (nodeId != null) {
-            List<NodeSecurity> list = jdbcTemplate.query(
-                    getSql("findNodeSecuritySql"), new Object[] { nodeId },
-                    new int[] { Types.VARCHAR }, new NodeSecurityRowMapper());
-            NodeSecurity security = (NodeSecurity) getFirstEntry(list);
-            if (security == null && createIfNotFound) {
-                insertNodeSecurity(nodeId);
-                security = findNodeSecurity(nodeId, false);
+            if (nodeId != null) {
+                List<NodeSecurity> list = jdbcTemplate.query(
+                        getSql("findNodeSecuritySql"), new Object[] { nodeId },
+                        new int[] { Types.VARCHAR },
+                        new NodeSecurityRowMapper());
+                NodeSecurity security = (NodeSecurity) getFirstEntry(list);
+                if (security == null && createIfNotFound) {
+                    insertNodeSecurity(nodeId);
+                    security = findNodeSecurity(nodeId, false);
+                }
+                return security;
+            } else {
+                logger
+                        .warn("A 'null' node id was passed into findNodeSecurity");
+                return null;
             }
-            return security;
-        } else {
-            logger.warn("A 'null' node id was passed into findNodeSecurity");
-            return null;
-        }
         } catch (DataIntegrityViolationException ex) {
             logger.error("Could not find a node security row for " + nodeId);
             throw ex;
