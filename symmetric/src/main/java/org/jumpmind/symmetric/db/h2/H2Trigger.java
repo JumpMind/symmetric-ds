@@ -224,7 +224,7 @@ public class H2Trigger implements org.h2.api.Trigger {
     protected String getTransactionId(Connection c, Object[] oldRow, Object[] newRow) {
         JdbcConnection con = (JdbcConnection) c;
         Session session = (Session) con.getSession();
-        return String.format("%s-%s-%s", session.getId(), session.getFirstUncommittedLog(), session
+        return String.format("'%s-%s-%s'", session.getId(), session.getFirstUncommittedLog(), session
                 .getFirstUncommittedPos());
     }
 
