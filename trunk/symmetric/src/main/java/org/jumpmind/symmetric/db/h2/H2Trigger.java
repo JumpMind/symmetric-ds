@@ -119,13 +119,14 @@ public class H2Trigger implements org.h2.api.Trigger {
         int columnCount = oldRow != null ? oldRow.length : newRow.length;
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
-        forEachColumn(columnCount, newRow, out, 0, tokens);
-        forEachColumn(columnCount, oldRow, out, columnCount, tokens);
-        out.append(tokens[tokens.length - 1]);
+        int tokenIndex = 0;
+        tokenIndex = forEachColumn(columnCount, newRow, out, tokenIndex, tokens);
+        tokenIndex = forEachColumn(columnCount, oldRow, out, tokenIndex, tokens);
+        out.append(tokens[tokenIndex]);
         return out.toString();
     }
 
-    private void forEachColumn(int columnCount, Object[] data, StringBuilder out, int startIndex, String[] tokens) {
+    private int forEachColumn(int columnCount, Object[] data, StringBuilder out, int tokenIndex, String[] tokens) {
         for (int i = 0; i < columnCount; i++) {
             boolean include = true;
             for (int j = 0; excludedIndexes != null && j < excludedIndexes.length; j++) {
@@ -134,7 +135,7 @@ public class H2Trigger implements org.h2.api.Trigger {
                 }
             }
             if (include) {
-                out.append(tokens[startIndex + i]);
+                out.append(tokens[tokenIndex++]);
                 if (data != null) {
                     data[i] = appendVirtualTableStringValue(data[i], out);
                 } else {
@@ -142,6 +143,7 @@ public class H2Trigger implements org.h2.api.Trigger {
                 }
             }
         }
+        return tokenIndex;
     }
 
     private Object appendVirtualTableStringValue(Object value, StringBuilder out) {
