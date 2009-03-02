@@ -181,6 +181,30 @@ public class Trigger {
         }
         return orderedColumns.toArray(new Column[orderedColumns.size()]);
     }
+    
+    /**
+     * Get a list of the natural indexes of the excluded columns
+     */
+    public int[] getExcludedColumnIndexes(Table table) {
+        if (excludedColumnNames != null && excludedColumnNames.length() > 0) {
+            StringTokenizer tokenizer = new StringTokenizer(
+                    excludedColumnNames, ",");
+            int[] indexes = new int[tokenizer.countTokens()];
+            Column[] columns = table.getColumns();
+            List<String> columnNames = new ArrayList<String>(columns.length);
+            for (Column column : columns) {
+                columnNames.add(column.getName().toLowerCase());
+            }
+            int i = 0;
+            while (tokenizer.hasMoreTokens()) {
+                indexes[i++] = columnNames.indexOf(tokenizer.nextToken()
+                        .toLowerCase());
+            }
+            return indexes;
+        } else {
+            return new int[0];
+        }
+    }
 
     @SuppressWarnings("unchecked")
     private List<String> getExcludedColumnNamesAsList() {

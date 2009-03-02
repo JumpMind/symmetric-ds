@@ -17,7 +17,7 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.db.hsqldb;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -39,6 +39,7 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;

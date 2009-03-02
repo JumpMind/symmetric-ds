@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.db;
 
+import java.util.Set;
+
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.load.IColumnFilter;
@@ -207,4 +209,11 @@ public interface IDbDialect {
     public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger, TriggerHistory hist);
 
     public boolean supportsOpenCursorsAcrossCommit();
+    
+    /**
+     * Retrieves a list of keywords for the database.
+     */
+    public Set<String> getSqlKeywords();
+    
+    public String getInitialLoadTableAlias();
 }

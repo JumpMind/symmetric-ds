@@ -2,6 +2,7 @@
  * SymmetricDS is an open source database synchronization solution.
  *
  * Copyright (C) Keith Naas <knaas@users.sourceforge.net>
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -20,99 +21,62 @@ package org.jumpmind.symmetric.db.h2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
-/**
- * 
- * @author knaas@users.sourceforge.net
- */
 public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(H2Dialect.class);
-    public static String DUAL_TABLE = "DUAL";
-    private boolean initializeDatabase;
-    private static boolean h2Initialized = false;
     private boolean storesUpperCaseNames = true;
     
-    private ThreadLocal<Boolean> syncEnabled = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return Boolean.TRUE;
-        }
-    };
-    
-    private ThreadLocal<String> syncNodeDisabled = new ThreadLocal<String>() {
-
-        @Override
-        protected String initialValue() {
-            return null;
-        }
-    };
-
     protected void initForSpecificDialect() {
-        if (initializeDatabase) {
-            if (!h2Initialized) {
-                jdbcTemplate.update("SET WRITE_DELAY 100");
-                h2Initialized = true;
-            }
-        }
-
-        createDummyDualTable();
-
         jdbcTemplate
                 .update("CREATE ALIAS IF NOT EXISTS BASE64_ENCODE for \"org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64\"");
     }
 
-    /**
-     * This is for use in the java triggers so we can create a virtual table w/
-     * old and new columns values to bump SQL expressions up against.
-     */
-    private void createDummyDualTable() {
-        Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
-        if (table == null) {
-            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
-            jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
-            jdbcTemplate.update("REVOKE ALL ON " + DUAL_TABLE + " FROM PUBLIC");
-            jdbcTemplate.update("GRANT SELECT ON " + DUAL_TABLE + " TO PUBLIC");
-        }
-
-    }
-
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        String triggerExpression = triggerName + "_%";
-        triggerExpression = triggerExpression.replace("_", "\\_");
-        return jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS where trigger_name like ?",
-                new Object[] { triggerExpression }) > 0;
-    }
-    
-    protected String getModifiedTriggerName(String triggerName, TriggerHistory hist) {
-        return (triggerName + "_" + getEngineName() + "_"
-        + hist.getTriggerHistoryId()).toUpperCase();
+        boolean exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
+                new Object[] { triggerName }) > 0;
+        if (!exists) {
+            exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ?",
+                    new Object[] { String.format("%s_VIEW", triggerName) }) > 0;
+        }
+        return exists;
     }
 
     public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        triggerName = schemaName + triggerName;
-        triggerName = getModifiedTriggerName(triggerName, hist);
         try {
-            int count = jdbcTemplate.update(String.format("drop trigger %s", triggerName));
+            int count = jdbcTemplate.update(String.format("DROP TRIGGER IF EXISTS %s", triggerName));
             if (count > 0) {
-                logger.info(String.format("Just droped trigger %s", triggerName));
+                logger.info(String.format("Just dropped trigger %s", triggerName));
+            }
+            count = jdbcTemplate.update(String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName));
+            if (count > 0) {
+                logger.info(String.format("Just dropped view %s_VIEW", triggerName));
             }
         } catch (Exception e) {
             logger.warn("Error removing " + triggerName + ": " + e.getMessage());
         }
     }
 
+    /**
+     * All the templates have ' escaped because the SQL is inserted into a view.  When returning the raw SQL
+     * for use as SQL it needs to be un-escaped.
+     */
+    @Override
+    public String createInitalLoadSqlFor(Node node, Trigger trigger) {
+        String sql = super.createInitalLoadSqlFor(node, trigger);
+        sql = sql.replace("''", "'");
+        return sql;
+    }
+    
     public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName,
             TriggerHistory oldHistory) {
-        removeTrigger(schemaName, triggerName, oldHistory);
+        removeTrigger(schemaName, triggerName, oldHistory);        
     }
 
     @Override
@@ -125,33 +89,25 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
-    public boolean isSyncEnabled() {
-        return syncEnabled.get();
-    }
-
-    public String getSyncNodeDisabled() {
-        return syncNodeDisabled.get();
-    }
-
     public void disableSyncTriggers(String nodeId) {
-        syncEnabled.set(Boolean.FALSE);
-        syncNodeDisabled.set(nodeId);
+        jdbcTemplate.update("set @sync_prevented=1");
+        jdbcTemplate.update("set @node_value=?", new Object[] {nodeId});
     }
 
     public void enableSyncTriggers() {
-        syncEnabled.set(Boolean.TRUE);
-        syncNodeDisabled.set(null);
+        jdbcTemplate.update("set @sync_prevented=null");
+        jdbcTemplate.update("set @node_value=null");
     }
 
     public String getSyncTriggersExpression() {
-        return "1 = 1";
+        return " @sync_prevented is null ";
     }
 
     /**
-     * This is not used by the H2 Java triggers
+     * An expression which the java trigger can string replace
      */
     public String getTransactionTriggerExpression(Trigger trigger) {
-        return "not used";
+        return H2Trigger.TX_REPLACEMENT_TOKEN;
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
@@ -202,8 +158,9 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
     public String getDefaultSchema() {
         return null;
     }
-
-    public void setInitializeDatabase(boolean initializeDatabase) {
-        this.initializeDatabase = initializeDatabase;
+    
+    public String getInitialLoadTableAlias() {
+        return "t.";
     }
+
 }

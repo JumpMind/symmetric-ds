@@ -122,15 +122,13 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     @Test
     public void validateTestTableTriggers() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
-
         assertTrue(count == 1);
         String csvString = getNextDataRow(getSymmetricEngine());
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
-        assertTrue(match, "Received " + csvString + ", Expected the string to end with "
+        assertTrue(match, "The full string we pulled from the database was " + csvString + " however, we expected the string to end with "
                 + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 

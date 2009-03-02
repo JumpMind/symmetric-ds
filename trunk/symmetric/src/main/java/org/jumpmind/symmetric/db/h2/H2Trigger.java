@@ -2,7 +2,6 @@
  * SymmetricDS is an open source database synchronization solution.
  *   
  * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
- *               Keith Naas <knaas@users.sourceforge.net>
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,154 +20,116 @@
 package org.jumpmind.symmetric.db.h2;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.sql.Statement;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.h2.engine.Session;
 import org.h2.jdbc.JdbcConnection;
-import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
-import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEventType;
-import org.jumpmind.symmetric.model.Node;
-import org.springframework.jdbc.core.RowMapper;
+import org.jumpmind.symmetric.util.AppUtils;
 
-public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Trigger {
+public class H2Trigger implements org.h2.api.Trigger {
 
-    static final Log logger = LogFactory.getLog(H2Trigger.class);
+    protected final Log logger = LogFactory.getLog(getClass());
+
+    protected static final FastDateFormat DATE_FORMATTER = FastDateFormat
+            .getInstance("yyyy-MM-dd HH:mm:ss.S");
+    static final String KEY_CONDITION_SQL = "CONDITION_SQL";
+    static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
+    static final String KEY_INSERT_DATA_EVENT_SQL = "INSERT_DATA_EVENT_SQL";
+    static final String KEY_EXCLUDED_COLUMN_INDEXES = "EXCLUDED_COLUMN_INDEXES";
+    public static final String TX_REPLACEMENT_TOKEN = "$<txReplacementToken>";
+
     protected String triggerName;
-    protected String schemaName;
-    protected String dataSelectSql;
-    protected String nodeSelectSql;
-    protected String transactionIdSql;
-    protected boolean conditionalExists;
-    protected boolean initialized = false;
-    protected Set<String> keywords;
+    protected Map<String, String> templates = new HashMap<String, String>();
+    protected int[] excludedIndexes = null;
 
-    public void fire(Connection conn, Object[] oldRow, Object[] newRow) {
+    /**
+     * This method is called by the database engine once when initializing the
+     * trigger.
+     * 
+     * @param conn
+     *            a connection to the database
+     * @param schemaName
+     *            the name of the schema
+     * @param triggerName
+     *            the name of the trigger used in the CREATE TRIGGER statement
+     * @param tableName
+     *            the name of the table
+     * @param before
+     *            whether the fire method is called before or after the
+     *            operation is performed
+     * @param type
+     *            the operation type: INSERT, UPDATE, or DELETE
+     */
+    public void init(Connection conn, String schemaName, String triggerName,
+            String tableName, boolean before, int type) throws SQLException {
+        this.triggerName = triggerName;
+        this.templates = getTemplates(conn);
+        this.excludedIndexes = AppUtils.toIntArray(templates
+                .get(KEY_EXCLUDED_COLUMN_INDEXES));
+    }
+
+    /**
+     * This method is called for each triggered action.
+     * 
+     * @param conn
+     *            a connection to the database
+     * @param oldRow
+     *            the old row, or null if no old row is available (for INSERT)
+     * @param newRow
+     *            the new row, or null if no new row is available (for DELETE)
+     * @throws SQLException
+     *             if the operation must be undone
+     */
+    public void fire(Connection conn, Object[] oldRow, Object[] newRow)
+            throws SQLException {
         try {
-            if (initialized) {
-                H2Dialect dialect = getDbDialect();
-                if (trigger.isSyncOnIncomingBatch() || dialect.isSyncEnabled() && isInsertDataEvent(oldRow, newRow)) {
-                    Data data = createData(oldRow, newRow);
-                    List<Node> nodes = findTargetNodes(oldRow, newRow);
-                    String disabledNodeId = dialect.getSyncNodeDisabled();
-                    if (disabledNodeId != null) {
-                        Node disabledNode = new Node();
-                        disabledNode.setNodeId(disabledNodeId);
-                        nodes.remove(disabledNode);
-                    }
-                    if (nodes != null) {
-                        dataService.insertDataEvent(data, trigger.getChannelId(),
-                                getTransactionId(conn, oldRow, newRow), nodes);
-                    }
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(fillVirtualTableSql(templates
+                    .get(KEY_CONDITION_SQL), oldRow, newRow));
+            if (rs.next() && rs.getInt(1) > 0) {
+                rs.close();
+                int count = stmt.executeUpdate(fillVirtualTableSql(templates
+                        .get(KEY_INSERT_DATA_SQL), oldRow, newRow));
+                if (count > 0) {
+                    stmt.executeUpdate(fillVirtualTableSql(templates.get(
+                            KEY_INSERT_DATA_EVENT_SQL).replace(
+                            TX_REPLACEMENT_TOKEN,
+                            getTransactionId(conn, oldRow, newRow)), oldRow,
+                            newRow));
                 }
             }
-        } catch (RuntimeException ex) {
+            stmt.close();
+        } catch(RuntimeException ex) {
+            logger.error(ex,ex);
+            throw ex;
+        } catch (SQLException ex) {
             logger.error(ex, ex);
             throw ex;
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected List<Node> findTargetNodes(Object[] oldRow, Object[] newRow) {
-        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, oldRow, newRow),
-                new RowMapper() {
-                    public Object mapRow(ResultSet rs, int index) throws SQLException {
-                        Node node = new Node();
-                        node.setNodeId(rs.getString(1));
-                        return node;
-                    }
-                });
-    }
-
-    protected boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
-        if (conditionalExists) {
-            return getDbDialect().getJdbcTemplate().queryForInt(fillVirtualTableSql(dataSelectSql, oldRow, newRow)) > 0;
-        } else {
-            return true;
-        }
-    }
-
-    protected void initializeMetadata(Connection conn) {
-        try {
-            DatabaseMetaData metaData = conn.getMetaData();
-            keywords = new HashSet<String>(Arrays.asList(metaData.getSQLKeywords().split(",")));
-        } catch (SQLException ex) {
-            throw new IllegalStateException("Unable to fetch keywords", ex);
-        }
-    }
-
-    public void init(Connection conn, String schemaName, String triggerName, String tableName, boolean before, int type) {
-        if (!initialized) {
-            this.schemaName = schemaName;
-            this.triggerName = triggerName;
-            initializeMetadata(conn);
-            if (initialize(getDataEventType(type), tableName)) {
-                buildDataSelectSql();
-                buildNodeSelectSql();
-                buildTransactionIdSql();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("initializing " + this.triggerName + " for " + triggerType);
-                }
-                initialized = true;
-            }
-        }
-    }
-
-    protected String buildVirtualTableSql() {
-        StringBuilder b = new StringBuilder("(select ");
-        for (String column : includedColumns) {
-            b.append("? as ");
-            if (keywords.contains(column) || column.indexOf(" ") != -1) {
-                b.append("\"new_").append(column).append("\",");
-            } else {
-                b.append("new_").append(column).append(",");
-            }
-        }
-
-        for (String column : includedColumns) {
-            b.append("? as ");
-            if (keywords.contains(column) || column.indexOf(" ") != -1) {
-                b.append("\"old_").append(column).append("\",");
-            } else {
-                b.append("old_").append(column).append(",");
-            }
-        }
-        b.deleteCharAt(b.length() - 1);
-        b.append(" from " + H2Dialect.DUAL_TABLE + ") t ");
-        return b.toString();
-    }
-
-    protected void buildTransactionIdSql() {
-        if (!StringUtils.isBlank(trigger.getTxIdExpression())) {
-            transactionIdSql = "select " + replaceOldNewTriggerTokens(trigger.getTxIdExpression()) + " from "
-                    + buildVirtualTableSql();
-        }
-    }
-
-    /**
-     * I wanted to do this as a preparedstatement but h2 doesn't seem to support
-     * it???
-     */
-    protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) {
-        Object[] values = ArrayUtils.addAll(getOrderedColumnValues(newRow), getOrderedColumnValues(oldRow));
+    protected String fillVirtualTableSql(String sql, Object[] oldRow,
+            Object[] newRow) throws SQLException {
+        Object[] values = ArrayUtils.addAll(getOrderedColumnValues(newRow),
+                getOrderedColumnValues(oldRow));
         StringBuilder out = new StringBuilder();
         String[] tokens = StringUtils.split(sql, "?");
         for (int i = 0; i < tokens.length; i++) {
             out.append(tokens[i]);
             if (i < values.length) {
                 Object value = values[i];
-                if (value instanceof String) {
+                if (value instanceof String || value instanceof Boolean) {
                     out.append("'");
                     out.append(value);
                     out.append("'");
@@ -176,108 +137,72 @@ public class H2Trigger extends AbstractEmbeddedTrigger implements org.h2.api.Tri
                     out.append(value);
                 } else if (value instanceof Date) {
                     out.append("'");
-                    out.append(AbstractEmbeddedTrigger.dateFormatter.format(value));
+                    out.append(DATE_FORMATTER.format(value));
                     out.append("'");
                 } else {
                     // anything else is unsupported
                     out.append("null");
                 }
-            } else {
-                out.append("");
+            } else if (i+1 != tokens.length) {
+                out.append("null");
             }
         }
         return out.toString();
     }
 
-    protected void buildNodeSelectSql() {
-        StringBuilder b = new StringBuilder("select node_id from ");
-        b.append(dbDialect.getTablePrefix());
-        b.append("_node c, ");
-        b.append(buildVirtualTableSql());
-        b.append("where c.node_group_id='");
-        b.append(trigger.getTargetGroupId());
-        b.append("' and c.sync_enabled=1 ");
-        b.append(replaceOldNewTriggerTokens(trigger.getNodeSelect()));
-        this.nodeSelectSql = b.toString();
-    }
-
-    protected void buildDataSelectSql() {
-        StringBuilder b = new StringBuilder("select count(*) from ");
-        b.append(buildVirtualTableSql());
-        switch (triggerType) {
-        case INSERT:
-            if (!StringUtils.isBlank(trigger.getSyncOnInsertCondition())) {
-                conditionalExists = true;
-                b.append("where ");
-                b.append(trigger.getSyncOnInsertCondition());
-            }
-            break;
-        case UPDATE:
-            if (!StringUtils.isBlank(trigger.getSyncOnUpdateCondition())) {
-                conditionalExists = true;
-                b.append("where ");
-                b.append(trigger.getSyncOnUpdateCondition());
-            }
-            break;
-        case DELETE:
-            if (!StringUtils.isBlank(trigger.getSyncOnDeleteCondition())) {
-                conditionalExists = true;
-                b.append("where ");
-                b.append(trigger.getSyncOnDeleteCondition());
-            }
-            break;
-        }
-
-        this.dataSelectSql = replaceOldNewTriggerTokens(b.toString());
-    }
-
-    protected String replaceOldNewTriggerTokens(String targetString) {
-        // This is a little hack to allow us to replace not only the old/new
-        // alias's, but also the column prefix for
-        // use in a virtual table we can match SQL expressions against.
-        targetString = StringUtils.replace(targetString, "$(newTriggerValue).", "$(newTriggerValue)");
-        targetString = StringUtils.replace(targetString, "$(oldTriggerValue).", "$(oldTriggerValue)");
-        targetString = StringUtils.replace(targetString, "$(curTriggerValue).", "$(curTriggerValue)");
-        return dbDialect.replaceTemplateVariables(triggerType, trigger, triggerHistory, targetString);
-    }
-
-    protected DataEventType getDataEventType(int type) {
-        switch (type) {
-        case org.h2.api.Trigger.INSERT:
-            return DataEventType.INSERT;
-        case org.h2.api.Trigger.UPDATE:
-            return DataEventType.UPDATE;
-        case org.h2.api.Trigger.DELETE:
-            return DataEventType.DELETE;
-        default:
-            throw new IllegalStateException("Unexpected trigger type: " + type);
-        }
-    }
-
-    protected H2Dialect getDbDialect() {
-        return (H2Dialect) dbDialect;
-    }
-
-    @Override
-    protected String getEngineName() {
-        String minusTriggerId = triggerName.substring(0, triggerName.lastIndexOf("_"));
-        return minusTriggerId.substring(minusTriggerId.lastIndexOf("_") + 1);
-    }
-
-    @Override
-    protected int getTriggerHistId() {
-        return Integer.parseInt(triggerName.substring(triggerName.lastIndexOf("_") + 1));
-    }
-
-    protected String getTransactionId(Connection c, Object[] oldRow, Object[] newRow) {
-        if (transactionIdSql == null) {
-            JdbcConnection con = (JdbcConnection) c;
-            Session session = (Session) con.getSession();
-            return String.format("%s-%s-%s", session.getId(), session.getFirstUncommittedLog(), session
-                    .getFirstUncommittedPos());
+    protected Object[] getOrderedColumnValues(Object[] allValues) {
+        if (allValues != null && excludedIndexes != null && excludedIndexes.length > 0) {
+            Object[] includedValues = new Object[allValues.length
+                    - excludedIndexes.length];
+            int includedIndex = 0;
+            for (int i = 0; i < allValues.length; i++) {
+                boolean include = true;
+                for (int j = 0; j < excludedIndexes.length; j++) {
+                    if (excludedIndexes[j] == i) {
+                        include = false;
+                    }
+                }
+                if (include) {
+                    includedValues[includedIndex++] = allValues[i];
+                }
+            }            
+            return includedValues;
         } else {
-            return (String) getDbDialect().getJdbcTemplate().queryForObject(
-                    fillVirtualTableSql(transactionIdSql, oldRow, newRow), String.class);
+            return allValues;
+        }
+                
+    }
+
+    protected Map<String, String> getTemplates(Connection conn)
+            throws SQLException {
+        Map<String, String> templates = new HashMap<String, String>();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(String.format("select * from %s_VIEW",
+                triggerName));
+        if (rs.next()) {
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                templates.put(metaData.getColumnName(i), rs.getString(i));
+            }
+            return templates;
+        } else {
+            throw new SQLException(
+                    String
+                            .format(
+                                    "%s is in an invalid state.  %s_VIEW did not return a row.",
+                                    triggerName, triggerName));
         }
     }
+
+    protected String getTransactionId(Connection c, Object[] oldRow,
+            Object[] newRow) {
+        JdbcConnection con = (JdbcConnection) c;
+        Session session = (Session) con.getSession();
+        return String.format("%s-%s-%s", session.getId(), session
+                .getFirstUncommittedLog(), session.getFirstUncommittedPos());
+    }
+    
+
+
 }
