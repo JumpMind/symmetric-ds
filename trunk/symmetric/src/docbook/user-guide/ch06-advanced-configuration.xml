@@ -128,7 +128,7 @@ values
                 As data is loaded into the target database, a filter can change the
                 data in a column or save it somewhere else.  It can also specify by the
                 return type of the function call that the data loader should continue on 
-                and load the data or ignore it.  One possible use of the filter might be to
+                and load the data (by returning true) or ignore it (by returning false). One possible use of the filter might be to
                 route credit card data to a secure database and blank it out as it loads 
                 into less-restricted reporting database.
             </para>
