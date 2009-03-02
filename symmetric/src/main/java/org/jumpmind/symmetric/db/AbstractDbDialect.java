@@ -35,11 +35,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
@@ -114,6 +117,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     private String databaseProductVersion;
 
     private String identifierQuoteString;
+    
+    private Set<String> sqlKeywords;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -280,6 +285,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
         }
         return retTable;
+    }
+    
+    public Set<String> getSqlKeywords() {
+        if (sqlKeywords == null) {
+            jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection con)
+                        throws SQLException, DataAccessException {
+                    DatabaseMetaData metaData = con.getMetaData();
+                    sqlKeywords = new HashSet<String>(Arrays.asList(metaData
+                            .getSQLKeywords().split(",")));
+                    return null;
+                }
+            });
+        }
+        return sqlKeywords;
     }
 
     public Table findTable(String catalogName, String schemaName, final String tblName) throws Exception {
@@ -1054,5 +1074,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public boolean supportsOpenCursorsAcrossCommit() {
         return true;
+    }
+    
+    public String getInitialLoadTableAlias() {
+        return "t";
     }
 }

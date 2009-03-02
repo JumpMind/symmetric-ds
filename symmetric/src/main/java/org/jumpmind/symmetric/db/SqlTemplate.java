@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db;
 
 import java.sql.Types;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -32,6 +33,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.util.AppUtils;
 
 public class SqlTemplate {
 
@@ -75,13 +77,13 @@ public class SqlTemplate {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString("t", "t", columns);
+        String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(), columns);
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("whereClause", trig.getInitialLoadSelect() == null ? "1=1" : trig.getInitialLoadSelect(), sql);
-        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString("t", metaData.getPrimaryKeyColumns()), sql);
+        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData.getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference domainNames and domainIds
@@ -183,7 +185,7 @@ public class SqlTemplate {
         }
         return targetTableName;
     }
-
+    
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema,
             String ddl) {
@@ -201,6 +203,8 @@ public class SqlTemplate {
 
         ddl = replace("triggerName", dialect.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength(), trigger, history)
                 .toUpperCase(), ddl);
+        String columnIndexesAsString = AppUtils.toString(trigger.getExcludedColumnIndexes(metaData));
+        ddl = replace("excludedColumnIndexes", columnIndexesAsString == null ? "null" : columnIndexesAsString, ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
@@ -220,9 +224,10 @@ public class SqlTemplate {
                 .getSyncTriggersExpression(), ddl);
         ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
-        Column[] columns = trigger.orderColumnsForTable(metaData);
+        Column[] columns = trigger.orderColumnsForTable(metaData);        
         String columnsText = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, columns);
         ddl = replace("columns", columnsText, ddl);
+        ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldTriggerValue, newTriggerValue, columns), ddl);
         if (trigger.isSyncColumnLevel()) {
             columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, columns);
         } else {
@@ -270,6 +275,45 @@ public class SqlTemplate {
         }
         return ddl;
     }
+    
+    private String buildVirtualTableSql(IDbDialect dialect, String oldTriggerValue, String newTriggerValue, Column[] columns) {
+        if (oldTriggerValue.indexOf(".") >= 0) {
+            oldTriggerValue = oldTriggerValue.substring(oldTriggerValue
+                    .indexOf(".")+1);
+        }
+        
+        if (newTriggerValue.indexOf(".") >= 0) {
+            newTriggerValue = newTriggerValue.substring(newTriggerValue
+                    .indexOf(".")+1);
+        }
+        
+        Set<String> sqlKeywords = dialect.getSqlKeywords();
+
+        StringBuilder b = new StringBuilder("(SELECT ");
+        for (Column columnType : columns) {
+            String column = columnType.getName();
+            b.append("? as ");
+            if (sqlKeywords.contains(column) || column.indexOf(" ") != -1) {
+                b.append("\"").append(newTriggerValue).append(column).append("\",");
+            } else {
+                b.append(newTriggerValue).append(column).append(",");
+            }
+        }
+
+        for (Column columnType : columns) {
+            String column = columnType.getName();
+            b.append("? AS ");
+            if (sqlKeywords.contains(column) || column.indexOf(" ") != -1) {
+                b.append("\"").append(oldTriggerValue).append(column).append("\",");
+            } else {
+                b.append(oldTriggerValue).append(column).append(",");
+            }
+        }
+        b.deleteCharAt(b.length() - 1);
+        b.append(" FROM DUAL) T ");
+        return b.toString();
+    }
+
 
     private String eval(boolean condition, String prop, String ddl) {
         if (ddl != null) {
@@ -445,10 +489,18 @@ public class SqlTemplate {
 
         }
 
-        String LAST_COMMAN_TOKEN = triggerConcatCharacter + "','" + triggerConcatCharacter;
+        String lastCommandToken = triggerConcatCharacter + "','" + triggerConcatCharacter;
 
-        if (columnsText.endsWith(LAST_COMMAN_TOKEN)) {
-            columnsText = columnsText.substring(0, columnsText.length() - LAST_COMMAN_TOKEN.length());
+        if (columnsText.endsWith(lastCommandToken)) {
+            columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());
+        }
+        
+        // H2 (and maybe other embedded java triggers) escape the ' character so it may be inserted into the 
+        // database as SQL that can be used by the trigger code.
+        lastCommandToken = triggerConcatCharacter + "'',''" + triggerConcatCharacter;
+
+        if (columnsText.endsWith(lastCommandToken)) {
+            columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());
         }
 
         columnsText = replace("origTableAlias", origTableAlias, columnsText);
