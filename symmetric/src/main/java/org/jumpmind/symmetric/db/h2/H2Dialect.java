@@ -74,6 +74,20 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         return sql;
     }
     
+    @Override
+    public String createCsvDataSql(Trigger trigger, String whereClause) {      
+        String sql = super.createCsvDataSql(trigger, whereClause);
+        sql = sql.replace("''", "'");
+        return sql;        
+    }
+    
+    @Override
+    public String createCsvPrimaryKeySql(Trigger trigger, String whereClause) {
+        String sql =  super.createCsvPrimaryKeySql(trigger, whereClause);
+        sql = sql.replace("''", "'");
+        return sql;        
+    }
+    
     public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName,
             TriggerHistory oldHistory) {
         removeTrigger(schemaName, triggerName, oldHistory);        
@@ -161,6 +175,14 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
     
     public String getInitialLoadTableAlias() {
         return "t.";
+    }
+    
+    @Override
+    public String preProcessTriggerSqlClause(String sqlClause) {  
+        sqlClause = sqlClause.replace("$(newTriggerValue).", "$(newTriggerValue)");
+        sqlClause = sqlClause.replace("$(oldTriggerValue).", "$(oldTriggerValue)");
+        sqlClause = sqlClause.replace("$(curTriggerValue).", "$(curTriggerValue)");
+        return sqlClause.replace("'", "''");
     }
 
 }

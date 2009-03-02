@@ -237,14 +237,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String createCsvDataSql(Trigger trigger, String whereClause) {
-        return sqlTemplate.createCsvDataSql(
+        return sqlTemplate.createCsvDataSql(this, 
                 trigger,
                 getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
     }
 
     public String createCsvPrimaryKeySql(Trigger trigger, String whereClause) {
-        return sqlTemplate.createCsvPrimaryKeySql(
+        return sqlTemplate.createCsvPrimaryKeySql(this,
                 trigger,
                 getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
@@ -1078,5 +1078,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     public String getInitialLoadTableAlias() {
         return "t";
+    }
+    
+    public String preProcessTriggerSqlClause(String sqlClause) {
+        return sqlClause;
     }
 }
