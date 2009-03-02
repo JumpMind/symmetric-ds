@@ -216,4 +216,6 @@ public interface IDbDialect {
     public Set<String> getSqlKeywords();
     
     public String getInitialLoadTableAlias();
+    
+    public String preProcessTriggerSqlClause(String sqlClause);
 }

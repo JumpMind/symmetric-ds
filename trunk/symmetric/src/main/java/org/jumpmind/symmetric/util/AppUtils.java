@@ -88,7 +88,7 @@ public class AppUtils {
             }
             return b.substring(0, b.length() - 1);
         }
-        return null;
+        return "";
     }
     
     public static int[] toIntArray(String commaSeparated) {
