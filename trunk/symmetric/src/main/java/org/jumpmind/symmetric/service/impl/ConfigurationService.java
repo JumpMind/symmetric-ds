@@ -431,16 +431,16 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setTargetGroupId(rs.getString("target_node_group_id"));
             trig.setExcludedColumnNames(rs.getString("excluded_column_names"));
             String condition = rs.getString("sync_on_insert_condition");
-            if (condition != null) {
+            if (!StringUtils.isBlank(condition)) {
                 trig.setSyncOnInsertCondition(condition);
             }
             condition = rs.getString("sync_on_update_condition");
-            if (condition != null) {
+            if (!StringUtils.isBlank(condition)) {
                 trig.setSyncOnUpdateCondition(condition);
             }
 
             condition = rs.getString("sync_on_delete_condition");
-            if (condition != null) {
+            if (!StringUtils.isBlank(condition)) {
                 trig.setSyncOnDeleteCondition(condition);
             }
             trig.setTxIdExpression(rs.getString("tx_id_expression"));
@@ -449,12 +449,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
             trig.setInactiveTime(rs.getTimestamp("inactive_time"));
             condition = rs.getString("node_select");
-            if (condition != null) {
+            if (!StringUtils.isBlank(condition)) {
                 trig.setNodeSelect(condition);
             }
 
             condition = rs.getString("initial_load_select");
-            if (condition != null) {
+            if (!StringUtils.isBlank(condition)) {
                 trig.setInitialLoadSelect(condition);
             }
 
