@@ -111,13 +111,30 @@
         <column name="Mixed_Case_Id" type="INTEGER" primaryKey="true" required="true" />
         <column name="Name" type="VARCHAR" size="50" required="true" />
     </table>
-    
+
     <table name="TEST_XML_PUBLISHER">
         <column name="ID1" type="INTEGER" primaryKey="true" required="true" />
         <column name="ID2" type="INTEGER" required="true" />
         <column name="DATA1" type="VARCHAR" size="10" />
         <column name="DATA2" type="INTEGER" />
         <column name="DATA3" type="TIMESTAMP" />
-    </table>    
+    </table>
+
+    <table name="TEST_ADDITIVE_DATA_LOADER_TABLE_1">
+        <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="PK2" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="ADD1" type="DECIMAL" size="10" />
+        <column name="ADD2" type="DECIMAL" size="10,2" />
+        <column name="ADD3" type="INTEGER" />
+        <column name="OVR1" type="DECIMAL" size="10,2" />
+        <column name="OVR2" type="INTEGER" />
+        <column name="OVR3" type="VARCHAR" size="10" />
+        <column name="NADA1" type="INTEGER" />
+    </table>
+
+    <table name="TEST_ADDITIVE_DATA_LOADER_TABLE_2">
+        <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="ADD1" type="DECIMAL" size="10" />
+    </table>
 
 </database>

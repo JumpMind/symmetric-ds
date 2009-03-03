@@ -44,3 +44,9 @@ values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, n
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
 values('test_sync_incoming_batch','test-root-group','test-node-group2','testchannel', 1, 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+
+-- AdditiveDataLoaderFilter test data
+insert into TEST_ADDITIVE_DATA_LOADER_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
+insert into TEST_ADDITIVE_DATA_LOADER_TABLE_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
+insert into TEST_ADDITIVE_DATA_LOADER_TABLE_2 values('k3',1);
+

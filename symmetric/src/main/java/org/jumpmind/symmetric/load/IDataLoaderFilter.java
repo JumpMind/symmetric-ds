@@ -28,19 +28,21 @@ import org.springframework.transaction.annotation.Transactional;
 public interface IDataLoaderFilter extends IExtensionPoint {
 
     /**
-     * @return true if the row should be loaded. false if the filter has handled
+     * @return True if the row should be loaded. False if the filter has handled
      *         the row and it should be ignored.
      */
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues);
 
     /**
-     * @return true if the row should be loaded. false if the filter has handled
+     * @param columnValues Contains 'new' values for both key and non-key columns
+     * @param keyValues Contains the 'old' values for the key columns
+     * @return True if the row should be loaded. False if the filter has handled
      *         the row and it should be ignored.
      */
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues);
 
     /**
-     * @return true if the row should be loaded. false if the filter has handled
+     * @return True if the row should be loaded. False if the filter has handled
      *         the row and it should be ignored.
      */
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues);

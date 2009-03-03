@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import org.jumpmind.symmetric.config.ParameterFilterTest;
 import org.jumpmind.symmetric.db.DbTriggerTest;
+import org.jumpmind.symmetric.ext.AdditiveDataLoaderFilterTest;
 import org.jumpmind.symmetric.ext.XmlPublisherFilterTest;
 import org.jumpmind.symmetric.extract.DataExtractorTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
@@ -47,7 +48,8 @@ import org.junit.runners.Suite.SuiteClasses;
         CrossCatalogSyncTest.class, FunkyDataTypesTest.class, NodeConcurrencyFilterTest.class,
         AcknowledgeServiceTest.class, ClusterServiceTest.class, DataExtractorServiceTest.class,
         DataLoaderServiceTest.class, NodeServiceTest.class, OutgoingBatchServiceTest.class, ParameterServiceTest.class,
-        PurgeServiceTest.class, RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class, CleanupTest.class })
+        PurgeServiceTest.class, RegistrationServiceTest.class, StatisticServiceTest.class,
+        XmlPublisherFilterTest.class,  AdditiveDataLoaderFilterTest.class, CleanupTest.class, })
 public class DatabaseTestSuite extends AbstractDatabaseTest {
 
     public static final String DEFAULT_TEST_PREFIX = "test";
