@@ -48,7 +48,6 @@ public class H2Trigger implements org.h2.api.Trigger {
     static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     static final String KEY_INSERT_DATA_EVENT_SQL = "INSERT_DATA_EVENT_SQL";
-    static final String KEY_EXCLUDED_COLUMN_INDEXES = "EXCLUDED_COLUMN_INDEXES";
     public static final String TX_REPLACEMENT_TOKEN = "$<txReplacementToken>";
 
     protected String triggerName;
