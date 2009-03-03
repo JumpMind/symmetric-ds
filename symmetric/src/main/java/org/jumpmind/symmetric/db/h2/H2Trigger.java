@@ -19,9 +19,11 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -76,7 +78,8 @@ public class H2Trigger implements org.h2.api.Trigger {
         this.triggerName = triggerName;
         this.templates = getTemplates(conn);
         if (templates == null || templates.size() == 0) {
-            throw new IllegalStateException(String.format("The '%s' SymmetricDS trigger is in an invalid state.  It needs to be dropped.", triggerName));
+            throw new IllegalStateException(String.format(
+                    "The '%s' SymmetricDS trigger is in an invalid state.  It needs to be dropped.", triggerName));
         }
     }
 
@@ -161,15 +164,16 @@ public class H2Trigger implements org.h2.api.Trigger {
             out.append("'");
         } else if (value instanceof Number) {
             out.append(value);
-        } else if (value instanceof ByteArrayInputStream) {
+        } else if (value instanceof ByteArrayInputStream || value instanceof BufferedInputStream) {
             out.append("'");
             try {
-                value = ByteUtils.convertBytesToString(IOUtils.toByteArray((ByteArrayInputStream) value));
+                value = ByteUtils.convertBytesToString(IOUtils.toByteArray((InputStream) value));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             out.append(value);
             out.append("'");
+
         } else if (value instanceof Date) {
             out.append("'");
             out.append(DATE_FORMATTER.format(value));
