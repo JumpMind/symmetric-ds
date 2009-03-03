@@ -116,6 +116,9 @@ public class H2Trigger implements org.h2.api.Trigger {
         }
     }
 
+    /**
+     * TODO Try this as a preparedstatement
+     */
     protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) throws SQLException {
         int columnCount = oldRow != null ? oldRow.length : newRow.length;
         StringBuilder out = new StringBuilder();
