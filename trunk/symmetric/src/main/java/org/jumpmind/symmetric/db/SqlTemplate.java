@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.util.AppUtils;
 
 public class SqlTemplate {
 
@@ -212,8 +211,6 @@ public class SqlTemplate {
 
         ddl = replace("triggerName", dialect.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength(),
                 trigger, history).toUpperCase(), ddl);
-        String columnIndexesAsString = AppUtils.toString(trigger.getExcludedColumnIndexes(metaData));
-        ddl = replace("excludedColumnIndexes", columnIndexesAsString == null ? "null" : columnIndexesAsString, ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
@@ -239,7 +236,7 @@ public class SqlTemplate {
         Column[] columns = trigger.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns);
         ddl = replace("columns", columnsText, ddl);
-        ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, columns),
+        ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
         if (trigger.isSyncColumnLevel()) {
             columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns);

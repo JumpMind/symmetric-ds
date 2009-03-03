@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import org.h2.engine.Session;
 import org.h2.jdbc.JdbcConnection;
 import org.h2.util.ByteUtils;
-import org.jumpmind.symmetric.util.AppUtils;
 
 public class H2Trigger implements org.h2.api.Trigger {
 
@@ -54,7 +53,6 @@ public class H2Trigger implements org.h2.api.Trigger {
 
     protected String triggerName;
     protected Map<String, String> templates = new HashMap<String, String>();
-    protected int[] excludedIndexes = null;
 
     /**
      * This method is called by the database engine once when initializing the
@@ -78,7 +76,6 @@ public class H2Trigger implements org.h2.api.Trigger {
             throws SQLException {
         this.triggerName = triggerName;
         this.templates = getTemplates(conn);
-        this.excludedIndexes = AppUtils.toIntArray(templates.get(KEY_EXCLUDED_COLUMN_INDEXES));
     }
 
     /**
@@ -94,23 +91,27 @@ public class H2Trigger implements org.h2.api.Trigger {
      *             if the operation must be undone
      */
     public void fire(Connection conn, Object[] oldRow, Object[] newRow) throws SQLException {
+        String sql = null;
         try {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(fillVirtualTableSql(templates.get(KEY_CONDITION_SQL), oldRow, newRow));
+            sql = fillVirtualTableSql(templates.get(KEY_CONDITION_SQL), oldRow, newRow);
+            ResultSet rs = stmt.executeQuery(sql);
             if (rs.next() && rs.getInt(1) > 0) {
                 rs.close();
-                int count = stmt.executeUpdate(fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow));
+                sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
+                int count = stmt.executeUpdate(sql);
                 if (count > 0) {
-                    stmt.executeUpdate(fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL).replace(
-                            TX_REPLACEMENT_TOKEN, getTransactionId(conn, oldRow, newRow)), oldRow, newRow));
+                    sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL).replace(TX_REPLACEMENT_TOKEN,
+                            getTransactionId(conn, oldRow, newRow)), oldRow, newRow);
+                    stmt.executeUpdate(sql);
                 }
             }
             stmt.close();
         } catch (RuntimeException ex) {
-            logger.error(ex, ex);
+            logger.error("Error during the firing of a SymmetricDS trigger.", ex);
             throw ex;
         } catch (SQLException ex) {
-            logger.error(ex, ex);
+            logger.error(String.format("Error executing the following SQL: %s", sql), ex);
             throw ex;
         }
     }
@@ -128,19 +129,11 @@ public class H2Trigger implements org.h2.api.Trigger {
 
     private int forEachColumn(int columnCount, Object[] data, StringBuilder out, int tokenIndex, String[] tokens) {
         for (int i = 0; i < columnCount; i++) {
-            boolean include = true;
-            for (int j = 0; excludedIndexes != null && j < excludedIndexes.length; j++) {
-                if (excludedIndexes[j] == i) {
-                    include = false;
-                }
-            }
-            if (include) {
-                out.append(tokens[tokenIndex++]);
-                if (data != null) {
-                    data[i] = appendVirtualTableStringValue(data[i], out);
-                } else {
-                    out.append("null");
-                }
+            out.append(tokens[tokenIndex++]);
+            if (data != null) {
+                data[i] = appendVirtualTableStringValue(data[i], out);
+            } else {
+                out.append("null");
             }
         }
         return tokenIndex;
@@ -180,28 +173,6 @@ public class H2Trigger implements org.h2.api.Trigger {
             throw new IllegalStateException(String.format("Type not supported: %s", value.getClass().getName()));
         }
         return value;
-    }
-
-    protected Object[] getOrderedColumnValues(Object[] allValues) {
-        if (allValues != null && excludedIndexes != null && excludedIndexes.length > 0) {
-            Object[] includedValues = new Object[allValues.length - excludedIndexes.length];
-            int includedIndex = 0;
-            for (int i = 0; i < allValues.length; i++) {
-                boolean include = true;
-                for (int j = 0; j < excludedIndexes.length; j++) {
-                    if (excludedIndexes[j] == i) {
-                        include = false;
-                    }
-                }
-                if (include) {
-                    includedValues[includedIndex++] = allValues[i];
-                }
-            }
-            return includedValues;
-        } else {
-            return allValues;
-        }
-
     }
 
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
