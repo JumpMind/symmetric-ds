@@ -49,7 +49,7 @@ import org.junit.runners.Suite.SuiteClasses;
         AcknowledgeServiceTest.class, ClusterServiceTest.class, DataExtractorServiceTest.class,
         DataLoaderServiceTest.class, NodeServiceTest.class, OutgoingBatchServiceTest.class, ParameterServiceTest.class,
         PurgeServiceTest.class, RegistrationServiceTest.class, StatisticServiceTest.class,
-        XmlPublisherFilterTest.class,  AdditiveDataLoaderFilterTest.class, CleanupTest.class, })
+        XmlPublisherFilterTest.class,  AdditiveDataLoaderFilterTest.class, CleanupTest.class })
 public class DatabaseTestSuite extends AbstractDatabaseTest {
 
     public static final String DEFAULT_TEST_PREFIX = "test";
