@@ -78,33 +78,6 @@ public class AppUtils {
     }
     
     /**
-     * TODO What commons utility does this?
-     */
-    public static String toString(int[] values) {
-        if (values != null && values.length > 0) {
-            StringBuilder b = new StringBuilder();
-            for (int i : values) {
-                b.append(i).append(",");
-            }
-            return b.substring(0, b.length() - 1);
-        }
-        return "";
-    }
-    
-    public static int[] toIntArray(String commaSeparated) {
-        if (commaSeparated != null && commaSeparated.length() > 0 && !commaSeparated.equals("null")) {
-            String[] values = commaSeparated.split(",");
-            int[] array = new int[values.length];
-            for (int i = 0; i < values.length; i++) {
-                array[i] = Integer.parseInt(values[i]);
-                
-            }
-           return array;
-        }
-        return null;
-    }
-
-    /**
      * Handy utility method to look up a SymmetricDS component given the bean
      * name.
      * 
