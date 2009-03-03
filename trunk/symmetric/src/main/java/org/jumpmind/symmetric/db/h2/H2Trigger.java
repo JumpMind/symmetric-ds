@@ -76,6 +76,9 @@ public class H2Trigger implements org.h2.api.Trigger {
             throws SQLException {
         this.triggerName = triggerName;
         this.templates = getTemplates(conn);
+        if (templates == null || templates.size() == 0) {
+            throw new IllegalStateException(String.format("The '%s' SymmetricDS trigger is in an invalid state.  It needs to be dropped.", triggerName));
+        }
     }
 
     /**
