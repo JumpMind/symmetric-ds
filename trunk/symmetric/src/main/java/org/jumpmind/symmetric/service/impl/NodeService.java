@@ -137,10 +137,8 @@ public class NodeService extends AbstractService implements INodeService {
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
         try {
             if (nodeId != null) {
-                List<NodeSecurity> list = jdbcTemplate.query(
-                        getSql("findNodeSecuritySql"), new Object[] { nodeId },
-                        new int[] { Types.VARCHAR },
-                        new NodeSecurityRowMapper());
+                List<NodeSecurity> list = jdbcTemplate.query(getSql("findNodeSecuritySql"), new Object[] { nodeId },
+                        new int[] { Types.VARCHAR }, new NodeSecurityRowMapper());
                 NodeSecurity security = (NodeSecurity) getFirstEntry(list);
                 if (security == null && createIfNotFound) {
                     insertNodeSecurity(nodeId);
@@ -148,8 +146,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
                 return security;
             } else {
-                logger
-                        .warn("A 'null' node id was passed into findNodeSecurity");
+                logger.warn("A 'null' node id was passed into findNodeSecurity");
                 return null;
             }
         } catch (DataIntegrityViolationException ex) {
@@ -341,30 +338,34 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     private NodeStatus getDataLoadStatus() {
-
-        class DataLoadStatus {
-            int initialLoadEnabled;
-            Date initialLoadTime;
-        }
-
-        List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
-            public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-                DataLoadStatus status = new DataLoadStatus();
-                status.initialLoadEnabled = rs.getInt(1);
-                status.initialLoadTime = rs.getTimestamp(2);
-                return status;
+        try {
+            class DataLoadStatus {
+                int initialLoadEnabled;
+                Date initialLoadTime;
             }
-        });
 
-        if (results.size() > 0) {
-            DataLoadStatus status = results.get(0);
-            if (status.initialLoadEnabled == 1) {
-                return NodeStatus.DATA_LOAD_STARTED;
-            } else if (status.initialLoadTime != null) {
-                return NodeStatus.DATA_LOAD_COMPLETED;
+            List<DataLoadStatus> results = jdbcTemplate.query(getSql("getDataLoadStatusSql"), new RowMapper() {
+                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                    DataLoadStatus status = new DataLoadStatus();
+                    status.initialLoadEnabled = rs.getInt(1);
+                    status.initialLoadTime = rs.getTimestamp(2);
+                    return status;
+                }
+            });
+
+            if (results.size() > 0) {
+                DataLoadStatus status = results.get(0);
+                if (status.initialLoadEnabled == 1) {
+                    return NodeStatus.DATA_LOAD_STARTED;
+                } else if (status.initialLoadTime != null) {
+                    return NodeStatus.DATA_LOAD_COMPLETED;
+                }
             }
+            return NodeStatus.DATA_LOAD_NOT_STARTED;
+        } catch (Exception ex) {
+            logger.error(ex, ex);
+            return NodeStatus.STATUS_UNKNOWN;
         }
-        return NodeStatus.DATA_LOAD_NOT_STARTED;
     }
 
 }
