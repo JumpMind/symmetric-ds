@@ -40,20 +40,27 @@ final public class Version {
     private static final int MINOR_INDEX = 1;
 
     private static final int PATCH_INDEX = 2;
+    
+    private static String version = null;
 
     public static String version() {
-        InputStream is = Version.class
-                .getResourceAsStream("/META-INF/maven/org.jumpmind.symmetric/symmetric/pom.properties");
-        if (is != null) {
-            Properties p = new Properties();
-            try {
-                p.load(is);
-                return p.getProperty("version");
-            } catch (IOException e) {
-                log.warn(e, e);
+        if (version == null) {
+            InputStream is = Version.class
+                    .getResourceAsStream("/META-INF/maven/org.jumpmind.symmetric/symmetric/pom.properties");
+            if (is != null) {
+                Properties p = new Properties();
+                try {
+                    p.load(is);
+                    version = p.getProperty("version");
+                } catch (IOException e) {
+                    version = "unknown";
+                    log.warn(e, e);
+                }
+            } else {
+            version = "development";
             }
         }
-        return "development";
+        return version;
     }
 
     public static int[] parseVersion(String version) {
