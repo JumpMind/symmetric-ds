@@ -46,7 +46,7 @@ insert into sym_trigger
 values('test_sync_incoming_batch','test-root-group','test-node-group2','testchannel', 1, 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
 
 -- AdditiveDataLoaderFilter test data
-insert into TEST_ADDITIVE_DATA_LOADER_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
-insert into TEST_ADDITIVE_DATA_LOADER_TABLE_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
-insert into TEST_ADDITIVE_DATA_LOADER_TABLE_2 values('k3',1);
+insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);
+insert into TEST_ADD_DL_TABLE_1 values('k5','k6',1,3.0,5,7.0,9,'11',13);
+insert into TEST_ADD_DL_TABLE_2 values('k3',1);
 
