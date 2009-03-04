@@ -63,11 +63,15 @@ public class PullService extends AbstractService implements IPullService {
                 for (Node node : nodes) {
                     String nodeName = " for " + node;
                     try {
-                        logger.info("Pull requested" + nodeName);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Pull requested" + nodeName);
+                        }
                         if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
                             logger.info("Pull data received" + nodeName);
                         } else {
-                            logger.info("Pull no data received" + nodeName);
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Pull no data received" + nodeName);
+                            }
                         }
                     } catch (ConnectException ex) {
                         logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
