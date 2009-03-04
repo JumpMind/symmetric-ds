@@ -58,7 +58,6 @@
             <value>40001</value>
         </property>
     </bean>
-50200-107
 
     <bean id="H2" class="org.springframework.jdbc.support.SQLErrorCodes">
         <property name="badSqlGrammarCodes">
