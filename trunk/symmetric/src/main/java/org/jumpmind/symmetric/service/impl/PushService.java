@@ -66,11 +66,15 @@ public class PushService extends AbstractService implements IPushService {
             List<Node> nodes = nodeService.findNodesToPushTo();
             if (nodes != null && nodes.size() > 0) {
                 for (Node node : nodes) {
-                    logger.info("Push requested for " + node);
+                    if (logger.isDebugEnabled()) {
+                        logger.info("Push requested for " + node);
+                    }
                     if (pushToNode(node)) {
-                        logger.info("Push completed for " + node);
+                        if (logger.isDebugEnabled()) {
+                            logger.info("Push completed for " + node);
+                        }
                     } else {
-                        logger.info("Push unsuccessful for " + node);
+                        logger.warn("Push unsuccessful for " + node);
                     }
                 }
             }
