@@ -1,9 +1,7 @@
-package org.jumpmind.symmetric.ext;
-
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Mark Hanes <eegeek@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +17,7 @@ package org.jumpmind.symmetric.ext;
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.ext;
 
 import java.util.ArrayList;
 import java.util.List;
