@@ -14,8 +14,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
-    private static final String TABLE_TEST_1 = "TEST_ADDITIVE_DATA_LOADER_TABLE_1";
-    private static final String TABLE_TEST_2 = "TEST_ADDITIVE_DATA_LOADER_TABLE_2";
+    private static final String TABLE_TEST_1 = "TEST_ADD_DL_TABLE_1";
+    private static final String TABLE_TEST_2 = "TEST_ADD_DL_TABLE_2";
 
     private DataLoaderContext ctx1;
     private AdditiveDataLoaderFilter filter;

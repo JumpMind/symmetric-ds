@@ -120,7 +120,7 @@
         <column name="DATA3" type="TIMESTAMP" />
     </table>
 
-    <table name="TEST_ADDITIVE_DATA_LOADER_TABLE_1">
+    <table name="TEST_ADD_DL_TABLE_1">
         <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
         <column name="PK2" type="VARCHAR" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
@@ -132,7 +132,7 @@
         <column name="NADA1" type="INTEGER" />
     </table>
 
-    <table name="TEST_ADDITIVE_DATA_LOADER_TABLE_2">
+    <table name="TEST_ADD_DL_TABLE_2">
         <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
     </table>
