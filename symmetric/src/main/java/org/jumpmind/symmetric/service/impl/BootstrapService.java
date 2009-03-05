@@ -146,17 +146,23 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
      * trigger existed), then should we auto-resync data?
      */
     synchronized public void syncTriggers() {
-        if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
-            try {
-                logger.info("Synchronizing triggers");
-                removeInactiveTriggers();
-                updateOrCreateSymTriggers();
-            } finally {
-                clusterService.unlock(LockAction.SYNCTRIGGERS);
-                logger.info("Done synchronizing triggers");
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
+                try {
+                    logger.info("Synchronizing triggers");
+                    removeInactiveTriggers();
+                    updateOrCreateSymTriggers();
+                } finally {
+                    clusterService.unlock(LockAction.SYNCTRIGGERS);
+                    logger.info("Done synchronizing triggers");
+                }
+            } else {
+                logger
+                        .warn("Did not run the syncTriggers process because the cluster service has it locked");
             }
         } else {
-            logger.warn("Did not run the syncTriggers process because the cluster service has it locked");
+            logger
+                    .info("Not syncing triggers.  Auto syncrhonization of triggers has been disabled.");
         }
     }
 
