@@ -28,6 +28,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -146,14 +147,6 @@ public class SqlTemplate {
             return functionTemplatesToInstall.keySet().toArray(new String[functionTemplatesToInstall.size()]);
         } else {
             return new String[0];
-        }
-    }
-
-    public String createFunctionDDL(String name) {
-        if (functionTemplatesToInstall != null) {
-            return functionTemplatesToInstall.get(name);
-        } else {
-            return null;
         }
     }
 
@@ -667,7 +660,9 @@ public class SqlTemplate {
 
     public String getFunctionSql(String functionName) {
         if (this.functionTemplatesToInstall != null) {
-            return this.functionTemplatesToInstall.get(functionName);
+            String ddl = replace("functionName", functionName, this.functionTemplatesToInstall.get(functionName));
+            ddl = replace("version", Version.versionWithUnderscores(), ddl);
+            return ddl;
         } else {
             return null;
         }
@@ -676,6 +671,7 @@ public class SqlTemplate {
     public String getFunctionInstalledSql(String functionName) {
         if (functionInstalledSql != null) {
             String ddl = replace("functionName", functionName, functionInstalledSql);
+            ddl = replace("version", Version.versionWithUnderscores(), ddl);
             return ddl;
         } else {
             return null;

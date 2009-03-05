@@ -32,12 +32,11 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(H2Dialect.class);
     private boolean storesUpperCaseNames = true;
-    
-    protected void initForSpecificDialect() {
-        jdbcTemplate
-                .update("CREATE ALIAS IF NOT EXISTS BASE64_ENCODE for \"org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64\"");
-    }
 
+    @Override
+    protected void initForSpecificDialect() {
+    }
+    
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         boolean exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                 new Object[] { triggerName }) > 0;
@@ -121,7 +120,7 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
      * An expression which the java trigger can string replace
      */
     public String getTransactionTriggerExpression(Trigger trigger) {
-        return H2Trigger.TX_REPLACEMENT_TOKEN;
+        return "SYM_TRANSACTION_ID()";
     }
 
     public String getSelectLastInsertIdSql(String sequenceName) {
