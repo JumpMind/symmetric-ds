@@ -33,14 +33,15 @@ import org.apache.commons.lang.StringUtils;
  */
 final public class Version {
 
-    static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(Version.class);
+    static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
+            .getLog(Version.class);
 
     private static final int MAJOR_INDEX = 0;
 
     private static final int MINOR_INDEX = 1;
 
     private static final int PATCH_INDEX = 2;
-    
+
     private static String version = null;
 
     public static String version() {
@@ -57,10 +58,14 @@ final public class Version {
                     log.warn(e, e);
                 }
             } else {
-            version = "development";
+                version = "development";
             }
         }
         return version;
+    }
+
+    public static String versionWithUnderscores() {
+        return version().replace("[\\.\\-]", "_");
     }
 
     public static int[] parseVersion(String version) {
@@ -80,7 +85,7 @@ final public class Version {
         }
         return versions;
     }
-    
+
     private static int parseVersionComponent(String versionComponent) {
         int version = 0;
         try {
@@ -105,18 +110,19 @@ final public class Version {
     public static boolean isOlderVersion(String version) {
         return isOlderThanVersion(version, version());
     }
-    
-    public static boolean isOlderThanVersion(String checkVersion, String targetVersion) {
+
+    public static boolean isOlderThanVersion(String checkVersion,
+            String targetVersion) {
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
         if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX] &&
-                checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
+        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
+                && checkVersions[MINOR_INDEX] < targetVersions[MINOR_INDEX]) {
             return true;
-        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX] &&
-                checkVersions[MINOR_INDEX] == targetVersions[MINOR_INDEX] &&
-                checkVersions[PATCH_INDEX] < targetVersions[PATCH_INDEX]) {
+        } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
+                && checkVersions[MINOR_INDEX] == targetVersions[MINOR_INDEX]
+                && checkVersions[PATCH_INDEX] < targetVersions[PATCH_INDEX]) {
             return true;
         }
         return false;

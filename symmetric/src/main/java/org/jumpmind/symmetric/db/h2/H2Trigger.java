@@ -38,8 +38,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.h2.engine.Session;
-import org.h2.jdbc.JdbcConnection;
 import org.h2.util.ByteUtils;
 
 public class H2Trigger implements org.h2.api.Trigger {
@@ -50,7 +48,6 @@ public class H2Trigger implements org.h2.api.Trigger {
     static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     static final String KEY_INSERT_DATA_EVENT_SQL = "INSERT_DATA_EVENT_SQL";
-    public static final String TX_REPLACEMENT_TOKEN = "$<txReplacementToken>";
 
     protected String triggerName;
     protected Map<String, String> templates = new HashMap<String, String>();
@@ -106,8 +103,7 @@ public class H2Trigger implements org.h2.api.Trigger {
                 sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
                 int count = stmt.executeUpdate(sql);
                 if (count > 0) {
-                    sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL).replace(TX_REPLACEMENT_TOKEN,
-                            getTransactionId(conn, oldRow, newRow)), oldRow, newRow);
+                    sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL), oldRow, newRow);
                     stmt.executeUpdate(sql);
                 }
             }
@@ -199,13 +195,6 @@ public class H2Trigger implements org.h2.api.Trigger {
             throw new SQLException(String.format("%s is in an invalid state.  %s_VIEW did not return a row.",
                     triggerName, triggerName));
         }
-    }
-
-    protected String getTransactionId(Connection c, Object[] oldRow, Object[] newRow) {
-        JdbcConnection con = (JdbcConnection) c;
-        Session session = (Session) con.getSession();
-        return String.format("'%s-%s-%s'", session.getId(), session.getFirstUncommittedLog(), session
-                .getFirstUncommittedPos());
     }
 
 }
