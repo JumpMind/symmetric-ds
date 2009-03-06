@@ -74,7 +74,7 @@ public class PullService extends AbstractService implements IPullService {
                             }
                         }
                     } catch (ConnectException ex) {
-                        logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + node.getSyncURL());
+                        logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node.getSyncURL()));
                     } catch (ConnectionRejectedException ex) {
                         logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
                     } catch (AuthenticationException ex) {
