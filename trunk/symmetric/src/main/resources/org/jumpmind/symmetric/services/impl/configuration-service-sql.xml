@@ -8,49 +8,45 @@
   default-lazy-init="true">
 
   <util:map id="rootConfigChannelInitialLoadSelect">
+    <!-- Lets keep it simple.  Sync to everyone the configuration for everyone. -->
     <entry key="$[sym.sync.table.prefix]_node_group">
-      <value>
-        node_group_id = '$(groupId)' or node_group_id in (select source_node_group_id from
-        $[sym.sync.table.prefix]_node_group_link where target_node_group_id = '$(groupId)') or
-        node_group_id in (select target_node_group_id from $[sym.sync.table.prefix]_node_group_link
-        where source_node_group_id = '$(groupId)')
-      </value>
+      <value>1=1</value>
     </entry>
     <entry key="$[sym.sync.table.prefix]_node_group_link">
-      <value>source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)'</value>
+      <value>1=1</value>
     </entry>
+    <entry key="$[sym.sync.table.prefix]_parameter">
+      <value>1=1</value>
+    </entry>
+    <entry key="$[sym.sync.table.prefix]_channel">
+      <value>1=1</value>
+    </entry>
+    <entry key="$[sym.sync.table.prefix]_trigger">
+      <value>1=1</value>
+    </entry> 
     <entry key="$[sym.sync.table.prefix]_node">
       <value>
-        node_id = '$(nodeId)' or node_group_id in (select source_node_group_id from
+        node_id = '$(nodeId)' or (node_group_id in (select source_node_group_id from
         $[sym.sync.table.prefix]_node_group_link where target_node_group_id = '$(groupId)') or
         node_group_id in (select target_node_group_id from $[sym.sync.table.prefix]_node_group_link
-        where source_node_group_id = '$(groupId)')
+        where source_node_group_id = '$(groupId)') and created_at_node_id=(select node_id from $[sym.sync.table.prefix]_node_identity))
       </value>
     </entry>
     <entry key="$[sym.sync.table.prefix]_node_security">
       <value>
-        node_id = '$(nodeId)' or node_id in (select s.node_id from $[sym.sync.table.prefix]_node s inner
-        join $[sym.sync.table.prefix]_node_group_link l on s.node_group_id = l.source_node_group_id
-        where l.target_node_group_id = '$(groupId)') or node_id in (select s.node_id from
-        $[sym.sync.table.prefix]_node s inner join $[sym.sync.table.prefix]_node_group_link l on
-        s.node_group_id = l.target_node_group_id where l.source_node_group_id = '$(groupId)')
+        node_id = '$(nodeId)' 
+        or node_id in (select s.node_id from $[sym.sync.table.prefix]_node s inner join $[sym.sync.table.prefix]_node_group_link l 
+          on s.node_group_id = l.source_node_group_id
+          where l.target_node_group_id = '$(groupId)' 
+          and s.created_at_node_id=(select node_id from $[sym.sync.table.prefix]_node_identity)) 
+        or node_id in (select s.node_id from $[sym.sync.table.prefix]_node s inner join $[sym.sync.table.prefix]_node_group_link l 
+          on s.node_group_id = l.target_node_group_id 
+          where l.source_node_group_id = '$(groupId)'
+          and s.created_at_node_id=(select node_id from $[sym.sync.table.prefix]_node_identity))
       </value>
-    </entry>
-    <entry key="$[sym.sync.table.prefix]_parameter">
-      <value>(external_id='ALL' and node_group_id = 'ALL') or (external_id='ALL' and node_group_id = '$(groupId)') or (node_group_id='ALL' and external_id='$(externalId)')</value>
-    </entry>
-    <entry key="$[sym.sync.table.prefix]_channel">
-      <value>
-        channel_id in (select channel_id from $[sym.sync.table.prefix]_trigger where
-        source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)')
-        or channel_id = 'reload' or channel_id = 'config'
-      </value>
-    </entry>
+    </entry>   
     <entry key="$[sym.sync.table.prefix]_node_channel_ctl">
       <value>node_id = '$(nodeId)'</value>
-    </entry>
-    <entry key="$[sym.sync.table.prefix]_trigger">
-      <value>source_node_group_id = '$(groupId)' or target_node_group_id = '$(groupId)'</value>
     </entry>
   </util:map>
 

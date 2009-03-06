@@ -91,7 +91,7 @@ public class SqlTemplate {
                 .getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
-        // reference domainNames and domainIds
+        // reference the node that is being loaded
         sql = replace("groupId", node.getNodeGroupId(), sql);
         sql = replace("externalId", node.getExternalId(), sql);
         sql = replace("nodeId", node.getNodeId(), sql);
