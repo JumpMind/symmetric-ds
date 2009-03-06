@@ -46,7 +46,7 @@
       </value>
     </entry>   
     <entry key="$[sym.sync.table.prefix]_node_channel_ctl">
-      <value>node_id = '$(nodeId)'</value>
+      <value>node_id in (select s.node_id from $[sym.sync.table.prefix]_node s where s.created_at_node_id=(select node_id from $[sym.sync.table.prefix]_node_identity))</value>
     </entry>
   </util:map>
 
