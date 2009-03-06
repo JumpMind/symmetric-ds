@@ -125,9 +125,10 @@ public class SymmetricLauncher {
             }
 
             // validate that block-size has been set
-            if (line.hasOption(OPTION_PROPERTIES_FILE)) {
+            if (line.hasOption(OPTION_PROPERTIES_FILE)) {                
                 propertiesFile =
                         "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
+                System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1,propertiesFile);
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE))
                         .exists()) {
                     throw new ParseException(
