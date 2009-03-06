@@ -29,6 +29,7 @@ public class TableConstants {
     public static final String SYM_NODE = "node";
     public static final String SYM_NODE_SECURITY = "node_security";
     public static final String SYM_NODE_IDENTITY = "node_identity";
+    public static final String SYM_NODE_CHANNEL_CTL = "node_channel_ctl";
     public static final String SYM_CHANNEL = "channel";
     public static final String SYM_NODE_GROUP = "node_group";
     public static final String SYM_NODE_GROUP_LINK = "node_group_link";
@@ -40,6 +41,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NODE));
         tables.add(getTableName(tablePrefix, SYM_NODE_SECURITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
+        tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
         return tables;
     }
 
