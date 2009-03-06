@@ -99,7 +99,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     abstract Log getLogger();
 
     protected void reschedule() {
-        final Timer timer = new Timer();
+        final Timer timer = new Timer(getClass().getName().substring(getClass().getName().lastIndexOf(".")+1).toLowerCase());
         timer.schedule((TimerTask) beanFactory.getBean(beanName), rescheduleImmediately ? 0 : parameterService.getLong(rescheduleDelayParameter));
         rescheduleImmediately = false;
         if (getLogger().isDebugEnabled()) {
