@@ -123,13 +123,13 @@ public class PushService extends AbstractService implements IPushService {
             }
             success = true;
         } catch (ConnectException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + remote.getSyncURL() == null ? parameterService.getRegistrationUrl() : remote.getSyncURL());
+            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + (remote.getSyncURL() == null ? parameterService.getRegistrationUrl() : remote.getSyncURL()));
         } catch (ConnectionRejectedException ex) {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
         } catch (SocketException ex) {
-            logger.warn(ex.getMessage());
+                logger.warn(ex.getMessage());
         } catch (TransportException ex) {
-            logger.warn(ex.getMessage());
+                logger.warn(ex.getMessage());
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Exception e) {

@@ -185,7 +185,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * 
      * @param in
      */
-    protected List<IncomingBatchHistory> loadDataAndReturnBatches(IIncomingTransport transport) {
+    protected List<IncomingBatchHistory> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
         List<IncomingBatchHistory> list = new ArrayList<IncomingBatchHistory>();
         IncomingBatch status = null;
@@ -202,17 +202,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         } catch (RegistrationRequiredException ex) {
             throw ex;
-        } catch (ConnectException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT);
+        } catch (ConnectException ex) {            
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
+            throw ex;
         } catch (UnknownHostException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
+            throw ex;
         } catch (RegistrationNotOpenException ex) {
             logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
         } catch (ConnectionRejectedException ex) {
             logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
+            throw ex;
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Throwable e) {
@@ -266,7 +268,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    public boolean loadData(IIncomingTransport transport) {
+    public boolean loadData(IIncomingTransport transport) throws IOException {
         boolean inError = false;
         List<IncomingBatchHistory> list = loadDataAndReturnBatches(transport);
         if (list != null && list.size() > 0) {

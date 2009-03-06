@@ -44,7 +44,7 @@ public interface IDataLoaderService {
     public boolean loadData(Node remote, Node local) throws IOException;
 
     @Transactional
-    public boolean loadData(IIncomingTransport reader);
+    public boolean loadData(IIncomingTransport reader) throws IOException;
 
     @Transactional
     public void loadData(InputStream in, OutputStream out) throws IOException;
