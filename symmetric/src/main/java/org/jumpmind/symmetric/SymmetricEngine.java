@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -101,7 +102,13 @@ public class SymmetricEngine {
     public SymmetricEngine(String... overridePropertiesResources) {
         this(null, overridePropertiesResources);
     }
-    
+
+    /**
+     * Create a SymmetricDS instance using an existing {@link ApplicationContext} as the parent.  This
+     * gives the SymmetricDS context access to beans in the parent context.
+     * @param parentContext
+     * @param overridePropertiesResources
+     */
     public SymmetricEngine(ApplicationContext parentContext, String... overridePropertiesResources) {
         String one = null;
         String two = null;
@@ -115,14 +122,15 @@ public class SymmetricEngine {
     }
 
     /**
-     * Create a SymmetricDS node
+     * Create a SymmetricDS node.  This constructor creates a new {@link ApplicationContext} using
+     * SymmetricDS's classpath:/symmetric.xml.
      */
     public SymmetricEngine() {
         init(createContext(null));
     }
 
     /**
-     * Pass in the Spring context to be used. The context needs to load classpath:/symmetric.xml.
+     * Pass in the {@link ApplicationContext} to be used. The context passed in needs to load classpath:/symmetric.xml.
      * 
      * @param ctx
      *                A Spring framework context to use for this SymmetricEngine
@@ -370,6 +378,14 @@ public class SymmetricEngine {
      */
     public void syncTriggers() {
         bootstrapService.syncTriggers();
+    }
+    
+    /**
+     * Get the current status of this node.
+     * @return {@link NodeStatus}
+     */
+    public NodeStatus getNodeStatus() {
+        return nodeService.getNodeStatus();
     }
 
     /**

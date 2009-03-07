@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
@@ -131,5 +132,9 @@ public class MockNodeService implements INodeService {
 
     public boolean isDataLoadStarted() {      
         return false;
+    }
+    
+    public NodeStatus getNodeStatus() {
+        return null;
     }
 }

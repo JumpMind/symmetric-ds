@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.ext.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.NodeStatus;
 
 /**
  * This service provides an API to access {@link Node}s and Node related
@@ -86,12 +87,19 @@ public interface INodeService {
     public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
 
     /**
-     * Returns true if a data load has occurred and has been completed.
+     * @return true if a data load has occurred and has been completed.
      */
     public boolean isDataLoadCompleted();
 
     /**
-     * Returns true if a data load has started but not yet completed.
+     * @return true if a data load has started but not yet completed.
      */
     public boolean isDataLoadStarted();
+    
+    /**
+     * Get the current status of this node.
+     * 
+     * @return {@link NodeStatus}
+     */
+    public NodeStatus getNodeStatus();
 }
