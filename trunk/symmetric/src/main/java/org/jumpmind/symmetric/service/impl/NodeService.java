@@ -329,15 +329,15 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public boolean isDataLoadCompleted() {
-        return getDataLoadStatus() == NodeStatus.DATA_LOAD_COMPLETED;
+        return getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED;
     }
 
     public boolean isDataLoadStarted() {
-        return getDataLoadStatus() == NodeStatus.DATA_LOAD_STARTED;
+        return getNodeStatus() == NodeStatus.DATA_LOAD_STARTED;
     }
 
     @SuppressWarnings("unchecked")
-    private NodeStatus getDataLoadStatus() {
+    public NodeStatus getNodeStatus() {
         try {
             class DataLoadStatus {
                 int initialLoadEnabled;
