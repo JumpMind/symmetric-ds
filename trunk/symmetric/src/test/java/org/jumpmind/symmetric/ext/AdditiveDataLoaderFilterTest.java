@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +57,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         filter.setOverrideColumnNames(new String[] { "OVR1", "OVR2", "OVR3" });
     }
 
+    @ParameterExcluder(value="postgres")
     @Test
     public void testNonFilteredTable() {
         ctx2.setOldData(new String[] { "k1", "0" });
@@ -64,6 +66,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         Assert.assertTrue(filter.filterDelete(ctx2, new String[] { "k1" }));
     }
 
+    @ParameterExcluder(value="postgres")
     @Test
     public void testInsertNonExistent() {
         ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
@@ -71,6 +74,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
                 "5", "6" }));
     }
 
+    @ParameterExcluder(value="postgres")
     @Test
     public void testDelete() {
         ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
@@ -82,6 +86,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         }
     }
 
+    @ParameterExcluder(value="postgres")
     @Test
     public void testUpdateNonExistent() {
         ctx1.setOldData(new String[] { "k1", "k2", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
@@ -91,6 +96,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         Assert.assertFalse(result);
     }
 
+    @ParameterExcluder(value="postgres")
     @Test
     public void testInsertExists() {
         ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
