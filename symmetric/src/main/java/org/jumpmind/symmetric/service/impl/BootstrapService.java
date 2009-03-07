@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.service.LockAction;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -74,6 +75,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private INodeService nodeService;
 
     private IDataService dataService;
+    
+    private IOutgoingBatchService outgoingBatchService;
 
     private IUpgradeService upgradeService;
 
@@ -380,11 +383,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
         }
 
-        for (Node node : heartbeatNodesToPush) {
-            if (!configurationService.isRegistrationServer()) {
-                dataService.insertHeartbeatEvent(node);
+        if (!configurationService.isRegistrationServer()) {
+            for (Node node : heartbeatNodesToPush) {
+                // don't send new heart beat events if we haven't sent the last ones ...
+                if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node.getNodeId())) {
+                    dataService.insertHeartbeatEvent(node);
+                }
             }
-
         }
     }
 
@@ -476,6 +481,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     public void setDefaultChannels(List<Channel> defaultChannels) {
         this.defaultChannels = defaultChannels;
+    }
+
+    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+        this.outgoingBatchService = outgoingBatchService;
     }
 
 }

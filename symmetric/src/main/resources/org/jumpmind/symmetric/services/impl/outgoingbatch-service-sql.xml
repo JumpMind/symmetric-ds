@@ -10,10 +10,14 @@
   <util:map id="outgoingBatchServiceSql">
     <entry key="initialLoadStatusSql">
       <value>
-        select status from $[sym.sync.table.prefix]_outgoing_batch where channel_id='reload' and
-        node_id=?
+        select status from $[sym.sync.table.prefix]_outgoing_batch where node_id=? and channel_id=?
       </value>
     </entry>
+    <entry key="unsentBatchesForNodeIdChannelIdSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_outgoing_batch where node_id=? and channel_id=? and status != 'OK'
+      </value>
+    </entry>    
     <entry key="unbatchedCountForNodeIdChannelIdSql">
       <value>
         select count(*) from $[sym.sync.table.prefix]_data_event where node_id=? and channel_id=? and batched=0

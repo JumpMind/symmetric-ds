@@ -354,7 +354,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), batchId });
     }
 
-    // TODO Should this move to DataService?
     @SuppressWarnings("unchecked")
     public boolean isInitialLoadComplete(String nodeId) {
 
@@ -364,7 +363,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"),
-                new Object[] { nodeId }, String.class);
+                new Object[] { nodeId, Constants.CHANNEL_RELOAD }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
@@ -381,6 +380,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
         return true;
+    }
+    
+    public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
+        int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"),
+                new Object[] { nodeId, channelId });
+        if (unsentCount > 0) {
+            return true;
+        }
+        
+        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {nodeId, channelId});
+        if (unbatchedCount > 0) {
+            return true;
+        }
+
+        return false;
     }
 
     public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
