@@ -29,6 +29,10 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 public class MockOutgoingBatchService implements IOutgoingBatchService {
 
+    public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
+        return false;
+    }
+    
     public void buildOutgoingBatches(String nodeId, List<NodeChannel> channels) {
 
     }

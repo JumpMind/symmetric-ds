@@ -48,6 +48,8 @@ public interface IOutgoingBatchService {
     public void setBatchStatus(long batchId, Status status);
 
     public boolean isInitialLoadComplete(String nodeId);
+    
+    public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId);
 
     public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId);
 
