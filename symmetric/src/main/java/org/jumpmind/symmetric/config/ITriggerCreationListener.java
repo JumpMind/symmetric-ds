@@ -24,7 +24,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
- * This extension point allows a client to listen in on the trigger creation
+ * An {@link IExtensionPoint} that allows a client to listen in on the trigger creation
  * process.
  */
 public interface ITriggerCreationListener extends IExtensionPoint {
