@@ -25,7 +25,7 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 import java.util.Set;
 
-import org.jumpmind.symmetric.ext.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;

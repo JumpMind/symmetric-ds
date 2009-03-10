@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.Map;
 
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.model.Trigger;
 
 /**
@@ -44,5 +45,7 @@ public interface IBootstrapService {
     public void heartbeat();
     
     public Map<Integer,Trigger> getCachedTriggers(boolean refreshCache);
+    
+    public void addTriggerCreationListeners(ITriggerCreationListener l);
 
 }

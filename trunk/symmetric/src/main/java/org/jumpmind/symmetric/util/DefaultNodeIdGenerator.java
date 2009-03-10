@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math.random.RandomDataImpl;
-import org.jumpmind.symmetric.ext.INodeIdGenerator;
+import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
