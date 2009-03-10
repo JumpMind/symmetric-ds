@@ -41,6 +41,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
@@ -81,6 +82,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private IUpgradeService upgradeService;
 
     private List<Channel> defaultChannels;
+    
+    private List<ITriggerCreationListener> triggerCreationListeners;
 
     private boolean initialized = false;
 
@@ -154,14 +157,14 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 try {
                     logger.info("Synchronizing triggers");
                     removeInactiveTriggers();
-                    updateOrCreateSymTriggers();
+                    updateOrCreateSymmetricTriggers();
                 } finally {
                     clusterService.unlock(LockAction.SYNCTRIGGERS);
                     logger.info("Done synchronizing triggers");
                 }
             } else {
                 logger
-                        .warn("Did not run the syncTriggers process because the cluster service has it locked");
+                        .info("Did not run the syncTriggers process because the cluster service has it locked");
             }
         } else {
             logger
@@ -183,6 +186,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
                         .getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
                 configurationService.inactivateTriggerHistory(history);
+                
+                if (this.triggerCreationListeners != null) {
+                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                        l.triggerInactivated(trigger, history);
+                    }
+                }
+                
             } else {
                 logger.info("A trigger was inactivated that had not yet been built, taking no action");
             }
@@ -205,7 +215,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         return triggerCache;
     }
 
-    private void updateOrCreateSymTriggers() {
+    private void updateOrCreateSymmetricTriggers() {
         Collection<Trigger> triggers = getCachedTriggers(true).values();
 
         for (Trigger trigger : triggers) {
@@ -240,10 +250,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         forceRebuildOfTriggers = true;
                     }
 
-                    // TODO should probably check to see if the time stamp on
-                    // the symmetric-dialects.xml is newer than the
-                    // create time on the hist record.
-
                     TriggerHistory newestHistory = rebuildTriggerIfNecessary(forceRebuildOfTriggers, trigger,
                             DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(
                                     forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
@@ -255,13 +261,32 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     if (latestHistoryBeforeRebuild != null && newestHistory != null) {
                         configurationService.inactivateTriggerHistory(latestHistoryBeforeRebuild);
                     }
+                    
+                    if (newestHistory != null) {
+                        if (this.triggerCreationListeners != null) {
+                            for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                                l.triggerCreated(trigger, newestHistory);
+                            }
+                        }
+                    }
 
                 } else {
                     logger.error("The configured table does not exist in the datasource that is configured: "
                             + schemaPlusTriggerName);
+                    
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.tableDoesNotExist(trigger);
+                        }
+                    }
                 }
             } catch (Exception ex) {
                 logger.error("Failed to synchronize trigger for " + schemaPlusTriggerName, ex);
+                if (this.triggerCreationListeners != null) {
+                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                        l.triggerFailed(trigger, ex);
+                    }
+                }
             }
 
         }
@@ -360,36 +385,41 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     @Transactional
     public void heartbeat() {
-        List<Node> heartbeatNodesToPush = new ArrayList<Node>();
-        Node me = nodeService.findIdentity();
-        if (me != null) {
-            logger.info("Updating my node information and heartbeat time.");
-            me.setHeartbeatTime(new Date());
-            me.setTimezoneOffset(AppUtils.getTimezoneOffset());
-            me.setDatabaseType(dbDialect.getName());
-            me.setDatabaseVersion(dbDialect.getVersion());
-            me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-            me.setExternalId(parameterService.getExternalId());
-            me.setNodeGroupId(parameterService.getNodeGroupId());
-            me.setSymmetricVersion(Version.version());
-            if (!StringUtils.isBlank(parameterService.getMyUrl())) {
-                me.setSyncURL(parameterService.getMyUrl());
-            } else {
-                me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
+        if (clusterService.lock(LockAction.HEARTBEAT)) {
+            List<Node> heartbeatNodesToPush = new ArrayList<Node>();
+            Node me = nodeService.findIdentity();
+            if (me != null) {
+                logger.info("Updating my node information and heartbeat time.");
+                me.setHeartbeatTime(new Date());
+                me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                me.setDatabaseType(dbDialect.getName());
+                me.setDatabaseVersion(dbDialect.getVersion());
+                me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                me.setExternalId(parameterService.getExternalId());
+                me.setNodeGroupId(parameterService.getNodeGroupId());
+                me.setSymmetricVersion(Version.version());
+                if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                    me.setSyncURL(parameterService.getMyUrl());
+                } else {
+                    me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
+                }
+                nodeService.updateNode(me);
+                logger.info("Done updating my node information and heartbeat time.");
+                heartbeatNodesToPush.add(me);
+                heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
             }
-            nodeService.updateNode(me);
-            logger.info("Done updating my node information and heartbeat time.");
-            heartbeatNodesToPush.add(me);
-            heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
-        }
 
-        if (!configurationService.isRegistrationServer()) {
-            for (Node node : heartbeatNodesToPush) {
-                // don't send new heart beat events if we haven't sent the last ones ...
-                if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node.getNodeId())) {
-                    dataService.insertHeartbeatEvent(node);
+            if (!configurationService.isRegistrationServer()) {
+                for (Node node : heartbeatNodesToPush) {
+                    // don't send new heart beat events if we haven't sent the
+                    // last ones ...
+                    if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node.getNodeId())) {
+                        dataService.insertHeartbeatEvent(node);
+                    }
                 }
             }
+        } else {
+            logger.info("Did not run the heartbeat process because the cluster service has it locked ");
         }
     }
 
@@ -487,4 +517,18 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         this.outgoingBatchService = outgoingBatchService;
     }
 
+    public void setTriggerCreationListeners(List<ITriggerCreationListener> autoTriggerCreationListeners) {
+        if (triggerCreationListeners != null) {
+            for (ITriggerCreationListener l : triggerCreationListeners) {
+                addTriggerCreationListeners(l);
+            }
+        }
+    }
+    
+    public void addTriggerCreationListeners(ITriggerCreationListener l) {
+        if (this.triggerCreationListeners == null) {
+            this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
+        }
+        this.triggerCreationListeners.add(l);
+    }
 }

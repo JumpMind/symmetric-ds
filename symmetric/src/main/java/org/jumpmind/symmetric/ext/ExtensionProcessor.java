@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.load.IBatchListener;
@@ -30,6 +32,7 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
+import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -52,6 +55,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IParameterService parameterService;
     
     INodeService nodeService;
+    
+    IBootstrapService bootstrapService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -83,6 +88,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     }
 
     private void registerExtension(IExtensionPoint ext) {
+        
+        if (ext instanceof ITriggerCreationListener) {
+            bootstrapService.addTriggerCreationListeners((ITriggerCreationListener)ext);
+        }
         
         if (ext instanceof IBatchListener) {
             dataLoaderService.addBatchListener((IBatchListener) ext);
@@ -143,6 +152,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public void setBootstrapService(IBootstrapService bootstrapService) {
+        this.bootstrapService = bootstrapService;
     }
 
 }

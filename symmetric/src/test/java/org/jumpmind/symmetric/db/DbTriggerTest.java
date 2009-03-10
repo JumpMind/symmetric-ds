@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -36,6 +37,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -49,6 +51,12 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     static final Log logger = LogFactory.getLog(DbTriggerTest.class);
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
+
+    public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_float)";
+    public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
+            + TestConstants.TEST_PREFIX
+            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
+    public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.043, 5.2212)";
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
@@ -116,7 +124,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate().queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id < 100");
+        return getJdbcTemplate().queryForInt(
+                "select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id < 100");
     }
 
     @Test
@@ -128,8 +137,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
-        assertTrue(match, "The full string we pulled from the database was " + csvString + " however, we expected the string to end with "
-                + EXPECTED_INSERT1_CSV_ENDSWITH);
+        assertTrue(match, "The full string we pulled from the database was " + csvString
+                + " however, we expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 
     @SuppressWarnings("unchecked")
@@ -155,7 +164,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public void validateTransactionFunctionailty() throws Exception {
         final String SQL = "select transaction_id from " + TestConstants.TEST_PREFIX
                 + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
-        
+
         final JdbcTemplate jdbcTemplate = getJdbcTemplate();
         List<String> batchIdList = (List<String>) jdbcTemplate.queryForList(SQL, String.class);
 
@@ -175,7 +184,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
         IDbDialect dbDialect = getDbDialect();
         if (dbDialect.supportsTransactionId()) {
-            assertTrue(batchIdList != null && batchIdList.size()-currentNumberOfTransactions == 1);
+            assertTrue(batchIdList != null && batchIdList.size() - currentNumberOfTransactions == 1);
             assertNotNull(batchIdList.get(0));
         }
     }
@@ -278,7 +287,23 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         getDbDialect().enableSyncTriggers();
         List<String> nodeList = getNextDataEvents();
         Assert.assertEquals(2, nodeList.size());
-        Assert.assertEquals("00011", nodeList.get(0));    }
+        Assert.assertEquals("00011", nodeList.get(0));
+    }
+
+    @Test
+    public void testBinaryColumnTypesForOracle() {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof OracleDbDialect) {
+            getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
+            getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
+            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
+            TriggerFailureListener failures = new TriggerFailureListener();
+            bootstrapService.addTriggerCreationListeners(failures);
+            bootstrapService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, failures.getFailures().size());
+            getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
+        }
+    }
 
     protected static int[] filterTypes(int[] types, IDbDialect dbDialect) {
         boolean isBooleanSupported = !((dbDialect instanceof OracleDbDialect) || (dbDialect instanceof Db2DbDialect));
