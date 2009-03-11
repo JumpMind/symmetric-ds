@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
@@ -56,19 +55,6 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         return jdbcTemplate.queryForInt("select count(*) from rdb$triggers where rdb$trigger_name = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
-    }
-
-    public void removeTrigger(String schemaName, String triggerName) {
-        throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
-    }
-
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
-        } catch (Exception e) {
-            logger.warn("Trigger does not exist");
-        }
     }
 
     public void disableSyncTriggers(String nodeId) {

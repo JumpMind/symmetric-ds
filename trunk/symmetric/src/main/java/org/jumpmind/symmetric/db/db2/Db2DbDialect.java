@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -63,20 +62,6 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from syscat.triggers where trigname = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
-    }
-
-    public void removeTrigger(String schemaName, String triggerName) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + schemaName + triggerName);
-        } catch (Exception e) {
-            logger.warn("Trigger " + triggerName + " does not exist");
-        }
-    }
-
-    public void removeTrigger(String catalogName, String schemaName, String triggerName,
-            String tableName, TriggerHistory oldHistory) {
-        removeTrigger(schemaName, triggerName);
     }
 
     public boolean isBlobSyncSupported() {

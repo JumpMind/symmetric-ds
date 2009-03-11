@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.postgresql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -67,17 +68,20 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema == null ? defaultSchema : schema }) > 0;
     }
 
-    public void removeTrigger(String schemaName, String triggerName) {
-        throw new RuntimeException("Not implemented.  Use removeTrigger(schema, trigger, table) instead.");
-    }
-
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + triggerName + " on " + schemaName + tableName);
-            jdbcTemplate.update("drop function " + schemaName + "f" + triggerName + "()");
-        } catch (Exception e) {
-            logger.warn("Trigger does not exist");
+        final String dropSql = "drop trigger " + triggerName + " on " + schemaName + tableName;
+        logSql(dropSql, sqlBuffer);
+        final String dropFunction = "drop function " + schemaName + "f" + triggerName + "()";
+        logSql(dropFunction, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                jdbcTemplate.update(dropSql);
+                jdbcTemplate.update(dropFunction);
+            } catch (Exception e) {
+                logger.warn("Trigger does not exist");
+            }
         }
     }
 

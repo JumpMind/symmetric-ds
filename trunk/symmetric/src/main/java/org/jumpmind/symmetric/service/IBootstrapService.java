@@ -35,7 +35,17 @@ public interface IBootstrapService {
     
     public void setupDatabase(boolean force);
 
+    /**
+     * This is done periodically throughout the day (so it needs to be
+     * efficient). If the trigger is created for the first time (no previous
+     * trigger existed), then should we auto-resync data?
+     */
     public void syncTriggers();
+    
+    /**
+     * Synchronize the triggers and write the DDL to the SQL buffer.
+     */
+    public void syncTriggers(StringBuilder sql);
 
     @Deprecated
     public void register();

@@ -146,53 +146,64 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         clusterService.initLockTable();
     }
 
-    /**
-     * This is done periodically throughout the day (so it needs to be
-     * efficient). If the trigger is created for the first time (no previous
-     * trigger existed), then should we auto-resync data?
-     */
-    synchronized public void syncTriggers() {
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
-                try {
-                    logger.info("Synchronizing triggers");
-                    removeInactiveTriggers();
-                    updateOrCreateSymmetricTriggers();
-                } finally {
-                    clusterService.unlock(LockAction.SYNCTRIGGERS);
-                    logger.info("Done synchronizing triggers");
-                }
-            } else {
-                logger
-                        .info("Did not run the syncTriggers process because the cluster service has it locked");
+
+    public void syncTriggers() {
+        syncTriggers(null);
+    }
+    
+    synchronized public void syncTriggers(StringBuilder sqlBuffer) {
+        if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
+            try {
+                logger.info("Synchronizing triggers");
+                removeInactiveTriggers(sqlBuffer);
+                updateOrCreateSymmetricTriggers(sqlBuffer);
+            } finally {
+                clusterService.unlock(LockAction.SYNCTRIGGERS);
+                logger.info("Done synchronizing triggers");
             }
         } else {
-            logger
-                    .info("Not syncing triggers.  Auto syncrhonization of triggers has been disabled.");
+            logger.info("Did not run the syncTriggers process because the cluster service has it locked");
         }
     }
 
-    private void removeInactiveTriggers() {
+    private void removeInactiveTriggers(StringBuilder sqlBuffer) {
         List<Trigger> triggers = configurationService.getInactiveTriggersForSourceNodeGroup(parameterService
                 .getString(ParameterConstants.NODE_GROUP_ID));
         for (Trigger trigger : triggers) {
             TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
                 logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForInsertTrigger(), trigger.getSourceTableName(), history);
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForDeleteTrigger(), trigger.getSourceTableName(), history);
-                dbDialect.removeTrigger(history.getSourceCatalogName(), history.getSourceSchemaName(), history
-                        .getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
-                configurationService.inactivateTriggerHistory(history);
-                
-                if (this.triggerCreationListeners != null) {
-                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                        l.triggerInactivated(trigger, history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForInsertTrigger(), trigger.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForDeleteTrigger(), trigger.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
+
+                if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerInactivated(trigger, history);
+                        }
                     }
                 }
-                
+
+                boolean triggerExists = dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForInsertTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForUpdateTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForDeleteTrigger());
+                if (triggerExists) {
+                    logger
+                            .warn(String
+                                    .format(
+                                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id=%s and trigger_hist_id=%s",
+                                            history.getTriggerId(), history.getTriggerHistoryId()));
+                } else {
+                    configurationService.inactivateTriggerHistory(history);
+                }
+
             } else {
                 logger.info("A trigger was inactivated that had not yet been built, taking no action");
             }
@@ -215,7 +226,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         return triggerCache;
     }
 
-    private void updateOrCreateSymmetricTriggers() {
+    private void updateOrCreateSymmetricTriggers(StringBuilder sqlBuffer) {
         Collection<Trigger> triggers = getCachedTriggers(true).values();
 
         for (Trigger trigger : triggers) {
@@ -250,10 +261,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         forceRebuildOfTriggers = true;
                     }
 
-                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(forceRebuildOfTriggers, trigger,
-                            DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(
+                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
+                            DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer, 
                                     forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
-                                    latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(forceRebuildOfTriggers,
+                                    latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
                                             trigger, DataEventType.INSERT, reason, latestHistoryBeforeRebuild, null,
                                             trigger.isSyncOnInsert(), table), trigger.isSyncOnUpdate(), table), trigger
                                     .isSyncOnDelete(), table);
@@ -263,9 +274,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     }
                     
                     if (newestHistory != null) {
-                        if (this.triggerCreationListeners != null) {
-                            for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                                l.triggerCreated(trigger, newestHistory);
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                            if (this.triggerCreationListeners != null) {
+                                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                                    l.triggerCreated(trigger, newestHistory);
+                                }
                             }
                         }
                     }
@@ -423,7 +436,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
-    private TriggerHistory rebuildTriggerIfNecessary(boolean forceRebuild, Trigger trigger, DataEventType dmlType,
+    private TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer, boolean forceRebuild, Trigger trigger, DataEventType dmlType,
             TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist, boolean triggerIsActive, Table table) {
 
         boolean triggerExists = false;
@@ -462,7 +475,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
-            dbDialect.removeTrigger(oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(),
+            dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(),
                     oldhist);
             triggerExists = false;
         }
@@ -475,7 +488,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if (!triggerExists && triggerIsActive) {
-            dbDialect.initTrigger(dmlType, trigger, hist, tablePrefix, table);
+            dbDialect.initTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
         }
 
         return hist;
