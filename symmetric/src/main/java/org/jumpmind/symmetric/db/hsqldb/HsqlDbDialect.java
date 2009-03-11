@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.hsqldb;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -105,19 +106,22 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where trigger_name = ?",
                 new Object[] { triggerName }) > 0;
     }
-
-    public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        triggerName = schemaName + triggerName;
-        try {
-            jdbcTemplate.update(new String("drop trigger " + triggerName + "_" + getEngineName() + "_" + hist.getTriggerHistoryId()).toUpperCase());
-        } catch (Exception e) {
-            logger.warn("Error removing " + triggerName + ": " + e.getMessage());
+    
+    @Override
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory) {
+        final String dropSql = new String("drop trigger " + triggerName + "_" + getEngineName() + "_"
+                + oldHistory.getTriggerHistoryId()).toUpperCase();
+        logSql(dropSql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            schemaName = schemaName == null ? "" : (schemaName + ".");
+            triggerName = schemaName + triggerName;
+            try {
+                jdbcTemplate.update(dropSql);
+            } catch (Exception e) {
+                logger.warn("Error removing " + triggerName + ": " + e.getMessage());
+            }
         }
-    }
-
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
-        removeTrigger(schemaName, triggerName, oldHistory);
     }
 
     public boolean isBlobSyncSupported() {

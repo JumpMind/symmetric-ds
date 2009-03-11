@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.db.h2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -28,18 +29,19 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
-public class H2Dialect extends AbstractDbDialect implements IDbDialect {
+public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(H2Dialect.class);
+    static final Log logger = LogFactory.getLog(H2DbDialect.class);
     private boolean storesUpperCaseNames = true;
 
     @Override
     protected void initForSpecificDialect() {
     }
-    
+
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        boolean exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
-                new Object[] { triggerName }) > 0;
+        boolean exists = jdbcTemplate
+                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
+                        new Object[] { triggerName }) > 0;
         if (!exists) {
             exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ?",
                     new Object[] { String.format("%s_VIEW", triggerName) }) > 0;
@@ -47,24 +49,9 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         return exists;
     }
 
-    public void removeTrigger(String schemaName, String triggerName, TriggerHistory hist) {
-        try {
-            int count = jdbcTemplate.update(String.format("DROP TRIGGER IF EXISTS %s", triggerName));
-            if (count > 0) {
-                logger.info(String.format("Just dropped trigger %s", triggerName));
-            }
-            count = jdbcTemplate.update(String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName));
-            if (count > 0) {
-                logger.info(String.format("Just dropped view %s_VIEW", triggerName));
-            }
-        } catch (Exception e) {
-            logger.warn("Error removing " + triggerName + ": " + e.getMessage());
-        }
-    }
-
     /**
-     * All the templates have ' escaped because the SQL is inserted into a view.  When returning the raw SQL
-     * for use as SQL it needs to be un-escaped.
+     * All the templates have ' escaped because the SQL is inserted into a view.
+     * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
     public String createInitalLoadSqlFor(Node node, Trigger trigger) {
@@ -72,24 +59,42 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
         sql = sql.replace("''", "'");
         return sql;
     }
-    
+
     @Override
-    public String createCsvDataSql(Trigger trigger, String whereClause) {      
+    public String createCsvDataSql(Trigger trigger, String whereClause) {
         String sql = super.createCsvDataSql(trigger, whereClause);
         sql = sql.replace("''", "'");
-        return sql;        
+        return sql;
     }
-    
+
     @Override
     public String createCsvPrimaryKeySql(Trigger trigger, String whereClause) {
-        String sql =  super.createCsvPrimaryKeySql(trigger, whereClause);
+        String sql = super.createCsvPrimaryKeySql(trigger, whereClause);
         sql = sql.replace("''", "'");
-        return sql;        
+        return sql;
     }
-    
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName,
-            TriggerHistory oldHistory) {
-        removeTrigger(schemaName, triggerName, oldHistory);        
+
+    @Override
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory) {
+        final String dropSql = String.format("DROP TRIGGER IF EXISTS %s", triggerName);
+        logSql(dropSql, sqlBuffer);
+        final String dropView = String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName);
+        logSql(dropView, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                int count = jdbcTemplate.update(dropSql);
+                if (count > 0) {
+                    logger.info(String.format("Just dropped trigger %s", triggerName));
+                }
+                count = jdbcTemplate.update(dropView);
+                if (count > 0) {
+                    logger.info(String.format("Just dropped view %s_VIEW", triggerName));
+                }
+            } catch (Exception e) {
+                logger.warn("Error removing " + triggerName + ": " + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -104,7 +109,7 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.update("set @sync_prevented=1");
-        jdbcTemplate.update("set @node_value=?", new Object[] {nodeId});
+        jdbcTemplate.update("set @node_value=?", new Object[] { nodeId });
     }
 
     public void enableSyncTriggers() {
@@ -150,12 +155,12 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
 
     public boolean supportsGetGeneratedKeys() {
         return false;
-    }    
-    
+    }
+
     @Override
     public boolean supportsTransactionId() {
         return true;
-    }    
+    }
 
     protected boolean allowsNullForIdentityColumn() {
         return false;
@@ -171,13 +176,13 @@ public class H2Dialect extends AbstractDbDialect implements IDbDialect {
     public String getDefaultSchema() {
         return null;
     }
-    
+
     public String getInitialLoadTableAlias() {
         return "t.";
     }
-    
+
     @Override
-    public String preProcessTriggerSqlClause(String sqlClause) {  
+    public String preProcessTriggerSqlClause(String sqlClause) {
         sqlClause = sqlClause.replace("$(newTriggerValue).", "$(newTriggerValue)");
         sqlClause = sqlClause.replace("$(oldTriggerValue).", "$(oldTriggerValue)");
         sqlClause = sqlClause.replace("$(curTriggerValue).", "$(curTriggerValue)");

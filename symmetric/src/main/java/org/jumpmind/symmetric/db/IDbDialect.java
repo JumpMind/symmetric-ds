@@ -34,8 +34,8 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
-
-    public void initTrigger(DataEventType dml, Trigger trigger, TriggerHistory audit, String tablePrefix, Table table);
+    
+    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist, String tablePrefix, Table table);
 
     /**
      * Get the name of this symmetric instance. This can be set in
@@ -43,7 +43,7 @@ public interface IDbDialect {
      */
     public String getEngineName();
 
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory);
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 

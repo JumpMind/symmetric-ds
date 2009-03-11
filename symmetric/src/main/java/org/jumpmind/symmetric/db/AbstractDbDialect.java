@@ -98,7 +98,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     private Map<Integer, String> _defaultSizes;
 
-    private IParameterService parameterService;
+    protected IParameterService parameterService;
 
     protected String tablePrefix;
 
@@ -303,9 +303,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public Table findTable(String catalogName, String schemaName, final String tblName) throws Exception {
-        // if we don't provide a default schema or catalog, then on some
-        // databases multiple results
-        // will be found in the metadata from multiple schemas/catalogs
+        // If we don't provide a default schema or catalog, then on some
+        // databases multiple results will be found in the metadata from multiple schemas/catalogs
         final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
         final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog() : catalogName;
         return (Table) jdbcTemplate.execute(new ConnectionCallback() {
@@ -603,12 +602,34 @@ abstract public class AbstractDbDialect implements IDbDialect {
             index.addColumn(indexColumn);
         }
     }
+    
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory) {
+        schemaName = schemaName == null ? "" : (schemaName + ".");
+        final String sql = "drop trigger " + schemaName + triggerName;
+        logSql(sql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                jdbcTemplate.update(sql);
+            } catch (Exception e) {
+                logger.warn("Trigger does not exist");
+            }
+        }
+    }
+    
+    final protected void logSql(String sql, StringBuilder sqlBuffer) {
+        if (sqlBuffer != null) {
+            sqlBuffer.append(sql);
+            sqlBuffer.append(System.getProperty("line.separator"));
+            sqlBuffer.append(System.getProperty("line.separator"));
+        }
+    }
 
     /**
      * Create the configured trigger. The catalog will be changed to the source
      * schema if the source schema is configured.
      */
-    public void initTrigger(final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
+    public void initTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
             final String tablePrefix, final Table table) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
@@ -621,26 +642,32 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 String defaultSchema = getDefaultSchema();
                 try {
                     previousCatalog = switchCatalogForTriggerInstall(sourceCatalogName, con);
-                    Statement stmt = con.createStatement();
+                    
                     String triggerSql = sqlTemplate.createTriggerDDL(AbstractDbDialect.this, dml, trigger, hist,
                             tablePrefix, table, defaultCatalog, defaultSchema);
-                    try {
-                        logger.debug(triggerSql);
-                        stmt.executeUpdate(triggerSql);
-                    } catch (SQLException ex) {
-                        logger.error("Failed to create trigger: " + triggerSql);
-                        throw ex;
-                    }
-                    String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, tablePrefix, table);
-                    if (postTriggerDml != null) {
+                    
+                    if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                        Statement stmt = con.createStatement();
                         try {
-                            stmt.executeUpdate(postTriggerDml);
+                            logger.debug(triggerSql);
+                            stmt.executeUpdate(triggerSql);
                         } catch (SQLException ex) {
-                            logger.error("Failed to create post trigger: " + postTriggerDml);
+                            logger.error("Failed to create trigger: " + triggerSql);
                             throw ex;
                         }
+                        String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, tablePrefix, table);
+                        if (postTriggerDml != null) {
+                            try {
+                                stmt.executeUpdate(postTriggerDml);
+                            } catch (SQLException ex) {
+                                logger.error("Failed to create post trigger: " + postTriggerDml);
+                                throw ex;
+                            }
+                        }
+                        stmt.close();
                     }
-                    stmt.close();
+                    
+                    logSql(triggerSql, sqlBuffer);
 
                 } finally {
                     if (sourceCatalogName != null && !sourceCatalogName.equalsIgnoreCase(previousCatalog)) {

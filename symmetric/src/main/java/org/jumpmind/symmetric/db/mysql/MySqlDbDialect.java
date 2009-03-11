@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -76,13 +77,17 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
                         + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
     }
 
-    // TODO this belongs in SqlTemplate
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory) {
         catalogName = catalogName == null ? "" : (catalogName + ".");
-        try {
-            jdbcTemplate.update("drop trigger " + catalogName + triggerName);
-        } catch (Exception e) {
-            logger.warn("Trigger does not exist");
+        final String sql = "drop trigger " + catalogName + triggerName;
+        logSql(sql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            try {
+                jdbcTemplate.update(sql);
+            } catch (Exception e) {
+                logger.warn("Trigger does not exist");
+            }
         }
     }
 

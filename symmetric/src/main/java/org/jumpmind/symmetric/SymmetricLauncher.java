@@ -37,6 +37,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
@@ -52,6 +53,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -76,6 +78,8 @@ public class SymmetricLauncher {
     private static final String OPTION_MAX_IDLE_TIME = "max-idle-time";
 
     private static final String OPTION_DDL_GEN = "generate-config-dll";
+    
+    private static final String OPTION_TRIGGER_GEN = "generate-triggers";
 
     private static final String OPTION_PURGE = "purge";
 
@@ -170,6 +174,12 @@ public class SymmetricLauncher {
                 dumpBatch(new SymmetricEngine(), arg);
                 return;
             }
+            
+            if (line.hasOption(OPTION_TRIGGER_GEN)) {
+                String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
+                syncTrigger(new SymmetricEngine(), arg);
+                return;
+            }            
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 autoCreateDatabase(new SymmetricEngine());
@@ -320,6 +330,7 @@ public class SymmetricLauncher {
                         OPTION_SKIP_DB_VALIDATION,
                         false,
                         "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
+        options.addOption("t", OPTION_TRIGGER_GEN, true, "Run the sync triggers process and write the output the specified file.  If triggers should not be applied automatically then set the auto.sync.triggers property to false");
         return options;
     }
 
@@ -371,11 +382,29 @@ public class SymmetricLauncher {
                 .getApplicationContext().getBean(Constants.DATA_SERVICE);
         return dataService.reloadNode(argument);
     }
+    
+    
+    private static void syncTrigger(SymmetricEngine engine, String fileName) throws IOException {
+        if (fileName != null) {
+            File file = new File(fileName);
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
+            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
+            StringBuilder sqlBuffer = new StringBuilder();
+            bootstrapService.syncTriggers(sqlBuffer);
+            FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
+        } else {
+            throw new IllegalStateException("Please provide a file name to write the trigger SQL to");
+        }
+    }
 
     private static void generateDDL(SymmetricEngine engine, String fileName)
             throws IOException {
         File file = new File(fileName);
-        file.getParentFile().mkdirs();
+        if (file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
         FileWriter os = new FileWriter(file, false);
         os.write(((IDbDialect) engine.getApplicationContext().getBean(
                 Constants.DB_DIALECT)).getCreateSymmetricDDL());
@@ -385,7 +414,9 @@ public class SymmetricLauncher {
     private static void generateDefaultProperties(String fileName)
             throws IOException {
         File file = new File(fileName);
-        file.getParentFile().mkdirs();
+        if (file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
         BufferedReader is = new BufferedReader(new InputStreamReader(
                 SymmetricLauncher.class
                         .getResourceAsStream("/symmetric-default.properties"),

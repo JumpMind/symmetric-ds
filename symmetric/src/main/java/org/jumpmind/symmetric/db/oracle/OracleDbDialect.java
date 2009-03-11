@@ -60,17 +60,17 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     
     @Override
-    public void initTrigger(DataEventType dml, Trigger trigger,
-            TriggerHistory hist, String tablePrefix, Table table) {
+    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
+            String tablePrefix, Table table) {
         try {
-        super.initTrigger(dml, trigger, hist, tablePrefix, table);
+            super.initTrigger(sqlBuffer, dml, trigger, hist, tablePrefix, table);
         } catch (BadSqlGrammarException ex) {
-            if (ex.getSQLException().getErrorCode() == 4095) {                
+            if (ex.getSQLException().getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
-                    logger.warn("A trigger already exists for that name.  Details are as follows: " + jdbcTemplate.queryForMap(
-                            "select * from user_triggers where trigger_name like upper(?)",
-                            new Object[] { hist.getTriggerNameForDmlType(dml) }));
+                    logger.warn("A trigger already exists for that name.  Details are as follows: "
+                            + jdbcTemplate.queryForMap("select * from user_triggers where trigger_name like upper(?)",
+                                    new Object[] { hist.getTriggerNameForDmlType(dml) }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -109,21 +109,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public boolean isDateOverrideToTimestamp() {
         return true;
-    }
-
-    public void removeTrigger(String schemaName, String triggerName) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
-        triggerName = schemaName + triggerName;
-        try {            
-            jdbcTemplate.update("drop trigger " + triggerName);
-            logger.info("Removed trigger " + triggerName);
-        } catch (Exception e) {
-            logger.warn("Trigger " + triggerName + " could not be removed.  It does not exist");
-        }
-    }
-
-    public void removeTrigger(String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory) {
-        removeTrigger(schemaName, triggerName);
     }
 
     public String getTransactionTriggerExpression(Trigger trigger) {
