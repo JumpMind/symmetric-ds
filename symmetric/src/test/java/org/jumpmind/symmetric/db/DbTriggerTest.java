@@ -56,8 +56,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
             + TestConstants.TEST_PREFIX
             + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
-    public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.043, 5.2212)";
-    public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",2.043,5.2212";
+    public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
+    public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
