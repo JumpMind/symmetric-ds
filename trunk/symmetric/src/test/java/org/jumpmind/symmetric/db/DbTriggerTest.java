@@ -52,7 +52,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
-    public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_float)";
+    public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
     public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
             + TestConstants.TEST_PREFIX
             + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";

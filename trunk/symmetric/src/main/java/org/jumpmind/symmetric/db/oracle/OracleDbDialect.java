@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.db.oracle;
 
 import java.net.URL;
+import java.sql.Types;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,6 +57,25 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             }
         } catch (Exception ex) {
             logger.error("Error while initializing Oracle.", ex);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Integer overrideJdbcTypeForColumn(Map values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        // This is for Oracle's TIMESTAMP(9)
+        if (typeName != null && typeName.startsWith("TIMESTAMP")) {
+            return Types.TIMESTAMP;
+            // This is for Oracle's NVARCHAR type
+        } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
+            return Types.VARCHAR;        
+        } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
+            return Types.FLOAT;
+        } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
+            return Types.DOUBLE;
+        } else {
+          return super.overrideJdbcTypeForColumn(values);
         }
     }
 
