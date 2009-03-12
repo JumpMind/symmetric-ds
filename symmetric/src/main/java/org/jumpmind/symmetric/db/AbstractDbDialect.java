@@ -431,23 +431,24 @@ abstract public class AbstractDbDialect implements IDbDialect {
             JdbcUtils.closeResultSet(columnData);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    protected Integer overrideJdbcTypeForColumn(Map values) {
+        return null;
+    }
 
     @SuppressWarnings("unchecked")
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         Column column = new Column();
         column.setName((String) values.get("COLUMN_NAME"));
-        column.setDefaultValue((String) values.get("COLUMN_DEF"));
-        String typeName = (String) values.get("TYPE_NAME");
-        // This is for Oracle's TIMESTAMP(9)
-        if (typeName != null && typeName.startsWith("TIMESTAMP")) {
-            column.setTypeCode(Types.TIMESTAMP);
+        column.setDefaultValue((String) values.get("COLUMN_DEF"));        
+        Integer jdbcType = overrideJdbcTypeForColumn(values);
+        if (jdbcType != null) {
+            column.setTypeCode(jdbcType);
         } else {
             column.setTypeCode(((Integer) values.get("DATA_TYPE")).intValue());
         }
-        // This is for Oracle's NVARCHAR type
-        if (typeName != null && typeName.startsWith("NVARCHAR")) {
-            column.setTypeCode(Types.VARCHAR);
-        }
+
         column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
         String size = (String) values.get("COLUMN_SIZE");
         int scale = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
