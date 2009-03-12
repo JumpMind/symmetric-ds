@@ -18,12 +18,11 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class ZSeriesDb2DbDialect extends AbstractDbDialect implements IDbDialect {
+public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(ZSeriesDb2DbDialect.class);
+    static final Log logger = LogFactory.getLog(Db2zSeriesDbDialect.class);
 
-    // Reading Current schema properties
-    private String currentSchema;
+
     private String userName;
 
     /**
@@ -42,44 +41,34 @@ public class ZSeriesDb2DbDialect extends AbstractDbDialect implements IDbDialect
         this.userName = userName;
     }
 
-    /**
-     * Returns the current schema name
-     * @return String
-     */
-    public String getCurrentSchema() {
-        return currentSchema;
-    }
-
-    /**
-     * Sets the current schema name from properties file
-     * @param currentSchema
-     */
-    public void setCurrentSchema(String currentSchema) {
-        this.currentSchema = currentSchema;
-    }
-
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("SELECT COUNT(*) FROM SYSIBM.SYSTRIGGERS WHERE NAME = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
+    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
 
+    @Override
     public boolean isClobSyncSupported() {
         return true;
     }
 
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "nullif('','')";
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
     }
@@ -96,14 +85,17 @@ public class ZSeriesDb2DbDialect extends AbstractDbDialect implements IDbDialect
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     public boolean supportsGetGeneratedKeys() {
         return true;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -115,15 +107,7 @@ public class ZSeriesDb2DbDialect extends AbstractDbDialect implements IDbDialect
         return null;
     }
 
-    public String getDefaultSchema() {
-        if(getCurrentSchema() != null 
-                && (!getCurrentSchema().trim().equals("")) 
-                && (!getCurrentSchema().trim().equals("null")) ){
-            return getCurrentSchema();
-        }
-        return getUserName().toUpperCase();
-    }
-
+    @Override
     public String getIdentifierQuoteString() {
         return "";
     }
@@ -142,6 +126,7 @@ public class ZSeriesDb2DbDialect extends AbstractDbDialect implements IDbDialect
     protected void initForSpecificDialect() {
     }
 
+    @Override
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback callback) {
         return (Long) jdbcTemplate.execute(new ConnectionCallback() {

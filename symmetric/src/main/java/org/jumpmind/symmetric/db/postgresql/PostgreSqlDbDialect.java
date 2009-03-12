@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.postgresql;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -43,8 +44,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
 
     private String transactionIdExpression = "null";
 
-    protected String defaultSchema;
-
+    @Override
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
             logger.info("Enabling transaction ID support");
@@ -57,7 +57,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             logger.error("Please add \"custom_variable_classes = 'symmetric'\" to your postgresql.conf file");
             throw new RuntimeException("Missing custom variable class 'symmetric'", e);
         }
-        defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);        
+             
     }
 
     @Override
@@ -68,6 +68,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema == null ? defaultSchema : schema }) > 0;
     }
 
+    @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
@@ -102,14 +103,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return "fn_sym_triggers_disabled() = 0";
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return transactionIdExpression;
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select currval('" + sequenceName + "_seq')";
     }
 
+    @Override
     public boolean requiresSavepointForFallback() {
         return true;
     }
@@ -126,14 +130,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return false;
     }
 
+    @Override
     public boolean storesLowerCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
 
+    @Override
     public boolean supportsTransactionId() {
         return supportsTransactionId;
     }
@@ -145,10 +152,15 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         return null;
     }
 
+    @Override
     public String getDefaultSchema() {
-        return defaultSchema;
+        if (StringUtils.isBlank(this.defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("select current_schema()", String.class);
+        }
+        return super.getDefaultSchema();
     }
-    
+
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }

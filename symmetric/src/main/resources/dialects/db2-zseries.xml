@@ -7,11 +7,11 @@
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
 	default-lazy-init="true">
 
-	<bean id="db2MainframeDialect"
-		class="org.jumpmind.symmetric.db.db2.ZSeriesDb2DbDialect"
+	<bean id="db2zSeriesDialect"
+		class="org.jumpmind.symmetric.db.db2.Db2zSeriesDbDialect"
 		scope="prototype">
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
-		<property name="currentSchema" value="$[sym.db.schema]" />
+		<property name="defaultSchema" value="$[sym.db.default.schema]" />
 		<property name="userName" value="$[sym.db.user]" />
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"

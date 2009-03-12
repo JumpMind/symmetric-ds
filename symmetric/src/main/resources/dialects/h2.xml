@@ -18,6 +18,7 @@
         scope="prototype">
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="parameterService" ref="parameterService" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
         <property name="streamingResultsFetchSize" value="$[sym.db.jdbc.streaming.results.fetch.size]" />
         <property name="sqlTemplate">
             <bean class="org.jumpmind.symmetric.db.SqlTemplate">

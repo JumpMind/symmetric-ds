@@ -2,19 +2,20 @@ package org.jumpmind.symmetric.db;
 
 import javax.sql.DataSource;
 
-import junit.framework.TestCase;
-
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
-import org.jumpmind.symmetric.db.db2.ZSeriesDb2DbDialect;
+import org.jumpmind.symmetric.db.db2.Db2zSeriesDbDialect;
+import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-public class DBDialectFactoryTest extends TestCase {
+public class DBDialectFactoryTest {
 
+    @Test
     @Ignore
     public void testShouldReturnDb2MainframeDialectWhenCurrentDbIszOSDb2() throws Exception {
         DbDialectFactory factory = new DbDialectFactory();
@@ -27,7 +28,7 @@ public class DBDialectFactoryTest extends TestCase {
         jdbcTemplate.setDataSource(dataSource);
         factory.setJdbcTemplate(jdbcTemplate);
         factory.setBeanFactory(stubbedBeanFactory());
-        assertTrue("should be db2 main frame", factory.getObject() instanceof ZSeriesDb2DbDialect);
+        Assert.assertTrue("should be db2 main frame", factory.getObject() instanceof Db2zSeriesDbDialect);
     }
 
     private BeanFactory stubbedBeanFactory() {
@@ -46,7 +47,7 @@ public class DBDialectFactoryTest extends TestCase {
                     return new Db2DbDialect();
                 }
                 if (name.equals("db2MainframeDialect")) {
-                    return new ZSeriesDb2DbDialect();
+                    return new Db2zSeriesDbDialect();
                 }
                 return null;
             }

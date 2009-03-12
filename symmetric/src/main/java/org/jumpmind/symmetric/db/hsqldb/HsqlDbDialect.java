@@ -57,6 +57,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     };
 
+    @Override
     protected void initForSpecificDialect() {
         if (initializeDatabase) {
             if (!hsqldbInitialized) {
@@ -100,6 +101,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     }
 
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt(
@@ -124,10 +126,12 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         }
     }
 
+    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
 
+    @Override
     public boolean isClobSyncSupported() {
         return true;
     }
@@ -157,10 +161,12 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     /**
      * This is not used by the HSQLDB Java triggers
      */
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "not used";
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
     }
@@ -182,14 +188,17 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     public boolean supportsGetGeneratedKeys() {
         return false;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -198,10 +207,6 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getDefaultCatalog() {
-        return null;
-    }
-
-    public String getDefaultSchema() {
         return null;
     }
 

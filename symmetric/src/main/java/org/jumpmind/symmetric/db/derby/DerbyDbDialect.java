@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db.derby;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -31,23 +32,28 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(DerbyDbDialect.class);
 
+    @Override
     protected void initForSpecificDialect() {
     }
 
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
+    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
 
+    @Override
     public boolean isClobSyncSupported() {
         return true;
     }
 
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
@@ -69,10 +75,12 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return "fn_sym_sync_triggers_disabled() = 0";
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "fn_sym_transaction_id()";
     }
-
+    
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
     }
@@ -89,14 +97,17 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     public boolean supportsGetGeneratedKeys() {
         return false;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -108,7 +119,11 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    @Override
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
+        if (StringUtils.isBlank(this.defaultSchema)) {
+            defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
+        }
+        return defaultSchema;
     }
 }
