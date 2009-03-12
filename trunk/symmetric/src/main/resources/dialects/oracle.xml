@@ -89,7 +89,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as varchar(50))||'"') ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number(20,10))||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
