@@ -29,22 +29,17 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.h2.util.ByteUtils;
+import org.h2.util.IOUtils;
 
 public class H2Trigger implements org.h2.api.Trigger {
 
-    protected final Log logger = LogFactory.getLog(getClass());
-
-    protected static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
+    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
     static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     static final String KEY_INSERT_DATA_EVENT_SQL = "INSERT_DATA_EVENT_SQL";
@@ -93,28 +88,19 @@ public class H2Trigger implements org.h2.api.Trigger {
      *             if the operation must be undone
      */
     public void fire(Connection conn, Object[] oldRow, Object[] newRow) throws SQLException {
-        String sql = null;
-        try {
-            Statement stmt = conn.createStatement();
-            sql = fillVirtualTableSql(templates.get(KEY_CONDITION_SQL), oldRow, newRow);
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next() && rs.getInt(1) > 0) {
-                rs.close();
-                sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
-                int count = stmt.executeUpdate(sql);
-                if (count > 0) {
-                    sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL), oldRow, newRow);
-                    stmt.executeUpdate(sql);
-                }
+        Statement stmt = conn.createStatement();
+        String sql = fillVirtualTableSql(templates.get(KEY_CONDITION_SQL), oldRow, newRow);
+        ResultSet rs = stmt.executeQuery(sql);
+        if (rs.next() && rs.getInt(1) > 0) {
+            rs.close();
+            sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
+            int count = stmt.executeUpdate(sql);
+            if (count > 0) {
+                sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL), oldRow, newRow);
+                stmt.executeUpdate(sql);
             }
-            stmt.close();
-        } catch (RuntimeException ex) {
-            logger.error("Error during the firing of a SymmetricDS trigger.", ex);
-            throw ex;
-        } catch (SQLException ex) {
-            logger.error(String.format("Error executing the following SQL: %s", sql), ex);
-            throw ex;
         }
+        stmt.close();
     }
 
     /**
@@ -123,7 +109,7 @@ public class H2Trigger implements org.h2.api.Trigger {
     protected String fillVirtualTableSql(String sql, Object[] oldRow, Object[] newRow) throws SQLException {
         int columnCount = oldRow != null ? oldRow.length : newRow.length;
         StringBuilder out = new StringBuilder();
-        String[] tokens = StringUtils.split(sql, "?");
+        String[] tokens = sql.split("\\?");
         int tokenIndex = 0;
         tokenIndex = forEachColumn(columnCount, newRow, out, tokenIndex, tokens);
         tokenIndex = forEachColumn(columnCount, oldRow, out, tokenIndex, tokens);
@@ -150,7 +136,7 @@ public class H2Trigger implements org.h2.api.Trigger {
             if (value instanceof BufferedReader) {
                 try {
                     BufferedReader reader = (BufferedReader) value;
-                    value = IOUtils.toString(reader);
+                    value = IOUtils.readStringAndClose(reader, -1);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -163,7 +149,7 @@ public class H2Trigger implements org.h2.api.Trigger {
         } else if (value instanceof ByteArrayInputStream || value instanceof BufferedInputStream) {
             out.append("'");
             try {
-                value = ByteUtils.convertBytesToString(IOUtils.toByteArray((InputStream) value));
+                value = ByteUtils.convertBytesToString(IOUtils.readBytesAndClose((InputStream) value, -1));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -172,7 +158,9 @@ public class H2Trigger implements org.h2.api.Trigger {
 
         } else if (value instanceof Date) {
             out.append("'");
-            out.append(DATE_FORMATTER.format(value));
+            synchronized (DATE_FORMATTER) {
+                out.append(DATE_FORMATTER.format(value));
+            }
             out.append("'");
         } else {
             throw new IllegalStateException(String.format("Type not supported: %s", value.getClass().getName()));
