@@ -57,9 +57,7 @@ public class H2Builder extends SqlBuilder {
         addEscapedCharSequence("'", "''");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void dropTable(Table table) throws IOException {
         print("DROP TABLE ");
         printIdentifier(getTableName(table));
@@ -67,10 +65,12 @@ public class H2Builder extends SqlBuilder {
         printEndOfStatement();
     }
 
+    @Override
     public String getSelectLastIdentityValues(Table table) {
         return "CALL IDENTITY()";
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             CreationParameters params, Collection changes) throws IOException {
@@ -163,6 +163,7 @@ public class H2Builder extends SqlBuilder {
         change.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
     }
 
+    @Override
     protected void writeColumnDefaultValueStmt(Table table, Column column) throws IOException {
         Object parsedDefault = column.getParsedDefaultValue();
 
@@ -187,6 +188,7 @@ public class H2Builder extends SqlBuilder {
         }
     }
 
+    @Override
     protected void printDefaultValue(Object defaultValue, int typeCode) throws IOException {
         if (defaultValue != null) {
             String defaultValueStr = defaultValue.toString();

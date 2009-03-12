@@ -7,7 +7,7 @@
 
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="db2MainframeDatabaseProductVersion" value="$[sym.db.databaseProductVersion]" />
+        <property name="db2zSeriesProductVersion" value="$[sym.db2.zseries.version]" />
         <property name="customPlatforms">
             <map key-type="java.lang.String" value-type="java.lang.Class">
                 <entry key="H21" value="org.jumpmind.symmetric.db.h2.H2Platform" />

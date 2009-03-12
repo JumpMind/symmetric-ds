@@ -52,25 +52,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private static final Log logger = LogFactory.getLog(DbDialectFactory.class);
 
-    private String db2MainframeDatabaseProductVersion;
+    private String db2zSeriesProductVersion;
     
-    /**
-     * Returns the database product version for zOS db2     
-     * @return String
-     */
-    public String getDb2MainframeDatabaseProductVersion() {
-        return db2MainframeDatabaseProductVersion;
-    }
-
-    /**
-     * Sets the database product version for zOS db2 from the properties file
-     * @param db2MainframeDatabaseProductVersion
-     */
-    public void setDb2MainframeDatabaseProductVersion(String db2MainframeDatabaseProductVersion) {
-        this.db2MainframeDatabaseProductVersion = db2MainframeDatabaseProductVersion;
-    }
-
-
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
@@ -120,9 +103,9 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
-            if(currentDbProductVersion.equals(getDb2MainframeDatabaseProductVersion())){
-                dialect = (AbstractDbDialect) beanFactory.getBean("db2MainframeDialect");
-            }else {
+            if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
+                dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
+            } else {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
             }
         } else if (pf instanceof FirebirdPlatform) {
@@ -214,6 +197,13 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     public void setCustomPlatforms(Map<String, Class<Platform>> customPlatforms) {
         this.customPlatforms = customPlatforms;
+    }
+
+    /**
+     * Sets the database product version for zOS db2 from the properties file
+     */
+    public void setDb2zSeriesProductVersion(String version) {
+        this.db2zSeriesProductVersion = version;
     }
 
 }

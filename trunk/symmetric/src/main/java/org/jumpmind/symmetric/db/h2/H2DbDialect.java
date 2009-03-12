@@ -38,6 +38,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
     protected void initForSpecificDialect() {
     }
 
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
         boolean exists = jdbcTemplate
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
@@ -124,10 +125,12 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
     /**
      * An expression which the java trigger can string replace
      */
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "SYM_TRANSACTION_ID()";
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "call IDENTITY()";
     }
@@ -149,10 +152,12 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return storesUpperCaseNames;
     }
 
+    @Override
     public boolean supportsGetGeneratedKeys() {
         return false;
     }
@@ -162,6 +167,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -173,10 +179,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public String getDefaultSchema() {
-        return null;
-    }
-
+    @Override
     public String getInitialLoadTableAlias() {
         return "t.";
     }

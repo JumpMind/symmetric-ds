@@ -45,6 +45,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private boolean supportsTransactionId = false;
 
+    @Override
     protected void initForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());
         if (getMajorVersion() == 5
@@ -77,6 +78,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
                         + checkCatalogSql, new Object[] { triggerName, tableName }) > 0;
     }
 
+    @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {
         catalogName = catalogName == null ? "" : (catalogName + ".");
@@ -107,7 +109,9 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
+    @Override
     // Mister CHenson, what is this non-sense?
+    // I dunno ...
     public String getTransactionTriggerExpression(Trigger trigger) {
         if (supportsTransactionId) {
             String defaultCatalog = "";
@@ -119,10 +123,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
+    @Override
     public boolean supportsTransactionId() {
         return supportsTransactionId;
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id()";
     }
@@ -142,14 +148,11 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public void purge() {
     }
 
-    public String getDefaultSchema() {
-        return null;
-    }
-
     public String getDefaultCatalog() {
         return (String) jdbcTemplate.queryForObject("select database()", String.class);
     }
 
+    @Override
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         if (catalog != null) {
             String previousCatalog = c.getCatalog();
@@ -169,10 +172,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return Integer.MIN_VALUE;
     }
 
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
     
+    @Override
     public String getIdentifierQuoteString()
     {
         return "`";

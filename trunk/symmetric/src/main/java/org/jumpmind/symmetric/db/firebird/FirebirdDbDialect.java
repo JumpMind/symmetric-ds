@@ -36,9 +36,11 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
+    @Override
     protected void initForSpecificDialect() {
     }
 
+    @Override
     protected void createRequiredFunctions() {
         super.createRequiredFunctions();
         try {
@@ -73,10 +75,12 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return "rdb$get_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "current_transaction||''";
     }
 
+    @Override
     protected String getTableNamePattern(String tableName) {
         /*
          * When looking up a table definition, Jaybird treats underscore (_) in
@@ -87,14 +91,17 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return tableName.replaceAll("\\_", "\\\\_");
     }
     
+    @Override
     public boolean supportsReturningKeys() {
         return true;
     }
     
+    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
     
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
@@ -111,10 +118,12 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
@@ -122,6 +131,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     public void purge() {
     }
 
+    @Override
     public String getName() {
         return super.getName().substring(0, 49);
     }
@@ -130,10 +140,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public String getDefaultSchema() {
-        return null;
-    }
-
+    @Override
     public boolean supportsOpenCursorsAcrossCommit() {
         return false;
     }

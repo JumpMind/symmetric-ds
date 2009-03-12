@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.mssql;
 import java.util.ArrayList;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
@@ -46,9 +47,11 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(MsSqlDbDialect.class);
 
+    @Override
     protected void initForSpecificDialect() {
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -148,10 +151,12 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return "dbo.fn_sym_triggers_disabled() = 0";
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "@TransactionId";
     }
 
+    @Override
     public boolean supportsTransactionId() {
         return true;
     }
@@ -173,10 +178,12 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean isTransactionIdOverrideSupported() {
         return false;
     }
 
+    @Override
     public boolean isDateOverrideToTimestamp() {
         return true;
     }
@@ -200,10 +207,15 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return (String) jdbcTemplate.queryForObject("select DB_NAME()", String.class);
     }
 
+    @Override
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
+        if (StringUtils.isBlank(this.defaultSchema)) {
+            this.defaultSchema = (String) jdbcTemplate.queryForObject("select SCHEMA_NAME()", String.class);
+        }
+        return this.defaultSchema;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }

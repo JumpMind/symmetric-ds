@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.net.URL;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -39,6 +40,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(Db2DbDialect.class);
 
+    @Override
     protected void initForSpecificDialect() {
         try {
             enableSyncTriggers();
@@ -57,6 +59,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return getClass().getResource("/dialects/db2.sql");
     }
 
+    @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
@@ -64,14 +67,17 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
 
+    @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
 
+    @Override
     public boolean isClobSyncSupported() {
         return true;
     }
 
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
@@ -93,10 +99,12 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return "nullif('','')";
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";
     }
@@ -113,14 +121,17 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return false;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
 
+    @Override
     public boolean supportsGetGeneratedKeys() {
         return false;
     }
 
+    @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
@@ -132,10 +143,15 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    @Override
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
+        if (StringUtils.isBlank(this.defaultSchema)) {
+            this.defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class); 
+        }
+        return this.defaultSchema;
     }
 
+    @Override
     public String getIdentifierQuoteString() {
         return "";
     }

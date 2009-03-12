@@ -1542,9 +1542,7 @@ public class CsvReader {
         }
     }
 
-    /**
-     * 
-     */
+    @Override
     protected void finalize() {
         close(false);
     }

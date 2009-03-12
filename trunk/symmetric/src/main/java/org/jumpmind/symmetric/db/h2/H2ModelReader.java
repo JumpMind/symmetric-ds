@@ -49,9 +49,7 @@ public class H2ModelReader extends JdbcModelReader {
         setDefaultSchemaPattern(null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     @SuppressWarnings("unchecked")
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         Column column = super.readColumn(metaData, values);
@@ -61,18 +59,14 @@ public class H2ModelReader extends JdbcModelReader {
         return column;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected boolean isInternalForeignKeyIndex(DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
             Index index) {
         String name = index.getName();
         return name != null && name.startsWith("CONSTRAINT_INDEX_");
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected boolean isInternalPrimaryKeyIndex(DatabaseMetaDataWrapper metaData, Table table, Index index) {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");

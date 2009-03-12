@@ -24,6 +24,7 @@ import java.net.URL;
 import java.sql.Types;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
@@ -108,6 +109,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { name }) > 0;
     }
 
+    @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.BASE64;
     }
@@ -124,14 +126,17 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
+    @Override
     public boolean isBlobOverrideToBinary() {
         return true;
     }
 
+    @Override
     public boolean isDateOverrideToTimestamp() {
         return true;
     }
 
+    @Override
     public String getTransactionTriggerExpression(Trigger trigger) {
         return TRANSACTION_ID_FUNCTION_NAME + "()";
     }
@@ -154,6 +159,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select " + sequenceName + ".currval from dual";
     }
@@ -165,6 +171,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                 new Object[] { triggerName, tableName }) > 0;
     }
 
+    @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
     }
@@ -193,11 +200,13 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return null;
     }
 
+    @Override
     public String getDefaultSchema() {
-        return (String) jdbcTemplate.queryForObject("SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual",
-                String.class);
+        if (StringUtils.isBlank(this.defaultSchema)) {
+            this.defaultSchema = (String) jdbcTemplate.queryForObject(
+                    "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
+        }
+        return defaultSchema;
     }
-    
-    
 
 }

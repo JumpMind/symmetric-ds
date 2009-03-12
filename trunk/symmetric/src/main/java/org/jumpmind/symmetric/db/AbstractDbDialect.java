@@ -102,23 +102,25 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected String tablePrefix;
 
-    private int streamingResultsFetchSize;
+    protected int streamingResultsFetchSize;
 
-    private Boolean supportsGetGeneratedKeys;
+    protected Boolean supportsGetGeneratedKeys;
 
     protected TransactionTemplate transactionTemplate;
 
-    private String databaseName;
+    protected String databaseName;
 
-    private int databaseMajorVersion;
+    protected int databaseMajorVersion;
 
-    private int databaseMinorVersion;
+    protected int databaseMinorVersion;
 
-    private String databaseProductVersion;
+    protected String databaseProductVersion;
 
-    private String identifierQuoteString;
+    protected String identifierQuoteString;
     
-    private Set<String> sqlKeywords;
+    protected Set<String> sqlKeywords;
+    
+    protected String defaultSchema;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -970,6 +972,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void rollbackToSavepoint(final Object savepoint) {
         if (savepoint != null) {
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
                     transactionstatus.rollbackToSavepoint(savepoint);
                 }
@@ -980,6 +983,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public void releaseSavepoint(final Object savepoint) {
         if (savepoint != null) {
             transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
                     transactionstatus.releaseSavepoint(savepoint);
                 }
@@ -1111,4 +1115,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String preProcessTriggerSqlClause(String sqlClause) {
         return sqlClause;
     }
+    
+    /**
+     * Returns the current schema name
+     * @return String
+     */
+    public String getDefaultSchema() {
+        return StringUtils.isBlank(defaultSchema) ? null : defaultSchema;
+    }
+
+    /**
+     * Sets the current schema name from properties file
+     * @param currentSchema
+     */
+    public void setDefaultSchema(String currentSchema) {
+        this.defaultSchema = currentSchema;
+    }
+    
 }

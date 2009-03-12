@@ -11,6 +11,7 @@
 		class="org.jumpmind.symmetric.db.db2.Db2DbDialect"
 		scope="prototype">
 		<property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+        <property name="defaultSchema" value="$[sym.db.default.schema]" />
 		<property name="parameterService" ref="parameterService" />
 		<property name="streamingResultsFetchSize"
 			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
