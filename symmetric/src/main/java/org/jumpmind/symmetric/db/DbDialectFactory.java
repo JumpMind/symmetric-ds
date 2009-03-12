@@ -52,6 +52,25 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private static final Log logger = LogFactory.getLog(DbDialectFactory.class);
 
+    private String db2MainframeDatabaseProductVersion;
+    
+    /**
+     * Returns the database product version for zOS db2     
+     * @return String
+     */
+    public String getDb2MainframeDatabaseProductVersion() {
+        return db2MainframeDatabaseProductVersion;
+    }
+
+    /**
+     * Sets the database product version for zOS db2 from the properties file
+     * @param db2MainframeDatabaseProductVersion
+     */
+    public void setDb2MainframeDatabaseProductVersion(String db2MainframeDatabaseProductVersion) {
+        this.db2MainframeDatabaseProductVersion = db2MainframeDatabaseProductVersion;
+    }
+
+
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
@@ -71,6 +90,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
+
+        String currentDbProductVersion = getDatabaseProductVersion();
         initPlatforms();
        
         Platform pf = PlatformFactory.createNewPlatformInstance(productString);
@@ -99,7 +120,11 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
-            dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
+            if(currentDbProductVersion.equals(getDb2MainframeDatabaseProductVersion())){
+                dialect = (AbstractDbDialect) beanFactory.getBean("db2MainframeDialect");
+            }else {
+                dialect = (AbstractDbDialect) beanFactory.getBean("db2Dialect");
+            }
         } else if (pf instanceof FirebirdPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("firebirdDialect");
         } else {
@@ -152,6 +177,15 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         });
     }
 
+    private String getDatabaseProductVersion() {
+        return (String) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+                DatabaseMetaData metaData = c.getMetaData();
+                return metaData.getDatabaseProductVersion();
+            }
+        });
+    }
+    
     private String getDbProductName() {
         return (String) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {

@@ -15,6 +15,7 @@
 	<import resource="classpath:/dialects/h2.xml" />
 	<import resource="classpath:/dialects/hsqldb.xml" />
     <import resource="classpath:/dialects/db2.xml" />
+    <import resource="classpath:/dialects/db2Mainframe.xml" />
     <import resource="classpath:/dialects/firebird.xml" />
 
 </beans>
