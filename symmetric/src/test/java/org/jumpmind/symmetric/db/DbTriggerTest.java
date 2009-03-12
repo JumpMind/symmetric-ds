@@ -57,6 +57,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             + TestConstants.TEST_PREFIX
             + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.043, 5.2212)";
+    public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",2.043,5.2212";
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
@@ -302,6 +303,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             bootstrapService.syncTriggers();
             Assert.assertEquals("Some triggers must have failed to build.", 0, failures.getFailures().size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
+            String csvString = getNextDataRow(getSymmetricEngine());
+            Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
         }
     }
 
