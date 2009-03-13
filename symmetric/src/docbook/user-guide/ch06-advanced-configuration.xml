@@ -234,6 +234,14 @@ values
             <title>IExtractorListener</title>
             <para></para>
         </section>
+        <section>
+            <title>INodeIdGenerator</title>
+            <para></para>
+        </section>
+        <section>
+            <title>ITriggerCreationListener</title>
+            <para></para>
+        </section>                
     </section>
     <section>
         <title>Secure Transport</title>
