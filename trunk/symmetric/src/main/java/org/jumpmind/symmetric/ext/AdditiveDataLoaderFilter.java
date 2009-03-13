@@ -111,7 +111,9 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         s.append(buildSetClause(context, columnValues, values));
         s.append(buildWhereClause(context, keyValues, values));
 
-        logger.info(s.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug(s.toString());
+        }
         return (jdbcTemplate.update(s.toString(), values.toArray()) > 0);
     }
 
