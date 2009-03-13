@@ -155,11 +155,12 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
                 // Additive columns...
                 for (int i = 0; i < additiveColumnNames.length; i++) {
                     int additiveColumnIndex = context.getColumnIndex(additiveColumnNames[i]);
-                    String oldData = context.getOldData()[additiveColumnIndex];
+                    String[] oldValues = context.getOldData();                    
+                    String oldData = oldValues == null ? null : context.getOldData()[additiveColumnIndex];
                     String newData = columnValues[additiveColumnIndex];
 
                     if (!StringUtils.isEmpty(newData)) {
-                        if (!newData.equalsIgnoreCase(oldData)) {
+                        if (oldData == null || !newData.equalsIgnoreCase(oldData)) {
                             if (firstSet) {
                                 s.append(", ");
                             }
