@@ -156,7 +156,17 @@
                                 The timezone offset in RFC822 format at the time of the last heartbeat.
                             </entry>
                         </row>
-                        
+                        <row>
+                            <entry>created_at_node_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>Y</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>
+                                The id of the node where this node was created.  This is filled with the 
+                                id found in node_identity where registration was opened for the node.
+                            </entry>
+                        </row>                        
                     </tbody>
                 </tgroup>
             </table>
@@ -240,6 +250,17 @@
                             <entry></entry>
                             <entry>The timestamp when this node started the initial load.</entry>
                         </row>
+                        <row>
+                            <entry>created_at_node_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>Y</entry>
+                            <entry></entry>
+                            <entry></entry>
+                            <entry>
+                                The id of the node where this node was created.  This is filled with the 
+                                id found in node_identity where registration was opened for the node.
+                            </entry>
+                        </row>                                                
                     </tbody>
                 </tgroup>
             </table>
