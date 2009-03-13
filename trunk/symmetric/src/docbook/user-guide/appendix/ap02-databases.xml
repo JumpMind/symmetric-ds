@@ -30,6 +30,7 @@
                         <entry>Transaction Identifier</entry>
                         <entry>Fallback Update</entry>
                         <entry>Conditional Sync</entry>
+                        <entry>Update Loop Prevention</entry>
                         <entry>BLOB Sync</entry>
                         <entry>CLOB Sync</entry>
                     </row>
@@ -38,6 +39,7 @@
                     <row>
                         <entry>Oracle</entry>
                         <entry>8.1.7 and above</entry>
+                        <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
@@ -52,6 +54,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
+                        <entry>Y</entry>
                     </row>
                     <row>
                         <entry>PostgreSQL</entry>
@@ -61,10 +64,12 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
+                        <entry>Y</entry>
                     </row>
                     <row>
                         <entry>SQL Server</entry>
                         <entry>2005</entry>
+                        <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
@@ -79,10 +84,12 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
+                        <entry>Y</entry>
                     </row>
                     <row>
                         <entry>H2</entry>
                         <entry>1.1</entry>
+                        <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
@@ -97,6 +104,7 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
+                        <entry>Y</entry>
                     </row>      
                     <row>
                         <entry>IBM DB2</entry>
@@ -106,10 +114,12 @@
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
+                        <entry>Y</entry>
                     </row>                                    
                     <row>
                         <entry>Firebird</entry>
                         <entry>2.0</entry>
+                        <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
                         <entry>Y</entry>
