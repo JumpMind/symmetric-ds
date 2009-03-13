@@ -26,6 +26,30 @@
         </itemizedlist>
     </section>
     <section>
+        <title>Bi-Directional Synchronization</title>
+        <para>
+            SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
+            synchronization does not process changes during an incoming synchronization unless the trigger 
+            was created with the sync_on_incoming_batch flag was set.  If the sync_on_incoming_batch flag
+            is set, then update loops are prevented by a feature that is available in most database dialects.  
+            During an incoming synchronization the source node_id is put into a database variable that is 
+            available to the database trigger.  Data events are not generated if the target node_id 
+            on an outgoing synchronization is equal to the source node_id.  
+        </para> 
+        <para>
+            When synchronizing tables in both directions, the sync_column_level flag may be enabled.  
+            This indicates to the data loader that only columns that have changed should be updated.  
+            In order to accomplish this, both old and new data are transmitted from the source node 
+            to the target node.  Because of the extra data overhead this feature should only be 
+            enabled if needed.
+        </para>         
+        <para>
+            More complex conflict resolution strategies can be accomplished by using the 
+            <literal>IDataLoaderFilter</literal> extension point which has access to both 
+            old and new data.
+        </para>         
+    </section>    
+    <section>
         <title>Dead Triggers</title>
         <para>
             Normally a Trigger is specified to capture data changes to a table and send them to
@@ -128,12 +152,28 @@ values
                 As data is loaded into the target database, a filter can change the
                 data in a column or save it somewhere else.  It can also specify by the
                 return type of the function call that the data loader should continue on 
-                and load the data (by returning true) or ignore it (by returning false). One possible use of the filter might be to
+                and load the data (by returning true) or ignore it (by returning false). One 
+                possible use of the filter might be to
                 route credit card data to a secure database and blank it out as it loads 
                 into less-restricted reporting database.
             </para>
             <para>
-                A class implementing the IDataLoaderFilter interface is given to the
+                An IDataLoaderContext is passed to each of the callback methods.  A new 
+                context is created for each synchronization.  The context provides methods to 
+                lookup column indexes by column name, get table meta data, and provides access to 
+                old data if the sync_column_level flag is enabled.  The context also provides a means 
+                to share data during a synchronization between different rows of data that are 
+                committed in a  database transaction and are in the same channel.  It does so by 
+                providing a context cache which can be populated by the extension point.
+            </para>  
+            <para>
+                Many times the IDataLoaderFilter will be combined with the IBatchListener.  The 
+                XmlPublisherFilter (in the org.jumpmind.symmetric.ext package) is a good example 
+                of using the combination of the two extension points in order to create XML messages 
+                to be published to JMS.
+            </para>          
+            <para>
+                A class implementing the IDataLoaderFilter interface is injected onto the
                 DataLoaderService in order to receive callbacks when data is inserted,
                 updated, or deleted.
                 

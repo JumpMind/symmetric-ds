@@ -181,7 +181,7 @@
             </listitem>            
         </itemizedlist>
         <para>
-            See the appendix <link linkend="databases">Database Notes</link> for compatibility notes and
+            See the appendix <link linkend="databases"></link> for compatibility notes and
             other details for your specific database.
         </para>
     </section>
