@@ -30,7 +30,7 @@
         </para>
         <para>
             <table>
-                <title>Node</title>
+                <title>node</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -180,7 +180,7 @@
         </para>
         <para>
             <table>
-                <title>Node Security</title>
+                <title>node_security</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -274,7 +274,7 @@
         </para>
         <para>
             <table>
-                <title>Node Security</title>
+                <title>node_identity</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -314,7 +314,7 @@
         </para>
         <para>
             <table>
-                <title>Node Group</title>
+                <title>node_group</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -365,7 +365,7 @@
         </para>
         <para>
             <table>
-                <title>Node Group Link</title>
+                <title>node_group_link</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -425,7 +425,7 @@
         </para>
         <para>
             <table>
-                <title>Channel</title>
+                <title>channel</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -504,7 +504,7 @@
         </para>
         <para>
             <table>
-                <title>Node Channel Control</title>
+                <title>node_channel_ctl</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -578,7 +578,7 @@
         </para>
         <para>
             <table>
-                <title>Trigger</title>
+                <title>trigger</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -895,7 +895,7 @@
         </para>
         <para>
             <table>
-                <title>Parameter</title>
+                <title>parameter</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
