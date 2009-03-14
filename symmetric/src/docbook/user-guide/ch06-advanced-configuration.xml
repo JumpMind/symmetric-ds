@@ -8,6 +8,12 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
     <section>
+        <title>Node Topologies</title>
+    </section>
+    <section>
+        <title>Node Select</title>
+    </section>    
+    <section>
         <title>Initial Load</title>
         <para>
             There are variables you can use when specifying the initial_load_select SQL for
@@ -82,6 +88,9 @@ values
    0, 0, 0, 
    105, 'demo', current_timestamp, current_timestamp);]]></programlisting>
         </para>
+    </section>
+    <section>
+        <title>Database Purging</title>
     </section>
     <section>
         <title>Extension Points</title>
