@@ -238,7 +238,7 @@ values
             <title>INodeIdGenerator</title>
             <para>
              This extension point allows SymmetricDS users to implement their own algorithms for how 
-             node_id(s) and passwords are generated or selected during registration process.  There may be 
+             node ids and passwords are generated or selected during the registration process.  There may be 
              only one node generator per SymmetricDS instance.
             </para>
         </section>
