@@ -142,6 +142,10 @@
                 This example starts all the SymmetricDS Servlets with Filters to compress the
                 stream, authenticate nodes, and reject nodes when the server is too busy.
             </para>
+            <para>
+                The web.base.servlet.path property in symmetric.properties can be set if the SymmetricServlet needs to
+                coexist with other Servlets.
+            </para>            
         </section>
         <section>
             <title>Standalone</title>

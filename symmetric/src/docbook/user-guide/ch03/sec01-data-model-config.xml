@@ -22,7 +22,7 @@
         </figure>
     </para>
     <section>
-        <title>Node</title>
+        <title>Node Table</title>
         <para>
             An instance of SymmetricDS that synchronizes data with one or more nodes. Each node has
             a unique identifier (nodeId) that is used when communicating, as well as a
@@ -173,7 +173,7 @@
         </para>
     </section>
     <section>
-        <title>Node Security</title>
+        <title>Node Security Table</title>
         <para>
             Security features like node passwords and open registration flag are stored in the
             NodeSecurity table.
@@ -267,7 +267,7 @@
         </para>
     </section>
     <section>
-        <title>Node Identity</title>
+        <title>Node Identity Table</title>
         <para>
             After registration, this table will have one row representing the identity of the node.
             For a root node, the row is entered by the user.
@@ -307,7 +307,7 @@
         </para>
     </section>
     <section>
-        <title>Node Group</title>
+        <title>Node Group Table</title>
         <para>
             A category of Nodes that synchronizes data with one or more NodeGroups. A common use of
             NodeGroup is to describe a level in a hierarchy of data synchronization.
@@ -358,7 +358,7 @@
         </para>
     </section>
     <section>
-        <title>Node Group Link</title>
+        <title>Node Group Link Table</title>
         <para>
             A source NodeGroup sends its data updates to a target NodeGroup using a pull, push, or
             custom technique.
@@ -417,7 +417,7 @@
         </para>
     </section>
     <section>
-        <title>Channel</title>
+        <title>Channel Table</title>
         <para>
             A category of data that can be synchronized independently of other Channels. Channels
             allow control over the type of data flowing and prevents one type of synchronization
@@ -496,7 +496,7 @@
         </para>
     </section>
     <section>
-        <title>Node Channel Control</title>
+        <title>Node Channel Control Table</title>
         <para>
             The Node Channel Control is used to ignore or suspend a channel. A channel that is
             ignored will have its Data Events batched and they will immediately be marked as "OK"
@@ -570,7 +570,7 @@
         </para>
     </section>
     <section>
-        <title>Trigger</title>
+        <title id="table.trigger">Trigger Table</title>
         <para>
             The database triggers that capture changes in the database are automatically generated
             by SymmetricDS. Configuration of which triggers are generated and how they will behave
@@ -889,7 +889,7 @@
         </para>
     </section>
     <section>
-        <title>Parameter</title>
+        <title>Parameter Table</title>
         <para>
             The Parameter table provides a way to manage most SymmetricDS settings in the database.
         </para>
