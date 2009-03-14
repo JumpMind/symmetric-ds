@@ -64,7 +64,7 @@
             <listitem>
                 <para>Standalone service that embeds Jetty web server</para>
                 <para>
-                    This option means running the "sym" command line, which launches the built-in Jetty web server.  
+                    This option means running the <emphasis>sym</emphasis> command line, which launches the built-in Jetty web server.  
                     This is a simple option because it is already provided, but you lose the flexibility to configure 
                     the web server any further.
                 </para>
