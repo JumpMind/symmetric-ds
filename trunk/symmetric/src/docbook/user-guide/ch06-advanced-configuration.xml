@@ -29,10 +29,10 @@
         <title>Bi-Directional Synchronization</title>
         <para>
             SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
-            synchronization does not process changes during an incoming synchronization unless the trigger 
-            was created with the sync_on_incoming_batch flag was set.  If the sync_on_incoming_batch flag
+            synchronization does not process changes during an incoming synchronization on the same node unless the trigger 
+            was created with the sync_on_incoming_batch flag set.  If the sync_on_incoming_batch flag
             is set, then update loops are prevented by a feature that is available in most database dialects.  
-            During an incoming synchronization the source node_id is put into a database variable that is 
+            During an incoming synchronization the source node_id is put into a database session variable that is 
             available to the database trigger.  Data events are not generated if the target node_id 
             on an outgoing synchronization is equal to the source node_id.  
         </para> 
