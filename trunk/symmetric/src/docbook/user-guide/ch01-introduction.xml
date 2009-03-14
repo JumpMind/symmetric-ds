@@ -13,9 +13,21 @@
             <title>What is SymmetricDS?</title>
             <para>
                 SymmetricDS is asynchronous data replication software supporting multiple subscribers and bi-directional
-                synchronization. 
-                 It uses web and database technologies to replicate tables between relational databases in near real time. 
-                 The software was designed to scale for a large number of databases, work across low-bandwidth connections, and withstand periods of network outage.
+                synchronization. It uses web and database technologies to replicate tables between relational databases in near real time. 
+                 The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
+                 and withstand periods of network outage.
+            </para>
+            <para>
+                 The software is installed either standalone, as a web application in a Java application server or can be embedded 
+                 into another Java application.  A single installation of SymmetricDS is called a <emphasis>node</emphasis>.  A node is initialized by 
+                 a properties file and is configured by inserting configuration data into a series of database tables.  It then 
+                 creates database triggers on the application tables that are configured so that database events are captured for delivery 
+                 to other SymmetricDS nodes.
+            </para>
+            <para>
+                SymmetricDS supports synchronization across different database platforms through the 
+                concept of database dialects.  A database dialect is an abstraction layer that SymmetricDS 
+                interacts with to insulated the main synchronization logic from database specific implementation details. 
             </para>
         </section>
         <section>
@@ -65,8 +77,7 @@
                 that are committed together. SymmetricDS stores the transaction ID along with
                 the data that changed so it can play back the transaction exactly the way it
                 happened. This means the target database maintains the same integrity as its
-                source. Support for transaction ID is included in the Database Dialects for both
-                MySQL and Oracle in this release.
+                source. Support for transaction ID is documented in the appendix of this guide.
             </para>
         </section>
         <section>
@@ -74,6 +85,16 @@
             <para>
                 Data can be filtered as it is recorded, extracted, and loaded.
                 <itemizedlist>
+                    <listitem>
+                        <para>
+                            Data routing and filtering is specified using SQL expressions in the 
+                            trigger configuration.  The SQL expressions are configured in the node_select 
+                            (for real time routing) and initial_load_select (for initial data loads) columns 
+                            of the <xref linkend="table.trigger"/>.  The SQL expressions are used to create the 
+                            SQL triggers that SymmetricDS installs to capture data changes.  Using this technique 
+                            data can be routed to a specific node or group of nodes.
+                        </para>
+                    </listitem>
                     <listitem>
                         <para>
                             As data changes are loaded in the target database, a class implementing
