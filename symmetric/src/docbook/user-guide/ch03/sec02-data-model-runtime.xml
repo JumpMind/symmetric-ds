@@ -21,7 +21,7 @@
         </figure>
     </para>
     <section>
-        <title>Trigger Hist Table</title>
+        <title>Trigger History Table</title>
         <para>
             A history of a table's definition and the Trigger used to capture data from the table.
             When a database trigger captures a data change, it references a Trigger Hist entry
@@ -34,7 +34,7 @@
         </para>
         <para>
             <table>
-                <title>Trigger Hist</title>
+                <title>trigger_hist</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -194,7 +194,7 @@
         </para>
         <para>
             <table>
-                <title>Data</title>
+                <title>data</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -302,7 +302,7 @@
         </para>
         <para>
             <table>
-                <title>Data Event</title>
+                <title>data_event</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -395,7 +395,7 @@
         </para>
         <para>
             <table>
-                <title>Outgoing Batch</title>
+                <title>outgoing_batch</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -475,14 +475,14 @@
         </para>
     </section>
     <section>
-        <title>Outgoing Batch Hist Table</title>
+        <title>Outgoing Batch Histpry Table</title>
         <para>
             A history of status changes to the Outgoing Batch, along with statistics of
             the work performed.
         </para>
         <para>
             <table>
-                <title>Outgoing Batch Hist</title>
+                <title>outgoing_batch_hist</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -656,7 +656,7 @@
         </para>
         <para>
             <table>
-                <title>Incoming Batch</title>
+                <title>incoming_batch</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
@@ -716,14 +716,14 @@
         </para>
     </section>
     <section>
-        <title>Incoming Batch Hist Table</title>
+        <title>Incoming Batch History Table</title>
         <para>
             A history of status changes to the Incoming Batch, along with statistics of
             the work performed.
         </para>
         <para>
             <table>
-                <title>Incoming Batch Hist</title>
+                <title>incoming_batch_hist</title>
                 <tgroup cols="6">
                     <colspec colwidth="115px" />
                     <colspec colwidth="65px" />
