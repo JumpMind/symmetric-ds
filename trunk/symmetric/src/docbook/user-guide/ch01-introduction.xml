@@ -14,12 +14,12 @@
             <para>
                 SymmetricDS is asynchronous data replication software supporting multiple subscribers and bi-directional
                 synchronization. It uses web and database technologies to replicate tables between relational databases in near real time. 
-                 The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
-                 and withstand periods of network outage.
+                The software was designed to scale for a large number of databases, work across low-bandwidth connections, 
+                and withstand periods of network outage.
             </para>
             <para>
                  The software is installed either standalone, as a web application in a Java application server or can be embedded 
-                 into another Java application.  A single installation of SymmetricDS is called a <emphasis>node</emphasis>.  A node is initialized by 
+                 into another Java application.  A single installation of SymmetricDS is called a <emphasis>Node</emphasis>.  A Node is initialized by 
                  a properties file and is configured by inserting configuration data into a series of database tables.  It then 
                  creates database triggers on the application tables specified so that database events are captured for delivery 
                  to other SymmetricDS nodes.
