@@ -120,7 +120,7 @@
     <section>
         <title>Startup Parameters</title>
         <para>
-            Startup parameters are read once from properties files during start up.
+            Startup parameters are read once from properties files and apply only during start up.
             The following properties are used:
     
             <variablelist>
@@ -294,6 +294,41 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>auto.config.database</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If this is true, the configuration and runtime tables used by SymmetricDS are
+                            automatically created during startup. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.upgrade</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If this is true, when symmetric starts up it will try to upgrade tables to latest version.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>    
+                <varlistentry>
+                    <term>
+                        <command>auto.sync.configuration</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If this is true, create triggers for the SymmetricDS configuration table that 
+                            will synchronize changes to node groups that pull from the node where this 
+                            property is set.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                              
+                <varlistentry>
+                    <term>
                         <command>sync.table.prefix</command>
                     </term>
                     <listitem>
@@ -328,6 +363,57 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>start.push.job</command>
+                    </term>
+                    <listitem>
+                        <para>Whether the push job is enabled for this node. [&#xA0;Default:&#xA0;true]</para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
+                        <command>start.pull.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the pull job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
+                        <command>start.purge.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the purge job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>start.synctriggers.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the sync triggers job is enabled for this node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
+                        <command>start.heartbeat.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the heartbeat job is enabled for this node. The heartbeat job simply inserts
+                            an event to update the heartbeat_time column on the node table for the current node.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
+                <varlistentry>
+                    <term>
                         <command>job.purge.period.time.ms</command>
                     </term>
                     <listitem>
@@ -360,28 +446,6 @@
             <variablelist>
                 <varlistentry>
                     <term>
-                        <command>auto.config.database</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If this is true, the configuration and runtime tables used by SymmetricDS are
-                            automatically created during startup. [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>auto.upgrade</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If this is true, when symmetric starts up it will try to upgrade tables to latest version.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
                         <command>auto.registration</command>
                     </term>
                     <listitem>
@@ -401,20 +465,7 @@
                             [&#xA0;Default:&#xA0;false&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>auto.sync.configuration</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If this is true, create triggers for the SymmetricDS configuration table that 
-                            will synchronize changes to node groups that pull from the node where this 
-                            property is set.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>            
+                </varlistentry>          
                 <varlistentry>
                     <term>
                         <command>http.download.rate.kb</command>
@@ -687,28 +738,10 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>start.push.job</command>
-                    </term>
-                    <listitem>
-                        <para>Whether the push job is enabled for this node. [&#xA0;Default:&#xA0;true]</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
                         <command>job.push.period.time.ms</command>
                     </term>
                     <listitem>
                         <para>This is how often the push job will be run. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>start.pull.job</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Whether the pull job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -721,45 +754,12 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>start.purge.job</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Whether the purge job is enabled for this node. [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>start.synctriggers.job</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Whether the sync triggers job is enabled for this node.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
                         <command>job.synctriggers.aftermidnight.minutes</command>
                     </term>
                     <listitem>
                         <para>
                             If scheduled, the sync triggers job will run nightly. This is how long after midnight
                             that job will run. [&#xA0;Default:&#xA0;15&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>start.heartbeat.job</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Whether the heartbeat job is enabled for this node. The heartbeat job simply inserts
-                            an event to update the heartbeat_time column on the node table for the current node.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
