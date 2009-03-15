@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.LockAction;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
@@ -52,7 +52,7 @@ public class PullService extends AbstractService implements IPullService {
     private IClusterService clusterService;
     
     synchronized public void pullData() {
-        if (clusterService.lock(LockAction.PULL)) {
+        if (clusterService.lock(LockActionConstants.PULL)) {
             // register if we haven't already been registered
             if (!registrationService.isRegisteredWithServer()) {
                 registrationService.registerWithServer();

@@ -31,11 +31,12 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.LockAction;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import static org.jumpmind.symmetric.service.LockActionConstants.*;
 
 public class ClusterService extends AbstractService implements IClusterService {
 
@@ -48,10 +49,10 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable() {
         initLockTableForNodes(nodeService.findNodesToPull());
         initLockTableForNodes(nodeService.findNodesToPushTo());
-        initLockTable(LockAction.PURGE_INCOMING, COMMON_LOCK_ID);
-        initLockTable(LockAction.PURGE_OUTGOING, COMMON_LOCK_ID);
-        initLockTable(LockAction.PURGE_STATISTICS, COMMON_LOCK_ID);
-        initLockTable(LockAction.SYNCTRIGGERS, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.PURGE_INCOMING, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.PURGE_OUTGOING, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.PURGE_STATISTICS, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
     private void initLockTableForNodes(final List<Node> nodes) {
@@ -61,14 +62,14 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     public void initLockTableForNode(final Node node) {
-        initLockTable(LockAction.PULL, node.getNodeId());
-        initLockTable(LockAction.PUSH, node.getNodeId());
-        initLockTable(LockAction.HEARTBEAT, node.getNodeId());
+        initLockTable(LockActionConstants.PULL, node.getNodeId());
+        initLockTable(LockActionConstants.PUSH, node.getNodeId());
+        initLockTable(LockActionConstants.HEARTBEAT, node.getNodeId());
     }
 
-    public void initLockTable(final LockAction action, final String lockId) {
+    public void initLockTable(final String action, final String lockId) {
         try {
-            jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action.name() });
+            jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action });
             if (logger.isDebugEnabled()) {
                 logger.debug("Inserted into the node_lock table for " + lockId + ".");
             }
@@ -86,30 +87,30 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final LockAction action, final Node node) {
+    public boolean lock(final String action, final Node node) {
         return lock(action, node.getNodeId());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final LockAction action) {
+    public boolean lock(final String action) {
         return lock(action, COMMON_LOCK_ID);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final LockAction action) {
+    public void unlock(final String action) {
         unlock(action, COMMON_LOCK_ID);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final LockAction action, final Node node) {
+    public void unlock(final String action, final Node node) {
         unlock(action, node.getNodeId());
     }
 
-    private boolean lock(final LockAction action, final String id) {
+    private boolean lock(final String action, final String id) {
         if (isClusteringEnabled(action)) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
                     .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action.name(),
+            return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action,
                     timeout }) == 1;
         } else {
             return true;
@@ -120,30 +121,25 @@ public class ClusterService extends AbstractService implements IClusterService {
         return AppUtils.getServerId();
     }
 
-    private void unlock(final LockAction action, final String id) {
+    private void unlock(final String action, final String id) {
         if (isClusteringEnabled(action)) {
-            jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action.name(), getLockingServerId() });
+            jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, getLockingServerId() });
         }
     }
 
-    private boolean isClusteringEnabled(final LockAction action) {
-        switch (action) {
-        case PULL:
+    private boolean isClusteringEnabled(final String action) {
+        if (PULL.equals(action)) {
             return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PULL);
-        case PUSH:
+        } else if (PUSH.equals(action)) {
             return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PUSH);
-        case PURGE_INCOMING:
-        case PURGE_OUTGOING:
-        case PURGE_STATISTICS:
+        } else if (PURGE_INCOMING.equals(action) || PURGE_OUTGOING.equals(action) || PURGE_STATISTICS.equals(action)) {
             return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PURGE);
-        case HEARTBEAT:
+        } else if (HEARTBEAT.equals(action)) {
             return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_HEARTBEAT);
-        case SYNCTRIGGERS:
+        } else if (SYNCTRIGGERS.equals(action)) {
             return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_SYNC_TRIGGERS);
-        case OTHER:
+        } else {
             return true;
-        default:
-            return false;
         }
     }
 

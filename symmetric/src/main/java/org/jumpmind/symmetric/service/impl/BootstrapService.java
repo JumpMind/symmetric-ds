@@ -57,7 +57,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IUpgradeService;
-import org.jumpmind.symmetric.service.LockAction;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,13 +152,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
     
     synchronized public void syncTriggers(StringBuilder sqlBuffer) {
-        if (clusterService.lock(LockAction.SYNCTRIGGERS)) {
+        if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateSymmetricTriggers(sqlBuffer);
             } finally {
-                clusterService.unlock(LockAction.SYNCTRIGGERS);
+                clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
                 logger.info("Done synchronizing triggers");
             }
         } else {
@@ -398,7 +398,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     @Transactional
     public void heartbeat() {
-        if (clusterService.lock(LockAction.HEARTBEAT)) {
+        if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
             List<Node> heartbeatNodesToPush = new ArrayList<Node>();
             Node me = nodeService.findIdentity();
             if (me != null) {
