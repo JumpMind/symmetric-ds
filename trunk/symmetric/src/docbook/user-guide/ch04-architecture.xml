@@ -31,6 +31,11 @@
         The Ack Servlet uses services to update the status of data that was loaded at a client Node.
     </para>
     <para>
+        The <literal>SymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The 
+        <literal>SymmetricWebServer</literal> is a wrapper API that can be used to directly start <emphasis>both</emphasis> the
+        client and host services inside a Jetty web container.
+    </para>
+    <para>
         The Transport Manager handles the incoming and outgoing streams of data between Nodes.
         The default transport is based on a simple implementation over HTTP, and other
         implementations may be added.
