@@ -7,8 +7,12 @@
     <para>
         Many of the data synchronization concepts can be understood by examining the data model. The
         configuration data model is stored in a set of tables updated by the user as needed to
-        configure the system. In constrast, the set of tables for the runtime data model change
+        configure the system. In contrast, the set of tables for the runtime data model change
         constantly as the system captures data changes and records the activity to deliver them.
+    </para>
+    <para>
+        Note that all tables are prepended with a configurable prefix so that multiple instances of SymmetricDS
+        may coexist in the same database.  The default prefix is <emphasis>sym_</emphasis>. 
     </para>
 
     <xi:include href="ch03/sec01-data-model-config.xml" />

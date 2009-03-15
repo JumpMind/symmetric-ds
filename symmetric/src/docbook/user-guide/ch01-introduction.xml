@@ -21,7 +21,7 @@
                  The software is installed either standalone, as a web application in a Java application server or can be embedded 
                  into another Java application.  A single installation of SymmetricDS is called a <emphasis>node</emphasis>.  A node is initialized by 
                  a properties file and is configured by inserting configuration data into a series of database tables.  It then 
-                 creates database triggers on the application tables that are configured so that database events are captured for delivery 
+                 creates database triggers on the application tables specified so that database events are captured for delivery 
                  to other SymmetricDS nodes.
             </para>
             <para>
