@@ -19,6 +19,13 @@
  */
 package org.jumpmind.symmetric.service;
 
-public enum LockAction {
-    PUSH, PULL, PURGE_OUTGOING, PURGE_INCOMING, PURGE_STATISTICS, HEARTBEAT, SYNCTRIGGERS, OTHER
+public class LockActionConstants {
+    public static final String PUSH = "PUSH";
+    public static final String PULL = "PUSH";
+    public static final String PURGE_OUTGOING = "PURGE_OUTGOING";
+    public static final String PURGE_INCOMING = "PURGE_INCOMING";
+    public static final String PURGE_STATISTICS = "PURGE_STATISTICS";
+    public static final String HEARTBEAT = "HEARTBEAT";
+    public static final String SYNCTRIGGERS = "SYNCTRIGGERS";
+    
 }

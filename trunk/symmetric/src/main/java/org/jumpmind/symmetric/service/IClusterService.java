@@ -28,15 +28,15 @@ public interface IClusterService {
 
     public void initLockTableForNode(Node node);
 
-    public void initLockTable(LockAction action, String lockId);
+    public void initLockTable(String action, String lockId);
 
-    public boolean lock(LockAction action, Node node);
+    public boolean lock(String action, Node node);
 
-    public boolean lock(LockAction action);
+    public boolean lock(String action);
 
-    public void unlock(LockAction action);
+    public void unlock(String action);
 
-    public void unlock(final LockAction action, final Node node);
+    public void unlock(String action, Node node);
 
     public void clearAllLocks();
 

@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.LockAction;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.junit.Test;
 
@@ -39,10 +39,10 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testLock() throws Exception {
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
-        assertTrue(service.lock(LockAction.PURGE_INCOMING), "Could not lock for PURGE");
+        assertTrue(service.lock(LockActionConstants.PURGE_INCOMING), "Could not lock for PURGE");
         assertEquals(countActivePurgeLocks(), 1, "Could not find the lock in the database.");
-        assertFalse(service.lock(LockAction.PURGE_INCOMING), "Should not have been able to lock for PURGE");
-        service.unlock(LockAction.PURGE_INCOMING);
+        assertFalse(service.lock(LockActionConstants.PURGE_INCOMING), "Should not have been able to lock for PURGE");
+        service.unlock(LockActionConstants.PURGE_INCOMING);
         assertEquals(countActivePurgeLocks(), 0, "Could not find the lock in the database.");
     }
 
@@ -57,19 +57,19 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
         nodeTwo.setNodeId(ID_TWO);
 
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
-        service.initLockTable(LockAction.OTHER, ID_ONE);
-        service.initLockTable(LockAction.OTHER, ID_TWO);
-        assertTrue(service.lock(LockAction.OTHER, nodeOne), "Could not lock for OTHER " + ID_ONE);
-        assertFalse(service.lock(LockAction.OTHER, nodeOne), "Should not have been able to lock for OTHER "
+        service.initLockTable("OTHER", ID_ONE);
+        service.initLockTable("OTHER", ID_TWO);
+        assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
+        assertFalse(service.lock("OTHER", nodeOne), "Should not have been able to lock for OTHER "
                 + ID_ONE);
-        assertTrue(service.lock(LockAction.OTHER, nodeTwo), "Could not lock for OTHER " + ID_TWO);
-        service.unlock(LockAction.OTHER, nodeOne);
-        assertTrue(service.lock(LockAction.OTHER, nodeOne), "Could not lock for OTHER " + ID_ONE);
+        assertTrue(service.lock("OTHER", nodeTwo), "Could not lock for OTHER " + ID_TWO);
+        service.unlock("OTHER", nodeOne);
+        assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
     }
 
     private int countActivePurgeLocks() {
         return getJdbcTemplate().queryForInt(
                 "select count(*) from sym_lock where lock_id=? and lock_action=? and lock_time is not null",
-                new Object[] { ClusterService.COMMON_LOCK_ID, LockAction.PURGE_INCOMING.name() });
+                new Object[] { ClusterService.COMMON_LOCK_ID, LockActionConstants.PURGE_INCOMING });
     }
 }

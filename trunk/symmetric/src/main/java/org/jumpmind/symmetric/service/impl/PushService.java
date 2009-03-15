@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
-import org.jumpmind.symmetric.service.LockAction;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -62,7 +62,7 @@ public class PushService extends AbstractService implements IPushService {
     private IClusterService clusterService;
     
     synchronized public void pushData() {
-        if (clusterService.lock(LockAction.PUSH)) {
+        if (clusterService.lock(LockActionConstants.PUSH)) {
             List<Node> nodes = nodeService.findNodesToPushTo();
             if (nodes != null && nodes.size() > 0) {
                 for (Node node : nodes) {
