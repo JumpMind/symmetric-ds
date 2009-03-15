@@ -57,7 +57,7 @@
                 <para>Web application archive (WAR) deployed to an application server</para>
                 <para>
                     This option means packaging a WAR file and deploying to your favorite
-                    web server, so you could use Apache Tomcat.  It's a little more work, but you
+                    web server, like Apache Tomcat.  It's a little more work, but you
                     can configure the web server to do whatever you need.
                 </para>                
             </listitem>

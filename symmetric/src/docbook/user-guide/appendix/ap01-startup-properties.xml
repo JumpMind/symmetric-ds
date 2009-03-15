@@ -847,18 +847,6 @@
                         </para>
                     </listitem>
                 </varlistentry>
-                 <varlistentry>
-                    <term>
-                        <command>h2.initialize.db</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            If using the H2Dialect, this property indicates whether Symmetric should setup the embedded database properties or if an
-                            external application will be doing so.
-                            [&#xA0;Default:&#xA0;true&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
             </variablelist>
         </para>
     </section>
