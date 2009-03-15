@@ -93,6 +93,9 @@ values
         <title>Database Purging</title>
     </section>
     <section>
+        <title>Clustering</title>
+    </section>    
+    <section>
         <title>Extension Points</title>
         <para>
              SymmetricDS may be extended via a plug-in like architecture where extension point interfaces 
