@@ -399,37 +399,44 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     @Transactional
     public void heartbeat() {
         if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
-            List<Node> heartbeatNodesToPush = new ArrayList<Node>();
-            Node me = nodeService.findIdentity();
-            if (me != null) {
-                logger.info("Updating my node information and heartbeat time.");
-                me.setHeartbeatTime(new Date());
-                me.setTimezoneOffset(AppUtils.getTimezoneOffset());
-                me.setDatabaseType(dbDialect.getName());
-                me.setDatabaseVersion(dbDialect.getVersion());
-                me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-                me.setExternalId(parameterService.getExternalId());
-                me.setNodeGroupId(parameterService.getNodeGroupId());
-                me.setSymmetricVersion(Version.version());
-                if (!StringUtils.isBlank(parameterService.getMyUrl())) {
-                    me.setSyncURL(parameterService.getMyUrl());
-                } else {
-                    me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
+            try {
+                List<Node> heartbeatNodesToPush = new ArrayList<Node>();
+                Node me = nodeService.findIdentity();
+                if (me != null) {
+                    logger.info("Updating my node information and heartbeat time.");
+                    me.setHeartbeatTime(new Date());
+                    me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                    me.setDatabaseType(dbDialect.getName());
+                    me.setDatabaseVersion(dbDialect.getVersion());
+                    me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                    me.setExternalId(parameterService.getExternalId());
+                    me.setNodeGroupId(parameterService.getNodeGroupId());
+                    me.setSymmetricVersion(Version.version());
+                    if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                        me.setSyncURL(parameterService.getMyUrl());
+                    } else {
+                        me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
+                    }
+                    nodeService.updateNode(me);
+                    logger.info("Done updating my node information and heartbeat time.");
+                    heartbeatNodesToPush.add(me);
+                    heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
                 }
-                nodeService.updateNode(me);
-                logger.info("Done updating my node information and heartbeat time.");
-                heartbeatNodesToPush.add(me);
-                heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
-            }
 
-            if (!configurationService.isRegistrationServer()) {
-                for (Node node : heartbeatNodesToPush) {
-                    // don't send new heart beat events if we haven't sent the
-                    // last ones ...
-                    if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node.getNodeId())) {
-                        dataService.insertHeartbeatEvent(node);
+                if (!configurationService.isRegistrationServer()) {
+                    for (Node node : heartbeatNodesToPush) {
+                        // don't send new heart beat events if we haven't sent
+                        // the
+                        // last ones ...
+                        if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node
+                                .getNodeId())) {
+                            dataService.insertHeartbeatEvent(node);
+                        }
                     }
                 }
+            } finally {
+                clusterService.unlock(LockActionConstants.HEARTBEAT);
+
             }
         } else {
             logger.info("Did not run the heartbeat process because the cluster service has it locked ");
