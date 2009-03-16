@@ -48,46 +48,55 @@ public class PullService extends AbstractService implements IPullService {
     private IDataLoaderService dataLoaderService;
 
     private IRegistrationService registrationService;
-    
+
     private IClusterService clusterService;
-    
+
     synchronized public void pullData() {
         if (clusterService.lock(LockActionConstants.PULL)) {
-            // register if we haven't already been registered
-            if (!registrationService.isRegisteredWithServer()) {
-                registrationService.registerWithServer();
-            }
+            try {
+                // register if we haven't already been registered
+                if (!registrationService.isRegisteredWithServer()) {
+                    registrationService.registerWithServer();
+                }
 
-            List<Node> nodes = nodeService.findNodesToPull();
-            if (nodes != null && nodes.size() > 0) {
-                for (Node node : nodes) {
-                    String nodeName = " for " + node;
-                    try {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Pull requested" + nodeName);
-                        }
-                        if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
-                            logger.info("Pull data received" + nodeName);
-                        } else {
+                List<Node> nodes = nodeService.findNodesToPull();
+                if (nodes != null && nodes.size() > 0) {
+                    for (Node node : nodes) {
+                        String nodeName = " for " + node;
+                        try {
                             if (logger.isDebugEnabled()) {
-                                logger.debug("Pull no data received" + nodeName);
+                                logger.debug("Pull requested" + nodeName);
                             }
+                            if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
+                                logger.info("Pull data received" + nodeName);
+                            } else {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Pull no data received" + nodeName);
+                                }
+                            }
+                        } catch (ConnectException ex) {
+                            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT
+                                    + " url="
+                                    + (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node
+                                            .getSyncURL()));
+                        } catch (ConnectionRejectedException ex) {
+                            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+                        } catch (AuthenticationException ex) {
+                            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+                        } catch (SocketException ex) {
+                            logger.warn(ex.getMessage());
+                        } catch (TransportException ex) {
+                            logger.warn(ex.getMessage());
+                        } catch (IOException e) {
+                            logger.error(e, e);
                         }
-                    } catch (ConnectException ex) {
-                        logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url=" + (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node.getSyncURL()));
-                    } catch (ConnectionRejectedException ex) {
-                        logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
-                    } catch (AuthenticationException ex) {
-                        logger.warn(ErrorConstants.NOT_AUTHENTICATED);
-                    } catch (SocketException ex) {
-                        logger.warn(ex.getMessage());
-                    } catch (TransportException ex) {
-                        logger.warn(ex.getMessage());
-                    } catch (IOException e) {
-                        logger.error(e, e);
                     }
                 }
+            } finally {
+                clusterService.unlock(LockActionConstants.PULL);
+
             }
+
         } else {
             logger.warn("Did not run the pull process because the cluster service has it locked");
         }
@@ -108,7 +117,5 @@ public class PullService extends AbstractService implements IPullService {
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
-    
-    
 
 }
