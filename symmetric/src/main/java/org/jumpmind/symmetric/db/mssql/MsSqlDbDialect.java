@@ -92,11 +92,9 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     ArrayList<Object> values = new ArrayList<Object>();
                     CollectionUtils.addAll(values, columnValues);
                     for (int index : indexesToRemove) {
-                        // if (values.size() > index) {
                         if (index >= 0) {
                             values.remove(index);
                         }
-                        // }
                     }
                     return values.toArray(new Object[values.size()]);
                 }
