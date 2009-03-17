@@ -20,7 +20,7 @@
         <para>
             If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
             for the desired Nodes at the desired parent Node and by configuring each Node's registration.url to be the parent Node's URL.  
-            The parent Node is always tracked by the setting of the parent's id in the created_at_node_id column of the new Node.  
+            The parent Node is always tracked by the setting of the parent's node_id in the created_at_node_id column of the new Node.  
             When a Node registers and downloads its configuration it is always provided the configuration for all Nodes that were 
             <emphasis>created</emphasis> at the Node that it is registering with.
         </para> 
