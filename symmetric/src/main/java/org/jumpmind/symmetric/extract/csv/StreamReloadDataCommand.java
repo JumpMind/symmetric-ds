@@ -41,15 +41,19 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
     private INodeService nodeService;
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
-        // The initial_load_select can be overridden
-        if (data.getRowData() != null) {
-            trigger.setInitialLoadSelect(data.getRowData());
+        int id = data.getTriggerHistory().getTriggerId();
+        Trigger trigger = configurationService.getTriggerById(id);
+        if (trigger != null) {
+            // The initial_load_select can be overridden
+            if (data.getRowData() != null) {
+                trigger.setInitialLoadSelect(data.getRowData());
+            }
+            Node node = nodeService.findNode(context.getBatch().getNodeId());
+            dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out, context);
+            out.flush();
+        } else {
+            logger.error(String.format("The trigger %s is not longer available for an initial load.", id));
         }
-        Node node = nodeService.findNode(context.getBatch().getNodeId());
-        dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out,
-                context);
-        out.flush();
     }
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
