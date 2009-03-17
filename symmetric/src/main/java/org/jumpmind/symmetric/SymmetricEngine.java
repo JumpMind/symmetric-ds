@@ -475,14 +475,22 @@ public class SymmetricEngine {
      * Locate a {@link SymmetricEngine} in the same JVM
      */
     public static SymmetricEngine findEngineByUrl(String url) {
-        return registeredEnginesByUrl.get(url);
+        if (registeredEnginesByUrl != null) {
+            return registeredEnginesByUrl.get(url);
+        } else {
+            return null;
+        }
     }
 
     /**
      * Locate a {@link SymmetricEngine} in the same JVM
      */
     public static SymmetricEngine findEngineByName(String name) {
-        return registeredEnginesByName.get(name.toLowerCase());
+        if (registeredEnginesByName != null) {
+            return registeredEnginesByName.get(name.toLowerCase());
+        } else {
+            return null;
+        }
     }
     
     /**
