@@ -475,7 +475,7 @@ public class SymmetricEngine {
      * Locate a {@link SymmetricEngine} in the same JVM
      */
     public static SymmetricEngine findEngineByUrl(String url) {
-        if (registeredEnginesByUrl != null) {
+        if (registeredEnginesByUrl != null && url != null) {
             return registeredEnginesByUrl.get(url);
         } else {
             return null;
@@ -486,7 +486,7 @@ public class SymmetricEngine {
      * Locate a {@link SymmetricEngine} in the same JVM
      */
     public static SymmetricEngine findEngineByName(String name) {
-        if (registeredEnginesByName != null) {
+        if (registeredEnginesByName != null && name != null) {
             return registeredEnginesByName.get(name.toLowerCase());
         } else {
             return null;
