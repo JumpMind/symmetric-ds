@@ -146,7 +146,9 @@ public class NodeService extends AbstractService implements INodeService {
                 }
                 return security;
             } else {
-                logger.warn("A 'null' node id was passed into findNodeSecurity");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("A 'null' node id was passed into findNodeSecurity");
+                }
                 return null;
             }
         } catch (DataIntegrityViolationException ex) {
