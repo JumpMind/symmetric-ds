@@ -8,7 +8,22 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
     <section>
-        <title>Node Topologies</title>
+        <title>Node Trees</title>
+        <para>
+            Nodes can be organized so synchronization can flow through a tree-like network.
+        </para>
+        <para>
+            A Node will always push and pull data to other Node groups according to the Node group link configuration.  
+            A Node can only pull and push data to other Nodes that are represented in its database.  Therefore, a tree-like 
+            hierarchy of Nodes is created by having only a subset of Nodes represented at the different branches of the tree.  
+        </para>
+        <para>
+            If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
+            for the desired Nodes at the desired parent Node and by configuring each Node's registration.url to be the parent Node's URL.  
+            The parent Node is always tracked by the setting of the parent's id in the created_at_node_id column of the new Node.  
+            When a Node registers and downloads its configuration it is always provided the configuration for all Nodes that were 
+            <emphasis>created</emphasis> at the Node that it is registering with.
+        </para> 
     </section>
     <section>
         <title>Node Select</title>
@@ -243,7 +258,7 @@ values
             <para></para>
         </section>                
         <section>
-            <title>IExtractorListener</title>
+            <title>IExtractorFilter</title>
             <para></para>
         </section>
         <section>

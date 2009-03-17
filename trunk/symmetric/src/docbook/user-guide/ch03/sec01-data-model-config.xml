@@ -956,5 +956,53 @@
                 </tgroup>
             </table>
         </para>
-    </section>    
+    </section>
+    <section>
+        <title>Registration Redirect Table</title>
+        <para>
+            The Registration redirect table provides a way for a centralized registration server to redirect registering Nodes to their prospective
+            parent Node in a multi-tiered deployment. 
+        </para>
+        <para>
+            <table>
+                <title>registration_redirect</title>
+                <tgroup cols="6">
+                    <colspec colwidth="115px" />
+                    <colspec colwidth="65px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="25px" />
+                    <colspec colwidth="40px" />
+                    <colspec colwidth="250px" />
+                    <thead>
+                        <row>
+                            <entry>Column Name</entry>
+                            <entry>Type</entry>
+                            <entry>Null</entry>
+                            <entry>Key</entry>
+                            <entry>Default</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>registrant_external_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>PK</entry>
+                            <entry></entry>
+                            <entry>Maps the external id of a registration request to a different parent node.</entry>
+                        </row>
+                        <row>
+                            <entry>registration_node_id</entry>
+                            <entry>varchar(50)</entry>
+                            <entry>N</entry>
+                            <entry>PK</entry>
+                            <entry></entry>
+                            <entry>The id of the Node that a registration request should be redirected to.</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </para>
+    </section>        
 </section>
