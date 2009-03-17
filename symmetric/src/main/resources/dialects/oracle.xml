@@ -90,7 +90,7 @@
                 </property>
                 <property name="numberColumnTemplate">
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number(20,10))||'"') ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||cast($(tableAlias)."$(columnName)" as number($[sym.oracle.template.precision]))||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="datetimeColumnTemplate" >
