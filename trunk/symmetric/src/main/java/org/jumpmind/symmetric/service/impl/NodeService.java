@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -340,6 +341,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     @SuppressWarnings("unchecked")
     public NodeStatus getNodeStatus() {
+        long ts = System.currentTimeMillis();
         try {
             class DataLoadStatus {
                 int initialLoadEnabled;
@@ -364,8 +366,8 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
-        } catch (Exception ex) {
-            logger.error(ex, ex);
+        } catch (CannotAcquireLockException ex) {
+            logger.error(String.format("Could not aquire lock on the table after %sms.  The status is unknown.", (System.currentTimeMillis()-ts)));
             return NodeStatus.STATUS_UNKNOWN;
         }
     }
