@@ -24,8 +24,8 @@ import org.jumpmind.symmetric.service.IPullService;
 
 public class MockPullService implements IPullService {
 
-    public void pullData() {
-
+    public boolean pullData() {
+        return true;
     }
 
 }
