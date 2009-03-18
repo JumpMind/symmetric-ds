@@ -29,7 +29,9 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,14 +41,19 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private final static Log logger = LogFactory.getLog(PurgeService.class);
 
     private IClusterService clusterService;
+    
+    private INodeService nodeService;
 
     public void purge() {
-        Calendar retentionCutoff = Calendar.getInstance();
-        retentionCutoff.add(Calendar.MINUTE, -parameterService
-                .getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-        purgeOutgoing(retentionCutoff);
-        purgeIncoming(retentionCutoff);
-        purgeStatistic(retentionCutoff);
+        if (nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
+            Calendar retentionCutoff = Calendar.getInstance();
+            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
+            purgeOutgoing(retentionCutoff);
+            purgeIncoming(retentionCutoff);
+            purgeStatistic(retentionCutoff);
+        } else {
+            logger.warn("No sense running the purge service because an initial load has not been completed.");
+        }
     }
 
     private void purgeStatistic(Calendar retentionCutoff) {
@@ -262,4 +269,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         this.clusterService = clusterService;
     }
 
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
+    }
 }
