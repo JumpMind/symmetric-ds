@@ -38,6 +38,8 @@ import org.jumpmind.symmetric.model.NodeStatus;
 public interface INodeService {
 
     public Node findNode(String nodeId);
+    
+    public boolean isRegistrationServer();
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId);
 

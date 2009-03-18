@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -337,6 +338,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean isDataLoadStarted() {
         return getNodeStatus() == NodeStatus.DATA_LOAD_STARTED;
+    }
+    
+    public boolean isRegistrationServer() {
+        return StringUtils.isBlank(parameterService.getRegistrationUrl());
     }
 
     @SuppressWarnings("unchecked")

@@ -32,6 +32,10 @@ import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
 
+    public boolean isRegistrationServer() {
+        return false;
+    }
+    
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         return null;
     }

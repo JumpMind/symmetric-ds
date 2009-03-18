@@ -462,10 +462,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public boolean isRegistrationServer() {
-        return StringUtils.isBlank(parameterService.getRegistrationUrl());
-    }
-
     public void setRootConfigChannelTableNames(List<String> configChannelTableNames) {
         this.rootConfigChannelTableNames = configChannelTableNames;
     }
