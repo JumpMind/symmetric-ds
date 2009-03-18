@@ -35,11 +35,11 @@ public class PullJob extends AbstractJob {
 
     @Override
     public void doJob() throws Exception {
-        pullService.pullData();
+        boolean dataPulled = pullService.pullData();
 
         // Reschedule immediately if we are in the middle of an initial load
         // so that the initial load completes as quickly as possible.
-        if (nodeService.isDataLoadStarted()) {
+        if (nodeService.isDataLoadStarted() && dataPulled) {
             rescheduleImmediately = true;
         }
     }
