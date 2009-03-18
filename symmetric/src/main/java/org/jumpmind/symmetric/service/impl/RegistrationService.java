@@ -246,14 +246,19 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public void openRegistration(Node node) {
         Node me = nodeService.findIdentity();
         String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
-        String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
-        jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
-                node.getExternalId(), me.getNodeId() });
-        jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"),
-                new Object[] { nodeId, password, me.getNodeId() });
-        clusterService.initLockTableForNode(nodeService.findNode(nodeId));
-        logger.info("Just opened registration for external id of " + node.getExternalId() + " and a node group of "
-                + node.getNodeGroupId() + " and a node id of " + nodeId);
+        Node existingNode = nodeService.findNode(nodeId);
+        if (existingNode == null) {
+            String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
+            jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
+                    node.getExternalId(), me.getNodeId() });
+            jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
+                    me.getNodeId() });
+            clusterService.initLockTableForNode(nodeService.findNode(nodeId));
+            logger.info("Just opened registration for external id of " + node.getExternalId() + " and a node group of "
+                    + node.getNodeGroupId() + " and a node id of " + nodeId);
+        } else {
+            reOpenRegistration(nodeId);
+        }
     }
 
     public void setNodeService(INodeService nodeService) {
