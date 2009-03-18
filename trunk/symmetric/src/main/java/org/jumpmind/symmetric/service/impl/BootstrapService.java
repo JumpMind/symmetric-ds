@@ -423,7 +423,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
                 }
 
-                if (!configurationService.isRegistrationServer()) {
+                if (!nodeService.isRegistrationServer()) {
                     for (Node node : heartbeatNodesToPush) {
                         // don't send new heart beat events if we haven't sent
                         // the

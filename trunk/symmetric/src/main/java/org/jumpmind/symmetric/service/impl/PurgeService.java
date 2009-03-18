@@ -42,10 +42,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private IClusterService clusterService;
     
-    private INodeService nodeService;
+    private INodeService nodeService;   
 
     public void purge() {
-        if (nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
+        if (nodeService.isRegistrationServer() || nodeService.getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED) {
             Calendar retentionCutoff = Calendar.getInstance();
             retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
             purgeOutgoing(retentionCutoff);

@@ -82,8 +82,6 @@ public interface IConfigurationService {
 
     public void insert(Trigger trigger);
 
-    public boolean isRegistrationServer();
-    
     public List<Trigger> getConfigurationTriggers(String sourceGroupId,
             String targetGroupId);
     

@@ -37,7 +37,6 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -61,8 +60,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     private IDataExtractorService dataExtractorService;
 
-    private IConfigurationService configurationService;
-
     private IClusterService clusterService;
 
     private IDataService dataService;
@@ -84,7 +81,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
      *            remote client
      */
     public boolean registerNode(Node node, OutputStream out, boolean isRequestedRegistration) throws IOException {
-        if (!configurationService.isRegistrationServer()) {
+        if (!nodeService.isRegistrationServer()) {
             // registration is not allowed until this node has an identity and
             // an initial load
             Node identity = nodeService.findIdentity();
@@ -265,10 +262,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
-    }
-
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
     }
 
     public void setClusterService(IClusterService clusterService) {

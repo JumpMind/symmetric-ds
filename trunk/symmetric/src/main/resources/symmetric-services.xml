@@ -190,7 +190,6 @@
         <property name="nodeService" ref="nodeService" />
         <property name="clusterService" ref="clusterService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
-        <property name="configurationService" ref="configurationService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="transportManager" ref="transportManager" />
         <property name="dataLoaderService" ref="dataLoaderService" />
