@@ -51,7 +51,8 @@ public class PullService extends AbstractService implements IPullService {
 
     private IClusterService clusterService;
 
-    synchronized public void pullData() {
+    synchronized public boolean pullData() {
+        boolean dataPulled = false;
         if (clusterService.lock(LockActionConstants.PULL)) {
             try {
                 // register if we haven't already been registered
@@ -69,6 +70,7 @@ public class PullService extends AbstractService implements IPullService {
                             }
                             if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
                                 logger.info("Pull data received" + nodeName);
+                                dataPulled = true;
                             } else {
                                 if (logger.isDebugEnabled()) {
                                     logger.debug("Pull no data received" + nodeName);
@@ -100,6 +102,8 @@ public class PullService extends AbstractService implements IPullService {
         } else {
             logger.warn("Did not run the pull process because the cluster service has it locked");
         }
+        
+        return dataPulled;
     }
 
     public void setNodeService(INodeService nodeService) {
