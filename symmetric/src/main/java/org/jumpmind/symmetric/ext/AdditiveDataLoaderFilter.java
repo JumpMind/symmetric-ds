@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.ext;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -59,11 +58,13 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         if (!tableName.equalsIgnoreCase(context.getTableName())) {
             return true;
         } else {
-            
-            // The correct behavior here would seem to be to use the "old" values to
-            // back out the node's overall contribution to the summary columns, much
+
+            // The correct behavior here would seem to be to use the "old"
+            // values to
+            // back out the node's overall contribution to the summary columns,
+            // much
             // like a reverse update.
-            
+
             throw new RuntimeException("delete not supported for AdditiveDataLoaderFilter, table: "
                     + context.getTableName() + ", key(s): " + keyValues);
         }
@@ -105,11 +106,13 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
      * @return Returns true if updated one or more rows
      */
     protected boolean update(IDataLoaderContext context, String[] columnValues, String[] keyValues) {
+        Object[] colData = context.getObjectValues(columnValues);
+        Object[] keyData = context.getObjectKeyValues(keyValues);
         StringBuilder s = new StringBuilder();
         s.append("update " + context.getTableName());
         List<Object> values = new ArrayList<Object>();
-        s.append(buildSetClause(context, columnValues, values));
-        s.append(buildWhereClause(context, keyValues, values));
+        s.append(buildSetClause(context, colData, values));
+        s.append(buildWhereClause(context, keyData, values));
 
         if (logger.isDebugEnabled()) {
             logger.debug(s.toString());
@@ -124,7 +127,7 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
      * @param columnValues
      * @return
      */
-    protected String buildSetClause(IDataLoaderContext context, String[] columnValues, List<Object> values) {
+    protected String buildSetClause(IDataLoaderContext context, Object[] columnValues, List<Object> values) {
         StringBuilder s = new StringBuilder();
 
         if (overrideColumnNames != null && additiveColumnNames != null) {
@@ -138,9 +141,9 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
             if (overrideColumnNames != null) {
                 for (int i = 0; i < overrideColumnNames.length; i++) {
                     int overrideColumnIndex = context.getColumnIndex(overrideColumnNames[i]);
-                    String newData = columnValues[overrideColumnIndex];
+                    Object newData = columnValues[overrideColumnIndex];
 
-                    if (!StringUtils.isEmpty(newData)) {
+                    if (newData != null) {
                         if (firstSet) {
                             s.append(", ");
                         }
@@ -154,15 +157,15 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
                 }
             }
             if (additiveColumnNames != null) {
+                Object[] oldValues = context.getOldObjectValues();
                 // Additive columns...
                 for (int i = 0; i < additiveColumnNames.length; i++) {
                     int additiveColumnIndex = context.getColumnIndex(additiveColumnNames[i]);
-                    String[] oldValues = context.getOldData();                    
-                    String oldData = oldValues == null ? null : context.getOldData()[additiveColumnIndex];
-                    String newData = columnValues[additiveColumnIndex];
+                    Object oldData = oldValues == null ? null : oldValues[additiveColumnIndex];
+                    Object newData = columnValues[additiveColumnIndex];
 
-                    if (!StringUtils.isEmpty(newData)) {
-                        if (oldData == null || !newData.equalsIgnoreCase(oldData)) {
+                    if (newData != null) {
+                        if (oldData == null || !newData.equals(oldData)) {
                             if (firstSet) {
                                 s.append(", ");
                             }
@@ -174,7 +177,7 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
                             s.append("+");
                             s.append(newData);
 
-                            if (!StringUtils.isEmpty(oldData)) {
+                            if (oldData != null) {
                                 s.append("-");
                                 s.append(oldData);
                             }
@@ -186,7 +189,7 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         return s.toString();
     }
 
-    protected String buildWhereClause(IDataLoaderContext context, String[] keyValues, List<Object> values) {
+    protected String buildWhereClause(IDataLoaderContext context, Object[] keyValues, List<Object> values) {
 
         StringBuilder s = new StringBuilder();
         s.append(" where ");

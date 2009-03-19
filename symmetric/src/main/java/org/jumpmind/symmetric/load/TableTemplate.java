@@ -301,8 +301,16 @@ public class TableTemplate {
                 dbDialect.isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(), dbDialect
                         .getIdentifierQuoteString());
     }
-
-    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData) {
+    
+    public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
+        return getObjectValues(ctx, values, columnMetaData == null ? getColumnMetaData(columnNames) : columnMetaData);
+    }
+    
+    public Object[] getObjectKeyValues(IDataLoaderContext ctx, String[] values) {
+        return getObjectValues(ctx, values, keyMetaData == null ? getColumnMetaData(keyNames) : keyMetaData);
+    }    
+    
+    public Object[] getObjectValues(IDataLoaderContext ctx, String[] values, Column[] metaData) {
         List<Object> list = new ArrayList<Object>(values.length);
 
         for (int i = 0; i < values.length; i++) {
@@ -351,7 +359,11 @@ public class TableTemplate {
                 list.add(objectValue);
             }
         }
-        Object[] objectValues = list.toArray();
+        return list.toArray();  
+    }
+
+    private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData) {        
+        Object[] objectValues = getObjectValues(ctx, values, metaData);
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);

@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
-import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +56,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         filter.setOverrideColumnNames(new String[] { "OVR1", "OVR2", "OVR3" });
     }
 
-    @ParameterExcluder(value="postgres")
+    
     @Test
     public void testNonFilteredTable() {
         ctx2.setOldData(new String[] { "k1", "0" });
@@ -66,18 +65,18 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         Assert.assertTrue(filter.filterDelete(ctx2, new String[] { "k1" }));
     }
 
-    @ParameterExcluder(value="postgres")
+    
     @Test
     public void testInsertNonExistent() {
-        ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
-        Assert.assertTrue(filter.filterInsert(ctx1, new String[] { "k1", "k2", "1", "0.0", "2.0", "3.5", "4", "0.0",
-                "5", "6" }));
+        ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
+        Assert.assertTrue(filter.filterInsert(ctx1, new String[] { "k1", "k2", "1", "0.0", "2", "3.5", "4", "0.0",
+                "5" }));
     }
 
-    @ParameterExcluder(value="postgres")
+    
     @Test
     public void testDelete() {
-        ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
+        ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
         try {
             filter.filterDelete(ctx1, new String[] { "k1", "k2" });
             Assert.fail("Delete should have thrown exception.");
@@ -86,22 +85,22 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         }
     }
 
-    @ParameterExcluder(value="postgres")
+    
     @Test
     public void testUpdateNonExistent() {
-        ctx1.setOldData(new String[] { "k1", "k2", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
-        boolean result = filter.filterUpdate(ctx1, new String[] { "k1", "k2", "1.0", "0.0", "2.0", "3.5", "4", "0.0",
-                "5", "6" }, new String[] { "k1", "k2" });
+        ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
+        boolean result = filter.filterUpdate(ctx1, new String[] { "k1", "k2", "1.0", "0.0", "2", "3.5", "4", "0.0",
+                "5" }, new String[] { "k1", "k2" });
 
         Assert.assertFalse(result);
     }
 
-    @ParameterExcluder(value="postgres")
+    
     @Test
     public void testInsertExists() {
-        ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
+        ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0", "0.0", "0", "0.0", "5" });
         boolean result = filter.filterInsert(ctx1,
-                new String[] { "k3", "k4", "1", "0.0", "2.0", "3.5", "4", "0.0", "5" });
+                new String[] { "k3", "k4", "1", "0.0", "2", "3.5", "4", "0.0", "5" });
 
         Assert.assertFalse(result);
 
@@ -129,8 +128,8 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
         // Sequence 2
 
-        ctx1.setOldData(new String[] { "k3", "k4", "1.0", "0.0", "0.0", "0.0", "0.0", "0.0", "5", "6" });
-        result = filter.filterInsert(ctx1, new String[] { "k3", "k4", "0", "0.1", "2.0", "3.5", "5", "5", "5" });
+        ctx1.setOldData(new String[] { "k3", "k4", "1.0", "0.0", "0", "0.0", "0", "0.0", "5" });
+        result = filter.filterInsert(ctx1, new String[] { "k3", "k4", "0", "0.1", "2", "3.5", "5", "5", "5" });
 
         Assert.assertFalse(result);
 

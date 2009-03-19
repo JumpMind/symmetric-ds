@@ -49,7 +49,7 @@ public class DataLoaderContext implements IDataLoaderContext {
     private TableTemplate tableTemplate;
 
     private Map<String, Object> contextCache = new HashMap<String, Object>();
-    
+
     private BinaryEncoding binaryEncoding = BinaryEncoding.NONE;
 
     public DataLoaderContext() {
@@ -110,7 +110,7 @@ public class DataLoaderContext implements IDataLoaderContext {
         this.tableName = tableName;
         this.tableTemplate = tableTemplateMap.get(tableName);
     }
-    
+
     public String[] getOldData() {
         return this.tableTemplate != null ? this.tableTemplate.getOldData() : null;
     }
@@ -160,23 +160,32 @@ public class DataLoaderContext implements IDataLoaderContext {
         return contextCache;
     }
 
-    public BinaryEncoding getBinaryEncoding()
-    {
+    public BinaryEncoding getBinaryEncoding() {
         return binaryEncoding;
     }
 
-    public void setBinaryEncoding(BinaryEncoding binaryEncoding)
-    {
+    public void setBinaryEncoding(BinaryEncoding binaryEncoding) {
         this.binaryEncoding = binaryEncoding;
     }
 
-    public void setBinaryEncodingType(String encoding)
-    {
+    public void setBinaryEncodingType(String encoding) {
         try {
             this.binaryEncoding = BinaryEncoding.valueOf(encoding);
         } catch (Exception ex) {
             logger.warn("Unsupported binary encoding value of " + encoding);
         }
+    }
+    
+    public Object[] getOldObjectValues() {
+        return tableTemplate.getObjectValues(this, this.getOldData());
+    }
+
+    public Object[] getObjectValues(String[] values) {
+        return tableTemplate.getObjectValues(this, values);
+    }
+    
+    public Object[] getObjectKeyValues(String[] values) {
+        return tableTemplate.getObjectKeyValues(this, values);
     }
 
 }

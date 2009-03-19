@@ -367,8 +367,8 @@ public class SymmetricEngine {
      * 
      * @see IPushService#pushData()
      */
-    public void push() {
-        ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
+    public boolean push() {
+        return ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();
     }
 
     /**
@@ -393,8 +393,8 @@ public class SymmetricEngine {
      * 
      * @see IPullService#pullData()
      */
-    public void pull() {
-        ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
+    public boolean pull() {
+        return ((IPullService) applicationContext.getBean(Constants.PULL_SERVICE)).pullData();
     }
 
     /**

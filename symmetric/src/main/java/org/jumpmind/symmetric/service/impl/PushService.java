@@ -61,21 +61,22 @@ public class PushService extends AbstractService implements IPushService {
 
     private IClusterService clusterService;
 
-    synchronized public void pushData() {
+    synchronized public boolean pushData() {
+        boolean pushedData = false;
         if (clusterService.lock(LockActionConstants.PUSH)) {
             try {
                 List<Node> nodes = nodeService.findNodesToPushTo();
                 if (nodes != null && nodes.size() > 0) {
                     for (Node node : nodes) {
                         if (logger.isDebugEnabled()) {
-                            logger.info("Push requested for " + node);
+                            logger.debug("Push requested for " + node);
                         }
                         if (pushToNode(node)) {
-                            if (logger.isDebugEnabled()) {
-                                logger.info("Push completed for " + node);
-                            }
-                        } else {
-                            logger.warn("Push unsuccessful for " + node);
+                            pushedData = true;
+                            logger.info("Pushed data to " + node);
+                        }
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Push completed for " + node);
                         }
                     }
                 }
@@ -85,11 +86,12 @@ public class PushService extends AbstractService implements IPushService {
         } else {
             logger.warn("Did not run the push process because the cluster service has it locked");
         }
+        return pushedData;
     }
 
     private boolean pushToNode(Node remote) {
         IOutgoingWithResponseTransport transport = null;
-        boolean success = false;
+        boolean pushedData = false;
         try {
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId());
             if (nodeSecurity != null) {
@@ -124,8 +126,8 @@ public class PushService extends AbstractService implements IPushService {
                     }
                     ackService.ack(batchInfo);
                 }
+                pushedData = true;
             }
-            success = true;
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url="
                     + (remote.getSyncURL() == null ? parameterService.getRegistrationUrl() : remote.getSyncURL()));
@@ -147,7 +149,7 @@ public class PushService extends AbstractService implements IPushService {
             } catch (Exception e) {
             }
         }
-        return success;
+        return pushedData;
     }
 
     public void setExtractor(IDataExtractorService extractor) {
