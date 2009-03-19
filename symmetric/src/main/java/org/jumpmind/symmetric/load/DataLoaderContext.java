@@ -175,15 +175,20 @@ public class DataLoaderContext implements IDataLoaderContext {
             logger.warn("Unsupported binary encoding value of " + encoding);
         }
     }
-    
+
     public Object[] getOldObjectValues() {
-        return tableTemplate.getObjectValues(this, this.getOldData());
+        String[] oldData = this.getOldData();
+        if (oldData != null) {
+            return tableTemplate.getObjectValues(this, oldData);
+        } else {
+            return null;
+        }
     }
 
     public Object[] getObjectValues(String[] values) {
         return tableTemplate.getObjectValues(this, values);
     }
-    
+
     public Object[] getObjectKeyValues(String[] values) {
         return tableTemplate.getObjectKeyValues(this, values);
     }

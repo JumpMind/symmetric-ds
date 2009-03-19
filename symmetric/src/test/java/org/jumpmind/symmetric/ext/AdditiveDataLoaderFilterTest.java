@@ -98,7 +98,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
     
     @Test
     public void testInsertExists() {
-        ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0", "0.0", "0", "0.0", "5" });
+        //ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0", "0.0", "0", "0.0", "5" });
         boolean result = filter.filterInsert(ctx1,
                 new String[] { "k3", "k4", "1", "0.0", "2", "3.5", "4", "0.0", "5" });
 
