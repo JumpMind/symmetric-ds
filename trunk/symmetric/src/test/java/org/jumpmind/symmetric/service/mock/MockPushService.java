@@ -24,8 +24,8 @@ import org.jumpmind.symmetric.service.IPushService;
 
 public class MockPushService implements IPushService {
 
-    public void pushData() {
-
+    public boolean pushData() {
+        return false;
     }
 
 }

@@ -53,5 +53,11 @@ public interface IDataLoaderContext {
     public TableTemplate getTableTemplate();
     
     public BinaryEncoding getBinaryEncoding();
+    
+    public Object[] getObjectValues(String[] values);
+    
+    public Object[] getObjectKeyValues(String[] values);
+    
+    public Object[] getOldObjectValues();
 
 }
