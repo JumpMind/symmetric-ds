@@ -131,7 +131,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     
     protected Trigger buildConfigTrigger(String tableName, boolean syncChanges, String sourceGroupId, String targetGroupId) {
         Trigger trigger = new Trigger();
-        trigger.setTriggerId(Math.abs(tableName.hashCode()));
+        trigger.setTriggerId(Math.abs(tableName.hashCode()+sourceGroupId.hashCode()));
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
