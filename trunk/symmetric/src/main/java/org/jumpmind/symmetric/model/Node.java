@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -33,6 +34,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class Node {
 
     private static final long serialVersionUID = 5228552569658130763L;
+    
+    private int MAX_VERSION_SIZE = 50;
 
     private String nodeId;
 
@@ -111,7 +114,8 @@ public class Node {
     }
 
     public void setSchemaVersion(String version) {
-        this.schemaVersion = version;
+        // abbreviate because we do not control the version
+        this.schemaVersion = StringUtils.abbreviate(version, MAX_VERSION_SIZE);
     }
 
     public boolean isSyncEnabled() {
