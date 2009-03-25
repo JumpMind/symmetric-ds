@@ -178,8 +178,9 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
                             s.append(newData);
 
                             if (oldData != null) {
-                                s.append("-");
+                                s.append("-(");
                                 s.append(oldData);
+                                s.append(")");
                             }
                         }
                     }
