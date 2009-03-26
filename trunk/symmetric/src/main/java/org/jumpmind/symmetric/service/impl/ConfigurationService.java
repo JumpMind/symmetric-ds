@@ -84,13 +84,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinks() {
-        return jdbcTemplate.query(getSql("groupsLinksSql"), new DomainTargetRowMapper());
+        return jdbcTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
     }
 
     @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinksFor(String nodeGroupId) {
         return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { nodeGroupId },
-                new DomainTargetRowMapper());
+                new NodeGroupLinkMapper());
     }
 
     public List<String> getRootConfigChannelTableNames() {
@@ -131,7 +131,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     
     protected Trigger buildConfigTrigger(String tableName, boolean syncChanges, String sourceGroupId, String targetGroupId) {
         Trigger trigger = new Trigger();
-        trigger.setTriggerId(Math.abs(tableName.hashCode()+sourceGroupId.hashCode()));
+        trigger.setTriggerId(Math.abs(tableName.hashCode()+targetGroupId.hashCode()));
         trigger.setSyncOnDelete(syncChanges);
         trigger.setSyncOnInsert(syncChanges);
         trigger.setSyncOnUpdate(syncChanges);
@@ -359,7 +359,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    class DomainTargetRowMapper implements RowMapper {
+    class NodeGroupLinkMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             NodeGroupLink node_groupTarget = new NodeGroupLink();
             node_groupTarget.setSourceGroupId(rs.getString(1));
