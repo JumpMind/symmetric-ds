@@ -185,9 +185,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
             BIG_BINARY[i] = 0x01;
         }
 
+        final String TEST_CLOB = "This is my test's test";
         // now change some data that should be sync'd
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101, "Charlie Brown", "1", "300 Grub Street",
-                "New Yorl", "NY", 90009, new Date(), "This is a test", BIG_BINARY });
+                "New Yorl", "NY", 90009, new Date(), TEST_CLOB, BIG_BINARY });
 
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=101"), 1,
@@ -195,7 +196,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         if (getRootDbDialect().isClobSyncSupported()) {
             assertEquals(clientJdbcTemplate.queryForObject("select notes from test_customer where customer_id=101",
-                    String.class), "This is a test", "The CLOB notes field on customer was not sync'd to the client.");
+                    String.class), rootJdbcTemplate.queryForObject("select notes from test_customer where customer_id=101",
+                            String.class), "The CLOB notes field on customer was not sync'd to the client.");
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {

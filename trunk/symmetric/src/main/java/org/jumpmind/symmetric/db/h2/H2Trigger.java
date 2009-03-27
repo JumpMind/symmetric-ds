@@ -142,7 +142,7 @@ public class H2Trigger implements org.h2.api.Trigger {
                 }
             }
             out.append("'");
-            out.append(value);
+            out.append(escapeString(value));
             out.append("'");
         } else if (value instanceof Number) {
             out.append(value);
@@ -153,7 +153,7 @@ public class H2Trigger implements org.h2.api.Trigger {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            out.append(value);
+            out.append(escapeString(value));
             out.append("'");
 
         } else if (value instanceof Date) {
@@ -166,6 +166,10 @@ public class H2Trigger implements org.h2.api.Trigger {
             throw new IllegalStateException(String.format("Type not supported: %s", value.getClass().getName()));
         }
         return value;
+    }
+    
+    protected String escapeString(Object val) {
+        return val == null ? null : val.toString().replaceAll("'", "''");
     }
 
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
