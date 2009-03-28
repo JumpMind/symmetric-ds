@@ -503,5 +503,10 @@ public class Trigger {
         
         return hashedValue;
     }
+    
+    public boolean isSame(Trigger trigger) {
+        return trigger.sourceTableName.equals(sourceTableName) && trigger.sourceGroupId.equals(sourceGroupId)
+                && trigger.targetGroupId.equals(targetGroupId);
+    }
 
 }

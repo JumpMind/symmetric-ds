@@ -181,9 +181,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     abstract protected void initForSpecificDialect();
 
-    public void initConfigDb() {
+    public void initSupportDb() {
         initForSpecificDialect();
-        addPrefixAndCreateTablesIfNecessary(getConfigDdlDatabase());
+        addPrefixAndCreateTablesIfNecessary(getSupportDatabaseFromDdl());
         createRequiredFunctions();
     }
 
@@ -696,7 +696,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateSymmetricDDL() {
-        Database db = getConfigDdlDatabase();
+        Database db = getSupportDatabaseFromDdl();
         prefixConfigDatabase(db);
         return platform.getCreateTablesSql(db, true, true);
     }
@@ -734,7 +734,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public boolean doesDatabaseNeedConfigured() {
-        return prefixConfigDatabase(getConfigDdlDatabase());
+        return prefixConfigDatabase(getSupportDatabaseFromDdl());
     }
 
     protected boolean prefixConfigDatabase(Database targetTables) {
@@ -775,9 +775,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    protected Database getConfigDdlDatabase() {
+    protected Database getSupportDatabaseFromDdl() {
         try {
-            return new DatabaseIO().read(new InputStreamReader(getConfigDdlXml().openStream()));
+            return new DatabaseIO().read(new InputStreamReader(getSupportDatabaseDdlXml().openStream()));
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -785,7 +785,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         }
     }
 
-    protected URL getConfigDdlXml() {
+    protected URL getSupportDatabaseDdlXml() {
         return AbstractDbDialect.class.getResource("/ddl-config.xml");
     }
 

@@ -82,9 +82,4 @@ public interface IConfigurationService {
 
     public void insert(Trigger trigger);
 
-    public List<Trigger> getConfigurationTriggers(String sourceGroupId,
-            String targetGroupId);
-    
-    public List<Trigger> getConfigurationTriggers();
-
 }

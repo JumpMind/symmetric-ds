@@ -69,7 +69,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-    
+
     private INodeService nodeService;
 
     /**
@@ -89,8 +89,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     @SuppressWarnings("unchecked")
     public List<NodeGroupLink> getGroupLinksFor(String nodeGroupId) {
-        return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { nodeGroupId },
-                new NodeGroupLinkMapper());
+        return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { nodeGroupId }, new NodeGroupLinkMapper());
     }
 
     public List<String> getRootConfigChannelTableNames() {
@@ -128,13 +127,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return triggers;
     }
-    
-    protected Trigger buildConfigTrigger(String tableName, boolean syncChanges, String sourceGroupId, String targetGroupId) {
+
+    protected Trigger buildConfigTrigger(String tableName, boolean syncChanges, String sourceGroupId,
+            String targetGroupId) {
+        boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
         Trigger trigger = new Trigger();
-        trigger.setTriggerId(Math.abs(tableName.hashCode()+targetGroupId.hashCode()));
-        trigger.setSyncOnDelete(syncChanges);
-        trigger.setSyncOnInsert(syncChanges);
-        trigger.setSyncOnUpdate(syncChanges);
+        trigger.setTriggerId(Math.abs(tableName.hashCode() + targetGroupId.hashCode()));
+        trigger.setSyncOnDelete(syncChanges && autoSyncConfig);
+        trigger.setSyncOnInsert(syncChanges && autoSyncConfig);
+        trigger.setSyncOnUpdate(syncChanges && autoSyncConfig);
         trigger.setSyncOnIncomingBatch(true);
         trigger.setSourceTableName(tableName);
         trigger.setSourceGroupId(sourceGroupId);
@@ -188,7 +189,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         return DataEventAction.fromCode(code);
     }
-    
+
     /**
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.
@@ -196,14 +197,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public List<Trigger> getConfigurationTriggers() {
         List<Trigger> triggers = new ArrayList<Trigger>();
         Node me = nodeService.findIdentity();
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION) && me != null) {
+        if (me != null) {
             List<NodeGroupLink> links = getGroupLinksFor(me.getNodeGroupId());
             for (NodeGroupLink nodeGroupLink : links) {
                 if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
-                    triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(),
-                            nodeGroupLink.getTargetGroupId()));
+                    triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(), nodeGroupLink
+                            .getTargetGroupId()));
                 } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
-                    triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE), false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
+                    triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
+                            false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
                 }
             }
         } else {
@@ -220,9 +222,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         if (configs.size() > 0) {
             return configs.get(0);
         } else {
-            List<Trigger> triggers = new ArrayList<Trigger>();
-            triggers.addAll(getConfigurationTriggers());
-            triggers.addAll(getActiveTriggersForSourceNodeGroup(sourceNodeGroupId));
+            List<Trigger> triggers = getActiveTriggersForSourceNodeGroup(sourceNodeGroupId);
             for (Trigger trigger : triggers) {
                 if (trigger.getSourceTableName().equalsIgnoreCase(table)) {
                     return trigger;
@@ -232,10 +232,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return null;
     }
 
+    protected void mergeInConfigurationTriggers(String sourceNodeGroupId, List<Trigger> configuredInDatabase) {
+         List<Trigger> virtualConfigTriggers = getConfigurationTriggers();
+         for (Trigger trigger : virtualConfigTriggers) {
+            if (trigger.getSourceGroupId().equals(sourceNodeGroupId) && !doesTriggerExistInList(configuredInDatabase, trigger)) {
+                configuredInDatabase.add(trigger);
+            }
+        }
+    }
+    
+    protected boolean doesTriggerExistInList(List<Trigger> triggers, Trigger trigger) {
+        for (Trigger checkMe : triggers) {
+            if (checkMe.isSame(trigger)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {
-        return (List<Trigger>) jdbcTemplate.query(getSql("activeTriggersForSourceNodeGroupSql"),
+    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {        
+        List<Trigger> triggers = (List<Trigger>) jdbcTemplate.query(getSql("activeTriggersForSourceNodeGroupSql"),
                 new Object[] { sourceNodeGroupId }, new TriggerMapper());
+        mergeInConfigurationTriggers(sourceNodeGroupId, triggers);
+        return triggers;
     }
 
     @SuppressWarnings("unchecked")
@@ -324,12 +344,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         jdbcTemplate.query(getSql("allTriggerHistSql"), new TriggerHistoryMapper(retMap));
         return retMap;
     }
-    
+
     public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName) {
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
         jdbcTemplate.query(String.format("%s%s", getSql("allTriggerHistSql"),
-                getSql("triggerHistBySourceTableWhereSql")), new Object[] {sourceTableName}, new int[] {Types.VARCHAR},
-                new TriggerHistoryMapper(retMap));
+                getSql("triggerHistBySourceTableWhereSql")), new Object[] { sourceTableName },
+                new int[] { Types.VARCHAR }, new TriggerHistoryMapper(retMap));
         if (retMap.size() > 0) {
             return retMap.values().iterator().next();
         } else {
@@ -477,7 +497,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
-    
+
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }

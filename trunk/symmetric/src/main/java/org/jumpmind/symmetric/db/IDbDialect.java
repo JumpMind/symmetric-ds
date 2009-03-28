@@ -69,7 +69,7 @@ public interface IDbDialect {
      */
     public boolean doesDatabaseNeedConfigured();
 
-    public void initConfigDb();
+    public void initSupportDb();
 
     public Platform getPlatform();
 
