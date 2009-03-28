@@ -165,7 +165,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 Object value = values[i];
                 if (value instanceof String) {
                     out.append("'");
-                    out.append(value);
+                    out.append(escapeString(value));
                     out.append("'");
                 } else if (value instanceof Number) {
                     out.append(value);
@@ -180,6 +180,10 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             }
         }
         return out.toString();
+    }
+
+    protected String escapeString(Object val) {
+        return val == null ? null : val.toString().replaceAll("'", "''");
     }
 
     private void buildNodeSelectSql() {
