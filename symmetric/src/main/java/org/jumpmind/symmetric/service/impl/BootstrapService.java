@@ -96,7 +96,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             logger.info("Initializing SymmetricDS database.");
-            dbDialect.initConfigDb();
+            dbDialect.initSupportDb();
             if (defaultChannels != null) {
                 logger.info("Setting up " + defaultChannels.size() + " default channels");
                 for (Channel defaultChannel : defaultChannels) {
@@ -214,10 +214,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (triggerCache == null || refreshCache) {
             synchronized (this) {
                 triggerCache = new HashMap<Integer, Trigger>();
-                List<Trigger> triggers = new ArrayList<Trigger>();
-                triggers.addAll(configurationService.getConfigurationTriggers());
-                triggers.addAll(configurationService.getActiveTriggersForSourceNodeGroup(parameterService
-                        .getString(ParameterConstants.NODE_GROUP_ID)));
+                List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
+                        .getString(ParameterConstants.NODE_GROUP_ID));
                 for (Trigger trigger : triggers) {
                     triggerCache.put(trigger.getTriggerId(), trigger);
                 }
