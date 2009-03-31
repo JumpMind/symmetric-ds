@@ -93,6 +93,8 @@ public class SymmetricLauncher {
 
     private static final String OPTION_START_SERVER = "server";
     
+    private static final String OPTION_START_CLIENT = "client";
+    
     private static final String OPTION_START_SECURE_SERVER = "secure-server";
     
     private static final String OPTION_START_MIXED_SERVER = "mixed-server";
@@ -202,6 +204,11 @@ public class SymmetricLauncher {
                 loadBatch(new SymmetricEngine(), line
                         .getOptionValue(OPTION_LOAD_BATCH));
             }
+            
+            if (line.hasOption(OPTION_START_CLIENT)) {
+                new SymmetricEngine().start();
+                return;
+            }
 
             if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER) ||
                     line.hasOption(OPTION_START_MIXED_SERVER)) {
@@ -259,6 +266,8 @@ public class SymmetricLauncher {
         Options options = new Options();
         options.addOption("S", OPTION_START_SERVER, false,
                 "Start an embedded instance of SymmetricDS that accepts HTTP.");
+        options.addOption("C", OPTION_START_CLIENT, false,
+        "Start an embedded, client-only, instance of SymmetricDS.");        
         options.addOption("T", OPTION_START_SECURE_SERVER, false, 
                 "Start an embedded instance of SymmetricDS that accepts HTTPS.");
         options.addOption("U", OPTION_START_MIXED_SERVER, false, 
