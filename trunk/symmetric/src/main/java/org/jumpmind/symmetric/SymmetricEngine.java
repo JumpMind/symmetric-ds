@@ -93,7 +93,7 @@ public class SymmetricEngine {
 
     private IDbDialect dbDialect;
 
-    private Set<Timer> jobs;
+    private Map<String, Timer> jobs;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
 
@@ -235,12 +235,15 @@ public class SymmetricEngine {
     }
 
     private void startJob(String name) {
-        if (jobs == null) {
-            jobs = new HashSet<Timer>();
-        }
         logger.info("Starting " + name);
-        Timer timer = AppUtils.find(name, this);
-        jobs.add(timer);
+        AppUtils.find(name, this);
+    }
+    
+    public synchronized void addTimer(String timerName, Timer timer) {
+        if (jobs == null) {
+            jobs = new HashMap<String, Timer>();
+        }
+        jobs.put(timerName, timer);
     }
 
     /**
@@ -279,7 +282,7 @@ public class SymmetricEngine {
 
     private void stopJobs() {
         if (jobs != null) {
-            for (Timer job : jobs) {
+            for (Timer job : jobs.values()) {
                 try {
                     job.cancel();
                 } catch (RuntimeException e) {

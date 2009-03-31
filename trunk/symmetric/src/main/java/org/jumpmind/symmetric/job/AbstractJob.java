@@ -38,7 +38,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanNameAware;
 
 abstract public class AbstractJob extends TimerTask implements BeanFactoryAware, BeanNameAware {
-    
+
     DataSource dataSource;
 
     protected static final Log logger = LogFactory.getLog(AbstractJob.class);
@@ -56,7 +56,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private boolean requiresRegistration = true;
 
     private SymmetricEngine engine;
-    
+
     protected boolean rescheduleImmediately = false;
 
     @Override
@@ -71,7 +71,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             if (engine == null) {
                 engine = SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
             }
-            
+
             if (engine == null) {
                 logger.info("Could not find a reference to the SymmetricEngine from " + beanName);
             } else if (engine.isStarted()) {
@@ -88,9 +88,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
         } catch (final Throwable ex) {
             getLogger().error(ex, ex);
         } finally {
-            if (isNeedsRescheduled() && engine != null && (engine.isStarted() || engine.isStarting())) {
-                reschedule();
-            }
+            reschedule();
         }
     }
 
@@ -99,13 +97,21 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     abstract Log getLogger();
 
     protected void reschedule() {
-        final Timer timer = new Timer(getClass().getName().substring(getClass().getName().lastIndexOf(".")+1).toLowerCase());
-        timer.schedule((TimerTask) beanFactory.getBean(beanName), rescheduleImmediately ? 0 : parameterService.getLong(rescheduleDelayParameter));
-        rescheduleImmediately = false;
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                    "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
-                            + " ms delay.");
+        if (needsRescheduled && engine != null && (engine.isStarted() || engine.isStarting())) {
+            final String timerName = getClass().getName().substring(getClass().getName().lastIndexOf(".") + 1)
+                    .toLowerCase();
+            final Timer timer = new Timer(timerName);
+            timer.schedule((TimerTask) beanFactory.getBean(beanName), rescheduleImmediately ? 0 : parameterService
+                    .getLong(rescheduleDelayParameter));
+            engine.addTimer(timerName, timer);
+            rescheduleImmediately = false;
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
+                                + " ms delay.");
+            }
+        } else {
+            logger.warn("Did not reschedule because the engine was not set.");
         }
     }
 
