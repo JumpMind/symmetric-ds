@@ -110,7 +110,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
                         "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
                                 + " ms delay.");
             }
-        } else if (!needsRescheduled) {
+        } else if (needsRescheduled) {
             logger.warn("Did not reschedule because the engine was not set.");
         }
     }
