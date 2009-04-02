@@ -229,7 +229,7 @@ values
             </para>
             <para>
                 The filter class is specified as a Spring-managed bean.  A custom Spring XML file
-                is specified as follows in a jar at META-INF/servers/symmetric-myfilter-ext.xml.
+                is specified as follows in a jar at META-INF/services/symmetric-myfilter-ext.xml.
                 
                 <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
