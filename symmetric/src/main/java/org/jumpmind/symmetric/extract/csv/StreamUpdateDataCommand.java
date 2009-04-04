@@ -34,4 +34,8 @@ class StreamUpdateDataCommand extends AbstractStreamDataCommand {
         Util.write(out, CsvConstants.UPDATE, DELIMITER, data.getRowData(), DELIMITER, data.getPkData());
         out.newLine();
     }
+    
+    public boolean isTriggerHistoryRequired() {
+        return true;
+    }
 }

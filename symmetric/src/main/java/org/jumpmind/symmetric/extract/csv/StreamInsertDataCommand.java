@@ -34,4 +34,8 @@ class StreamInsertDataCommand extends AbstractStreamDataCommand {
         Util.write(writer, CsvConstants.INSERT, DELIMITER, data.getRowData());
         writer.newLine();
     }
+    
+    public boolean isTriggerHistoryRequired() {
+        return true;
+    }
 }

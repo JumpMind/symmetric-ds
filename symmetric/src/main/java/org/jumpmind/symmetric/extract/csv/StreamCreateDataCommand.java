@@ -13,4 +13,8 @@ public class StreamCreateDataCommand extends AbstractStreamDataCommand {
         Util.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
         writer.newLine();
     }
+    
+    public boolean isTriggerHistoryRequired() {
+        return false;
+    }
 }

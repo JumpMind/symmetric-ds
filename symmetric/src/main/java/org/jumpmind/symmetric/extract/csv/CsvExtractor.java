@@ -69,8 +69,11 @@ public class CsvExtractor implements IDataExtractor {
     }
 
     public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
-        preprocessTable(data, writer, context);
-        dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
+        IStreamDataCommand cmd = dictionary.get(data.getEventType().getCode());
+        if (cmd.isTriggerHistoryRequired()) {
+            preprocessTable(data, writer, context);
+        }
+        cmd.execute(writer, data, context);
     }
 
     /**
@@ -81,29 +84,26 @@ public class CsvExtractor implements IDataExtractor {
      * @param out
      */
     public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
-        if (data.getTriggerHistory() != null) {
-            String auditKey = Integer.toString(
-                    data.getTriggerHistory().getTriggerHistoryId()).intern();
-            if (!context.getAuditRecordsWritten().contains(auditKey)) {
-                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-                out.newLine();
-                Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory()
-                        .getPkColumnNames());
-                out.newLine();
-                Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory()
-                        .getColumnNames());
-                out.newLine();
-                context.getAuditRecordsWritten().add(auditKey);
-            } else if (!context.isLastTable(data.getTableName())) {
-                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
-                out.newLine();
-            }
-            if (data.getEventType() == DataEventType.UPDATE
-                    && data.getOldData() != null) {
-                Util.write(out, CsvConstants.OLD, ", ", data.getOldData());
-                out.newLine();
-            }
-
+        if (data.getTriggerHistory() == null) {
+            throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
+                    + ": try running syncTriggers() or restarting SymmetricDS");
+        }
+        String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
+        if (!context.getAuditRecordsWritten().contains(auditKey)) {
+            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            out.newLine();
+            Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
+            out.newLine();
+            Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
+            out.newLine();
+            context.getAuditRecordsWritten().add(auditKey);
+        } else if (!context.isLastTable(data.getTableName())) {
+            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            out.newLine();
+        }
+        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
+            Util.write(out, CsvConstants.OLD, ", ", data.getOldData());
+            out.newLine();
         }
         context.setLastTableName(data.getTableName());
     }

@@ -34,4 +34,8 @@ class StreamDeleteDataCommand extends AbstractStreamDataCommand {
         Util.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData());
         out.newLine();
     }
+    
+    public boolean isTriggerHistoryRequired() {
+        return true;
+    }
 }

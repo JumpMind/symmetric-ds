@@ -34,5 +34,8 @@ class StreamSQLDataCommand extends AbstractStreamDataCommand {
         Util.writeSql(data.getRowData(), writer);
     }
     
+    public boolean isTriggerHistoryRequired() {
+        return false;
+    }
 
 }
