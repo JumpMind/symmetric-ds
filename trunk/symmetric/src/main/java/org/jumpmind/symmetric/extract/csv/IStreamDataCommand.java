@@ -29,4 +29,5 @@ import org.jumpmind.symmetric.model.Data;
 
 interface IStreamDataCommand {
     void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException;
+    boolean isTriggerHistoryRequired();
 }

@@ -67,5 +67,9 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
+    
+    public boolean isTriggerHistoryRequired() {
+        return true;
+    }
 
 }
