@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -59,8 +58,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private INodeService nodeService;
 
     private IDataExtractorService dataExtractorService;
-
-    private IClusterService clusterService;
 
     private IDataService dataService;
 
@@ -254,7 +251,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     node.getExternalId(), me.getNodeId() });
             jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
                     me.getNodeId() });
-            clusterService.initLockTableForNode(nodeService.findNode(nodeId));
             logger.info("Just opened registration for external id of " + node.getExternalId() + " and a node group of "
                     + node.getNodeGroupId() + " and a node id of " + nodeId);
         } else {
@@ -268,10 +264,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void setDataExtractorService(IDataExtractorService dataExtractorService) {
         this.dataExtractorService = dataExtractorService;
-    }
-
-    public void setClusterService(IClusterService clusterService) {
-        this.clusterService = clusterService;
     }
 
     public void setDataService(IDataService dataService) {

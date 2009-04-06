@@ -20,9 +20,16 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import static org.jumpmind.symmetric.service.LockActionConstants.HEARTBEAT;
+import static org.jumpmind.symmetric.service.LockActionConstants.PULL;
+import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_INCOMING;
+import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_OUTGOING;
+import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_STATISTICS;
+import static org.jumpmind.symmetric.service.LockActionConstants.PUSH;
+import static org.jumpmind.symmetric.service.LockActionConstants.SYNCTRIGGERS;
+
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -30,13 +37,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import static org.jumpmind.symmetric.service.LockActionConstants.*;
 
 public class ClusterService extends AbstractService implements IClusterService {
 
@@ -44,27 +49,18 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected static final String COMMON_LOCK_ID = "common";
 
-    private INodeService nodeService;
-
     public void initLockTable() {
-        initLockTableForNodes(nodeService.findNodesToPull());
-        initLockTableForNodes(nodeService.findNodesToPushTo());
+        initLockTable(LockActionConstants.PULL, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.PUSH, COMMON_LOCK_ID);
+        initLockTable(LockActionConstants.HEARTBEAT, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PURGE_INCOMING, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PURGE_OUTGOING, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PURGE_STATISTICS, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
-
-    private void initLockTableForNodes(final List<Node> nodes) {
-        for (final Node node : nodes) {
-            initLockTableForNode(node);
-        }
-    }
-
-    public void initLockTableForNode(final Node node) {
-        initLockTable(LockActionConstants.PULL, node.getNodeId());
-        initLockTable(LockActionConstants.PUSH, node.getNodeId());
-        initLockTable(LockActionConstants.HEARTBEAT, node.getNodeId());
+    
+    public void initLockTableForNode(String action, final Node node) {
+        initLockTable(action, node.getNodeId());
     }
 
     public void initLockTable(final String action, final String lockId) {
@@ -141,10 +137,6 @@ public class ClusterService extends AbstractService implements IClusterService {
         } else {
             return true;
         }
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
     }
 
 }

@@ -188,7 +188,6 @@
         <property name="sql" ref="registrationServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
-        <property name="clusterService" ref="clusterService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="dbDialect" ref="dbDialect" />
         <property name="transportManager" ref="transportManager" />
@@ -362,7 +361,6 @@
     <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
-        <property name="nodeService" ref="nodeService" />
         <property name="sql" ref="clusterServiceSql" />
     </bean>
 
