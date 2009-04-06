@@ -26,7 +26,7 @@ public interface IClusterService {
 
     public void initLockTable();
 
-    public void initLockTableForNode(Node node);
+    public void initLockTableForNode(String action, Node node);
 
     public void initLockTable(String action, String lockId);
 
