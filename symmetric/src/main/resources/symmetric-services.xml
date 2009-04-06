@@ -183,7 +183,6 @@
         </property>
     </bean>
 
-
     <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService" scope="singleton">
         <property name="sql" ref="registrationServiceSql" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
