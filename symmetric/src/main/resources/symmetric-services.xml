@@ -264,9 +264,6 @@
                 <entry key="D">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
                 </entry>
-                <entry key="V">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
-                </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
                         <property name="dataExtractorService" ref="dataExtractorService" />
@@ -299,9 +296,6 @@
                 <entry key="D">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
                 </entry>
-                <entry key="V">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
-                </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
                         <property name="dataExtractorService" ref="dataExtractorService" />
@@ -332,9 +326,6 @@
                 </entry>
                 <entry key="D">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
-                </entry>
-                <entry key="V">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamValidateDataCommand"></bean>
                 </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
