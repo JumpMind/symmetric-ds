@@ -21,7 +21,7 @@ package org.jumpmind.symmetric.service;
 
 public class LockActionConstants {
     public static final String PUSH = "PUSH";
-    public static final String PULL = "PUSH";
+    public static final String PULL = "PULL";
     public static final String PURGE_OUTGOING = "PURGE_OUTGOING";
     public static final String PURGE_INCOMING = "PURGE_INCOMING";
     public static final String PURGE_STATISTICS = "PURGE_STATISTICS";
