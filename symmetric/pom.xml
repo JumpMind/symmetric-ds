@@ -10,14 +10,19 @@
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
     <description>
-        SymmetricDS is an open source database synchronization solution. It is platform-independent, web-enabled, and
-        database-agnostic. SymmetricDS was first built to replicate changes between 'retail store' databases and a
+        SymmetricDS is an open source database synchronization solution. It is platform-independent,
+        web-enabled, and
+        database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
+        databases and a
         centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric/
+        </url>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -33,16 +38,22 @@
     <mailingLists>
         <mailingList>
             <name>SymmetricDS Development Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development</subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development</unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=</archive>
+            <subscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
+            </subscribe>
+            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/symmetricds-development
+            </unsubscribe>
+            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
+            </archive>
             <post>symmetricds-development@lists.sourceforge.net</post>
         </mailingList>
         <mailingList>
             <name>SymmetricDS User Mailing list</name>
-            <subscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users</subscribe>
-            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users</unsubscribe>
-            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=</archive>
+            <subscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
+            </subscribe>
+            <unsubscribe>http://lists.sourceforge.net/mailman/listinfo/jwebunit-users
+            </unsubscribe>
+            <archive>http://sourceforge.net/mailarchive/forum.php?forum_id=
+            </archive>
             <post>symmetricds-users@lists.sourceforge.net</post>
         </mailingList>
     </mailingLists>
@@ -128,13 +139,15 @@
         <repository>
             <id>dav.codehaus.org</id>
             <name>SymmetricDS Repo</name>
-            <url>dav:https://dav.codehaus.org/repository/symmetricds/</url>
+            <url>dav:https://dav.codehaus.org/repository/symmetricds/
+            </url>
         </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
             <id>dav.codehaus.org</id>
             <name>SymmetricDS Repo</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/</url>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/symmetricds/
+            </url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
@@ -163,7 +176,8 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.jumpmind.symmetric.SymmetricLauncher</mainClass>
+                            <mainClass>org.jumpmind.symmetric.SymmetricLauncher
+                            </mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
@@ -248,7 +262,8 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/assembly-bin.xml</descriptor>
+                                <descriptor>${basedir}/src/main/assembly/assembly-bin.xml
+                                </descriptor>
                             </descriptors>
                             <finalName>symmetric-ds-${pom.version}</finalName>
                         </configuration>
@@ -287,12 +302,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changes-plugin</artifactId>
                 <configuration>
-                    <issueLinkTemplate>%URL%/SYMMETRICDS-%ISSUE%</issueLinkTemplate>
+                    <fixVersionIds>14864</fixVersionIds>
+                    <columnNames>Fix Version,Type,Key,Summary,Assignee</columnNames>                    
                 </configuration>
                 <reportSets>
                     <reportSet>
                         <reports>
-                            <report>changes-report</report>
+                            <report>jira-report</report>
                         </reports>
                     </reportSet>
                 </reportSets>
@@ -331,20 +347,15 @@
     </reporting>
 
     <dependencies>
-        <!-- 
-            Stolen from http://viewvc.jboss.org/cgi-bin/viewvc.cgi/seam/trunk/build/parent.pom.xml?revision=7344&view=markup
-            Recommendations for dependency scope
-            
-            * optional - this library is needed only if you use a feature of 
-            the module which requires it.  You can use the module without
-            needing this library on the classpath. A library should only
-            be marked non-optional if it is used by > 95% of users of the
-            module OR won't break the user's application if included and
-            not needed/another implementation is used.
-            
-            * provided - this is something that is part of the Java EE 5 specification.
-            If it is included in the archive, things will break. Candidates
-            include JSF, Servlet API, JSP API, EL, JPA API.  
+        <!--
+            Stolen from
+            http://viewvc.jboss.org/cgi-bin/viewvc.cgi/seam/trunk/build/parent.pom.xml?revision=7344&view=markup
+            Recommendations for dependency scope * optional - this library is needed only if you use a feature of the
+            module which requires it. You can use the module without needing this library on the classpath. A library
+            should only be marked non-optional if it is used by > 95% of users of the module OR won't break the user's
+            application if included and not needed/another implementation is used. * provided - this is something that
+            is part of the Java EE 5 specification. If it is included in the archive, things will break. Candidates
+            include JSF, Servlet API, JSP API, EL, JPA API.
         -->
 
         <dependency>
@@ -601,8 +612,10 @@
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>*.xml</includes>
                                     <imgSrcPath>${docbook.source}/images</imgSrcPath>
-                                    <admonGraphicsPath>${docbook.source}/resources/images/admons/</admonGraphicsPath>
-                                    <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl</foCustomization>
+                                    <admonGraphicsPath>${docbook.source}/resources/images/admons/
+                                    </admonGraphicsPath>
+                                    <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl
+                                    </foCustomization>
                                     <postProcess>
                                         <delete file="${docbook.target}/pdf/user-guide.fo" />
                                     </postProcess>
@@ -616,7 +629,8 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${docbook.source}</sourceDirectory>
-                                    <targetDirectory>${docbook.target}/html-single</targetDirectory>
+                                    <targetDirectory>${docbook.target}/html-single
+                                    </targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>*.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
