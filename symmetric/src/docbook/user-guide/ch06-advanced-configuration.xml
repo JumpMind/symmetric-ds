@@ -58,7 +58,7 @@
                    <para>$(oldTriggerValue) </para>
                </listitem>
                <listitem>
-                   <para>$$(curTriggerValue)  </para>
+                   <para>$(curTriggerValue)  </para>
                </listitem>
             </itemizedlist>
             These get replaced with something that can be understood by the database you are using. For example, on Oracle the "$(newTriggerValue)" is 
