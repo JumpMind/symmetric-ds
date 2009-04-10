@@ -8,22 +8,38 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
     <section>
-        <title>Node Trees</title>
+        <title>Multi-Tiered Synchronization</title>
         <para>
-            Nodes can be organized so synchronization can flow through a tree-like network.
+            At times, there may be scenarios where data needs to flow through multiple tiers of nodes that
+            are organized in a tree-like network with each tier requiring a different subset of data.  For example,
+            you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
+            may connect to a server located physically at that store.  Then the store server may communicate with 
+            a corporate server or even a regional server.
         </para>
         <para>
-            A Node will always push and pull data to other Node groups according to the Node group link configuration.  
-            A Node can only pull and push data to other Nodes that are represented in its database.  Therefore, a tree-like 
-            hierarchy of Nodes is created by having only a subset of Nodes represented at the different branches of the tree.  
+            The different tiers would be device, store, region and corporate.  A tier is typically represented by a node group.  Each node in 
+            the tier would belong to the node group representing that tier.  
+        </para>
+        <para>
+            A node will always push and pull data to other node groups according to the node group link configuration.  
+            A node can only pull and push data to other nodes that are represented as rows in the node table in its database.  Because of this, a tree-like 
+            hierarchy of nodes can be created by having only a subset of nodes belonging to the same node group represented at the different branches of the tree.  
         </para>
         <para>
             If auto registration is turned <emphasis>off</emphasis>, then this setup must occur manually by opening registration 
-            for the desired Nodes at the desired parent Node and by configuring each Node's registration.url to be the parent Node's URL.  
-            The parent Node is always tracked by the setting of the parent's node_id in the created_at_node_id column of the new Node.  
-            When a Node registers and downloads its configuration it is always provided the configuration for all Nodes that were 
-            <emphasis>created</emphasis> at the Node that it is registering with.
+            for the desired nodes at the desired parent node and by configuring each node's registration.url to be the parent node's URL.  
+            The parent node is always tracked by the setting of the parent's node_id in the created_at_node_id column of the new node.  
+            When a node registers and downloads its configuration it is always provided the configuration for all nodes that were 
+            <emphasis>created</emphasis> at the node that it is registering with.
+        </para>
+        <para>
+            Most tiers will require the SymmetricDS <emphasis>server</emphasis> software.  It must be deployed to any node that is pulled from or pushed to.  If the node only pushes and pulls from other nodes, then only
+            the client software (no HTTP server) is required.
         </para> 
+        <para>
+            Nodes that service many clients may be deployed as a web farm for scalability purposes.  In this scenario a single node may have multiple SymmetricDS server 
+            instances that are configured the same and are fronted by some type of stateless load balancer. 
+        </para>        
     </section>
     <section>
         <title>Node Select</title>
