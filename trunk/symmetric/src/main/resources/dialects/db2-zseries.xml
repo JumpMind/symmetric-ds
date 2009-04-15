@@ -22,7 +22,7 @@
 					value="$[sym.trigger.prefix]" />
 				<property name="functionInstalledSql">
 					<value>
-						<![CDATA[select count(*) from syscat.functions where funcname = '$(functionName)']]>
+						<![CDATA[select count(*) from sysibm.sysfunctions where name = '$(functionName)']]>
 					</value>
 				</property>
 				<property name="stringColumnTemplate">
@@ -50,6 +50,16 @@
 						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)||' '||substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)||'.'||STRIP(char(microsecond($(tableAlias)."$(columnName)"))) || '"' end ||','||]]>
 					</value>
 				</property>
+                <property name="dateColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || STRIP(char(year($(tableAlias)."$(columnName)")))||'-'||substr(digits(month($(tableAlias)."$(columnName)")),9)||'-'||substr(digits(day($(tableAlias)."$(columnName)")),9)|| '"' end ||','||]]>
+                    </value>
+                </property>
+                <property name="timeColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || substr(digits(hour($(tableAlias)."$(columnName)")),9)||':'||substr(digits(minute($(tableAlias)."$(columnName)")),9)||':'||substr(digits(second($(tableAlias)."$(columnName)")),9)|| '"' end ||','||]]>
+                    </value>
+                </property>
 				<property name="triggerConcatCharacter" value="||" />
 				<property name="newTriggerValue" value="new" />
 				<property name="oldTriggerValue" value="old" />
