@@ -59,6 +59,26 @@ public class SqlTemplate {
     private String numberColumnTemplate;
 
     private String datetimeColumnTemplate;
+    
+    private String timeColumnTemplate;
+    
+    public String getTimeColumnTemplate() {
+        return timeColumnTemplate;
+    }
+
+    public void setTimeColumnTemplate(String timeColumnTemplate) {
+        this.timeColumnTemplate = timeColumnTemplate;
+    }
+
+    public String getDateColumnTemplate() {
+        return dateColumnTemplate;
+    }
+
+    public void setDateColumnTemplate(String dateColumnTemplate) {
+        this.dateColumnTemplate = dateColumnTemplate;
+    }
+
+    private String dateColumnTemplate;
 
     private String clobColumnTemplate;
 
@@ -455,7 +475,19 @@ public class SqlTemplate {
                 templateToUse = blobColumnTemplate;
                 break;
             case Types.DATE:
+                if(noDateColumnTemplate()){
+                    templateToUse = datetimeColumnTemplate;
+                    break;
+                }
+                templateToUse = dateColumnTemplate;
+                break;
             case Types.TIME:
+                if(noTimeColumnTemplate()){
+                    templateToUse = datetimeColumnTemplate;
+                    break;
+                }
+                templateToUse = timeColumnTemplate;
+                break;
             case Types.TIMESTAMP:
                 templateToUse = datetimeColumnTemplate;
                 break;
@@ -489,7 +521,7 @@ public class SqlTemplate {
         if (columnsText.endsWith(lastCommandToken)) {
             columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());
         }
-
+        
         // H2 (and maybe other embedded java triggers) escape the ' character so
         // it may be inserted into the
         // database as SQL that can be used by the trigger code.
@@ -502,6 +534,14 @@ public class SqlTemplate {
         columnsText = replace("origTableAlias", origTableAlias, columnsText);
         return replace("tableAlias", tableAlias, columnsText);
 
+    }
+
+    private boolean noTimeColumnTemplate() {
+        return timeColumnTemplate == null || timeColumnTemplate.equals("null") || timeColumnTemplate.trim().equals("");
+    }
+
+    private boolean noDateColumnTemplate() {
+        return dateColumnTemplate == null || dateColumnTemplate.equals("null") || dateColumnTemplate.trim().equals("");
     }
 
     private String buildColumnNameString(String tableAlias, Column[] columns) {
