@@ -133,6 +133,6 @@ final public class Version {
     }
     
     private static boolean noTargetVersion(String targetVersion) {
-        return targetVersion == null || targetVersion.equals("null") || targetVersion.trim().endsWith("");
+        return StringUtils.isBlank(targetVersion);
     }
 }
