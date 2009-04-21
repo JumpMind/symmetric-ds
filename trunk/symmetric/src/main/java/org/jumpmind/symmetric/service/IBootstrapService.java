@@ -58,4 +58,8 @@ public interface IBootstrapService {
     
     public void addTriggerCreationListeners(ITriggerCreationListener l);
 
+    /**
+     * Get a list of triggers that failed to create
+     */
+    public Map<Trigger, Exception> getFailedTriggers();
 }
