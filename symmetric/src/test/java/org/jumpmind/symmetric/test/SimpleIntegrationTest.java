@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -107,7 +108,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public SimpleIntegrationTest(String client, String root) throws Exception {
         super(client, root);
     }
-
+    
+    protected void checkForFailedTriggers() {
+        IBootstrapService service = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getClientEngine());
+        Assert.assertEquals(0, service.getFailedTriggers().size());
+        service = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getRootEngine());
+        Assert.assertEquals(0, service.getFailedTriggers().size());
+    }
+    
     @Test(timeout = 30000)
     public void registerClientWithRoot() {
         INodeService rootNodeService = AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
@@ -122,6 +130,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IStatisticManager statMgr = (IStatisticManager) getClientEngine().getApplicationContext().getBean(
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();
+        
+        checkForFailedTriggers();
     }
 
     @Test(timeout = 30000)

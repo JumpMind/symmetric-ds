@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
@@ -86,8 +87,14 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private List<ITriggerCreationListener> triggerCreationListeners;
 
     private boolean initialized = false;
+    
+    private TriggerFailureListener failureListener = new TriggerFailureListener();
 
     private Map<Integer, Trigger> triggerCache;
+    
+    public BootstrapService() {
+     this.addTriggerCreationListeners(this.failureListener);
+    }
 
     public void setupDatabase() {
         setupDatabase(false);
@@ -546,5 +553,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
         }
         this.triggerCreationListeners.add(l);
+    }
+    
+    public Map<Trigger, Exception> getFailedTriggers() {
+        return this.failureListener.getFailures();
     }
 }
