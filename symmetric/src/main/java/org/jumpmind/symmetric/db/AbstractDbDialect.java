@@ -480,10 +480,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
         query.append(" FROM ");
         if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
-            query.append(table.getCatalog() + ".");
+            query.append("\"").append(table.getCatalog()).append("\".");
         }
         if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
-            query.append(table.getSchema() + ".");
+            query.append("\"").append(table.getSchema()).append("\".");
         }
         query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
 
