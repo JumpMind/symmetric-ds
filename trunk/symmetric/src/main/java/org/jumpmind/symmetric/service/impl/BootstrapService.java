@@ -396,7 +396,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     @Transactional
     public void heartbeat() {
-        if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
+        if (clusterService.lock(LockActionConstants.HEARTBEAT) && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)) {
             try {
                 List<Node> heartbeatNodesToPush = new ArrayList<Node>();
                 Node me = nodeService.findIdentity();
@@ -412,8 +412,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     me.setSymmetricVersion(Version.version());
                     if (!StringUtils.isBlank(parameterService.getMyUrl())) {
                         me.setSyncURL(parameterService.getMyUrl());
-                    } else {
-                        me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
                     }
                     nodeService.updateNode(me);
                     logger.info("Done updating my node information and heartbeat time.");

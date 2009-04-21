@@ -112,11 +112,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void registerClientWithRoot() {
         INodeService rootNodeService = AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        Assert.assertTrue("The registration for the client should be opened now.", rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
+        Assert.assertTrue("The registration for the client should be opened now.", rootNodeService.findNodeSecurity(
+                TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         getClientEngine().start();
         getClientEngine().pull();
-        Assert.assertTrue("The client did not register.", getClientEngine().isRegistered());        
-        Assert.assertFalse("The registration for the client should be closed now.", rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
+        Assert.assertTrue("The client did not register.", getClientEngine().isRegistered());
+        Assert.assertFalse("The registration for the client should be closed now.", rootNodeService.findNodeSecurity(
+                TestConstants.TEST_CLIENT_EXTERNAL_ID).isRegistrationEnabled());
         IStatisticManager statMgr = (IStatisticManager) getClientEngine().getApplicationContext().getBean(
                 Constants.STATISTIC_MANAGER);
         statMgr.flush();
@@ -130,27 +132,30 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         insertIntoTestTriggerTable(rootDialect, new Object[] { 1, "wow", "mom" });
         insertIntoTestTriggerTable(rootDialect, new Object[] { 2, "mom", "wow" });
 
-        INodeService rootNodeService =  AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
-        INodeService clientNodeService = AppUtils.find(Constants.NODE_SERVICE, getClientEngine());        
+        INodeService rootNodeService = AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
+        INodeService clientNodeService = AppUtils.find(Constants.NODE_SERVICE, getClientEngine());
         String nodeId = rootNodeService.findNodeByExternalId(TestConstants.TEST_CLIENT_NODE_GROUP,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID).getNodeId();
-        
+
         getRootEngine().reloadNode(nodeId);
-        IOutgoingBatchService rootOutgoingBatchService =  AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getRootEngine());
+        IOutgoingBatchService rootOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE,
+                getRootEngine());
         Assert.assertFalse(rootOutgoingBatchService.isInitialLoadComplete(nodeId));
-        
-        Assert.assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isInitialLoadEnabled());
-        
+
+        Assert.assertTrue(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
+                .isInitialLoadEnabled());
+
         while (!rootOutgoingBatchService.isInitialLoadComplete(nodeId)) {
-            getClientEngine().pull();    
+            getClientEngine().pull();
         }
-        
-        Assert.assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID).isInitialLoadEnabled());
-        
-        NodeSecurity clientNodeSecurity = clientNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID);        
+
+        Assert.assertFalse(rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
+                .isInitialLoadEnabled());
+
+        NodeSecurity clientNodeSecurity = clientNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
         Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
-        
+
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from sym_incoming_batch where status='ER'"), 0,
                 "The initial load errored out." + printRootAndClientDatabases());
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_triggers_table"), 2,
@@ -196,8 +201,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         if (getRootDbDialect().isClobSyncSupported()) {
             assertEquals(clientJdbcTemplate.queryForObject("select notes from test_customer where customer_id=101",
-                    String.class), rootJdbcTemplate.queryForObject("select notes from test_customer where customer_id=101",
-                            String.class), "The CLOB notes field on customer was not sync'd to the client.");
+                    String.class), rootJdbcTemplate.queryForObject(
+                    "select notes from test_customer where customer_id=101", String.class),
+                    "The CLOB notes field on customer was not sync'd to the client.");
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
@@ -251,7 +257,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         return oldValue;
     }
 
-    @Test//(timeout = 30000)
+    @Test
+    // (timeout = 30000)
     public void syncToRoot() throws ParseException {
         turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
@@ -370,13 +377,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testHeartbeat() throws Exception {
         final String checkHeartbeatSql = "select heartbeat_time from " + TestConstants.TEST_PREFIX
-        + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
+                + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
         long ts = System.currentTimeMillis();
         Thread.sleep(1000);
+        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
+        parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, true);
         getClientEngine().heartbeat();
+        parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, false);
         Date time = (Date) clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
-        Assert.assertTrue("The heartbeat time was not updated locally.", time != null
-                && time.getTime() > ts);
+        Assert.assertTrue("The heartbeat time was not updated locally.", time != null && time.getTime() > ts);
         getClientEngine().push();
         time = (Date) rootJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
         Assert.assertTrue("The client node was not sync'd to the root as expected.", time != null
@@ -432,8 +441,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @SuppressWarnings("unchecked")
     @Test(timeout = 30000)
     public void testReservedColumnNames() {
-        if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect ||
-                getRootDbDialect() instanceof FirebirdDbDialect || getClientDbDialect() instanceof FirebirdDbDialect) {
+        if (getRootDbDialect() instanceof Db2DbDialect || getClientDbDialect() instanceof Db2DbDialect
+                || getRootDbDialect() instanceof FirebirdDbDialect || getClientDbDialect() instanceof FirebirdDbDialect) {
             return;
         }
         // alter the table to have column names that are not usually allowed
@@ -457,8 +466,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(updateKeyWordSql.replaceAll("\"", rquote), new Object[] { "y", "b", 1 });
         getClientEngine().pull();
 
-        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote),
-                new Object[] { 1 });
+        List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote), new Object[] { 1 });
         Map columnMap = (Map) rowList.get(0);
         assertEquals(columnMap.get("key word"), "y", "Wrong key word value in table");
         assertEquals(columnMap.get("case"), "b", "Wrong case value in table");
