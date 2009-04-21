@@ -32,7 +32,6 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.test.TestSetupUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +61,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getExternalId(), "00001", "Wrong external id");
         assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
-        assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
+        assertEquals(node.getDatabaseType(), "H2", "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
     }
 
@@ -76,7 +75,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getExternalId(), "00001", "Wrong external id");
         assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
-        assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
+        assertEquals(node.getDatabaseType(), "H2", "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), "5.0", "Wrong databaseVersion");
     }
 
@@ -116,9 +115,9 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00000", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_ROOT_NODE_GROUP, "Wrong node group id");
         assertEquals(node.getExternalId(), TestConstants.TEST_ROOT_EXTERNAL_ID, "Wrong external id");
-        assertEquals(node.getSyncURL().toString(), "http://localhost:" + TestSetupUtil.TEST_PORT + "/sync",
+        assertEquals(node.getSyncURL().toString(), "internal://root",
                 "Wrong syncUrl");
-        assertEquals(node.getSchemaVersion(), "?", "Wrong schemaVersion");
+        assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), getDbDialect().getName(), "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), getDbDialect().getVersion(), "Wrong databaseVersion");
     }
