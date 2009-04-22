@@ -30,6 +30,10 @@
         <priority value="WARN" />
     </category>
 
+    <category name="org.springframework.jmx.export.MBeanExporter">
+        <priority value="ERROR" />
+    </category>
+
     <category name="org.apache.ddlutils.platform.derby">
         <priority value="ERROR" />
     </category>
