@@ -216,8 +216,20 @@ public class SymmetricEngine {
      * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
-        registeredEnginesByUrl.put(parameterService.getMyUrl(), this);
+        registeredEnginesByUrl.put(getMyUrl(), this);
         registeredEnginesByName.put(getEngineName(), this);
+    }
+    
+    /**
+     * @return the URL that represents this engine
+     */
+    public String getMyUrl() {
+        Node node = nodeService.findIdentity();
+        if (node != null) {
+            return node.getSyncURL();
+        } else {
+            return parameterService.getMyUrl();
+        }
     }
 
     /**
