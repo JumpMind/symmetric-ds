@@ -56,6 +56,7 @@ public class ParameterConstants {
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
     public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
+    public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
