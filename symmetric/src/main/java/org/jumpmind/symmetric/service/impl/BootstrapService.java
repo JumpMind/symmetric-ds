@@ -77,23 +77,23 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private INodeService nodeService;
 
     private IDataService dataService;
-    
+
     private IOutgoingBatchService outgoingBatchService;
 
     private IUpgradeService upgradeService;
 
     private List<Channel> defaultChannels;
-    
+
     private List<ITriggerCreationListener> triggerCreationListeners;
 
     private boolean initialized = false;
-    
+
     private TriggerFailureListener failureListener = new TriggerFailureListener();
 
     private Map<Integer, Trigger> triggerCache;
-    
+
     public BootstrapService() {
-     this.addTriggerCreationListeners(this.failureListener);
+        this.addTriggerCreationListeners(this.failureListener);
     }
 
     public void setupDatabase() {
@@ -139,12 +139,12 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             + "Please set auto.upgrade property to true for an automated upgrade.");
                 }
             }
-            
+
             if (nodeService.findIdentity() == null) {
                 buildTablesFromDdlUtilXmlIfProvided();
                 loadFromScriptIfProvided();
             }
-            
+
             initialized = true;
 
         }
@@ -153,11 +153,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         clusterService.initLockTable();
     }
 
-
     public void syncTriggers() {
         syncTriggers(null);
     }
-    
+
     synchronized public void syncTriggers(StringBuilder sqlBuffer) {
         if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
             try {
@@ -266,18 +265,18 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         forceRebuildOfTriggers = true;
                     }
 
-                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
-                            DataEventType.DELETE, reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer, 
-                                    forceRebuildOfTriggers, trigger, DataEventType.UPDATE, reason,
-                                    latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
-                                            trigger, DataEventType.INSERT, reason, latestHistoryBeforeRebuild, null,
-                                            trigger.isSyncOnInsert(), table), trigger.isSyncOnUpdate(), table), trigger
-                                    .isSyncOnDelete(), table);
+                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
+                            trigger, DataEventType.DELETE, reason, latestHistoryBeforeRebuild,
+                            rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger, DataEventType.UPDATE,
+                                    reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer,
+                                            forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
+                                            latestHistoryBeforeRebuild, null, trigger.isSyncOnInsert(), table), trigger
+                                            .isSyncOnUpdate(), table), trigger.isSyncOnDelete(), table);
 
                     if (latestHistoryBeforeRebuild != null && newestHistory != null) {
                         configurationService.inactivateTriggerHistory(latestHistoryBeforeRebuild);
                     }
-                    
+
                     if (newestHistory != null) {
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                             if (this.triggerCreationListeners != null) {
@@ -291,7 +290,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 } else {
                     logger.error("The configured table does not exist in the datasource that is configured: "
                             + schemaPlusTriggerName);
-                    
+
                     if (this.triggerCreationListeners != null) {
                         for (ITriggerCreationListener l : this.triggerCreationListeners) {
                             l.tableDoesNotExist(trigger);
@@ -316,30 +315,38 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     /**
-     * Simply check and make sure that this node is all configured properly for operation.
+     * Simply check and make sure that this node is all configured properly for
+     * operation.
      */
     public void validateConfiguration() {
         Node node = nodeService.findIdentity();
         if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())) {
-            throw new IllegalStateException(String.format("Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.", ParameterConstants.REGISTRATION_URL));       
-        } else if (node != null && (!node.getExternalId().equals(parameterService.getExternalId()) || !node.getNodeGroupId().equals(parameterService.getNodeGroupId()))) {
+            throw new IllegalStateException(
+                    String
+                            .format(
+                                    "Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.",
+                                    ParameterConstants.REGISTRATION_URL));
+        } else if (node != null
+                && (!node.getExternalId().equals(parameterService.getExternalId()) || !node.getNodeGroupId().equals(
+                        parameterService.getNodeGroupId()))) {
             throw new IllegalStateException(
                     "The configured state does not match recorded database state.  The recorded external id is "
                             + node.getExternalId() + " while the configured external id is "
                             + parameterService.getExternalId() + ".  The recorded node group id is "
                             + node.getNodeGroupId() + " while the configured node group id is "
                             + parameterService.getNodeGroupId());
-        } 
-        // TODO Add more validation checks to make sure that the system is configured correctly
-        
-        // TODO Add method to configuration service to validate triggers and call from here.
+        }
+        // TODO Add more validation checks to make sure that the system is
+        // configured correctly
+
+        // TODO Add method to configuration service to validate triggers and
+        // call from here.
         // Make sure there are not duplicate trigger rows with the same name
     }
 
     private boolean buildTablesFromDdlUtilXmlIfProvided() {
         boolean loaded = false;
-        String xml = parameterService
-                .getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML);
+        String xml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML);
         if (!StringUtils.isBlank(xml)) {
             File file = new File(xml);
             URL fileUrl = null;
@@ -403,34 +410,37 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
 
     @Transactional
     public void heartbeat() {
-        if (clusterService.lock(LockActionConstants.HEARTBEAT) && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)) {
+        if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
             try {
                 List<Node> heartbeatNodesToPush = new ArrayList<Node>();
                 Node me = nodeService.findIdentity();
                 if (me != null) {
-                    logger.info("Updating my node information and heartbeat time.");
+                    logger.info("Updating time and version node info");
                     me.setHeartbeatTime(new Date());
                     me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                    me.setSymmetricVersion(Version.version());
                     me.setDatabaseType(dbDialect.getName());
                     me.setDatabaseVersion(dbDialect.getVersion());
-                    me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-                    me.setExternalId(parameterService.getExternalId());
-                    me.setNodeGroupId(parameterService.getNodeGroupId());
-                    me.setSymmetricVersion(Version.version());
-                    if (!StringUtils.isBlank(parameterService.getMyUrl())) {
-                        me.setSyncURL(parameterService.getMyUrl());
+                    if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
+                        logger.info("Updating my node configuration info according to the symmetric properties");
+                        me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                        me.setExternalId(parameterService.getExternalId());
+                        me.setNodeGroupId(parameterService.getNodeGroupId());
+                        if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                            me.setSyncURL(parameterService.getMyUrl());
+                        }
                     }
                     nodeService.updateNode(me);
-                    logger.info("Done updating my node information and heartbeat time.");
-                    heartbeatNodesToPush.add(me);
-                    heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
+                    logger.info("Done updating my node info");
                 }
 
-                if (!nodeService.isRegistrationServer()) {
+                if (!nodeService.isRegistrationServer() && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
+                        && me != null) {
+                    heartbeatNodesToPush.add(me);
+                    heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
                     for (Node node : heartbeatNodesToPush) {
                         // don't send new heart beat events if we haven't sent
-                        // the
-                        // last ones ...
+                        // the last ones ...
                         if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node
                                 .getNodeId())) {
                             dataService.insertHeartbeatEvent(node);
@@ -446,8 +456,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
-    private TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer, boolean forceRebuild, Trigger trigger, DataEventType dmlType,
-            TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist, boolean triggerIsActive, Table table) {
+    private TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer, boolean forceRebuild, Trigger trigger,
+            DataEventType dmlType, TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
+            boolean triggerIsActive, Table table) {
 
         boolean triggerExists = false;
 
@@ -485,8 +496,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
 
         if ((forceRebuild || !triggerIsActive) && triggerExists) {
-            dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName, trigger.getSourceTableName(),
-                    oldhist);
+            dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName, trigger
+                    .getSourceTableName(), oldhist);
             triggerExists = false;
         }
 
@@ -547,14 +558,14 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             }
         }
     }
-    
+
     public void addTriggerCreationListeners(ITriggerCreationListener l) {
         if (this.triggerCreationListeners == null) {
             this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
         }
         this.triggerCreationListeners.add(l);
     }
-    
+
     public Map<Trigger, Exception> getFailedTriggers() {
         return this.failureListener.getFailures();
     }

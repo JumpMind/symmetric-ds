@@ -118,8 +118,8 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getSyncURL().toString(), "internal://root",
                 "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
-        assertEquals(node.getDatabaseType(), "H2", "Wrong databaseType");
-        assertEquals(node.getDatabaseVersion(), "1.1", "Wrong databaseVersion");
+        assertEquals(node.getDatabaseType(), getDbDialect().getName(), "Wrong databaseType");
+        assertEquals(node.getDatabaseVersion(), getDbDialect().getVersion(), "Wrong databaseVersion");
     }
 
     @Test
