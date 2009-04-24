@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,9 +81,10 @@ public class SymmetricFilter implements Filter {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = getContext();
-        Map<String, Filter> filterBeans = ctx.getBeansOfType(Filter.class);
-        if (filterBeans.size() == 0) {
-            filterBeans = ctx.getParent().getBeansOfType(Filter.class);
+        Map<String, Filter> filterBeans = new HashMap<String, Filter>();
+        filterBeans.putAll(ctx.getBeansOfType(Filter.class));
+        if (ctx.getParent() != null) {
+            filterBeans.putAll(ctx.getParent().getBeansOfType(Filter.class));
         }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file

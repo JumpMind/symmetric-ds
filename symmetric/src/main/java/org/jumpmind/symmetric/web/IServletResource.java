@@ -61,20 +61,6 @@ public interface IServletResource {
     public abstract boolean matches(ServletRequest request);
 
     /**
-     * Returns true if this is a container managed resource.
-     * 
-     * @return
-     */
-    public abstract boolean isSpringManaged();
-
-    /**
-     * Returns the spring managed bean
-     * 
-     * @return
-     */
-    public abstract IServletResource getSpringBean();
-
-    /**
      * Returns true if this should be container compatible
      * 
      * @return

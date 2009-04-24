@@ -204,7 +204,7 @@ public class ServletResourceTemplate implements IServletResource {
      * @param resp
      * @param statusCode
      * @param message
-     *                a message to put in the body of the response
+     *            a message to put in the body of the response
      * @throws IOException
      */
     protected boolean sendError(ServletResponse resp, int statusCode, String message) throws IOException {
@@ -217,17 +217,18 @@ public class ServletResourceTemplate implements IServletResource {
 
     /**
      * Returns true if this is a spring managed resource.
-     * 
-     * @return
      */
     public boolean isSpringManaged() {
-        return getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+        boolean managed = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+        if (!managed && getDefaultApplicationContext().getParent() != null) {
+            managed = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+                    .contains(this);
+        }
+        return managed;
     }
 
     /**
      * Returns true if this is a container managed resource.
-     * 
-     * @return
      */
     @SuppressWarnings("unchecked")
     public IServletResource getSpringBean() {
@@ -236,6 +237,14 @@ public class ServletResourceTemplate implements IServletResource {
             Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
+            }
+
+            if (retVal == null && getDefaultApplicationContext().getParent() != null) {
+                iterator = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+                        .iterator();
+                if (iterator.hasNext()) {
+                    retVal = (IServletResource) iterator.next();
+                }
             }
         }
         return retVal;

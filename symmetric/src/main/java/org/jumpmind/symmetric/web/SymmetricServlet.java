@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * The SymmetricServlet manages all of the other servlets. This allows for
@@ -71,13 +73,17 @@ public class SymmetricServlet extends AbstractServlet {
         return logger;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
         servlets = new ArrayList<HttpServlet>();
-        @SuppressWarnings("unchecked")
-        final Map<String, HttpServlet> servletBeans = getDefaultApplicationContext().getBeansOfType(HttpServlet.class);
+        ApplicationContext ctx = getDefaultApplicationContext();
+        final Map<String, HttpServlet> servletBeans = new HashMap<String, HttpServlet>();
+        servletBeans.putAll(ctx.getBeansOfType(HttpServlet.class));
+        if (ctx.getParent() != null) {
+            servletBeans.putAll(ctx.getParent().getBeansOfType(HttpServlet.class));
+        }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
         for (final Map.Entry<String, HttpServlet> servletEntry : servletBeans.entrySet()) {
