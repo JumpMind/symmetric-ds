@@ -120,29 +120,38 @@ public abstract class AbstractResourceServlet<T extends ITransportResourceHandle
 
     /**
      * Returns true if this is a spring managed resource.
-     * 
-     * @return
      */
-    public boolean isSpringManaged() {
-        return getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+    protected boolean isSpringManaged() {
+        boolean managed = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
+        if (!managed && getDefaultApplicationContext().getParent() != null) {
+            managed = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+                    .contains(this);
+        }
+        return managed;
     }
 
     /**
      * Returns true if this is a container managed resource.
-     * 
-     * @return
      */
     @SuppressWarnings("unchecked")
-    public IServletResource getSpringBean() {
+    protected IServletResource getSpringBean() {
         IServletResource retVal = this;
         if (!isSpringManaged()) {
             Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
             }
+
+            if (retVal == null && getDefaultApplicationContext().getParent() != null) {
+                iterator = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+                        .iterator();
+                if (iterator.hasNext()) {
+                    retVal = (IServletResource) iterator.next();
+                }
+            }
         }
         return retVal;
-    }
+    }   
 
     public void init(ServletContext servletContext) {
         servletResourceTemplate.init(servletContext);

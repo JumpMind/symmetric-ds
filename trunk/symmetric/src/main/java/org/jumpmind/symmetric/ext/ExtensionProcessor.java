@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.ext;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
@@ -53,14 +55,20 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IDataExtractorService dataExtractorService;
 
     IParameterService parameterService;
-    
+
     INodeService nodeService;
-    
+
     IBootstrapService bootstrapService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        Map<String, IExtensionPoint> extensions = beanFactory.getBeansOfType(IExtensionPoint.class);
+        Map<String, IExtensionPoint> extensions = new HashMap<String, IExtensionPoint>();
+        extensions.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
+        if (beanFactory.getParentBeanFactory() != null
+                && beanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
+            extensions.putAll(((ListableBeanFactory) beanFactory.getParentBeanFactory())
+                    .getBeansOfType(IExtensionPoint.class));
+        }
         for (IExtensionPoint ext : extensions.values()) {
             if (ext.isAutoRegister()) {
                 boolean registerExtension = false;
@@ -88,11 +96,11 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     }
 
     private void registerExtension(IExtensionPoint ext) {
-        
+
         if (ext instanceof ITriggerCreationListener) {
-            bootstrapService.addTriggerCreationListeners((ITriggerCreationListener)ext);
+            bootstrapService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
-        
+
         if (ext instanceof IBatchListener) {
             dataLoaderService.addBatchListener((IBatchListener) ext);
         }
@@ -128,9 +136,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof IExtractorFilter) {
             dataExtractorService.addExtractorFilter((IExtractorFilter) ext);
         }
-        
+
         if (ext instanceof INodeIdGenerator) {
-            nodeService.setNodeIdGenerator((INodeIdGenerator)ext);
+            nodeService.setNodeIdGenerator((INodeIdGenerator) ext);
         }
     }
 

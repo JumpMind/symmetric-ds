@@ -68,14 +68,12 @@ public class AuthenticationFilterTest extends AbstractSymmetricFilterTest {
 
     @Test
     public void testAuthenticationFilter() throws Exception {
-
         final SymmetricFilter filter = new SymmetricFilter();
         filter.init(new MockFilterConfig(servletContext));
-
         final MockHttpServletRequest request = TestSetupUtil.createMockHttpServletRequest(servletContext, method, uri, parameters);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
-        Assert.assertEquals(response.getStatus(), HttpServletResponse.SC_FORBIDDEN);
+        Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
         filter.destroy();
     }
 

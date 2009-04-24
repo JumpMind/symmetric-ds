@@ -25,27 +25,25 @@ import javax.servlet.ServletContextEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextException;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * This is the standard way to bootstrap Symmetric in a web container. Symmetric
  * uses Spring's WebApplicationContext for access to symmetric from its
  * Servlets. This servlet context listener forces the contextConfigLocation for
- * Spring to be load symmetric.xml. <p/> Developers have the option to subclass
- * off of this listener and override the createConfigureAndStartEngine() method.
+ * Spring to be load symmetric.xml.
+ * <p/>
+ * Developers have the option to subclass off of this listener and override the
+ * createConfigureAndStartEngine() method.
  */
 public class SymmetricEngineContextLoaderListener extends ContextLoaderListener {
 
     static final String SYMMETRIC_SPRING_LOCATION = "classpath:/symmetric.xml";
+    static final String SYMMETRIC_EMPTY_SPRING_LOCATION = "classpath:/symmetric-empty.xml";
 
     static final Log logger = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
 
@@ -92,31 +90,31 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
     @Override
     protected ContextLoader createContextLoader() {
         return new ContextLoader() {
-            @SuppressWarnings("unchecked")
-            protected WebApplicationContext createWebApplicationContext(ServletContext servletContext,
-                    ApplicationContext parent) throws BeansException {
+            @Override
+            protected void customizeContext(ServletContext servletContext,
+                    ConfigurableWebApplicationContext applicationContext) {
+                if (engine == null) {
+                    String[] configLocation = applicationContext.getConfigLocations();
+                    String[] newconfigLocation = new String[configLocation.length + 1];
+                    boolean symmetricConfigured = false;
+                    for (int i = 0; i < configLocation.length; i++) {
+                        String config = configLocation[i];
+                        if (config.equals(SYMMETRIC_SPRING_LOCATION)) {
+                            symmetricConfigured = true;
+                        }
+                        newconfigLocation[i] = configLocation[i];
+                    }
 
-                Class contextClass = determineContextClass(servletContext);
-                if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
-                    throw new ApplicationContextException("Custom context class [" + contextClass.getName()
-                            + "] is not of type ConfigurableWebApplicationContext");
+                    if (!symmetricConfigured) {
+                        newconfigLocation[configLocation.length + 1] = SYMMETRIC_SPRING_LOCATION;
+                        applicationContext.setConfigLocations(newconfigLocation);
+                    }
+                } else {
+                    applicationContext.setParent(engine.getApplicationContext());
+                    applicationContext.setConfigLocation(SYMMETRIC_EMPTY_SPRING_LOCATION);
+                    
                 }
 
-                ConfigurableWebApplicationContext wac = (ConfigurableWebApplicationContext) BeanUtils
-                        .instantiateClass(contextClass);
-                wac.setParent(parent);
-                wac.setServletContext(servletContext);
-                String configLocation = servletContext.getInitParameter(CONFIG_LOCATION_PARAM);
-                if (configLocation == null) {
-                    configLocation = SYMMETRIC_SPRING_LOCATION;
-                } else if (!configLocation.contains(SYMMETRIC_SPRING_LOCATION)) {
-                    configLocation = SYMMETRIC_SPRING_LOCATION + "," + configLocation;
-                }
-                wac.setConfigLocations(StringUtils.tokenizeToStringArray(configLocation,
-                        ConfigurableWebApplicationContext.CONFIG_LOCATION_DELIMITERS));
-
-                wac.refresh();
-                return wac;
             }
         };
     }
