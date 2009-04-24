@@ -41,14 +41,14 @@ public class AbstractWebTest {
     public static void setupTest() throws Exception {
         TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null,
                 "h2");
+        IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, TestSetupUtil.getRootEngine());
+        bootstrapService.setupDatabase();        
     }
 
     @Before
     public void springTestContextBeforeTestMethod() throws Exception {
         servletContext = new MockServletContext();
         applicationContext = new XmlWebApplicationContext();
-        IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, TestSetupUtil.getRootEngine());
-        bootstrapService.setupDatabase();
         applicationContext.setParent(TestSetupUtil.getRootEngine().getApplicationContext());
         applicationContext.setServletContext(servletContext);
         applicationContext.setConfigLocations(new String[0]);

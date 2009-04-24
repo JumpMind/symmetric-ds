@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -81,7 +81,7 @@ public class SymmetricFilter implements Filter {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
         ApplicationContext ctx = getContext();
-        Map<String, Filter> filterBeans = new HashMap<String, Filter>();
+        Map<String, Filter> filterBeans = new LinkedHashMap<String, Filter>();
         filterBeans.putAll(ctx.getBeansOfType(Filter.class));
         if (ctx.getParent() != null) {
             filterBeans.putAll(ctx.getParent().getBeansOfType(Filter.class));
@@ -98,7 +98,7 @@ public class SymmetricFilter implements Filter {
                 filters.add(filter);
             } else {
                 logger
-                        .info("Found a Spring filter that does not implement IExtensionPoint.  NOT adding it as a SymmetricFilter.");
+                        .warn("Found a Spring filter that does not implement IExtensionPoint.  NOT adding it as a SymmetricFilter.");
             }
         }
     }
@@ -122,9 +122,6 @@ public class SymmetricFilter implements Filter {
      * The chain will visit each filter in turn. When done, it will pass along
      * to the original chain. The chain skips disabled filters. I'm wondering if
      * this should be moved to the {@link SymmetricFilter#init(FilterConfig)}.
-     * 
-     * @author Keith
-     * 
      */
     private class SymmetricFilterChain implements FilterChain {
 

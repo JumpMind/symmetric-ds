@@ -22,8 +22,8 @@
 package org.jumpmind.symmetric.web;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +79,7 @@ public class SymmetricServlet extends AbstractServlet {
         super.init(config);
         servlets = new ArrayList<HttpServlet>();
         ApplicationContext ctx = getDefaultApplicationContext();
-        final Map<String, HttpServlet> servletBeans = new HashMap<String, HttpServlet>();
+        final Map<String, HttpServlet> servletBeans = new LinkedHashMap<String, HttpServlet>();
         servletBeans.putAll(ctx.getBeansOfType(HttpServlet.class));
         if (ctx.getParent() != null) {
             servletBeans.putAll(ctx.getParent().getBeansOfType(HttpServlet.class));
