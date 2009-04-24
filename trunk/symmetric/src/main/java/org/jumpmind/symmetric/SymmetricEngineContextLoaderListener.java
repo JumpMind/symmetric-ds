@@ -106,7 +106,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
                     }
 
                     if (!symmetricConfigured) {
-                        newconfigLocation[configLocation.length + 1] = SYMMETRIC_SPRING_LOCATION;
+                        newconfigLocation[configLocation.length] = SYMMETRIC_SPRING_LOCATION;
                         applicationContext.setConfigLocations(newconfigLocation);
                     }
                 } else {
