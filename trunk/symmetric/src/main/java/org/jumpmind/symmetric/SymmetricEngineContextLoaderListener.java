@@ -96,17 +96,17 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
                 if (engine == null) {
                     String[] configLocation = applicationContext.getConfigLocations();
                     String[] newconfigLocation = new String[configLocation.length + 1];
+                    newconfigLocation[0] = SYMMETRIC_SPRING_LOCATION;
                     boolean symmetricConfigured = false;
                     for (int i = 0; i < configLocation.length; i++) {
                         String config = configLocation[i];
                         if (config.equals(SYMMETRIC_SPRING_LOCATION)) {
                             symmetricConfigured = true;
                         }
-                        newconfigLocation[i] = configLocation[i];
+                        newconfigLocation[i+1] = configLocation[i];
                     }
 
                     if (!symmetricConfigured) {
-                        newconfigLocation[configLocation.length] = SYMMETRIC_SPRING_LOCATION;
                         applicationContext.setConfigLocations(newconfigLocation);
                     }
                 } else {
