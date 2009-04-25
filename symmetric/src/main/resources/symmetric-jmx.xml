@@ -22,6 +22,7 @@
         <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
     </bean>
 
+    <!-- Deprecated -->
     <bean id="defaultServerExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="true">
         <property name="assembler" ref="assembler" />
         <property name="beans">
