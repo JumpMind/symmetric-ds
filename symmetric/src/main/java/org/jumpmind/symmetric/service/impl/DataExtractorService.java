@@ -295,9 +295,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (batches != null && batches.size() > 0) {
             OutgoingBatchHistory history = null;
             try {
-                handler.init();
+                boolean initialized = false;
                 for (final OutgoingBatch batch : batches) {
                     history = new OutgoingBatchHistory(batch);
+                    if (!initialized) {
+                        handler.init();
+                        initialized = true;
+                    }
                     handler.startBatch(batch);
                     selectEventDataToExtract(handler, batch);
                     handler.endBatch(batch);
