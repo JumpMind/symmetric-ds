@@ -498,6 +498,18 @@ public class Trigger {
         if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
+        
+        if (null != nodeSelect) {
+            hashedValue += nodeSelect.hashCode();
+        }
+        
+        if (null != initialLoadSelect) {
+            hashedValue += initialLoadSelect.hashCode();
+        }
+        
+        if (null != txIdExpression) {
+            hashedValue += txIdExpression.hashCode();
+        }        
 
         return hashedValue;
     }
