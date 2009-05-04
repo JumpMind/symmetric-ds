@@ -66,7 +66,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String insertOrderDetailSql = "insert into test_order_detail (order_id, line_number, item_type, item_id, quantity, price) values(?,?,?,?,?,?)";
 
-    static final String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_time, notes, icon) values(?,?,?,?,?,?,?,?,?,?)";
+    static final String insertCustomerSql = "insert into test_customer (customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time, notes, icon) values(?,?,?,?,?,?,?,?,?,?,?)";
 
     static final String insertTestTriggerTableSql = "insert into test_triggers_table (id, string_one_value, string_two_value) values(?,?,?)";
 
@@ -138,7 +138,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void initialLoad() {
         IDbDialect rootDialect = getRootDbDialect();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 301, "Linus", "1", "42 Blanket Street",
-                "Santa Claus", "IN", 90009, new Date(), "This is a test", BINARY_DATA });
+                "Santa Claus", "IN", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });
         insertIntoTestTriggerTable(rootDialect, new Object[] { 1, "wow", "mom" });
         insertIntoTestTriggerTable(rootDialect, new Object[] { 2, "mom", "wow" });
 
@@ -203,7 +203,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String TEST_CLOB = "This is my test's test";
         // now change some data that should be sync'd
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 101, "Charlie Brown", "1", "300 Grub Street",
-                "New Yorl", "NY", 90009, new Date(), TEST_CLOB, BIG_BINARY });
+                "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB, BIG_BINARY });
 
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=101"), 1,
@@ -347,7 +347,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         configService.flushChannels();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
-                "New Yorl", "NY", 90009, new Date(), "This is a test", BINARY_DATA });
+                "New Yorl", "NY", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=201"), 0,
                 "The customer was sync'd to the client.");

@@ -68,7 +68,8 @@
         <column name="city" type="VARCHAR" size="50" required="true" />
         <column name="state" type="VARCHAR" size="50" required="true" />
         <column name="zip" type="INTEGER" />
-        <column name="entry_time" type="TIMESTAMP" />
+        <column name="entry_timestamp" type="TIMESTAMP" />
+        <column name="entry_time" type="TIME" />
         <column name="notes" type="CLOB" />
         <column name="icon" type="BLOB" />
     </table>
