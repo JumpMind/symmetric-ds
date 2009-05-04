@@ -61,6 +61,9 @@ public class TableTemplate {
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
 
+    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
+            "yyyy-MM-dd HH:mm:ss" };
+
     private JdbcTemplate jdbcTemplate;
 
     private IDbDialect dbDialect;
@@ -353,7 +356,7 @@ public class TableTemplate {
                             }
                         }
                     } else if (type == Types.TIME) {
-                        objectValue = new Time(getTime(value, TIMESTAMP_PATTERNS));
+                        objectValue = new Time(getTime(value, TIME_PATTERNS));
                     }
                 }
                 list.add(objectValue);

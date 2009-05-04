@@ -65,8 +65,8 @@ insert into sym_trigger
 values('test_sync_column_level','test-root-group','test-node-group','testchannel', 1, 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
 
 insert into test_customer
-(customer_id, name, is_active, address, city, state, zip, entry_time)
-values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '2007-01-02 11:30:00'});
+(customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time)
+values(100, 'John Smith', '1', '300 Main Street', 'Columbus', 'OH', 43230, {ts '2007-01-02 11:30:00'}, {ts '1970-01-01 11:30:00'});
 
 insert into test_order_header
 (order_id, customer_id, status, deliver_date)
