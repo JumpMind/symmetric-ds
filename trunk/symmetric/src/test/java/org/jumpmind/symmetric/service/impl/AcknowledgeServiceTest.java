@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.jumpmind.symmetric.transport.mock.MockAcknowledgeEventListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,6 +73,9 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     @Test
     public void okTest() {
         cleanSlate();
+        
+        ackService.addAcknowledgeEventListener(new MockAcknowledgeEventListener());
+        
         ackService.ack(new BatchInfo(1));
 
         List<OutgoingBatchHistory> history = getOutgoingBatchHistory(1);
@@ -80,7 +84,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(hist.getBatchId(), 1);
         Assert.assertEquals(hist.getStatus(), OutgoingBatchHistory.Status.OK);
     }
-
+    
     private void cleanSlate() {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch_hist", TestConstants.TEST_PREFIX + "outgoing_batch");

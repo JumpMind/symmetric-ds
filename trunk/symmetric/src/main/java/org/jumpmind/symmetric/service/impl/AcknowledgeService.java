@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,12 +33,15 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.transaction.annotation.Transactional;
 
 public class AcknowledgeService extends AbstractService implements IAcknowledgeService {
 
     private IOutgoingBatchService outgoingBatchService;
+    
+    private List<IAcknowledgeEventListener> batchEventListeners;
     
     private IRegistrationService registrationService;
 
@@ -50,6 +54,13 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     @Transactional
     public void ack(final BatchInfo batch) {
+    	
+    	if (batchEventListeners != null) {
+			for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
+				batchEventListener.onAcknowledgeEvent(batch);
+			}
+		}
+    	
         if (batch.getBatchId() == BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION) {
             if (batch.isOk()) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
@@ -102,4 +113,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         this.registrationService = registrationService;
     }
 
+	public void addAcknowledgeEventListener(
+			IAcknowledgeEventListener statusChangeListner) {
+		
+        if (batchEventListeners == null) {
+            batchEventListeners = new ArrayList<IAcknowledgeEventListener>();
+        }
+        batchEventListeners.add(statusChangeListner);
+	}
 }

@@ -33,12 +33,14 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -59,6 +61,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     INodeService nodeService;
 
     IBootstrapService bootstrapService;
+    
+    IAcknowledgeService acknowledgeService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -97,6 +101,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private void registerExtension(IExtensionPoint ext) {
 
+        if (ext instanceof IAcknowledgeEventListener) {
+        	acknowledgeService.addAcknowledgeEventListener((IAcknowledgeEventListener)ext);
+        }
+    	
         if (ext instanceof ITriggerCreationListener) {
             bootstrapService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
@@ -165,5 +173,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     public void setBootstrapService(IBootstrapService bootstrapService) {
         this.bootstrapService = bootstrapService;
     }
+
+	public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
+		this.acknowledgeService = acknowledgeService;
+	}
 
 }
