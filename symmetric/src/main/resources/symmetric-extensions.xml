@@ -11,6 +11,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
         <property name="bootstrapService" ref="bootstrapService" />
+        <property name="acknowledgeService" ref="acknowledgeService" />
     </bean>
 
     <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.SyncTriggersRequiredFilter">
