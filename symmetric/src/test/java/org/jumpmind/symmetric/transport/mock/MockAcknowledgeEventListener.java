@@ -25,7 +25,6 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 public class MockAcknowledgeEventListener implements IAcknowledgeEventListener {
 
 	public boolean isAutoRegister() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
