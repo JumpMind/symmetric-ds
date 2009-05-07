@@ -181,8 +181,10 @@ public class SymmetricWebServer implements ApplicationContextAware {
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
+            String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+            keyStorePassword = (keyStorePassword != null)?keyStorePassword:"changeit";
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
-            ((SslSocketConnector) connector).setPassword("changeit");
+            ((SslSocketConnector) connector).setPassword(keyStorePassword);
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
             connector.setPort(securePort);
             connectors.add(connector);
