@@ -39,6 +39,8 @@ public class DataLoaderContext implements IDataLoaderContext {
     private String nodeId;
 
     private String tableName;
+    
+    private String channelId;
 
     private long batchId;
 
@@ -191,6 +193,14 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public Object[] getObjectKeyValues(String[] values) {
         return tableTemplate.getObjectKeyValues(this, values);
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
 }

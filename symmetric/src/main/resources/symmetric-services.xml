@@ -249,43 +249,29 @@
         </property>
     </bean>
 
+    <bean id="dataExtractor16" class="org.jumpmind.symmetric.extract.csv.CsvExtractor16">
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionary" ref="dataExtractorDictionary13" />
+    </bean>
+
     <bean id="dataExtractor14" class="org.jumpmind.symmetric.extract.csv.CsvExtractor14">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="dictionary">
-            <map>
-                <entry key="I">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
-                </entry>
-                <entry key="U">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
-                </entry>
-                <entry key="D">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
-                </entry>
-                <entry key="R">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
-                        <property name="dataExtractorService" ref="dataExtractorService" />
-                        <property name="configurationService" ref="configurationService" />
-                        <property name="nodeService" ref="nodeService" />
-                    </bean>
-                </entry>
-                <entry key="S">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
-                </entry>
-                <entry key="C">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
-                </entry>
-            </map>
-        </property>
+        <property name="dictionary" ref="dataExtractorDictionary13" />
     </bean>
 
     <bean id="dataExtractor13" class="org.jumpmind.symmetric.extract.csv.CsvExtractor13">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
-        <property name="dictionary">
+        <property name="dictionary" ref="dataExtractorDictionary13" />
+    </bean>
+
+	<bean id="dataExtractorDictionary13" class="java.util.HashMap">
+        <constructor-arg>
             <map>
                 <entry key="I">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
@@ -310,7 +296,7 @@
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
                 </entry>
             </map>
-        </property>
+        </constructor-arg>
     </bean>
 
     <bean id="dataExtractor10" class="org.jumpmind.symmetric.extract.csv.CsvExtractor10">

@@ -38,13 +38,13 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class CsvExtractor14 implements IDataExtractor {
 
-    private Map<String, IStreamDataCommand> dictionary = null;
+    protected Map<String, IStreamDataCommand> dictionary = null;
 
-    private IParameterService parameterService;
+    protected IParameterService parameterService;
 
-    private IDbDialect dbDialect;
+    protected IDbDialect dbDialect;
 
-    private INodeService nodeService;
+    protected INodeService nodeService;
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
         Node nodeIdentity = nodeService.findIdentity();

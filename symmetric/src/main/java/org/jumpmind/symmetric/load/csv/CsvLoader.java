@@ -179,6 +179,8 @@ public class CsvLoader implements IDataLoader {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
             context.setColumnNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
+        } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
+            context.setChannelId(tokens[1]);
         } else {
             isMetaTokenParsed = false;
         }

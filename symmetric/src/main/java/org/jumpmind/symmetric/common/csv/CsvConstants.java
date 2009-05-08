@@ -51,4 +51,5 @@ public class CsvConstants {
 
     public static final String CREATE = "create";
 
+    public static final String CHANNEL = "channel";
 }
