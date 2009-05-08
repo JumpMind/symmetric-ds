@@ -38,6 +38,8 @@ public class IncomingBatch implements Serializable {
 
     private String nodeId;
 
+    private String channelId;
+
     private Status status;
 
     private Date createTime;
@@ -50,6 +52,7 @@ public class IncomingBatch implements Serializable {
     public IncomingBatch(IDataLoaderContext context) {
         batchId = context.getBatchId();
         nodeId = context.getNodeId();
+        channelId = context.getChannelId();
         status = Status.OK;
     }
 
@@ -103,6 +106,14 @@ public class IncomingBatch implements Serializable {
      */
     public boolean isPersistable() {
         return batchId >= 0;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
 }

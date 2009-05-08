@@ -92,7 +92,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     public void insertIncomingBatch(IncomingBatch status) {
         jdbcTemplate.update(getSql("insertIncomingBatchSql"), new Object[] { Long.valueOf(status.getBatchId()),
-                status.getNodeId(), status.getStatus().toString() });
+                status.getNodeId(), status.getChannelId(), status.getStatus().toString() });
     }
 
     public int updateIncomingBatch(IncomingBatch status) {
@@ -118,8 +118,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             IncomingBatch batch = new IncomingBatch();
             batch.setBatchId(rs.getLong(1));
             batch.setNodeId(rs.getString(2));
-            batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(3)));
-            batch.setCreateTime(rs.getTimestamp(4));
+            batch.setChannelId(rs.getString(3));
+            batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(4)));
+            batch.setCreateTime(rs.getTimestamp(5));
             return batch;
         }
     }

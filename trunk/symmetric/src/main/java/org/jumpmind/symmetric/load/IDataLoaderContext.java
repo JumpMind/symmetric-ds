@@ -33,6 +33,8 @@ public interface IDataLoaderContext {
     public String getNodeId();
 
     public String getTableName();
+    
+    public String getChannelId();
 
     public String getVersion();
 

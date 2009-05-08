@@ -198,6 +198,7 @@
     <table name="incoming_batch">
         <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="50" />
         <column name="status" type="CHAR" size="2" />
         <column name="create_time" type="TIMESTAMP" />
     </table>

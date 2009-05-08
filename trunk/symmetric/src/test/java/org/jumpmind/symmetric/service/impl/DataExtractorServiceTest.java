@@ -85,7 +85,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         Trigger trigger = configurationService.getTriggerFor(DbTriggerTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         String loadResults = mockTransport.toString();
-        assertEquals(countLines(loadResults), 4, "Unexpected number of lines in the csv result: " + loadResults);
+        assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
         
         DbTriggerTest.insert(DbTriggerTest.INSERT1_VALUES, template, getDbDialect());
@@ -93,7 +93,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         loadResults = mockTransport.toString();
-        assertEquals(countLines(loadResults), 13, "Unexpected number of lines in the csv result: " + loadResults);
+        assertEquals(countLines(loadResults), 15, "Unexpected number of lines in the csv result: " + loadResults);
         
         
     }
@@ -109,7 +109,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
 
-        assertEquals(countLines(loadResults), 8, "Unexpected number of lines in the transport result: "
+        assertEquals(countLines(loadResults), 9, "Unexpected number of lines in the transport result: "
                 + loadResults);
     }
 

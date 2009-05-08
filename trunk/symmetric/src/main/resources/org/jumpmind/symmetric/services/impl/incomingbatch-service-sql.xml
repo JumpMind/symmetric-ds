@@ -10,7 +10,7 @@
   <util:map id="incomingBatchServiceSql">
     <entry key="findIncomingBatchSql">
       <value>
-        select batch_id, node_id, status, create_time from $[sym.sync.table.prefix]_incoming_batch where
+        select batch_id, node_id, channel_id, status, create_time from $[sym.sync.table.prefix]_incoming_batch where
         batch_id = ? and node_id = ?
       </value>
     </entry>
@@ -31,8 +31,8 @@
     </entry>
     <entry key="insertIncomingBatchSql">
       <value>
-        insert into $[sym.sync.table.prefix]_incoming_batch (batch_id, node_id, status, create_time)
-        values (?, ?, ?, current_timestamp)
+        insert into $[sym.sync.table.prefix]_incoming_batch (batch_id, node_id, channel_id, status, create_time)
+        values (?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
     <entry key="updateIncomingBatchSql">
