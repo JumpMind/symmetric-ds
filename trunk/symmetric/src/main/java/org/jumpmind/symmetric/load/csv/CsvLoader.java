@@ -158,10 +158,8 @@ public class CsvLoader implements IDataLoader {
                         if (!context.isSkipping()) {
                             runDdl(tokens[1]);
                         }
-                    } else if (tokens[0].equals(CsvConstants.BINARY)) {
-                        context.setBinaryEncodingType(tokens[1]);
                     } else {
-                        throw new RuntimeException("Unexpected token '" + tokens[0] + "' on line "
+                        logger.warn("Unexpected token '" + tokens[0] + "' on line "
                                 + stats.getLineCount() + " of batch " + context.getBatchId());
                     }
                 }
@@ -179,6 +177,8 @@ public class CsvLoader implements IDataLoader {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
             context.setColumnNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
+        } else if (tokens[0].equals(CsvConstants.BINARY)) {
+            context.setBinaryEncodingType(tokens[1]);
         } else if (tokens[0].equals(CsvConstants.CHANNEL)) {
             context.setChannelId(tokens[1]);
         } else {
