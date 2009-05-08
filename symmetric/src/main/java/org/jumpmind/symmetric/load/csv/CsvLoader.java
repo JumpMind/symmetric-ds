@@ -355,7 +355,7 @@ public class CsvLoader implements IDataLoader {
         }
         jdbcTemplate.execute(sql);
         if (context.getTableTemplate() != null) {
-            context.getTableTemplate().resetMetaData();
+            context.getTableTemplate().resetMetaData(false);
         }
     }
 
@@ -365,7 +365,7 @@ public class CsvLoader implements IDataLoader {
             logger.debug("Running DDL: " + xml);
         }
         dbDialect.createTables(xml);
-        context.getTableTemplate().resetMetaData();
+        context.getTableTemplate().resetMetaData(false);
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {
