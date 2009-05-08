@@ -311,12 +311,12 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         CsvWriter writer = getWriter(out);
         writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.writeRecord(new String[] { CsvConstants.BATCH, getBatchId() });
-        writer.writeRecord(new String[] { CsvConstants.TABLE, TEST_TABLE });
-        writer.write("UnknownTokenWithinBatch");
+        writer.write(CsvConstants.KEYS);
+        writer.writeRecord(TEST_KEYS);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, getBatchId() });
         writer.close();
         // Pause a moment to guarantee our history comes back in time order
-        Thread.sleep(10);
+        Thread.sleep(10);       
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");

@@ -285,6 +285,9 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writeCSV(CsvConstants.NODEID);
             writer.write(location);
             writer.newLine();
+            writeCSV(CsvConstants.BINARY);
+            writer.write(getDbDialect().getBinaryEncoding().name());
+            writer.newLine();
         }
 
         void batchBegin(long batchId) throws IOException {
@@ -293,9 +296,6 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             writer.newLine();
             writeCSV(CsvConstants.BATCH);
             writer.write(new Long(batchId).toString());
-            writer.newLine();
-            writeCSV(CsvConstants.BINARY);
-            writer.write(getDbDialect().getBinaryEncoding().name());
             writer.newLine();
         }
 
