@@ -28,14 +28,17 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
- * An out of the box filter that checks to see if the SymmetricDS trigger
- * configuration has changed. If it has, it will synchronize triggers.
+ * An out of the box filter that checks to see if the SymmetricDS 
+ * configuration has changed. If it has, it will take the correct action
+ * to apply the configuration change to the current node.
  */
-public class SyncTriggersRequiredFilter implements IDataLoaderFilter, IBatchListener {
+public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchListener {
 
-    static final Log logger = LogFactory.getLog(SyncTriggersRequiredFilter.class);
+    static final Log logger = LogFactory.getLog(ConfigurationChangedFilter.class);
 
-    final String CTX_KEY_RESYNC_NEEDED = SyncTriggersRequiredFilter.class.getSimpleName() + hashCode();
+    final String CTX_KEY_RESYNC_NEEDED = "Resync." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
     private IBootstrapService bootstrapService;
 
@@ -45,16 +48,19 @@ public class SyncTriggersRequiredFilter implements IDataLoaderFilter, IBatchList
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         recordSyncNeeded(context);
+        recordChannelFlushNeeded(context);
         return true;
     }
 
     public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         recordSyncNeeded(context);
+        recordChannelFlushNeeded(context);
         return true;
     }
 
     public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues) {
         recordSyncNeeded(context);
+        recordChannelFlushNeeded(context);
         return true;
     }
 
@@ -63,9 +69,19 @@ public class SyncTriggersRequiredFilter implements IDataLoaderFilter, IBatchList
             context.getContextCache().put(CTX_KEY_RESYNC_NEEDED, true);
         }
     }
+    
+    private void recordChannelFlushNeeded(IDataLoaderContext context) {
+        if (isChannelFlushNeeded(context)) {
+            context.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, true);
+        }
+    }
 
     private boolean isSyncTriggersNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_TRIGGER);
+    }
+    
+    private boolean isChannelFlushNeeded(IDataLoaderContext context) {
+        return matchesTable(context, TableConstants.SYM_CHANNEL);
     }
 
     private boolean matchesTable(IDataLoaderContext context, String tableSuffix) {
