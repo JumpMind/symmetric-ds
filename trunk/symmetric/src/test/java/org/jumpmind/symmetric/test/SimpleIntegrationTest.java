@@ -462,6 +462,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", rquote));
         clientJdbcTemplate.update(alterKeyWordSql.replaceAll("\"", cquote));
         clientJdbcTemplate.update(alterKeyWordSql2.replaceAll("\"", cquote));
+        
+        getClientDbDialect().resetCachedTableModel();
+        getRootDbDialect().resetCachedTableModel();
 
         // enable the trigger for the table and update the client with
         // configuration
