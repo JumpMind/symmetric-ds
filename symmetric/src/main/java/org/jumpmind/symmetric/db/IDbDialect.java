@@ -60,6 +60,12 @@ public interface IDbDialect {
      * dialect an opportunity to do any post loading work for the given table.
      */
     public void cleanupAfterDataLoad(Table table);
+    
+    /**
+     * For performance reasons, the as table metadata is read in, it is cached.  This method will
+     * clear that cache.
+     */
+    public void resetCachedTableModel();
 
     /**
      * Check to see if the database is configured for symmetric already, or if
