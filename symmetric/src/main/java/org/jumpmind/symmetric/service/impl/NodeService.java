@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataAccessException;
@@ -61,6 +62,8 @@ public class NodeService extends AbstractService implements INodeService {
     private long securityCacheTime;
 
     private INodeIdGenerator nodeIdGenerator;
+    
+    private INodePasswordFilter nodePasswordFilter;
 
     public String findSymmetricVersion() {
         try {
@@ -146,6 +149,9 @@ public class NodeService extends AbstractService implements INodeService {
                     insertNodeSecurity(nodeId);
                     security = findNodeSecurity(nodeId, false);
                 }
+                else if(security != null){
+                	security.setPassword(filterPasswordOnRenderIfNeeded(security.getPassword()));
+                }
                 return security;
             } else {
                 if (logger.isDebugEnabled()) {
@@ -161,8 +167,11 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id,
-                nodeIdGenerator.generatePassword(this, new Node(id, null, null)), findIdentity().getNodeId() });
+		String password =
+			nodeIdGenerator.generatePassword(this, new Node(id,null, null));
+		password = filterPasswordOnSaveIfNeeded(password);
+		jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id,
+				password, findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
@@ -255,6 +264,7 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean updateNodeSecurity(NodeSecurity security) {
         flushNodeAuthorizedCache();
+        security.setPassword(filterPasswordOnSaveIfNeeded(security.getPassword()));
         return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
                 security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedByNodeId(),
@@ -377,4 +387,23 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
+	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+		this.nodePasswordFilter = nodePasswordFilter;
+	}
+
+	private String filterPasswordOnSaveIfNeeded(String password){
+		String s = password;
+		if(nodePasswordFilter != null){
+			s = nodePasswordFilter.onNodeSecuritySave(password);
+		}
+		return s;
+	}
+	
+	private String filterPasswordOnRenderIfNeeded(String password){
+		String s = password;
+		if(nodePasswordFilter != null){
+			s = nodePasswordFilter.onNodeSecurityRender(password);
+		}
+		return s;
+	}
 }

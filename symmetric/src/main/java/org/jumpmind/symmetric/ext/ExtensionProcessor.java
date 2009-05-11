@@ -24,15 +24,16 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -40,6 +41,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -63,6 +65,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IBootstrapService bootstrapService;
     
     IAcknowledgeService acknowledgeService;
+    
+    IRegistrationService registrationService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -101,6 +105,11 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private void registerExtension(IExtensionPoint ext) {
 
+        if (ext instanceof INodePasswordFilter) {
+        	nodeService.setNodePasswordFilter((INodePasswordFilter)ext);
+        	registrationService.setNodePasswordFilter((INodePasswordFilter)ext);
+        }
+    	
         if (ext instanceof IAcknowledgeEventListener) {
         	acknowledgeService.addAcknowledgeEventListener((IAcknowledgeEventListener)ext);
         }
@@ -176,6 +185,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
 	public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
 		this.acknowledgeService = acknowledgeService;
+	}
+
+	public void setRegistrationService(IRegistrationService registrationService) {
+		this.registrationService = registrationService;
 	}
 
 }

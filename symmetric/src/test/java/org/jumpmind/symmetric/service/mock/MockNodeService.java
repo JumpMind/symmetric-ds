@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
@@ -141,4 +142,9 @@ public class MockNodeService implements INodeService {
     public NodeStatus getNodeStatus() {
         return null;
     }
+
+	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+		// TODO Auto-generated method stub
+		
+	}
 }
