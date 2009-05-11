@@ -60,7 +60,7 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter
     {
         if (tableTemplate == null)
         {
-            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect, duplicateTableName, null, false);
+            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect, duplicateTableName, null, false, null, null);
             tableTemplate.setColumnNames(context.getColumnNames());
             tableTemplate.setKeyNames(context.getKeyNames());
         }
