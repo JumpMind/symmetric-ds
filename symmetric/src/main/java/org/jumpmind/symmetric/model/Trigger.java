@@ -60,6 +60,8 @@ public class Trigger {
     private String sourceCatalogName;
 
     private String targetSchemaName;
+    
+    private String targetCatalogName;
 
     private boolean syncOnUpdate = true;
 
@@ -430,6 +432,14 @@ public class Trigger {
     public void setSyncColumnLevel(boolean syncColumnLevel) {
         this.syncColumnLevel = syncColumnLevel;
     }
+    
+    public String getTargetCatalogName() {
+        return targetCatalogName;
+    }
+
+    public void setTargetCatalogName(String targetCatalogName) {
+        this.targetCatalogName = targetCatalogName;
+    }    
 
     public long getHashedValue() {
         long hashedValue = triggerId;
@@ -460,6 +470,10 @@ public class Trigger {
         if (null != sourceCatalogName) {
             hashedValue += sourceCatalogName.hashCode();
         }
+        
+        if (null != targetCatalogName) {
+            hashedValue += targetCatalogName.hashCode();
+        }        
 
         if (null != targetSchemaName) {
             hashedValue += targetSchemaName.hashCode();
@@ -533,5 +547,6 @@ public class Trigger {
     public int hashCode() {
         return triggerId;
     }
+
 
 }
