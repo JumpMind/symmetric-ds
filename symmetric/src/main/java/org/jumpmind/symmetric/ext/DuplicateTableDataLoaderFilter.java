@@ -84,8 +84,8 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     }
 
     public boolean isAutoRegister() {
-        logger.info("Duplicating table " + originalTableName + " into "
-                + duplicateTableName);
+        logger.info("Duplicating table " + originalTableName + " into " + (duplicateCatalog != null ? duplicateCatalog + "." : "") + (duplicateSchema != null ? duplicateSchema + "." : "") +
+                duplicateTableName);
         return true;
     }
 
