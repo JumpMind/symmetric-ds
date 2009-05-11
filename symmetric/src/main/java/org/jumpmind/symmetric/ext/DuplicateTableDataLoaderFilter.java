@@ -1,4 +1,22 @@
-
+/*
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Eric Long <erilong@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.jumpmind.symmetric.ext;
 
 import org.apache.commons.logging.Log;
@@ -10,87 +28,91 @@ import org.jumpmind.symmetric.load.TableTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * @author elong
  */
-public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter
-{
-    private static final Log logger = LogFactory.getLog(DuplicateTableDataLoaderFilter.class);
+public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
+    private static final Log logger = LogFactory
+            .getLog(DuplicateTableDataLoaderFilter.class);
 
     private IDbDialect dbDialect;
 
     private JdbcTemplate jdbcTemplate;
 
     private TableTemplate tableTemplate;
+    
+    private String schema;
+    
+    private String catalog;
 
     private String tableName;
 
     private String duplicateTableName;
 
-    public boolean filterDelete(IDataLoaderContext context, String[] keyValues)
-    {
-        if (context.getTableName().equals(tableName))
-        {
+    public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
+        if (context.getTableName().equals(tableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
             tableTemplate.insert(context, keyValues);
         }
         return true;
     }
 
-    public boolean filterInsert(IDataLoaderContext context, String[] columnValues)
-    {
-        if (context.getTableName().equals(tableName))
-        {
+    public boolean filterInsert(IDataLoaderContext context,
+            String[] columnValues) {
+        if (context.getTableName().equals(tableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
             tableTemplate.insert(context, columnValues);
         }
         return true;
     }
 
-    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues)
-    {
-        if (context.getTableName().equals(tableName))
-        {
+    public boolean filterUpdate(IDataLoaderContext context,
+            String[] columnValues, String[] keyValues) {
+        if (context.getTableName().equals(tableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
             tableTemplate.update(context, columnValues, keyValues);
         }
         return true;
     }
 
-    private TableTemplate getTableTemplate(IDataLoaderContext context)
-    {
-        if (tableTemplate == null)
-        {
-            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect, duplicateTableName, null, false, null, null);
+    private TableTemplate getTableTemplate(IDataLoaderContext context) {
+        if (tableTemplate == null) {
+            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect,
+                    duplicateTableName, null, false, schema, catalog);
             tableTemplate.setColumnNames(context.getColumnNames());
             tableTemplate.setKeyNames(context.getKeyNames());
         }
         return tableTemplate;
     }
 
-    public boolean isAutoRegister()
-    {
-        logger.info("Duplicating table " + tableName + " into " + duplicateTableName);
+    public boolean isAutoRegister() {
+        logger.info("Duplicating table " + tableName + " into "
+                + duplicateTableName);
         return true;
     }
 
-    public void setDbDialect(IDbDialect dbDialect)
-    {
+    public void setDbDialect(IDbDialect dbDialect) {
         this.dbDialect = dbDialect;
     }
 
-    public void setJdbcTemplate(JdbcTemplate jdbcTemplate)
-    {
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void setTableName(String tableName)
-    {
+    public void setTableName(String tableName) {
         this.tableName = tableName;
     }
 
-    public void setDuplicateTableName(String duplicateTableName)
-    {
+    public void setDuplicateTableName(String duplicateTableName) {
         this.duplicateTableName = duplicateTableName;
     }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public void setCatalog(String catalog) {
+        this.catalog = catalog;
+    }
+    
+    
 
 }
