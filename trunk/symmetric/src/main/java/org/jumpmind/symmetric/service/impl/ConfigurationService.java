@@ -323,7 +323,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void insert(Trigger trigger) {
         jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetSchemaName(),
+                trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(), 
+                trigger.getTargetSchemaName(),
                 trigger.getTargetTableName(), trigger.getSourceGroupId(), trigger.getTargetGroupId(),
                 trigger.getChannelId(), trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
                 trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
@@ -332,7 +333,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(), trigger.getInitialLoadSelect(),
                 trigger.getNodeSelect(), trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
                 trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
@@ -429,6 +430,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setChannelId(rs.getString("channel_id"));
             trig.setSourceTableName(rs.getString("source_table_name"));
             trig.setTargetTableName(rs.getString("target_table_name"));
+            trig.setTargetCatalogName(rs.getString("target_catalog_name"));
             trig.setSourceGroupId(rs.getString("source_node_group_id"));
             trig.setTargetSchemaName(rs.getString("target_schema_name"));
             trig.setSyncOnInsert(rs.getBoolean("sync_on_insert"));
