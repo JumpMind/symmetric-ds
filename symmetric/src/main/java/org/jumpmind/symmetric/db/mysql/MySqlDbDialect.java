@@ -23,8 +23,10 @@ package org.jumpmind.symmetric.db.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -53,6 +55,13 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             logger.info("Enabling transaction ID support");
             supportsTransactionId = true;
         }
+    }
+    
+    @Override
+    public Table findTable(String catalogName, String schemaName, String tblName)
+            throws Exception {
+        catalogName = StringUtils.isBlank(catalogName) ? StringUtils.isBlank(schemaName) ? getDefaultCatalog() :schemaName : catalogName; 
+        return super.findTable(catalogName, schemaName, tblName);
     }
 
     @Override
