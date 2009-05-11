@@ -109,13 +109,12 @@ public class TableTemplate {
             boolean dontIncludeKeysInUpdateStatement, String schema, String catalog) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
-        this.schema = schema;
-        this.catalog = catalog;
-        this.setupColumnFilters(columnFilter, dbDialect);
-        this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
         this.tableName = tableName;
         this.schema = StringUtils.isBlank(schema) ?dbDialect.getDefaultSchema() : schema;
         this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
+        this.setupColumnFilters(columnFilter, dbDialect);
+        this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
+
         resetMetaData(true);
     }
 
