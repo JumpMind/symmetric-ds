@@ -475,8 +475,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return column;
     }
 
-    protected void determineAutoIncrementFromResultSetMetaData(Table table, final Column columnsToCheck[])
-            throws SQLException {
+    protected void determineAutoIncrementFromResultSetMetaData(Table table,
+            final Column columnsToCheck[]) throws SQLException {
         StringBuffer query;
         if (columnsToCheck == null || columnsToCheck.length == 0) {
             return;
@@ -486,21 +486,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
         for (int idx = 0; idx < columnsToCheck.length; idx++) {
             if (idx > 0)
                 query.append(",");
-            query.append("t.").append("\"").append(columnsToCheck[idx].getName()).append("\"");
+            query.append("t.").append("\"").append(
+                    columnsToCheck[idx].getName()).append("\"");
         }
 
         query.append(" FROM ");
         if (table.getCatalog() != null && !table.getCatalog().trim().equals("")) {
-            query.append(table.getCatalog() + ".");
+            query.append("\"").append(table.getCatalog()).append("\".");
         }
         if (table.getSchema() != null && !table.getSchema().trim().equals("")) {
-            query.append(table.getSchema() + ".");
+            query.append("\"").append(table.getSchema()).append("\".");
         }
         query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
 
         final String finalQuery = query.toString();
         jdbcTemplate.execute(new StatementCallback() {
-            public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
+            public Object doInStatement(Statement stmt) throws SQLException,
+                    DataAccessException {
                 ResultSet rs = stmt.executeQuery(finalQuery);
                 ResultSetMetaData rsMetaData = rs.getMetaData();
                 for (int idx = 0; idx < columnsToCheck.length; idx++)
