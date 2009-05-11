@@ -38,14 +38,14 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         ctx1 = new DataLoaderContext();
         ctx1.setNodeId("54321");
         ctx1.setTableName(TABLE_TEST_1);
-        ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false));
+        ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false, null, null));
         ctx1.setColumnNames(new String[] { "PK1", "PK2", "ADD1", "ADD2", "ADD3", "OVR1", "OVR2", "OVR3", "NADA1" });
         ctx1.setKeyNames(new String[] { "PK1", "PK2" });
 
         ctx2 = new DataLoaderContext();
         ctx2.setNodeId("54321");
         ctx2.setTableName(TABLE_TEST_2);
-        ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false));
+        ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false, null, null));
         ctx2.setKeyNames(new String[] { "PK1" });
         ctx2.setColumnNames(new String[] { "PK1", "ADD1" });
 

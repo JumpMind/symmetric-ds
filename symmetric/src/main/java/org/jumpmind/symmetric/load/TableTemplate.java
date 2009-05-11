@@ -71,6 +71,8 @@ public class TableTemplate {
     private Table table;
 
     private String schema;
+    
+    private String catalog;
 
     private String tableName;
 
@@ -100,25 +102,25 @@ public class TableTemplate {
 
     public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
             boolean dontIncludeKeysInUpdateStatement) {
+        this(jdbcTemplate, dbDialect, tableName, columnFilter, dontIncludeKeysInUpdateStatement, null, null);
+    }
+    
+    public TableTemplate(JdbcTemplate jdbcTemplate, IDbDialect dbDialect, String tableName, IColumnFilter columnFilter,
+            boolean dontIncludeKeysInUpdateStatement, String schema, String catalog) {
         this.jdbcTemplate = jdbcTemplate;
         this.dbDialect = dbDialect;
+        this.schema = schema;
+        this.catalog = catalog;
         this.setupColumnFilters(columnFilter, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
-
-        int periodIndex = tableName.indexOf(".");
-        if (periodIndex != -1) {
-            this.schema = tableName.substring(0, periodIndex);
-            this.tableName = tableName.substring(periodIndex + 1);
-        } else {
-            this.schema = dbDialect.getDefaultSchema();
-            this.tableName = tableName;
-        }
-
+        this.tableName = tableName;
+        this.schema = StringUtils.isBlank(schema) ?dbDialect.getDefaultSchema() : schema;
+        this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
         resetMetaData(true);
     }
 
     public void resetMetaData(boolean useCache) {
-        table = dbDialect.getMetaDataFor(null, schema, tableName, useCache);
+        table = dbDialect.getMetaDataFor(catalog, schema, tableName, useCache);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
         keyMetaData = null;
