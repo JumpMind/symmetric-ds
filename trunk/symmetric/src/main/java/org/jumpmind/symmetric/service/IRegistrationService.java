@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 public interface IRegistrationService {
 
@@ -65,6 +66,8 @@ public interface IRegistrationService {
     public void registerWithServer();
 
     public boolean isRegisteredWithServer();
+    
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
     
     /**
      * Add an entry to the registation_redirect table so that if a node tries to register here.  It will be redirected to the correct node.

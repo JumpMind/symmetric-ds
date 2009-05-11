@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 
 /**
  * This service provides an API to access {@link Node}s and Node related
@@ -88,6 +89,8 @@ public interface INodeService {
 
     public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator);
 
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter);
+    
     /**
      * @return true if a data load has occurred and has been completed.
      */

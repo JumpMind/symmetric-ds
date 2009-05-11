@@ -12,6 +12,7 @@
         <property name="parameterService" ref="parameterService" />
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
+        <property name="registrationService" ref="registrationService" />
     </bean>
 
     <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">

@@ -30,8 +30,10 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.mock.MockNodePasswordFilter;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,6 +90,16 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     @Test
     public void testFindNodeSecurity() throws Exception {
         NodeSecurity node = nodeService.findNodeSecurity("00001");
+        assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
+        assertEquals(node.getPassword(), "secret", "Wrong password");
+        assertEquals(node.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
+        assertEquals(node.getRegistrationTime().toString(), "2007-01-01 01:01:01.0", "Wrong registrationTime");
+    }
+    
+    @Test
+    public void testFindNodeSecurityWithPasswordFilter() throws Exception {
+        NodeSecurity node = nodeService.findNodeSecurity("00001");
+        nodeService.setNodePasswordFilter(new MockNodePasswordFilter());
         assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
         assertEquals(node.getPassword(), "secret", "Wrong password");
         assertEquals(node.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
@@ -199,5 +211,10 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         } finally {
             nodeService.updateNodeSecurity(originalNodeSecurity);
         }
+    }
+    
+    @After
+    public void reset(){
+    	nodeService.setNodePasswordFilter(null);
     }
 }

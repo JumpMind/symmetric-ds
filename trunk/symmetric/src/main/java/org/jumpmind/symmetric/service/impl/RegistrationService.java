@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -68,6 +69,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private RandomTimeSlot randomTimeSlot;
 
     private IDbDialect dbDialect;
+    
+    private INodePasswordFilter nodePasswordFilter;
 
     /**
      * Register a node for the given group name and external id if the
@@ -218,6 +221,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public void reOpenRegistration(String nodeId) {
         Node node = nodeService.findNode(nodeId);
         String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
+        password = filterPasswordOnSaveIfNeeded(password);
         if (node != null) {
             int updateCount = jdbcTemplate.update(getSql("reopenRegistrationSql"), new Object[] { password, nodeId });
             if (updateCount == 0) {
@@ -247,6 +251,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         Node existingNode = nodeService.findNode(nodeId);
         if (existingNode == null) {
             String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
+            password = filterPasswordOnSaveIfNeeded(password);
             jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
                     node.getExternalId(), me.getNodeId() });
             jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
@@ -290,4 +295,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.randomTimeSlot = randomTimeSlot;
     }
 
+	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+		this.nodePasswordFilter=nodePasswordFilter;
+	}
+	
+	private String filterPasswordOnSaveIfNeeded(String password){
+		String s = password;
+		if(nodePasswordFilter != null){
+			s = nodePasswordFilter.onNodeSecuritySave(password);
+		}
+		return s;
+	}
 }

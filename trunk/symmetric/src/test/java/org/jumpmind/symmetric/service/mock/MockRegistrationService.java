@@ -24,11 +24,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 public class MockRegistrationService implements IRegistrationService {
 
-    public boolean isAutoRegistration() {
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean isAutoRegistration() {
         return false;
     }
 
