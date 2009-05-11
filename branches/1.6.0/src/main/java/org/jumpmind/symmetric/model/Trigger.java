@@ -68,7 +68,7 @@ public class Trigger {
     private boolean syncOnDelete = true;
 
     private boolean syncOnIncomingBatch = false;
-    
+
     private boolean syncColumnLevel = false;
 
     private String nameForInsertTrigger;
@@ -118,7 +118,7 @@ public class Trigger {
 
     public Trigger() {
     }
-    
+
     public Trigger(String tableName) {
         this.sourceTableName = tableName;
     }
@@ -181,14 +181,13 @@ public class Trigger {
         }
         return orderedColumns.toArray(new Column[orderedColumns.size()]);
     }
-    
+
     /**
      * Get a list of the natural indexes of the excluded columns
      */
     public int[] getExcludedColumnIndexes(Table table) {
         if (excludedColumnNames != null && excludedColumnNames.length() > 0) {
-            StringTokenizer tokenizer = new StringTokenizer(
-                    excludedColumnNames, ",");
+            StringTokenizer tokenizer = new StringTokenizer(excludedColumnNames, ",");
             int[] indexes = new int[tokenizer.countTokens()];
             Column[] columns = table.getColumns();
             List<String> columnNames = new ArrayList<String>(columns.length);
@@ -197,8 +196,7 @@ public class Trigger {
             }
             int i = 0;
             while (tokenizer.hasMoreTokens()) {
-                indexes[i++] = columnNames.indexOf(tokenizer.nextToken()
-                        .toLowerCase());
+                indexes[i++] = columnNames.indexOf(tokenizer.nextToken().toLowerCase());
             }
             return indexes;
         } else {
@@ -432,14 +430,14 @@ public class Trigger {
     public void setSyncColumnLevel(boolean syncColumnLevel) {
         this.syncColumnLevel = syncColumnLevel;
     }
-    
+
     public long getHashedValue() {
         long hashedValue = triggerId;
         if (null != sourceTableName) {
             hashedValue += sourceTableName.hashCode();
         }
 
-        if (null != targetTableName ) {
+        if (null != targetTableName) {
             hashedValue += targetTableName.hashCode();
         }
 
@@ -493,20 +491,47 @@ public class Trigger {
             hashedValue += syncOnInsertCondition.hashCode();
         }
 
-        if (null != syncOnDeleteCondition)  {
+        if (null != syncOnDeleteCondition) {
             hashedValue += syncOnDeleteCondition.hashCode();
         }
 
-        if (null != excludedColumnNames)  {
+        if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
         
+        if (null != nodeSelect) {
+            hashedValue += nodeSelect.hashCode();
+        }
+        
+        if (null != initialLoadSelect) {
+            hashedValue += initialLoadSelect.hashCode();
+        }
+        
+        if (null != txIdExpression) {
+            hashedValue += txIdExpression.hashCode();
+        }        
+
         return hashedValue;
     }
-    
+
     public boolean isSame(Trigger trigger) {
         return trigger.sourceTableName.equals(sourceTableName) && trigger.sourceGroupId.equals(sourceGroupId)
                 && trigger.targetGroupId.equals(targetGroupId);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Trigger) {
+            return triggerId == ((Trigger) obj).triggerId;
+
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return triggerId;
     }
 
 }
