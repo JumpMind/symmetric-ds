@@ -218,4 +218,6 @@ public interface IDbDialect {
     public String getInitialLoadTableAlias();
     
     public String preProcessTriggerSqlClause(String sqlClause);
+    
+    public void resetCachedTableModel();
 }

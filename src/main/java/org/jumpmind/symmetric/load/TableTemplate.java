@@ -111,11 +111,11 @@ public class TableTemplate {
             this.tableName = tableName;
         }
 
-        resetMetaData();
+        resetMetaData(true);
     }
 
-    public void resetMetaData() {
-        table = dbDialect.getMetaDataFor(null, schema, tableName, false);
+    public void resetMetaData(boolean useCache) {
+        table = dbDialect.getMetaDataFor(null, schema, tableName, useCache);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
         keyMetaData = null;
