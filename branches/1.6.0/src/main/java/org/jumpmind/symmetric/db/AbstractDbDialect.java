@@ -152,6 +152,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return true;
     }
+    
+    public void resetCachedTableModel() {
+        synchronized (this.getClass()) {
+            Table[] tables = this.cachedModel.getTables();
+            if (tables != null) {
+                for (Table table : tables) {
+                    this.cachedModel.removeTable(table);
+                }
+            }
+        }
+    }
 
     /**
      * Provide a default implementation of this method using DDLUtils,
