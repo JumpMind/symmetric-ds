@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.db.mssql;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -107,6 +109,17 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
         };
     }
+    
+    @Override
+    protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
+        if (catalog != null) {
+            String previousCatalog = c.getCatalog();
+            c.setCatalog(catalog);
+            return previousCatalog;
+        } else {
+            return null;
+        }
+    }    
 
     @Override
     public void prepareTableForDataLoad(Table table) {
