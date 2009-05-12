@@ -24,6 +24,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterMatcher;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -40,6 +41,24 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
     @Test
     @ParameterMatcher("mysql")
     public void testCrossCatalogSyncOnMySQL() {
+        testCrossCatalogSyncOnMySQL(false, true);
+    }
+
+    @Test
+    @ParameterMatcher("mysql")
+    public void testCrossSchemaSyncOnMySQL() {
+        // there really is no such thing as a schema on mysql.  this should behave just like setting the catalog element.
+        testCrossCatalogSyncOnMySQL(true, false);
+    }
+
+    @Ignore
+    @Test
+    @ParameterMatcher("mysql")
+    public void testCrossSchemaCatalogSyncOnMySQL() {
+        testCrossCatalogSyncOnMySQL(true, true);
+    }
+
+    protected void testCrossCatalogSyncOnMySQL(boolean schema, boolean catalog) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         jdbcTemplate.update("drop database if exists other ");
         jdbcTemplate.update("create database other");
@@ -52,7 +71,12 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         trigger.setChannelId("other");
         trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setSourceCatalogName("other");
+        if (catalog) {
+            trigger.setSourceCatalogName("other");
+        }
+        if (schema) {
+            trigger.setSourceSchemaName("other");
+        }
         trigger.setSourceTableName("other_table");
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
