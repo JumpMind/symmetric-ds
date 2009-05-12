@@ -123,6 +123,8 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         if (supportsTransactionId) {
             if (trigger.getSourceCatalogName() != null) {
                 defaultCatalog = defaultCatalog + ".";
+            } else {
+                defaultCatalog = "";
             }
             return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
         }
