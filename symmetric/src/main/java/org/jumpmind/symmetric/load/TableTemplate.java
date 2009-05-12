@@ -114,7 +114,6 @@ public class TableTemplate {
         this.catalog = StringUtils.isBlank(catalog) ? null : catalog;
         this.setupColumnFilters(columnFilter, dbDialect);
         this.dontIncludeKeysInUpdateStatement = dontIncludeKeysInUpdateStatement;
-
         resetMetaData(true);
     }
 
@@ -293,13 +292,11 @@ public class TableTemplate {
         }
 
         String tableName = table.getName();
-        if (table.getSchema() != null && dbDialect.getDefaultSchema() != null
-                && !table.getSchema().equals(dbDialect.getDefaultSchema())) {
-            tableName = table.getSchema() + "." + tableName;
+        if (!StringUtils.isBlank(schema)) {
+            tableName = schema + "." + tableName;
         }
-        if (table.getCatalog() != null && dbDialect.getDefaultCatalog() != null
-                && !table.getCatalog().equals(dbDialect.getDefaultCatalog())) {
-            tableName = table.getCatalog() + "." + tableName;
+        if (!StringUtils.isBlank(catalog)) {
+            tableName = catalog + "." + tableName;
         }
         return new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames),
                 dbDialect.isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(), dbDialect
