@@ -64,7 +64,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     @Override
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "nullif('','')";
     }
 

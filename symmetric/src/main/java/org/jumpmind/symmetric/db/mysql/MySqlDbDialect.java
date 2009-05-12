@@ -119,9 +119,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         if (supportsTransactionId) {
-            return TRANSACTION_ID_FUNCTION_NAME + "()";
+            if (trigger.getSourceCatalogName() != null) {
+                defaultCatalog = defaultCatalog + ".";
+            }
+            return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
         }
         return "null";
     }

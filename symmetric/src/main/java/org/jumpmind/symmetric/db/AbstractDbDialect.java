@@ -232,7 +232,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName,
             String triggerName);
 
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "null";
     }
 

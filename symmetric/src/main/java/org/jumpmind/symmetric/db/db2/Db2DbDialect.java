@@ -100,7 +100,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "nullif('','')";
     }
 
