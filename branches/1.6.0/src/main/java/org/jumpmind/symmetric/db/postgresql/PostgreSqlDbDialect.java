@@ -20,6 +20,9 @@
 
 package org.jumpmind.symmetric.db.postgresql;
 
+import java.sql.Types;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +61,18 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             throw new RuntimeException("Missing custom variable class 'symmetric'", e);
         }
              
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Integer overrideJdbcTypeForColumn(Map values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
+            return Types.TIMESTAMP;
+        }
+        else {
+            return super.overrideJdbcTypeForColumn(values);
+        }
     }
 
     @Override
