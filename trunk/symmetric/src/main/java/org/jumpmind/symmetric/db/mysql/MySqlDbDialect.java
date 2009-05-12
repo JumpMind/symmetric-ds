@@ -119,15 +119,9 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    // Mister CHenson, what is this non-sense?
-    // I dunno ...
     public String getTransactionTriggerExpression(Trigger trigger) {
         if (supportsTransactionId) {
-            String defaultCatalog = "";
-            if (trigger.getSourceCatalogName() != null) {
-                defaultCatalog = this.getDefaultCatalog() + ".";
-            }
-            return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
+            return TRANSACTION_ID_FUNCTION_NAME + "()";
         }
         return "null";
     }
