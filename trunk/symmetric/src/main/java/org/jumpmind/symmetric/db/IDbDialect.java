@@ -95,7 +95,7 @@ public interface IDbDialect {
     
     public Table getMetaDataFor(Trigger trigger, boolean useCache);
 
-    public String getTransactionTriggerExpression(Trigger trigger);
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitalLoadSqlFor(Node node, Trigger trigger);
 

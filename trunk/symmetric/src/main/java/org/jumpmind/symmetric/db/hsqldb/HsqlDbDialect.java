@@ -162,7 +162,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
      * This is not used by the HSQLDB Java triggers
      */
     @Override
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "not used";
     }
 

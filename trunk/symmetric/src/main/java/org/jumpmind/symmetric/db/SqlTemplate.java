@@ -229,7 +229,7 @@ public class SqlTemplate {
         ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
         ddl = replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
-        String triggerExpression = dialect.getTransactionTriggerExpression(trigger);
+        String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog, defaultSchema, trigger);
         if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
             triggerExpression = trigger.getTxIdExpression();
         }

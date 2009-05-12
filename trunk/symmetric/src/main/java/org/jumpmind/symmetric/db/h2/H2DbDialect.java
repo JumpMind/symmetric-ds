@@ -126,7 +126,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
      * An expression which the java trigger can string replace
      */
     @Override
-    public String getTransactionTriggerExpression(Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "SYM_TRANSACTION_ID()";
     }
 
