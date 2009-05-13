@@ -44,6 +44,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         testCrossCatalogSyncOnMySQL(false, true);
     }
 
+    @Ignore
     @Test
     @ParameterMatcher("mysql")
     public void testCrossSchemaSyncOnMySQL() {
