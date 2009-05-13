@@ -28,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
 import org.jumpmind.symmetric.transport.ITransportResource;
-import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 import org.springframework.beans.BeanUtils;
 
 /**
@@ -36,7 +35,7 @@ import org.springframework.beans.BeanUtils;
  * 
  * @param <T>
  */
-public abstract class AbstractResourceServlet<T extends ITransportResourceHandler> extends AbstractServlet implements
+public abstract class AbstractResourceServlet extends AbstractServlet implements
         IServletResource {
 
     private static final long serialVersionUID = 1L;

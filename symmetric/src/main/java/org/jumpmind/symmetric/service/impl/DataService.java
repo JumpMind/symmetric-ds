@@ -201,6 +201,7 @@ public class DataService extends AbstractService implements IDataService {
                 buildReloadBatches(targetNode.getNodeId());
             }
         }
+        
         if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
@@ -219,6 +220,7 @@ public class DataService extends AbstractService implements IDataService {
                 listener.afterReload(targetNode);
             }
         }
+        
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
         insertNodeSecurityUpdate(targetNode);
 
