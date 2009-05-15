@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.examples;
 
 import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.SymmetricWebServer;
 
 public class StartSymmetricEngine {
 
@@ -33,11 +34,14 @@ public class StartSymmetricEngine {
     public static void main(String[] args) throws Exception {
         String workingDirectory = System.getProperty("user.dir");
 
-        SymmetricEngine engine = new SymmetricEngine("classpath://my-symmetric-application.properties", "file://"
-                + workingDirectory + "/my-symmetric-environment.properties");
+        SymmetricWebServer node = new SymmetricWebServer(new SymmetricEngine("classpath://my-application.properties", "file://"
+                + workingDirectory + "/my-environment.properties"));
 
         // this will create the database, sync triggers, start jobs running
-        engine.start();
-    }
+        node.start(8080);
+        
+        // this will stop the node
+        node.stop();
+    }   
 
 }
