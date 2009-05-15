@@ -3,7 +3,7 @@ package org.jumpmind.symmetric;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class VersionTest {
+public class VersionUnitTest {
 
     @Test
     public void testIsOlderThanVersion() {
