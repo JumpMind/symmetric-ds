@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.service.impl;
 
+import org.apache.commons.logging.impl.NoOpLog;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.symmetric.web.BandwidthSamplerServlet;
 import org.junit.Assert;
@@ -16,6 +17,7 @@ public class BandwidthServiceUnitTest {
     public void testDownloadKbps() throws Exception {
         
         BandwidthService service = new BandwidthService();
+        service.logger = new NoOpLog();
         int port = 9768;
         BandwidthSamplerServlet servlet = new BandwidthSamplerServlet();
         Server server = startServer(port, "", servlet);
@@ -27,6 +29,9 @@ public class BandwidthServiceUnitTest {
         BandwidthTestResults bw2 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
         Assert.assertTrue(bw2.getKbps() < bw1.getKbps());
         server.stop();
+
+        Assert.assertEquals(-1d, service.getDownloadKbpsFor(String.format("http://localhost:%s", port), 1000, 2000), 0);
+
         
     }
     

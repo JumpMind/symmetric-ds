@@ -12,10 +12,10 @@ import org.jumpmind.symmetric.transport.BandwidthTestResults;
 
 public class BandwidthService implements IBandwidthService {
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    protected Log logger = LogFactory.getLog(getClass());
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
-        double downloadSpeed = -1;
+        double downloadSpeed = -1d;
         try {
             BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);
             downloadSpeed = (int) bw.getKbps();
