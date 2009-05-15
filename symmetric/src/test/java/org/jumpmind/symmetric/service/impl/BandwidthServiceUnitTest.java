@@ -37,14 +37,13 @@ public class BandwidthServiceUnitTest {
         BandwidthService service = new BandwidthService();
         int port = 9768;
         BandwidthSamplerServlet servlet = new BandwidthSamplerServlet();
-        servlet.setDefaultTestSlowBandwidthDelay(25);
         Server server = startServer(port, "", servlet);
-        BandwidthTestResults bw1 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 100, 2000);
+        BandwidthTestResults bw1 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
         Assert.assertTrue(Double.toString(bw1.getKbps()), bw1.getKbps() > 0);
         Assert.assertTrue(Double.toString(bw1.getElapsed()), bw1.getElapsed() > 0);
         
-        servlet.setDefaultTestSlowBandwidthDelay(50);
-        BandwidthTestResults bw2 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 100, 2000);
+        servlet.setDefaultTestSlowBandwidthDelay(5);
+        BandwidthTestResults bw2 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
         Assert.assertTrue(bw2.getKbps() < bw1.getKbps());
         server.stop();
         
