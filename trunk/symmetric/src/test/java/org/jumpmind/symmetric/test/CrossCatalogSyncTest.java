@@ -88,4 +88,66 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate
                 .queryForInt("select count(*) from sym_data_event where channel_id='other'"), 1);
     }
+
+    @Ignore
+    @Test
+    @ParameterMatcher("mssql")
+    public void testCrossCatalogSyncOnMsSql() {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        try {
+            jdbcTemplate.update("drop database other");
+        } catch (Exception e) { }
+        jdbcTemplate.update("create database other");
+        String db = (String) jdbcTemplate.queryForObject("select db_name()", String.class);
+        jdbcTemplate.update("use other");
+        jdbcTemplate.update("create table other_table (id char(5) not null, name varchar(40), primary key(id))");
+        jdbcTemplate.update("use " + db);
+        IConfigurationService configService = find(Constants.CONFIG_SERVICE);
+        Trigger trigger = new Trigger();
+        trigger.setChannelId("other");
+        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.setSourceCatalogName("other");
+        trigger.setSourceSchemaName("dbo");
+        trigger.setSourceTableName("other_table");
+        trigger.setSyncOnInsert(true);
+        trigger.setSyncOnUpdate(true);
+        trigger.setSyncOnDelete(true);
+        configService.insert(trigger);
+        getSymmetricEngine().syncTriggers();
+        jdbcTemplate.update("insert into other.dbo.other_table values('00000','first row')");
+        Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
+                .queryForInt("select count(*) from sym_data_event where channel_id='other'"));
+    }
+
+    @Ignore
+    @Test
+    @ParameterMatcher("mssql")
+    public void testCrossSchemaSyncOnMsSql() {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        try {            
+            jdbcTemplate.update("drop table other.other_table2");
+        } catch (Exception e) { }
+        try {            
+            jdbcTemplate.update("drop schema other");
+        } catch (Exception e) { }
+        jdbcTemplate.update("create schema other");
+        jdbcTemplate.update("create table other.other_table2 (id char(5) not null, name varchar(40), primary key(id))");
+        IConfigurationService configService = find(Constants.CONFIG_SERVICE);
+        Trigger trigger = new Trigger();
+        trigger.setChannelId("other");
+        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.setSourceSchemaName("other");
+        trigger.setSourceTableName("other_table2");
+        trigger.setSyncOnInsert(true);
+        trigger.setSyncOnUpdate(true);
+        trigger.setSyncOnDelete(true);
+        configService.insert(trigger);
+        getSymmetricEngine().syncTriggers();
+        jdbcTemplate.update("insert into other.other_table2 values('00000','first row')");
+        Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
+                .queryForInt("select count(*) from sym_data where table_name='other_table2'"));
+    }
+
 }
