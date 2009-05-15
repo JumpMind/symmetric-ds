@@ -39,7 +39,7 @@ public class BandwidthService implements IBandwidthService {
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
         double downloadSpeed = -1;
         try {
-            BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);
+            BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);            
             downloadSpeed = (int) bw.getKbps();
         } catch (Exception e) {
             logger.error(e,e);
@@ -55,14 +55,15 @@ public class BandwidthService implements IBandwidthService {
         try {
             BandwidthTestResults bw = new BandwidthTestResults();
             URL u = new URL(String.format("%s/bandwidth?sampleSize=%s", syncUrl, sampleSize));
-            is = u.openStream();
             bw.start();
+            is = u.openStream();            
             int r;
             while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
                 bw.transmitted(r);
             }
             is.close();
             bw.stop();
+            logger.info(String.format("%s was calculated to have a download bandwidth of %s kbps", syncUrl, bw.getKbps()));
             return bw;
         } finally {
             IOUtils.closeQuietly(is);
