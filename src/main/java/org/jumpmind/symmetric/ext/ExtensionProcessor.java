@@ -38,6 +38,8 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.transport.ISyncUrlExtension;
+import org.jumpmind.symmetric.transport.ITransportManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -57,11 +59,14 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     INodeService nodeService;
     
     IBootstrapService bootstrapService;
+    
+    ITransportManager transportManager;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         Map<String, IExtensionPoint> extensions = beanFactory.getBeansOfType(IExtensionPoint.class);
-        for (IExtensionPoint ext : extensions.values()) {
+        for (String beanName : extensions.keySet()) {
+            IExtensionPoint ext = extensions.get(beanName);
             if (ext.isAutoRegister()) {
                 boolean registerExtension = false;
                 if (ext instanceof INodeGroupExtensionPoint) {
@@ -80,14 +85,18 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
                 }
 
                 if (registerExtension) {
-                    registerExtension(ext);
+                    registerExtension(beanName, ext);
                 }
             }
         }
 
     }
 
-    private void registerExtension(IExtensionPoint ext) {
+    private void registerExtension(String beanName, IExtensionPoint ext) {
+        
+        if (ext instanceof ISyncUrlExtension) {
+            transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
+        }
         
         if (ext instanceof ITriggerCreationListener) {
             bootstrapService.addTriggerCreationListeners((ITriggerCreationListener)ext);
@@ -158,4 +167,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.bootstrapService = bootstrapService;
     }
 
+    public void setTransportManager(ITransportManager transportManager) {
+        this.transportManager = transportManager;
+    }
 }

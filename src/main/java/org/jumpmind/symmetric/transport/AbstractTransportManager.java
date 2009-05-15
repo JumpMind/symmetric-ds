@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -28,15 +30,72 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.WebConstants;
 
 abstract public class AbstractTransportManager {
 
+    protected Log logger = LogFactory.getLog(getClass());
+
+    protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers;
+
+    protected IParameterService parameterService;
+
+    public AbstractTransportManager(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
+
+    public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
+        if (extensionSyncUrlHandlers == null) {
+            extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
+        }
+        if (extensionSyncUrlHandlers.containsKey(name)) {
+            logger.warn(String
+                    .format("Overriding an existing '%s' extension sync url handler with a second one.", name));
+        }
+        extensionSyncUrlHandlers.put(name, handler);
+    }
+
+    /**
+     * Build the url for remote node communication. Use the remote sync_url
+     * first, if it is null or blank, then use the registration url instead.
+     */
+    public String resolveURL(String url) {
+        if (StringUtils.isBlank(url) || url.startsWith(Constants.PROTOCOL_NONE)) {
+            logger
+                    .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
+            return parameterService.getRegistrationUrl();
+        } else if (url.startsWith(Constants.PROTOCOL_EXT)) {
+            try {
+                URI uri = new URI(url);                
+                ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
+                if (handler == null) {
+                    logger
+                            .error(String
+                                    .format(
+                                            "Could not find a registered extension sync url handler with the name of %s using the url %s",
+                                            uri.getHost(), url));
+                    return url;
+                } else {
+                    return handler.resolveUrl(uri);
+                }
+            } catch (URISyntaxException e) {
+                logger.error(e, e);
+                return url;
+            }
+        } else {
+            return url;
+        }
+    }
+    
     protected String getAcknowledgementData(String nodeId, List<IncomingBatchHistory> list) throws IOException {
         StringBuilder builder = new StringBuilder();
         for (IncomingBatchHistory status : list) {
@@ -49,7 +108,9 @@ abstract public class AbstractTransportManager {
             append(builder, WebConstants.ACK_BATCH_NAME + status.getBatchId(), value);
         }
 
-        // For backwards compatibility with 1.3 and earlier, the first line is the original acknowledgment data and the second line contains more information
+        // For backwards compatibility with 1.3 and earlier, the first line is
+        // the original acknowledgment data and the second line contains more
+        // information
         builder.append("\n");
         for (IncomingBatchHistory status : list) {
             long batchId = status.getBatchId();

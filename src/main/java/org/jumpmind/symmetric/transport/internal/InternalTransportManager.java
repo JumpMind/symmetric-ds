@@ -64,7 +64,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     private INodeService nodeService;
 
     public InternalTransportManager(INodeService nodeService, IParameterService config) {
-        this.parameterServer = config;
+        super(config);
         this.nodeService = nodeService;
     }
 
