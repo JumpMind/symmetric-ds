@@ -159,7 +159,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public String getSyncTriggersExpression() {
-        return "dbo.fn_sym_triggers_disabled() = 0";
+        return getDefaultCatalog() + ".dbo.fn_sym_triggers_disabled() = 0";
     }
 
     @Override
