@@ -475,6 +475,17 @@
                             </entry>
                         </row>
                         <row>
+                            <entry>max_batch_to_send</entry>
+                            <entry>integer</entry>
+                            <entry>N</entry>
+                            <entry></entry>
+                            <entry>60</entry>
+                            <entry>
+                                The maximum number of batches to send during a synchronization between
+                                two nodes.
+                            </entry>
+                        </row>
+                        <row>
                             <entry>enabled</entry>
                             <entry>booleanint</entry>
                             <entry>N</entry>
