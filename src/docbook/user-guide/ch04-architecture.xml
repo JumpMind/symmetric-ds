@@ -196,15 +196,14 @@ public class StartSymmetricDSEngine {
     public static void main(String[] args) throws Exception {
         String workingDirectory = System.getProperty("user.dir");
 
-        SymmetricEngine engine = new SymmetricEngine(
-            "classpath://my-application.properties",
-            "file://" + workingDirectory + "/my-environment.properties");
+        SymmetricWebServer node = new SymmetricWebServer(new SymmetricEngine("classpath://my-application.properties", "file://"
+                + workingDirectory + "/my-environment.properties"));
 
         // this will create the database, sync triggers, start jobs running
-        engine.start();
+        node.start(8080);
         
-        // this will stop the engine
-        engine.stop();
+        // this will stop the node
+        node.stop();
     }   
 
 }]]></programlisting>
