@@ -26,10 +26,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-abstract class AbstractService {
+abstract class AbstractService implements IService {
 
     protected IParameterService parameterService;
 
@@ -43,6 +44,10 @@ abstract class AbstractService {
     
     protected SimpleJdbcTemplate getSimpleTemplate() {
         return new SimpleJdbcTemplate(jdbcTemplate);
+    }
+    
+    synchronized public void synchronize(Runnable runnable) {
+        runnable.run();
     }
     
     @SuppressWarnings("unchecked")
