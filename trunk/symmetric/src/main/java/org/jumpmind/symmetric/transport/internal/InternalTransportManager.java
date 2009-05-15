@@ -59,12 +59,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     static final Log logger = LogFactory.getLog(InternalTransportManager.class);
 
-    private IParameterService parameterServer;
-
     private INodeService nodeService;
 
     public InternalTransportManager(INodeService nodeService, IParameterService config) {
-        this.parameterServer = config;
+        super(config);
         this.nodeService = nodeService;
     }
 
@@ -114,7 +112,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(parameterServer.getRegistrationUrl(), null, respOs, new IClientRunnable() {
+        runAtClient(parameterService.getRegistrationUrl(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the registration servlet does
                 // ...

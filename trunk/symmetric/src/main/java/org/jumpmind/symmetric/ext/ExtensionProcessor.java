@@ -43,6 +43,8 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
+import org.jumpmind.symmetric.transport.ISyncUrlExtension;
+import org.jumpmind.symmetric.transport.ITransportManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -63,10 +65,12 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     INodeService nodeService;
 
     IBootstrapService bootstrapService;
-    
+
     IAcknowledgeService acknowledgeService;
-    
+
     IRegistrationService registrationService;
+
+    ITransportManager transportManager;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -77,7 +81,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
             extensions.putAll(((ListableBeanFactory) beanFactory.getParentBeanFactory())
                     .getBeansOfType(IExtensionPoint.class));
         }
-        for (IExtensionPoint ext : extensions.values()) {
+        for (String beanName : extensions.keySet()) {
+            IExtensionPoint ext = extensions.get(beanName);
             if (ext.isAutoRegister()) {
                 boolean registerExtension = false;
                 if (ext instanceof INodeGroupExtensionPoint) {
@@ -96,24 +101,28 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
                 }
 
                 if (registerExtension) {
-                    registerExtension(ext);
+                    registerExtension(beanName, ext);
                 }
             }
         }
 
     }
 
-    private void registerExtension(IExtensionPoint ext) {
+    private void registerExtension(String beanName, IExtensionPoint ext) {
+
+        if (ext instanceof ISyncUrlExtension) {
+            transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
+        }
 
         if (ext instanceof INodePasswordFilter) {
-        	nodeService.setNodePasswordFilter((INodePasswordFilter)ext);
-        	registrationService.setNodePasswordFilter((INodePasswordFilter)ext);
+            nodeService.setNodePasswordFilter((INodePasswordFilter) ext);
+            registrationService.setNodePasswordFilter((INodePasswordFilter) ext);
         }
-    	
+
         if (ext instanceof IAcknowledgeEventListener) {
-        	acknowledgeService.addAcknowledgeEventListener((IAcknowledgeEventListener)ext);
+            acknowledgeService.addAcknowledgeEventListener((IAcknowledgeEventListener) ext);
         }
-    	
+
         if (ext instanceof ITriggerCreationListener) {
             bootstrapService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
@@ -183,12 +192,16 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.bootstrapService = bootstrapService;
     }
 
-	public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
-		this.acknowledgeService = acknowledgeService;
-	}
+    public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
+        this.acknowledgeService = acknowledgeService;
+    }
 
-	public void setRegistrationService(IRegistrationService registrationService) {
-		this.registrationService = registrationService;
-	}
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
+
+    public void setTransportManager(ITransportManager transportManager) {
+        this.transportManager = transportManager;
+    }
 
 }

@@ -58,10 +58,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     private INodeService nodeService;
 
-    private IParameterService parameterService;
-
     public HttpTransportManager(INodeService nodeService, IParameterService paramService) {
-        this.parameterService = paramService;
+        super(paramService);
         this.nodeService = nodeService;
     }
 
@@ -155,22 +153,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
      * Build a url for an action. Include the nodeid and the security token.
      */
     protected String buildURL(String action, Node remote, Node local) throws IOException {
-        return addSecurityToken((chooseURL(remote) + "/" + action), "&");
-    }
-
-    /**
-     * Build the url for remote node communication. Use the remote sync_url
-     * first, if it is null or blank, then use the registration url instead.
-     */
-    private String chooseURL(Node remote) {
-        if (StringUtils.isBlank(remote.getSyncURL()) || remote.getSyncURL().startsWith(Constants.PROTOCOL_NONE)) {
-            logger
-                    .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
-            return parameterService.getRegistrationUrl();
-        } else {
-            return remote.getSyncURL();
-        }
-
+        return addSecurityToken((resolveURL(remote.getSyncURL()) + "/" + action), "&");
     }
 
     private String addSecurityToken(String base, String connector) {
