@@ -76,6 +76,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected int httpsPort = -1;
 
     protected String propertiesFile;
+    
+    protected String host;
 
     /**
      * This will only be set if the SymmetricWebServer itself is created from a
@@ -175,12 +177,14 @@ public class SymmetricWebServer implements ApplicationContextAware {
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = new SelectChannelConnector();
             connector.setPort(port);
+            connector.setHost(host);
             ((SelectChannelConnector) connector).setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
             logger.info("About to start SymmetricDS web server on port " + port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
+            connector.setHost(host);
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setPassword("changeit");
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
@@ -296,6 +300,10 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     public void setCreateJmxServer(boolean createJmxServer) {
         this.createJmxServer = createJmxServer;
+    }
+    
+    public void setHost(String host) {
+        this.host = host;
     }
 
 }
