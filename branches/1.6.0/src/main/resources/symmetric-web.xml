@@ -126,6 +126,12 @@
             ref="pullResourceHandler" />
     </bean>
 
+    <bean id="bandWidthTestServlet"
+        class="org.jumpmind.symmetric.web.BandwidthSamplerServlet">
+        <property name="parameterService" ref="parameterService"/>
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/bandwidth/*" />
+    </bean>
+
     <bean id="pushServlet"
         class="org.jumpmind.symmetric.web.PushServlet">
         <property name="uriPattern" value="$[sym.web.base.servlet.path]/push/*" />

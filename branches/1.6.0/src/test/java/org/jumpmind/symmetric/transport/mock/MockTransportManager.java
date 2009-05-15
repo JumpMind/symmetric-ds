@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -37,6 +38,13 @@ public class MockTransportManager implements ITransportManager {
     protected IIncomingTransport incomingTransport;
 
     protected IOutgoingWithResponseTransport outgoingTransport;
+
+    public String resolveURL(String url) {
+        return null;
+    }
+    
+    public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
+    }
 
     public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
         return incomingTransport;

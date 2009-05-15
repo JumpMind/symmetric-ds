@@ -136,7 +136,6 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(hist.getFailedDataId(), expectedResults);
     }
 
-    @SuppressWarnings("unchecked")
     protected List<OutgoingBatchHistory> getOutgoingBatchHistory(long batchId) {
         final String sql = "select batch_id, status, data_event_count, start_time, " + "failed_data_id from "
                 + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";

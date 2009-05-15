@@ -11,12 +11,18 @@
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
         <property name="bootstrapService" ref="bootstrapService" />
+        <property name="transportManager" ref="transportManager" />
     </bean>
 
     <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.SyncTriggersRequiredFilter">
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="parameterService" ref="parameterService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+    </bean>
+    
+    <bean id="httpBandwidthUrlSelector" class="org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="bandwidthService" ref="bandwidthService"/>
     </bean>
 
 </beans>

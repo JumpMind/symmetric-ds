@@ -41,5 +41,15 @@ public interface ITransportManager {
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException;
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException;
+    
+    public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler);
+    
+    /**
+     * This is the proper way to determine the URL for a node.  It delegates to configured 
+     * extension points when necessary to take in to account custom load balancing and
+     * url selection schemes.
+     * @param url This is the url configured in sync_url of the node table
+     */
+    public String resolveURL(String url);
 
 }
