@@ -161,5 +161,11 @@
             ref="batchResourceHandler" />
         <property name="enabled" value="$[sym.web.batch.servlet.enable]"/>            
     </bean>    
+    
+    <bean id="bandWidthTestServlet"
+        class="org.jumpmind.symmetric.web.BandwidthSamplerServlet">
+        <property name="parameterService" ref="parameterService"/>
+        <property name="uriPattern" value="$[sym.web.base.servlet.path]/bandwidth/*" />
+    </bean>
 
 </beans>
