@@ -50,8 +50,6 @@ public interface IDataExtractorService {
      */
     public boolean extract(Node node, IOutgoingTransport transport) throws Exception;
 
-    public boolean extract(Node node, final IExtractListener handler) throws Exception;
-
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
             throws Exception;
 
