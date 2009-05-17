@@ -412,8 +412,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     me.setSymmetricVersion(Version.version());
                     if (!StringUtils.isBlank(parameterService.getMyUrl())) {
                         me.setSyncURL(parameterService.getMyUrl());
-                    } else {
-                        me.setSyncURL(Constants.PROTOCOL_NONE + "://" + AppUtils.getServerId());
                     }
                     nodeService.updateNode(me);
                     logger.info("Done updating my node information and heartbeat time.");
