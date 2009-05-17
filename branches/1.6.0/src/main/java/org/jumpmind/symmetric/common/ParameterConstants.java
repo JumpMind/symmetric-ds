@@ -42,7 +42,8 @@ public class ParameterConstants {
     public final static String SCHEMA_VERSION = "schema.version";
 
     public static final String STATISTIC_THRESHOLD_ALERTS_ENABLED = "statistic.threshold.alerts.enabled";
-
+    public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
+    
     @Deprecated
     public final static String RUNTIME_CONFIGURATION_CLASS = "configuration.class";
 

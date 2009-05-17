@@ -59,6 +59,7 @@ public class ParameterConstants {
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
     
     public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
+    public final static String STREAM_TO_FILE_THRESHOLD = "stream.to.file.threshold.bytes";
 
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 

@@ -22,9 +22,9 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -288,8 +288,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (batches != null && batches.size() > 0) {
             FileOutgoingTransport fileTransport = null;
 
-            if (shouldStreamToFile(batches)) {
-                fileTransport = new FileOutgoingTransport();
+            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                fileTransport = new FileOutgoingTransport(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
             }
 
             ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
@@ -305,24 +305,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected boolean shouldStreamToFile(List<OutgoingBatch> batches) {
-        boolean stream2file = false;
-        for (OutgoingBatch outgoingBatch : batches) {
-            stream2file |= Constants.CHANNEL_RELOAD.equals(outgoingBatch.getChannelId());
-        }
-        return stream2file && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
-    }
-    
     protected void copy(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport) throws IOException {
         if (fileTransport != null) {
             fileTransport.close();
-            FileReader reader = null;
+            Reader reader = null;
             try {
-                reader = new FileReader(fileTransport.getFile());
+                reader = fileTransport.getReader();
                 IOUtils.copy(reader, targetTransport.open());
             } finally {
                 IOUtils.closeQuietly(reader);
-                fileTransport.getFile().delete();
+                fileTransport.delete();
             }
         }        
     }
@@ -337,6 +329,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             boolean initialized = false;
             for (final OutgoingBatch batch : batches) {
                 history = new OutgoingBatchHistory(batch);
+                long ts = System.currentTimeMillis();
                 if (!initialized) {
                     handler.init();
                     initialized = true;
@@ -344,6 +337,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
+                history.setDatabaseMillis(System.currentTimeMillis()-ts);
                 history.setStatus(OutgoingBatchHistory.Status.SE);
                 history.setEndTime(new Date());
                 outgoingBatchService.insertOutgoingBatchHistory(history);
