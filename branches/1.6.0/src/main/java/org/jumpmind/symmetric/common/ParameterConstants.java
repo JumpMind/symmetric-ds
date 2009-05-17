@@ -57,6 +57,8 @@ public class ParameterConstants {
     public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";
     public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";
 
+    public final static String STREAM_TO_FILE_ENABLED = "stream.to.file.enabled";
+    
     public final static String PARAMETER_REFRESH_PERIOD_IN_MS = "parameter.reload.timeout.ms";
 
     public final static String CONCURRENT_WORKERS = "http.concurrent.workers.max";
