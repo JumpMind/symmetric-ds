@@ -19,6 +19,8 @@
  */
 package org.jumpmind.symmetric.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
 
@@ -91,5 +93,12 @@ public class AppUtils {
     @SuppressWarnings("unchecked")
     public static <T> T find(String name, SymmetricWebServer server) {
         return (T) server.getEngine().getApplicationContext().getBean(name);
+    }
+    
+    /**
+     * Use this method to create any needed temporary files for SymmetricDS.
+     */
+    public static File createTempFile(String token) throws IOException {
+        return File.createTempFile("sym." + token + ".", ".tmp");
     }
 }

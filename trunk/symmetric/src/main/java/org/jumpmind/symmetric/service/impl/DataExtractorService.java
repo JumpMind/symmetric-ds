@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Connection;
@@ -32,10 +33,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -62,6 +65,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -106,10 +110,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * failure.
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
-
         try {
             OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
-            if (Version.isOlderThanVersion(node.getSymmetricVersion(), UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
+            if (Version.isOlderThanVersion(node.getSymmetricVersion(),
+                    UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
                 outgoingBatchService.insertOutgoingBatch(batch);
                 OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
                 history.setStatus(OutgoingBatchHistory.Status.SE);
@@ -133,15 +137,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             dataExtractor.commit(batch, writer);
 
-
         } finally {
             writer.flush();
         }
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<Trigger> triggers = new TriggerSelector(configurationService.getActiveTriggersForSourceNodeGroup(parameterService.getNodeGroupId()),
-                Constants.CHANNEL_CONFIG, node.getNodeGroupId()).select();
+        List<Trigger> triggers = new TriggerSelector(configurationService
+                .getActiveTriggersForSourceNodeGroup(parameterService.getNodeGroupId()), Constants.CHANNEL_CONFIG, node
+                .getNodeGroupId()).select();
         if (node != null && node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {
                 Trigger trigger = triggers.get(i);
@@ -224,13 +228,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * @param hist
      * @param transport
      * @param batch
-     *                If null, then assume this 'initial load' is part of
-     *                another batch.
+     *            If null, then assume this 'initial load' is part of another
+     *            batch.
      * @param ctx
      */
     protected void writeInitialLoad(Node node, final Trigger trigger, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
-
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
 
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
@@ -272,17 +275,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         });
     }
 
-    public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
+    public boolean extract(Node node, IOutgoingTransport targetTransport) throws Exception {
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
-        ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
-        return extract(node, handler);
-    }
-
-    /**
-     * Allow a handler callback to do the work so we can route the extracted
-     * data to other types of handlers for processing.
-     */
-    public boolean extract(Node node, final IExtractListener handler) throws Exception {
 
         List<NodeChannel> channels = configurationService.getChannels();
 
@@ -291,50 +285,92 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
-
         if (batches != null && batches.size() > 0) {
-            OutgoingBatchHistory history = null;
-            try {
-                boolean initialized = false;
-                for (final OutgoingBatch batch : batches) {
-                    history = new OutgoingBatchHistory(batch);
-                    if (!initialized) {
-                        handler.init();
-                        initialized = true;
-                    }
-                    handler.startBatch(batch);
-                    selectEventDataToExtract(handler, batch);
-                    handler.endBatch(batch);
-                    history.setStatus(OutgoingBatchHistory.Status.SE);
-                    history.setEndTime(new Date());
-                    outgoingBatchService.insertOutgoingBatchHistory(history);
-                }
-            } catch (RuntimeException e) {
-                SQLException se = unwrapSqlException(e);
-                if (history != null) {
-                    if (se != null) {
-                        history.setSqlState(se.getSQLState());
-                        history.setSqlCode(se.getErrorCode());
-                        history.setSqlMessage(se.getMessage());
-                    } else {
-                        history.setSqlMessage(e.getMessage());
-                    }
-                    history.setStatus(OutgoingBatchHistory.Status.SE);
-                    history.setEndTime(new Date());
-                    outgoingBatchService.setBatchStatus(history.getBatchId(), Status.ER);
-                    outgoingBatchService.insertOutgoingBatchHistory(history);
-                } else {
-                    logger.error(
-                            "Could not log the outgoing batch status because the batch history has not been created.",
-                            e);
-                }
-                throw e;
-            } finally {
-                handler.done();
+            FileOutgoingTransport fileTransport = null;
+
+            if (shouldStreamToFile(batches)) {
+                fileTransport = new FileOutgoingTransport();
             }
+
+            ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
+                    fileTransport != null ? fileTransport : targetTransport);
+
+            extract(node, batches, handler);
+
+            copy(fileTransport, targetTransport);
+            
             return true;
+        } else {
+            return false;
         }
-        return false;
+    }
+
+    protected boolean shouldStreamToFile(List<OutgoingBatch> batches) {
+        boolean stream2file = false;
+        for (OutgoingBatch outgoingBatch : batches) {
+            stream2file |= Constants.CHANNEL_RELOAD.equals(outgoingBatch.getChannelId());
+        }
+        return stream2file && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+    }
+    
+    protected void copy(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport) throws IOException {
+        if (fileTransport != null) {
+            fileTransport.close();
+            FileReader reader = null;
+            try {
+                reader = new FileReader(fileTransport.getFile());
+                IOUtils.copy(reader, targetTransport.open());
+            } finally {
+                IOUtils.closeQuietly(reader);
+                fileTransport.getFile().delete();
+            }
+        }        
+    }
+
+    /**
+     * Allow a handler callback to do the work so we can route the extracted
+     * data to other types of handlers for processing.
+     */
+    protected void extract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws Exception {
+        OutgoingBatchHistory history = null;
+        try {
+            boolean initialized = false;
+            for (final OutgoingBatch batch : batches) {
+                history = new OutgoingBatchHistory(batch);
+                if (!initialized) {
+                    handler.init();
+                    initialized = true;
+                }
+                handler.startBatch(batch);
+                selectEventDataToExtract(handler, batch);
+                handler.endBatch(batch);
+                history.setStatus(OutgoingBatchHistory.Status.SE);
+                history.setEndTime(new Date());
+                outgoingBatchService.insertOutgoingBatchHistory(history);
+            }
+        } catch (RuntimeException e) {
+            SQLException se = unwrapSqlException(e);
+            if (history != null) {
+                if (se != null) {
+                    history.setSqlState(se.getSQLState());
+                    history.setSqlCode(se.getErrorCode());
+                    history.setSqlMessage(se.getMessage());
+                } else {
+                    history.setSqlMessage(e.getMessage());
+                }
+                history.setStatus(OutgoingBatchHistory.Status.SE);
+                history.setEndTime(new Date());
+                outgoingBatchService.setBatchStatus(history.getBatchId(), Status.ER);
+                outgoingBatchService.insertOutgoingBatchHistory(history);
+            } else {
+                logger.error("Could not log the outgoing batch status because the batch history has not been created.",
+                        e);
+            }
+            throw e;
+        } finally {
+            handler.done();
+        }
+
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
@@ -346,7 +382,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public boolean extractBatchRange(final IExtractListener handler, String startBatchId, String endBatchId)
             throws Exception {
-
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
 
         if (batches != null && batches.size() > 0) {

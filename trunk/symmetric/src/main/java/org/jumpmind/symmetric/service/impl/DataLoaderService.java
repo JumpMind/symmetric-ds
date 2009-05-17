@@ -22,6 +22,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -62,7 +65,9 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
+import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -87,7 +92,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected List<IDataLoaderFilter> filters;
 
     protected IStatisticManager statisticManager;
-    
+
     protected INodeService nodeService;
 
     protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
@@ -169,11 +174,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 dataLoader.load();
                 IncomingBatchHistory history = new IncomingBatchHistory(dataLoader.getContext());
                 history.setValues(dataLoader.getStatistics(), true);
-                fireBatchComplete(dataLoader, history);                
+                fireBatchComplete(dataLoader, history);
             }
         } finally {
             stats = dataLoader.getStatistics();
-            dataLoader.close();            
+            dataLoader.close();
         }
         return stats;
     }
@@ -192,6 +197,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IncomingBatchHistory history = null;
         IDataLoader dataLoader = null;
         try {
+            if (shouldStreamToFile(transport)) {
+                transport = writeToFile(transport);
+            }
             dataLoader = openDataLoader(transport.open());
             while (dataLoader.hasNext()) {
                 status = new IncomingBatch(dataLoader.getContext());
@@ -202,7 +210,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         } catch (RegistrationRequiredException ex) {
             throw ex;
-        } catch (ConnectException ex) {            
+        } catch (ConnectException ex) {
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (UnknownHostException ex) {
@@ -249,9 +257,33 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (dataLoader != null) {
                 dataLoader.close();
             }
+            transport.close();
             recordStatistics(list);
         }
         return list;
+    }
+
+    /**
+     * Right now we will only write to a file first if the feature is enabled and we are in initial load 
+     * state.  
+     * TODO - Make sure statistics are captured correctly and stream to a file if the payload is > than
+     * a certain # of bytes.
+     */
+    protected boolean shouldStreamToFile(IIncomingTransport transport) {
+        return parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED) && !nodeService.isDataLoadCompleted();
+    }
+    
+    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {
+        File file = AppUtils.createTempFile("load");
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(file);
+            IOUtils.copy(transport.open(), writer);
+        } finally {
+            IOUtils.closeQuietly(writer);
+            transport.close();            
+        }
+        return new FileIncomingTransport(file);
     }
 
     private void recordStatistics(List<IncomingBatchHistory> list) {
@@ -296,8 +328,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     history.setValues(dataLoader.getStatistics(), true);
                     fireBatchComplete(dataLoader, history);
                     if (status.isPersistable()) {
-                        incomingBatchService
-                                .insertIncomingBatchHistory(history);
+                        incomingBatchService.insertIncomingBatchHistory(history);
                     }
                 } catch (IOException e) {
                     throw new TransportException(e);
