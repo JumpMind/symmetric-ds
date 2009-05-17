@@ -37,6 +37,8 @@ public class IncomingBatchHistory implements Serializable {
     public enum Status {
         OK, ER, SK;
     }
+    
+    private IncomingBatch batch;
 
     private long batchId;
 
@@ -82,7 +84,8 @@ public class IncomingBatchHistory implements Serializable {
         this.hostName = thisHostName;
     }
 
-    public IncomingBatchHistory(IDataLoaderContext context) {
+    public IncomingBatchHistory(IncomingBatch batch, IDataLoaderContext context) {
+        this.batch = batch;
         batchId = context.getBatchId();
         nodeId = context.getNodeId();
         status = Status.OK;
@@ -92,7 +95,6 @@ public class IncomingBatchHistory implements Serializable {
 
     public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
         byteCount = statistics.getByteCount();
-        networkMillis = statistics.getNetworkMillis();
         filterMillis = statistics.getFilterMillis();
         databaseMillis = statistics.getDatabaseMillis();
         statementCount = statistics.getStatementCount();
@@ -254,4 +256,7 @@ public class IncomingBatchHistory implements Serializable {
         this.sqlState = sqlState;
     }
 
+    public IncomingBatch getBatch() {
+        return batch;
+    }
 }

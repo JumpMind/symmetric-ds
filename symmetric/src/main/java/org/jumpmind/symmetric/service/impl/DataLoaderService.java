@@ -22,8 +22,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,6 +42,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -67,7 +66,6 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -172,7 +170,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             while (dataLoader.hasNext()) {
                 dataLoader.load();
-                IncomingBatchHistory history = new IncomingBatchHistory(dataLoader.getContext());
+                IncomingBatchHistory history = new IncomingBatchHistory(new IncomingBatch(dataLoader.getContext()), dataLoader.getContext());
                 history.setValues(dataLoader.getStatistics(), true);
                 fireBatchComplete(dataLoader, history);
             }
@@ -197,17 +195,30 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         IncomingBatchHistory history = null;
         IDataLoader dataLoader = null;
         try {
-            if (shouldStreamToFile(transport)) {
+            long totalNetworkMillis = System.currentTimeMillis();
+            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 transport = writeToFile(transport);
-            }
+                totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
+            }            
             dataLoader = openDataLoader(transport.open());
             while (dataLoader.hasNext()) {
                 status = new IncomingBatch(dataLoader.getContext());
-                history = new IncomingBatchHistory(dataLoader.getContext());
+                history = new IncomingBatchHistory(status, dataLoader.getContext());
                 list.add(history);
                 loadBatch(dataLoader, status, history);
                 status = null;
             }
+            
+            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                estimateNetworkMillis(list, totalNetworkMillis);
+            }
+            
+            for (IncomingBatchHistory incomingBatchHistory : list) {
+                if (incomingBatchHistory.getBatch().isPersistable()) {
+                    incomingBatchService.insertIncomingBatchHistory(incomingBatchHistory);
+                }  
+            }
+
         } catch (RegistrationRequiredException ex) {
             throw ex;
         } catch (ConnectException ex) {
@@ -262,28 +273,30 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
         return list;
     }
-
-    /**
-     * Right now we will only write to a file first if the feature is enabled and we are in initial load 
-     * state.  
-     * TODO - Make sure statistics are captured correctly and stream to a file if the payload is > than
-     * a certain # of bytes.
-     */
-    protected boolean shouldStreamToFile(IIncomingTransport transport) {
-        return parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED) && !nodeService.isDataLoadCompleted();
-    }
     
-    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {
-        File file = AppUtils.createTempFile("load");
-        FileWriter writer = null;
+    protected void estimateNetworkMillis(List<IncomingBatchHistory> list, long totalNetworkMillis) {
+        long totalNumberOfBytes = 0;
+        for (IncomingBatchHistory incomingBatchHistory : list) {
+            totalNumberOfBytes += incomingBatchHistory.getByteCount();
+        }
+        for (IncomingBatchHistory incomingBatchHistory : list) {
+            if (totalNumberOfBytes > 0) {
+             double ratio = (double)incomingBatchHistory.getByteCount()/(double)totalNumberOfBytes;
+             incomingBatchHistory.setNetworkMillis((long)(totalNetworkMillis*ratio));
+            }                     
+        }
+    }
+
+    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {        
+        ThresholdFileWriter writer = null;
         try {
-            writer = new FileWriter(file);
+            writer = new ThresholdFileWriter(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "load");
             IOUtils.copy(transport.open(), writer);
         } finally {
             IOUtils.closeQuietly(writer);
             transport.close();            
         }
-        return new FileIncomingTransport(file);
+        return new FileIncomingTransport(writer);
     }
 
     private void recordStatistics(List<IncomingBatchHistory> list) {
@@ -327,9 +340,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     }
                     history.setValues(dataLoader.getStatistics(), true);
                     fireBatchComplete(dataLoader, history);
-                    if (status.isPersistable()) {
-                        incomingBatchService.insertIncomingBatchHistory(history);
-                    }
                 } catch (IOException e) {
                     throw new TransportException(e);
                 } finally {
