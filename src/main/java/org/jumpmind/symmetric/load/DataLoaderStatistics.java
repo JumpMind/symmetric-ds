@@ -26,9 +26,7 @@ import java.util.Date;
 public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     private Date startTime;
-
-    private long networkMillis;
-
+    
     private long filterMillis;
 
     private long databaseMillis;
@@ -69,10 +67,6 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     public long incrementStatementCount() {
         return ++statementCount;
-    }
-
-    public void incrementNetworkMillis(long millis) {
-        networkMillis += millis;
     }
 
     public void incrementFilterMillis(long millis) {
@@ -157,14 +151,6 @@ public class DataLoaderStatistics implements IDataLoaderStatistics {
 
     public void setFilterMillis(long filterMillis) {
         this.filterMillis = filterMillis;
-    }
-
-    public long getNetworkMillis() {
-        return networkMillis;
-    }
-
-    public void setNetworkMillis(long networkMillis) {
-        this.networkMillis = networkMillis;
     }
 
     public long getByteCount() {
