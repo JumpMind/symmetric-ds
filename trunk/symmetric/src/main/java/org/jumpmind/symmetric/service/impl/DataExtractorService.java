@@ -295,9 +295,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
                     fileTransport != null ? fileTransport : targetTransport);
 
-            extract(node, batches, handler);
+            databaseExtract(node, batches, handler);
 
-            copy(fileTransport, targetTransport);
+            networkTransfer(fileTransport, targetTransport);
             
             return true;
         } else {
@@ -305,7 +305,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    protected void copy(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport) throws IOException {
+    protected void networkTransfer(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport) throws IOException {
         if (fileTransport != null) {
             fileTransport.close();
             Reader reader = null;
@@ -323,7 +323,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void extract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws Exception {
+    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws Exception {
         OutgoingBatchHistory history = null;
         try {
             boolean initialized = false;
