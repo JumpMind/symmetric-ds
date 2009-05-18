@@ -45,7 +45,7 @@ public interface IBootstrapService {
     /**
      * Synchronize the triggers and write the DDL to the SQL buffer.
      */
-    public void syncTriggers(StringBuilder sql);
+    public void syncTriggers(StringBuilder sql, boolean gen_always);
 
     @Deprecated
     public void register();

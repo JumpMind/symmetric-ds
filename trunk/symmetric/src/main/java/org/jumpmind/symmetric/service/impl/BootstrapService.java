@@ -154,15 +154,15 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     public void syncTriggers() {
-        syncTriggers(null);
+        syncTriggers(null, false);
     }
 
-    synchronized public void syncTriggers(StringBuilder sqlBuffer) {
+    synchronized public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
         if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
                 removeInactiveTriggers(sqlBuffer);
-                updateOrCreateSymmetricTriggers(sqlBuffer);
+                updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
             } finally {
                 clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
                 logger.info("Done synchronizing triggers");
@@ -230,7 +230,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         return triggerCache;
     }
 
-    private void updateOrCreateSymmetricTriggers(StringBuilder sqlBuffer) {
+    private void updateOrCreateSymmetricTriggers(StringBuilder sqlBuffer, boolean gen_always) {
         Collection<Trigger> triggers = getCachedTriggers(true).values();
 
         for (Trigger trigger : triggers) {
@@ -262,6 +262,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())
                             || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
+                        forceRebuildOfTriggers = true;
+                    } else if(gen_always) {
+                        reason = TriggerReBuildReason.FORCED;
                         forceRebuildOfTriggers = true;
                     }
 
