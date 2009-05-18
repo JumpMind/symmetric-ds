@@ -137,7 +137,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         List<String> list = jdbcTemplate.queryForList(getSql("getRegistrationRedirectUrlSql"),
                 new Object[] { externalId }, new int[] { Types.VARCHAR }, String.class);
         if (list.size() > 0) {
-            return list.get(0);
+            return transportManager.resolveURL(list.get(0));
         } else {
             return null;
         }
