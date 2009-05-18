@@ -74,7 +74,7 @@
                                             SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
                                                 $(txIdExpression) from $(prefixName)_node c
                                                 where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
-                                        END
+                                        END;
                                 ]]>
 							</value>
 						</entry>
@@ -99,7 +99,7 @@
                                         SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
                                             where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
-                                END
+                                END;
                                 ]]>
 							</value>
 						</entry>
@@ -122,7 +122,7 @@
                                         SELECT node_id, IDENTITY_VAL_LOCAL(), '$(channelName)',
                                             $(txIdExpression) from $(prefixName)_node c
                                             where (c.node_group_id = '$(targetGroupId)' and c.sync_enabled = 1) $(nodeSelectWhere);
-                                END
+                                END;
                                 ]]>
 							</value>
 						</entry>
