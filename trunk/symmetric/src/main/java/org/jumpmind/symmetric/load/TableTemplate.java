@@ -59,7 +59,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class TableTemplate {
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd" };
+    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss" };
