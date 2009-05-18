@@ -27,7 +27,7 @@
 				</property>
 				<property name="stringColumnTemplate">
 					<value>
-						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+						<![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' when length($(tableAlias)."$(columnName)") = 0 then '' else '"' || replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
 					</value>
 				</property>
 				<property name="clobColumnTemplate">
