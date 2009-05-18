@@ -33,12 +33,16 @@ import java.sql.Connection;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
@@ -63,6 +67,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SymmetricLauncher {
 
+    private static final Log logger = LogFactory.getLog(SymmetricLauncher.class);
+        
     private static final String OPTION_DUMP_BATCH = "dump-batch";
 
     private static final String OPTION_OPEN_REGISTRATION = "open-registration";
@@ -104,10 +110,17 @@ public class SymmetricLauncher {
     private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
     
     public static void main(String[] args) throws Exception {        
+        logger.debug("Arguments: " + ArrayUtils.toString(args));
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
             CommandLine line = parser.parse(options, args);
+
+            if (line.getOptions() != null) {
+                for (Option option: line.getOptions()) {
+                    logger.debug("Option: name=" + option.getLongOpt() + ", value=" + ArrayUtils.toString(option.getValues()));
+                }
+            }
 
             int port = 31415;
             int securePort = 31417;
@@ -461,6 +474,7 @@ public class SymmetricLauncher {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static void runSql(SymmetricEngine engine, String fileName)
             throws FileNotFoundException, MalformedURLException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext()
