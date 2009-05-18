@@ -85,6 +85,7 @@ public class ThresholdFileWriter extends Writer {
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
         if (fileWriter != null) {
+            fileWriter.write(cbuf, off, len);
         } else if (len + buffer.length() > threshhold) {
             if (file == null) {
                 file = AppUtils.createTempFile(tempFileCategory == null ? "threshold.file.writer" : tempFileCategory);
