@@ -21,7 +21,10 @@
 package org.jumpmind.symmetric.db.mssql;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -30,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -37,6 +41,9 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 
 /**
  * This dialect was tested with the jTDS JDBC driver on SQL Server 2005.
@@ -111,6 +118,41 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
+    public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName, final String triggerName,
+            String tableName, TriggerHistory oldHistory) {
+        schemaName = schemaName == null ? "" : (schemaName + ".");
+        final String sql = "drop trigger " + schemaName + triggerName;
+        logSql(sql, sqlBuffer);
+        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            jdbcTemplate.execute(new ConnectionCallback() {
+                public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                    String previousCatalog = con.getCatalog();
+                    Statement stmt = null;
+                    try {
+                        if (catalogName != null) {
+                            con.setCatalog(catalogName);
+                        }
+                        stmt = con.createStatement();
+                        stmt.execute(sql);
+                    }
+                    catch (Exception e) {
+                        logger.warn("Could not drop trigger " + triggerName);
+                    }
+                    finally {
+                        if (catalogName != null) {
+                            con.setCatalog(previousCatalog);
+                        }
+                        try {
+                            stmt.close();
+                        } catch (Exception e) { }
+                    }
+                    return Boolean.FALSE;
+                }
+            });
+        }
+    }
+    
+    @Override
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         if (catalog != null) {
             String previousCatalog = c.getCatalog();
@@ -141,9 +183,30 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt("select count(*) from sysobjects where type = 'TR' AND name = ?",
-                new Object[] { triggerName }) > 0;
+    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName, final String triggerName) {
+        return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                String previousCatalog = con.getCatalog();
+                PreparedStatement stmt = con.prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
+                try {
+                    if (catalogName != null) {
+                        con.setCatalog(catalogName);
+                    }
+                    stmt.setString(1, triggerName);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()){
+                        int count = rs.getInt(1);
+                        return count > 0;
+                    }
+                } finally {
+                    if (catalogName != null) {
+                        con.setCatalog(previousCatalog);
+                    }
+                    stmt.close();
+                }
+                return Boolean.FALSE;
+            }
+        });
     }
 
     public void disableSyncTriggers(String nodeId) {
