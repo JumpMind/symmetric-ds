@@ -86,6 +86,8 @@ public class SymmetricLauncher {
     private static final String OPTION_DDL_GEN = "generate-config-dll";
     
     private static final String OPTION_TRIGGER_GEN = "generate-triggers";
+    
+    private static final String OPTION_TRIGGER_GEN_ALWAYS = "generate-triggers-always";
 
     private static final String OPTION_PURGE = "purge";
 
@@ -192,7 +194,8 @@ public class SymmetricLauncher {
             
             if (line.hasOption(OPTION_TRIGGER_GEN)) {
                 String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
-                syncTrigger(new SymmetricEngine(), arg);
+                boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
+                syncTrigger(new SymmetricEngine(), arg, gen_always);
                 return;
             }            
 
@@ -353,6 +356,7 @@ public class SymmetricLauncher {
                         false,
                         "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
         options.addOption("t", OPTION_TRIGGER_GEN, true, "Run the sync triggers process and write the output the specified file.  If triggers should not be applied automatically then set the auto.sync.triggers property to false");
+        options.addOption("o", OPTION_TRIGGER_GEN_ALWAYS, false, "Run the sync triggers process even if the triggers already exist.");
         return options;
     }
 
@@ -406,7 +410,7 @@ public class SymmetricLauncher {
     }
     
     
-    private static void syncTrigger(SymmetricEngine engine, String fileName) throws IOException {
+    private static void syncTrigger(SymmetricEngine engine, String fileName, boolean gen_always) throws IOException {
         if (fileName != null) {
             File file = new File(fileName);
             if (file.getParentFile() != null) {
@@ -414,7 +418,7 @@ public class SymmetricLauncher {
             }
             IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
             StringBuilder sqlBuffer = new StringBuilder();
-            bootstrapService.syncTriggers(sqlBuffer);
+            bootstrapService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
         } else {
             throw new IllegalStateException("Please provide a file name to write the trigger SQL to");
