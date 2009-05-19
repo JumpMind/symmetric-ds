@@ -475,7 +475,7 @@
         </para>
     </section>
     <section>
-        <title>Outgoing Batch Histpry Table</title>
+        <title>Outgoing Batch History Table</title>
         <para>
             A history of status changes to the Outgoing Batch, along with statistics of
             the work performed.
