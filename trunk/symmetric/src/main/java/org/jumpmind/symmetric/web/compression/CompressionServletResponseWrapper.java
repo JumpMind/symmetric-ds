@@ -19,6 +19,8 @@ package org.jumpmind.symmetric.web.compression;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.zip.Deflater;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -44,13 +46,18 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
     static final Log logger = LogFactory.getLog(CompressionServletResponseWrapper.class);
 
+    int compressionLevel = Deflater.DEFAULT_COMPRESSION;
+    
+    int compressionStrategy = Deflater.DEFAULT_STRATEGY;
+    
     /**
      * Calls the parent constructor which creates a ServletResponse adaptor
      * wrapping the given response object.
      */
-
-    public CompressionServletResponseWrapper(HttpServletResponse response) {
+    public CompressionServletResponseWrapper(HttpServletResponse response, int compressionLevel, int compressionStrategy) {
         super(response);
+        this.compressionLevel = compressionLevel;
+        this.compressionStrategy = compressionStrategy;
         origResponse = response;
         if (logger.isDebugEnabled()) {
             logger.debug("CompressionServletResponseWrapper constructor gets called");
@@ -113,7 +120,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
             logger.debug("createOutputStream gets called");
         }
 
-        CompressionResponseStream stream = new CompressionResponseStream(origResponse);
+        CompressionResponseStream stream = new CompressionResponseStream(origResponse, compressionLevel, compressionStrategy);
         return stream;
 
     }

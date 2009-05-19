@@ -64,11 +64,16 @@ public class CompressionResponseStream extends ServletOutputStream {
      * @param response
      *                The associated response
      */
-    public CompressionResponseStream(HttpServletResponse response) throws IOException {
+    public CompressionResponseStream(HttpServletResponse response, final int compressionLevel, final int compressionStrategy) throws IOException {
         this.closed = false;
         this.response = response;
         response.addHeader("Content-Encoding", "gzip");
-        gzipstream = new GZIPOutputStream(response.getOutputStream());
+        gzipstream = new GZIPOutputStream(response.getOutputStream()) {
+            {
+                this.def.setLevel(compressionLevel);
+                this.def.setStrategy(compressionStrategy);
+            }
+        };
     }
 
     /**

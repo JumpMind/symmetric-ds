@@ -86,7 +86,8 @@ public class CompressionFilter extends AbstractFilter {
     public void init(final FilterConfig filterConfig) throws ServletException {
         super.init(filterConfig);
         delegate = new org.jumpmind.symmetric.web.compression.CompressionFilter();
-
+        delegate.setCompressionLevel(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL));
+        delegate.setCompressionStrategy(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
         delegate.init(filterConfig);
     }
 

@@ -80,6 +80,8 @@ public class ParameterConstants {
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";
     public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
+    public final static String TRANSPORT_HTTP_COMPRESSION_LEVEL = "compression.level";
+    public final static String TRANSPORT_HTTP_COMPRESSION_STRATEGY = "compression.strategy";
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     
