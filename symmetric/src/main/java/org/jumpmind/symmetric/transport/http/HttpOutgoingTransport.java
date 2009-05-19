@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -50,11 +52,14 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private int httpTimeout;
 
     private boolean useCompression;
+    
+    private IParameterService parameterService;
 
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression) {
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, IParameterService parameterService) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
+        this.parameterService = parameterService;
     }
 
     public void close() throws IOException {
@@ -114,7 +119,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         }
         OutputStream out = connection.getOutputStream();
         if (useCompression) {
-            out = new GZIPOutputStream(out);
+            out = new GZIPOutputStream(out) {
+                {
+                    this.def.setLevel(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL));
+                    this.def.setStrategy(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
+                }
+            };
         }
         OutputStreamWriter wout = new OutputStreamWriter(out, Constants.ENCODING);
         writer = new BufferedWriter(wout);

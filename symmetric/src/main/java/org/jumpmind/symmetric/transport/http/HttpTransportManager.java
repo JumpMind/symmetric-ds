@@ -107,7 +107,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         URL url = new URL(buildURL("push", remote, local));
         int httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
         boolean useCompression = parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT);
-        return new HttpOutgoingTransport(url, httpTimeout, useCompression);
+        return new HttpOutgoingTransport(url, httpTimeout, useCompression, parameterService);
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {

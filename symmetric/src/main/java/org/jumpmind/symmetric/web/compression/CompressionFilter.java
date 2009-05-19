@@ -19,6 +19,7 @@ package org.jumpmind.symmetric.web.compression;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.zip.Deflater;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -49,6 +50,10 @@ import org.apache.commons.logging.LogFactory;
 public class CompressionFilter implements Filter {
 
     static final Log logger = LogFactory.getLog(CompressionFilter.class);
+    
+    int compressionLevel = Deflater.DEFAULT_COMPRESSION;
+    
+    int compressionStrategy = Deflater.DEFAULT_STRATEGY;
 
     /**
      * The filter configuration object we are associated with. If this value is
@@ -144,7 +149,7 @@ public class CompressionFilter implements Filter {
         } else {
             if (response instanceof HttpServletResponse) {
                 CompressionServletResponseWrapper wrappedResponse = new CompressionServletResponseWrapper(
-                        (HttpServletResponse) response);
+                        (HttpServletResponse) response, compressionLevel, compressionStrategy);
                 if (logger.isDebugEnabled()) {
                     logger.debug("doFilter gets called with compression");
                 }
@@ -156,6 +161,22 @@ public class CompressionFilter implements Filter {
                 return;
             }
         }
+    }
+    
+    public int getCompressionLevel() {
+        return compressionLevel;
+    }
+
+    public void setCompressionLevel(int compressionLevel) {
+        this.compressionLevel = compressionLevel;
+    }
+
+    public int getCompressionStrategy() {
+        return compressionStrategy;
+    }
+
+    public void setCompressionStrategy(int compressionStrategy) {
+        this.compressionStrategy = compressionStrategy;
     }
 
     /**
