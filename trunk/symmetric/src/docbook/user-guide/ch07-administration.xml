@@ -183,5 +183,75 @@ where source_node_group_id = 'client';
         <title>Statistics</title>
         <para></para>
     </section>
+    <section>
+        <title>Running as a Windows Service</title>
+        <para>
+            SymmetricDS uses a Java service wrapper called
+            <ulink url="http://forge.ow2.org/projects/javaservice/">JavaService</ulink>
+            in order to run in the background as a Windows NT/2000/XP system service.
+            The JavaService executable is named <filename class="file">sym_service.exe</filename>
+            so it can be easily identified from a list of running processes.
+            To install the service, use the provided script:
+            <programlisting>bin\install_service.bat</programlisting>
+        </para>
+        <para>
+            The script contains configuration that can be changed, including the server
+            port number and file locations.  The server defaults to port 8080.
+            It will look in the <filename class="directory">conf</filename> directory
+            for the <filename class="filename">symmetric.properties</filename> file
+            and the  <filename class="filename">log4j.xml</filename> file.
+            Logging for standard out, error, and application are written to the
+            <filename class="directory">logs</filename> directory.
+        </para>
+        <para>
+            When the configuration is changed, the service should be un-installed and 
+            then installed again.  To un-install the service, use the provided script:
+            <programlisting>bin\uninstall_service.bat</programlisting>
+        </para>
+        <para>
+            Use the <command>net</command> command to start and stop the service: 
+            <programlisting>net start symmetric</programlisting>
+            <programlisting>net stop symmetric</programlisting>
+        </para>
+    </section>
+    <section>
+        <title>Running as a Unix Service</title>
+        <para>
+            SymmetricDS uses an init script in order to run in the background as a Unix
+            service (also called a daemon).  
+            The <filename class="file">symmetric.init</filename> file follows the
+            Linux Standard Base specification, which should work on many systems, including
+            Fedora and Debian.  To install the script, copy it into the system init directory:
+        </para>
+        <para>
+            <programlisting>cp bin/symmetric.init /etc/init.d/symmetric</programlisting>
+        </para>
+        <para>
+            Edit the init script to set the SYM_HOME variable to the directory
+            where SymmetricDS is located.  The init script calls the
+            <filename class="file">sym_service</filename> script, which contains configuration
+            such as port number and file locations.  The server defaults to port 8080.
+            It will look in the <filename class="directory">conf</filename> directory
+            for the <filename class="filename">symmetric.properties</filename> file
+            and the  <filename class="filename">log4j.xml</filename> file.
+            Logging for standard out, error, and application are written to the
+            <filename class="directory">logs</filename> directory.
+        </para>
+        <para>
+            To enable the service to run automatically when the system is started:
+            <programlisting>/sbin/chkconfig --add symmetric</programlisting>
+        </para>
+        <para>
+            To disable the service from running automatically:
+            <programlisting>/sbin/chkconfig --del symmetric</programlisting>
+        </para>
+        <para>
+            Use the <command>service</command> command to start, stop, and query
+            the status of the service: 
+            <programlisting>/sbin/service symmetric start</programlisting>
+            <programlisting>/sbin/service symmetric stop</programlisting>
+            <programlisting>/sbin/service symmetric status</programlisting>
+        </para>
+    </section>
     
 </chapter>
