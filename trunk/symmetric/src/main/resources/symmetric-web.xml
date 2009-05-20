@@ -103,6 +103,7 @@
                 <value>$[sym.web.base.servlet.path]/pull/*</value>
                 <value>$[sym.web.base.servlet.path]/push/*</value>
                 <value>$[sym.web.base.servlet.path]/registration/*</value>
+                <value>$[sym.web.base.servlet.path]/batch/*</value>
             </list>
         </property>
         <property name="parameterService" ref="parameterService" />        
