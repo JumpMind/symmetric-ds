@@ -42,48 +42,6 @@
         </para>        
     </section>
     <section>
-        <title>Node Select</title>
-        <para>
-            Synchronized data can be routed to a specific node or group of nodes by providing a SQL expression in the trigger configuration table called a node_select expression.
-            If your table has a column named client_id which contains the same value as your node's external_id, then you can use node_select like this: 
-            <programlisting><![CDATA[
-            and c.external_id = $(curTriggerValue).client_id 
-            ]]></programlisting> 
-            The triggerValue variables let you specify if you want the before, after, or current value of the row being changed. Here are the variables: 
-            <itemizedlist>
-               <listitem>
-                   <para>$(newTriggerValue)  </para>
-               </listitem>
-               <listitem>
-                   <para>$(oldTriggerValue) </para>
-               </listitem>
-               <listitem>
-                   <para>$(curTriggerValue)  </para>
-               </listitem>
-            </itemizedlist>
-            These get replaced with something that can be understood by the database you are using. For example, on Oracle the "$(newTriggerValue)" is 
-            replaced with ":new". The curTriggerValue will use the oldTriggerValue on a delete change, otherwise use newTriggerValue. 
-        </para>
-    </section>    
-    <section>
-        <title>Initial Load</title>
-        <para>
-            There are variables you can use when specifying the initial_load_select SQL for
-            a Trigger that will be replaced at runtime:
-        </para> 
-        <itemizedlist>
-            <listitem>
-                <para>$(nodeId) - the node ID of the target node </para>
-            </listitem>
-            <listitem>
-                <para>$(groupId) - the node group ID of the target node  </para>
-            </listitem>
-            <listitem>
-                <para>$(externalId) - the external ID of the target node </para>
-            </listitem>
-        </itemizedlist>
-    </section>
-    <section>
         <title>Bi-Directional Synchronization</title>
         <para>
             SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
