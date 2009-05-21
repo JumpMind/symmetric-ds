@@ -116,7 +116,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 databases you create match the settings in the properties files.
             </para>
             <para>
-                See the appendix <emphasis>Database Notes</emphasis> for compatibility
+                See the appendix <link linkend="databases">Database Notes</link> for compatibility
                 with your specific database.
             </para>
         </important>
