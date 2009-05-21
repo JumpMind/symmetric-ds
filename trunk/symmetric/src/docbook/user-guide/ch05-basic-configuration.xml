@@ -293,4 +293,158 @@ values
 ]]></programlisting>
         </para>
     </section>
+
+    <section>
+        <title id="synConditions">Using Sync Conditions</title>
+        <para>
+        	Sync Conditions can be specified for capturing the changes to rows in a table.
+        	If the condition is met, the data change is captured for sending to other Nodes.
+        	If the condition is not met, the data change is allowed, but it will not be 
+        	captured and sent to other Nodes.
+        	The condition runs within the context of the database trigger event, and it uses
+        	the language specific to the database platform.  A condition can be specified
+        	for insert, update, and delete events, and it is run for each row of that event.
+        </para>
+        <para>
+            Because a condition makes a decision about whether or not to capture a data
+            change, it effectively creates a subset of the table for synchronization to 
+            all Nodes in the Node Group.  
+            If a different subset of the table is required for each Node, then
+            see the section on <link linkend="nodeSelect">Using Node Select</link>.
+        </para>
+        <para>
+            The following SQL statement defines a Trigger that will capture data for a table named 
+            "sale_transaction" only when the workstation column has a value of "001".
+            All Nodes in the "store" Node Group will receive a subset of the table for only that workstation.
+
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER 
+  (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+   sync_on_insert, sync_on_update, sync_on_delete,
+   sync_on_insert_condition, sync_on_update_condition, sync_on_delete_condition, 
+   initial_load_order, last_updated_by, last_updated_time, create_time)
+values
+  ('sale_transaction', 'corp', 'store', 'sale_transaction', 
+   1, 1, 1, 
+   'workstation = ''001''', 'workstation = ''001''', 'workstation = ''001''', 
+   105, 'demo', current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>
+    </section>
+
+    <section>
+        <title id="nodeSelect">Using Node Select</title>
+        <para>
+            After a data change is captured, the Nodes which will receive the change are selected.
+            By default, all Nodes in the target Node Group for the Trigger will be selected.
+            To limit which Nodes are selected, a condition is specified for the node_select
+            of the Trigger.  The condition is written in SQL syntax that is appended to the
+            "where" clause of a "select" statement on the Node table.  The table is aliased 
+            as "c" in order to allow a sub-select to correlate a join.  The condition is run
+            within the context of the database trigger event, so it can access the row
+            being changed.
+        </para>
+        <para>
+            Because the node_select makes a decision about which Nodes receive the data
+            change, it effectively creates a subset of the table for different Nodes. 
+            If the same subset of the table is required for all Nodes in the Node Group,
+            then see the section on <link linkend="syncConditions">Using Sync Conditions</link>.
+        </para>
+        <para>
+            The following variables can be used in the node_select, which will
+            be replaced when the database trigger is built:
+            <itemizedlist>
+                <listitem>
+                    <para>$(oldTriggerValue) - alias for columns on the "before" row that was updated or deleted</para>
+                </listitem>
+                <listitem>
+                    <para>$(newTriggerValue) - alias for columns on the "after" row that was updated or inserted</para>
+                </listitem>
+                <listitem>
+                    <para>$(curTriggerValue) - alias for columns on the current row that was changed</para>
+                </listitem>
+            </itemizedlist>       
+            These variables are replaced with syntax in the language of the database being used. 
+            For example, on Oracle the "$(newTriggerValue)" is replaced with ":new".
+            The curTriggerValue will use the oldTriggerValue on a delete change, otherwise use newTriggerValue. 
+        </para> 
+        <para>
+            The following SQL statement defines a Trigger that will capture all data changes 
+            for a table named "sale_transaction", and select Nodes to receive changes by
+            using the value of the "store" column.
+            The Nodes that have been set with an external ID that matches the "store" column
+            will receive only those rows.
+
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER 
+  (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+   sync_on_insert, sync_on_update, sync_on_delete,
+   node_select, 
+   initial_load_order, last_updated_by, last_updated_time, create_time)
+values
+  ('sale_transaction', 'corp', 'store', 'sale_transaction', 
+   1, 1, 1, 
+   'and external_id = $(curTriggerValue).store', 
+   105, 'demo', current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>
+    </section>
+
+    <section>
+        <title id="initialLoadSelect">Using Initial Load Select</title>
+        <para>
+            The Initial Load sends all required rows for each table to a Node, which
+            prepares its database with an initial synchronized state.  Afterwards,
+            SymmetricDS begins sending incremental changes as data is changed.
+            By default, the initial load will send all rows of a table.
+            To send a subset of data, a condition is specified for the 
+            initial_load_select of the Trigger.  The condition is written in SQL
+            syntax that is appended to the "where" clause of a "select" statement on
+            the table.  The table is aliased as "t" in order to allow a sub-select
+            to correlate a join. 
+        </para>
+        <para>
+            It's important that the condition used for the initial state of a table matches
+            the condition for capturing and sending changes.  In other words, the condition
+            used for the initial_load_select should be consistent with any
+            <link linkend="syncConditions">Sync Conditions</link> or
+            <link linkend="nodeSelect">Node Select Conditions</link>, in order
+            to guarantee consistent data in the table.
+        </para>
+        <para>
+            The following variables can be used in the initial_load_select, which will
+            be replaced at runtime:
+        </para> 
+        <itemizedlist>
+            <listitem>
+                <para>$(nodeId) - the node ID of the target node </para>
+            </listitem>
+            <listitem>
+                <para>$(groupId) - the node group ID of the target node  </para>
+            </listitem>
+            <listitem>
+                <para>$(externalId) - the external ID of the target node </para>
+            </listitem>
+        </itemizedlist>        
+        <para>
+            The following SQL statement defines a Trigger for the "sale_transaction" table
+            that will only synchronize the subset of data where the workstation is "001".
+        
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER 
+  (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+   sync_on_insert, sync_on_update, sync_on_delete,
+   sync_on_insert_condition, sync_on_update_condition, sync_on_delete_condition, 
+   initial_load_select,
+   initial_load_order, last_updated_by, last_updated_time, create_time)
+values
+  ('sale_transaction', 'corp', 'store', 'sale_transaction', 
+   1, 1, 1, 
+   'workstation = ''001''', 'workstation = ''001''', 'workstation = ''001''',
+   'workstation = ''001''',
+   105, 'demo', current_timestamp, current_timestamp);
+]]></programlisting>
+        </para>
+    </section>
+
 </chapter>
