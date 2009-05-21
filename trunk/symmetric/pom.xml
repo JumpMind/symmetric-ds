@@ -59,6 +59,8 @@
             <email>chenson42@users.sourceforge.net</email>
             <url><![CDATA[http://www.linkedin.com/profile?trk=tab_pro&key=17076974&viewProfile=]]>
             </url>
+            <organization>JumpMind, Inc.</organization>
+            <organizationUrl>http://jumpmind.com/</organizationUrl>
             <roles>
                 <role>developer</role>
                 <role>architect</role>
@@ -70,9 +72,22 @@
             <name>Eric Long</name>
             <email>erilong@users.sourceforge.net</email>
             <url>http://alstongrove.com/</url>
+            <organization>JumpMind, Inc.</organization>
+            <organizationUrl>http://jumpmind.com/</organizationUrl>
             <roles>
                 <role>developer</role>
                 <role>architect</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+        <developer>
+            <id>eegeek</id>
+            <name>Mark Hanes</name>
+            <email>eegeek@users.sourceforge.net</email>
+            <organization>JumpMind, Inc.</organization>
+            <organizationUrl>http://jumpmind.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
             </roles>
             <timezone>-5</timezone>
         </developer>
@@ -86,6 +101,7 @@
             <timezone>-5</timezone>
         </developer>
         <developer>
+        	<id>knaas</id>
             <name>Keith Naas</name>
             <email>knaas@users.sourceforge.net</email>
             <roles>
@@ -95,6 +111,15 @@
             <url>http://www.linkedin.com/in/keithnaas</url>
             <organization>30xi</organization>
             <organizationUrl>http://30xi.com</organizationUrl>
+        </developer>
+        <developer>
+            <id>mmahawar</id>
+            <name>Manisha Mahawar</name>
+            <email>mmahawar@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
         </developer>
     </developers>
     <contributors>
@@ -109,6 +134,8 @@
         <contributor>
             <name>Megha Shetty</name>
             <email>megha_s@users.sourceforge.net</email>
+            <organization>Big Lots</organization>
+            <organizationUrl>http://www.biglots.com/</organizationUrl>
             <roles>
                 <role>developer</role>
             </roles>
@@ -122,7 +149,56 @@
             </roles>
             <timezone>-5</timezone>
         </contributor>
-
+        <contributor>
+            <name>Dave Michels</name>
+            <email>dmichels2@users.sourceforge.net</email>
+            <organization>Leading Edje</organization>
+            <organizationUrl>http://leadingedje.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>
+        <contributor>
+            <name>Kunal Bajaj</name>
+            <email>kbajaj01@users.sourceforge.net</email>
+            <organization>Big Lots</organization>
+            <organizationUrl>http://www.biglots.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>
+        <contributor>
+            <name>Phil Marzullo</name>
+            <email>pmarzullo64@users.sourceforge.net</email>
+            <organization>Abercrombie &amp; Fitch</organization>
+            <organizationUrl>http://www.abercrombie.com/</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>
+        <contributor>
+            <name>Yasmany Cubela Medina</name>
+            <email>bitgandtter@users.sourceforge.net</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </contributor>
+        <contributor>
+            <name>Hiro Rahandomal Gangwani</name>
+            <email>hiro.gangwani@tcs.com</email>
+            <url>http://www.linkedin.com/pub/hiro-gangwani/8/954/67a</url>
+            <organization>Tata Consultancy Services Ltd</organization>
+            <organizationUrl>http://www.tcs.com</organizationUrl>
+            <roles>
+                <role>designer</role>
+                <role>tester</role>
+            </roles>
+            <timezone>+4.5</timezone>
+        </contributor>
     </contributors>
 
     <distributionManagement>
