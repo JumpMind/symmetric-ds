@@ -463,6 +463,9 @@
                 <value>
                     alter table $[sym.sync.table.prefix]_incoming_batch add channel_id varchar(50)
                 </value>
+                <value>
+                    alter table $[sym.sync.table.prefix]_trigger add target_catalog_name varchar(50)
+                </value>
             </list>
         </property>
     </bean>        
