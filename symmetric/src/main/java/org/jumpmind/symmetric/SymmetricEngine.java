@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Timer;
 
 import javax.sql.DataSource;
 
@@ -36,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
@@ -49,7 +49,6 @@ import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -57,9 +56,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * This is the preferred way to create, configure, start and manage a client-only instance
  * of SymmetricDS. The engine will bootstrap the symmetric.xml Spring context.
  * <p/> 
- * The Symmetric instance is configured by properties configuration files.
+ * The SymmetricDS instance is configured by properties configuration files.
  * By default the engine will look for and override existing properties with
- * ones found in the properties files. Symmetric looks for: symmetric.properties
+ * ones found in the properties files. SymmetricDS looks for: symmetric.properties
  * in the classpath (it will use the first one it finds), and then for a
  * symmetric.properties found in the user.home system property location. Next,
  * if provided, in the constructor of the SymmetricEngine, it will locate and
@@ -92,8 +91,8 @@ public class SymmetricEngine {
     private boolean setup = false;
 
     private IDbDialect dbDialect;
-
-    private Map<String, Timer> jobs;
+    
+    private IJobManager jobManager;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
 
@@ -142,7 +141,7 @@ public class SymmetricEngine {
     public void stop() {
         logger.info("Closing SymmetricDS externalId=" + parameterService.getExternalId() + " version="
                 + Version.version() + " database=" + dbDialect.getName());
-        stopJobs();
+        jobManager.stopJobs();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
         DataSource ds = dbDialect.getJdbcTemplate().getDataSource();
@@ -207,6 +206,7 @@ public class SymmetricEngine {
         purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
         dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
+        jobManager = (IJobManager)applicationContext.getBean(Constants.JOB_MANAGER);
     }
 
     /**
@@ -246,63 +246,6 @@ public class SymmetricEngine {
         }
     }
 
-    private void startJob(String name) {
-        logger.info("Starting " + name);
-        AppUtils.find(name, this);
-    }
-    
-    public synchronized void addTimer(String timerName, Timer timer) {
-        if (jobs == null) {
-            jobs = new HashMap<String, Timer>();
-        }
-        jobs.put(timerName, timer);
-    }
-
-    /**
-     * Start the jobs if they are configured to be started in
-     * symmetric.properties
-     */
-    private void startJobs() {
-        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PUSH_JOB))) {
-            startJob(Constants.PUSH_JOB_TIMER);
-        }
-
-        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
-            startJob(Constants.PULL_JOB_TIMER);
-        }
-
-        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
-            startJob(Constants.PURGE_JOB_TIMER);
-        }
-
-        if (Boolean.TRUE.toString()
-                .equalsIgnoreCase(parameterService.getString(ParameterConstants.START_HEARTBEAT_JOB))) {
-            startJob(Constants.HEARTBEAT_JOB_TIMER);
-        }
-
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_SYNCTRIGGERS_JOB))) {
-            startJob(Constants.SYNC_TRIGGERS_JOB_TIMER);
-        }
-
-        if (Boolean.TRUE.toString().equalsIgnoreCase(
-                parameterService.getString(ParameterConstants.START_STATISTIC_FLUSH_JOB))) {
-            startJob(Constants.STATISTIC_FLUSH_JOB_TIMER);
-        }
-
-    }
-
-    private void stopJobs() {
-        if (jobs != null) {
-            for (Timer job : jobs.values()) {
-                try {
-                    job.cancel();
-                } catch (RuntimeException e) {
-                    logger.error(e, e);
-                }
-            }
-        }
-    }
 
     /**
      * Get a list of configured properties for Symmetric. Read-only.
@@ -356,7 +299,7 @@ public class SymmetricEngine {
                 }
                 bootstrapService.syncTriggers();
                 heartbeat();
-                startJobs();                
+                jobManager.startJobs();                
                 logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
                         + Version.version() + " database=" + dbDialect.getName());
                 started = true;

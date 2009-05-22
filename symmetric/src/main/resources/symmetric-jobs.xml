@@ -7,6 +7,10 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
     default-lazy-init="true">
 
+    <bean id="jobManager" class="org.jumpmind.symmetric.job.JobManager">
+        <property name="parameterService" ref="parameterService" />
+    </bean>
+    
     <bean id="randomTimeSlot" class="org.jumpmind.symmetric.util.RandomTimeSlot">
         <property name="parameterService" ref="parameterService" />
     </bean>
@@ -45,6 +49,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="needsRescheduled" value="true" />
         <property name="rescheduleDelayParameter" value="job.push.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
+        <property name="jobManager" ref="jobManager"/>
     </bean>
 
     <bean id="pullJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -67,6 +72,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="nodeService" ref="nodeService"/>
         <property name="rescheduleDelayParameter" value="job.pull.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
+        <property name="jobManager" ref="jobManager"/>
     </bean>
     
     <bean id="purgeJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
@@ -81,6 +87,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                             <property name="purgeService" ref="purgeService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
+                            <property name="jobManager" ref="jobManager"/>
                         </bean>
                     </property>
                 </bean>
@@ -99,6 +106,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                         <bean class="org.jumpmind.symmetric.job.StatisticFlushJob">
                             <property name="statisticManager" ref="statisticManager" />
                             <property name="parameterService" ref="parameterService" />
+                            <property name="jobManager" ref="jobManager"/>
                         </bean>
                     </property>
                 </bean>
@@ -118,6 +126,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
+                            <property name="jobManager" ref="jobManager"/>
                         </bean>
                     </property>
                 </bean>
@@ -136,6 +145,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                             <property name="bootstrapService" ref="bootstrapService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
+                            <property name="jobManager" ref="jobManager"/>
                         </bean>
                     </property>
                 </bean>

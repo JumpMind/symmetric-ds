@@ -58,6 +58,8 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private SymmetricEngine engine;
 
     protected boolean rescheduleImmediately = false;
+    
+    private IJobManager jobManager;
 
     @Override
     public boolean cancel() {
@@ -103,7 +105,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             final Timer timer = new Timer(timerName);
             timer.schedule((TimerTask) beanFactory.getBean(beanName), rescheduleImmediately ? 0 : parameterService
                     .getLong(rescheduleDelayParameter));
-            engine.addTimer(timerName, timer);
+            jobManager.addTimer(timerName, timer);
             rescheduleImmediately = false;
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug(
@@ -152,6 +154,10 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     public void setRequiresRegistration(boolean requiresRegistration) {
         this.requiresRegistration = requiresRegistration;
+    }
+
+    public void setJobManager(IJobManager jobManager) {
+        this.jobManager = jobManager;
     }
 
 }

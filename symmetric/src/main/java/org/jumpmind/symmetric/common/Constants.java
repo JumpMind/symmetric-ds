@@ -112,6 +112,8 @@ public class Constants {
     public static final String CONCURRENT_CONNECTION_MANGER = "concurrentConnectionManager";
 
     public static final String DB_DIALECT = "dbDialect";
+    
+    public static final String JOB_MANAGER = "jobManager";
 
     public static final String PUSH_JOB_TIMER = "pushJobTimer";
 
