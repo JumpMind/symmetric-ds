@@ -5,7 +5,7 @@
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Basic Configuration</title>
     <para>
-        To get an instance of SymmetricDS running, it needs to be given an identity and know how
+        To get an instance of SymmetricDS running, it needs to be given an identity and it needs to know how
         to connect to the database it will manage.  A basic way to specify this is to place properties
         in the symmetric.properties file.  When started up, the SymmetricDS reads the configuration
         and state from the database.  If the configuration tables are missing, they are created
