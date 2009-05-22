@@ -117,8 +117,11 @@ public class ParameterService extends AbstractService implements IParameterServi
         return value;
     }
 
+    /**
+     * Save a parameter that applies to {@link IParameterService#ALL} external ids and all node groups.
+     */
     public void saveParameter(String key, Object paramValue) {
-        this.saveParameter(getExternalId(), getNodeGroupId(), key, paramValue);
+        this.saveParameter(IParameterService.ALL, IParameterService.ALL, key, paramValue);
     }
 
     public void saveParameter(String externalId, String nodeGroupId, String key, Object paramValue) {
@@ -183,6 +186,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> buildSystemParameters() {
         final Map<String, String> map = new HashMap<String, String>();
         Properties p = rereadFileParameters();
+        p.putAll(System.getProperties());
         for (Object key : p.keySet()) {
             map.put((String) key, p.getProperty((String) key));
         }
