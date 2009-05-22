@@ -23,7 +23,8 @@ import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.model.BatchInfo;
 
 /**
- * Listener for changes in the batch status.
+ * Listener for changes in the batch status.  This extension point 
+ * is called at the point of extraction.
  * @author jkrajewski
  */
 public interface IAcknowledgeEventListener extends IExtensionPoint {

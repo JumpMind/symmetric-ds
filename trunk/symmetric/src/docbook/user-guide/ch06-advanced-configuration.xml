@@ -241,24 +241,41 @@ values
             </para>
         </section>
         <section>
-            <title>IColumnFilter</title>
-            <para></para>
+            <title>ITableColumnFilter</title>
+            <para>
+            Implement this extension point to filter out specific columns from
+            use by the dataloader. Only one column filter may be added per target table.
+            </para>
         </section>
         <section>
             <title>IBatchListener</title>
-            <para></para>
+            <para>
+            This extension point is called whenever a batch has completed loading but before
+            the transaction has committed.
+            </para>
         </section>
         <section>
             <title>IAcknowledgeEventListener</title>
-            <para></para>
+            <para>
+            Implement this extension point to receive callback events when a batch is acknowledged.  
+            The callback for this listener happens at the point of extraction.
+            </para>
         </section>                
         <section>
             <title>IReloadListener</title>
-            <para></para>
+            <para>
+            Implement this extension point to listen in and take
+            action before or after a reload is requested for a Node.  The callback for this listener
+            happens at the point of extraction.
+            </para>
         </section>                
         <section>
             <title>IExtractorFilter</title>
-            <para></para>
+            <para>
+            This extension point is called after data has been extracted, but before it has been streamed.  It
+            has the ability to inspect each row of data to take some action and indicate, if necessary, that the
+            row should not be streamed.
+            </para>
         </section>
         <section>
             <title>ISyncUrlExtension</title>
@@ -282,7 +299,9 @@ values
         </section>
         <section>
             <title>ITriggerCreationListener</title>
-            <para></para>
+            <para>
+            Implement this extension point to get status callbacks during trigger creation.
+            </para>
         </section>                
     </section>
     <section>

@@ -55,6 +55,9 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
 
+    /**
+     * The type of HTTP connection to create for this SymmetricDS web server 
+     */
     public enum Mode {
         HTTP, HTTPS, MIXED;
     }

@@ -62,7 +62,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Run symmetric utilities and/or launch an embedded version of Symmetric. If
+ * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS. If
  * you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
@@ -478,7 +478,6 @@ public class SymmetricLauncher {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static void runSql(SymmetricEngine engine, String fileName)
             throws FileNotFoundException, MalformedURLException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext()
