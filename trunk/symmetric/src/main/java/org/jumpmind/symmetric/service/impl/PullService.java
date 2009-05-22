@@ -100,7 +100,7 @@ public class PullService extends AbstractService implements IPullService {
             }
 
         } else {
-            logger.warn("Did not run the pull process because the cluster service has it locked");
+            logger.info("Did not run the pull process because the cluster service has it locked");
         }
         
         return dataPulled;
