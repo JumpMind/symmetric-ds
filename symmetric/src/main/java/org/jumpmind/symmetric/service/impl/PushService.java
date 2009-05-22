@@ -84,7 +84,7 @@ public class PushService extends AbstractService implements IPushService {
                 clusterService.unlock(LockActionConstants.PUSH);
             }
         } else {
-            logger.warn("Did not run the push process because the cluster service has it locked");
+            logger.info("Did not run the push process because the cluster service has it locked");
         }
         return pushedData;
     }
