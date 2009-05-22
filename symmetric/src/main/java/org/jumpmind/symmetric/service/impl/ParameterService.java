@@ -183,7 +183,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         return map;
     }
 
-    private Map<String, String> buildSystemParameters() {
+    private Map<String, String> rereadApplicationParameters() {
         final Map<String, String> map = new HashMap<String, String>();
         Properties p = rereadFileParameters();
         p.putAll(System.getProperties());
@@ -200,7 +200,7 @@ public class ParameterService extends AbstractService implements IParameterServi
                 || lastTimeParameterWereCached == null
                 || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached.getTime() < (System.currentTimeMillis() - cacheTimeoutInMs))) {
             lastTimeParameterWereCached = new Date();
-            parameters = buildSystemParameters();
+            parameters = rereadApplicationParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
             createRuntimeConfigIfNecessary();
         }
