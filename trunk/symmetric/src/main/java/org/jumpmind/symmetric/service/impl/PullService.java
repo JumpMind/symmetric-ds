@@ -56,9 +56,7 @@ public class PullService extends AbstractService implements IPullService {
         if (clusterService.lock(LockActionConstants.PULL)) {
             try {
                 // register if we haven't already been registered
-                if (!registrationService.isRegisteredWithServer()) {
-                    registrationService.registerWithServer();
-                }
+                registrationService.registerWithServer();
 
                 List<Node> nodes = nodeService.findNodesToPull();
                 if (nodes != null && nodes.size() > 0) {
