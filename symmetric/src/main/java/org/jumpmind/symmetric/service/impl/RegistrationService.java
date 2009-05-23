@@ -69,7 +69,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private RandomTimeSlot randomTimeSlot;
 
     private IDbDialect dbDialect;
-    
+
     private INodePasswordFilter nodePasswordFilter;
 
     /**
@@ -121,14 +121,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
             markNodeAsRegistered(nodeId);
         }
-        
+
         if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
             // only send automatic initial load once or if the client is really
             // re-registering
             if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 dataService.reloadNode(node.getNodeId());
             }
-        }        
+        }
 
         dataExtractorService.extractConfigurationStandalone(node, out);
 
@@ -295,15 +295,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.randomTimeSlot = randomTimeSlot;
     }
 
-	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-		this.nodePasswordFilter=nodePasswordFilter;
-	}
-	
-	private String filterPasswordOnSaveIfNeeded(String password){
-		String s = password;
-		if(nodePasswordFilter != null){
-			s = nodePasswordFilter.onNodeSecuritySave(password);
-		}
-		return s;
-	}
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+        this.nodePasswordFilter = nodePasswordFilter;
+    }
+
+    private String filterPasswordOnSaveIfNeeded(String password) {
+        String s = password;
+        if (nodePasswordFilter != null) {
+            s = nodePasswordFilter.onNodeSecuritySave(password);
+        }
+        return s;
+    }
 }
