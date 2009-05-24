@@ -15,7 +15,7 @@
         in different circumstances.
     </para>
     <para>
-        As a client, the Node runs the Push Job and Pull Job on a timer in order to synchronize
+        As a client, the Node runs the Push Job and Pull Job on a timer thread in order to synchronize
         with a host Node.  The Push Job uses services to batch, extract, and stream data to
         another Node (i.e. it pushes data).  The response from a push is a list
         of batch acknowlegements to indicate that data was loaded.
@@ -52,7 +52,56 @@
     </para>
     <section>
         <title>Software Components</title>
-        <para></para>
+        <para>
+            <figure>
+                <title>Startup Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/seq-startup.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Client Side Pull Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/seq-pull-client.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Host Side Pull Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/seq-pull-host.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Client Side Push Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/seq-push-client.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+        <para>
+            <figure>
+                <title>Host Side Push Sequence Diagram</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/seq-push-host.gif" format="GIF"  />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>        
     </section>
     <section>
         <title>Deployment Options</title>
