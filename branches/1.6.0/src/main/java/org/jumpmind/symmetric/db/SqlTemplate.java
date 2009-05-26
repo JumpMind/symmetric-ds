@@ -81,7 +81,7 @@ public class SqlTemplate {
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns);
+                "", columns).columnString;
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -113,7 +113,7 @@ public class SqlTemplate {
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns);
+                "", columns).columnString;
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -130,7 +130,7 @@ public class SqlTemplate {
 
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns);
+                "", columns).columnString;
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -227,17 +227,17 @@ public class SqlTemplate {
         ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
-        String columnsText = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns);
-        ddl = replace("columns", columnsText, ddl);
+        ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns);
+        ddl = replace("columns", columnString.columnString, ddl);
         ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
+        String oldColumnString = "null";
         if (trigger.isSyncColumnLevel()) {
-            columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns);
-        } else {
-            columnsText = "null";
+            oldColumnString = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString;
         }
-        ddl = replace("oldColumns", columnsText, ddl);
-        ddl = eval(containsBlobClobColumns(columns), "containsBlobClobColumns", ddl);
+
+        ddl = replace("oldColumns", oldColumnString, ddl);
+        ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
         ddl = replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);
@@ -247,8 +247,8 @@ public class SqlTemplate {
                         + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        columnsText = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns);
-        ddl = replace("oldKeys", columnsText, ddl);
+        oldColumnString = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString;
+        ddl = replace("oldKeys", oldColumnString, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
         ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(newTriggerValue, columns), ddl);
@@ -340,20 +340,6 @@ public class SqlTemplate {
         return ddl;
     }
 
-    private boolean containsBlobClobColumns(Column[] columns) {
-        for (Column column : columns) {
-            switch (column.getTypeCode()) {
-            case Types.CLOB:
-            case Types.BLOB:
-            case Types.BINARY:
-                // SQL-Server ntext binary type
-            case -10:
-                return true;
-            }
-        }
-        return false;
-    }
-
     private String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
         for (Column column : columns) {
@@ -422,8 +408,9 @@ public class SqlTemplate {
         return b.toString();
     }
 
-    private String buildColumnString(String origTableAlias, String tableAlias, String columnPrefix, Column[] columns) {
+    private ColumnString buildColumnString(String origTableAlias, String tableAlias, String columnPrefix, Column[] columns) {
         String columnsText = "";
+        boolean isBlobClob = false;
         for (Column column : columns) {
             String templateToUse = null;
             switch (column.getTypeCode()) {
@@ -445,6 +432,7 @@ public class SqlTemplate {
                 break;
             case Types.CLOB:
                 templateToUse = clobColumnTemplate;
+                isBlobClob = true;
                 break;
             case Types.BLOB:
             case Types.BINARY:
@@ -453,6 +441,7 @@ public class SqlTemplate {
                 // SQL-Server ntext binary type
             case -10:
                 templateToUse = blobColumnTemplate;
+                isBlobClob = true;
                 break;
             case Types.DATE:
             case Types.TIME:
@@ -500,8 +489,8 @@ public class SqlTemplate {
         }
 
         columnsText = replace("origTableAlias", origTableAlias, columnsText);
-        return replace("tableAlias", tableAlias, columnsText);
-
+        columnsText = replace("tableAlias", tableAlias, columnsText);
+        return new ColumnString(columnsText, isBlobClob);
     }
 
     private String buildColumnNameString(String tableAlias, Column[] columns) {
@@ -676,6 +665,18 @@ public class SqlTemplate {
         } else {
             return null;
         }
+    }
+
+    private class ColumnString {
+        
+        String columnString;
+        boolean isBlobClob = false;
+        
+        ColumnString(String columnExpression, boolean isBlobClob) {
+            this.columnString = columnExpression;
+            this.isBlobClob = isBlobClob;
+        }
+
     }
 
 }
