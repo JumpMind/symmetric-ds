@@ -583,13 +583,17 @@ public class SqlTemplate {
             case Types.BIT:
                 text += "bit\n";
                 break;
-            case Types.NULL:
-            case Types.OTHER:
-            case Types.JAVA_OBJECT:
-            case Types.DISTINCT:
-            case Types.STRUCT:
-            case Types.REF:
-            case Types.DATALINK:
+            case Types.CLOB:
+                text += "varchar(max)\n";
+                break;
+            case Types.BLOB:
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+            case -10: // SQL-Server ntext binary type
+                text += "varbinary(max)\n";
+                break;                
+            default:
                 throw new NotImplementedException(columns[i] + " is of type " + columns[i].getType());
             }
         }
