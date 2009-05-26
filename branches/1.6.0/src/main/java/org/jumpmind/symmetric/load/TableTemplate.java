@@ -339,7 +339,7 @@ public class TableTemplate {
                         objectValue = new BigDecimal(value.replace(',', '.'));
                     } else if (type == Types.BOOLEAN) {
                         objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY) {
+                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY || type == Types.VARBINARY) {
                         BinaryEncoding encoding = ctx.getBinaryEncoding();
                         if (encoding == BinaryEncoding.NONE) {
                             objectValue = value.getBytes();
