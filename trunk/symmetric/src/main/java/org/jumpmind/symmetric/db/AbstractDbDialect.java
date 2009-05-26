@@ -364,7 +364,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (table != null && table.getPrimaryKeyColumns() != null && table.getPrimaryKeyColumns().length == 0) {
             Column[] allCoumns = table.getColumns();
             for (Column column : allCoumns) {
-                column.setPrimaryKey(true);
+                if (!column.isOfBinaryType()) {
+                    column.setPrimaryKey(true);
+                }
             }
         }
     }
