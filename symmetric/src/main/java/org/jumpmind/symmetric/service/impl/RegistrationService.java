@@ -184,6 +184,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         boolean registered = isRegisteredWithServer();
         int maxNumberOfAttempts = parameterService.getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
+            boolean errorOccurred = false;
             try {
                 logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
                 registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
@@ -203,6 +204,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 Node node = nodeService.findIdentity();
                 if (node != null) {
                     logger.info(String.format("Successfully registered node [id=%s]", node.getNodeId()));
+                } else if (!errorOccurred) {
+                    logger.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
                 } else {
                     logger.error("Node registration is unavailable");
                 }
