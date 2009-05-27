@@ -82,7 +82,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 abstract public class AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(AbstractDbDialect.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
