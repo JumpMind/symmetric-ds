@@ -23,8 +23,8 @@ package org.jumpmind.symmetric.db;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-
 import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -37,6 +37,7 @@ import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
 import org.apache.ddlutils.platform.oracle.Oracle10Platform;
 import org.apache.ddlutils.platform.oracle.Oracle8Platform;
+import org.apache.ddlutils.platform.oracle.Oracle9Platform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.db.h2.H2Platform;
 import org.springframework.beans.factory.BeanFactory;
@@ -89,6 +90,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         if (pf instanceof MySqlPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("mysqlDialect");
         } else if (pf instanceof Oracle8Platform) {
+            dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
+        } else if (pf instanceof Oracle9Platform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
         } else if (pf instanceof Oracle10Platform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("oracleDialect");
