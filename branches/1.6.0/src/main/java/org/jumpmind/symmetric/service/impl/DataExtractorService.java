@@ -167,6 +167,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ctx.getDataExtractor().write(writer, data, ctx);
             }
         }
+        
+        if (triggers.size() == 0)
+        {
+            logger.error(node + " attempted registration, but was sent an empty configuration.");
+        }
     }
 
     private void addPurgeCriteriaToConfigurationTables(String sourceTableName, StringBuilder sql) {
