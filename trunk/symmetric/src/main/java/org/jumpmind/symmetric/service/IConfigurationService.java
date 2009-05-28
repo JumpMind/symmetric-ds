@@ -36,6 +36,14 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  */
 public interface IConfigurationService {
 
+    /**
+     * Return a list of triggers used when extraction configuration data during 
+     * the registration process.
+     * @param sourceGroupId group id of the node being registered with
+     * @param targetGroupId group id of the node that is registering
+     */
+    public List<Trigger> getRegistrationTriggers(String sourceGroupId, String targetGroupId);
+    
     public List<NodeGroupLink> getGroupLinks();
 
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);

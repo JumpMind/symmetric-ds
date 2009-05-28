@@ -41,7 +41,14 @@
         <property name="propertiesFile" value="classpath:/multi-tier-test-workstation.1.2.properties" />
         <property name="createJmxServer" value="false" />
         <property name="join" value="false" />
-    </bean>      
+    </bean>  
+    
+    <bean id="push001" class="org.jumpmind.symmetric.SymmetricWebServer" init-method="start">
+        <property name="httpPort" value="51418" />
+        <property name="propertiesFile" value="classpath:/multi-tier-test-pushOnly.001.properties" />
+        <property name="createJmxServer" value="false" />
+        <property name="join" value="false" />
+    </bean>           
     
     <util:map id="unitTestSql">
     </util:map>

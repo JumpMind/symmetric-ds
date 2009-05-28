@@ -46,6 +46,9 @@ public class MultiTierTest {
     protected SymmetricWebServer workstation000102;
 
     @Resource
+    protected SymmetricWebServer push001;
+
+    @Resource
     protected Map<String, String> unitTestSql;
 
     @BeforeClass
@@ -59,12 +62,10 @@ public class MultiTierTest {
     @Test
     public void validateHomeServerStartup() {
         Assert.assertTrue(homeServer.getEngine().isStarted());
-        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
-                homeServer);
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, homeServer);
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
-        Assert.assertEquals(node.getNodeId(),
-                MultiTierTestConstants.NODE_ID_HOME);
+        Assert.assertEquals(node.getNodeId(), MultiTierTestConstants.NODE_ID_HOME);
     }
 
     @Test
@@ -79,23 +80,20 @@ public class MultiTierTest {
 
     @Test
     public void registerAndLoadRegion01() {
-        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_1,
-                region01Server, MultiTierTestConstants.NODE_GROUP_REGION,
-                false, false);
+        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_1, region01Server,
+                MultiTierTestConstants.NODE_GROUP_REGION, false, false, true);
     }
 
     @Test
     public void registerAndLoadRegion02() {
-        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_2,
-                region02Server, MultiTierTestConstants.NODE_GROUP_REGION,
-                false, false);
+        registerAndLoad(homeServer, MultiTierTestConstants.NODE_ID_REGION_2, region02Server,
+                MultiTierTestConstants.NODE_GROUP_REGION, false, false, true);
     }
 
     @Test
     public void registerAndLoadWorkstation000101DirectlyWithRegion01() {
-        registerAndLoad(region01Server, MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_001,
-                workstation000101, MultiTierTestConstants.NODE_GROUP_WORKSTATION,
-                true, true);
+        registerAndLoad(region01Server, MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_001, workstation000101,
+                MultiTierTestConstants.NODE_GROUP_WORKSTATION, true, true, true);
     }
 
     /**
@@ -104,10 +102,10 @@ public class MultiTierTest {
     @Test
     public void registerAndLoadWorkstation000102WithHomeServer() {
         IRegistrationService registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, homeServer);
-        registrationService.saveRegistrationRedirect(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002, MultiTierTestConstants.NODE_ID_REGION_1);
+        registrationService.saveRegistrationRedirect(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002,
+                MultiTierTestConstants.NODE_ID_REGION_1);
         workstation000102.getEngine().pull();
-        IOutgoingBatchService outgoingBatchService = AppUtils.find(
-                Constants.OUTGOING_BATCH_SERVICE, region01Server);
+        IOutgoingBatchService outgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, region01Server);
         while (!outgoingBatchService.isInitialLoadComplete(MultiTierTestConstants.NODE_ID_STORE_0001_WORKSTATION_002)) {
             workstation000102.getEngine().pull();
         }
@@ -122,33 +120,42 @@ public class MultiTierTest {
     public void sendDataFromHomeToWorkstation000101Only() {
 
     }
-    
+
     protected void registerAndLoad(SymmetricWebServer registrationServer, String externalId,
-            SymmetricWebServer clientNode, String nodeGroupId,
-            boolean autoRegister, boolean autoReload) {
+            SymmetricWebServer clientNode, String nodeGroupId, boolean autoRegister, boolean autoReload,
+            boolean testReload) {
         if (!autoRegister) {
             registrationServer.getEngine().openRegistration(nodeGroupId, externalId);
         }
         clientNode.getEngine().pull();
-        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE,
-                clientNode);
+        INodeService nodeService = AppUtils.find(Constants.NODE_SERVICE, clientNode);
         Node node = nodeService.findIdentity();
         Assert.assertNotNull(node);
         Assert.assertEquals(node.getNodeId(), externalId);
-        if (!autoReload) {
-            registrationServer.getEngine().reloadNode(externalId);
-        }
 
-        IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(
-                Constants.OUTGOING_BATCH_SERVICE, registrationServer);
-        while (!homeOutgoingBatchService.isInitialLoadComplete(externalId)) {
-            clientNode.getEngine().pull();
-        }
+        if (testReload) {
+            if (!autoReload) {
+                registrationServer.getEngine().reloadNode(externalId);
+            }
 
-        NodeSecurity clientNodeSecurity = nodeService
-                .findNodeSecurity(externalId);
-        Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
-        Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
+            IOutgoingBatchService homeOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE,
+                    registrationServer);
+            while (!homeOutgoingBatchService.isInitialLoadComplete(externalId)) {
+                clientNode.getEngine().pull();
+            }
+
+            NodeSecurity clientNodeSecurity = nodeService.findNodeSecurity(externalId);
+            Assert.assertFalse(clientNodeSecurity.isInitialLoadEnabled());
+            Assert.assertNotNull(clientNodeSecurity.getInitialLoadTime());
+        }
+    }
+
+    /**
+     * Test the registration process to a client that is only configured to push
+     */
+    @Test
+    public void testRegistrationFromPushOnlyClient() {
+        registerAndLoad(homeServer, "push", push001, "pushOnly", false, false, false);
     }
 
 }

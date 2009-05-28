@@ -41,14 +41,12 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -69,8 +67,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-
-    private INodeService nodeService;
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -109,7 +105,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getId() });
     }
 
-    public List<Trigger> getConfigurationTriggers(String sourceGroupId, String targetGroupId) {
+    public List<Trigger> getRegistrationTriggers(String sourceGroupId, String targetGroupId) {
+        return getConfigurationTriggers(sourceGroupId, targetGroupId);
+    }
+
+    protected List<Trigger> getConfigurationTriggers(String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
         List<String> tables = getRootConfigChannelTableNames();
         List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
@@ -194,23 +194,17 @@ public class ConfigurationService extends AbstractService implements IConfigurat
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.
      */
-    public List<Trigger> getConfigurationTriggers() {
+    protected List<Trigger> getConfigurationTriggers(String sourceNodeGroupId) {
         List<Trigger> triggers = new ArrayList<Trigger>();
-        Node me = nodeService.findIdentity();
-        if (me != null) {
-            List<NodeGroupLink> links = getGroupLinksFor(me.getNodeGroupId());
-            for (NodeGroupLink nodeGroupLink : links) {
-                if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
-                    triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(), nodeGroupLink
-                            .getTargetGroupId()));
-                } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
-                    triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
-                            false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
-                }
+        List<NodeGroupLink> links = getGroupLinksFor(sourceNodeGroupId);
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
+                triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(), nodeGroupLink
+                        .getTargetGroupId()));
+            } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
+                triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
+                        false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
             }
-        } else {
-            logger
-                    .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
         }
         return triggers;
     }
@@ -233,14 +227,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     protected void mergeInConfigurationTriggers(String sourceNodeGroupId, List<Trigger> configuredInDatabase) {
-         List<Trigger> virtualConfigTriggers = getConfigurationTriggers();
-         for (Trigger trigger : virtualConfigTriggers) {
-            if (trigger.getSourceGroupId().equals(sourceNodeGroupId) && !doesTriggerExistInList(configuredInDatabase, trigger)) {
+        List<Trigger> virtualConfigTriggers = getConfigurationTriggers(sourceNodeGroupId);
+        for (Trigger trigger : virtualConfigTriggers) {
+            if (trigger.getSourceGroupId().equals(sourceNodeGroupId)
+                    && !doesTriggerExistInList(configuredInDatabase, trigger)) {
                 configuredInDatabase.add(trigger);
             }
         }
     }
-    
+
     protected boolean doesTriggerExistInList(List<Trigger> triggers, Trigger trigger) {
         for (Trigger checkMe : triggers) {
             if (checkMe.isSame(trigger)) {
@@ -251,7 +246,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     @SuppressWarnings("unchecked")
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {        
+    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId) {
         List<Trigger> triggers = (List<Trigger>) jdbcTemplate.query(getSql("activeTriggersForSourceNodeGroupSql"),
                 new Object[] { sourceNodeGroupId }, new TriggerMapper());
         mergeInConfigurationTriggers(sourceNodeGroupId, triggers);
@@ -323,21 +318,21 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void insert(Trigger trigger) {
         jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
-                trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(), 
-                trigger.getTargetSchemaName(),
-                trigger.getTargetTableName(), trigger.getSourceGroupId(), trigger.getTargetGroupId(),
-                trigger.getChannelId(), trigger.isSyncOnUpdate() ? 1 : 0, trigger.isSyncOnInsert() ? 1 : 0,
-                trigger.isSyncOnDelete() ? 1 : 0, trigger.isSyncOnIncomingBatch() ? 1 : 0,
-                trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
-                trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
-                trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(), trigger.getInitialLoadSelect(),
-                trigger.getNodeSelect(), trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
-                trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] {
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(),
+                trigger.getTargetSchemaName(), trigger.getTargetTableName(), trigger.getSourceGroupId(),
+                trigger.getTargetGroupId(), trigger.getChannelId(), trigger.isSyncOnUpdate() ? 1 : 0,
+                trigger.isSyncOnInsert() ? 1 : 0, trigger.isSyncOnDelete() ? 1 : 0,
+                trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
+                trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
+                trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
+                trigger.getSyncOnDeleteCondition(), trigger.getInitialLoadSelect(), trigger.getNodeSelect(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadOrder(),
+                new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP });
+                Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                Types.VARCHAR, Types.TIMESTAMP });
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {
@@ -500,7 +495,4 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.tablePrefix = tablePrefix;
     }
 
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
 }
