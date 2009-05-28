@@ -138,14 +138,14 @@
         <column name="ADD1" type="DECIMAL" size="10" />
     </table>
     
-    <table name="TEST_TARGET_TABLE_1">
-        <column name="ID" type="VARCHAR" primaryKey="true" required="true" />
-        <column name="DESC" type="VARCHAR" required="true" />
+    <table name="TEST_TARGET_TABLE_A">
+        <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="DESC_FIELD" type="VARCHAR" />
     </table>
     
-    <table name="TEST_TARGET_TABLE_2">
-        <column name="ID" type="VARCHAR" primaryKey="true" required="true" />
-        <column name="DESC" type="VARCHAR" required="true" />
+    <table name="TEST_TARGET_TABLE_B">
+        <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="DESC_FIELD" type="VARCHAR" />
     </table>    
 
 </database>

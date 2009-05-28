@@ -315,14 +315,6 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     }
 
-    private String getNextDataRowTableName(SymmetricEngine engine) {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        return (String) jdbcTemplate
-                .queryForObject("select table_name from " + TestConstants.TEST_PREFIX
-                        + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
-                        String.class);
-    }
-
     @SuppressWarnings("unchecked")
     private List<String> getNextDataEvents() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
