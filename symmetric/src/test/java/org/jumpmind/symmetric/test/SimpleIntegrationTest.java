@@ -594,10 +594,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 return null;
             }
         });
-        getClientEngine().pull();
+        Assert.assertTrue(getClientEngine().pull());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
-        Assert.assertEquals(9, ForceCommitException.getForceCommitCount());
         Assert.assertEquals(100, newCount-oldCount);
+        Assert.assertEquals(9, ForceCommitException.getForceCommitCount());
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
