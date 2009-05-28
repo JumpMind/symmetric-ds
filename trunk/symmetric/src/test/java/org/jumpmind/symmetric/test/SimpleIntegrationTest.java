@@ -594,7 +594,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 return null;
             }
         });
-        Assert.assertTrue(getClientEngine().pull());
+        do {
+           logger.warn("If you see this message more than once the root database isn't respecting the fact that auto commit is set to false!");
+        } while (getClientEngine().pull());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
         Assert.assertEquals(100, newCount-oldCount);
         Assert.assertEquals(9, ForceCommitException.getForceCommitCount());
