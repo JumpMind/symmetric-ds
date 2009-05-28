@@ -52,6 +52,8 @@ public class CsvExtractor16 extends CsvExtractor14 {
         if (data.getTriggerHistory() == null) {
             throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
                     + ": try running syncTriggers() or restarting SymmetricDS");
+        } else if (!data.getTriggerHistory().getSourceTableName().toLowerCase().equals(data.getTableName().toLowerCase())) {
+            throw new RuntimeException(String.format("The table name captured in the data table (%1$s) does not match the table name recorded in the trigger_hist table (%2$s).  Please drop the symmetric triggers on %1$s and restart the server",  data.getTableName(), data.getTriggerHistory().getSourceTableName() ));
         }
         String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getAuditRecordsWritten().contains(auditKey)) {

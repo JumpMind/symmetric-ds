@@ -195,14 +195,10 @@ public class SqlTemplate {
 
     private String getDefaultTargetTableName(Trigger trigger, TriggerHistory history) {
         String targetTableName = null;
-        if (StringUtils.isBlank(trigger.getTargetTableName())) {
-            if (history != null) {
-                targetTableName = history.getSourceTableName();
-            } else {
-                targetTableName = trigger.getSourceTableName();
-            }
+        if (history != null) {
+            targetTableName = history.getSourceTableName();
         } else {
-            targetTableName = trigger.getTargetTableName();
+            targetTableName = trigger.getSourceTableName();
         }
         return targetTableName;
     }

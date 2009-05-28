@@ -267,8 +267,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         return oldValue;
     }
 
-    @Test
-    // (timeout = 30000)
+    @Test (timeout = 30000)
     public void syncToRoot() throws ParseException {
         turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
@@ -552,6 +551,20 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 new Object[] { "same", id });
         clientJdbcTemplate.update(deleteSyncColumnLevelSql, new Object[] { id });
         getClientEngine().pull();
+    }
+    
+    @Test
+    public void testTargetTableNameSync() throws Exception {
+        IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
+        .getBean(Constants.PARAMETER_SERVICE);
+        boolean oldLookupTargetSchemaValue = clientParameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, true);
+        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_2"));
+        rootJdbcTemplate.update("insert into test_target_table_1 values('1','2')");
+        getClientEngine().pull();
+        Assert.assertEquals(1, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_2"));
+        Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_1"));
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, oldLookupTargetSchemaValue);
     }
 
     @Test(timeout = 30000)

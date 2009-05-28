@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.BufferedWriter;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
@@ -50,7 +49,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     protected IDataService dataService;
 
-    private int triggerHistId;
+    private TriggerHistory triggerHistory;
 
     protected Node node;
 
@@ -70,9 +69,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
-        Set<Long> histKeys = configurationService.getHistoryRecords().keySet();
-        assertFalse(histKeys.isEmpty());
-        triggerHistId = histKeys.iterator().next().intValue();
+        triggerHistory = configurationService.getHistoryRecords().values().iterator().next();
     }
 
     @Test
@@ -102,7 +99,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
     public void testExtract() throws Exception {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
-        createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT, node.getNodeId());
+        createDataEvent(triggerHistory, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT, node.getNodeId());
 
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         mockTransport.open();
@@ -117,10 +114,8 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         return new StringTokenizer(results, "\n").countTokens();
     }
 
-    private void createDataEvent(String tableName, int auditId, String channelId, DataEventType type, String nodeId) {
-        TriggerHistory audit = new TriggerHistory();
-        audit.setTriggerHistoryId(auditId);
-        Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
+    private void createDataEvent(TriggerHistory hist, String channelId, DataEventType type, String nodeId) {
+        Data data = new Data(hist.getSourceTableName(), type, "r.o.w., dat-a", "p-k d.a.t.a", hist);
         dataService.insertDataEvent(data, channelId, nodeId);
     }
 }
