@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
+import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -70,7 +71,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
@@ -326,29 +327,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return !inError;
     }
 
-    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status,
-            final IncomingBatchHistory history) {
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            public void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                try {
-                    dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
-                    if (incomingBatchService.acquireIncomingBatch(status)) {
-                        dataLoader.load();
-                    } else {
-                        history.setStatus(IncomingBatchHistory.Status.SK);
-                        dataLoader.skip();
-                    }
-                    history.setValues(dataLoader.getStatistics(), true);
-                    fireBatchComplete(dataLoader, history);
-                } catch (IOException e) {
-                    throw new TransportException(e);
-                } finally {
-                    dbDialect.enableSyncTriggers();
-                }
-            }
-        });
-    }
-
     private void fireBatchComplete(IDataLoader loader, IncomingBatchHistory history) {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
@@ -449,5 +427,59 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
+        
+    private enum LoadStatus { CONTINUE, DONE }
+    
+    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status,
+            final IncomingBatchHistory history) {
+        TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader, history);
+        LoadStatus loadStatus = loadDelegate.getLoadStatus();
+        do {
+            transactionTemplate.execute(loadDelegate);
+            loadStatus = loadDelegate.getLoadStatus();
+        } while (LoadStatus.CONTINUE == loadStatus);
+    }
+    
+    class TransactionalLoadDelegate implements TransactionCallback {
+        IncomingBatch status;
+        IDataLoader dataLoader;
+        LoadStatus loadStatus = LoadStatus.DONE;
+        IncomingBatchHistory history;
+        
+        public TransactionalLoadDelegate(IncomingBatch status, IDataLoader dataLoader,
+                IncomingBatchHistory history) {
+            this.status = status;
+            this.dataLoader = dataLoader;
+            this.history = history;
+        }
 
+        public Object doInTransaction(TransactionStatus txStatus) {
+            try {
+                dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
+                if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(status)) {
+                    dataLoader.load();
+                } else {
+                    history.setStatus(IncomingBatchHistory.Status.SK);
+                    dataLoader.skip();
+                }
+                history.setValues(dataLoader.getStatistics(), true);
+                fireBatchComplete(dataLoader, history);
+                this.loadStatus = LoadStatus.DONE;
+                return this.loadStatus;
+            } catch (IOException e) {
+                throw new TransportException(e);
+            } catch (ForceCommitException ex) {
+                this.loadStatus = LoadStatus.CONTINUE;
+                return this.loadStatus;
+            } finally {
+                dbDialect.enableSyncTriggers();
+            }
+        }
+
+        public LoadStatus getLoadStatus() {
+            return loadStatus;
+        }
+                
+    }
+    
 }

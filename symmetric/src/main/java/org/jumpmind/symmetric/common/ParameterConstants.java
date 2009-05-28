@@ -76,6 +76,7 @@ public class ParameterConstants {
     public final static String DATA_LOADER_ENABLE_FALLBACK_UPDATE = "dataloader.enable.fallback.update";
     public final static String DATA_LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
     public final static String DATA_LOADER_ALLOW_MISSING_DELETE = "dataloader.allow.missing.delete";
+    public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
 
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";
