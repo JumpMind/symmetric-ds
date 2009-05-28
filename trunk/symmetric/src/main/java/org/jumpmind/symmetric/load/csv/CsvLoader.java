@@ -200,6 +200,9 @@ public class CsvLoader implements IDataLoader {
                 Node sourceNode = nodeService.findNode(context.getNodeId());
                 if (sourceNode != null) {
                     Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
+                        tableName = trigger.getTargetTableName();
+                    }                    
                     if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
                         schema = trigger.getTargetSchemaName();
                     }

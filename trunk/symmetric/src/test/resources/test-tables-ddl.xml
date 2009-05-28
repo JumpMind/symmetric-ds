@@ -137,5 +137,15 @@
         <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
     </table>
+    
+    <table name="TEST_TARGET_TABLE_1">
+        <column name="ID" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="DESC" type="VARCHAR" required="true" />
+    </table>
+    
+    <table name="TEST_TARGET_TABLE_2">
+        <column name="ID" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="DESC" type="VARCHAR" required="true" />
+    </table>    
 
 </database>
