@@ -41,14 +41,12 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -69,8 +67,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-
-    private INodeService nodeService;
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -109,6 +105,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getId() });
     }
 
+    public List<Trigger> getRegistrationTriggers(String sourceGroupId, String targetGroupId) {
+        return getConfigurationTriggers(sourceGroupId, targetGroupId);
+    }
+    
     public List<Trigger> getConfigurationTriggers(String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
         List<String> tables = getRootConfigChannelTableNames();
@@ -194,11 +194,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.
      */
-    public List<Trigger> getConfigurationTriggers() {
+    public List<Trigger> getConfigurationTriggers(String sourceNodeGroupId) {
         List<Trigger> triggers = new ArrayList<Trigger>();
-        Node me = nodeService.findIdentity();
-        if (me != null) {
-            List<NodeGroupLink> links = getGroupLinksFor(me.getNodeGroupId());
+            List<NodeGroupLink> links = getGroupLinksFor(sourceNodeGroupId);
             for (NodeGroupLink nodeGroupLink : links) {
                 if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
                     triggers.addAll(getConfigurationTriggers(nodeGroupLink.getSourceGroupId(), nodeGroupLink
@@ -208,10 +206,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
                 }
             }
-        } else {
-            logger
-                    .info("Auto syncing of configuration is currently off.  Configuration triggers will not be generated.");
-        }
         return triggers;
     }
 
@@ -233,7 +227,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     protected void mergeInConfigurationTriggers(String sourceNodeGroupId, List<Trigger> configuredInDatabase) {
-         List<Trigger> virtualConfigTriggers = getConfigurationTriggers();
+         List<Trigger> virtualConfigTriggers = getConfigurationTriggers(sourceNodeGroupId);
          for (Trigger trigger : virtualConfigTriggers) {
             if (trigger.getSourceGroupId().equals(sourceNodeGroupId) && !doesTriggerExistInList(configuredInDatabase, trigger)) {
                 configuredInDatabase.add(trigger);
@@ -498,7 +492,4 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.tablePrefix = tablePrefix;
     }
 
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
-    }
 }
