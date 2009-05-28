@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
+import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -120,6 +121,8 @@ public class CsvLoader implements IDataLoader {
 
     public void load() throws IOException {
         try {
+            long rowsBeforeCommit = parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+            long rowsProcessed = 0;
             prepareTableForDataLoad();
             while (csvReader.readRecord()) {
                 String[] tokens = csvReader.getValues();
@@ -132,37 +135,46 @@ public class CsvLoader implements IDataLoader {
                           throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
                         } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             insert(tokens);
+                            rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                         if (context.getTableTemplate() == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
                           } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             update(tokens);
+                            rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
                         if (context.getTableTemplate() == null) {
                             throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
                           } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             delete(tokens);
+                            rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.OLD)) {
                         context.setOldData((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
                     } else if (isMetaTokenParsed(tokens)) {
                         continue;
                     } else if (tokens[0].equals(CsvConstants.COMMIT)) {
+                        rowsProcessed = 0;
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
                         if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable()) && !context.isSkipping()) {
                             runSql(tokens[1]);
+                            rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.CREATE)) {
                         if (!context.isSkipping()) {
                             runDdl(tokens[1]);
+                            rowsProcessed++;
                         }
                     } else {
                         logger.warn("Unexpected token '" + tokens[0] + "' on line "
                                 + stats.getLineCount() + " of batch " + context.getBatchId());
-                    }
+                    }                    
+                }
+                if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
+                    throw new ForceCommitException();
                 }
             }
         } finally {

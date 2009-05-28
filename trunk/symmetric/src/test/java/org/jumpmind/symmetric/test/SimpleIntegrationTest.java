@@ -20,6 +20,8 @@
 package org.jumpmind.symmetric.test;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -40,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -52,6 +55,8 @@ import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.RowMapper;
 
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
@@ -565,6 +570,36 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Assert.assertEquals(1, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_a"));
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, oldLookupTargetSchemaValue);
+    }
+    
+    @Test
+    public void testMaxRowsBeforeCommit() throws Exception {
+        IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
+                .getBean(Constants.PARAMETER_SERVICE);
+        long oldMaxRowsBeforeCommit = clientParameterService
+                .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 10);
+        int oldCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
+        ForceCommitException.resetForceCommitCount();
+        Assert.assertEquals(0, ForceCommitException.getForceCommitCount());
+        rootJdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+                con.setAutoCommit(false);
+                PreparedStatement stmt = con.prepareStatement("insert into ONE_COLUMN_TABLE values(?)");
+                for (int i = 400; i < 500; i++) {
+                    stmt.setInt(1, i);
+                    Assert.assertEquals(1, stmt.executeUpdate());
+                }
+                con.commit();
+                return null;
+            }
+        });
+        getClientEngine().pull();
+        int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
+        Assert.assertEquals(9, ForceCommitException.getForceCommitCount());
+        Assert.assertEquals(100, newCount-oldCount);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
+                oldMaxRowsBeforeCommit);
     }
 
     @Test(timeout = 30000)

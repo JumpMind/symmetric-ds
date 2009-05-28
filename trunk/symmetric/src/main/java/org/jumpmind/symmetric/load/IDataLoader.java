@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.transaction.annotation.Transactional;
-
 public interface IDataLoader extends Cloneable {
 
     public void open(BufferedReader in) throws IOException;
@@ -37,7 +35,6 @@ public interface IDataLoader extends Cloneable {
 
     public boolean hasNext() throws IOException;
 
-    @Transactional
     public void load() throws IOException;
 
     public void skip() throws IOException;
