@@ -237,35 +237,6 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void testTargetTableNameFunctionality() throws Exception {
-
-        final String TARGET_TABLE_NAME = "SOME_OTHER_TABLE_NAME";
-        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
-                Constants.BOOTSTRAP_SERVICE);
-        // need to wait for a second to make sure enough time has passed so the
-        // update of the trigger
-        // table will have a greater timestamp than the audit table.
-        Thread.sleep(1000);
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX + "trigger set target_table_name='"
-                + TARGET_TABLE_NAME + "', last_updated_time=current_timestamp " + TEST_TRIGGER_WHERE_CLAUSE));
-
-        service.syncTriggers();
-
-        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
-                .getBean(Constants.CONFIG_SERVICE);
-        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
-                + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
-                "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
-
-        assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
-
-        String tableName = getNextDataRowTableName(getSymmetricEngine());
-        assertEquals(tableName, TARGET_TABLE_NAME, "Received " + tableName + ", Expected " + TARGET_TABLE_NAME);
-    }
-
-    @Test
     public void inactivateTriggersTest() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
