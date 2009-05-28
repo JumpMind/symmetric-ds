@@ -7,6 +7,11 @@ values ('region', 'Regional Waypoints');
 insert into sym_node_group (node_group_id, description) 
 values ('workstation', 'Client Machines');
 
+insert into sym_node_group (node_group_id, description) 
+values ('pushOnly', 'A group that only pushes data');
+
+insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
+values ('pushOnly', 'home', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)
 values ('region', 'home', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action)

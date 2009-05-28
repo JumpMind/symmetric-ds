@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
@@ -143,10 +142,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<Trigger> triggers = new TriggerSelector(configurationService
-                .getActiveTriggersForSourceNodeGroup(parameterService.getNodeGroupId()), Constants.CHANNEL_CONFIG, node
-                .getNodeGroupId()).select();
-        if (node != null && node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
+        List<Trigger> triggers = configurationService.getRegistrationTriggers(parameterService.getNodeGroupId(), node.getNodeGroupId());
+        if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {
                 Trigger trigger = triggers.get(i);
                 StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger, null));
