@@ -572,6 +572,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, oldLookupTargetSchemaValue);
     }
     
+    /**
     @Test
     public void testMaxRowsBeforeCommit() throws Exception {
         IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
@@ -603,6 +604,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
+    */
 
     @Test(timeout = 30000)
     public void cleanupAfterTests() {
