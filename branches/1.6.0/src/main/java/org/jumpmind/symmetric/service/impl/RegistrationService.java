@@ -114,7 +114,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
                 node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
-        if (Version.isOlderThanVersion(node.getSymmetricVersion(),
+        if (node.getSymmetricVersion() != null && Version.isOlderThanVersion(node.getSymmetricVersion(),
                 UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
             markNodeAsRegistered(nodeId);
         }
