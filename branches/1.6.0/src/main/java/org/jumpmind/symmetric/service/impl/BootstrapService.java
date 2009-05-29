@@ -159,8 +159,10 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     
     synchronized public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
         if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
-            try {
+            try {              
                 logger.info("Synchronizing triggers");
+                // make sure channels are read from the database
+                configurationService.flushChannels();  
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
             } finally {
