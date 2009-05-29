@@ -120,9 +120,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             Trigger trigger = buildConfigTrigger(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
             trigger.setInitialLoadSelect(initialLoadSelect);
-            // little trick to force the rebuild of sym triggers every time
-            // there is a new version of symmetricds
-            trigger.setLastModifiedTime(new Date(Version.version().hashCode()));
             triggers.add(trigger);
         }
         return triggers;
@@ -141,6 +138,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         trigger.setSourceGroupId(sourceGroupId);
         trigger.setTargetGroupId(targetGroupId);
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
+        // little trick to force the rebuild of sym triggers every time
+        // there is a new version of symmetricds
+        trigger.setLastModifiedTime(new Date(Version.version().hashCode()));        
         return trigger;
     }
 
