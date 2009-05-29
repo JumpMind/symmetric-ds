@@ -304,8 +304,7 @@ public class DataService extends AbstractService implements IDataService {
         if (data != null) {
             insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
         } else {
-            logger
-                    .info("Not generating data/data events for node because a trigger is not created for that table yet.");
+            logger.info("Not generating data/data events for table " + tableName + " because a trigger or trigger hist is not created yet");
         }
     }
 
@@ -340,7 +339,9 @@ public class DataService extends AbstractService implements IDataService {
                     history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
                 }
             }
-            data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history);
+            if (history != null) {
+                data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history);
+            }
         }
         return data;
     }
