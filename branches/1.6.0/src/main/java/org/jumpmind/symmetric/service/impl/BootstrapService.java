@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
@@ -98,9 +99,13 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             logger.info("Initializing SymmetricDS database.");
             dbDialect.initSupportDb();
             if (defaultChannels != null) {
-                logger.info("Setting up " + defaultChannels.size() + " default channels");
+                configurationService.flushChannels();
+                List<NodeChannel> channels = configurationService.getChannels();
                 for (Channel defaultChannel : defaultChannels) {
-                    configurationService.saveChannel(defaultChannel);
+                    if (!defaultChannel.isInList(channels)) {
+                        logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
+                        configurationService.saveChannel(defaultChannel);
+                    }
                 }
             }
             parameterService.rereadParameters();
