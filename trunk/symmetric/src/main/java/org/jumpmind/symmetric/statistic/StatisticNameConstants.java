@@ -29,6 +29,7 @@ public class StatisticNameConstants {
     public static final String INCOMING_MS_PER_ROW = "INCOMING_MS_PER_ROW";
     public static final String INCOMING_BATCH_COUNT = "INCOMING_BATCH_COUNT";
     public static final String INCOMING_SKIP_BATCH_COUNT = "INCOMING_SKIP_BATCH_COUNT";
+    public static final String INCOMING_MAX_ROWS_COMMITTED = "INCOMING_MAX_ROWS_COMMITED";
 
     public static final String OUTGOING_MS_PER_EVENT_BATCHED = "OUTGOING_MS_PER_EVENT_BATCHED";
     public static final String OUTGOING_EVENTS_PER_BATCH = "OUTGOING_EVENTS_PER_BATCH";

@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
-import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -119,7 +118,7 @@ public class CsvLoader implements IDataLoader {
         // skipping is reset when a new batch_id is set
     }
 
-    public void load() throws IOException {
+    public boolean load() throws IOException {
         try {
             long rowsBeforeCommit = parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
             long rowsProcessed = 0;
@@ -174,9 +173,11 @@ public class CsvLoader implements IDataLoader {
                     }                    
                 }
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
-                    throw new ForceCommitException();
+                    return false;
                 }
             }
+            
+            return true;
         } finally {
             cleanupAfterDataLoad();
         }

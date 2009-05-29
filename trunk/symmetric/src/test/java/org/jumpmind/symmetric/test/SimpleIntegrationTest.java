@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
-import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -51,6 +50,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
@@ -572,22 +572,22 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, oldLookupTargetSchemaValue);
     }
     
-    /**
     @Test
     public void testMaxRowsBeforeCommit() throws Exception {
         IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
                 .getBean(Constants.PARAMETER_SERVICE);
         long oldMaxRowsBeforeCommit = clientParameterService
                 .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 10);
+        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT, 5);
         int oldCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
-        ForceCommitException.resetForceCommitCount();
-        Assert.assertEquals(0, ForceCommitException.getForceCommitCount());
+        IStatisticManager statisticManager = AppUtils.find(Constants.STATISTIC_MANAGER, getClientEngine());
+        statisticManager.flush();
+        Assert.assertEquals(0, statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).getCount());
         rootJdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 con.setAutoCommit(false);
                 PreparedStatement stmt = con.prepareStatement("insert into ONE_COLUMN_TABLE values(?)");
-                for (int i = 400; i < 500; i++) {
+                for (int i = 400; i < 450; i++) {
                     stmt.setInt(1, i);
                     Assert.assertEquals(1, stmt.executeUpdate());
                 }
@@ -599,12 +599,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
            logger.warn("If you see this message more than once the root database isn't respecting the fact that auto commit is set to false!");
         } while (getClientEngine().pull());
         int newCount = clientJdbcTemplate.queryForInt("select count(*) from ONE_COLUMN_TABLE");
-        Assert.assertEquals(100, newCount-oldCount);
-        Assert.assertEquals(9, ForceCommitException.getForceCommitCount());
+        Assert.assertEquals(50, newCount-oldCount);
+        Assert.assertEquals(8, statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).getCount());
+        statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
     }
-    */
 
     @Test(timeout = 30000)
     public void cleanupAfterTests() {

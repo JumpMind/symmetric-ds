@@ -38,7 +38,7 @@ public interface IDataLoader extends Cloneable {
     public boolean hasNext() throws IOException;
 
     @Transactional
-    public void load() throws IOException;
+    public boolean load() throws IOException;
 
     public void skip() throws IOException;
 
