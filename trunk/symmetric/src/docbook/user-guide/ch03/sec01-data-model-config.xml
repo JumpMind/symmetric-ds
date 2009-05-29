@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section version="5.0" xml:id="sec01-data-model-config" xmlns="http://docbook.org/ns/docbook"
+<section version="5.0" xml:id="ch03-data-model-config" xmlns="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
@@ -21,7 +21,7 @@
             </mediaobject>
         </figure>
     </para>
-    <section>
+    <section id="ch03-node">
         <title>Node Table</title>
         <para>
             An instance of SymmetricDS that synchronizes data with one or more nodes. Each node has
@@ -172,7 +172,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-node-security">
         <title>Node Security Table</title>
         <para>
             Security features like node passwords and open registration flag are stored in the
@@ -266,7 +266,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-node-identity">
         <title>Node Identity Table</title>
         <para>
             After registration, this table will have one row representing the identity of the node.
@@ -306,7 +306,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-node-group">
         <title>Node Group Table</title>
         <para>
             A category of Nodes that synchronizes data with one or more NodeGroups. A common use of
@@ -357,7 +357,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-node-group-link">
         <title>Node Group Link Table</title>
         <para>
             A source NodeGroup sends its data updates to a target NodeGroup using a pull, push, or
@@ -416,7 +416,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-channel">
         <title>Channel Table</title>
         <para>
             A category of data that can be synchronized independently of other Channels. Channels
@@ -506,7 +506,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-node-channel-control">
         <title>Node Channel Control Table</title>
         <para>
             The Node Channel Control is used to ignore or suspend a channel. A channel that is
@@ -580,7 +580,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-trigger">
         <title id="table.trigger">Trigger Table</title>
         <para>
             The database triggers that capture changes in the database are automatically generated
@@ -899,7 +899,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-parameter">
         <title>Parameter Table</title>
         <para>
             The Parameter table provides a way to manage most SymmetricDS settings in the database.
@@ -968,7 +968,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-registration-redirect">
         <title>Registration Redirect Table</title>
         <para>
             The Registration redirect table provides a way for a centralized registration server to redirect registering Nodes to their prospective

@@ -32,7 +32,7 @@
         are installed on tables that require data changes to be captured.  The PullJob and PushJob
         begin running as required to synchronize changes with other Nodes.
     </para>
-    <section>
+    <section id="ch05-basic-properties">
         <title>Basic Properties</title>
         <para>
             Each Node requires properties that will connect it to the database and register
@@ -166,7 +166,7 @@
             </varlistentry>
         </variablelist>
     </section>
-    <section>
+    <section id="ch05-node-group">
         <title>Node Group</title>
         <para>
             Each Node must belong to a Node Group, a collection of one or more Nodes.
@@ -190,7 +190,7 @@ values
   ('corp', 'A corporate node');]]></programlisting>
         </para>
     </section>
-    <section>
+    <section id="ch05-node-group-link">
         <title>Node Group Link</title>
         <para>
             To establish synchronization between Nodes, two Node Groups are linked together.  The direction
@@ -217,7 +217,7 @@ values
   ('corp', 'store', 'W');]]></programlisting>
         </para>
     </section>
-    <section>
+    <section id="ch05-node">
         <title>Node</title>
         <para>
             Each instance of SymmetricDS is a Node that can be uniquely identified. 
@@ -240,7 +240,7 @@ values
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
     </section>
-    <section>
+    <section id="ch05-channel">
         <title>Channel</title>
         <para>
             Data changes in the database are captured in the order that they occur, which is preserved
@@ -267,7 +267,7 @@ values
   ('sale_transaction', 1, 1000, 1, 'retail sale transactions from register');]]></programlisting>
         </para>
     </section>
-    <section>
+    <section id="ch05-trigger">
         <title>Trigger</title>
         <para>
             At the heart of SymmetricDS are Triggers that define what data to capture.  Nodes in the source
@@ -294,8 +294,8 @@ values
         </para>
     </section>
 
-    <section>
-        <title id="synConditions">Using Sync Conditions</title>
+    <section id="ch05-sync-conditions">
+        <title>Using Sync Conditions</title>
         <para>
         	Sync Conditions can be specified for capturing the changes to rows in a table.
         	If the condition is met, the data change is captured for sending to other Nodes.
@@ -310,7 +310,7 @@ values
             change, it effectively creates a subset of the table for synchronization to 
             all Nodes in the Node Group.  
             If a different subset of the table is required for each Node, then
-            see the section on <link linkend="nodeSelect">Using Node Select</link>.
+            see the section on <link linkend="ch05-node-select">Using Node Select</link>.
         </para>
         <para>
             The following SQL statement defines a Trigger that will capture data for a table named 
@@ -332,8 +332,8 @@ values
         </para>
     </section>
 
-    <section>
-        <title id="nodeSelect">Using Node Select</title>
+    <section id="ch05-node-select">
+        <title>Using Node Select</title>
         <para>
             After a data change is captured, the Nodes which will receive the change are selected.
             By default, all Nodes in the target Node Group for the Trigger will be selected.
@@ -348,7 +348,7 @@ values
             Because the node_select makes a decision about which Nodes receive the data
             change, it effectively creates a subset of the table for different Nodes. 
             If the same subset of the table is required for all Nodes in the Node Group,
-            then see the section on <link linkend="syncConditions">Using Sync Conditions</link>.
+            then see the section on <link linkend="ch05-sync-conditions">Using Sync Conditions</link>.
         </para>
         <para>
             The following variables can be used in the node_select, which will
@@ -390,8 +390,8 @@ values
         </para>
     </section>
 
-    <section>
-        <title id="initialLoadSelect">Using Initial Load Select</title>
+    <section id="ch05-initial-load-select">
+        <title>Using Initial Load Select</title>
         <para>
             The Initial Load sends all required rows for each table to a Node, which
             prepares its database with an initial synchronized state.  Afterwards,
@@ -407,8 +407,8 @@ values
             It's important that the condition used for the initial state of a table matches
             the condition for capturing and sending changes.  In other words, the condition
             used for the initial_load_select should be consistent with any
-            <link linkend="syncConditions">Sync Conditions</link> or
-            <link linkend="nodeSelect">Node Select Conditions</link>, in order
+            <link linkend="ch05-sync-conditions">Sync Conditions</link> or
+            <link linkend="ch05-node-select">Node Select Conditions</link>, in order
             to guarantee consistent data in the table.
         </para>
         <para>

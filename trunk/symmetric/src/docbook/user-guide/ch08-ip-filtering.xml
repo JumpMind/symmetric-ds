@@ -7,7 +7,7 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>IP Filtering</title>
-    <section>
+    <section id="ch08-ip-filtering-types">
         <title>IP Filtering</title>
         <para>
             SymmetricDS supports restricting IP addresses of clients that are allowed to 
