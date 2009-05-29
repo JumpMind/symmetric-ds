@@ -515,8 +515,8 @@ public class Trigger {
     }
 
     public boolean isSame(Trigger trigger) {
-        return trigger.sourceTableName.equals(sourceTableName) && trigger.sourceGroupId.equals(sourceGroupId)
-                && trigger.targetGroupId.equals(targetGroupId);
+        return trigger.sourceTableName.equalsIgnoreCase(sourceTableName) && trigger.sourceGroupId.equalsIgnoreCase(sourceGroupId)
+                && trigger.targetGroupId.equalsIgnoreCase(targetGroupId);
     }
 
     @Override
