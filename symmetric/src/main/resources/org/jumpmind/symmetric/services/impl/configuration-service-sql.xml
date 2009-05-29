@@ -26,10 +26,11 @@
     </entry> 
     <entry key="$[sym.sync.table.prefix]_node">
       <value>
-        node_id = '$(nodeId)' or (node_group_id in (select source_node_group_id from
+        node_id = '$(nodeId)' or node_id = (select node_id from $[sym.sync.table.prefix]_node_identity) 
+        or ((node_group_id in (select source_node_group_id from
         $[sym.sync.table.prefix]_node_group_link where target_node_group_id = '$(groupId)') or
         node_group_id in (select target_node_group_id from $[sym.sync.table.prefix]_node_group_link
-        where source_node_group_id = '$(groupId)') and created_at_node_id=(select node_id from $[sym.sync.table.prefix]_node_identity))
+        where source_node_group_id = '$(groupId)')) and created_at_node_id = (select node_id from $[sym.sync.table.prefix]_node_identity))
       </value>
     </entry>
     <entry key="$[sym.sync.table.prefix]_node_security">
