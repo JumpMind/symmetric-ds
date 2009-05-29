@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
-import org.jumpmind.symmetric.load.ForceCommitException;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -437,6 +436,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         do {
             transactionTemplate.execute(loadDelegate);
             loadStatus = loadDelegate.getLoadStatus();
+            if (loadStatus == LoadStatus.CONTINUE) {
+                statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
+            }
         } while (LoadStatus.CONTINUE == loadStatus);
     }
     
@@ -455,22 +457,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public Object doInTransaction(TransactionStatus txStatus) {
             try {
+                boolean done = true;
                 dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
                 if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(status)) {
-                    dataLoader.load();
+                    done = dataLoader.load();
                 } else {
                     history.setStatus(IncomingBatchHistory.Status.SK);
                     dataLoader.skip();
                 }
                 history.setValues(dataLoader.getStatistics(), true);
                 fireBatchComplete(dataLoader, history);
-                this.loadStatus = LoadStatus.DONE;
+                this.loadStatus = done ? LoadStatus.DONE : LoadStatus.CONTINUE;
                 return this.loadStatus;
             } catch (IOException e) {
                 throw new TransportException(e);
-            } catch (ForceCommitException ex) {
-                this.loadStatus = LoadStatus.CONTINUE;
-                return this.loadStatus;
             } finally {
                 dbDialect.enableSyncTriggers();
             }
