@@ -2,7 +2,6 @@ package org.jumpmind.symmetric.transport;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,7 +78,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         Map<String, Reservation> reservations = getReservationMap(poolId);
         int maxPoolSize = parameterService.getInt(ParameterConstants.CONCURRENT_WORKERS);
         long timeout = parameterService.getLong(ParameterConstants.CONCURRENT_RESERVATION_TIMEOUT);
-        removeTimedOutReservations(reservations, timeout);
+        removeTimedOutReservations(reservations);
         if (reservations.size() < maxPoolSize || reservations.containsKey(nodeId) || whiteList.contains(nodeId)) {
             reservations.put(nodeId, new Reservation(nodeId, reservationRequest == ReservationType.SOFT ? System
                     .currentTimeMillis()
@@ -94,16 +93,18 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         }
     }
 
-    private void removeTimedOutReservations(Map<String, Reservation> reservations, long timeout) {
+    protected void removeTimedOutReservations(Map<String, Reservation> reservations) {
         long currentTime = System.currentTimeMillis();
-        for (Iterator<String> iterator = reservations.keySet().iterator(); iterator.hasNext();) {
-            String nodeId = iterator.next();
-            Reservation reservation = reservations.get(nodeId);
-            if (reservation.timeToLiveInMs < currentTime) {
-                statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_TIMEOUT_COUNT).increment();
-                reservations.remove(nodeId);
+        String[] keys = reservations.keySet().toArray(new String[reservations.size()]);
+        if (keys != null) {
+            for (String nodeId : keys) {
+                Reservation reservation = reservations.get(nodeId);
+                if (reservation.timeToLiveInMs < currentTime) {
+                    statisticManager.getStatistic(StatisticNameConstants.NODE_CONCURRENCY_RESERVATION_TIMEOUT_COUNT).increment();
+                    reservations.remove(nodeId);
+                }                
             }
-        }
+        }   
     }
 
     private Map<String, Reservation> getReservationMap(String poolId) {
@@ -123,7 +124,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         this.statisticManager = statisticManager;
     }
 
-    public class Reservation {
+    protected static class Reservation {
         String nodeId;
         long timeToLiveInMs;
         long createTime = System.currentTimeMillis();
