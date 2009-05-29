@@ -107,6 +107,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         configurationService.saveChannel(defaultChannel);
                     }
                 }
+                configurationService.flushChannels();
             }
             parameterService.rereadParameters();
             logger.info("Done initializing SymmetricDS database.");

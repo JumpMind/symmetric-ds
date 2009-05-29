@@ -112,8 +112,11 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                     if (!defaultChannel.isInList(channels)) {
                         logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
                         configurationService.saveChannel(defaultChannel);
+                    } else {
+                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel.getId()));
                     }
                 }
+                configurationService.flushChannels();
             }
             parameterService.rereadParameters();
             logger.info("Done initializing SymmetricDS database.");
