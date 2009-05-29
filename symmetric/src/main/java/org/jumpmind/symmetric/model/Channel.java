@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.util.Collection;
+
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
@@ -93,5 +95,20 @@ public class Channel {
 
     public void setMaxBatchToSend(int maxBatchToSend) {
         this.maxBatchToSend = maxBatchToSend;
+    }
+    
+    /**
+     * Check to see if this channel id matches one of the channels in the collection
+     * @return true if a match is found
+     */
+    public boolean isInList(Collection<? extends Channel> channels) {
+        if (channels != null) {
+            for (Channel channel : channels) {
+                if (channel.getId().equals(id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
