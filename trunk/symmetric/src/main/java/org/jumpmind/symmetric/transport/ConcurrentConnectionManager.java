@@ -71,7 +71,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return whiteList.toArray(new String[whiteList.size()]);
     }
 
-    public int getReservationCount(String poolId) {
+    synchronized public int getReservationCount(String poolId) {
         return getReservationMap(poolId).size();
     }
 
