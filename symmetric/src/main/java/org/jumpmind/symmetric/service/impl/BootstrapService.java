@@ -169,6 +169,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
             try {
                 logger.info("Synchronizing triggers");
+                // make sure channels are read from the database
+                configurationService.flushChannels(); 
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
             } finally {

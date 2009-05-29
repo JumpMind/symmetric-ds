@@ -25,6 +25,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -43,6 +44,8 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     private IBootstrapService bootstrapService;
 
     private IParameterService parameterService;
+    
+    private IConfigurationService configurationService;
 
     private String tablePrefix;
 
@@ -93,6 +96,10 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     }
 
     public void batchComplete(IDataLoader loader, IncomingBatchHistory history) {
+        if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
+            logger.info("Channels flushed because new channels came through the dataloader.");
+            configurationService.flushChannels();
+        }
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             logger.info("About to syncTriggers because new configuration came through the dataloader.");
@@ -110,6 +117,10 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
 
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
+    }
+    
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
 }

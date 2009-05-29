@@ -16,9 +16,10 @@
         <property name="transportManager" ref="transportManager" />
     </bean>
 
-    <bean id="syncTriggersDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
+    <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 
