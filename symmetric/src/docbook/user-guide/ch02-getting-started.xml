@@ -27,7 +27,7 @@
         With the two databases in sync, we make changes to data in the tables and observe
         the changes being synchronized.
     </para>
-    <section>
+    <section id="ch02-install">
         <title>Installing SymmetricDS</title>
         <para>
             Install the SymmetricDS software and configure it with your database connection
@@ -107,7 +107,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-create-database">
         <title>Creating and Populating Your Databases</title>
         <important>
             <para>
@@ -208,7 +208,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-start-server">
         <title>Starting SymmetricDS</title>
         <para>Start the SymmetricDS nodes and observe the logging output.</para>
         <procedure>
@@ -253,7 +253,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             <programlisting><![CDATA[my.url=http://localhost:8080/sync]]></programlisting>
         </tip>
     </section>
-    <section>
+    <section id="ch02-register-node">
         <title>Registering a Node</title>
         <para>
             Open registration for the client node using the root node administration feature.
@@ -292,7 +292,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-initial-load">
         <title>Sending Initial Load</title>
         <para>
             Send an initial load of data to the client node using the root node administration
@@ -325,7 +325,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-pull">
         <title>Pulling Data</title>
         <para>
             Modify data in the root database. The changes are propagated to the client database
@@ -367,7 +367,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-push">
         <title>Pushing Data</title>
         <para>
             Modify data in the client database. The changes are propagated to the root database
@@ -404,7 +404,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-verify-outgoing">
         <title>Verifying Outgoing Batches</title>
         <para>
             A batch is used for tracking and sending data changes to nodes.  The sending node
@@ -487,7 +487,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             </step>
         </procedure>
     </section>
-    <section>
+    <section id="ch02-verify-incoming">
         <title>Verifying Incoming Batches</title>
         <para>
             The receiving node keeps track of the batches it acknowledges and records

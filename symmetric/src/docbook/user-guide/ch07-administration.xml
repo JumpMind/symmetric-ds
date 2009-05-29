@@ -7,7 +7,7 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Administration</title>
-    <section>
+    <section id="ch07-changing-triggers">
         <title>Changing Triggers</title>
         <para>
             A trigger row may be updated using SQL to change a synchronization definition.
@@ -44,7 +44,7 @@ where source_node_group_id = 'client';
             server.
         </para>
     </section>
-    <section>
+    <section id="ch07-changing-configuration">
         <title>Changing Configuration</title>
         <para>
             The configuration of the your system as defined in the sym_* tables may be modified at runtime.  By default any changes made to 
@@ -56,7 +56,7 @@ where source_node_group_id = 'client';
             to the sym_* tables when the auto syncing feature is disabled.
         </para>
     </section>    
-    <section>
+    <section id="ch07-sync-triggers">
         <title>Sync Triggers Job</title>
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
@@ -131,11 +131,11 @@ where source_node_group_id = 'client';
             </variablelist>
         </para>
     </section>
-    <section>
+    <section id="ch07-control-sync">
         <title>Enabling and Disabling Synchronization</title>
         <para></para>
     </section>
-    <section>
+    <section id="ch07-jmx">
         <title>Java Management Extensions</title>
         <para>
           Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
@@ -171,19 +171,19 @@ where source_node_group_id = 'client';
           
         </para>
     </section>
-    <section>
+    <section id="ch07-registration">
         <title>Opening Registration</title>
         <para></para>
     </section>
-    <section>
+    <section id="ch07-batches">
         <title>Viewing Batches</title>
         <para></para>
     </section>
-    <section>
+    <section id="ch07-statistics">
         <title>Statistics</title>
         <para></para>
     </section>
-    <section>
+    <section id="ch07-running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
             SymmetricDS uses a Java service wrapper called
@@ -214,7 +214,7 @@ where source_node_group_id = 'client';
             <programlisting>net stop symmetric</programlisting>
         </para>
     </section>
-    <section>
+    <section id="ch07-running-service-unix">
         <title>Running as a Unix Service</title>
         <para>
             SymmetricDS uses an init script in order to run in the background as a Unix

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section version="5.0" xml:id="sec02-data-model-runtime" xmlns="http://docbook.org/ns/docbook"
+<section version="5.0" xml:id="ch03-data-model-runtime" xmlns="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
@@ -20,7 +20,7 @@
             </mediaobject>
         </figure>
     </para>
-    <section>
+    <section id="ch03-trigger-history">
         <title>Trigger History Table</title>
         <para>
             A history of a table's definition and the Trigger used to capture data from the table.
@@ -186,7 +186,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-data">
         <title>Data Table</title>
         <para>
           The captured data change that occurred to a row in the database.
@@ -294,7 +294,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-data-event">
         <title>Data Event Table</title>
         <para>
             The Data Event represents routing of a Data to one or more Nodes.
@@ -382,7 +382,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-outgoing-batch">
         <title>Outgoing Batch Table</title>
         <para>
             The Outgoing Batch is used for tracking the sending a collection
@@ -474,7 +474,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-outgoing-batch-history">
         <title>Outgoing Batch History Table</title>
         <para>
             A history of status changes to the Outgoing Batch, along with statistics of
@@ -647,7 +647,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-incoming-batch">
         <title>Incoming Batch Table</title>
         <para>
             The Incoming Batch is used for tracking the status of loading an Outgoing Batch
@@ -715,7 +715,7 @@
             </table>
         </para>
     </section>
-    <section>
+    <section id="ch03-incoming-batch-history">
         <title>Incoming Batch History Table</title>
         <para>
             A history of status changes to the Incoming Batch, along with statistics of

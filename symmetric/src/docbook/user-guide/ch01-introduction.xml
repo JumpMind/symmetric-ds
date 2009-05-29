@@ -7,9 +7,9 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Introduction</title>
-    <section>
+    <section id="ch01-intro">
         <title>Introduction</title>
-        <section>
+        <section id="ch01-definition">
             <title>What is SymmetricDS?</title>
             <para>
                 SymmetricDS is asynchronous data replication software supporting multiple subscribers and bi-directional
@@ -30,7 +30,7 @@
                 interacts with to insulated the main synchronization logic from database specific implementation details. 
             </para>
         </section>
-        <section>
+        <section id="ch01-notification">
             <title>Notification Schemes</title>
             <para>
                 After a change to the database is recorded, the nodes interested in the change
@@ -43,7 +43,7 @@
                 notification is configured by default to one minute.
             </para>
         </section>
-        <section>
+        <section id="ch01-bi-sync">
             <title>Two-Way Table Synchronization</title>
             <para>
                 Some data may synchronize in one direction. For example, a retail store sends
@@ -55,7 +55,7 @@
                 update loops by only recording data changes outside of synchronization.
             </para>
         </section>
-        <section>
+        <section id="ch01-data-channels">
             <title>Data Channels</title>
             <para>
                 Data synchronization is defined at the table (or table subset) level. Each
@@ -70,7 +70,7 @@
                 get through.
             </para>
         </section>
-        <section>
+        <section id="ch01-transactions">
             <title>Transaction Awareness</title>
             <para>
                 Many databases provide a unique transaction identifier associated with the rows
@@ -80,7 +80,7 @@
                 source. Support for transaction ID is documented in the appendix of this guide.
             </para>
         </section>
-        <section>
+        <section id="ch01-plugins">
             <title>Data Filtering and Rerouting</title>
             <para>
                 Data can be filtered as it is recorded, extracted, and loaded.
@@ -130,7 +130,7 @@
                 </itemizedlist>
             </para>
         </section>
-        <section>
+        <section id="ch01-transports">
             <title>HTTP Transport</title>
             <para>
                 By default, SymmetricDS uses web-based HTTP in a style called Representation
@@ -144,7 +144,7 @@
                 that makes it easy to run automated tests locally.)
             </para>
         </section>
-        <section>
+        <section id="ch01-jmx">
             <title>Remote Management</title>
             <para>
                 Administration functions are exposed through Java Management Extensions (JMX)
@@ -160,7 +160,7 @@
             </para>
         </section>
     </section>
-    <section>
+    <section id="ch01-requirements">
         <title>Requirements</title>
         <para>
             SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or
@@ -206,7 +206,7 @@
             other details for your specific database.
         </para>
     </section>
-    <section>
+    <section id="ch01-background">
         <title>Background</title>
         <para>
             While implementing a commercial Point of Sale (POS) system for a large retailer, the

@@ -50,7 +50,7 @@
             </mediaobject>
         </figure>
     </para>
-    <section>
+    <section id="ch04-components">
         <title>Software Components</title>
         <para>
             <figure>
@@ -103,7 +103,7 @@
             </figure>
         </para>        
     </section>
-    <section>
+    <section id="ch04-deploy">
         <title>Deployment Options</title>
         <para>The following deployment options are possible:</para>
         <itemizedlist>
@@ -141,7 +141,7 @@
             the <emphasis>Standalone</emphasis> or <emphasis>Web Archive</emphasis> with Tomcat 5.5 or 6.  Deploying to Tomcat
             is a good middle-of-the-road decision that requires a little more work for more flexibility.
         </para>
-        <section>
+        <section id="ch04-deploy-war">
             <title>Web Archive</title>
             <para>
                 As a web application archive, a WAR or EAR file is deployed to an application server,
@@ -217,7 +217,7 @@
                 coexist with other Servlets.
             </para>            
         </section>
-        <section>
+        <section id="ch04-deploy-standalone">
             <title>Standalone</title>
             <para>
                 A standalone service can use the <literal>sym</literal> command line options to start
@@ -231,7 +231,7 @@
                 properties found in the <filename>root.properties</filename> file.
             </para>
         </section>
-        <section>
+        <section id="ch04-deploy-embedded">
             <title>Embedded</title>
             <para>
                 A Java application with the SymmetricDS Java Archive (JAR) library on its
