@@ -42,7 +42,10 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
                     return nodeId;
                 }
                 nodeId = buildNodeId(nodeService, node) + "-" + sequence;
-            }
+            } 
+            
+            return nodeId;
+
         }
         return node.getNodeId();
     }
@@ -65,7 +68,7 @@ public class DefaultNodeIdGenerator implements INodeIdGenerator {
     }
 
     protected String buildNodeId(INodeService nodeService, Node node) {
-        return node.getExternalId();
+        return StringUtils.isBlank(node.getExternalId()) ? "0" : node.getExternalId();
     }
 
     public String generatePassword(INodeService nodeService, Node node) {
