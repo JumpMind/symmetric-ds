@@ -2,7 +2,7 @@
 <project name="SymmetricDS">
     <bannerLeft>
         <name>SymmetricDS</name>
-        <src>images/symmetric-chrome.png</src>
+        <src>images/logos/SymmetricDS-Site.png</src>
         <href>/</href>
     </bannerLeft>
     <poweredBy>
@@ -30,7 +30,7 @@
             <item name="Users Guide" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
             <item name="JavaDoc" href="apidocs/index.html" />
-            <item name="Recent Changes" href="/jira-report.html" />
+            <item name="Recent Changes" href="http://jira.codehaus.org/secure/ConfigureReleaseNote.jspa?projectId=11906" />
         </menu>
 
         <menu name="Community">
