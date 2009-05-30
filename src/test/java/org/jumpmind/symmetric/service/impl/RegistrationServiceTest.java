@@ -109,6 +109,25 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
     }
+    
+    
+    @Test
+    public void testRegisterWithBlankExternalId() throws Exception {        
+        Node node = new Node();
+        node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        node.setExternalId(null);
+        node.setSyncURL("http://localhost:8080/sync");
+        node.setSchemaVersion("1");
+        node.setDatabaseType("MySQL");
+        node.setDatabaseVersion("5");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        assertFalse(registrationService.registerNode(node, out, true), "Node should not be allowed to register");
+        registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "0");
+        node.setExternalId(null);
+        node.setNodeId(null);
+        assertTrue(registrationService.registerNode(node, out, true), "Node should be allowed to register");
+    }
+
 
     @Test
     public void testRegisterNodeAutomatic() throws Exception {
