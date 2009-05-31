@@ -8,12 +8,26 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Architecture</title>
     <para>
-        The SymmetricDS library allows for outgoing and incoming changes to be synchronized
-        to/from another database.  The Node that initiates the connection is the client, and the
+        The SymmetricDS software allows for outgoing and incoming changes to be synchronized
+        to/from other databases.  The Node that initiates the connection is the client, and the
         Node receiving a connection is the host.  Because synchronization is configurable to
         push or pull in either direction, the same Node can act as either a client or a host
         in different circumstances.
     </para>
+    <para>
+        The software consists of a series of jobs, managers, servlets, and services wired together
+        through dependency injection using the <ulink url="http://springframework.org">Spring Framework</ulink>.
+    </para>    
+    <para>
+        <figure>
+            <title>Software Stack</title>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                </imageobject>
+            </mediaobject>
+        </figure>
+    </para>    
     <para>
         As a client, the Node runs the Push Job and Pull Job on a timer thread in order to synchronize
         with a host Node.  The Push Job uses services to batch, extract, and stream data to
@@ -31,25 +45,29 @@
         The Ack Servlet uses services to update the status of data that was loaded at a client Node.
     </para>
     <para>
-        The <literal>SymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The 
-        <literal>SymmetricWebServer</literal> is a wrapper API that can be used to directly start <emphasis>both</emphasis> the
-        client and host services inside a Jetty web container.
-    </para>
-    <para>
         The Transport Manager handles the incoming and outgoing streams of data between Nodes.
-        The default transport is based on a simple implementation over HTTP, and other
-        implementations may be added.
-    </para>
+        The default transport is based on a simple implementation over HTTP.  An internal transport
+        is also provided.  It is possible to add other implementations, such as a socket-based transport manager.
+    </para> 
+    <para>
+        Node communication over HTTP is represented in the following figure.
+    </para> 
     <para>
         <figure>
-            <title>Software Stack</title>
+            <title>Node Communication</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                    <imagedata fileref="images/seq-node-communication.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
         </figure>
-    </para>
+    </para>    
+    <para>
+        The <literal>SymmetricEngine</literal> is wrapper API that can be used to directly start the client services only.  The 
+        <literal>SymmetricWebServer</literal> is a wrapper API that can be used to directly start <emphasis>both</emphasis> the
+        client and host services inside a Jetty web container.
+    </para>   
+    <!-- TODO
     <section id="ch04-components">
         <title>Software Components</title>
         <para>
@@ -103,6 +121,7 @@
             </figure>
         </para>        
     </section>
+     -->
     <section id="ch04-deploy">
         <title>Deployment Options</title>
         <para>The following deployment options are possible:</para>
