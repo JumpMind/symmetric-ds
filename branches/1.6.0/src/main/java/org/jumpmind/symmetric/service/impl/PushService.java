@@ -61,8 +61,11 @@ public class PushService extends AbstractService implements IPushService {
 
     private IClusterService clusterService;
 
+    private static enum PushStatus { PUSHED, ERROR, NOTHING_TO_PUSH };
+
     synchronized public boolean pushData() {
         boolean pushedData = false;
+        boolean inError = false;
         if (clusterService.lock(LockActionConstants.PUSH)) {
             try {
                 List<Node> nodes = nodeService.findNodesToPushTo();
@@ -71,9 +74,13 @@ public class PushService extends AbstractService implements IPushService {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Push requested for " + node);
                         }
-                        if (pushToNode(node)) {
+                        PushStatus status = pushToNode(node);
+                        if (status == PushStatus.PUSHED) {
                             pushedData = true;
                             logger.info("Pushed data to " + node);
+                        } else if (status == PushStatus.ERROR) {
+                            inError = true;
+                            logger.warn("There was an error while pushing data to the server");
                         }
                         if (logger.isDebugEnabled()) {
                             logger.debug("Push completed for " + node);
@@ -84,14 +91,14 @@ public class PushService extends AbstractService implements IPushService {
                 clusterService.unlock(LockActionConstants.PUSH);
             }
         } else {
-            logger.warn("Did not run the push process because the cluster service has it locked");
+            logger.info("Did not run the push process because the cluster service has it locked");
         }
-        return pushedData;
+        return pushedData && !inError;
     }
 
-    private boolean pushToNode(Node remote) {
+    private PushStatus pushToNode(Node remote) {
+        PushStatus status = PushStatus.ERROR;
         IOutgoingWithResponseTransport transport = null;
-        boolean pushedData = false;
         try {
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(remote.getNodeId());
             if (nodeSecurity != null) {
@@ -119,14 +126,21 @@ public class PushService extends AbstractService implements IPushService {
 
                 List<BatchInfo> batches = transportManager.readAcknowledgement(ackString, ackExtendedString);
 
+                status = PushStatus.PUSHED;
+                
                 for (BatchInfo batchInfo : batches) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Saving ack: " + batchInfo.getBatchId() + ", "
                                 + (batchInfo.isOk() ? "OK" : "error"));
                     }
-                    ackService.ack(batchInfo);
+                    if (!batchInfo.isOk()) {
+                        status = PushStatus.ERROR;
+                    }
+                    ackService.ack(batchInfo);                    
+                    
                 }
-                pushedData = true;
+            } else {
+                status = PushStatus.NOTHING_TO_PUSH;
             }
         } catch (ConnectException ex) {
             logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url="
@@ -149,7 +163,7 @@ public class PushService extends AbstractService implements IPushService {
             } catch (Exception e) {
             }
         }
-        return pushedData;
+        return status;
     }
 
     public void setExtractor(IDataExtractorService extractor) {
