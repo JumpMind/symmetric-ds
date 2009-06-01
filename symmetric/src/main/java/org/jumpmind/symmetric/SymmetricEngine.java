@@ -324,6 +324,7 @@ public class SymmetricEngine {
      * Will perform a push the same way the {@link PushJob} would have.
      * 
      * @see IPushService#pushData()
+     * @return true if data was pushed successfully
      */
     public boolean push() {
         return ((IPushService) applicationContext.getBean(Constants.PUSH_SERVICE)).pushData();

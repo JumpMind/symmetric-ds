@@ -22,6 +22,9 @@ package org.jumpmind.symmetric.service;
 
 public interface IPushService {
 
+    /**
+     * @return true if data was pushed successfully
+     */
     public boolean pushData();
 
 }
