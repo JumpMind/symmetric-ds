@@ -19,8 +19,11 @@
  */
 package org.jumpmind.symmetric.statistic;
 
-public class StatisticNameConstants {
+final public class StatisticNameConstants {
 
+    private StatisticNameConstants() {
+    }
+    
     public static final String INCOMING_TRANSPORT_ERROR_COUNT = "INCOMING_TRANSPORT_ERROR_COUNT";
     public static final String INCOMING_TRANSPORT_CONNECT_ERROR_COUNT = "INCOMING_TRANSPORT_CONNECT_ERROR_COUNT";
     public static final String INCOMING_TRANSPORT_REJECTED_COUNT = "INCOMING_TRANSPORT_REJECTED_COUNT";

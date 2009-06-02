@@ -20,8 +20,11 @@
 
 package org.jumpmind.symmetric.common;
 
-public class ParameterConstants {
+final public class ParameterConstants {
 
+    private ParameterConstants() {
+    }
+    
     public final static String START_PULL_JOB = "start.pull.job";
     public final static String START_PUSH_JOB = "start.push.job";
     public final static String START_PURGE_JOB = "start.purge.job";
