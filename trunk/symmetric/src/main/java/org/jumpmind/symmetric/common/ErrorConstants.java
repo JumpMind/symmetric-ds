@@ -20,7 +20,10 @@
 
 package org.jumpmind.symmetric.common;
 
-public class ErrorConstants {
+final public class ErrorConstants {
+
+    private ErrorConstants() {
+    }
 
     final public static String COULD_NOT_CONNECT_TO_TRANSPORT = "Could not connect to the transport.";
 

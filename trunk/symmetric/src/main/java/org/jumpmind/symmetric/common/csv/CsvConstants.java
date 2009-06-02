@@ -21,8 +21,11 @@
 
 package org.jumpmind.symmetric.common.csv;
 
-public class CsvConstants {
+final public class CsvConstants {
 
+    private CsvConstants() {
+    }
+    
     public static final String BINARY = "binary";
 
     public static final String VERSION = "version";

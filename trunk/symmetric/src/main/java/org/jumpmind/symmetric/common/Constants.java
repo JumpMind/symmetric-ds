@@ -21,8 +21,11 @@
 
 package org.jumpmind.symmetric.common;
 
-public class Constants {
+final public class Constants {
 
+    private Constants() {
+    }
+    
     public static final String ENCODING = "UTF-8";
     
     public static final String OVERRIDE_PROPERTIES_FILE_1 = "symmetric.override.properties.file.1";
