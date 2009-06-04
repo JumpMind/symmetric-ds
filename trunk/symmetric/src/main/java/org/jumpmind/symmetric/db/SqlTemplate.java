@@ -238,9 +238,13 @@ public class SqlTemplate {
                 ddl);
         ddl = replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);
-        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1" : replace("defaultCatalog",
-                resolveSchemaAndCatalogs && defaultCatalog != null && defaultCatalog.length() > 0 ? defaultCatalog + "." : "",
-                dialect.getSyncTriggersExpression()), ddl);
+        String syncTriggersExpression = dialect.getSyncTriggersExpression();
+        syncTriggersExpression = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+                && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", syncTriggersExpression);
+        syncTriggersExpression = replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
+                && defaultSchema.length() > 0 ? defaultSchema + "." : "", syncTriggersExpression);
+        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1"
+                : syncTriggersExpression, ddl);
         ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);

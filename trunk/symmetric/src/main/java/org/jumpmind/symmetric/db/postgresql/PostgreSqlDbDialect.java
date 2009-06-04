@@ -115,7 +115,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public String getSyncTriggersExpression() {
-        return "fn_sym_triggers_disabled() = 0";
+        return "$(defaultSchema)fn_sym_triggers_disabled() = 0";
     }
 
     @Override
