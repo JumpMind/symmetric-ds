@@ -688,20 +688,24 @@ public class SqlTemplate {
         this.newColumnPrefix = newColumnPrefix;
     }
 
-    public String getFunctionSql(String functionName) {
+    public String getFunctionSql(String functionName, String defaultSchema) {
         if (this.functionTemplatesToInstall != null) {
             String ddl = replace("functionName", functionName, this.functionTemplatesToInstall.get(functionName));
             ddl = replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = replace("defaultSchema",
+                    defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
             return ddl;
         } else {
             return null;
         }
     }
 
-    public String getFunctionInstalledSql(String functionName) {
+    public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
             String ddl = replace("functionName", functionName, functionInstalledSql);
             ddl = replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = replace("defaultSchema",
+                    defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
             return ddl;
         } else {
             return null;
