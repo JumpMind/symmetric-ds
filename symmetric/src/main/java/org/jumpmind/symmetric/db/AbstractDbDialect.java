@@ -210,8 +210,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected void createRequiredFunctions() {
         String[] functions = sqlTemplate.getFunctionsToInstall();
         for (String funcName : functions) {
-            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName)) == 0) {
-                jdbcTemplate.update(sqlTemplate.getFunctionSql(funcName));
+            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, defaultSchema)) == 0) {
+                jdbcTemplate.update(sqlTemplate.getFunctionSql(funcName, defaultSchema));
                 logger.info("Just installed " + funcName);
             }
         }

@@ -17,7 +17,8 @@
                 <property name="triggerPrefix" value="$[sym.trigger.prefix]" />
                 <property name="functionInstalledSql">
                     <value>
-                        <![CDATA[select count(*) from information_schema.routines where routine_name = '$(functionName)']]>
+                        <![CDATA[select count(*) from information_schema.routines 
+                        where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)']]>
                     </value>
                 </property>               
                 <property name="functionTemplatesToInstall">
@@ -25,7 +26,7 @@
                         <entry key="fn_sym_triggers_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE or REPLACE FUNCTION fn_sym_triggers_disabled() RETURNS INTEGER AS $$
+                                CREATE or REPLACE FUNCTION $(defaultSchema)fn_sym_triggers_disabled() RETURNS INTEGER AS $$
                                 DECLARE
                                   triggerDisabled INTEGER;
                                 BEGIN
@@ -41,7 +42,7 @@
                         <entry key="fn_sym_node_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE or REPLACE FUNCTION fn_sym_node_disabled() RETURNS VARCHAR AS $$
+                                CREATE or REPLACE FUNCTION $(defaultSchema)fn_sym_node_disabled() RETURNS VARCHAR AS $$
                                 DECLARE
                                   nodeId VARCHAR(50);
                                 BEGIN
