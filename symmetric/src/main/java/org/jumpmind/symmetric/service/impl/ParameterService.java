@@ -54,6 +54,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Date lastTimeParameterWereCached;
 
     private IParameterFilter parameterFilter;
+    
+    private boolean initialized = false;
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
@@ -167,7 +169,9 @@ public class ParameterService extends AbstractService implements IParameterServi
                     .getProperty(ParameterConstants.NODE_GROUP_ID)));
             return map;
         } catch (Exception ex) {
-            logger.warn("Could not read the database parameters.  We will try again later.");
+            if (initialized) {
+                logger.warn("Could not read the database parameters.  We will try again later.");
+            }
             return new HashMap<String, String>();
         }
     }
@@ -191,6 +195,7 @@ public class ParameterService extends AbstractService implements IParameterServi
             map.put((String) key, p.getProperty((String) key));
         }
         map.putAll(rereadDatabaseParameters(p));
+        initialized = true;
         return map;
 
     }
