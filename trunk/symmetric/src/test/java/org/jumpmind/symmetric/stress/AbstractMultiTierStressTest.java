@@ -85,16 +85,16 @@ abstract public class AbstractMultiTierStressTest {
                 "truncate table sync_workstation_to_home");
 
         PushThread w1 = new PushThread(unitTestSql
-                .get("insertWorkstationToHomeSql"), workstation000101, 100, 50,
+                .get("insertWorkstationToHomeSql"), workstation000101, 500, 150,
                 10);
         PushThread w2 = new PushThread(unitTestSql
-                .get("insertWorkstationToHomeSql"), workstation000102, 100, 25,
+                .get("insertWorkstationToHomeSql"), workstation000102, 500, 250,
                 12);
         w2.start();
         w1.start();
         while (regionServer.getEngine().push() || !w2.done || !w1.done) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(5);
             } catch (Exception ex) {
             }
         }
