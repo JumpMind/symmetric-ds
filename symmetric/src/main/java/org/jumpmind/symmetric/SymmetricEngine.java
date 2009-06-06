@@ -112,9 +112,9 @@ public class SymmetricEngine {
         String one = null;
         String two = null;
         if (overridePropertiesResources.length > 0) {
-            one = overridePropertiesResources[0];
+            one = overridePropertiesResources[0].trim();
             if (overridePropertiesResources.length > 1) {
-                two = overridePropertiesResources[1];
+                two = overridePropertiesResources[1].trim();
             }
         }
         init(parentContext, one, two);
