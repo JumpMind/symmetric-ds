@@ -78,7 +78,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     protected int httpsPort = -1;
 
-    protected String propertiesFile;
+    protected String[] propertiesFiles;
         
     protected String host;
 
@@ -100,19 +100,18 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
     
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
-        this.propertiesFile = propertiesUrl;
+        this.propertiesFiles = new String[] {propertiesUrl};
         this.maxIdleTime = maxIdleTime;
     }    
 
     public void start(int port, String propertiesUrl) throws Exception {
-        this.propertiesFile = propertiesUrl;
+        this.propertiesFiles = new String[] { propertiesUrl };
         start(port);
     }
 
     public SymmetricEngine getEngine() {
         if (contextListener == null) {
-            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext,
-                    propertiesFile));
+            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext, propertiesFiles));
         }
         return contextListener.getEngine();
     }
@@ -293,7 +292,11 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public void setPropertiesFile(String propertiesFile) {
-        this.propertiesFile = propertiesFile;
+        this.propertiesFiles = new String[] { propertiesFile };
+    }
+    
+    public void setPropertiesFiles(String[] propertiesFiles) {
+        this.propertiesFiles = propertiesFiles;
     }
 
     /**

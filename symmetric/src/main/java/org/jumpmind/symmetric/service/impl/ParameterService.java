@@ -55,7 +55,13 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private IParameterFilter parameterFilter;
     
+    private Properties systemProperties;
+    
     private boolean initialized = false;
+    
+    public ParameterService() {
+        systemProperties = (Properties)System.getProperties().clone();
+    }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
@@ -190,7 +196,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Map<String, String> rereadApplicationParameters() {
         final Map<String, String> map = new HashMap<String, String>();
         Properties p = rereadFileParameters();
-        p.putAll(System.getProperties());
+        p.putAll(systemProperties);
         for (Object key : p.keySet()) {
             map.put((String) key, p.getProperty((String) key));
         }

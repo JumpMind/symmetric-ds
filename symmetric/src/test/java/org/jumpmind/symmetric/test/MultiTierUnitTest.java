@@ -26,9 +26,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:/multi-tier-test.xml" })
-public class MultiTierTest {
+public class MultiTierUnitTest {
 
-    static final Log logger = LogFactory.getLog(MultiTierTest.class);
+    static final Log logger = LogFactory.getLog(MultiTierUnitTest.class);
 
     @Resource
     protected SymmetricWebServer homeServer;
