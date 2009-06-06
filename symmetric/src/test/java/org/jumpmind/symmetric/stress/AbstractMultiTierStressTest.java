@@ -73,7 +73,7 @@ abstract public class AbstractMultiTierStressTest {
                 MultiTierTestConstants.NODE_GROUP_WORKSTATION, true, true, true);
     }
 
-    @Test(timeout = 600000)
+    @Test
     public void pushTest() {
         getTemplate(workstation000101).update(
                 "truncate table sync_workstation_to_home");
