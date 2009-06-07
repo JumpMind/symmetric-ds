@@ -85,7 +85,7 @@ abstract public class AbstractMultiTierStressTest {
                 "truncate table sync_workstation_to_home");
 
         PushThread w1 = new PushThread(unitTestSql
-                .get("insertWorkstationToHomeSql"), workstation000101, 500, 150,
+                .get("insertWorkstationToHomeSql"), workstation000101, 250, 500,
                 10);
         PushThread w2 = new PushThread(unitTestSql
                 .get("insertWorkstationToHomeSql"), workstation000102, 500, 250,
