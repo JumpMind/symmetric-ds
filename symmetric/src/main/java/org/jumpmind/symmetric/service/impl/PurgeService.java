@@ -99,7 +99,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeOutgoingBatch(final Calendar time) {
         logger.info("Getting range for outgoing batch");
-        int[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"), new Object[] { time.getTime() });
+        long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"), new Object[] { time.getTime() });
         int maxNumOfBatchIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
@@ -111,31 +111,31 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeDataRows(final Calendar time) {
         logger.info("Getting range for data");
-        int[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[] { time.getTime() });
+        long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[] { time.getTime() });
         int maxNumOfDataIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         purgeByMinMax(minMax, getSql("deleteDataSql"), true, maxNumOfDataIdsToPurgeInTx);
     }
 
-    private int[] queryForMinMax(String sql, Object[] params) {
-        int[] minMax = (int[]) jdbcTemplate.queryForObject(sql, params, new RowMapper() {
+    private long[] queryForMinMax(String sql, Object[] params) {
+        long[] minMax = (long[]) jdbcTemplate.queryForObject(sql, params, new RowMapper() {
             public Object mapRow(ResultSet rs, int row) throws SQLException {
-                return new int[] { rs.getInt(1), rs.getInt(2) };
+                return new long[] { rs.getLong(1), rs.getLong(2) };
             }
         });
         return minMax;
     }
 
-    private void purgeByMinMax(int[] minMax, String deleteSql, boolean useRangeTwice, int maxNumtoPurgeinTx) {
-        int minId = minMax[0];
-        int purgeUpToId = minMax[1];
+    private void purgeByMinMax(long[] minMax, String deleteSql, boolean useRangeTwice, int maxNumtoPurgeinTx) {
+        long minId = minMax[0];
+        long purgeUpToId = minMax[1];
         long ts = System.currentTimeMillis();
         int totalCount = 0;
         String tableName = deleteSql.trim().split("\\s")[2];
         logger.info("About to purge " + tableName);
 
         while (minId <= purgeUpToId) {
-            int maxId = minId + maxNumtoPurgeinTx;
+            long maxId = minId + maxNumtoPurgeinTx;
             if (maxId > purgeUpToId) {
                 maxId = purgeUpToId;
             }
@@ -183,7 +183,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         List<NodeBatchRange> nodeBatchRangeList = jdbcTemplate.query(getSql("selectIncomingBatchRangeSql"),
                 new Object[] { time.getTime() }, new RowMapper() {
                     public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return new NodeBatchRange(rs.getString(1), rs.getInt(2), rs.getInt(3));
+                        return new NodeBatchRange(rs.getString(1), rs.getLong(2), rs.getLong(3));
                     }
                 });
         purgeByNodeBatchRangeList(getSql("deleteIncomingBatchHistSql"), nodeBatchRangeList);
@@ -209,12 +209,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private int purgeByNodeBatchRange(String deleteSql, NodeBatchRange nodeBatchRange) {
         int maxNumOfDataIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
-        int minBatchId = nodeBatchRange.getMinBatchId();
-        int purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
+        long minBatchId = nodeBatchRange.getMinBatchId();
+        long purgeUpToBatchId = nodeBatchRange.getMaxBatchId();
         int totalCount = 0;
 
         while (minBatchId <= purgeUpToBatchId) {
-            int maxBatchId = minBatchId + maxNumOfDataIdsToPurgeInTx;
+            long maxBatchId = minBatchId + maxNumOfDataIdsToPurgeInTx;
             if (maxBatchId > purgeUpToBatchId) {
                 maxBatchId = purgeUpToBatchId;
             }
@@ -229,11 +229,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
     class NodeBatchRange {
         private String nodeId;
 
-        private int minBatchId;
+        private long minBatchId;
 
-        private int maxBatchId;
+        private long maxBatchId;
 
-        public NodeBatchRange(String nodeId, int minBatchId, int maxBatchId) {
+        public NodeBatchRange(String nodeId, long minBatchId, long maxBatchId) {
             this.nodeId = nodeId;
             this.minBatchId = minBatchId;
             this.maxBatchId = maxBatchId;
@@ -243,11 +243,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
             return nodeId;
         }
 
-        public int getMaxBatchId() {
+        public long getMaxBatchId() {
             return maxBatchId;
         }
 
-        public int getMinBatchId() {
+        public long getMinBatchId() {
             return minBatchId;
         }
     }

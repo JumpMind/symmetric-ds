@@ -197,7 +197,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                                             transactionIds.add(trxId);
                                         }
 
-                                        int dataId = results.getInt(2);
+                                        long dataId = results.getLong(2);
 
                                         update.clearParameters();
                                         update.setLong(1, Long.valueOf(newBatch.getBatchId()));
