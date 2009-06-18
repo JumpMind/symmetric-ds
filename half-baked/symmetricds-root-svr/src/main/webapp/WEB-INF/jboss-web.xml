@@ -1,7 +1,0 @@
-<jboss-web>
-    <resource-ref>
-        <res-ref-name>jdbc/SymmetricDS</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <jndi-name>java:/jdbc/SymmetricDS</jndi-name>
-    </resource-ref>
-</jboss-web>
