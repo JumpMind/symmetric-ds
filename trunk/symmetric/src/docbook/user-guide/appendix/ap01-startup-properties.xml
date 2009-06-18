@@ -180,6 +180,8 @@
                     <listitem>
                         <para>
                             The database username, which is used to login, create, and update SymmetricDS tables.
+                            To use an encrypted username, see the section 
+                            <link linkend="ch06-encrypted-passwords">Encrypted Passwords</link>.
                             If
                             <literal>db.jndi.name</literal>
                             is set, this property is ignored. [&#xA0;Default:&#xA0;symmetric&#xA0;]
@@ -192,7 +194,10 @@
                     </term>
                     <listitem>
                         <para>
-                            The password for the database user. If
+                            The password for the database user. 
+                            To use an encrypted password, see the section 
+                            <link linkend="ch06-encrypted-passwords">Encrypted Passwords</link>.
+                            If
                             <literal>db.jndi.name</literal>
                             is set, this property is ignored. [&#xA0;Default:&#xA0;]
                         </para>

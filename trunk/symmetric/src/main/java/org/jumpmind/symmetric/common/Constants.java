@@ -81,6 +81,8 @@ final public class Constants {
     public static final String STATISTIC_MANAGER = "statisticManager";
     
     public static final String STATISTIC_SERVICE = "statisticService";
+    
+    public static final String SECURITY_SERVICE = "securityService";
 
     public static final String AUTHENTICATION_RESOURCE_HANDLER = "authenticationResourceHandler";
 

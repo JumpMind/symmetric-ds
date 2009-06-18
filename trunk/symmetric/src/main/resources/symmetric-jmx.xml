@@ -73,6 +73,7 @@
         <property name="statisticManager" ref="statisticManager" />
         <property name="parameterService" ref="parameterService" />
         <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />
+        <property name="securityService" ref="securityService" />
     </bean>
 
     <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">
