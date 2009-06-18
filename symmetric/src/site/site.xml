@@ -6,6 +6,8 @@
         <href>/</href>
     </bannerLeft>
     <poweredBy>
+        <logo img="http://images.sourceforge.net/images/project-support.jpg"
+            name="Support SymmetricDS" href="http://sourceforge.net/donate/index.php?group_id=206470" />
         <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=108357&amp;type=1"
             name="Powered by Sourceforge" href="http://sourceforge.net" />
         <logo img="images/logos/maven-feather.png" name="Powered by Apache Maven"
