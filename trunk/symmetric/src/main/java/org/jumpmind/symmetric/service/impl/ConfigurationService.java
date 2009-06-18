@@ -204,6 +204,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
                 triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
                         false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
+                logger.info("Creating trigger hist entry for " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+            } else {
+                logger.warn("Unexpected node group link while creating configuration triggers: source_node_group_id="
+                    + sourceNodeGroupId + ", action=" + nodeGroupLink.getDataEventAction());
             }
         }
         return triggers;
@@ -229,7 +233,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     protected void mergeInConfigurationTriggers(String sourceNodeGroupId, List<Trigger> configuredInDatabase) {
         List<Trigger> virtualConfigTriggers = getConfigurationTriggers(sourceNodeGroupId);
         for (Trigger trigger : virtualConfigTriggers) {
-            if (trigger.getSourceGroupId().equals(sourceNodeGroupId)
+            if (trigger.getSourceGroupId().equalsIgnoreCase(sourceNodeGroupId)
                     && !doesTriggerExistInList(configuredInDatabase, trigger)) {
                 configuredInDatabase.add(trigger);
             }
