@@ -304,6 +304,24 @@ values
             </para>
         </section>                
     </section>
+    <section id="ch06-encrypted-passwords">
+        <title>Encrypted Passwords</title>
+        <para>
+            The db.user and db.password properties will accept encrypted text, which protects
+            against casual observation.  The text is prefixed with "enc:" to indicate
+            that it is encrypted.  To encrypt text, use the following command:
+        </para>
+        <para>
+            <command>sym -e secret</command>
+        </para>
+        <para>
+            The text is encrypted by the cipher defined as alias "sym.secret" in the 
+            Java keystore.  The keystore is specified by the "sym.keystore.file" system property, which
+            defaults to <filename class="filename">security/keystore</filename>.
+            If a cipher is not found, a default cipher using Triple DES with a random password
+            is generated.
+        </para>
+    </section>
     <section id="ch06-secure-transport">
         <title>Secure Transport</title>
         <para>

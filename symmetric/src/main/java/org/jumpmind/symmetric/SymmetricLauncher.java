@@ -47,6 +47,7 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -55,6 +56,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -110,6 +112,8 @@ public class SymmetricLauncher {
     private static final String OPTION_LOAD_BATCH = "load-batch";
 
     private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
+    
+    private static final String OPTION_ENCRYPT_TEXT = "encrypt";
     
     public static void main(String[] args) throws Exception {        
         logger.debug("Arguments: " + ArrayUtils.toString(args));
@@ -221,6 +225,11 @@ public class SymmetricLauncher {
                         .getOptionValue(OPTION_LOAD_BATCH));
             }
             
+            if (line.hasOption(OPTION_ENCRYPT_TEXT)) {
+                encryptText(new SymmetricEngine(), line.getOptionValue(OPTION_ENCRYPT_TEXT));
+                return;
+            }
+            
             if (line.hasOption(OPTION_START_CLIENT)) {
                 new SymmetricEngine().start();
                 return;
@@ -269,8 +278,7 @@ public class SymmetricLauncher {
 
     private static void testConnection() throws Exception {
         ApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:/symmetric-properties.xml",
-                        "classpath:/symmetric-database.xml" });
+                new String[] { "classpath:/symmetric.xml" });
         BasicDataSource ds = (BasicDataSource) ctx
                 .getBean(Constants.DATA_SOURCE);
         Connection c = ds.getConnection();
@@ -357,6 +365,9 @@ public class SymmetricLauncher {
                         "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
         options.addOption("t", OPTION_TRIGGER_GEN, true, "Run the sync triggers process and write the output the specified file.  If triggers should not be applied automatically then set the auto.sync.triggers property to false");
         options.addOption("o", OPTION_TRIGGER_GEN_ALWAYS, false, "Run the sync triggers process even if the triggers already exist.");
+        options.addOption("e", OPTION_ENCRYPT_TEXT, true,
+                "Encrypts the given text for use with db.user and db.password properties");
+
         return options;
     }
 
@@ -386,6 +397,12 @@ public class SymmetricLauncher {
         }
     }
 
+    private static void encryptText(SymmetricEngine engine, String plainText) {
+        ISecurityService service = (ISecurityService) engine.getApplicationContext().getBean(
+                Constants.SECURITY_SERVICE);
+        System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
+    }
+    
     private static void openRegistration(SymmetricEngine engine, String argument) {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
@@ -478,6 +495,7 @@ public class SymmetricLauncher {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static void runSql(SymmetricEngine engine, String fileName)
             throws FileNotFoundException, MalformedURLException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext()

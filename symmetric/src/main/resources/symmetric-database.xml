@@ -18,8 +18,18 @@
         destroy-method="close" >
         <property name="driverClassName" value="$[sym.db.driver]" />
         <property name="url" value="$[sym.db.url]" />
-        <property name="username" value="$[sym.db.user]" />
-        <property name="password" value="$[sym.db.password]" />
+        <property name="username">
+            <bean class="org.jumpmind.symmetric.security.PasswordFactory">
+                <property name="securityService" ref="securityService" />
+                <property name="password" value="$[sym.db.user]" />
+            </bean>
+        </property>
+        <property name="password">
+            <bean class="org.jumpmind.symmetric.security.PasswordFactory">
+                <property name="securityService" ref="securityService" />
+                <property name="password" value="$[sym.db.password]" />
+            </bean>
+        </property>
         <property name="initialSize" value="$[sym.db.pool.initial.size]"/>
         <property name="maxActive" value="$[sym.db.pool.max.active]"/>
         <property name="maxWait" value="$[sym.db.pool.max.wait.millis]"/>

@@ -32,6 +32,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -42,6 +43,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ISecurityService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
@@ -76,6 +78,8 @@ public class NodeManagementService {
     private IParameterService parameterService;
 
     private IConcurrentConnectionManager concurrentConnectionManager;
+
+    private ISecurityService securityService;
 
     private DataSource dataSource;
 
@@ -325,6 +329,20 @@ public class NodeManagementService {
         out.close();
     }
 
+    @ManagedOperation(description = "Encrypts plain text for use with db.user and db.password properties")
+    @ManagedOperationParameters( {
+            @ManagedOperationParameter(name = "plainText", description = "Plain text to encrypt") })
+    public String encryptText(String plainText) throws Exception {
+        try {
+        return SecurityConstants.PREFIX_ENC + securityService.encrypt(plainText);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public void setBootstrapService(IBootstrapService bootstrapService) {
         this.bootstrapService = bootstrapService;
     }
@@ -367,6 +385,10 @@ public class NodeManagementService {
 
     public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {
         this.concurrentConnectionManager = concurrentConnectionManager;
+    }
+
+    public void setSecurityService(ISecurityService securityService) {
+        this.securityService = securityService;
     }
 
 }

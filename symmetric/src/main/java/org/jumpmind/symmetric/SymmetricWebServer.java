@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.SymmetricFilter;
@@ -174,7 +175,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
-        String keyStoreFile = System.getProperty("sym.keystore.file");
+        String keyStoreFile = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
             Connector connector = new SelectChannelConnector();
@@ -186,8 +187,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
-            String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
-            keyStorePassword = (keyStorePassword != null)?keyStorePassword:"changeit";
+            String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
+            keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
             ((SslSocketConnector) connector).setKeystore(keyStoreFile);
             ((SslSocketConnector) connector).setPassword(keyStorePassword);
             ((SslSocketConnector) connector).setMaxIdleTime(maxIdleTime);
