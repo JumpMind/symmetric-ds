@@ -92,9 +92,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @Transactional
     public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
 
+        boolean useMulti = parameterService.is(ParameterConstants.OUTGOING_BATCH_ASSIGNMENT_MULTI)
+                || !dbDialect.supportsOpenCursorsAcrossCommit();
+
         if (channel.isSuspended()) {
             logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-        } else if (channel.isEnabled()) {
+        } else if (channel.isEnabled() && useMulti) {
             long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"), new Object[] { 0,
                     nodeId, channel.getId() });
 
@@ -125,6 +128,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         dataEventCount);
                 statisticManager.getStatistic(StatisticNameConstants.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
             }
+        } else if (channel.isEnabled()) {
+            buildOutgoingBatchesPeekAhead(nodeId, channel);
         }
     }
 
