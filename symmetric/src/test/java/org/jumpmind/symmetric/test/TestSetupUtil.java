@@ -131,8 +131,8 @@ public class TestSetupUtil {
     public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb)
             throws Exception {
         if (rootDb != null) {
-            rootServer = new SymmetricWebServer(new SymmetricEngine("file:"
-                    + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath()));
+            rootServer = new SymmetricWebServer("file:"
+                    + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath());
             dropAndCreateDatabaseTables(rootDb, rootServer.getEngine());
             IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, rootServer.getEngine());
             bootstrapService.setupDatabase();

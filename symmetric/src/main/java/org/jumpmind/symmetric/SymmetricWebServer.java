@@ -90,10 +90,14 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected ApplicationContext parentContext;
 
     public SymmetricWebServer() {
-    }
-
-    public SymmetricWebServer(SymmetricEngine engine) {
-        this.contextListener = new SymmetricEngineContextLoaderListener(engine);
+     }
+    
+    public SymmetricWebServer(String[] propertiesUrls) {
+        this.propertiesFiles = propertiesUrls;
+     }
+    
+    public SymmetricWebServer(String propertiesUrl) {
+       this.propertiesFiles = new String[] {propertiesUrl};
     }
 
     public SymmetricWebServer(int maxIdleTime) {
