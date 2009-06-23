@@ -54,27 +54,24 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
     @Transactional
     public void ack(final BatchInfo batch) {
-    	
-    	if (batchEventListeners != null) {
-			for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
-				batchEventListener.onAcknowledgeEvent(batch);
-			}
-		}
-    	
+
+        if (batchEventListeners != null) {
+            for (IAcknowledgeEventListener batchEventListener : batchEventListeners) {
+                batchEventListener.onAcknowledgeEvent(batch);
+            }
+        }
+
         if (batch.getBatchId() == BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION) {
             if (batch.isOk()) {
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
         } else {
             OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
-            outgoingBatchService.setBatchStatus(batch.getBatchId(), batch
-                    .isOk() ? Status.OK : Status.ER);
+            outgoingBatchService.setBatchStatus(batch.getBatchId(), batch.isOk() ? Status.OK : Status.ER);
 
             if (!batch.isOk() && batch.getErrorLine() != 0) {
-                CallBackHandler handler = new CallBackHandler(batch
-                        .getErrorLine());
-                jdbcTemplate.query(getSql("selectDataIdSql"),
-                        new Object[] { history.getBatchId() }, handler);
+                CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
+                jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { history.getBatchId() }, handler);
                 history.setFailedDataId(handler.getDataId());
             }
 
