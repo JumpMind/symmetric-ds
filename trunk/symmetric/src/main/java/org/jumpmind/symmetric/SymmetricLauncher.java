@@ -495,7 +495,6 @@ public class SymmetricLauncher {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static void runSql(SymmetricEngine engine, String fileName)
             throws FileNotFoundException, MalformedURLException {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext()
