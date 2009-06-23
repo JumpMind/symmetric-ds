@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.transport.file;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 
@@ -39,9 +40,7 @@ public class FileIncomingTransport implements IIncomingTransport {
     }
 
     public void close() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        IOUtils.closeQuietly(reader);
         if (fileWriter != null) {
             fileWriter.delete();
         }
