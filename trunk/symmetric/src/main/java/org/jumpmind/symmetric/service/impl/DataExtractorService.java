@@ -142,7 +142,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<Trigger> triggers = configurationService.getRegistrationTriggers(parameterService.getNodeGroupId(), node.getNodeGroupId());
+        List<Trigger> triggers = configurationService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
+                .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {
                 Trigger trigger = triggers.get(i);
@@ -164,9 +165,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ctx.getDataExtractor().write(writer, data, ctx);
             }
         }
-        
-        if (triggers.size() == 0)
-        {
+
+        if (triggers.size() == 0) {
             logger.error(node + " attempted registration, but was sent an empty configuration.");
         }
     }
@@ -290,24 +290,32 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (batches != null && batches.size() > 0) {
             FileOutgoingTransport fileTransport = null;
 
-            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                fileTransport = new FileOutgoingTransport(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
+            try {
+                if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                    fileTransport = new FileOutgoingTransport(parameterService
+                            .getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "extract");
+                }
+
+                ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
+                        fileTransport != null ? fileTransport : targetTransport);
+
+                databaseExtract(node, batches, handler);
+
+                networkTransfer(fileTransport, targetTransport);
+            } finally {
+                if (fileTransport != null) {
+                    fileTransport.close();
+                }
             }
 
-            ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
-                    fileTransport != null ? fileTransport : targetTransport);
-
-            databaseExtract(node, batches, handler);
-
-            networkTransfer(fileTransport, targetTransport);
-            
             return true;
         } else {
             return false;
         }
     }
 
-    protected void networkTransfer(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport) throws IOException {
+    protected void networkTransfer(FileOutgoingTransport fileTransport, IOutgoingTransport targetTransport)
+            throws IOException {
         if (fileTransport != null) {
             fileTransport.close();
             Reader reader = null;
@@ -318,14 +326,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 IOUtils.closeQuietly(reader);
                 fileTransport.delete();
             }
-        }        
+        }
     }
 
     /**
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws Exception {
+    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler)
+            throws Exception {
         OutgoingBatchHistory history = null;
         try {
             boolean initialized = false;
@@ -339,7 +348,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
-                history.setDatabaseMillis(System.currentTimeMillis()-ts);
+                history.setDatabaseMillis(System.currentTimeMillis() - ts);
                 history.setStatus(OutgoingBatchHistory.Status.SE);
                 history.setEndTime(new Date());
                 outgoingBatchService.insertOutgoingBatchHistory(history);
