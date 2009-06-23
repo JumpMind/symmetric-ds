@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
@@ -49,7 +50,7 @@ public class FileOutgoingTransport implements IOutgoingTransport {
     }
 
     public void close() throws IOException {
-        out.close();
+        IOUtils.closeQuietly(out);
         out = null;
     }
 
