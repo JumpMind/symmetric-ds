@@ -184,5 +184,8 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
+    
+    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    }
 
 }

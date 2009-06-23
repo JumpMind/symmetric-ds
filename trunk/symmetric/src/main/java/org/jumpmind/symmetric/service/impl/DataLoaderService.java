@@ -337,6 +337,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
         }
     }
+    
+    private void fireBatchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchCommitted(loader, history);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }    
 
     protected void handleBatchError(final IncomingBatch status, final IncomingBatchHistory history) {
         try {
@@ -440,6 +452,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
             }
         } while (LoadStatus.CONTINUE == loadStatus);
+        
+        fireBatchCommitted(dataLoader, history);
     }
     
     class TransactionalLoadDelegate implements TransactionCallback {

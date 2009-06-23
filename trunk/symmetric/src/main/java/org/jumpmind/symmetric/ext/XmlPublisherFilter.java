@@ -311,5 +311,8 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     public void setXmlFormat(Format xmlFormat) {
         this.xmlFormat = xmlFormat;
     }
+    
+    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    }
 
 }
