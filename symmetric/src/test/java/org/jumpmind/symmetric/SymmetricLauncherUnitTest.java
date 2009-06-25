@@ -6,8 +6,10 @@ import org.jumpmind.symmetric.ext.TestDataLoaderFilter;
 import org.jumpmind.symmetric.test.DatabaseRole;
 import org.jumpmind.symmetric.test.DatabaseTestSuite;
 import org.jumpmind.symmetric.test.TestSetupUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SymmetricLauncherUnitTest {
 
     @Test
