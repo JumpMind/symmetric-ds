@@ -32,6 +32,8 @@ import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -110,8 +112,14 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
-        jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '', false)");
+        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+            protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
+                if (! transactionstatus.isRollbackOnly()) {
+                    jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
+                    jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '', false)");
+                }
+            }
+        });
     }
 
     public String getSyncTriggersExpression() {
