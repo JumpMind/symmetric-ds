@@ -68,7 +68,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
-
+    
     private static final Log logger = LogFactory.getLog(SymmetricLauncher.class);
     
     private static final String OPTION_DUMP_BATCH = "dump-batch";
@@ -115,7 +115,13 @@ public class SymmetricLauncher {
     
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
     
-    public static void main(String[] args) throws Exception {        
+    protected static SymmetricWebServer webServer;
+    
+    protected static Exception exception;
+    
+    protected static boolean join = true;
+    
+    public static void main(String... args) throws Exception {        
         logger.debug("Arguments: " + ArrayUtils.toString(args));
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
@@ -241,13 +247,13 @@ public class SymmetricLauncher {
                     testConnection();
                 }
                 if (line.hasOption(OPTION_START_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime, propertiesFile).start(port);
+                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).start(port);
                 }
                 else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime, propertiesFile).startSecure(securePort);
+                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).startSecure(securePort);
                 }
                 else if (line.hasOption(OPTION_START_MIXED_SERVER)) {
-                    new SymmetricWebServer(maxIdleTime, propertiesFile).startMixed(port, securePort);
+                    webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).startMixed(port, securePort);
                 }
                 return;
             }
@@ -255,9 +261,11 @@ public class SymmetricLauncher {
             printHelp(options);
 
         } catch (ParseException exp) {
+            exception = exp;
             System.err.println(exp.getMessage());
             printHelp(options);
         } catch (Exception ex) {
+            exception = ex;
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
             System.err
@@ -278,7 +286,7 @@ public class SymmetricLauncher {
 
     private static void testConnection() throws Exception {
         ApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:/symmetric.xml" });
+              new String[] { "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
         BasicDataSource ds = (BasicDataSource) ctx
                 .getBean(Constants.DATA_SOURCE);
         Connection c = ds.getConnection();
