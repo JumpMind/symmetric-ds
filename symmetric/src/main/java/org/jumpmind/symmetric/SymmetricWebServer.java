@@ -104,6 +104,12 @@ public class SymmetricWebServer implements ApplicationContextAware {
         this.maxIdleTime = maxIdleTime;
     }
     
+    public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join) {
+        this.propertiesFiles = new String[] {propertiesUrl};
+        this.maxIdleTime = maxIdleTime;
+        this.join = join;
+    }     
+    
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
         this.propertiesFiles = new String[] {propertiesUrl};
         this.maxIdleTime = maxIdleTime;
@@ -133,19 +139,19 @@ public class SymmetricWebServer implements ApplicationContextAware {
         }
     }
 
-    public void start(int port) throws Exception {
-        start(port, 0, Mode.HTTP);
+    public SymmetricWebServer start(int port) throws Exception {
+        return start(port, 0, Mode.HTTP);
     }
 
-    public void startSecure(int port) throws Exception {
-        start(0, port, Mode.HTTPS);
+    public SymmetricWebServer startSecure(int port) throws Exception {
+        return start(0, port, Mode.HTTPS);
     }
 
-    public void startMixed(int port, int securePort) throws Exception {
-        start(port, securePort, Mode.MIXED);
+    public SymmetricWebServer startMixed(int port, int securePort) throws Exception {
+        return start(port, securePort, Mode.MIXED);
     }
 
-    public void start(int port, int securePort, Mode mode) throws Exception {
+    public SymmetricWebServer start(int port, int securePort, Mode mode) throws Exception {
         getEngine();
         server = new Server();
         server.setConnectors(getConnectors(port, securePort, mode));
@@ -175,6 +181,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
         if (join) {
             server.join();
         }
+        
+        return this;
     }
 
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {

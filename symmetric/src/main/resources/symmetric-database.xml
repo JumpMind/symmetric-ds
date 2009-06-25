@@ -6,6 +6,8 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd" default-lazy-init="true">
 
+    <bean id="securityService" class="org.jumpmind.symmetric.service.impl.SecurityService" scope="singleton" />
+
     <tx:annotation-driven transaction-manager="txManager" />
 
     <!-- Support two different types of data sources:  application server hosted and internal -->

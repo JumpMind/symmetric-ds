@@ -16,8 +16,6 @@
         </property>
     </bean>
 
-    <bean id="securityService" class="org.jumpmind.symmetric.service.impl.SecurityService" scope="singleton" />
-
     <bean id="bandwidthService" class="org.jumpmind.symmetric.service.impl.BandwidthService"/>
 
     <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">

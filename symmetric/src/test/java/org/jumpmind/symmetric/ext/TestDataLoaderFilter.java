@@ -33,6 +33,10 @@ public class TestDataLoaderFilter implements IDataLoaderFilter {
     public TestDataLoaderFilter() {
         numberOfTimesCreated++;
     }
+    
+    public static int getNumberOfTimesCreated() {
+        return numberOfTimesCreated;
+    }
 
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         numberOfTimesCalled++;
