@@ -74,6 +74,7 @@
         <property name="parameterService" ref="parameterService" />
         <property name="concurrentConnectionManager" ref="concurrentConnectionManager" />
         <property name="securityService" ref="securityService" />
+        <property name="configurationService" ref="configurationService"/>
     </bean>
 
     <bean id="incomingManagementService" class="org.jumpmind.symmetric.service.jmx.IncomingManagementService">

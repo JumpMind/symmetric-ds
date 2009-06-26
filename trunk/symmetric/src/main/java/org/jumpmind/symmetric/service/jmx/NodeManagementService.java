@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -68,6 +69,8 @@ public class NodeManagementService {
     private IDataService dataService;
 
     private IOutgoingBatchService outgoingBatchService;
+    
+    private IConfigurationService configurationService;
 
     private IRegistrationService registrationService;
 
@@ -92,6 +95,11 @@ public class NodeManagementService {
     @ManagedOperation(description = "Run the purge process")
     public void purge() {
         purgeService.purge();
+    }
+    
+    @ManagedOperation(description = "Force the channel settings to be read from the database")
+    public void clearChannelCache() {
+        configurationService.flushChannels();
     }
 
     @ManagedOperation(description = "Synchronize the triggers")
@@ -391,4 +399,7 @@ public class NodeManagementService {
         this.securityService = securityService;
     }
 
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
 }
