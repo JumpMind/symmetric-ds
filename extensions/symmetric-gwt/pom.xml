@@ -1,30 +1,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jumpmind.symmetric</groupId>
-    <artifactId>symmetric-gui</artifactId>
+    <groupId>org.jumpmind.symmetric.extensions</groupId>
+    <artifactId>symmetric-gwt</artifactId>
     <packaging>jar</packaging>
     <version>1.7.1-SNAPSHOT</version>
     <name>SymmetricDS GUI Plugin</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2009</inceptionYear>
+
     <description>
-        SymmetricDS is an open source database synchronization solution. It is platform-independent,
-        web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
-        databases and a centralized 'corporate' database.
+        A web admin console based on the GWT toolkit
     </description>
+
     <properties>
         <gwt.version>1.6.4</gwt.version>
     </properties>
+
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-gwt</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-gwt</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/symmetric-gwt</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/symmetric-gwt</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/symmetric-gwt</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/symmetric-gwt</url>
     </scm>
+
     <issueManagement>
         <system>JIRA</system>
         <url>http://jira.codehaus.org/BrowseProject.jspa?id=11906</url>
     </issueManagement>
+
     <licenses>
         <license>
             <name>LGPL</name>
@@ -57,11 +60,16 @@
 
     <build>
         <finalName>symmetric-gwt</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-eclipse-plugin</artifactId>
                 <configuration>
-                    <wtpVersion>${wtp.version}</wtpVersion>
+                    <buildOutputDirectory>war/WEB-INF/classes</buildOutputDirectory>
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>true</downloadJavadocs>
                 </configuration>
@@ -87,7 +95,7 @@
                     </execution>
                 </executions>
                 <configuration>
-
+                    <webappDirectory>${project.build.outputDirectory}/${project.build.finalName}</webappDirectory>
                 </configuration>
             </plugin>
         </plugins>
