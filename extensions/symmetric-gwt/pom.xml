@@ -17,6 +17,14 @@
         <gwt.version>1.6.4</gwt.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>symmetric-gwt</id>
+            <name>symmetric-gwt</name>
+            <url>file://${project.basedir}/maven/repository</url>
+        </repository>
+    </repositories>
+
     <scm>
         <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/symmetric-gwt</connection>
         <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/symmetric-gwt</developerConnection>
@@ -130,6 +138,12 @@
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
             <version>${gwt.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-incubator</artifactId>
+            <version>march-02-2009</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
