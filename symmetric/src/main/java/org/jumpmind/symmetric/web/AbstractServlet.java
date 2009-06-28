@@ -28,10 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.util.zip.GZIPInputStream;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,17 +37,22 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-
-    protected abstract Log getLogger();
+    
+    final protected Log logger = LogFactory.getLog(getClass());
     
     protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {
         return resp.getOutputStream();
+    }
+    
+    protected Log getLogger() {
+        return this.logger;
     }
 
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
@@ -90,228 +93,7 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected ApplicationContext getDefaultApplicationContext() {
         return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-    }
-    
-    @Override
-    protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handleGet(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing GET method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on GET method", e);
-            }
-            if (!resp.isCommitted()) {
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a GET should be idempotent and
-     * safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     * 
-     */
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handlePost(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing POST method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on POST method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. See
-     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected final void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handlePut(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing PUT method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on PUT method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a PUT should be idempotent.
-     * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handlePut(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected final void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
-        try {
-            handleDelete(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing DELETE method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on DELETE method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a DELETE should be idempotent.
-     * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handleHead(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing HEAD method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on HEAD method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a HEAD should be idempotent
-     * and safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handleHead(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handleOptions(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing data ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on OPTIONS method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a OPTIONS should be idempotent
-     * and safe. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handleOptions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
-
-    @Override
-    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            handleTrace(req, resp);
-        } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing TRACE method ", e);
-            }
-        } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on TRACE method", e);
-            }
-            sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * Override me to do real work. Remember that a TRACE should be idempotent.
-     * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html.
-     * 
-     * @param req
-     * @param resp
-     * @throws IOException
-     * @throws ServletException
-     * @throws Exception
-     *                 everything else that could go wrong!
-     */
-    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-    }
+    } 
 
     /**
      * Because you can't send an error when the response is already committed,

@@ -56,91 +56,107 @@ import com.sun.syndication.io.SyndFeedOutput;
 public class AlertResourceHandler extends AbstractTransportResourceHandler {
     private static final int MAX_ERRORS = 1000;
 
-    private static final FastDateFormat formatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
+    private static final FastDateFormat formatter = FastDateFormat
+            .getInstance("yyyy-MM-dd HH:mm:ss");
 
     private IIncomingBatchService incomingBatchService;
 
     private IOutgoingBatchService outgoingBatchService;
 
     private IParameterService parameterService;
-    
+
     private INodeService nodeService;
 
-    public void write(CharSequence feedURL, Writer outputWriter) throws IOException, FeedException {
-        SyndFeed feed = new SyndFeedImpl();
-        feed.setFeedType("rss_2.0");
-        feed.setTitle("SymmetricDS Alerts for " + parameterService.getMyUrl());
-        feed.setDescription("Problems synchronizing data");
-        feed.setLink(feedURL.toString());
+    public void write(CharSequence feedURL, Writer outputWriter)
+            throws IOException {
+        try {
+            SyndFeed feed = new SyndFeedImpl();
+            feed.setFeedType("rss_2.0");
+            feed.setTitle("SymmetricDS Alerts for "
+                    + parameterService.getMyUrl());
+            feed.setDescription("Problems synchronizing data");
+            feed.setLink(feedURL.toString());
 
-        List<SyndEntry> entries = new ArrayList<SyndEntry>();
+            List<SyndEntry> entries = new ArrayList<SyndEntry>();
 
-        for (IncomingBatch batch : findIncomingBatchErrors()) {
-            String title = "Incoming Batch " + batch.getNodeBatchId();
-            StringBuilder value = new StringBuilder("Node ");
-            value.append(batch.getNodeId());
-            value.append(" incoming batch ");
-            value.append(batch.getBatchId());
-            value.append(" is in error at ");
-            value.append(formatDate(batch.getCreateTime()));
-            value.append(".  ");
-            List<IncomingBatchHistory> list = filterOutIncomingHistoryErrors(incomingBatchService
-                    .findIncomingBatchHistory(batch.getBatchId(), batch.getNodeId()));
-            if (list.size() > 0) {
-                value.append("The batch has been attempted ");
-                value.append(list.size());
-                value.append(" times.  ");
-                IncomingBatchHistory history = list.get(list.size() - 1);
-                int sqlCode = history.getSqlCode();
-                String msg = history.getSqlMessage();
-                if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
-                    value.append("The sql error code is ");
-                    value.append(sqlCode);
-                    value.append(" and the error message is: ");
-                    value.append(msg);
+            for (IncomingBatch batch : findIncomingBatchErrors()) {
+                String title = "Incoming Batch " + batch.getNodeBatchId();
+                StringBuilder value = new StringBuilder("Node ");
+                value.append(batch.getNodeId());
+                value.append(" incoming batch ");
+                value.append(batch.getBatchId());
+                value.append(" is in error at ");
+                value.append(formatDate(batch.getCreateTime()));
+                value.append(".  ");
+                List<IncomingBatchHistory> list = filterOutIncomingHistoryErrors(incomingBatchService
+                        .findIncomingBatchHistory(batch.getBatchId(), batch
+                                .getNodeId()));
+                if (list.size() > 0) {
+                    value.append("The batch has been attempted ");
+                    value.append(list.size());
+                    value.append(" times.  ");
+                    IncomingBatchHistory history = list.get(list.size() - 1);
+                    int sqlCode = history.getSqlCode();
+                    String msg = history.getSqlMessage();
+                    if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
+                        value.append("The sql error code is ");
+                        value.append(sqlCode);
+                        value.append(" and the error message is: ");
+                        value.append(msg);
+                    }
                 }
-            }
-            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), nodeService.findNode(batch.getNodeId()).getSyncURL() + "/batch/" + batch.getBatchId()));
-        }
-
-        for (OutgoingBatch batch : findOutgoingBatchErrors()) {
-            String title = "Outgoing Batch " + batch.getNodeBatchId();
-            StringBuilder value = new StringBuilder("Node ");
-            value.append(batch.getNodeId());
-            value.append(" outgoing batch ");
-            value.append(batch.getBatchId());
-            value.append(" is in error at ");
-            value.append(formatDate(batch.getCreateTime()));
-            value.append(".  ");
-            List<OutgoingBatchHistory> histories = filterOutOutgoingHistoryErrors(outgoingBatchService
-                    .findOutgoingBatchHistory(batch.getBatchId(), batch.getNodeId()));
-            if (histories.size() > 0) {
-                value.append("The batch has been attempted ");
-                value.append(histories.size());
-                value.append(" times.  ");
-                OutgoingBatchHistory history = histories.get(histories.size() - 1);
-                int sqlCode = history.getSqlCode();
-                String msg = history.getSqlMessage();
-                if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
-                    value.append("The sql error code is ");
-                    value.append(sqlCode);
-                    value.append(" and the error message is: ");
-                    value.append(msg);
-                }
+                entries.add(createEntry(title, value.toString(), batch
+                        .getCreateTime(), nodeService.findNode(
+                        batch.getNodeId()).getSyncURL()
+                        + "/batch/" + batch.getBatchId()));
             }
 
-            entries.add(createEntry(title, value.toString(), batch.getCreateTime(), "batch/" + batch.getBatchId()));
+            for (OutgoingBatch batch : findOutgoingBatchErrors()) {
+                String title = "Outgoing Batch " + batch.getNodeBatchId();
+                StringBuilder value = new StringBuilder("Node ");
+                value.append(batch.getNodeId());
+                value.append(" outgoing batch ");
+                value.append(batch.getBatchId());
+                value.append(" is in error at ");
+                value.append(formatDate(batch.getCreateTime()));
+                value.append(".  ");
+                List<OutgoingBatchHistory> histories = filterOutOutgoingHistoryErrors(outgoingBatchService
+                        .findOutgoingBatchHistory(batch.getBatchId(), batch
+                                .getNodeId()));
+                if (histories.size() > 0) {
+                    value.append("The batch has been attempted ");
+                    value.append(histories.size());
+                    value.append(" times.  ");
+                    OutgoingBatchHistory history = histories.get(histories
+                            .size() - 1);
+                    int sqlCode = history.getSqlCode();
+                    String msg = history.getSqlMessage();
+                    if (sqlCode > 0 || !StringUtils.isBlank(msg)) {
+                        value.append("The sql error code is ");
+                        value.append(sqlCode);
+                        value.append(" and the error message is: ");
+                        value.append(msg);
+                    }
+                }
+
+                entries.add(createEntry(title, value.toString(), batch
+                        .getCreateTime(), "batch/" + batch.getBatchId()));
+            }
+
+            Collections.sort(entries, new SyndEntryOrderer());
+            feed.setEntries(entries);
+
+            SyndFeedOutput out = new SyndFeedOutput();
+            out.output(feed, outputWriter);
+        } catch (FeedException e) {
+            throw new IOException(e);
         }
-
-        Collections.sort(entries, new SyndEntryOrderer());
-        feed.setEntries(entries);
-
-        SyndFeedOutput out = new SyndFeedOutput();
-        out.output(feed, outputWriter);
     }
 
-    private List<IncomingBatchHistory> filterOutIncomingHistoryErrors(List<IncomingBatchHistory> list) {
-        for (Iterator<IncomingBatchHistory> iterator = list.iterator(); iterator.hasNext();) {
+    private List<IncomingBatchHistory> filterOutIncomingHistoryErrors(
+            List<IncomingBatchHistory> list) {
+        for (Iterator<IncomingBatchHistory> iterator = list.iterator(); iterator
+                .hasNext();) {
             IncomingBatchHistory outgoingBatchHistory = iterator.next();
             if (outgoingBatchHistory.getStatus() != org.jumpmind.symmetric.model.IncomingBatchHistory.Status.ER) {
                 iterator.remove();
@@ -149,8 +165,10 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return list;
     }
 
-    private List<OutgoingBatchHistory> filterOutOutgoingHistoryErrors(List<OutgoingBatchHistory> list) {
-        for (Iterator<OutgoingBatchHistory> iterator = list.iterator(); iterator.hasNext();) {
+    private List<OutgoingBatchHistory> filterOutOutgoingHistoryErrors(
+            List<OutgoingBatchHistory> list) {
+        for (Iterator<OutgoingBatchHistory> iterator = list.iterator(); iterator
+                .hasNext();) {
             OutgoingBatchHistory outgoingBatchHistory = iterator.next();
             if (outgoingBatchHistory.getStatus() != Status.ER) {
                 iterator.remove();
@@ -165,7 +183,8 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         }
     }
 
-    private SyndEntry createEntry(String title, String value, Date publishedDate, String sourceLink) {
+    private SyndEntry createEntry(String title, String value,
+            Date publishedDate, String sourceLink) {
         SyndEntry entry = new SyndEntryImpl();
         entry.setTitle(title);
         if (sourceLink != null) {
@@ -196,7 +215,8 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return incomingBatchService;
     }
 
-    public void setIncomingBatchService(IIncomingBatchService incomingBatchService) {
+    public void setIncomingBatchService(
+            IIncomingBatchService incomingBatchService) {
         this.incomingBatchService = incomingBatchService;
     }
 
@@ -204,7 +224,8 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return outgoingBatchService;
     }
 
-    public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
+    public void setOutgoingBatchService(
+            IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
 

@@ -43,7 +43,7 @@ public class MockDataExtractorService implements IDataExtractorService {
     public void extractConfigurationStandalone(Node node, BufferedWriter out) throws IOException {
     }
 
-    public boolean extract(Node node, IOutgoingTransport transport) throws Exception {
+    public boolean extract(Node node, IOutgoingTransport transport) throws IOException {
         return false;
     }
 
@@ -52,11 +52,11 @@ public class MockDataExtractorService implements IDataExtractorService {
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
-            throws Exception {
+            throws IOException {
         return false;
     }
 
-    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws Exception {
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws IOException {
         return false;
     }
 

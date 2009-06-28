@@ -50,7 +50,6 @@ public abstract class AbstractFilter extends ServletResourceTemplate implements 
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
                 BeanUtils.copyProperties(springBean, this, this.getClass());
-                this.refresh();
             }
         }
     }

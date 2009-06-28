@@ -31,8 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.handler.AckResourceHandler;
@@ -43,8 +41,6 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
 
     private static final long serialVersionUID = 1L;
 
-    protected static final Log logger = LogFactory.getLog(AckServlet.class);
-
     @Override
     public boolean isContainerCompatible() {
         return true;
@@ -52,7 +48,7 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         AckResourceHandler ackService = getTransportResourceHandler();
         if (logger.isDebugEnabled()) {
@@ -71,9 +67,5 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
             return batchId1.compareTo(batchId2);
         }
     }
-
-    @Override
-    protected Log getLogger() {
-        return logger;
-    }
+    
 }

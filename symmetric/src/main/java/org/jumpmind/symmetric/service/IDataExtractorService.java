@@ -48,12 +48,12 @@ public interface IDataExtractorService {
     /**
      * @return true if work was done or false if there was no work to do.
      */
-    public boolean extract(Node node, IOutgoingTransport transport) throws Exception;
+    public boolean extract(Node node, IOutgoingTransport transport) throws IOException;
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
-            throws Exception;
+            throws IOException;
 
-    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws Exception;
+    public boolean extractBatchRange(IExtractListener handler, String startBatchId, String endBatchId) throws IOException;
 
     public void addExtractorFilter(IExtractorFilter extractorFilter);
 

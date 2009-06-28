@@ -21,11 +21,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -47,30 +43,10 @@ public class ServletResourceTemplate implements IServletResource {
 
     private boolean disabled;
     protected String[] uriPatterns;
-    private String[] regexPatterns;
-    protected Pattern[] compiledRegexPatterns;
     protected IParameterService parameterService;
 
     public void init(ServletContext servletContext) {
         this.servletContext = servletContext;
-        compileRegexPatterns();
-    }
-
-    public void refresh() {
-        compileRegexPatterns();
-    }
-
-    protected void compileRegexPatterns() {
-        final List<Pattern> compiledRegexPatterns;
-        if (!ArrayUtils.isEmpty(regexPatterns)) {
-            compiledRegexPatterns = new ArrayList<Pattern>(regexPatterns.length);
-            for (String regexPattern : regexPatterns) {
-                compiledRegexPatterns.add(Pattern.compile(regexPattern));
-            }
-        } else {
-            compiledRegexPatterns = Collections.emptyList();
-        }
-        this.compiledRegexPatterns = compiledRegexPatterns.toArray(new Pattern[compiledRegexPatterns.size()]);
     }
 
     public void setDisabled(boolean disabled) {
@@ -85,36 +61,12 @@ public class ServletResourceTemplate implements IServletResource {
         this.uriPatterns = uriPatterns;
     }
 
-    public void setRegexPattern(String regexPattern) {
-        this.regexPatterns = new String[] { regexPattern };
-    }
-
-    public void setRegexPatterns(String[] regexPatterns) {
-        this.regexPatterns = regexPatterns;
-    }
-
     public boolean isDisabled() {
         return disabled;
     }
 
     public String[] getUriPatterns() {
         return uriPatterns;
-    }
-
-    public String[] getRegexPatterns() {
-        return regexPatterns;
-    }
-
-    protected boolean matchesRegexPatterns(String uri) {
-        boolean retVal = false;
-        for (int i = 0; !retVal && i < compiledRegexPatterns.length; i++) {
-            retVal = matchesRegexPattern(uri, compiledRegexPatterns[i]);
-        }
-        return retVal;
-    }
-
-    protected boolean matchesRegexPattern(String uri, Pattern compiledRegexPattern) {
-        return compiledRegexPattern.matcher(uri).matches();
     }
 
     protected boolean matchesUriPatterns(String uri) {
@@ -160,9 +112,7 @@ public class ServletResourceTemplate implements IServletResource {
             final String uri = normalizeRequestUri(httpRequest);
             if (!ArrayUtils.isEmpty(uriPatterns)) {
                 retVal = matchesUriPatterns(uri);
-            } else if (!ArrayUtils.isEmpty(compiledRegexPatterns)) {
-                retVal = matchesRegexPatterns(uri);
-            }
+            } 
         }
         return retVal;
     }

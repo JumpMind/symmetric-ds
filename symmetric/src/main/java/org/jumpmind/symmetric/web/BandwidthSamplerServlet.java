@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.web;
 
+import java.io.IOException;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -8,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.AppUtils;
 
 /**
  * This Servlet streams the number of bytes requested by the sampleSize
@@ -31,7 +34,7 @@ public class BandwidthSamplerServlet extends AbstractResourceServlet {
     }
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         long testSlowBandwidthDelay = parameterService != null ? parameterService.getLong("test.slow.bandwidth.delay")
                 : defaultTestSlowBandwidthDelay;
 
@@ -45,8 +48,8 @@ public class BandwidthSamplerServlet extends AbstractResourceServlet {
         ServletOutputStream os = resp.getOutputStream();
         for (int i = 0; i < sampleSize; i++) {
             os.write(1);
-            if (testSlowBandwidthDelay > 0) {
-                Thread.sleep(testSlowBandwidthDelay);
+            if (testSlowBandwidthDelay > 0) {                
+                AppUtils.sleep(testSlowBandwidthDelay);
             }
         }
     }

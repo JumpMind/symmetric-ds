@@ -21,18 +21,24 @@
 
 package org.jumpmind.symmetric.web;
 
+import java.io.IOException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -65,11 +71,10 @@ public class SymmetricServlet extends AbstractServlet {
 
     private static final Log logger = LogFactory.getLog(SymmetricServlet.class);
 
-    private List<HttpServlet> servlets;
+    private List<IServletExtension> servlets;
 
     @Override
     protected Log getLogger() {
-
         return logger;
     }
 
@@ -77,112 +82,128 @@ public class SymmetricServlet extends AbstractServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        servlets = new ArrayList<HttpServlet>();
+        servlets = new ArrayList<IServletExtension>();
         ApplicationContext ctx = getDefaultApplicationContext();
-        final Map<String, HttpServlet> servletBeans = new LinkedHashMap<String, HttpServlet>();
-        servletBeans.putAll(ctx.getBeansOfType(HttpServlet.class));
+        final Map<String, IServletExtension> servletBeans = new LinkedHashMap<String, IServletExtension>();
+        servletBeans.putAll(ctx.getBeansOfType(IServletExtension.class));
         if (ctx.getParent() != null) {
-            servletBeans.putAll(ctx.getParent().getBeansOfType(HttpServlet.class));
+            servletBeans.putAll(ctx.getParent().getBeansOfType(
+                    IServletExtension.class));
         }
-        // they will need to be sorted somehow, right now its just the order
-        // they appear in the spring file
-        for (final Map.Entry<String, HttpServlet> servletEntry : servletBeans.entrySet()) {
+        // TODO order using initOrder
+        for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans
+                .entrySet()) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Initializing servlet %s", servletEntry.getKey()));
+                logger.info(String.format("Initializing servlet %s",
+                        servletEntry.getKey()));
             }
-            final HttpServlet servlet = servletEntry.getValue();
-            servlet.init(this.getServletConfig());
-            servlets.add(servlet);
+            final IServletExtension extension = servletEntry.getValue();
+            extension.getServlet().init(config);
+            servlets.add(extension);
         }
     }
 
     public void destroy() {
-        for (final HttpServlet servlet : servlets) {
-            servlet.destroy();
+        for (final IServletExtension extension : servlets) {
+            extension.getServlet().destroy();
         }
     }
 
-    protected AbstractResourceServlet findMatchingServlet(HttpServletRequest req, HttpServletResponse resp) {
-        AbstractResourceServlet retVal = null;
-        for (Iterator<HttpServlet> iterator = servlets.iterator(); retVal == null && iterator.hasNext();) {
-            HttpServlet servlet = iterator.next();
-            if (servlet instanceof AbstractResourceServlet) {
-                final AbstractResourceServlet builtinServlet = (AbstractResourceServlet) servlet;
-                if (!builtinServlet.isDisabled() && builtinServlet.matches(req)) {
-                    retVal = builtinServlet;
-                }
+    protected Servlet findMatchingServlet(ServletRequest req,
+            ServletResponse resp) {
+        Servlet retVal = null;
+        for (Iterator<IServletExtension> iterator = servlets.iterator(); retVal == null
+                && iterator.hasNext();) {
+            IServletExtension extension = iterator.next();
+            if (!extension.isDisabled() && matches(extension, req)) {
+                retVal = extension.getServlet();
             }
         }
         return retVal;
     }
 
-    @Override
-    protected void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handleDelete(req, resp);
-        } else {
-            super.handleDelete(req, resp);
+    public boolean matches(IServletExtension ext, ServletRequest request) {
+        boolean retVal = true;
+        if (request instanceof HttpServletRequest) {
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            final String uri = normalizeRequestUri(httpRequest);
+            if (!ArrayUtils.isEmpty(ext.getUriPatterns())) {
+                retVal = matchesUriPatterns(uri, ext.getUriPatterns());
+            }
         }
+        return retVal;
+    }
+
+    protected boolean matchesUriPatterns(String uri, String[] uriPatterns) {
+        boolean retVal = false;
+        for (int i = 0; !retVal && i < uriPatterns.length; i++) {
+            retVal = matchesUriPattern(uri, uriPatterns[i]);
+        }
+        return retVal;
+    }
+
+    protected boolean matchesUriPattern(String uri, String uriPattern) {
+        boolean retVal = false;
+        String path = StringUtils.defaultIfEmpty(uri, "/");
+        final String pattern = StringUtils.defaultIfEmpty(uriPattern, "/");
+        if ("/".equals(pattern) || "/*".equals(pattern) || pattern.equals(path)) {
+            retVal = true;
+        } else {
+            final String[] patternParts = StringUtils.split(pattern, "/");
+            final String[] pathParts = StringUtils.split(path, "/");
+            boolean matches = true;
+            for (int i = 0; i < patternParts.length && i < pathParts.length
+                    && matches; i++) {
+                final String patternPart = patternParts[i];
+                matches = "*".equals(patternPart)
+                        || patternPart.equals(pathParts[i]);
+            }
+            retVal = matches;
+        }
+        return retVal;
+    }
+
+    /**
+     * Returns the part of the path we are interested in when doing pattern
+     * matching. This should work whether or not the servlet or filter is
+     * explicitly mapped inside of the web.xml since it always strips off the
+     * contextPath.
+     * 
+     * @param httpRequest
+     * @return
+     */
+    protected String normalizeRequestUri(HttpServletRequest httpRequest) {
+        String retVal = httpRequest.getRequestURI();
+        String contextPath = httpRequest.getContextPath();
+        if (retVal.startsWith(contextPath)) {
+            retVal = retVal.substring(contextPath.length());
+        }
+        return retVal;
     }
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
+    public void service(ServletRequest req, ServletResponse res)
+            throws ServletException, IOException {
+        Servlet servlet = findMatchingServlet(req, res);
         if (servlet != null) {
-            servlet.handleGet(req, resp);
-        } else {
-            super.handleGet(req, resp);
-        }
-    }
-
-    @Override
-    protected void handleHead(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handleHead(req, resp);
-        } else {
-            super.handleHead(req, resp);
-        }
-    }
-
-    @Override
-    protected void handleOptions(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handleOptions(req, resp);
-        } else {
-            super.handleOptions(req, resp);
-        }
-    }
-
-    @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handlePost(req, resp);
-        } else {
-            super.handlePost(req, resp);
-        }
-    }
-
-    @Override
-    protected void handlePut(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handlePut(req, resp);
-        } else {
-            super.handlePut(req, resp);
-        }
-    }
-
-    @Override
-    protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        AbstractResourceServlet servlet = findMatchingServlet(req, resp);
-        if (servlet != null) {
-            servlet.handleTrace(req, resp);
-        } else {
-            super.handleTrace(req, resp);
+            try {
+                servlet.service(req, res);
+            } catch (SocketException e) {
+                if (getLogger().isWarnEnabled()) {
+                    getLogger().warn(
+                            "Socket issue while processing HTTP method ", e);
+                }
+            } catch (Exception e) {
+                if (getLogger().isErrorEnabled()) {
+                    getLogger().error("uncaught exception on GET method", e);
+                }
+                if (!res.isCommitted()) {
+                    if (res instanceof HttpServletResponse) {
+                        ((HttpServletResponse) res)
+                                .sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    }
+                }
+            }
         }
     }
 
