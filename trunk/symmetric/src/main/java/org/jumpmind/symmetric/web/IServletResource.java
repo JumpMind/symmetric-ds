@@ -38,19 +38,11 @@ public interface IServletResource {
 
     public abstract void setUriPatterns(String[] uriPatterns);
 
-    public abstract void setRegexPattern(String regexPattern);
-
-    public abstract void setRegexPatterns(String[] regexPatterns);
-
     public abstract boolean isDisabled();
 
     public abstract String[] getUriPatterns();
 
-    public abstract String[] getRegexPatterns();
-
     public abstract void destroy();
-
-    public abstract void refresh();
 
     /**
      * Returns true if the request path matches the uriPattern on this filter.

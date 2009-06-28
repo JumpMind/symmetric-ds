@@ -277,7 +277,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         });
     }
 
-    public boolean extract(Node node, IOutgoingTransport targetTransport) throws Exception {
+    public boolean extract(Node node, IOutgoingTransport targetTransport) throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
         List<NodeChannel> channels = configurationService.getChannels();
@@ -333,8 +333,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler)
-            throws Exception {
+    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws IOException {
         OutgoingBatchHistory history = null;
         try {
             boolean initialized = false;
@@ -379,28 +378,44 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public boolean extractBatchRange(IOutgoingTransport transport, String startBatchId, String endBatchId)
-            throws Exception {
+            throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(null);
         ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
         return extractBatchRange(handler, startBatchId, endBatchId);
     }
-
-    public boolean extractBatchRange(final IExtractListener handler, String startBatchId, String endBatchId)
-            throws Exception {
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
-
-        if (batches != null && batches.size() > 0) {
-            try {
-                handler.init();
-                for (final OutgoingBatch batch : batches) {
-                    handler.startBatch(batch);
-                    selectEventDataToExtract(handler, batch);
-                    handler.endBatch(batch);
+    
+    private boolean areNumeric(String... data) {
+        if (data != null) {
+            for (String string : data) {
+                try {
+                    Long.parseLong(string);
+                } catch (NumberFormatException e) {
+                    return false;
                 }
-            } finally {
-                handler.done();
             }
-            return true;
+        }
+        return true;
+    }
+
+    public boolean extractBatchRange(final IExtractListener handler,
+            String startBatchId, String endBatchId) throws IOException {
+        if (areNumeric(startBatchId, endBatchId)) {
+            List<OutgoingBatch> batches = outgoingBatchService
+                    .getOutgoingBatchRange(startBatchId, endBatchId);
+
+            if (batches != null && batches.size() > 0) {
+                try {
+                    handler.init();
+                    for (final OutgoingBatch batch : batches) {
+                        handler.startBatch(batch);
+                        selectEventDataToExtract(handler, batch);
+                        handler.endBatch(batch);
+                    }
+                } finally {
+                    handler.done();
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -474,12 +489,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         BufferedWriter writer;
 
-        ExtractStreamHandler(IDataExtractor dataExtractor, IOutgoingTransport transport) throws Exception {
+        ExtractStreamHandler(IDataExtractor dataExtractor, IOutgoingTransport transport) throws IOException {
             this.transport = transport;
             this.dataExtractor = dataExtractor;
         }
 
-        public void dataExtracted(Data data) throws Exception {
+        public void dataExtracted(Data data) throws IOException {
             if (extractorFilters != null) {
                 for (IExtractorFilter filter : extractorFilters) {
                     if (!filter.filterData(data, context)) {
@@ -494,17 +509,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public void done() throws IOException {
         }
 
-        public void endBatch(OutgoingBatch batch) throws Exception {
+        public void endBatch(OutgoingBatch batch) throws IOException {
             dataExtractor.commit(batch, writer);
         }
 
-        public void init() throws Exception {
+        public void init() throws IOException {
             this.writer = transport.open();
             this.context = DataExtractorService.this.clonableContext.copy(dataExtractor);
             dataExtractor.init(writer, context);
         }
 
-        public void startBatch(OutgoingBatch batch) throws Exception {
+        public void startBatch(OutgoingBatch batch) throws IOException {
             context.setBatch(batch);
             dataExtractor.begin(batch, writer);
         }

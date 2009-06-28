@@ -23,20 +23,18 @@
 
 package org.jumpmind.symmetric.web;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.handler.BatchResourceHandler;
 
 /**
  * Allows for the request of a batch by id.
  */
 public class BatchServlet extends AbstractTransportResourceServlet<BatchResourceHandler> {
-
-    private static final Log logger = LogFactory.getLog(BatchServlet.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -46,12 +44,12 @@ public class BatchServlet extends AbstractTransportResourceServlet<BatchResource
     }
 
     @Override
-    public void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        handlePost(req, resp);
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        doPost(req, resp);
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/plain");
         String path = req.getPathInfo();
         if (!StringUtils.isBlank(path)) {
@@ -59,15 +57,12 @@ public class BatchServlet extends AbstractTransportResourceServlet<BatchResource
             String batchId = path.substring(batchIdStartIndex);
             if (!getTransportResourceHandler().write(batchId, resp.getOutputStream())) {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                resp.flushBuffer();
             }
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
-    }
-
-    @Override
-    protected Log getLogger() {
-        return logger;
     }
 
 }

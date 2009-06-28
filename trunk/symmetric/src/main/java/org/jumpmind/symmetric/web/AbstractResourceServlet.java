@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.web;
 
 import java.util.Iterator;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -36,11 +37,12 @@ import org.springframework.beans.BeanUtils;
  * @param <T>
  */
 public abstract class AbstractResourceServlet extends AbstractServlet implements
-        IServletResource {
+        IServletResource, IServletExtension {
 
     private static final long serialVersionUID = 1L;
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
-
+    private int initOrder;
+    
     /**
      * Returns true if this should be container compatible
      * 
@@ -49,6 +51,22 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
     public boolean isContainerCompatible() {
         return false;
     }
+    
+    public int getInitOrder() {
+        return this.initOrder;
+    }
+    
+    public void setInitOrder(int initOrder) {
+        this.initOrder = initOrder;
+    }
+    
+    public Servlet getServlet() {
+        return this;
+    }
+    
+    public boolean isAutoRegister() {
+        return true;
+    }
 
     public void destroy() {
         servletResourceTemplate.destroy();
@@ -56,10 +74,6 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
 
     public boolean isDisabled() {
         return servletResourceTemplate.isDisabled();
-    }
-
-    public String[] getRegexPatterns() {
-        return servletResourceTemplate.getRegexPatterns();
     }
 
     public String[] getUriPatterns() {
@@ -76,14 +90,6 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
     
     public void setEnabled(boolean enabled) {
         servletResourceTemplate.setDisabled(!enabled);
-    }
-
-    public void setRegexPattern(String regexPattern) {
-        servletResourceTemplate.setRegexPattern(regexPattern);
-    }
-
-    public void setRegexPatterns(String[] regexPatterns) {
-        servletResourceTemplate.setRegexPatterns(regexPatterns);
     }
 
     public void setUriPattern(String uriPattern) {
@@ -111,8 +117,6 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
                 BeanUtils.copyProperties(springBean, this, this.getClass());
-
-                this.refresh();
             }
         }
     }
@@ -154,9 +158,5 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
 
     public void init(ServletContext servletContext) {
         servletResourceTemplate.init(servletContext);
-    }
-
-    public void refresh() {
-        servletResourceTemplate.refresh();
     }
 }

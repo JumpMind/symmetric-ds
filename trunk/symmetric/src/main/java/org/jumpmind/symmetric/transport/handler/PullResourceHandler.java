@@ -23,6 +23,7 @@
 
 package org.jumpmind.symmetric.transport.handler;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
@@ -45,7 +46,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     private IRegistrationService registrationService;
 
-    public void pull(String nodeId, OutputStream outputStream) throws Exception {
+    public void pull(String nodeId, OutputStream outputStream) throws IOException {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
         if (nodeSecurity != null) {

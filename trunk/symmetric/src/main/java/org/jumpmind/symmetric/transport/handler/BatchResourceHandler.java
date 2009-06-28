@@ -21,6 +21,7 @@
 
 package org.jumpmind.symmetric.transport.handler;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -30,10 +31,9 @@ public class BatchResourceHandler extends AbstractTransportResourceHandler {
 
     private IDataExtractorService dataExtractorService;
 
-    public boolean write(String batchId, OutputStream os) throws Exception {
+    public boolean write(String batchId, OutputStream os) throws IOException {
         IOutgoingTransport transport = createOutgoingTransport(os);
         boolean foundBatch = dataExtractorService.extractBatchRange(transport, batchId, batchId);
-        transport.close();
         return foundBatch;
     }
 

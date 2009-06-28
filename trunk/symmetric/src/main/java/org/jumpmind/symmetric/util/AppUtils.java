@@ -26,12 +26,16 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 
 public class AppUtils {
 
+    private static Log logger = LogFactory.getLog(AppUtils.class);
+    
     private static String serverId;
 
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
@@ -100,5 +104,13 @@ public class AppUtils {
      */
     public static File createTempFile(String token) throws IOException {
         return File.createTempFile("sym." + token + ".", ".tmp");
+    }
+    
+    public static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            logger.warn(e.getMessage());
+        }
     }
 }

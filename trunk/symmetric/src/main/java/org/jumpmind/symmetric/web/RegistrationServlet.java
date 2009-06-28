@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.handler.RegistrationResourceHandler;
@@ -41,15 +39,13 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
 
     private static final long serialVersionUID = 1L;
 
-    protected static final Log logger = LogFactory.getLog(RegistrationServlet.class);
-
     @Override
     public boolean isContainerCompatible() {
         return true;
     }
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Node node = transform(req);
 
         try {
@@ -78,11 +74,6 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
         node.setDatabaseType(getParameter(req, WebConstants.DATABASE_TYPE));
         node.setDatabaseVersion(getParameter(req, WebConstants.DATABASE_VERSION));
         return node;
-    }
-
-    @Override
-    protected Log getLogger() {
-        return logger;
     }
 
 }
