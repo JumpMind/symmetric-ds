@@ -149,7 +149,8 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
             SyndFeedOutput out = new SyndFeedOutput();
             out.output(feed, outputWriter);
         } catch (FeedException e) {
-            throw new IOException(e);
+            logger.warn(e,e);
+            throw new IOException(e.getMessage());
         }
     }
 
