@@ -26,6 +26,8 @@ package org.jumpmind.symmetric.transport.handler;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
@@ -45,6 +47,8 @@ import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
  */
 public abstract class AbstractTransportResourceHandler implements ITransportResourceHandler {
 
+    final protected Log logger = LogFactory.getLog(getClass());
+    
     protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream) throws IOException {
         return new InternalOutgoingTransport(outputStream);
     }
