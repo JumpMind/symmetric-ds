@@ -67,15 +67,23 @@ public class ParameterService extends AbstractService implements IParameterServi
         this.beanFactory = beanFactory;
     }
 
-    public BigDecimal getDecimal(String key) {
+    public BigDecimal getDecimal(String key, BigDecimal defaultVal) {
         String val = getString(key);
         if (val != null) {
             return new BigDecimal(val);
         }
-        return BigDecimal.ZERO;
+        return defaultVal;
+    }
+    
+    public BigDecimal getDecimal(String key) {
+        return getDecimal(key, BigDecimal.ZERO);
+    }
+    
+    public boolean is(String key) {
+        return is(key, false);   
     }
 
-    public boolean is(String key) {
+    public boolean is(String key, boolean defaultVal) {
         String val = getString(key);
         if (val != null) {
             if (val.equals("1")) {
@@ -89,30 +97,35 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public int getInt(String key) {
+        return getInt(key, 0);
+    }
+    
+    public int getInt(String key, int defaultVal) {
         String val = getString(key);
         if (val != null) {
             return Integer.parseInt(val);
         }
-        return 0;
+        return defaultVal;
+    }
+    
+    public long getLong(String key) {
+        return getLong(key, 0);
     }
 
-    public long getLong(String key) {
+    public long getLong(String key, long defaultVal) {
         String val = getString(key);
         if (val != null) {
             return Long.parseLong(val);
         }
-        return 0;
+        return defaultVal;
+    }
+    
+    public String getString(String key) {
+        return getString(key, null);
     }
 
-    public String getString(String key) {
+    public String getString(String key, String defaultVal) {
         String value = null;
-        // TODO remove in 2.0
-        if (!key.startsWith("symmetric.")) {
-            value = getString("symmetric." + key);
-            if (StringUtils.isBlank(value) && !key.startsWith("symmetric.runtime.")) {
-                value = getString("symmetric.runtime." + key);
-            }
-        }
 
         if (StringUtils.isBlank(value)) {
             value = getParameters().get(key);
@@ -122,7 +135,7 @@ public class ParameterService extends AbstractService implements IParameterServi
             value = this.parameterFilter.filterParameter(key, value);
         }
 
-        return value;
+        return StringUtils.isBlank(value) ? defaultVal : value;
     }
 
     /**

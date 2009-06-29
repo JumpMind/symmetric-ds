@@ -34,14 +34,24 @@ public interface IParameterService {
     public static final String ALL = "ALL";
 
     public BigDecimal getDecimal(String key);
+    
+    public BigDecimal getDecimal(String key, BigDecimal defaulVal);
 
     public boolean is(String key);
+    
+    public boolean is(String key, boolean defaultVal);
 
     public int getInt(String key);
+    
+    public int getInt(String key, int defaultVal);
 
     public long getLong(String key);
+    
+    public long getLong(String key, long defaultVal);
 
     public String getString(String key);
+    
+    public String getString(String key, String defaultVal);
 
     public void saveParameter(String key, Object paramValue);
 
