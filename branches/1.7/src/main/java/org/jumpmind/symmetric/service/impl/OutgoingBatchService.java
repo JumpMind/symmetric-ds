@@ -72,6 +72,36 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     private IConfigurationService configurationService;
 
+    @Transactional
+    public void markAllAsSentForNode(String nodeId) {
+        List<NodeChannel> channels = configurationService.getChannels();
+        for (NodeChannel channel : channels) {
+            OutgoingBatch newBatch = new OutgoingBatch();
+            newBatch.setBatchType(BatchType.EVENTS);
+            newBatch.setChannelId(channel.getId());
+            newBatch.setNodeId(nodeId);
+            newBatch.setStatus(Status.OK);
+            long startTime = System.currentTimeMillis();
+            insertOutgoingBatch(newBatch);
+            int dataEventCount = jdbcTemplate.update(getSql("updateBatchedEventsMultiSql"), new Object[] {
+                    newBatch.getBatchId(), 1, 0, nodeId, newBatch.getChannelId() });
+            long databaseMillis = System.currentTimeMillis() - startTime;
+            OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
+            history.setEndTime(new Date());
+            history.setDataEventCount(dataEventCount);
+            history.setDatabaseMillis(databaseMillis);
+            insertOutgoingBatchHistory(history);
+        }
+        
+        List<OutgoingBatch> batches = null;
+        do {
+            batches = getOutgoingBatches(nodeId);
+            for (OutgoingBatch outgoingBatch : batches) {
+                setBatchStatus(outgoingBatch.getBatchId(), Status.OK);
+            }
+        } while (batches.size() > 0);
+    }
+    
     /**
      * Create a batch and mark events as tied to that batch. We iterate through
      * all the events so we can find a transaction boundary to stop on. <p/>

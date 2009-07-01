@@ -186,7 +186,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         
         // outgoing data events are pointless because we are reloading all data
-        purgeService.purgeAllOutgoingEventsForNode(targetNode.getNodeId());
+        outgoingBatchService.markAllAsSentForNode(targetNode.getNodeId());
 
         // insert node security so the client doing the initial load knows that an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);

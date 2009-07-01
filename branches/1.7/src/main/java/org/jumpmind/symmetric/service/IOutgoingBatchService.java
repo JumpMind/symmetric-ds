@@ -29,6 +29,9 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 
 public interface IOutgoingBatchService {
+    
+    public void markAllAsSentForNode(String nodeId);
+    
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch);
 
     @Deprecated
