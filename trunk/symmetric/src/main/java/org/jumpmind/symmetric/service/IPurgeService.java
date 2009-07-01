@@ -28,5 +28,4 @@ public interface IPurgeService {
     @Transactional
     public void purgeAllIncomingEventsForNode(String nodeId);
     
-    public void purgeAllOutgoingEventsForNode(String nodeId);
 }
