@@ -44,7 +44,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                         new Object[] { triggerName }) > 0;
         if (!exists) {
-            exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ?",
+            exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
                     new Object[] { String.format("%s_VIEW", triggerName) }) > 0;
         }
         return exists;
@@ -80,7 +80,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
             String tableName, TriggerHistory oldHistory) {
         final String dropSql = String.format("DROP TRIGGER IF EXISTS %s", triggerName);
         logSql(dropSql, sqlBuffer);
-        final String dropView = String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName);
+        final String dropView = String.format("DROP TABLE IF EXISTS %s_VIEW", triggerName);
         logSql(dropView, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
@@ -90,7 +90,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
                 }
                 count = jdbcTemplate.update(dropView);
                 if (count > 0) {
-                    logger.info(String.format("Just dropped view %s_VIEW", triggerName));
+                    logger.info(String.format("Just dropped table %s_VIEW", triggerName));
                 }
             } catch (Exception e) {
                 logger.warn("Error removing " + triggerName + ": " + e.getMessage());
