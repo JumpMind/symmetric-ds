@@ -39,19 +39,21 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName, String triggerName) {
         if (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ?",
                 new Object[] { String.format("%s_VIEW", triggerName) }) > 0) {
             // This is for upgrade to get rid of view.
             jdbcTemplate.update(String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName));
         }
-        boolean exists = jdbcTemplate
-                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
-                        new Object[] { triggerName }) > 0;
+        boolean exists = 
+            (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
+                        new Object[] { triggerName }) > 0) &&        
+            (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
+                    new Object[] { String.format("%s_VIEW", triggerName) }) > 0);    
+        
         if (!exists) {
-            exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
-                    new Object[] { String.format("%s_VIEW", triggerName) }) > 0;
-        }       
+            removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
+        }
         return exists;
     }
 
