@@ -32,6 +32,7 @@ import java.net.SocketException;
 import java.util.zip.GZIPInputStream;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -97,13 +98,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handleGet(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing GET method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on GET method", e);
-            }
+            logException(req, e, true);
             if (!resp.isCommitted()) {
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
@@ -131,13 +128,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handlePost(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing POST method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on POST method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -162,13 +155,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handlePut(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing PUT method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on PUT method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -194,13 +183,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handleDelete(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing DELETE method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on DELETE method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -225,13 +210,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handleHead(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing HEAD method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on HEAD method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -256,13 +237,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handleOptions(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing data ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on OPTIONS method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -287,13 +264,9 @@ abstract public class AbstractServlet extends HttpServlet {
         try {
             handleTrace(req, resp);
         } catch (SocketException e) {
-            if (getLogger().isWarnEnabled()) {
-                getLogger().warn("Socket issue while processing TRACE method ", e);
-            }
+            logException(req, e, false);
         } catch (Exception e) {
-            if (getLogger().isErrorEnabled()) {
-                getLogger().error("uncaught exception on TRACE method", e);
-            }
+            logException(req, e, true);
             sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
@@ -311,6 +284,23 @@ abstract public class AbstractServlet extends HttpServlet {
      */
     protected void handleTrace(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         sendError(resp, HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+    }
+    
+    protected void logException(ServletRequest req, Exception ex, boolean isError) {
+        String nodeId = req.getParameter(WebConstants.NODE_ID);
+        String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
+        String address = req.getRemoteAddr();
+        String hostName = req.getRemoteHost();
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest)req).getMethod() : "";
+        if (getLogger().isErrorEnabled() && isError) {
+            getLogger().error(
+                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s)", method,
+                            externalId, nodeId, address, hostName), ex);
+        } else if (getLogger().isWarnEnabled()) {
+            getLogger().warn(
+                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s", method,
+                            externalId, nodeId, address, hostName, ex.getMessage()));
+        }
     }
 
     /**
