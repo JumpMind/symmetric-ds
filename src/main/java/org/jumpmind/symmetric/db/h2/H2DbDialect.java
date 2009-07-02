@@ -40,13 +40,20 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
+        // This is for upgrade to get rid of view.
+        jdbcTemplate.update(String.format("DROP VIEW IF EXISTS %s_VIEW", triggerName));
         boolean exists = jdbcTemplate
                 .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
                         new Object[] { triggerName }) > 0;
-        if (!exists) {
+        if (exists) {
             exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
                     new Object[] { String.format("%s_VIEW", triggerName) }) > 0;
         }
+        if (exists) {
+            // TODO Remove in 2.0.  This is for the move away from using views
+            exists = jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ?",
+                    new Object[] { String.format("%s_VIEW", triggerName) }) == 0;
+        }        
         return exists;
     }
 
@@ -80,18 +87,20 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
             String tableName, TriggerHistory oldHistory) {
         final String dropSql = String.format("DROP TRIGGER IF EXISTS %s", triggerName);
         logSql(dropSql, sqlBuffer);
-        final String dropView = String.format("DROP TABLE IF EXISTS %s_VIEW", triggerName);
-        logSql(dropView, sqlBuffer);
+
+        final String dropTable = String.format("DROP TABLE IF EXISTS %s_VIEW", triggerName);
+        logSql(dropTable, sqlBuffer);
+        
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 int count = jdbcTemplate.update(dropSql);
                 if (count > 0) {
                     logger.info(String.format("Just dropped trigger %s", triggerName));
-                }
-                count = jdbcTemplate.update(dropView);
+                }                
+                count = jdbcTemplate.update(dropTable);
                 if (count > 0) {
                     logger.info(String.format("Just dropped table %s_VIEW", triggerName));
-                }
+                }                
             } catch (Exception e) {
                 logger.warn("Error removing " + triggerName + ": " + e.getMessage());
             }
