@@ -70,7 +70,10 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
         // Try to use latest version of platform, then fallback on default
         // platform
-        String productString = productName + majorVersion;
+        String productString = productName;
+        if (majorVersion > 0) {
+            productString += majorVersion;
+        }
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
@@ -158,7 +161,11 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         return (Integer) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData metaData = c.getMetaData();
-                return metaData.getDatabaseMajorVersion();
+                try {
+                    return metaData.getDatabaseMajorVersion();
+                } catch (UnsupportedOperationException e) {
+                    return 0;
+                }
             }
         });
     }
