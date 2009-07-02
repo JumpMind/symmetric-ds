@@ -189,14 +189,9 @@ public class SymmetricServlet extends AbstractServlet {
             try {
                 servlet.service(req, res);
             } catch (SocketException e) {
-                if (getLogger().isWarnEnabled()) {
-                    getLogger().warn(
-                            "Socket issue while processing HTTP method ", e);
-                }
+                logException(req, e, false);
             } catch (Exception e) {
-                if (getLogger().isErrorEnabled()) {
-                    getLogger().error("uncaught exception on GET method", e);
-                }
+                logException(req, e, true);                 
                 if (!res.isCommitted()) {
                     if (res instanceof HttpServletResponse) {
                         ((HttpServletResponse) res)
@@ -204,6 +199,23 @@ public class SymmetricServlet extends AbstractServlet {
                     }
                 }
             }
+        }
+    }
+    
+    protected void logException(ServletRequest req, Exception ex, boolean isError) {
+        String nodeId = req.getParameter(WebConstants.NODE_ID);
+        String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
+        String address = req.getRemoteAddr();
+        String hostName = req.getRemoteHost();
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest)req).getMethod() : "";
+        if (getLogger().isErrorEnabled() && isError) {
+            getLogger().error(
+                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s)", method,
+                            externalId, nodeId, address, hostName), ex);
+        } else if (getLogger().isWarnEnabled()) {
+            getLogger().warn(
+                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s", method,
+                            externalId, nodeId, address, hostName, ex.getMessage()));
         }
     }
 
