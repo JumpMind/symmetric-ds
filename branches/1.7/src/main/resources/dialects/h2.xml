@@ -70,7 +70,7 @@
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL VARCHAR(10000), INSERT_DATA_SQL VARCHAR(10000), INSERT_DATA_EVENT_SQL VARCHAR(10000));
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                 'select count(*) from $(virtualOldNewTable) where $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)', 
                                 'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time)
@@ -85,7 +85,7 @@
                         <entry key="updateTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL VARCHAR(10000), INSERT_DATA_SQL VARCHAR(10000), INSERT_DATA_EVENT_SQL VARCHAR(10000));
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                   'select count(*) from $(virtualOldNewTable) where $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)', 
                                   'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
@@ -100,7 +100,7 @@
                         <entry key="deleteTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL VARCHAR(10000), INSERT_DATA_SQL VARCHAR(10000), INSERT_DATA_EVENT_SQL VARCHAR(10000));
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                   'select count(*) from $(virtualOldNewTable) where $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)', 
                                   'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time)
