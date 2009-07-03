@@ -20,12 +20,14 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
+
+import org.jumpmind.symmetric.service.IConfigurationService;
 
 /**
  * This is the data that changed due to a data sync trigger firing.
- * 
- * @author chenson
  */
 public class Data {
 
@@ -50,10 +52,10 @@ public class Data {
     private String oldData;
 
     /**
-     * This is a reference to the audit row the trigger refered to when the data
+     * This is a reference to the triggerHistory row the trigger refered to when the data
      * event fired.
      */
-    private TriggerHistory triggerHistory;
+    private TriggerHistory triggerHistory;    
 
     private DataEventType eventType;
 
@@ -66,7 +68,7 @@ public class Data {
     private Date createTime;
 
     public Data(long dataId, String pkData, String rowData, DataEventType eventType, String tableName, Date createTime,
-            TriggerHistory audit) {
+            TriggerHistory triggerHistory) {
         super();
         this.dataId = dataId;
         this.pkData = pkData;
@@ -74,15 +76,28 @@ public class Data {
         this.eventType = eventType;
         this.tableName = tableName;
         this.createTime = createTime;
-        this.triggerHistory = audit;
+        this.triggerHistory = triggerHistory;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory audit) {
+    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory) {
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
         this.pkData = pkData;
-        this.triggerHistory = audit;
+        this.triggerHistory = triggerHistory;
+    }
+    
+    public Data(ResultSet results, IConfigurationService configurationService)
+            throws SQLException {
+        this.dataId = results.getLong(1);
+        this.tableName = results.getString(2);
+        this.eventType = DataEventType.getEventType(results.getString(3));
+        this.rowData = results.getString(4);
+        this.pkData = results.getString(5);
+        this.oldData = results.getString(6);
+        this.createTime = results.getDate(7);
+        int histId = results.getInt(8);
+        this.triggerHistory = configurationService.getHistoryRecordFor(histId);
     }
 
     public long getDataId() {
@@ -137,8 +152,8 @@ public class Data {
         return triggerHistory;
     }
 
-    public void setTriggerHistory(TriggerHistory audit) {
-        this.triggerHistory = audit;
+    public void setTriggerHistory(TriggerHistory triggerHistory) {
+        this.triggerHistory = triggerHistory;
     }
 
     public String getOldData() {

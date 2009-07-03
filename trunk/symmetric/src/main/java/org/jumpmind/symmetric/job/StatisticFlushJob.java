@@ -20,13 +20,9 @@
 
 package org.jumpmind.symmetric.job;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 public class StatisticFlushJob extends AbstractJob {
-
-    private static final Log logger = LogFactory.getLog(StatisticFlushJob.class);
 
     private IStatisticManager statisticManager;
 
@@ -36,11 +32,6 @@ public class StatisticFlushJob extends AbstractJob {
     @Override
     public void doJob() throws Exception {
         statisticManager.flush();
-    }
-
-    @Override
-    Log getLogger() {
-        return logger;
     }
 
     public void setStatisticManager(IStatisticManager statisticManager) {

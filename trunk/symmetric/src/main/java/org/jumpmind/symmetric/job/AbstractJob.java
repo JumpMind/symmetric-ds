@@ -41,7 +41,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     DataSource dataSource;
 
-    protected static final Log logger = LogFactory.getLog(AbstractJob.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     private boolean needsRescheduled;
 
@@ -82,21 +82,19 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
                 if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
                     doJob();
                 } else {
-                    getLogger().warn("Did not run job because the engine is not registered.");
+                    logger.warn("Did not run job because the engine is not registered.");
                 }
             } else {
                 logger.info("The engine is not currently started.");
             }
         } catch (final Throwable ex) {
-            getLogger().error(ex, ex);
+            logger.error(ex, ex);
         } finally {
             reschedule();
         }
     }
 
     abstract void doJob() throws Exception;
-
-    abstract Log getLogger();
 
     protected void reschedule() {
         if (needsRescheduled && engine != null && (engine.isStarted() || engine.isStarting())) {
@@ -107,8 +105,8 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
                     .getLong(rescheduleDelayParameter));
             jobManager.addTimer(timerName, timer);
             rescheduleImmediately = false;
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug(
+            if (logger.isDebugEnabled()) {
+                logger.debug(
                         "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
                                 + " ms delay.");
             }
@@ -118,9 +116,9 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     }
 
     protected void printDatabaseStats() {
-        if (getLogger().isDebugEnabled() && dataSource instanceof BasicDataSource) {
+        if (logger.isDebugEnabled() && dataSource instanceof BasicDataSource) {
             final BasicDataSource ds = (BasicDataSource) dataSource;
-            getLogger().debug("There are currently " + ds.getNumActive() + " active database connections.");
+            logger.debug("There are currently " + ds.getNumActive() + " active database connections.");
         }
     }
 

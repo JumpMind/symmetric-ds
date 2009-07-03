@@ -11,37 +11,6 @@
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="description" type="VARCHAR" size="1000" />
     </table>
-    
-    <!-- 2.0 tables
-    
-   <table name="data">
-       <column name="data_id" type="INTEGER" required="true" primaryKey="true"
-           autoIncrement="true" />
-       <column name="table_name" type="VARCHAR" size="50" required="true" />
-       <column name="event_type" type="CHAR" size="1" />
-       <column name="row_data" type="LONGVARCHAR" />
-       <column name="pk_data" type="LONGVARCHAR" />
-       <column name="old_data" type="LONGVARCHAR" />
-       <column name="trigger_hist_id" type="INTEGER" required="true" />
-       <column name="transaction_id" type="VARCHAR" size="1000" />
-       <column name="source_node_id" type="VARCHAR" size="50" />
-       <column name="create_time" type="TIMESTAMP" />
-       <index name="idx_data_create_time">
-           <index-column name="create_time" />
-       </index>
-   </table>
-
-   <table name="data_event">
-       <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
-       <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-       <column name="batch_id" type="INTEGER" required="true" default="-1" />
-       <index name="idx_de_batchid_nodeid">
-           <index-column name="batch_id" />
-           <index-column name="node_id" />
-       </index>
-   </table>
-        
-     -->
 
     <table name="data">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true"
