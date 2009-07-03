@@ -30,8 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,11 +45,15 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.BatchType;
+import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.route.IChannelBatchController;
+import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -70,8 +77,109 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private IStatisticManager statisticManager;
     
-    private IConfigurationService configurationService;
+    private IConfigurationService configurationService;    
+    
+    /**
+     * This method will batch data by channel
+     * @since 2.0
+     * @return
+     */
+    public boolean batch() {
+        class BatchesByChannel {
+            Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
+            Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
+            IChannelBatchController controller;
+        }
+       
+        final int peekAheadLength = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
+        final List<NodeChannel> channels = configurationService.getChannels();
+        final Map<String, BatchesByChannel> batches = new HashMap<String, BatchesByChannel>(channels.size());
+        for (NodeChannel nodeChannel : channels) {
+            BatchesByChannel b = new BatchesByChannel();
+            b.controller = nodeChannel.createChannelBatchController();
+            batches.put(nodeChannel.getId(), b);
+        }
+        return (Boolean)jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                boolean batchedData = false;
+                PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"),
+                        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                // How do we figure out what data event to start with?  Does it have to be a join of unbatched data?  Will that perform with large data sets?
+                // Can we record the last data id?  Wouldn't we run into issue where the data ids aren't sequential on some platforms?
+                //ps.setLong(1, getLastBatchedDataId());
+                ResultSet rs = ps.executeQuery();
+                try {
+                    Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
+                    LinkedList<Data> dataStack = new LinkedList<Data>();
+                    for (int i = 0; i < peekAheadLength && rs.next(); i++) {
+                        Data data = new Data(rs, configurationService);
+                        dataStack.addLast(data);
+                        transactionIdDataId.put("" /* TODO data.getTransactionId() */, data.getDataId());
+                    }
 
+                    while (dataStack.size() > 0) {
+                        Data data = dataStack.poll();
+                        boolean databaseTransactionBoundary = transactionIdDataId.get("" /* TODO data.getTransactionId() */) == data.getDataId();
+                        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory()
+                                .getTriggerHistoryId());
+                        IDataRouter router = trigger.getDataRouter();
+                        Set<String> nodeIds = router.routeToNodes(data);
+                        if (nodeIds != null && nodeIds.size() > 0) {
+                            String channelId = trigger.getChannelId();
+                            BatchesByChannel batchInfo = batches.get(channelId);
+                            for (String nodeId : nodeIds) {
+                                OutgoingBatch batch = batchInfo.batchesByNodes.get(nodeId);
+                                OutgoingBatchHistory history = batchInfo.batchHistoryByNodes.get(nodeId);
+                                if (batch == null) {
+                                    batch = createNewBatch(nodeId, channelId);
+                                    batchInfo.batchesByNodes.put(nodeId, batch);
+                                    history = new OutgoingBatchHistory(batch);
+                                    batchInfo.batchHistoryByNodes.put(nodeId, history);
+                                }
+                                history.incrementDataEventCount();
+                                
+                                // What would be the best way to control the transactionality of the
+                                // insert of batch and data events?
+                                insertDataEvent(data, batch.getBatchId(), nodeId);
+                                if (batchInfo.controller.completeBatch(history, batch, data,
+                                        databaseTransactionBoundary)) {
+                                    insertOutgoingBatchHistory(history);
+                                    batchInfo.batchesByNodes.remove(nodeId);
+                                    batchInfo.batchHistoryByNodes.remove(nodeId);
+                                }
+                                
+                                batchedData = true;
+
+                            }
+                        } else {
+                            insertDataEvent(data, -1, "-1");
+                        }
+
+                        if (rs.next()) {
+                            data = new Data(rs, configurationService);
+                            dataStack.addLast(data);
+                            transactionIdDataId.put("" /* TODO data.getTransactionId() */, data.getDataId());
+                        }
+                    }
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);
+                }
+                return batchedData;
+            }
+        });
+    }   
+    
+    protected void insertDataEvent(Data data, long batchId, String nodeId) {
+        // TODO
+    }
+    
+    protected OutgoingBatch createNewBatch(String nodeId, String channelId) {
+        // TODO
+        return null;
+    }
+    
     /**
      * Create a batch and mark events as tied to that batch. We iterate through
      * all the events so we can find a transaction boundary to stop on. <p/>

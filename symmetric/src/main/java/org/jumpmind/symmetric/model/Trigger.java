@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.route.IDataRouter;
 
 /**
  * Defines the trigger via which a table will be synchronized.
@@ -546,6 +547,11 @@ public class Trigger {
     @Override
     public int hashCode() {
         return triggerId;
+    }
+    
+    public IDataRouter getDataRouter() {
+        // TODO
+        return null;
     }
 
 

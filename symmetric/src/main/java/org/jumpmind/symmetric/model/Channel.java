@@ -22,6 +22,8 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Collection;
 
+import org.jumpmind.symmetric.route.IChannelBatchController;
+
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
@@ -95,6 +97,11 @@ public class Channel {
 
     public void setMaxBatchToSend(int maxBatchToSend) {
         this.maxBatchToSend = maxBatchToSend;
+    }
+    
+    public IChannelBatchController createChannelBatchController() {
+        // TODO
+        return null;
     }
     
     /**

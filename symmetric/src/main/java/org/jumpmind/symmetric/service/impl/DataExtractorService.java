@@ -432,7 +432,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     while (rs.next()) {
                         try {
-                            handler.dataExtracted(next(rs));
+                            handler.dataExtracted(new Data(rs, configurationService));
                         } catch (RuntimeException e) {
                             throw e;
                         } catch (Exception e) {
@@ -446,21 +446,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 return null;
             }
         });
-    }
-
-    private Data next(ResultSet results) throws SQLException {
-        long dataId = results.getLong(1);
-        String tableName = results.getString(2);
-        DataEventType eventType = DataEventType.getEventType(results.getString(3));
-        String rowData = results.getString(4);
-        String pk = results.getString(5);
-        String oldData = results.getString(6);
-        Date created = results.getDate(7);
-        int histId = results.getInt(8);
-        TriggerHistory hist = configurationService.getHistoryRecordFor(histId);
-        Data data = new Data(dataId, pk, rowData, eventType, tableName, created, hist);
-        data.setOldData(oldData);
-        return data;
     }
 
     public void setOutgoingBatchService(IOutgoingBatchService batchBuilderService) {

@@ -95,6 +95,10 @@ public class OutgoingBatchHistory implements Serializable {
         this.sqlCode = batch.getSqlCode();
         this.sqlMessage = batch.getSqlMessage();
     }
+    
+    public void incrementDataEventCount() {
+        dataEventCount++;
+    }
 
     public long getBatchId() {
         return batchId;
