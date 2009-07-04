@@ -92,10 +92,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
                             LinkedList<Data> dataStack = new LinkedList<Data>();
                             for (int i = 0; i < peekAheadLength && rs.next(); i++) {
-                                Data data = new Data(rs, configurationService);
-                                dataStack.addLast(data);
-                                transactionIdDataId.put("", data.getDataId()); // TODO
-                                                                               // data.getTransactionId()
+                                newData(rs, dataStack, transactionIdDataId);
                             }
 
                             while (dataStack.size() > 0) {
@@ -142,10 +139,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                                 }
 
                                 if (rs.next()) {
-                                    data = new Data(rs, configurationService);
-                                    dataStack.addLast(data);
-                                    transactionIdDataId.put("", data.getDataId()); // TODO
-                                                                                   // data.getTransactionId()
+                                    newData(rs, dataStack, transactionIdDataId);
                                 }
                             }
                         } finally {
@@ -164,6 +158,14 @@ public class RoutingService extends AbstractService implements IRoutingService {
         } else {
             return false;
         }
+    }
+    
+    private Data newData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId) throws SQLException {
+        Data data = new Data(rs, configurationService);
+        dataStack.addLast(data);
+        transactionIdDataId.put("", data.getDataId()); // TODO
+                                                       // data.getTransactionId()
+        return data;
     }
 
     protected Map<String, BatchesByChannel> initBatchesByChannel() {
