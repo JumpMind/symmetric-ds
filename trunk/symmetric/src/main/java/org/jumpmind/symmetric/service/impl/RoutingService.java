@@ -32,7 +32,9 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
@@ -41,6 +43,7 @@ import org.jumpmind.symmetric.route.IChannelBatchController;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.service.LockActionConstants;
@@ -69,6 +72,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
     IConfigurationService configurationService;
 
     IOutgoingBatchService outgoingBatchService;
+    
+    INodeService nodeService;
 
     /**
      * This method will route data to specific nodes.
@@ -80,6 +85,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             final int peekAheadLength = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
             final Map<String, BatchesByChannel> batches = initBatchesByChannel();
+            final List<Node> nodes = null; // TODO
             try {
                 return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
                     public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -91,8 +97,10 @@ public class RoutingService extends AbstractService implements IRoutingService {
                         try {
                             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
                             LinkedList<Data> dataStack = new LinkedList<Data>();
+                            // pre-populate data queue so we can look ahead to see if a transaction
+                            // has finished.
                             for (int i = 0; i < peekAheadLength && rs.next(); i++) {
-                                newData(rs, dataStack, transactionIdDataId);
+                                readData(rs, dataStack, transactionIdDataId);
                             }
 
                             while (dataStack.size() > 0) {
@@ -101,10 +109,10 @@ public class RoutingService extends AbstractService implements IRoutingService {
                                                                                                                        // data.getTransactionId()
                                 Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory()
                                         .getTriggerHistoryId());
-                                IDataRouter router = trigger.getDataRouter();
-                                Set<String> nodeIds = router.routeToNodes(data);
+                                IDataRouter router = trigger.getDataRouter();                                
                                 String channelId = trigger.getChannelId();
                                 BatchesByChannel batchInfo = batches.get(channelId);
+                                Set<String> nodeIds = router.routeToNodes(data, trigger, nodes, batchInfo.channel);
                                 boolean commit = false;
                                 if (nodeIds != null && nodeIds.size() > 0) {
                                     for (String nodeId : nodeIds) {
@@ -139,7 +147,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                                 }
 
                                 if (rs.next()) {
-                                    newData(rs, dataStack, transactionIdDataId);
+                                    readData(rs, dataStack, transactionIdDataId);
                                 }
                             }
                         } finally {
@@ -160,7 +168,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
     
-    private Data newData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId) throws SQLException {
+    private Data readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId) throws SQLException {
         Data data = new Data(rs, configurationService);
         dataStack.addLast(data);
         transactionIdDataId.put("", data.getDataId()); // TODO
@@ -213,5 +221,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
+    }
+    
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 }
