@@ -19,7 +19,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="parameterService" ref="parameterService" />
     </bean>    
 
-    <util:property-path id="delayBeforeStartTimeSlotBatch"
+    <util:property-path id="delayBeforeStartTimeSlotRouting"
         path="randomTimeSlot.randomValueSeededByDomainId" />
         
     <util:property-path id="delayBeforeStartTimeSlotPush"
@@ -35,7 +35,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         path="afterMidnightTimeSlot.millisecondsUntilTargetTime" />        
         
         
-    <bean id="batchJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
+    <bean id="routingJobTimer" class="org.springframework.scheduling.timer.TimerFactoryBean">
         <property name="scheduledTimerTasks">
             <list>
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
@@ -46,11 +46,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         </property>
     </bean>
     
-    <bean id="batchTimerTask" class="org.jumpmind.symmetric.job.BatchJob" scope="prototype">
+    <bean id="routingTimerTask" class="org.jumpmind.symmetric.job.RoutingJob" scope="prototype">
         <property name="parameterService" ref="parameterService" />
-        <property name="pushService" ref="pushService" />
+        <property name="routingService" ref="routingService" />
         <property name="needsRescheduled" value="true" />
-        <property name="rescheduleDelayParameter" value="job.batch.period.time.ms" />
+        <property name="rescheduleDelayParameter" value="job.routing.period.time.ms" />
         <property name="dataSource" ref="dataSource"/>
         <property name="jobManager" ref="jobManager"/>
     </bean>
