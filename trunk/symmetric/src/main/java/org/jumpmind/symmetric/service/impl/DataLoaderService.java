@@ -71,7 +71,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
 
@@ -82,8 +81,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected IIncomingBatchService incomingBatchService;
 
     protected ITransportManager transportManager;
-
-    protected TransactionTemplate transactionTemplate;
 
     protected BeanFactory beanFactory;
 
@@ -400,10 +397,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.transportManager = remoteService;
     }
 
-    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
-        this.transactionTemplate = transactionTemplate;
-    }
-
     public void setIncomingBatchService(IIncomingBatchService incomingBatchService) {
         this.incomingBatchService = incomingBatchService;
     }
@@ -446,7 +439,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader, history);
         LoadStatus loadStatus = loadDelegate.getLoadStatus();
         do {
-            transactionTemplate.execute(loadDelegate);
+            newTransactionTemplate.execute(loadDelegate);
             loadStatus = loadDelegate.getLoadStatus();
             if (loadStatus == LoadStatus.CONTINUE) {
                 statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();

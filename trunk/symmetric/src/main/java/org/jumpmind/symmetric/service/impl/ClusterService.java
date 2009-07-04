@@ -50,6 +50,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     protected static final String COMMON_LOCK_ID = "common";
 
     public void initLockTable() {
+        initLockTable(LockActionConstants.ROUTE, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PULL, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PUSH, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.HEARTBEAT, COMMON_LOCK_ID);

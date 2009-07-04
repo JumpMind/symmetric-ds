@@ -24,17 +24,31 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 abstract class AbstractService implements IService {
 
+    protected final Log logger = LogFactory.getLog(getClass());
+    
     protected IParameterService parameterService;
 
     protected JdbcTemplate jdbcTemplate;
+    
+    protected TransactionTemplate newTransactionTemplate;
+    
+    protected DataSource dataSource;
+    
+    protected IDbDialect dbDialect;
 
     private Map<String, String> sql;
 
@@ -72,5 +86,17 @@ abstract class AbstractService implements IService {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
+    
+    public void setNewTransactionTemplate(TransactionTemplate transactionTemplate) {
+        this.newTransactionTemplate = transactionTemplate;
+    }
 
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+    
+    public void setDbDialect(IDbDialect dbDialect) {
+        this.dbDialect = dbDialect;
+    }
+    
 }

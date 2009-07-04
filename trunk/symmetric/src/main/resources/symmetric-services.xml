@@ -97,9 +97,21 @@
             </list>
         </property>
     </bean>
+    
+    <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton">
+        <property name="sql" ref="routingServiceSql" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="dbDialect" ref="dbDialect" />
+        <property name="clusterService" ref="clusterService" />
+    </bean>    
 
     <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService" scope="singleton">
         <property name="sql" ref="outgoingBatchServiceSql" />
+        <property name="dataSource" ref="dataSource" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
@@ -152,7 +164,7 @@
 
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton">
         <property name="dbDialect" ref="dbDialect" />
-        <property name="transactionTemplate" ref="transactionTemplate" />
+        <property name="newTransactionTemplate" ref="transactionTemplate" />  
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
         <property name="statisticManager" ref="statisticManager" />

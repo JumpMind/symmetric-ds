@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.service;
 
 public class LockActionConstants {
+    public static final String ROUTE = "ROUTE";
     public static final String PUSH = "PUSH";
     public static final String PULL = "PULL";
     public static final String PURGE_OUTGOING = "PURGE_OUTGOING";
