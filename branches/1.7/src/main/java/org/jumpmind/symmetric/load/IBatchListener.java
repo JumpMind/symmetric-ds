@@ -40,4 +40,9 @@ public interface IBatchListener extends IExtensionPoint {
      * This method is called after the database transaction for the batch has been committed.
      */
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history);
+    
+    /**
+     * This method is called after the database transaction for the batch has been rolled back.
+     */
+    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history);    
 }
