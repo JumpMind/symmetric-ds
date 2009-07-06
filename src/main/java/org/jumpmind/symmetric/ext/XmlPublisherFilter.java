@@ -258,7 +258,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         if (doesXmlExistToPublish(ctx)) {
             finalizeXmlAndPublish(ctx);
         }
-    }
+    }    
 
     public void setTableNamesToPublishAsGroup(Set<String> tableNamesToPublishAsGroup) {
         this.tableNamesToPublishAsGroup = tableNamesToPublishAsGroup;
@@ -313,6 +313,9 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     }
     
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    }
+    
+    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {       
     }
 
 }
