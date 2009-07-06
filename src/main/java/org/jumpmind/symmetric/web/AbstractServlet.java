@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.util.zip.GZIPInputStream;
 
 import javax.servlet.ServletException;
@@ -97,7 +96,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleGet(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -127,7 +126,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected final void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handlePost(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -154,7 +153,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected final void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handlePut(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -182,7 +181,7 @@ abstract public class AbstractServlet extends HttpServlet {
             IOException {
         try {
             handleDelete(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -209,7 +208,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleHead(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -236,7 +235,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleOptions(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
@@ -263,7 +262,7 @@ abstract public class AbstractServlet extends HttpServlet {
     protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             handleTrace(req, resp);
-        } catch (SocketException e) {
+        } catch (IOException e) {
             logException(req, e, false);
         } catch (Exception e) {
             logException(req, e, true);
