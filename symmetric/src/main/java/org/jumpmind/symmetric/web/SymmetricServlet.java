@@ -188,7 +188,7 @@ public class SymmetricServlet extends AbstractServlet {
         if (servlet != null) {
             try {
                 servlet.service(req, res);
-            } catch (SocketException e) {
+            } catch (IOException e) {
                 logException(req, e, false);
             } catch (Exception e) {
                 logException(req, e, true);                 
