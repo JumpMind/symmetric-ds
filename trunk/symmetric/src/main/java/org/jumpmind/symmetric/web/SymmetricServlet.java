@@ -22,7 +22,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
