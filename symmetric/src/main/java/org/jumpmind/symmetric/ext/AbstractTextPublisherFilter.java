@@ -188,4 +188,6 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
     }
 
+    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+    }
 }

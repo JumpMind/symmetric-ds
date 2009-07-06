@@ -314,5 +314,8 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
     }
+    
+    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+    }
 
 }

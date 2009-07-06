@@ -346,6 +346,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
         }
     }    
+    
+    private void fireBatchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchRolledback(loader, history);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }        
 
     protected void handleBatchError(final IncomingBatch status, final IncomingBatchHistory history) {
         try {
@@ -436,16 +448,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     
     protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status,
             final IncomingBatchHistory history) {
-        TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader, history);
-        LoadStatus loadStatus = loadDelegate.getLoadStatus();
-        do {
-            newTransactionTemplate.execute(loadDelegate);
-            loadStatus = loadDelegate.getLoadStatus();
-            if (loadStatus == LoadStatus.CONTINUE) {
-                statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
-            }
-        } while (LoadStatus.CONTINUE == loadStatus);
-        
+        try {
+            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader, history);
+            LoadStatus loadStatus = loadDelegate.getLoadStatus();
+            do {
+                newTransactionTemplate.execute(loadDelegate);
+                loadStatus = loadDelegate.getLoadStatus();
+                if (loadStatus == LoadStatus.CONTINUE) {
+                    statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
+                }
+            } while (LoadStatus.CONTINUE == loadStatus);
+        } catch (RuntimeException ex) {
+            fireBatchRolledback(dataLoader, history);
+            throw ex;
+        }
         fireBatchCommitted(dataLoader, history);
     }
     
