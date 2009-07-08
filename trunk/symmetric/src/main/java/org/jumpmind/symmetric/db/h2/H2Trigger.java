@@ -42,7 +42,6 @@ public class H2Trigger implements org.h2.api.Trigger {
     protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
     static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
-    static final String KEY_INSERT_DATA_EVENT_SQL = "INSERT_DATA_EVENT_SQL";
 
     protected String triggerName;
     protected Map<String, String> templates = new HashMap<String, String>();
@@ -94,11 +93,7 @@ public class H2Trigger implements org.h2.api.Trigger {
         if (rs.next() && rs.getInt(1) > 0) {
             rs.close();
             sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_SQL), oldRow, newRow);
-            int count = stmt.executeUpdate(sql);
-            if (count > 0) {
-                sql = fillVirtualTableSql(templates.get(KEY_INSERT_DATA_EVENT_SQL), oldRow, newRow);
-                stmt.executeUpdate(sql);
-            }
+            stmt.executeUpdate(sql);
         }
         stmt.close();
     }

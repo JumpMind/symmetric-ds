@@ -16,8 +16,7 @@
     </entry>
     <entry key="insertIntoDataEventSql">
       <value>
-        insert into $[sym.sync.table.prefix]_data_event (data_id, node_id, channel_id, transaction_id,
-        batch_id, batched) values(?, ?, ?, ?, ?, ?)
+        insert into $[sym.sync.table.prefix]_data_event (data_id, node_id, batch_id) values(?, ?, ?)
       </value>
     </entry>
     <entry key="updateNodeHeartbeatSql">

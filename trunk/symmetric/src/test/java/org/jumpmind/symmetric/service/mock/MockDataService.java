@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.service.mock;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +134,10 @@ public class MockDataService implements IDataService {
     }
     
     public void insertResendConfigEvent(Node targetNode) {
+    }
+
+    public Data readData(ResultSet results) throws SQLException {
+        return null;
     }
 
 }

@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.route.IChannelBatchController;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRoutingService;
@@ -58,6 +59,16 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class RoutingService extends AbstractService implements IRoutingService {
 
+    protected IClusterService clusterService;
+
+    protected IDataService dataService;
+
+    protected IConfigurationService configurationService;
+
+    protected IOutgoingBatchService outgoingBatchService;
+
+    protected INodeService nodeService;
+
     class BatchesByChannel {
         NodeChannel channel;
         Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
@@ -67,94 +78,20 @@ public class RoutingService extends AbstractService implements IRoutingService {
         SingleConnectionDataSource dataSource;
     }
 
-    IClusterService clusterService;
-
-    IConfigurationService configurationService;
-
-    IOutgoingBatchService outgoingBatchService;
-    
-    INodeService nodeService;
-
     /**
      * This method will route data to specific nodes.
      * 
-     * @since 2.0
      * @return true if data was routed
      */
     public boolean route() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
-            final int peekAheadLength = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
             final Map<String, BatchesByChannel> batches = initBatchesByChannel();
-            final List<Node> nodes = null; // TODO
+            final Set<Node> nodes = findAvailableNodes();
             try {
                 return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
-                    public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                        boolean batchedData = false;
-                        PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"),
-                                ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                        ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                        ResultSet rs = ps.executeQuery();
-                        try {
-                            Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
-                            LinkedList<Data> dataStack = new LinkedList<Data>();
-                            // pre-populate data queue so we can look ahead to see if a transaction
-                            // has finished.
-                            for (int i = 0; i < peekAheadLength && rs.next(); i++) {
-                                readData(rs, dataStack, transactionIdDataId);
-                            }
-
-                            while (dataStack.size() > 0) {
-                                Data data = dataStack.poll();
-                                boolean databaseTransactionBoundary = transactionIdDataId.get("") == data.getDataId(); // TODO
-                                                                                                                       // data.getTransactionId()
-                                Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory()
-                                        .getTriggerHistoryId());
-                                IDataRouter router = trigger.getDataRouter();                                
-                                String channelId = trigger.getChannelId();
-                                BatchesByChannel batchInfo = batches.get(channelId);
-                                Set<String> nodeIds = router.routeToNodes(data, trigger, nodes, batchInfo.channel);
-                                boolean commit = false;
-                                if (nodeIds != null && nodeIds.size() > 0) {
-                                    for (String nodeId : nodeIds) {
-                                        OutgoingBatch batch = batchInfo.batchesByNodes.get(nodeId);
-                                        OutgoingBatchHistory history = batchInfo.batchHistoryByNodes.get(nodeId);
-                                        if (batch == null) {
-                                            batch = createNewBatch(batchInfo.dataSource, nodeId, channelId);
-                                            batchInfo.batchesByNodes.put(nodeId, batch);
-                                            history = new OutgoingBatchHistory(batch);
-                                            batchInfo.batchHistoryByNodes.put(nodeId, history);
-                                        }
-                                        history.incrementDataEventCount();
-
-                                        insertDataEvent(batchInfo.dataSource, data, batch.getBatchId(), nodeId);
-                                        if (batchInfo.controller.completeBatch(history, batch, data,
-                                                databaseTransactionBoundary)) {
-                                            insertOutgoingBatchHistory(batchInfo.dataSource, history);
-                                            batchInfo.batchesByNodes.remove(nodeId);
-                                            batchInfo.batchHistoryByNodes.remove(nodeId);
-                                            commit = true;
-                                        }
-
-                                        batchedData = true;
-
-                                    }
-                                } else {
-                                    insertDataEvent(batchInfo.dataSource, data, -1, "-1");
-                                }
-
-                                if (commit) {
-                                    batchInfo.connection.commit();
-                                }
-
-                                if (rs.next()) {
-                                    readData(rs, dataStack, transactionIdDataId);
-                                }
-                            }
-                        } finally {
-                            JdbcUtils.closeResultSet(rs);
-                            JdbcUtils.closeStatement(ps);
-                        }
-                        return batchedData;
+                    public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+                        selectDataAndRoute(c, batches, nodes);
+                        return null;
                     }
                 });
             } finally {
@@ -168,12 +105,90 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
     
-    private Data readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId) throws SQLException {
-        Data data = new Data(rs, configurationService);
+    protected Set<Node> findAvailableNodes()
+    {
+        Set<Node> nodes = new HashSet<Node>();
+        nodes.addAll(nodeService.findNodesToPull());
+        nodes.addAll(nodeService.findNodesToPushTo());
+        return nodes;
+    }
+
+    protected void selectDataAndRoute(Connection conn, Map<String, BatchesByChannel> batches, Set<Node> nodes)
+            throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
+                ResultSet.CONCUR_READ_ONLY);
+        ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+        ResultSet rs = ps.executeQuery();
+        try {
+            int peekAheadLength = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
+            Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
+            LinkedList<Data> dataQueue = new LinkedList<Data>();
+            // pre-populate data queue so we can look ahead to see if a
+            // transaction has finished.
+            for (int i = 0; i < peekAheadLength && rs.next(); i++) {
+                readData(rs, dataQueue, transactionIdDataId);
+            }
+
+            while (dataQueue.size() > 0) {
+                routeData(dataQueue.poll(), transactionIdDataId, batches, nodes);
+                if (rs.next()) {
+                    readData(rs, dataQueue, transactionIdDataId);
+                }
+            }
+        } finally {
+            JdbcUtils.closeResultSet(rs);
+            JdbcUtils.closeStatement(ps);
+        }
+    }
+
+    protected Data readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
+            throws SQLException {
+        Data data = dataService.readData(rs);
         dataStack.addLast(data);
-        transactionIdDataId.put("", data.getDataId()); // TODO
-                                                       // data.getTransactionId()
+        if (data.getTransactionId() != null) {
+            transactionIdDataId.put(data.getTransactionId(), data.getDataId());
+        }
         return data;
+    }
+
+    protected void routeData(Data data, Map<String, Long> transactionIdDataId, Map<String, BatchesByChannel> batches,
+            Set<Node> nodes) throws SQLException {
+        Long dataId = transactionIdDataId.get(data.getTransactionId());
+        boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
+        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());
+        IDataRouter router = trigger.getDataRouter();
+        String channelId = trigger.getChannelId();
+        BatchesByChannel batchInfo = batches.get(channelId);
+        Set<String> nodeIds = router.routeToNodes(data, trigger, nodes, batchInfo.channel, false);
+        boolean commit = false;
+        if (nodeIds != null && nodeIds.size() > 0) {
+            for (String nodeId : nodeIds) {
+                OutgoingBatch batch = batchInfo.batchesByNodes.get(nodeId);
+                OutgoingBatchHistory history = batchInfo.batchHistoryByNodes.get(nodeId);
+                if (batch == null) {
+                    batch = createNewBatch(batchInfo.dataSource, nodeId, channelId);
+                    batchInfo.batchesByNodes.put(nodeId, batch);
+                    history = new OutgoingBatchHistory(batch);
+                    batchInfo.batchHistoryByNodes.put(nodeId, history);
+                }
+                history.incrementDataEventCount();
+
+                insertDataEvent(batchInfo.dataSource, data, batch.getBatchId(), nodeId);
+                if (batchInfo.controller.completeBatch(history, batch, data, databaseTransactionBoundary)) {
+                    insertOutgoingBatchHistory(batchInfo.dataSource, history);
+                    batchInfo.batchesByNodes.remove(nodeId);
+                    batchInfo.batchHistoryByNodes.remove(nodeId);
+                    commit = true;
+                }
+            }
+        } else {
+            insertDataEvent(batchInfo.dataSource, data, -1, "-1");
+        }
+
+        if (commit) {
+            batchInfo.connection.commit();
+        }
+
     }
 
     protected Map<String, BatchesByChannel> initBatchesByChannel() {
@@ -222,8 +237,12 @@ public class RoutingService extends AbstractService implements IRoutingService {
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
-    
+
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
 }

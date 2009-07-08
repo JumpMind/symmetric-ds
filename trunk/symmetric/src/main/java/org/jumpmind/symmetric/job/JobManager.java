@@ -66,6 +66,10 @@ public class JobManager implements IJobManager, BeanFactoryAware {
         if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
             startJob(Constants.PULL_JOB_TIMER);
         }
+        
+        if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_ROUTE_JOB))) {
+            startJob(Constants.ROUTE_JOB_TIMER);
+        }
 
         if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PURGE_JOB))) {
             startJob(Constants.PURGE_JOB_TIMER);

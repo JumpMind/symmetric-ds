@@ -100,9 +100,10 @@
     
     <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton">
         <property name="sql" ref="routingServiceSql" />
-        <property name="dataSource" ref="dataSource" />
+        <property name="dataSource" ref="dataSource" />       
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
+        <property name="dataService" ref="dataService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="dbDialect" ref="dbDialect" />
@@ -113,6 +114,7 @@
         <property name="sql" ref="outgoingBatchServiceSql" />
         <property name="dataSource" ref="dataSource" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="routingService" ref="routingService"/>
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="nodeService" ref="nodeService" />
@@ -123,6 +125,7 @@
     <bean id="dataExtractorService" class="org.jumpmind.symmetric.service.impl.DataExtractorService">
         <property name="sql" ref="dataExtractorServiceSql" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="dataService" ref="dataService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />

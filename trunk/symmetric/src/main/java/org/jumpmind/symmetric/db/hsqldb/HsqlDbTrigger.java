@@ -72,7 +72,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                         nodes.remove(disabledNode);
                     }
                     if (nodes != null) {
-                        dataService.insertDataEvent(data, trigger.getChannelId(), getTransactionId(oldRow, newRow),
+                        dataService.insertDataEvent(data, trigger.getChannelId(), 
                                 nodes);
                     }
                 }

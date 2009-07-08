@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.route;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
@@ -28,6 +27,6 @@ import org.jumpmind.symmetric.model.Trigger;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    Set<String> routeToNodes(Data data, Trigger trigger, List<Node> nodes, NodeChannel channel);
+    Set<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel, boolean initialLoad);
 
 }

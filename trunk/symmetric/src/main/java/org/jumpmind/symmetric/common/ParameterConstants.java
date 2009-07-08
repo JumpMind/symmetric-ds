@@ -28,6 +28,7 @@ final public class ParameterConstants {
     public final static String START_PULL_JOB = "start.pull.job";
     public final static String START_PUSH_JOB = "start.push.job";
     public final static String START_PURGE_JOB = "start.purge.job";
+    public final static String START_ROUTE_JOB = "start.route.job";
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";

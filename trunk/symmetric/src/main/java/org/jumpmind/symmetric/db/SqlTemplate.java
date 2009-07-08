@@ -203,6 +203,7 @@ public class SqlTemplate {
         return targetTableName;
     }
 
+    // TODO Clean up to get rid of unused template variables
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema,
             String ddl) {
@@ -259,6 +260,7 @@ public class SqlTemplate {
         
         ddl = replace("oldColumns", oldColumnString, ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
+        ddl = eval(!StringUtils.isBlank(trigger.getNodeSelect()), "containsNodeSelect", ddl);
 
         // some column templates need tableName and schemaName
         ddl = replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);

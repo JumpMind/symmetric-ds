@@ -11,7 +11,7 @@
     <entry key="selectEventDataToExtractSql">
       <value>
         select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,
-        d.create_time, d.trigger_hist_id from $[sym.sync.table.prefix]_data d inner join
+        d.create_time, d.trigger_hist_id, d.transaction_id, d.source_node_id from $[sym.sync.table.prefix]_data d inner join
         $[sym.sync.table.prefix]_data_event e on d.data_id = e.data_id where e.node_id = ? and
         e.batch_id = ? order by d.data_id asc
       </value>

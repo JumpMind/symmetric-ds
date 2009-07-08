@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.route;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.Data;
@@ -15,8 +14,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         this.columnName = columnName;
     }
 
-    public Set<String> routeToNodes(Data data, Trigger trigger, List<org.jumpmind.symmetric.model.Node> nodes,
-            NodeChannel channel) {
+    public Set<String> routeToNodes(Data data, Trigger trigger, Set<org.jumpmind.symmetric.model.Node> nodes,
+            NodeChannel channel, boolean initialLoad) {
         return null;
     }
 

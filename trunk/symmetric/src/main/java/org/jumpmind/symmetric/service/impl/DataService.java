@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -41,11 +42,12 @@ import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -144,25 +146,25 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertDataEvent(DataEvent dataEvent) {
         jdbcTemplate.update(getSql("insertIntoDataEventSql"), new Object[] { dataEvent.getDataId(),
-                dataEvent.getNodeId(), dataEvent.getChannelId(), dataEvent.getTransactionId(), dataEvent.getBatchId(),
-                dataEvent.isBatched() ? 1 : 0 }, new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.INTEGER, Types.INTEGER });
+                dataEvent.getNodeId(), dataEvent.getBatchId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.INTEGER });
     }
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes) {
-        insertDataEvent(data, channelId, null, nodes);
-    }
-
-    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes) {
         long dataId = insertData(data);
         for (Node node : nodes) {
-            insertDataEvent(new DataEvent(dataId, node.getNodeId(), channelId, transactionId));
+            insertDataEvent(dataId, channelId, node.getNodeId());
         }
     }
-
+    
     public void insertDataEvent(Data data, String channelId, String nodeId) {
         long dataId = insertData(data);
-        insertDataEvent(new DataEvent(dataId, nodeId, channelId));
+        insertDataEvent(dataId, channelId, nodeId);
+    }    
+    
+    public void insertDataEvent(long dataId, String channelId, String nodeId) {
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId, channelId == Constants.CHANNEL_RELOAD ? BatchType.INITIAL_LOAD : BatchType.EVENTS);
+        outgoingBatchService.insertOutgoingBatch(outgoingBatch);
+        insertDataEvent(new DataEvent(dataId, nodeId, outgoingBatch.getBatchId()));        
     }
 
     public String reloadNode(String nodeId) {
@@ -198,7 +200,6 @@ public class DataService extends AbstractService implements IDataService {
             for (Trigger trigger : triggers) {
                 String xml = dbDialect.getCreateTableXML(trigger);
                 insertCreateEvent(targetNode, trigger, xml);
-                buildReloadBatches(targetNode.getNodeId());
             }
         }
         
@@ -206,13 +207,11 @@ public class DataService extends AbstractService implements IDataService {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
                 insertPurgeEvent(targetNode, trigger);
-                buildReloadBatches(targetNode.getNodeId());
             }
         }
 
         for (Trigger trigger : triggers) {
             insertReloadEvent(targetNode, trigger);
-            buildReloadBatches(targetNode.getNodeId());
         }
 
         if (listeners != null) {
@@ -226,18 +225,6 @@ public class DataService extends AbstractService implements IDataService {
 
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
-    }
-
-    /**
-     * This should be called after a reload event is inserted so there is a one
-     * to one between data events and reload batches.
-     */
-    private void buildReloadBatches(String nodeId) {
-        NodeChannel channel = new NodeChannel();
-        channel.setId(Constants.CHANNEL_RELOAD);
-        channel.setEnabled(true);
-        outgoingBatchService.buildOutgoingBatches(nodeId, channel);
-
     }
 
     private void insertNodeSecurityUpdate(Node node) {
@@ -413,6 +400,22 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+    
+    public Data readData(ResultSet results) throws SQLException {
+        Data data = new Data();
+        data.setDataId(results.getLong(1));
+        data.setTableName(results.getString(2));
+        data.setEventType(DataEventType.getEventType(results.getString(3)));
+        data.setRowData(results.getString(4));
+        data.setPkData(results.getString(5));
+        data.setOldData(results.getString(6));
+        data.setCreateTime(results.getDate(7));
+        int histId = results.getInt(8);
+        data.setTriggerHistory(configurationService.getHistoryRecordFor(histId));
+        data.setTransactionId(results.getString(9));
+        data.setSourceNodeId(results.getString(10));
+        return data;
     }
 
 }

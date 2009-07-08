@@ -21,7 +21,6 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,11 +31,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.BatchType;
@@ -49,13 +46,10 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
@@ -68,66 +62,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     
     protected IConfigurationService configurationService;        
        
-    /**
-     * Create a batch and mark events as tied to that batch. We iterate through
-     * all the events so we can find a transaction boundary to stop on. <p/>
-     * This method is currently non-transactional because of the fear of having
-     * to deal with large numbers of events as part of the same batch. This
-     * shouldn't be an issue in most cases other than possibly leaving a batch
-     * row w/out data every now and then or leaving a batch w/out the associated
-     * history row.
-     */
-    @Transactional
-    @Deprecated
-    public void buildOutgoingBatches(final String nodeId, final List<NodeChannel> channels) {
-        for (NodeChannel nodeChannel : channels) {
-            buildOutgoingBatches(nodeId, nodeChannel);
-        }
-    }
-
-    @Transactional
-    public void buildOutgoingBatches(final String nodeId, final NodeChannel channel) {
-
-        boolean useMulti = parameterService.is(ParameterConstants.OUTGOING_BATCH_ASSIGNMENT_MULTI)
-                || !dbDialect.supportsOpenCursorsAcrossCommit();
-
-        if (channel.isSuspended()) {
-            logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-        } else if (channel.isEnabled() && useMulti) {
-            long dataEventCount = jdbcTemplate.queryForLong(getSql("selectEventsToBatchCountSql"), new Object[] { 0,
-                    nodeId, channel.getId() });
-
-            if (dataEventCount > channel.getMaxBatchSize() && dbDialect.supportsOpenCursorsAcrossCommit()) {
-                buildOutgoingBatchesPeekAhead(nodeId, channel);
-            } else if (dataEventCount > 0) {
-                OutgoingBatch newBatch = new OutgoingBatch();
-                newBatch.setBatchType(BatchType.EVENTS);
-                newBatch.setChannelId(channel.getId());
-                newBatch.setNodeId(nodeId);
-
-                if (channel.isIgnored()) {
-                    newBatch.setStatus(Status.OK);
-                }
-
-                long startTime = System.currentTimeMillis();
-                insertOutgoingBatch(newBatch);
-                dataEventCount = jdbcTemplate.update(getSql("updateBatchedEventsMultiSql"), new Object[] {
-                        newBatch.getBatchId(), 1, 0, nodeId, newBatch.getChannelId() });
-                long databaseMillis = System.currentTimeMillis() - startTime;
-
-                OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
-                history.setEndTime(new Date());
-                history.setDataEventCount(dataEventCount);
-                history.setDatabaseMillis(databaseMillis);
-                insertOutgoingBatchHistory(history);
-                statisticManager.getStatistic(StatisticNameConstants.OUTGOING_MS_PER_EVENT_BATCHED).add(databaseMillis,
-                        dataEventCount);
-                statisticManager.getStatistic(StatisticNameConstants.OUTGOING_EVENTS_PER_BATCH).add(dataEventCount, 1);
-            }
-        } else if (channel.isEnabled()) {
-            buildOutgoingBatchesPeekAhead(nodeId, channel);
-        }
-    }
     
     @Transactional
     public void markAllAsSentForNode(String nodeId) {
@@ -157,136 +91,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 setBatchStatus(outgoingBatch.getBatchId(), Status.OK);
             }
         } while (batches.size() > 0);
-    }
-
-    @Transactional
-    private void buildOutgoingBatchesPeekAhead(final String nodeId, final NodeChannel channel) {
-
-        final int batchSizePeekAhead = parameterService.getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_WINDOW);
-
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-
-                PreparedStatement update = null;
-                try {
-                    update = conn.prepareStatement(getSql("updateBatchedEventsSql"));
-
-                    update.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-
-                    if (channel.isSuspended()) {
-                        logger.warn(channel.getId() + " channel for " + nodeId + " is currently suspended.");
-                    } else if (channel.isEnabled()) {
-                        // determine which transactions will be part of this
-                        // batch on this channel
-                        PreparedStatement select = null;
-                        ResultSet results = null;
-
-                        try {
-
-                            select = conn.prepareStatement(getSql("selectEventsToBatchSql"));
-
-                            select.setQueryTimeout(jdbcTemplate.getQueryTimeout());
-
-                            select.setInt(1, 0);
-                            select.setString(2, nodeId);
-                            select.setString(3, channel.getId());
-                            results = select.executeQuery();
-
-                            int count = 0;
-                            long databaseMillis = 0;
-                            int dataEventCount = 0;
-                            boolean peekAheadMode = false;
-                            int peekAheadCountDown = batchSizePeekAhead;
-                            Set<String> transactionIds = new HashSet<String>();
-
-                            OutgoingBatch newBatch = new OutgoingBatch();
-                            newBatch.setBatchType(BatchType.EVENTS);
-                            newBatch.setChannelId(channel.getId());
-                            newBatch.setNodeId(nodeId);
-
-                            // node channel is setup to ignore, just mark the
-                            // batch as already processed.
-                            if (channel.isIgnored()) {
-                                newBatch.setStatus(Status.OK);
-                            }
-
-                            if (results.next()) {
-
-                                databaseMillis = 0;
-                                dataEventCount = 0;
-                                insertOutgoingBatch(newBatch);
-                                OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
-
-                                do {
-                                    String trxId = results.getString(1);
-
-                                    if (!peekAheadMode
-                                            || (peekAheadMode && (trxId != null && transactionIds.contains(trxId)))) {
-                                        peekAheadCountDown = batchSizePeekAhead;
-
-                                        if (trxId != null) {
-                                            transactionIds.add(trxId);
-                                        }
-
-                                        long dataId = results.getLong(2);
-
-                                        update.clearParameters();
-                                        update.setLong(1, Long.valueOf(newBatch.getBatchId()));
-                                        update.setInt(2, 1);
-                                        update.setString(3, nodeId);
-                                        update.setLong(4, dataId);
-                                        update.addBatch();
-
-                                        count++;
-                                        dataEventCount++;
-
-                                    } else {
-                                        peekAheadCountDown--;
-                                    }
-
-                                    if (count > channel.getMaxBatchSize()) {
-                                        peekAheadMode = true;
-                                    }
-
-                                    // put this in so we don't build up too many
-                                    // statements to send to the server.
-                                    if (count
-                                            % parameterService
-                                                    .getInt(ParameterConstants.OUTGOING_BATCH_PEEK_AHEAD_BATCH_COMMIT_SIZE) == 0) {
-                                        long startTime = System.currentTimeMillis();
-                                        update.executeBatch();
-                                        databaseMillis += (System.currentTimeMillis() - startTime);
-                                    }
-
-                                } while (results.next() && peekAheadCountDown != 0);
-
-                                long startTime = System.currentTimeMillis();
-                                update.executeBatch();
-                                databaseMillis += (System.currentTimeMillis() - startTime);
-
-                                history.setEndTime(new Date());
-                                history.setDataEventCount(dataEventCount);
-                                history.setDatabaseMillis(databaseMillis);
-                                insertOutgoingBatchHistory(history);
-                                statisticManager.getStatistic(StatisticNameConstants.OUTGOING_MS_PER_EVENT_BATCHED).add(
-                                        databaseMillis, dataEventCount);
-                                statisticManager.getStatistic(StatisticNameConstants.OUTGOING_EVENTS_PER_BATCH).add(
-                                        dataEventCount, 1);
-
-                            }
-
-                        } finally {
-                            JdbcUtils.closeResultSet(results);
-                            JdbcUtils.closeStatement(select);
-                        }
-
-                    }
-                } finally {
-                    JdbcUtils.closeStatement(update);
-                }
-                return null;
-            }
-        });
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
