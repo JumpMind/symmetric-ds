@@ -20,11 +20,7 @@
 
 package org.jumpmind.symmetric.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
-
-import org.jumpmind.symmetric.service.IConfigurationService;
 
 /**
  * This is the data that changed due to a data sync trigger firing.
@@ -50,6 +46,10 @@ public class Data {
      */
 
     private String oldData;
+    
+    private String sourceNodeId;
+    
+    private String transactionId;
 
     /**
      * This is a reference to the triggerHistory row the trigger refered to when the data
@@ -68,7 +68,7 @@ public class Data {
     private Date createTime;
 
     public Data(long dataId, String pkData, String rowData, DataEventType eventType, String tableName, Date createTime,
-            TriggerHistory triggerHistory) {
+            TriggerHistory triggerHistory, String transactionId, String sourceNodeId) {
         super();
         this.dataId = dataId;
         this.pkData = pkData;
@@ -77,6 +77,8 @@ public class Data {
         this.tableName = tableName;
         this.createTime = createTime;
         this.triggerHistory = triggerHistory;
+        this.transactionId = transactionId;
+        this.sourceNodeId = sourceNodeId;
     }
 
     public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory) {
@@ -87,17 +89,7 @@ public class Data {
         this.triggerHistory = triggerHistory;
     }
     
-    public Data(ResultSet results, IConfigurationService configurationService)
-            throws SQLException {
-        this.dataId = results.getLong(1);
-        this.tableName = results.getString(2);
-        this.eventType = DataEventType.getEventType(results.getString(3));
-        this.rowData = results.getString(4);
-        this.pkData = results.getString(5);
-        this.oldData = results.getString(6);
-        this.createTime = results.getDate(7);
-        int histId = results.getInt(8);
-        this.triggerHistory = configurationService.getHistoryRecordFor(histId);
+    public Data() {
     }
 
     public long getDataId() {
@@ -164,4 +156,21 @@ public class Data {
         this.oldData = oldData;
     }
 
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+    
+    public void setSourceNodeId(String sourceNodeId) {
+        this.sourceNodeId = sourceNodeId;
+    }
+    
+    public String getTransactionId() {
+        return transactionId;
+    }
+    
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+    
+   
 }

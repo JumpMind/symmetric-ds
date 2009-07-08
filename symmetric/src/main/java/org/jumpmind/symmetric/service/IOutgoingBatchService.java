@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
-import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
@@ -32,20 +31,12 @@ public interface IOutgoingBatchService {
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch);
 
     public void markAllAsSentForNode(String nodeId);
-    
-    @Deprecated
-    public void buildOutgoingBatches(String nodeId, final List<NodeChannel> channels);
-
-    public void buildOutgoingBatches(final String nodeId, final NodeChannel channel);
 
     public List<OutgoingBatch> getOutgoingBatches(String nodeId);
 
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId);
 
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows);
-
-    @Deprecated
-    public void markOutgoingBatchSent(OutgoingBatch batch);
 
     public void setBatchStatus(long batchId, Status status);
 

@@ -50,7 +50,6 @@ import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
@@ -59,9 +58,11 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -78,6 +79,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected static final Log logger = LogFactory.getLog(DataExtractorService.class);
 
     private IOutgoingBatchService outgoingBatchService;
+    
+    private IRoutingService routingService;
+    
+    private IDataService dataService;
 
     private IConfigurationService configurationService;
 
@@ -110,7 +115,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
         try {
-            OutgoingBatch batch = new OutgoingBatch(node, Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
+            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
                 outgoingBatchService.insertOutgoingBatch(batch);
@@ -161,7 +166,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
-                        null, hist);
+                        null, hist, null, null);
                 ctx.getDataExtractor().write(writer, data, ctx);
             }
         }
@@ -202,7 +207,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger trigger, BufferedWriter writer) {
-        OutgoingBatch batch = new OutgoingBatch(node, trigger.getChannelId(), BatchType.INITIAL_LOAD);
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getChannelId(), BatchType.INITIAL_LOAD);
         outgoingBatchService.insertOutgoingBatch(batch);
         OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
         writeInitialLoad(node, trigger, writer, batch, null);
@@ -258,7 +263,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         while (rs.next()) {
                             dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist), ctxCopy);
+                                    .getSourceTableName(), null, hist, null, null), ctxCopy);
                         }
                         if (batch != null) {
                             dataExtractor.commit(batch, writer);
@@ -280,10 +285,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public boolean extract(Node node, IOutgoingTransport targetTransport) throws IOException {
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
-        List<NodeChannel> channels = configurationService.getChannels();
-
-        for (NodeChannel nodeChannel : channels) {
-            outgoingBatchService.buildOutgoingBatches(node.getNodeId(), nodeChannel);
+        if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
+            routingService.route();
         }
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
@@ -432,7 +435,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     while (rs.next()) {
                         try {
-                            handler.dataExtracted(new Data(rs, configurationService));
+                            handler.dataExtracted(dataService.readData(rs));
                         } catch (RuntimeException e) {
                             throw e;
                         } catch (Exception e) {
@@ -533,5 +536,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
+    
+    public void setRoutingService(IRoutingService routingService) {
+        this.routingService = routingService;
+    }
 
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
+    }
 }

@@ -70,13 +70,11 @@
                         <entry key="insertTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                 'select count(*) from $(virtualOldNewTable) where $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition)', 
-                                'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time)
-                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns),CURRENT_TIMESTAMP from $(virtualOldNewTable))',
-                                'insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, IDENTITY(), ''$(channelName)'', $(txIdExpression) from $(prefixName)_node c,
-                                    $(virtualOldNewTable) where c.node_group_id=''$(targetGroupId)'' and c.sync_enabled=1 and (@node_value is null or @node_value != c.node_id) $(nodeSelectWhere))'
+                                'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, transaction_id, source_node_id, create_time)
+                                  (select ''$(targetTableName)'',''I'',$(triggerHistoryId),$(columns), $(txIdExpression), @node_value, CURRENT_TIMESTAMP from $(virtualOldNewTable))' 
                                 );
                                 CREATE TRIGGER $(triggerName) AFTER INSERT ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger";
                                 ]]>
@@ -85,14 +83,12 @@
                         <entry key="updateTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                   'select count(*) from $(virtualOldNewTable) where $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition)', 
-                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
-                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns),CURRENT_TIMESTAMP from $(virtualOldNewTable))',
-                                  'insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, IDENTITY(), ''$(channelName)'', $(txIdExpression) from $(prefixName)_node c,
-                                    $(virtualOldNewTable) where c.node_group_id=''$(targetGroupId)'' and c.sync_enabled=1 and (@node_value is null or @node_value != c.node_id) $(nodeSelectWhere))'
-                                 );
+                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, transaction_id, source_node_id, create_time)
+                                    (select ''$(targetTableName)'',''U'',$(triggerHistoryId),$(oldKeys),$(columns),$(oldColumns), $(txIdExpression), @node_value, CURRENT_TIMESTAMP from $(virtualOldNewTable))'
+                                );
                                 CREATE TRIGGER $(triggerName) AFTER UPDATE ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger"
                                 ]]>
                             </value>
@@ -100,14 +96,12 @@
                         <entry key="deleteTriggerTemplate">
                             <value>
                                 <![CDATA[
-                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB, INSERT_DATA_EVENT_SQL CLOB);
+                                CREATE TABLE $(triggerName)_VIEW (CONDITION_SQL CLOB, INSERT_DATA_SQL CLOB);
                                 INSERT INTO $(triggerName)_VIEW values(    
                                   'select count(*) from $(virtualOldNewTable) where $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition)', 
-                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time)
-                                    (select ''$(targetTableName)'',''D'',$(triggerHistoryId),$(oldKeys),CURRENT_TIMESTAMP from $(virtualOldNewTable))',
-                                  'insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, IDENTITY(), ''$(channelName)'', $(txIdExpression) from $(prefixName)_node c,
-                                    $(virtualOldNewTable) where c.node_group_id=''$(targetGroupId)'' and c.sync_enabled=1 and (@node_value is null or @node_value != c.node_id) $(nodeSelectWhere))'
-                                  );
+                                  'insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, transaction_id, source_node_id, create_time)
+                                    (select ''$(targetTableName)'',''D'',$(triggerHistoryId),$(oldKeys), $(txIdExpression), @node_value, CURRENT_TIMESTAMP from $(virtualOldNewTable))'
+                                );                                 );
                                 CREATE TRIGGER $(triggerName) AFTER DELETE ON $(tableName) FOR EACH ROW CALL "org.jumpmind.symmetric.db.h2.H2Trigger"
                                 ]]>
                             </value>

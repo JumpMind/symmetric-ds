@@ -1,5 +1,7 @@
 package org.jumpmind.symmetric.service;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,9 +42,7 @@ public interface IDataService {
     public void insertDataEvent(DataEvent dataEvent);
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes);
-
-    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes);
-
+    
     public void insertDataEvent(Data data, String channelId, String nodeId);
 
     public void insertPurgeEvent(Node targetNode, Trigger trigger);
@@ -68,5 +68,7 @@ public interface IDataService {
     public void setReloadListeners(List<IReloadListener> listeners);
 
     public void removeReloadListener(IReloadListener listener);
+    
+    public Data readData(ResultSet results) throws SQLException;
 
 }

@@ -46,12 +46,12 @@ public class OutgoingBatch implements Serializable {
     public OutgoingBatch() {
     }
 
-    public OutgoingBatch(Node node, String channelId, BatchType batchType) {
-        this.nodeId = node.getNodeId();
+    public OutgoingBatch(String nodeId, String channelId, BatchType batchType) {
+        this.nodeId = nodeId;
         this.channelId = channelId;
         this.status = Status.NE;
         this.batchType = batchType;
-    }
+    }        
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;

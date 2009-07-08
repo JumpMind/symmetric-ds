@@ -4,6 +4,8 @@ package org.jumpmind.symmetric.route;
 public abstract class AbstractDataRouter implements IDataRouter {
 
     private boolean autoRegister;
+    
+    private boolean applyToInitialLoad = true;
 
     public boolean isAutoRegister() {
         return autoRegister;
@@ -13,4 +15,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
         this.autoRegister = autoRegister;
     }
 
+    public void setApplyToInitialLoad(boolean applyToInitialLoad) {
+        this.applyToInitialLoad = applyToInitialLoad;
+    }
+    
+    public boolean isApplyToInitialLoad() {
+        return applyToInitialLoad;
+    }
 }

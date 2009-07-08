@@ -6,40 +6,22 @@ public class DataEvent {
 
     private String nodeId;
 
-    private Long batchId;
-
-    private boolean batched;
-
-    private String channelId;
-
-    private String transactionId;
+    private long batchId;
 
     public DataEvent() {
     }
 
-    public DataEvent(long dataId, String nodeId, String channelId) {
+    public DataEvent(long dataId, String nodeId, long batchId) {
         this.dataId = dataId;
         this.nodeId = nodeId;
-        this.channelId = channelId;
+        this.batchId = batchId;
     }
 
-    public DataEvent(long dataId, String nodeId, String channelId, String transactionId) {
-        this.dataId = dataId;
-        this.nodeId = nodeId;
-        this.channelId = channelId;
-        this.transactionId = transactionId;
-    }
-
-    public DataEvent(long dataId, String nodeId) {
-        this.dataId = dataId;
-        this.nodeId = nodeId;
-    }
-
-    public Long getBatchId() {
+    public long getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(Long batchId) {
+    public void setBatchId(long batchId) {
         this.batchId = batchId;
     }
 
@@ -57,30 +39,6 @@ public class DataEvent {
 
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
-    }
-
-    public boolean isBatched() {
-        return batched;
-    }
-
-    public void setBatched(boolean batched) {
-        this.batched = batched;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
     }
 
 }
