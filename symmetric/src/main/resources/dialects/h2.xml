@@ -108,7 +108,7 @@
                         </entry>
                         <entry key="initialLoadSqlTemplate">
                             <value>
-                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t where $(whereClause)]]>
+                                <![CDATA[select $(columns) from $(schemaName)$(tableName) t]]>
                             </value>
                         </entry>
                     </map>

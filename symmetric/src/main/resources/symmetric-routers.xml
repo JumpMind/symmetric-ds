@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="    
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+    default-lazy-init="true">
+
+    <util:map id="routers">
+        <entry key="subselect">
+            <bean class="org.jumpmind.symmetric.route.SubSelectDataRouter">
+            </bean>
+        </entry>
+        <entry key="column">
+            <bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
+            </bean>
+        </entry>
+        <entry key="default">
+            <bean class="org.jumpmind.symmetric.route.DefaultDataRouter">
+            </bean>
+        </entry>
+    </util:map>
+
+</beans>

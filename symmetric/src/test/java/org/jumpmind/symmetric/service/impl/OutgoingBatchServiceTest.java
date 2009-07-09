@@ -91,9 +91,9 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
 
     protected void createDataEvent(String tableName, int auditId, String channelId, DataEventType type, String nodeId) {
-        TriggerHistory audit = new TriggerHistory();
-        audit.setTriggerHistoryId(auditId);
-        Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", audit);
+        TriggerHistory history = new TriggerHistory();
+        history.setTriggerHistoryId(auditId);
+        Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, null, null);
         dataService.insertDataEvent(data, channelId, nodeId);
     }
 

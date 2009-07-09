@@ -61,7 +61,7 @@ public class Trigger {
     private String sourceCatalogName;
 
     private String targetSchemaName;
-    
+
     private String targetCatalogName;
 
     private boolean syncOnUpdate = true;
@@ -89,16 +89,9 @@ public class Trigger {
     private String excludedColumnNames = null;
 
     /**
-     * Allows the end user to limit the data loaded when doing the initial load.
-     * if null, will default to 'from tablename'
+     * Default to routing all data to all nodes.
      */
-    private String initialLoadSelect = DEFAULT_CONDITION;
-
-    /**
-     * Default to selecting all. This can be changed to select based on joins
-     * between node parameters and data column values.
-     */
-    private String nodeSelect = "";
+    private String routingExpression = null;
 
     /**
      * This is a sql expression that creates a unique id which the sync process
@@ -118,6 +111,8 @@ public class Trigger {
     private Date lastModifiedTime;
 
     private String updatedBy;
+
+    private IDataRouter dataRouter;
 
     public Trigger() {
     }
@@ -298,28 +293,12 @@ public class Trigger {
         this.sourceTableName = tableName;
     }
 
-    public String getNodeSelect() {
-        return nodeSelect;
-    }
-
-    public void setNodeSelect(String registrantSelect) {
-        this.nodeSelect = registrantSelect;
-    }
-
     public String getTxIdExpression() {
         return txIdExpression;
     }
 
     public void setTxIdExpression(String batchIdExpression) {
         this.txIdExpression = batchIdExpression;
-    }
-
-    public String getInitialLoadSelect() {
-        return initialLoadSelect;
-    }
-
-    public void setInitialLoadSelect(String initialLoadExpression) {
-        this.initialLoadSelect = initialLoadExpression;
     }
 
     public int getInitialLoadOrder() {
@@ -433,14 +412,22 @@ public class Trigger {
     public void setSyncColumnLevel(boolean syncColumnLevel) {
         this.syncColumnLevel = syncColumnLevel;
     }
-    
+
     public String getTargetCatalogName() {
         return targetCatalogName;
     }
 
     public void setTargetCatalogName(String targetCatalogName) {
         this.targetCatalogName = targetCatalogName;
-    }    
+    }
+
+    public String getRoutingExpression() {
+        return routingExpression;
+    }
+
+    public void setRoutingExpression(String routingExpression) {
+        this.routingExpression = routingExpression;
+    }
 
     public long getHashedValue() {
         long hashedValue = triggerId;
@@ -471,10 +458,10 @@ public class Trigger {
         if (null != sourceCatalogName) {
             hashedValue += sourceCatalogName.hashCode();
         }
-        
+
         if (null != targetCatalogName) {
             hashedValue += targetCatalogName.hashCode();
-        }        
+        }
 
         if (null != targetSchemaName) {
             hashedValue += targetSchemaName.hashCode();
@@ -513,24 +500,21 @@ public class Trigger {
         if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
-        
-        if (null != nodeSelect) {
-            hashedValue += nodeSelect.hashCode();
+
+        if (null != routingExpression) {
+            hashedValue += routingExpression.hashCode();
         }
-        
-        if (null != initialLoadSelect) {
-            hashedValue += initialLoadSelect.hashCode();
-        }
-        
+
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
-        }        
+        }
 
         return hashedValue;
     }
 
     public boolean isSame(Trigger trigger) {
-        return trigger.sourceTableName.equalsIgnoreCase(sourceTableName) && trigger.sourceGroupId.equalsIgnoreCase(sourceGroupId)
+        return trigger.sourceTableName.equalsIgnoreCase(sourceTableName)
+                && trigger.sourceGroupId.equalsIgnoreCase(sourceGroupId)
                 && trigger.targetGroupId.equalsIgnoreCase(targetGroupId);
     }
 
@@ -548,11 +532,16 @@ public class Trigger {
     public int hashCode() {
         return triggerId;
     }
-    
+
     public IDataRouter getDataRouter() {
-        // TODO
-        return null;
+        if (dataRouter == null) {
+            this.dataRouter = createDataRouter();
+        }
+        return dataRouter;
     }
 
+    protected IDataRouter createDataRouter() {
+        return null;
+    }
 
 }

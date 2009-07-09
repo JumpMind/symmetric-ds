@@ -46,7 +46,8 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
         if (trigger != null) {
             // The initial_load_select can be overridden
             if (data.getRowData() != null) {
-                trigger.setInitialLoadSelect(data.getRowData());
+                // TODO Override DataRouter
+                //trigger.setInitialLoadSelect(data.getRowData());
             }
             Node node = nodeService.findNode(context.getBatch().getNodeId());
             dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out, context);
