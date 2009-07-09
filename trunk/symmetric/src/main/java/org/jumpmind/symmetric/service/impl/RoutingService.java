@@ -24,7 +24,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +68,12 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     protected INodeService nodeService;
 
+    // TODO better name??
     class BatchesByChannel {
         NodeChannel channel;
         Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
         Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
+        Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
         IChannelBatchController controller;
         Connection connection;
         SingleConnectionDataSource dataSource;
@@ -86,16 +87,20 @@ public class RoutingService extends AbstractService implements IRoutingService {
     public boolean route() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             final Map<String, BatchesByChannel> batches = initBatchesByChannel();
-            final Set<Node> nodes = findAvailableNodes();
             try {
                 return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
                     public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                        selectDataAndRoute(c, batches, nodes);
+                        selectDataAndRoute(c, batches);
                         return null;
                     }
                 });
             } finally {
                 for (BatchesByChannel batch : batches.values()) {
+                    try {
+                        batch.connection.commit();
+                    } catch (SQLException e) {
+                        logger.error(e, e);
+                    }
                     JdbcUtils.closeConnection(batch.connection);
                 }
                 clusterService.unlock(LockActionConstants.ROUTE);
@@ -104,17 +109,18 @@ public class RoutingService extends AbstractService implements IRoutingService {
             return false;
         }
     }
-    
-    protected Set<Node> findAvailableNodes()
-    {
-        Set<Node> nodes = new HashSet<Node>();
-        nodes.addAll(nodeService.findNodesToPull());
-        nodes.addAll(nodeService.findNodesToPushTo());
+
+    protected Set<Node> findAvailableNodes(Trigger trigger, BatchesByChannel batches) {
+        Set<Node> nodes = batches.availableNodes.get(trigger);
+        if (nodes == null) {
+            // TODO call the node service to get the appropriate nodes for this trigger
+            //nodes.addAll(nodeService.findNodesTargetedByTrigger(trigger);
+            batches.availableNodes.put(trigger, nodes);
+        }
         return nodes;
     }
 
-    protected void selectDataAndRoute(Connection conn, Map<String, BatchesByChannel> batches, Set<Node> nodes)
-            throws SQLException {
+    protected void selectDataAndRoute(Connection conn, Map<String, BatchesByChannel> batches) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
         ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -130,11 +136,12 @@ public class RoutingService extends AbstractService implements IRoutingService {
             }
 
             while (dataQueue.size() > 0) {
-                routeData(dataQueue.poll(), transactionIdDataId, batches, nodes);
+                routeData(dataQueue.poll(), transactionIdDataId, batches);
                 if (rs.next()) {
                     readData(rs, dataQueue, transactionIdDataId);
                 }
             }
+
         } finally {
             JdbcUtils.closeResultSet(rs);
             JdbcUtils.closeStatement(ps);
@@ -151,42 +158,41 @@ public class RoutingService extends AbstractService implements IRoutingService {
         return data;
     }
 
-    protected void routeData(Data data, Map<String, Long> transactionIdDataId, Map<String, BatchesByChannel> batches,
-            Set<Node> nodes) throws SQLException {
+    protected void routeData(Data data, Map<String, Long> transactionIdDataId, Map<String, BatchesByChannel> batchesByChannels) throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
         Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());
         IDataRouter router = trigger.getDataRouter();
         String channelId = trigger.getChannelId();
-        BatchesByChannel batchInfo = batches.get(channelId);
-        Set<String> nodeIds = router.routeToNodes(data, trigger, nodes, batchInfo.channel, false);
+        BatchesByChannel batchesByChannel = batchesByChannels.get(channelId);
+        Set<String> nodeIds = router.routeToNodes(data, trigger, findAvailableNodes(trigger, batchesByChannel), batchesByChannel.channel, false);
         boolean commit = false;
         if (nodeIds != null && nodeIds.size() > 0) {
             for (String nodeId : nodeIds) {
-                OutgoingBatch batch = batchInfo.batchesByNodes.get(nodeId);
-                OutgoingBatchHistory history = batchInfo.batchHistoryByNodes.get(nodeId);
+                OutgoingBatch batch = batchesByChannel.batchesByNodes.get(nodeId);
+                OutgoingBatchHistory history = batchesByChannel.batchHistoryByNodes.get(nodeId);
                 if (batch == null) {
-                    batch = createNewBatch(batchInfo.dataSource, nodeId, channelId);
-                    batchInfo.batchesByNodes.put(nodeId, batch);
+                    batch = createNewBatch(batchesByChannel.dataSource, nodeId, channelId);
+                    batchesByChannel.batchesByNodes.put(nodeId, batch);
                     history = new OutgoingBatchHistory(batch);
-                    batchInfo.batchHistoryByNodes.put(nodeId, history);
+                    batchesByChannel.batchHistoryByNodes.put(nodeId, history);
                 }
                 history.incrementDataEventCount();
 
-                insertDataEvent(batchInfo.dataSource, data, batch.getBatchId(), nodeId);
-                if (batchInfo.controller.completeBatch(history, batch, data, databaseTransactionBoundary)) {
-                    insertOutgoingBatchHistory(batchInfo.dataSource, history);
-                    batchInfo.batchesByNodes.remove(nodeId);
-                    batchInfo.batchHistoryByNodes.remove(nodeId);
+                insertDataEvent(batchesByChannel.dataSource, data, batch.getBatchId(), nodeId);
+                if (batchesByChannel.controller.completeBatch(history, batch, data, databaseTransactionBoundary)) {
+                    insertOutgoingBatchHistory(batchesByChannel.dataSource, history);
+                    batchesByChannel.batchesByNodes.remove(nodeId);
+                    batchesByChannel.batchHistoryByNodes.remove(nodeId);
                     commit = true;
                 }
             }
         } else {
-            insertDataEvent(batchInfo.dataSource, data, -1, "-1");
+            insertDataEvent(batchesByChannel.dataSource, data, -1, "-1");
         }
 
         if (commit) {
-            batchInfo.connection.commit();
+            batchesByChannel.connection.commit();
         }
 
     }

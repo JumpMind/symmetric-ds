@@ -81,12 +81,14 @@ public class Data {
         this.sourceNodeId = sourceNodeId;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory) {
+    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory, String transactionId, String sourceNodeId) {
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
         this.pkData = pkData;
         this.triggerHistory = triggerHistory;
+        this.transactionId = transactionId;
+        this.sourceNodeId = sourceNodeId;
     }
     
     public Data() {

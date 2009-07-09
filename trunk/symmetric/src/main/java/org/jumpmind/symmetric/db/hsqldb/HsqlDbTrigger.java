@@ -19,10 +19,7 @@
  */
 package org.jumpmind.symmetric.db.hsqldb;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
@@ -34,8 +31,6 @@ import org.hsqldb.Token;
 import org.hsqldb.types.Binary;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
-import org.jumpmind.symmetric.model.Node;
-import org.springframework.jdbc.core.RowMapper;
 
 public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb.Trigger {
 
@@ -44,8 +39,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     String triggerName;
 
     String dataSelectSql;
-
-    String nodeSelectSql;
 
     String transactionIdSql;
 
@@ -64,17 +57,8 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 HsqlDbDialect dialect = getDbDialect();
                 if (trigger.isSyncOnIncomingBatch() || dialect.isSyncEnabled() && isInsertDataEvent(oldRow, newRow)) {
                     Data data = createData(oldRow, newRow);
-                    List<Node> nodes = findTargetNodes(oldRow, newRow);
-                    String disabledNodeId = dialect.getSyncNodeDisabled();
-                    if (disabledNodeId != null) {
-                        Node disabledNode = new Node();
-                        disabledNode.setNodeId(disabledNodeId);
-                        nodes.remove(disabledNode);
-                    }
-                    if (nodes != null) {
-                        dataService.insertDataEvent(data, trigger.getChannelId(), 
-                                nodes);
-                    }
+                    dataService.insertData(data);
+
                 }
             }
         } catch (RuntimeException ex) {
@@ -84,17 +68,16 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             lastTransactionIdUpdate = System.currentTimeMillis();
         }
     }
+    
+    protected Data createData(Object[] oldRow, Object[] newRow) {
+        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
+                .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
+                triggerHistory, getTransactionId(oldRow, newRow), getDbDialect().getSyncNodeDisabled());
+        if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
+            data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
+        }
 
-    @SuppressWarnings("unchecked")
-    protected List<Node> findTargetNodes(Object[] oldRow, Object[] newRow) {
-        return (List<Node>) getDbDialect().getJdbcTemplate().query(fillVirtualTableSql(nodeSelectSql, oldRow, newRow),
-                new RowMapper() {
-                    public Object mapRow(ResultSet rs, int index) throws SQLException {
-                        Node node = new Node();
-                        node.setNodeId(rs.getString(1));
-                        return node;
-                    }
-                });
+        return data;
     }
 
     private boolean isInsertDataEvent(Object[] oldRow, Object[] newRow) {
@@ -110,7 +93,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             this.triggerName = triggerName;
             if (initialize(getDataEventType(type), tableName)) {
                 buildDataSelectSql();
-                buildNodeSelectSql();
                 buildTransactionIdSql();
                 if (logger.isDebugEnabled()) {
                     logger.debug("initializing " + triggerName + " for " + triggerType);
@@ -184,18 +166,6 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
 
     protected String escapeString(Object val) {
         return val == null ? null : val.toString().replaceAll("'", "''");
-    }
-
-    private void buildNodeSelectSql() {
-        StringBuilder b = new StringBuilder("select node_id from ");
-        b.append(dbDialect.getTablePrefix());
-        b.append("_node c, ");
-        b.append(buildVirtualTableSql());
-        b.append("where c.node_group_id='");
-        b.append(trigger.getTargetGroupId());
-        b.append("' and c.sync_enabled=1");
-        b.append(replaceOldNewTriggerTokens(trigger.getNodeSelect()));
-        this.nodeSelectSql = b.toString();
     }
 
     private void buildDataSelectSql() {

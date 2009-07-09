@@ -40,7 +40,6 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -168,17 +167,6 @@ public abstract class AbstractEmbeddedTrigger {
             b.deleteCharAt(b.length() - 1);
         }
         return b.toString();
-    }
-
-    protected Data createData(Object[] oldRow, Object[] newRow) {
-        Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
-                .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
-                triggerHistory);
-        if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
-            data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
-        }
-
-        return data;
     }
 
     protected Object[] getPrimaryKeys(Object[] allValues) {

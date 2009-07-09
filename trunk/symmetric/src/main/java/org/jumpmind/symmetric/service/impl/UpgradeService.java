@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.upgrade.IUpgradeTask;
 
+// TODO Upgrade for 2.0 or standalone program?
 public class UpgradeService extends AbstractService implements IUpgradeService {
 
     private static final Log logger = LogFactory.getLog(UpgradeService.class);

@@ -31,7 +31,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -55,6 +57,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -239,16 +242,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            batch.
      * @param ctx
      */
-    protected void writeInitialLoad(Node node, final Trigger trigger, final TriggerHistory hist,
+    protected void writeInitialLoad(final Node node, final Trigger trigger, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
-
+        
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
+                    Set<Node> oneNodeSet = new HashSet<Node>();
+                    oneNodeSet.add(node);
                     PreparedStatement st = null;
                     ResultSet rs = null;
                     try {
@@ -262,8 +267,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.begin(batch, writer);
                         }
                         while (rs.next()) {
-                            dataExtractor.write(writer, new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist, null, null), ctxCopy);
+                            Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
+                                    .getSourceTableName(), null, hist, null, null);
+                            // TODO test
+                            IDataRouter router = trigger.getDataRouter();                            
+                            Set<String> nodeIds = router.routeToNodes(data, trigger, oneNodeSet, null, true);
+                            if (nodeIds != null && nodeIds.size() > 0) {
+                                dataExtractor.write(writer, data, ctxCopy);
+                            }
                         }
                         if (batch != null) {
                             dataExtractor.commit(batch, writer);

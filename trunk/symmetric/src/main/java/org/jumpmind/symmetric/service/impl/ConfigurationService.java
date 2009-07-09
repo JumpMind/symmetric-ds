@@ -62,6 +62,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private List<String> rootConfigChannelTableNames;
 
+    // TODO 2.0 Does this go away??
     private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
@@ -115,11 +116,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
-            boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);
-            String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
+            boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);           
             Trigger trigger = buildConfigTrigger(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
-            trigger.setInitialLoadSelect(initialLoadSelect);
+            // TODO Set data router to replace the routing done by the node select
+            //String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
+            //trigger.setInitialLoadSelect(initialLoadSelect);
             triggers.add(trigger);
         }
         return triggers;
@@ -329,12 +331,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                trigger.getSyncOnDeleteCondition(), trigger.getInitialLoadSelect(), trigger.getNodeSelect(),
+                trigger.getSyncOnDeleteCondition(), trigger.getRoutingExpression(),
                 trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadOrder(),
                 new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
                 Types.VARCHAR, Types.TIMESTAMP });
     }
@@ -469,14 +471,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setUpdatedBy(rs.getString("last_updated_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
             trig.setInactiveTime(rs.getTimestamp("inactive_time"));
-            condition = rs.getString("node_select");
+            condition = rs.getString("routing_expression");
             if (!StringUtils.isBlank(condition)) {
-                trig.setNodeSelect(condition);
-            }
-
-            condition = rs.getString("initial_load_select");
-            if (!StringUtils.isBlank(condition)) {
-                trig.setInitialLoadSelect(condition);
+                trig.setRoutingExpression(condition);
             }
 
             return trig;

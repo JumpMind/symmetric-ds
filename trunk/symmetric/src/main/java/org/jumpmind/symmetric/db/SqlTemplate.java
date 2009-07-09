@@ -106,7 +106,6 @@ public class SqlTemplate {
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
-        sql = replace("whereClause", trig.getInitialLoadSelect() == null ? "1=1" : trig.getInitialLoadSelect(), sql);
         sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 
@@ -231,8 +230,6 @@ public class SqlTemplate {
             triggerExpression = trigger.getTxIdExpression();
         }
         ddl = replace("txIdExpression", dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
-        ddl = replace("nodeSelectWhere", dialect.preProcessTriggerSqlClause(trigger.getNodeSelect()), ddl);
-        ddl = replace("nodeSelectWhereEscaped", replace("'", "''", trigger.getNodeSelect()), ddl);
         ddl = replace("syncOnInsertCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
                 ddl);
         ddl = replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
@@ -260,7 +257,6 @@ public class SqlTemplate {
         
         ddl = replace("oldColumns", oldColumnString, ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
-        ddl = eval(!StringUtils.isBlank(trigger.getNodeSelect()), "containsNodeSelect", ddl);
 
         // some column templates need tableName and schemaName
         ddl = replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);

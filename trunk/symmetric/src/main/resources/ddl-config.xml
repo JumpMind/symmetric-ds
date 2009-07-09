@@ -159,8 +159,7 @@
         <column name="sync_on_update_condition" type="CLOB" />
         <column name="sync_on_insert_condition" type="CLOB" />
         <column name="sync_on_delete_condition" type="CLOB" />
-        <column name="initial_load_select" type="CLOB" />
-        <column name="node_select" type="CLOB" />
+        <column name="routing_expresssion" type="CLOB" />
         <column name="tx_id_expression" type="VARCHAR" size="500" />
         <column name="excluded_column_names" type="CLOB" />
         <column name="initial_load_order" type="INTEGER" required="true" default="1" />

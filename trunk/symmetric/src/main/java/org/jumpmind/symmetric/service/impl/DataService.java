@@ -87,12 +87,12 @@ public class DataService extends AbstractService implements IDataService {
         // initial_load_select for table can be overridden by populating the
         // row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect, null,
-                history);
+                history, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
     
     public void insertResendConfigEvent(final Node targetNode) {
-        Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null);
+        Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null, null, null);
         insertDataEvent(data, Constants.CHANNEL_CONFIG, targetNode.getNodeId());
     }    
 
@@ -113,19 +113,19 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, history);
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, history, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
     
     public void insertSqlEvent(final Node targetNode, String sql) {
-        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null);
+        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }    
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtil.escapeCsvData(xml), null,
-                history);
+                history, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
@@ -327,7 +327,7 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             if (history != null) {
-                data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history);
+                data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history, null, null);
             }
         }
         return data;
