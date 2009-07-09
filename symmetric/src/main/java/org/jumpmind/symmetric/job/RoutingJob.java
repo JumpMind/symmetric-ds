@@ -28,7 +28,7 @@ public class RoutingJob extends AbstractJob {
     
     @Override
     void doJob() throws Exception {
-        routingService.route();
+        routingService.routeData();
     }
     
     public void setRoutingService(IRoutingService routingService) {

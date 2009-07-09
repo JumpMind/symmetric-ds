@@ -100,6 +100,7 @@
     
     <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton">
         <property name="sql" ref="routingServiceSql" />
+        <property name="routers" ref="routers" />
         <property name="dataSource" ref="dataSource" />       
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />

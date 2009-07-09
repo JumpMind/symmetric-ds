@@ -57,7 +57,6 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
-import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -269,10 +268,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
                                     .getSourceTableName(), null, hist, null, null);
-                            // TODO test
-                            IDataRouter router = trigger.getDataRouter();                            
-                            Set<String> nodeIds = router.routeToNodes(data, trigger, oneNodeSet, null, true);
-                            if (nodeIds != null && nodeIds.size() > 0) {
+                            // TODO test       
+                            if (routingService.routeInitialLoadData(data, trigger, node)) {
                                 dataExtractor.write(writer, data, ctxCopy);
                             }
                         }
@@ -297,7 +294,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
 
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB)) {
-            routingService.route();
+            routingService.routeData();
         }
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());

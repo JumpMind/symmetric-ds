@@ -67,24 +67,32 @@ public class RoutingService extends AbstractService implements IRoutingService {
     protected IOutgoingBatchService outgoingBatchService;
 
     protected INodeService nodeService;
+    
+    protected Map<String, IDataRouter> routers;
 
-    // TODO better name??
+    // TODO better name??  Make this a RoutingContext?  Organize this hodge podge context better
     class BatchesByChannel {
         NodeChannel channel;
         Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
         Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
         Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
+        Map<String, IDataRouter> dataRouters = new HashMap<String, IDataRouter>();
         IChannelBatchController controller;
         Connection connection;
         SingleConnectionDataSource dataSource;
     }
-
+    
+    public boolean routeInitialLoadData(Data data, Trigger trigger, Node node) {
+        // TODO use IDataRouter
+        return true;
+    }
+    
     /**
      * This method will route data to specific nodes.
      * 
      * @return true if data was routed
      */
-    public boolean route() {
+    public boolean routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             final Map<String, BatchesByChannel> batches = initBatchesByChannel();
             try {
@@ -108,6 +116,15 @@ public class RoutingService extends AbstractService implements IRoutingService {
         } else {
             return false;
         }
+    }
+    
+    public IDataRouter getDataRouter(String routingExpression, BatchesByChannel batchesByChannel) {
+        IDataRouter router = batchesByChannel.dataRouters.get(routingExpression);
+        if (router == null) {
+            // TODO create router
+            // clone and set properties?
+        }
+        return router;
     }
 
     protected Set<Node> findAvailableNodes(Trigger trigger, BatchesByChannel batches) {
@@ -161,10 +178,10 @@ public class RoutingService extends AbstractService implements IRoutingService {
     protected void routeData(Data data, Map<String, Long> transactionIdDataId, Map<String, BatchesByChannel> batchesByChannels) throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
-        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());
-        IDataRouter router = trigger.getDataRouter();
+        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());        
         String channelId = trigger.getChannelId();
         BatchesByChannel batchesByChannel = batchesByChannels.get(channelId);
+        IDataRouter router = getDataRouter(trigger.getRoutingExpression(), batchesByChannel);
         Set<String> nodeIds = router.routeToNodes(data, trigger, findAvailableNodes(trigger, batchesByChannel), batchesByChannel.channel, false);
         boolean commit = false;
         if (nodeIds != null && nodeIds.size() > 0) {
@@ -250,5 +267,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
+    }
+    
+    public void setRouters(Map<String, IDataRouter> routers) {
+        this.routers = routers;
     }
 }
