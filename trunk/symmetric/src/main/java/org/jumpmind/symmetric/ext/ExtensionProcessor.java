@@ -166,6 +166,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof INodeIdGenerator) {
             nodeService.setNodeIdGenerator((INodeIdGenerator) ext);
         }
+        
+        // TODO Add new routing extensions
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
