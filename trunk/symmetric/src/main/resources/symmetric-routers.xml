@@ -21,4 +21,12 @@
         </entry>
     </util:map>
 
+    <util:map id="batchAlgorithms">
+        <entry key="default">
+            <bean class="org.jumpmind.symmetric.route.DefaultBatchAlgorithm" />
+        </entry>
+        <entry key="transaction">
+            <bean class="org.jumpmind.symmetric.route.TransactionalBatchAlgorithm" />
+        </entry>
+    </util:map>
 </beans>

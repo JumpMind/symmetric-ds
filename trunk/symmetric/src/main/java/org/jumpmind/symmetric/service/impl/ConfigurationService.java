@@ -95,10 +95,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveChannel(Channel channel) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
-                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0, channel.getId() })) {
+                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0, channel.getId(), channel.getBatchAlgorithm() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
-                    channel.isEnabled() ? 1 : 0 });
+                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() });
         }
     }
 
@@ -165,6 +165,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     channel.setMaxBatchSize(rs.getInt(6));
                     channel.setEnabled(rs.getBoolean(7));
                     channel.setMaxBatchToSend(rs.getInt(8));
+                    channel.setBatchAlgorithm(rs.getString(9));
                     return channel;
                 };
             });

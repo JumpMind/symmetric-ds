@@ -104,7 +104,7 @@
     <entry key="selectChannelsSql">
       <value>
         select c.channel_id, n.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,
-        c.max_batch_size, c.enabled, c.max_batch_to_send from $[sym.sync.table.prefix]_channel c inner
+        c.max_batch_size, c.enabled, c.max_batch_to_send, c.batch_algorithm from $[sym.sync.table.prefix]_channel c inner
         join $[sym.sync.table.prefix]_node_identity n on 1 = 1 left outer join
         $[sym.sync.table.prefix]_node_channel_ctl nc on c.channel_id = nc.channel_id and n.node_id =
         nc.node_id order by c.processing_order asc, c.channel_id
@@ -113,13 +113,13 @@
     <entry key="insertChannelSql">
       <value>
         insert into $[sym.sync.table.prefix]_channel (channel_id, processing_order, max_batch_size,
-        max_batch_to_send, enabled, description) values (?, ?, ?, ?, ?, null)
+        max_batch_to_send, enabled, description) values (?, ?, ?, ?, ?, ?, null)
       </value>
     </entry>
     <entry key="updateChannelSql">
       <value>
         update $[sym.sync.table.prefix]_channel set processing_order=?, max_batch_size=?,
-        max_batch_to_send=?, enabled=? where channel_id=?
+        max_batch_to_send=?, enabled=?, batch_algorithm=? where channel_id=?
       </value>
     </entry>
     <entry key="deleteChannelSql">
