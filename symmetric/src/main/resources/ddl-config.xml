@@ -9,6 +9,7 @@
         <column name="max_batch_size" type="INTEGER" required="true" default="1000" />
         <column name="max_batch_to_send" type="INTEGER" required="true" default="60" />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" />
+        <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" />
         <column name="description" type="VARCHAR" size="1000" />
     </table>
     

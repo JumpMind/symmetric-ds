@@ -22,13 +22,9 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Collection;
 
-import org.jumpmind.symmetric.route.IChannelBatchController;
-
 /**
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
- * 
- * @author chenson
  */
 public class Channel {
 
@@ -43,6 +39,8 @@ public class Channel {
     private int maxBatchToSend;
 
     private boolean enabled;
+    
+    private String batchAlgorithm;
 
     public Channel() {
     }
@@ -99,11 +97,6 @@ public class Channel {
         this.maxBatchToSend = maxBatchToSend;
     }
     
-    public IChannelBatchController createChannelBatchController() {
-        // TODO
-        return null;
-    }
-    
     /**
      * Check to see if this channel id matches one of the channels in the collection
      * @return true if a match is found
@@ -117,5 +110,13 @@ public class Channel {
             }
         }
         return false;
+    }
+    
+    public void setBatchAlgorithm(String batchAlgorithm) {
+        this.batchAlgorithm = batchAlgorithm;
+    }
+    
+    public String getBatchAlgorithm() {
+        return batchAlgorithm;
     }
 }

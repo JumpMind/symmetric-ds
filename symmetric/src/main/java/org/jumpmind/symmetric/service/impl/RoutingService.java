@@ -38,8 +38,10 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.route.IChannelBatchController;
+import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IRoutingContext;
+import org.jumpmind.symmetric.route.RoutingContext;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -50,7 +52,6 @@ import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
@@ -67,26 +68,16 @@ public class RoutingService extends AbstractService implements IRoutingService {
     protected IOutgoingBatchService outgoingBatchService;
 
     protected INodeService nodeService;
-    
+
     protected Map<String, IDataRouter> routers;
 
-    // TODO better name??  Make this a RoutingContext?  Organize this hodge podge context better
-    class BatchesByChannel {
-        NodeChannel channel;
-        Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
-        Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
-        Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
-        Map<String, IDataRouter> dataRouters = new HashMap<String, IDataRouter>();
-        IChannelBatchController controller;
-        Connection connection;
-        SingleConnectionDataSource dataSource;
-    }
-    
+    protected Map<String, IBatchAlgorithm> batchAlgorithms;
+
     public boolean routeInitialLoadData(Data data, Trigger trigger, Node node) {
         // TODO use IDataRouter
         return true;
     }
-    
+
     /**
      * This method will route data to specific nodes.
      * 
@@ -94,22 +85,23 @@ public class RoutingService extends AbstractService implements IRoutingService {
      */
     public boolean routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
-            final Map<String, BatchesByChannel> batches = initBatchesByChannel();
+            final Map<String, IRoutingContext> routingContexts = initRoutingContexts();
             try {
                 return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
                     public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                        selectDataAndRoute(c, batches);
+                        selectDataAndRoute(c, routingContexts);
                         return null;
                     }
                 });
             } finally {
-                for (BatchesByChannel batch : batches.values()) {
+                for (IRoutingContext batch : routingContexts.values()) {
                     try {
-                        batch.connection.commit();
+                        batch.commit();
                     } catch (SQLException e) {
                         logger.error(e, e);
+                    } finally {
+                        batch.cleanup();
                     }
-                    JdbcUtils.closeConnection(batch.connection);
                 }
                 clusterService.unlock(LockActionConstants.ROUTE);
             }
@@ -117,9 +109,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
             return false;
         }
     }
-    
-    public IDataRouter getDataRouter(String routingExpression, BatchesByChannel batchesByChannel) {
-        IDataRouter router = batchesByChannel.dataRouters.get(routingExpression);
+
+    public IDataRouter getDataRouter(String routingExpression, IRoutingContext routingContext) {
+        IDataRouter router = routingContext.getDataRouters().get(routingExpression);
         if (router == null) {
             // TODO create router
             // clone and set properties?
@@ -127,17 +119,18 @@ public class RoutingService extends AbstractService implements IRoutingService {
         return router;
     }
 
-    protected Set<Node> findAvailableNodes(Trigger trigger, BatchesByChannel batches) {
-        Set<Node> nodes = batches.availableNodes.get(trigger);
+    protected Set<Node> findAvailableNodes(Trigger trigger, IRoutingContext batches) {
+        Set<Node> nodes = batches.getAvailableNodes().get(trigger);
         if (nodes == null) {
-            // TODO call the node service to get the appropriate nodes for this trigger
-            //nodes.addAll(nodeService.findNodesTargetedByTrigger(trigger);
-            batches.availableNodes.put(trigger, nodes);
+            // TODO call the node service to get the appropriate nodes for this
+            // trigger
+            // nodes.addAll(nodeService.findNodesTargetedByTrigger(trigger);
+            batches.getAvailableNodes().put(trigger, nodes);
         }
         return nodes;
     }
 
-    protected void selectDataAndRoute(Connection conn, Map<String, BatchesByChannel> batches) throws SQLException {
+    protected void selectDataAndRoute(Connection conn, Map<String, IRoutingContext> batches) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
         ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -175,62 +168,65 @@ public class RoutingService extends AbstractService implements IRoutingService {
         return data;
     }
 
-    protected void routeData(Data data, Map<String, Long> transactionIdDataId, Map<String, BatchesByChannel> batchesByChannels) throws SQLException {
+    protected void routeData(Data data, Map<String, Long> transactionIdDataId,
+            Map<String, IRoutingContext> routingContexts) throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
-        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());        
+        Trigger trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerHistoryId());
         String channelId = trigger.getChannelId();
-        BatchesByChannel batchesByChannel = batchesByChannels.get(channelId);
-        IDataRouter router = getDataRouter(trigger.getRoutingExpression(), batchesByChannel);
-        Set<String> nodeIds = router.routeToNodes(data, trigger, findAvailableNodes(trigger, batchesByChannel), batchesByChannel.channel, false);
+        IRoutingContext routingContext = routingContexts.get(channelId);
+        IDataRouter router = getDataRouter(trigger.getRoutingExpression(), routingContext);
+        Set<String> nodeIds = router.routeToNodes(data, trigger, findAvailableNodes(trigger, routingContext),
+                routingContext.getChannel(), false);
         boolean commit = false;
+        boolean routed = false;
         if (nodeIds != null && nodeIds.size() > 0) {
             for (String nodeId : nodeIds) {
-                OutgoingBatch batch = batchesByChannel.batchesByNodes.get(nodeId);
-                OutgoingBatchHistory history = batchesByChannel.batchHistoryByNodes.get(nodeId);
-                if (batch == null) {
-                    batch = createNewBatch(batchesByChannel.dataSource, nodeId, channelId);
-                    batchesByChannel.batchesByNodes.put(nodeId, batch);
-                    history = new OutgoingBatchHistory(batch);
-                    batchesByChannel.batchHistoryByNodes.put(nodeId, history);
-                }
-                history.incrementDataEventCount();
-
-                insertDataEvent(batchesByChannel.dataSource, data, batch.getBatchId(), nodeId);
-                if (batchesByChannel.controller.completeBatch(history, batch, data, databaseTransactionBoundary)) {
-                    insertOutgoingBatchHistory(batchesByChannel.dataSource, history);
-                    batchesByChannel.batchesByNodes.remove(nodeId);
-                    batchesByChannel.batchHistoryByNodes.remove(nodeId);
-                    commit = true;
+                if (data.getSourceNodeId() == null || !data.getSourceNodeId().equals(nodeId)) {
+                    OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
+                    OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
+                    if (batch == null) {
+                        batch = createNewBatch(routingContext.getDataSource(), nodeId, channelId);
+                        routingContext.getBatchesByNodes().put(nodeId, batch);
+                        history = new OutgoingBatchHistory(batch);
+                        routingContext.getBatchHistoryByNodes().put(nodeId, history);
+                    }
+                    history.incrementDataEventCount();
+                    routed = true;
+                    insertDataEvent(routingContext.getDataSource(), data, batch.getBatchId(), nodeId);
+                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
+                            routingContext.getChannel(), history, batch, data, databaseTransactionBoundary)) {
+                        insertOutgoingBatchHistory(routingContext.getDataSource(), history);
+                        routingContext.getBatchesByNodes().remove(nodeId);
+                        routingContext.getBatchHistoryByNodes().remove(nodeId);
+                        commit = true;
+                    }
                 }
             }
-        } else {
-            insertDataEvent(batchesByChannel.dataSource, data, -1, "-1");
+        }
+
+        if (!routed) {
+            insertDataEvent(routingContext.getDataSource(), data, -1, "-1");
         }
 
         if (commit) {
-            batchesByChannel.connection.commit();
+            routingContext.commit();
         }
 
     }
 
-    protected Map<String, BatchesByChannel> initBatchesByChannel() {
+    protected Map<String, IRoutingContext> initRoutingContexts() {
         final List<NodeChannel> channels = configurationService.getChannels();
-        final Map<String, BatchesByChannel> batches = new HashMap<String, BatchesByChannel>(channels.size());
+        final Map<String, IRoutingContext> contexts = new HashMap<String, IRoutingContext>(channels.size());
         try {
             for (NodeChannel nodeChannel : channels) {
-                BatchesByChannel b = new BatchesByChannel();
-                b.channel = nodeChannel;
-                b.controller = nodeChannel.createChannelBatchController();
-                b.connection = dataSource.getConnection();
-                b.connection.setAutoCommit(false);
-                b.dataSource = new SingleConnectionDataSource(b.connection, true);
-                batches.put(nodeChannel.getId(), b);
+                IRoutingContext b = new RoutingContext(nodeChannel, dataSource.getConnection());
+                contexts.put(nodeChannel.getId(), b);
             }
-            return batches;
+            return contexts;
         } catch (SQLException e) {
-            for (BatchesByChannel batch : batches.values()) {
-                JdbcUtils.closeConnection(batch.connection);
+            for (IRoutingContext ctx : contexts.values()) {
+                ctx.cleanup();
             }
             throw new CannotGetJdbcConnectionException(e.getMessage(), e);
         }
@@ -268,8 +264,12 @@ public class RoutingService extends AbstractService implements IRoutingService {
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
-    
+
     public void setRouters(Map<String, IDataRouter> routers) {
         this.routers = routers;
+    }
+
+    public void setBatchAlgorithms(Map<String, IBatchAlgorithm> batchAlgorithms) {
+        this.batchAlgorithms = batchAlgorithms;
     }
 }
