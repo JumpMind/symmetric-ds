@@ -867,7 +867,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId) {
-        return insertWithGeneratedKey(sql, sequenceId, null);
+        return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, null);
     }
 
     protected String getSequenceName(SequenceIdentifier identifier) {
@@ -896,7 +896,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback callback) {
-        return (Long) jdbcTemplate.execute(new ConnectionCallback() {
+        return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
+    }
+    
+    public long insertWithGeneratedKey(JdbcTemplate template, final String sql, final SequenceIdentifier sequenceId,
+            final PreparedStatementCallback callback) {
+        return (Long) template.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
 
                 long key = 0;

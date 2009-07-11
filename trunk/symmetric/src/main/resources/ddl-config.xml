@@ -17,7 +17,7 @@
        <column name="data_id" type="INTEGER" required="true" primaryKey="true"
            autoIncrement="true" />
        <column name="table_name" type="VARCHAR" size="50" required="true" />
-       <column name="event_type" type="CHAR" size="1" />
+       <column name="event_type" type="CHAR" size="1" required="true" />
        <column name="row_data" type="LONGVARCHAR" />
        <column name="pk_data" type="LONGVARCHAR" />
        <column name="old_data" type="LONGVARCHAR" />
@@ -160,7 +160,8 @@
         <column name="sync_on_update_condition" type="CLOB" />
         <column name="sync_on_insert_condition" type="CLOB" />
         <column name="sync_on_delete_condition" type="CLOB" />
-        <column name="routing_expresssion" type="CLOB" />
+        <column name="router_name" type="VARCHAR" size="50" />
+        <column name="routing_expression" type="CLOB" />
         <column name="tx_id_expression" type="VARCHAR" size="500" />
         <column name="excluded_column_names" type="CLOB" />
         <column name="initial_load_order" type="INTEGER" required="true" default="1" />

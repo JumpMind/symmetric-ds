@@ -11,8 +11,7 @@ public class DefaultDataRouter extends AbstractDataRouter {
 
     public Set<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel,
             boolean initialLoad) {
-        // TODO Auto-generated method stub
-        return null;
+        return toNodeIds(nodes);
     }
 
 }

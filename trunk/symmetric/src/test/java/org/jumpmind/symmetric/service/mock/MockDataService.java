@@ -31,9 +31,10 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IDataService;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockDataService implements IDataService {
-
+    
     public void addReloadListener(IReloadListener listener) {
 
     }
@@ -58,6 +59,10 @@ public class MockDataService implements IDataService {
         return 0;
     }
 
+    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId) {
+        
+    }
+    
     public void insertDataEvent(DataEvent dataEvent) {
 
     }

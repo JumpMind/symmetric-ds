@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.route;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
@@ -9,24 +10,18 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 
 /**
- * We would provide several implementations of the data router and it can also
- * be an extension point. It would be configured by trigger. Some examples are:
- * ColumMatchDataRouter, DatabaseExpressionDataRouter,
- * RegistrationRedirectDataRouter, GroovyDataRouter
+ * The data router is an extension point that allows the end user to target 
+ * certain nodes with data changes.  SymmetricDS comes with a build-in data routers like
+ * {@link SubSelectDataRouter} and {@link ColumnMatchDataRouter}.
  * <p>
- * In order to configure a data router you use the route_expression column on
- * sym_trigger. You use the given Spring bean name of the {@link IDataRouter}
- * and configure it using a series of name/value pairs which will be set on the
- * bean.
- * <p>
- * For example, column:columName=store_id, would associate a
- * ColumnMatchDataRouter to the trigger and make the store_id column for the
- * table the driver column for routing.
+ * In order to configure a data router you use the router_name and routing_expression column on
+ * sym_trigger. The given Spring bean name of the {@link IDataRouter} is the router_name and 
+ * each data router is configured using the routing_expression according to its implementation. 
  * 
  * @since 2.0
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    Set<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel, boolean initialLoad);
+    Collection<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel, boolean initialLoad);
 
 }

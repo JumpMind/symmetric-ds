@@ -92,6 +92,11 @@ public class Node {
     public boolean equals(Object n) {
         return n != null && n instanceof Node && nodeId != null && nodeId.equals(((Node) n).getNodeId());
     }
+    
+    @Override
+    public int hashCode() {      
+        return nodeId != null ? nodeId.hashCode() : super.hashCode();
+    }
 
     public String getNodeId() {
         return nodeId;
@@ -215,4 +220,5 @@ public class Node {
         return false;
     }
 
+    
 }

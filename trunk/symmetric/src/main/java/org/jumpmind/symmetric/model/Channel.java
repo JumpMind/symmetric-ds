@@ -40,7 +40,7 @@ public class Channel {
 
     private boolean enabled;
     
-    private String batchAlgorithm;
+    private String batchAlgorithm = "default";
 
     public Channel() {
     }

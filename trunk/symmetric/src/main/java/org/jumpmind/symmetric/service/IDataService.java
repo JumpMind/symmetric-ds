@@ -10,6 +10,7 @@ import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface IDataService {
@@ -39,6 +40,8 @@ public interface IDataService {
 
     public long insertData(final Data data);
 
+    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId);
+    
     public void insertDataEvent(DataEvent dataEvent);
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes);

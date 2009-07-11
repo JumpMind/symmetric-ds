@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 
 import com.csvreader.CsvWriter;
@@ -145,8 +146,12 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(DataEvent dataEvent) {
-        jdbcTemplate.update(getSql("insertIntoDataEventSql"), new Object[] { dataEvent.getDataId(),
-                dataEvent.getNodeId(), dataEvent.getBatchId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.INTEGER });
+        this.insertDataEvent(jdbcTemplate, dataEvent.getDataId(), dataEvent.getNodeId(), dataEvent.getBatchId());    
+    }
+    
+    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId) {
+        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId,
+                nodeId, batchId }, new int[] { Types.INTEGER, Types.VARCHAR, Types.INTEGER });
     }
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes) {

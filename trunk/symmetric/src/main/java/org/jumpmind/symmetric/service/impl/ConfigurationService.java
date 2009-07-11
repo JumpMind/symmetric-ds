@@ -476,6 +476,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             if (!StringUtils.isBlank(condition)) {
                 trig.setRoutingExpression(condition);
             }
+            trig.setRouterName(rs.getString("router_name"));
 
             return trig;
         }

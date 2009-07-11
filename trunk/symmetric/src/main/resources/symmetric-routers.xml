@@ -9,6 +9,8 @@
     <util:map id="routers">
         <entry key="subselect">
             <bean class="org.jumpmind.symmetric.route.SubSelectDataRouter">
+                <property name="sql" value="select c.node_id from $[sym.sync.table.prefix]_node c where c.node_group_id=? and c.sync_enabled=1 $(nodeSelectWhere)"/>
+                <property name="jdbcTemplate" ref="jdbcTemplate"/>
             </bean>
         </entry>
         <entry key="column">
@@ -29,4 +31,5 @@
             <bean class="org.jumpmind.symmetric.route.TransactionalBatchAlgorithm" />
         </entry>
     </util:map>
+    
 </beans>

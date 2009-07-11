@@ -40,11 +40,6 @@ public enum DataEventType implements ICoded {
     DELETE("D"),
 
     /**
-     * An event that indicates that table validation needs to be done.
-     */
-    VALIDATE("V"),
-
-    /**
      * An event that indicates that a table needs to be reloaded.
      */
     RELOAD("R"),
@@ -92,7 +87,10 @@ public enum DataEventType implements ICoded {
             return CREATE;
         } else if (s.equals(CONFIG.getCode())) {
             return CONFIG;
+        } else if (s.equals(RELOAD.getCode())) {
+            return RELOAD;
+        } else {
+            throw new IllegalStateException(String.format("Invalid data event type of %s", s));
         }
-        return null;
     }
 }

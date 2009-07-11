@@ -87,6 +87,8 @@ public class Trigger {
 
     private String excludedColumnNames = null;
 
+    private String routerName = null;
+    
     /**
      * Default to routing all data to all nodes.
      */
@@ -418,6 +420,14 @@ public class Trigger {
         this.targetCatalogName = targetCatalogName;
     }
 
+    public void setRouterName(String routerName) {
+        this.routerName = routerName;
+    }
+    
+    public String getRouterName() {
+        return routerName;
+    }
+    
     public String getRoutingExpression() {
         return routingExpression;
     }

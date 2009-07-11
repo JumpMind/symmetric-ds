@@ -11,8 +11,8 @@
     <entry key="selectDataToBatchSql">
       <value>
         select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,
-        d.create_time, d.trigger_hist_id, d.transaction_id, d.source_node_id from $[sym.sync.table.prefix]_data d right outer join
-        $[sym.sync.table.prefix]_data_event e on d.data_id=e.data_id and e.data_id is null order by data_id asc
+        d.create_time, d.trigger_hist_id, d.transaction_id, d.source_node_id from $[sym.sync.table.prefix]_data d left outer join
+        $[sym.sync.table.prefix]_data_event e on d.data_id=e.data_id where e.data_id is null order by data_id asc
       </value>
     </entry>
   </util:map>

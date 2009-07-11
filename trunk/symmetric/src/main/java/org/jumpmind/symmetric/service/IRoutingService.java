@@ -7,7 +7,7 @@ import org.jumpmind.symmetric.model.Trigger;
 
 public interface IRoutingService {
 
-    public boolean routeData();
+    public void routeData();
     
     public boolean routeInitialLoadData(Data data, Trigger trigger, Node node);
     

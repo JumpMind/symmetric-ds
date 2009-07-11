@@ -45,9 +45,9 @@ import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,32 +58,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private IDbDialect dbDialect;
 
-    private IStatisticManager statisticManager;
-    
-    private IConfigurationService configurationService;        
-       
-    
+    private IConfigurationService configurationService;
+
     @Transactional
     public void markAllAsSentForNode(String nodeId) {
-        List<NodeChannel> channels = configurationService.getChannels();
-        for (NodeChannel channel : channels) {
-            OutgoingBatch newBatch = new OutgoingBatch();
-            newBatch.setBatchType(BatchType.EVENTS);
-            newBatch.setChannelId(channel.getId());
-            newBatch.setNodeId(nodeId);
-            newBatch.setStatus(Status.OK);
-            long startTime = System.currentTimeMillis();
-            insertOutgoingBatch(newBatch);
-            int dataEventCount = jdbcTemplate.update(getSql("updateBatchedEventsMultiSql"), new Object[] {
-                    newBatch.getBatchId(), 1, 0, nodeId, newBatch.getChannelId() });
-            long databaseMillis = System.currentTimeMillis() - startTime;
-            OutgoingBatchHistory history = new OutgoingBatchHistory(newBatch);
-            history.setEndTime(new Date());
-            history.setDataEventCount(dataEventCount);
-            history.setDatabaseMillis(databaseMillis);
-            insertOutgoingBatchHistory(history);
-        }
-        
         List<OutgoingBatch> batches = null;
         do {
             batches = getOutgoingBatches(nodeId);
@@ -94,8 +72,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
-        long batchId = dbDialect.insertWithGeneratedKey(getSql("createBatchSql"), SequenceIdentifier.OUTGOING_BATCH,
-                new PreparedStatementCallback() {
+        insertOutgoingBatch(jdbcTemplate, outgoingBatch);
+    }
+
+    public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, final OutgoingBatch outgoingBatch) {
+        long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("createBatchSql"),
+                SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
@@ -124,7 +106,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 errorChannels.add(batch.getChannelId());
             }
         }
-        
+
         List<NodeChannel> channels = configurationService.getChannels();
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
@@ -139,15 +121,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             }
         });
-        
-       
+
         return filterMaxNumberOfOutgoingBatchesByChannel(list, channels);
     }
-    
+
     /**
      * Filter out the maximum number of batches to send.
      */
-    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatchesByChannel(List<OutgoingBatch> batches, List<NodeChannel> channels) {
+    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatchesByChannel(List<OutgoingBatch> batches,
+            List<NodeChannel> channels) {
         if (batches != null && batches.size() > 0) {
             List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
             for (NodeChannel channel : channels) {
@@ -197,13 +179,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             return false;
         }
 
-        List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"),
-                new Object[] { nodeId, Constants.CHANNEL_RELOAD }, String.class);
+        List<String> statuses = (List<String>) jdbcTemplate.queryForList(getSql("initialLoadStatusSql"), new Object[] {
+                nodeId, Constants.CHANNEL_RELOAD }, String.class);
         if (statuses == null || statuses.size() == 0) {
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
-        
-        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {nodeId, Constants.CHANNEL_RELOAD});
+
+        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
+                nodeId, Constants.CHANNEL_RELOAD });
         if (unbatchedCount > 0) {
             logger.warn("Unbatched events on the reload channel found.");
             return false;
@@ -216,15 +199,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
         return true;
     }
-    
+
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
-        int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"),
-                new Object[] { nodeId, channelId });
+        int unsentCount = jdbcTemplate.queryForInt(getSql("unsentBatchesForNodeIdChannelIdSql"), new Object[] { nodeId,
+                channelId });
         if (unsentCount > 0) {
             return true;
         }
-        
-        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {nodeId, channelId});
+
+        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
+                nodeId, channelId });
         if (unbatchedCount > 0) {
             return true;
         }
@@ -233,7 +217,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
-        jdbcTemplate.update(getSql("insertOutgoingBatchHistorySql"), new Object[] { history.getBatchId(),
+        insertOutgoingBatchHistory(jdbcTemplate, history);
+    }
+
+    public void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history) {
+        template.update(getSql("insertOutgoingBatchHistorySql"), new Object[] { history.getBatchId(),
                 history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
                 history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
                 history.getDataEventCount(), history.getFailedDataId(), history.getStartTime(), history.getEndTime(),
@@ -290,10 +278,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
-    }
-
-    public void setStatisticManager(IStatisticManager statisticManager) {
-        this.statisticManager = statisticManager;
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

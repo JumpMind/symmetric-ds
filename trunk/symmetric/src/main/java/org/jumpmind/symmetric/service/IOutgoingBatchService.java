@@ -26,9 +26,13 @@ import java.util.List;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IOutgoingBatchService {
-    public void insertOutgoingBatch(final OutgoingBatch outgoingBatch);
+    
+    public void insertOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch);
+    
+    public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
 
     public void markAllAsSentForNode(String nodeId);
 
@@ -47,5 +51,7 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId);
 
     public void insertOutgoingBatchHistory(OutgoingBatchHistory history);
+    
+    public void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history);
 
 }
