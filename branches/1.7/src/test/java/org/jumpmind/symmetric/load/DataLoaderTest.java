@@ -26,16 +26,20 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math.random.RandomDataImpl;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
+import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.junit.Assert;
@@ -234,6 +238,40 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
     }
+    
+    @Test
+    public void testColumnFilterChangingColumnName() throws Exception {
+        String tableName = "TEST_CHANGING_COLUMN_NAME";
+        String[] keys = { "id" };
+        String[] columns = { "id", "test" };
+        String[] values = { "1", "10" };
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = getWriter(out);
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
+        writeTable(writer, tableName, keys, columns);
+        String nextBatchId = getNextBatchId();
+        writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
+        writer.write(CsvConstants.INSERT);
+        writer.writeRecord(values, true);
+        writer.close();
+        IColumnFilter filter = new IColumnFilter() {
+          public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames) {
+                columnNames[0] = "id1";
+                return columnNames;
+            }
+          public Object[] filterColumnsValues(IDataLoaderContext ctx, DmlType dml, Table table, Object[] columnValues) {
+                return columnValues;
+            }
+          public boolean isAutoRegister() {
+                return false;
+            }
+        };
+        Map<String, IColumnFilter> filters = new HashMap<String, IColumnFilter>();
+        filters.put(tableName, filter);
+        load(out, filters);
+        Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from TEST_CHANGING_COLUMN_NAME"));
+    }
 
     private void massageExpectectedResultsForDialect(String[] values) {
         if (values[5] != null && (!(getDbDialect() instanceof OracleDbDialect || getDbDialect() instanceof MsSqlDbDialect))) {
@@ -307,11 +345,15 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         // TODO: this used to run in 1 second; can we do some optimization?
         Assert.assertTrue("DataLoader running in " + totalSeconds + " is too slow", totalSeconds <= 15.0);
     }
-
+    
     protected void load(ByteArrayOutputStream out) throws Exception {
+        load(out, null);
+    }
+
+    protected void load(ByteArrayOutputStream out, Map<String, IColumnFilter> filters) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         IDataLoader dataLoader = getDataLoader();
-        dataLoader.open(TransportUtils.toReader(in));
+        dataLoader.open(TransportUtils.toReader(in), null, filters);
         while (dataLoader.hasNext()) {
             dataLoader.load();
         }
