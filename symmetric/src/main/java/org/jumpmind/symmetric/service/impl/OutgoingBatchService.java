@@ -54,13 +54,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
-    protected INodeService nodeService;
+    private INodeService nodeService;
 
-    protected IDbDialect dbDialect;
+    private IDbDialect dbDialect;
 
-    protected IStatisticManager statisticManager;
+    private IStatisticManager statisticManager;
     
-    protected IConfigurationService configurationService;        
+    private IConfigurationService configurationService;        
        
     
     @Transactional

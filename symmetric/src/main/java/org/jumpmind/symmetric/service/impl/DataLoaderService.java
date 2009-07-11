@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -73,26 +71,24 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
 public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
+    
+    private IDbDialect dbDialect;
 
-    protected static final Log logger = LogFactory.getLog(DataLoaderService.class);
+    private IIncomingBatchService incomingBatchService;
 
-    protected IDbDialect dbDialect;
+    private ITransportManager transportManager;
 
-    protected IIncomingBatchService incomingBatchService;
+    private BeanFactory beanFactory;
 
-    protected ITransportManager transportManager;
+    private List<IDataLoaderFilter> filters;
 
-    protected BeanFactory beanFactory;
+    private IStatisticManager statisticManager;
 
-    protected List<IDataLoaderFilter> filters;
+    private INodeService nodeService;
 
-    protected IStatisticManager statisticManager;
+    private Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
 
-    protected INodeService nodeService;
-
-    protected Map<String, IColumnFilter> columnFilters = new HashMap<String, IColumnFilter>();
-
-    protected List<IBatchListener> batchListeners;
+    private List<IBatchListener> batchListeners;
 
     /**
      * Connect to the remote node and pull data. The acknowledgment of

@@ -21,13 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
-/**
- * @author elong
- * 
- */
+
 public class SecurityService implements ISecurityService {
 
-    private static final Log logger = LogFactory.getLog(SecurityService.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     private SecretKey secretKey;
     
