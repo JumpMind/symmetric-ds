@@ -36,7 +36,8 @@ public interface IColumnFilter extends IExtensionPoint {
      * This method is always called first. Typically, you must cache the column
      * index you are interested in order to be able to filter the column value
      * as well.
-     * 
+     * <P>
+     * @param columnNames If column names are going to change, then you should change the name in this reference and return it as the return value.
      * @return The columnName that the data loader will use to build its dml.
      */
     public String[] filterColumnsNames(IDataLoaderContext ctx, DmlType dml, Table table, String[] columnNames);
