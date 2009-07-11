@@ -26,8 +26,6 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -37,8 +35,6 @@ import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.jdbc.core.RowMapper;
 
 public class PurgeService extends AbstractService implements IPurgeService {
-
-    private final static Log logger = LogFactory.getLog(PurgeService.class);
 
     private IClusterService clusterService;
     
@@ -56,6 +52,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
+    // TODO have a different retention time for stats
     private void purgeStatistic(Calendar retentionCutoff) {
         try {
             if (clusterService.lock(LockActionConstants.PURGE_STATISTICS)) {

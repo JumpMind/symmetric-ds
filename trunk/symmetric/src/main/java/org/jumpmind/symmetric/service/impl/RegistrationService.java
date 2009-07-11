@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -53,8 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @see IRegistrationService
  */
 public class RegistrationService extends AbstractService implements IRegistrationService {
-
-    protected static final Log logger = LogFactory.getLog(RegistrationService.class);
 
     private INodeService nodeService;
 

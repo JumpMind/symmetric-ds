@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -52,8 +50,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class NodeService extends AbstractService implements INodeService {
-
-    private static final Log logger = LogFactory.getLog(NodeService.class);
 
     private Node cachedNodeIdentity;
 

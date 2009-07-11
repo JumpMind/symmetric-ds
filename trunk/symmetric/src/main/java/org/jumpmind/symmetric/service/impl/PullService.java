@@ -25,8 +25,6 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -40,8 +38,6 @@ import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
 
 public class PullService extends AbstractService implements IPullService {
-
-    private static final Log logger = LogFactory.getLog(PullService.class);
 
     private INodeService nodeService;
 

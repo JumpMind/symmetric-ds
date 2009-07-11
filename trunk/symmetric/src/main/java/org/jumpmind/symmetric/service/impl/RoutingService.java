@@ -59,19 +59,19 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class RoutingService extends AbstractService implements IRoutingService {
 
-    protected IClusterService clusterService;
+    private IClusterService clusterService;
 
-    protected IDataService dataService;
+    private IDataService dataService;
 
-    protected IConfigurationService configurationService;
+    private IConfigurationService configurationService;
 
-    protected IOutgoingBatchService outgoingBatchService;
+    private IOutgoingBatchService outgoingBatchService;
 
-    protected INodeService nodeService;
+    private INodeService nodeService;
 
-    protected Map<String, IDataRouter> routers;
+    private Map<String, IDataRouter> routers;
 
-    protected Map<String, IBatchAlgorithm> batchAlgorithms;
+    private Map<String, IBatchAlgorithm> batchAlgorithms;
 
     public boolean routeInitialLoadData(Data data, Trigger trigger, Node node) {
         // TODO use IDataRouter
