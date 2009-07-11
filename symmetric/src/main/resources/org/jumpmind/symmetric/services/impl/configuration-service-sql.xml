@@ -113,7 +113,7 @@
     <entry key="insertChannelSql">
       <value>
         insert into $[sym.sync.table.prefix]_channel (channel_id, processing_order, max_batch_size,
-        max_batch_to_send, enabled, description) values (?, ?, ?, ?, ?, ?, null)
+        max_batch_to_send, enabled, batch_algorithm, description) values (?, ?, ?, ?, ?, ?, null)
       </value>
     </entry>
     <entry key="updateChannelSql">

@@ -41,18 +41,6 @@
         batch_type, create_time) values (null, ?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
-    <entry key="updateBatchedEventsMultiSql">
-      <value>
-        update $[sym.sync.table.prefix]_data_event set batch_id = ?, batched = ? where batched = ?
-        and node_id = ? and channel_id = ?
-      </value>
-    </entry>
-    <entry key="updateBatchedEventsSql">
-      <value>
-        update $[sym.sync.table.prefix]_data_event set batch_id = ?, batched = ? where node_id = ? and
-        data_id = ?
-      </value>
-    </entry>
     <entry key="selectOutgoingBatchSql">
       <value>
         select batch_id, node_id, channel_id, status, batch_type, create_time from

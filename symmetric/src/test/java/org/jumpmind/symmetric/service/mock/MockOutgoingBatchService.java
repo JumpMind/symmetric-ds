@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockOutgoingBatchService implements IOutgoingBatchService {
 
@@ -56,6 +57,14 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
         return null;
     }
 
+    public void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history) {
+        
+    }
+    
+    public void insertOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
+        
+    }
+    
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch) {
 
     }

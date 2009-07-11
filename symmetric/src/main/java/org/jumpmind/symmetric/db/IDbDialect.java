@@ -197,6 +197,9 @@ public interface IDbDialect {
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceIde,
             final PreparedStatementCallback psCallback);
+    
+    public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql, final SequenceIdentifier sequenceIde,
+            final PreparedStatementCallback psCallback);
 
     /**
      * Get the string prepended to the Symmetric configuration tables.

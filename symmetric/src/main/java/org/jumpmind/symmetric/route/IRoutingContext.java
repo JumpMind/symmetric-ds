@@ -9,11 +9,11 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IRoutingContext {
     
-    public SingleConnectionDataSource getDataSource();
+    public JdbcTemplate getJdbcTemplate();
 
     public NodeChannel getChannel();
 
@@ -22,8 +22,6 @@ public interface IRoutingContext {
     public Map<String, OutgoingBatchHistory> getBatchHistoryByNodes();
 
     public Map<Trigger, Set<Node>> getAvailableNodes();
-
-    public Map<String, IDataRouter> getDataRouters();
 
     public void commit() throws SQLException;
     
