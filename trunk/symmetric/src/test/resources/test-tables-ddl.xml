@@ -137,15 +137,20 @@
         <column name="PK1" type="VARCHAR" primaryKey="true" required="true" />
         <column name="ADD1" type="DECIMAL" size="10" />
     </table>
-    
+
     <table name="TEST_TARGET_TABLE_A">
         <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
         <column name="DESC_FIELD" type="VARCHAR" />
     </table>
-    
+
     <table name="TEST_TARGET_TABLE_B">
         <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
         <column name="DESC_FIELD" type="VARCHAR" />
-    </table>    
+    </table>
+
+    <table name="TEST_CHANGING_COLUMN_NAME">
+        <column name="ID1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="TEST" type="DECIMAL" size="10" />
+    </table>
 
 </database>
