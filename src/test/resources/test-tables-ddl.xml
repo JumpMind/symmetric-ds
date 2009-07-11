@@ -147,5 +147,10 @@
         <column name="ID_FIELD" type="VARCHAR" primaryKey="true" required="true" />
         <column name="DESC_FIELD" type="VARCHAR" />
     </table>    
+    
+    <table name="TEST_CHANGING_COLUMN_NAME">
+        <column name="ID1" type="VARCHAR" primaryKey="true" required="true" />
+        <column name="TEST" type="DECIMAL" size="10" />
+    </table>    
 
 </database>
