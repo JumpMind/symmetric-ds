@@ -55,7 +55,6 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -93,31 +92,39 @@ public class RoutingService extends AbstractService implements IRoutingService {
      */
     public void routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
-            final Map<String, IRoutingContext> routingContexts = initRoutingContexts();
-            
             try {
                 jdbcTemplate.execute(new ConnectionCallback() {
                     public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                        selectDataAndRoute(c, routingContexts);
+                        routeDataForEachChannel(c);
                         return null;
                     }
                 });
             } finally {
-                for (IRoutingContext batch : routingContexts.values()) {
-                    try {
-                        batch.commit();
-                    } catch (SQLException e) {
-                        logger.error(e, e);
-                    } finally {
-                        batch.cleanup();
-                    }
-                }
                 clusterService.unlock(LockActionConstants.ROUTE);
             }
         }
     }
 
-    public IDataRouter getDataRouter(Trigger trigger) {
+    protected void routeDataForEachChannel(Connection c) throws SQLException {
+        final List<NodeChannel> channels = configurationService.getChannels();
+        for (NodeChannel nodeChannel : channels) {
+            IRoutingContext context = null;
+            try {
+                context = new RoutingContext(nodeChannel, dataSource.getConnection());
+                selectDataAndRoute(c, context);
+            } finally {
+                try {
+                    context.commit();
+                } catch (SQLException e) {
+                    logger.error(e, e);
+                } finally {
+                    context.cleanup();
+                }
+            }
+        }
+    }
+
+    protected IDataRouter getDataRouter(Trigger trigger) {
         IDataRouter router = null;
         if (!StringUtils.isBlank(trigger.getRouterName())) {
             router = routers.get(trigger.getRouterName());
@@ -155,7 +162,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
 
-    protected void selectDataAndRoute(Connection conn, Map<String, IRoutingContext> context) throws SQLException {
+    protected void selectDataAndRoute(Connection conn, IRoutingContext context) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                 ResultSet.CONCUR_READ_ONLY);
         ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -193,51 +200,51 @@ public class RoutingService extends AbstractService implements IRoutingService {
         return data;
     }
 
-    protected void routeData(Data data, Map<String, Long> transactionIdDataId,
-            Map<String, IRoutingContext> routingContexts) throws SQLException {
+    protected void routeData(Data data, Map<String, Long> transactionIdDataId, IRoutingContext routingContext)
+            throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
-        Trigger trigger = bootstrapService.getCachedTriggers(false).get(
-                (data.getTriggerHistory().getTriggerId()));
+        Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
         if (trigger != null) {
             String channelId = trigger.getChannelId();
-            IRoutingContext routingContext = routingContexts.get(channelId);
-            IDataRouter router = getDataRouter(trigger);
-            Collection<String> nodeIds = router.routeToNodes(data, trigger,
-                    findAvailableNodes(trigger, routingContext), routingContext.getChannel(), false);
-            boolean commit = false;
-            boolean routed = false;
-            if (nodeIds != null && nodeIds.size() > 0) {
-                for (String nodeId : nodeIds) {
-                    if (data.getSourceNodeId() == null || !data.getSourceNodeId().equals(nodeId)) {
-                        OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
-                        OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
-                        if (batch == null) {
-                            batch = createNewBatch(routingContext.getJdbcTemplate(), nodeId, channelId);
-                            routingContext.getBatchesByNodes().put(nodeId, batch);
-                            history = new OutgoingBatchHistory(batch);
-                            routingContext.getBatchHistoryByNodes().put(nodeId, history);
-                        }
-                        history.incrementDataEventCount();
-                        routed = true;
-                        insertDataEvent(routingContext.getJdbcTemplate(), data, batch.getBatchId(), nodeId);
-                        if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
-                                routingContext.getChannel(), history, batch, data, databaseTransactionBoundary)) {
-                            insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
-                            routingContext.getBatchesByNodes().remove(nodeId);
-                            routingContext.getBatchHistoryByNodes().remove(nodeId);
-                            commit = true;
+            if (channelId.equals(routingContext.getChannel().getId())) {
+                IDataRouter router = getDataRouter(trigger);
+                Collection<String> nodeIds = router.routeToNodes(data, trigger, findAvailableNodes(trigger,
+                        routingContext), routingContext.getChannel(), false);
+                boolean commit = false;
+                boolean routed = false;
+                if (nodeIds != null && nodeIds.size() > 0) {
+                    for (String nodeId : nodeIds) {
+                        if (data.getSourceNodeId() == null || !data.getSourceNodeId().equals(nodeId)) {
+                            OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
+                            OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
+                            if (batch == null) {
+                                batch = createNewBatch(routingContext.getJdbcTemplate(), nodeId, channelId);
+                                routingContext.getBatchesByNodes().put(nodeId, batch);
+                                history = new OutgoingBatchHistory(batch);
+                                routingContext.getBatchHistoryByNodes().put(nodeId, history);
+                            }
+                            history.incrementDataEventCount();
+                            routed = true;
+                            insertDataEvent(routingContext.getJdbcTemplate(), data, batch.getBatchId(), nodeId);
+                            if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
+                                    routingContext.getChannel(), history, batch, data, databaseTransactionBoundary)) {
+                                insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
+                                routingContext.getBatchesByNodes().remove(nodeId);
+                                routingContext.getBatchHistoryByNodes().remove(nodeId);
+                                commit = true;
+                            }
                         }
                     }
                 }
-            }
 
-            if (!routed) {
-                insertDataEvent(routingContext.getJdbcTemplate(), data, -1, "-1");
-            }
+                if (!routed) {
+                    insertDataEvent(routingContext.getJdbcTemplate(), data, -1, "-1");
+                }
 
-            if (commit) {
-                routingContext.commit();
+                if (commit) {
+                    routingContext.commit();
+                }
             }
         } else {
             logger.warn(String.format(
@@ -245,23 +252,6 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             .getTriggerHistory().getTriggerId(), data.getDataId()));
         }
 
-    }
-
-    protected Map<String, IRoutingContext> initRoutingContexts() {
-        final List<NodeChannel> channels = configurationService.getChannels();
-        final Map<String, IRoutingContext> contexts = new HashMap<String, IRoutingContext>(channels.size());
-        try {
-            for (NodeChannel nodeChannel : channels) {
-                IRoutingContext b = new RoutingContext(nodeChannel, dataSource.getConnection());
-                contexts.put(nodeChannel.getId(), b);
-            }
-            return contexts;
-        } catch (SQLException e) {
-            for (IRoutingContext ctx : contexts.values()) {
-                ctx.cleanup();
-            }
-            throw new CannotGetJdbcConnectionException(e.getMessage(), e);
-        }
     }
 
     protected void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history) {
