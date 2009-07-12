@@ -1,5 +1,5 @@
-insert into sym_channel values('testchannel', 1, 50, 50, 1, null);
-insert into sym_channel values('other', 0, 1, 50, 1, null);
+insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, enabled, description) values('testchannel', 1, 50, 50, 1, null);
+insert into sym_channel (channel_id, processing_order, max_batch_size, max_batch_to_send, enabled, description) values('other', 0, 1, 50, 1, null);
 insert into sym_node_group values ('symmetric','a group representing symmetric configuration');
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
@@ -34,16 +34,16 @@ insert into sym_node_security values ('00000', 'notsecret', 0, {ts '2007-01-01 0
 insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_triggers_table','test-root-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, null, null, 1, 'chenson', current_timestamp, 'insert_test_tbl_trg',current_timestamp);
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
+values('test_triggers_table','test-root-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp, 'insert_test_tbl_trg',current_timestamp);
 
 insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,create_time)
-values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, null, null, null, null, null, 1, 'chenson', current_timestamp, current_timestamp);
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,create_time)
+values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,initial_load_select,node_select,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_sync_incoming_batch','test-root-group','test-node-group2','testchannel', 1, 1, 1, 1, null, null, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
+values('test_sync_incoming_batch','test-root-group','test-node-group2','testchannel', 1, 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
 
 -- AdditiveDataLoaderFilter test data
 insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);

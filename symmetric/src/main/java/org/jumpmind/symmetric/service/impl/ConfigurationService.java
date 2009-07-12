@@ -52,8 +52,6 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
-    final static Log logger = LogFactory.getLog(ConfigurationService.class);
-
     private static final long MAX_CHANNEL_CACHE_TIME = 60000;
 
     private static List<NodeChannel> channelCache;
@@ -68,7 +66,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-
+    
     /**
      * Cache the history for performance. History never changes and does not
      * grow big so this should be OK.

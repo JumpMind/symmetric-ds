@@ -106,6 +106,7 @@
         <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
+        <property name="bootstrapService" ref="bootstrapService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />

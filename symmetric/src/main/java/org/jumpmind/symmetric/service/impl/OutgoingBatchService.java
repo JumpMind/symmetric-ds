@@ -28,7 +28,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -36,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -185,13 +183,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             throw new RuntimeException("The initial load has not been started for " + nodeId);
         }
 
-        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
-                nodeId, Constants.CHANNEL_RELOAD });
-        if (unbatchedCount > 0) {
-            logger.warn("Unbatched events on the reload channel found.");
-            return false;
-        }
-
         for (String status : statuses) {
             if (!Status.OK.name().equals(status)) {
                 return false;
@@ -206,12 +197,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (unsentCount > 0) {
             return true;
         }
-
-        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
-                nodeId, channelId });
-        if (unbatchedCount > 0) {
-            return true;
-        }
+        
+        // Do we need to check for unbatched data?
+//        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
+//                nodeId, channelId });
+//        if (unbatchedCount > 0) {
+//            return true;
+//        }
 
         return false;
     }
