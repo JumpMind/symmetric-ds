@@ -226,6 +226,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
+    // TODO Should this be in ConfigurationService?
     public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache) {
         if (triggerCache == null || refreshCache) {
             synchronized (this) {

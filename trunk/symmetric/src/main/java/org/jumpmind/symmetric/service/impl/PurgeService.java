@@ -79,9 +79,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
             if (clusterService.lock(LockActionConstants.PURGE_OUTGOING)) {
                 try {
                     logger.info("The outgoing purge process is about to run.");
-
-                    purgeOutgoingBatch(retentionCutoff);
                     purgeDataRows(retentionCutoff);
+                    purgeOutgoingBatch(retentionCutoff);
                 } finally {
                     clusterService.unlock(LockActionConstants.PURGE_OUTGOING);
                     logger.info("The outgoing purge process has completed.");
@@ -102,7 +101,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfDataEventsToPurgeInTx);
-        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), false, maxNumOfBatchIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), true, maxNumOfBatchIdsToPurgeInTx);
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), true, maxNumOfBatchIdsToPurgeInTx);
     }
 

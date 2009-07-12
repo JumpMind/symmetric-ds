@@ -17,7 +17,8 @@
     <entry key="deleteOutgoingBatchSql">
       <value>
         delete from $[sym.sync.table.prefix]_outgoing_batch where status = 'OK' and batch_id between ?
-        and ?
+        and ? and batch_id not in (select batch_id from $[sym.sync.table.prefix]_data_event where batch_id between ?
+        and ?)
       </value>
     </entry>
     <entry key="deleteOutgoingBatchHistSql">
@@ -30,8 +31,8 @@
     <entry key="deleteDataEventSql">
       <value>
         delete from $[sym.sync.table.prefix]_data_event where batch_id not in (select batch_id from
-        $[sym.sync.table.prefix]_outgoing_batch where batch_id between ? and ? and status != 'OK') and
-        batched = 1 and batch_id between ? and ?
+        $[sym.sync.table.prefix]_outgoing_batch where batch_id between ? and ? and status != 'OK') 
+        and batch_id between ? and ?
       </value>
     </entry>
     <entry key="selectDataRangeSql">
@@ -41,8 +42,10 @@
     </entry>
     <entry key="deleteDataSql">
       <value>
-        delete from $[sym.sync.table.prefix]_data where data_id not in (select data_id from
-        $[sym.sync.table.prefix]_data_event where data_id between ? and ?) and data_id between ? and ?
+        delete from $[sym.sync.table.prefix]_data where 
+          data_id between ? and ? and data_id not in 
+            (select data_id from $[sym.sync.table.prefix]_data_event where data_id between ? and ? and batch_id in 
+            (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where status != 'OK'))
       </value>
     </entry>
     <entry key="selectIncomingBatchRangeSql">
@@ -72,9 +75,6 @@
     <entry key="deleteIncomingBatchHistByNodeSql">
       <value>delete from $[sym.sync.table.prefix]_incoming_batch_hist where node_id = ?</value>
     </entry>
-    <entry key="deleteOutgoingEventsByNodeSql">
-      <value>delete from $[sym.sync.table.prefix]_data_event where node_id = ?</value>
-    </entry>    
   </util:map>
 
 </beans>
