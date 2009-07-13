@@ -5,9 +5,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -18,8 +17,8 @@ public class SubSelectDataRouter extends AbstractDataRouter {
     private JdbcTemplate jdbcTemplate;
     
     @SuppressWarnings("unchecked")
-    public Collection<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel,
-            boolean initialLoad) {
+    public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+        Trigger trigger = dataMetaData.getTrigger();
         String subSelect = trigger.getRoutingExpression();
         Collection<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect)) {

@@ -33,7 +33,7 @@ import org.apache.ddlutils.model.Table;
  * locations), then we still have the history of what the columns and primary
  * keys were at the time.
  */
-public class TriggerHistory {
+public class TriggerHistory extends AbstractCsvData {
 
     private int triggerHistoryId;
 
@@ -58,6 +58,7 @@ public class TriggerHistory {
     private String nameForDeleteTrigger;
 
     private Date inactiveTime;
+    
 
     /**
      * This is a hash based on the tablename, column names, and column data
@@ -151,6 +152,14 @@ public class TriggerHistory {
             return getNameForDeleteTrigger();
         }
         throw new IllegalStateException();
+    }
+    
+    public String[] getParsedColumnNames() {
+        return getData("columnNames", columnNames);
+    }
+    
+    public String[] getParsedPkColumnNames() {
+        return getData("pkColumnNames", pkColumnNames);
     }
 
     public int getTableHash() {

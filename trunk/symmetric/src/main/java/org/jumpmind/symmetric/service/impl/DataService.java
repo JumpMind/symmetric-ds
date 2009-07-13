@@ -39,7 +39,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.csv.CsvUtil;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.BatchType;
@@ -72,10 +71,6 @@ public class DataService extends AbstractService implements IDataService {
     private IPurgeService purgeService;
 
     private IOutgoingBatchService outgoingBatchService;
-
-    private String tablePrefix;
-
-    private IDbDialect dbDialect;
 
     private List<IReloadListener> listeners;
 
@@ -389,14 +384,6 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
-    }
-
-    public void setTablePrefix(String tablePrefix) {
-        this.tablePrefix = tablePrefix;
     }
 
     public void setPurgeService(IPurgeService purgeService) {

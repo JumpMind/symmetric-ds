@@ -226,47 +226,8 @@ public class ParameterService extends AbstractService implements IParameterServi
             lastTimeParameterWereCached = new Date();
             parameters = rereadApplicationParameters();
             cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
-            createRuntimeConfigIfNecessary();
         }
         return parameters;
-    }
-
-    /**
-     * For backward compatibility only. Remove in 2.0.
-     */
-    @SuppressWarnings("deprecation")
-    private void createRuntimeConfigIfNecessary() {
-        String clazz = getString(ParameterConstants.RUNTIME_CONFIGURATION_CLASS);
-        if (parameterFilter == null && !StringUtils.isBlank(clazz)) {
-            try {
-                final org.jumpmind.symmetric.config.IRuntimeConfig runtimeConfig = (org.jumpmind.symmetric.config.IRuntimeConfig) Class
-                        .forName(clazz).newInstance();
-                parameterFilter = new IParameterFilter() {
-                    public String filterParameter(String key, String value) {
-                        if (key.equals(ParameterConstants.EXTERNAL_ID)) {
-                            return runtimeConfig.getExternalId();
-                        } else if (key.equals(ParameterConstants.NODE_GROUP_ID)) {
-                            return runtimeConfig.getNodeGroupId();
-                        } else if (key.equals(ParameterConstants.REGISTRATION_URL)) {
-                            return runtimeConfig.getRegistrationUrl();
-                        } else if (key.equals(ParameterConstants.SCHEMA_VERSION)) {
-                            return runtimeConfig.getSchemaVersion();
-                        } else if (key.equals(ParameterConstants.MY_URL)) {
-                            return runtimeConfig.getMyUrl();
-                        } else {
-                            return value;
-                        }
-                    }
-
-                    public boolean isAutoRegister() {
-                        return false;
-                    }
-                };
-
-            } catch (Exception e) {
-                logger.error(e);
-            }
-        }
     }
 
     public Map<String, String> getAllParameters() {

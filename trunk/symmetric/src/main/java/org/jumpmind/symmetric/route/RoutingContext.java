@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -16,7 +18,8 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
 public class RoutingContext implements IRoutingContext {
-
+    
+    protected final Log logger = LogFactory.getLog(getClass());
     private NodeChannel channel;
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
@@ -53,6 +56,14 @@ public class RoutingContext implements IRoutingContext {
 
     public void commit() throws SQLException {
         connection.commit();
+    }
+
+    public void rollback() {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            logger.warn(e,e);
+        }
     }
 
     public void cleanup() {

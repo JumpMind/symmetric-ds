@@ -49,6 +49,8 @@ abstract class AbstractService implements IService {
     protected DataSource dataSource;
     
     protected IDbDialect dbDialect;
+    
+    protected String tablePrefix;
 
     private Map<String, String> sql;
 
@@ -81,6 +83,10 @@ abstract class AbstractService implements IService {
 
     public String getSql(String key) {
         return sql.get(key);
+    }
+    
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
     }
 
     public void setParameterService(IParameterService parameterService) {
