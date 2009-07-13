@@ -1,13 +1,18 @@
 package org.jumpmind.symmetric.route;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.util.CsvUtils;
+
+import com.csvreader.CsvReader;
 
 public abstract class AbstractDataRouter implements IDataRouter {
 
-    private boolean autoRegister;
+    private boolean autoRegister = true;
 
     private boolean applyToInitialLoad = true;
 
@@ -33,5 +38,15 @@ public abstract class AbstractDataRouter implements IDataRouter {
             nodeIds.add(node.getNodeId());
         }
         return nodeIds;
+    }
+    
+    // TODO This could probably become more efficient
+    protected String[] parseData(String data) throws IOException {
+        CsvReader csvReader = CsvUtils.getCsvReader(new StringReader(data));
+        if (csvReader.readRecord()) {
+            return csvReader.getValues();
+        } else {
+            throw new IOException(String.format("Could not parse the data passed in: %s", data));
+        }
     }
 }
