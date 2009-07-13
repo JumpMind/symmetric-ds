@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -77,9 +78,7 @@ public class CsvLoader implements IDataLoader {
     protected Map<String, IColumnFilter> columnFilters;
 
     public void open(BufferedReader reader) throws IOException {
-        csvReader = new CsvReader(reader);
-        csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
-        csvReader.setSafetySwitch(false);
+        csvReader = CsvUtils.getCsvReader(reader);
         context = new DataLoaderContext();
         stats = new DataLoaderStatistics();
     }
