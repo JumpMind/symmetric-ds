@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -53,8 +52,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class OutgoingBatchService extends AbstractService implements IOutgoingBatchService {
 
     private INodeService nodeService;
-
-    private IDbDialect dbDialect;
 
     private IConfigurationService configurationService;
 
@@ -262,10 +259,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             history.setSqlMessage(rs.getString(15));
             return history;
         }
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
     }
 
     public void setNodeService(INodeService nodeService) {

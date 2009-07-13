@@ -25,6 +25,8 @@ public interface IRoutingContext {
 
     public void commit() throws SQLException;
     
+    public void rollback();
+    
     public void cleanup();
     
 }

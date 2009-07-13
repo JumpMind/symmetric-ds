@@ -25,7 +25,7 @@ import java.util.Date;
 /**
  * This is the data that changed due to a data sync trigger firing.
  */
-public class Data {
+public class Data extends AbstractCsvData {
 
     // PK
     private long dataId;
@@ -52,7 +52,7 @@ public class Data {
     private String transactionId;
 
     /**
-     * This is a reference to the triggerHistory row the trigger refered to when the data
+     * This is a reference to the triggerHistory row the trigger referred to when the data
      * event fired.
      */
     private TriggerHistory triggerHistory;    
@@ -92,6 +92,18 @@ public class Data {
     }
     
     public Data() {
+    }
+    
+    public String[] getParsedRowData() {
+        return getData("rowData", rowData);
+    }
+    
+    public String[] getParsedOldData() {
+        return getData("oldData", oldData);
+    }
+    
+    public String[] getParsedPkData() {
+        return getData("pkData", pkData);
     }
 
     public long getDataId() {

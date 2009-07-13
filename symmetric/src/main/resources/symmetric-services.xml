@@ -17,12 +17,7 @@
     </bean>
 
     <bean id="bandwidthService" class="org.jumpmind.symmetric.service.impl.BandwidthService"/>
-
-    <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService">
-        <property name="sql" ref="statisticServiceSql" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-    </bean>
-
+    
     <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
         <property name="statisticService" ref="statisticService" />
         <property name="nodeService" ref="nodeService" />
@@ -40,12 +35,26 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
 
-    <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService" scope="singleton">
+    <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService" scope="singleton">
+        <property name="sql" ref="parameterServiceSql" />
+        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    </bean>
+
+    <bean id="abstractService" abstract="true" class="org.jumpmind.symmetric.service.impl.AbstractService">
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
         <property name="jdbcTemplate" ref="jdbcTemplate" />
+        <property name="dataSource" ref="dataSource" />        
         <property name="parameterService" ref="parameterService" />
-        <property name="nodeService" ref="nodeService" />
         <property name="dbDialect" ref="dbDialect" />
+        <property name="newTransactionTemplate" ref="transactionTemplate" />  
+    </bean>
+
+    <bean id="statisticService" class="org.jumpmind.symmetric.service.impl.StatisticService" parent="abstractService">
+        <property name="sql" ref="statisticServiceSql" />
+    </bean>
+        
+    <bean id="bootstrapService" class="org.jumpmind.symmetric.service.impl.BootstrapService" scope="singleton" parent="abstractService">
+        <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="dataService" ref="dataService" />
@@ -71,16 +80,7 @@
         </property>
     </bean>
 
-    <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService" scope="singleton">
-        <property name="sql" ref="parameterServiceSql" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-    </bean>
-
-    <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
+    <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService" scope="singleton" parent="abstractService">
         <property name="sql" ref="configurationServiceSql" />
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect" />
         <property name="rootConfigChannelTableNames">
@@ -98,33 +98,25 @@
         </property>
     </bean>
     
-    <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton">
+    <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton" parent="abstractService">
         <property name="sql" ref="routingServiceSql" />
         <property name="routers" ref="routers" />
         <property name="batchAlgorithms" ref="batchAlgorithms"/>
-        <property name="dataSource" ref="dataSource" />       
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
-        <property name="dbDialect" ref="dbDialect" />
         <property name="clusterService" ref="clusterService" />
     </bean>    
 
-    <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService" scope="singleton">
+    <bean id="outgoingBatchService" class="org.jumpmind.symmetric.service.impl.OutgoingBatchService" scope="singleton" parent="abstractService">
         <property name="sql" ref="outgoingBatchServiceSql" />
-        <property name="dataSource" ref="dataSource" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="dbDialect" ref="dbDialect" />
     </bean>
 
-    <bean id="dataExtractorService" class="org.jumpmind.symmetric.service.impl.DataExtractorService">
+    <bean id="dataExtractorService" class="org.jumpmind.symmetric.service.impl.DataExtractorService" parent="abstractService">
         <property name="sql" ref="dataExtractorServiceSql" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="routingService" ref="routingService"/>
@@ -132,25 +124,18 @@
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
-        <property name="parameterService" ref="parameterService" />
-        <property name="dbDialect" ref="dbDialect" />
         <property name="context" ref="extractorContext" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
     </bean>
 
-    <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton">
+    <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
         <property name="sql" ref="dataServiceSql" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="configurationService" ref="configurationService" />
-        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="purgeService" ref="purgeService" />
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 
-    <bean id="pushService" class="org.jumpmind.symmetric.service.impl.PushService">
+    <bean id="pushService" class="org.jumpmind.symmetric.service.impl.PushService" parent="abstractService">
         <property name="extractor" ref="dataExtractorService" />
         <property name="transportManager" ref="transportManager" />
         <property name="parameterService" ref="parameterService" />
@@ -160,21 +145,17 @@
         <property name="clusterService" ref="clusterService" />
     </bean>
 
-    <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService">
+    <bean id="pullService" class="org.jumpmind.symmetric.service.impl.PullService" parent="abstractService">
         <property name="registrationService" ref="registrationService" />
         <property name="dataLoaderService" ref="dataLoaderService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="parameterService" ref="parameterService" />
         <property name="clusterService" ref="clusterService" />
     </bean>
 
-    <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton">
-        <property name="dbDialect" ref="dbDialect" />
-        <property name="newTransactionTemplate" ref="transactionTemplate" />  
+    <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton" parent="abstractService">
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
         <property name="statisticManager" ref="statisticManager" />
-        <property name="parameterService" ref="parameterService" />
         <property name="nodeService" ref="nodeService" />
     </bean>
 
@@ -186,31 +167,23 @@
         <property name="parameterService" ref="parameterService" />
     </bean>
 
-    <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="dbDialect" ref="dbDialect" />
+    <bean id="incomingBatchService" class="org.jumpmind.symmetric.service.impl.IncomingBatchService" scope="singleton" parent="abstractService">
         <property name="sql" ref="incomingBatchServiceSql" />
-        <property name="parameterService" ref="parameterService" />
     </bean>
 
-    <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService" scope="singleton">
+    <bean id="nodeService" class="org.jumpmind.symmetric.service.impl.NodeService" scope="singleton" parent="abstractService">
         <property name="sql" ref="nodeServiceSql" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
         <property name="nodeIdGenerator">
             <bean class="org.jumpmind.symmetric.util.DefaultNodeIdGenerator" />
         </property>
     </bean>
 
-    <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService" scope="singleton">
+    <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService" scope="singleton" parent="abstractService">
         <property name="sql" ref="registrationServiceSql" />
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
         <property name="nodeService" ref="nodeService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
-        <property name="dbDialect" ref="dbDialect" />
         <property name="transportManager" ref="transportManager" />
         <property name="dataLoaderService" ref="dataLoaderService" />
-        <property name="parameterService" ref="parameterService" />
         <property name="dataService" ref="dataService" />
         <property name="randomTimeSlot">
             <bean class="org.jumpmind.symmetric.util.RandomTimeSlot">
@@ -220,15 +193,13 @@
         </property>
     </bean>
 
-    <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService" scope="singleton">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    <bean id="acknowledgeService" class="org.jumpmind.symmetric.service.impl.AcknowledgeService" scope="singleton" parent="abstractService">
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="registrationService" ref="registrationService" />
-        <property name="parameterService" ref="parameterService" />
         <property name="sql" ref="acknowledgeServiceSql" />
     </bean>
 
-    <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype"></bean>
+    <bean id="extractorContext" class="org.jumpmind.symmetric.extract.DataExtractorContext" scope="prototype"/>
 
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />
@@ -346,23 +317,17 @@
         </property>
     </bean>
 
-    <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
+    <bean id="upgradeService" class="org.jumpmind.symmetric.service.impl.UpgradeService" parent="abstractService">
         <property name="nodeService" ref="nodeService" />
         <property name="upgradeTaskMap" ref="upgradeTaskMap" />
     </bean>
 
-    <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
-        <property name="parameterService" ref="parameterService" />
+    <bean id="clusterService" class="org.jumpmind.symmetric.service.impl.ClusterService" parent="abstractService">
         <property name="sql" ref="clusterServiceSql" />
     </bean>
 
-    <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService">
-        <property name="jdbcTemplate" ref="jdbcTemplate" />
+    <bean id="purgeService" class="org.jumpmind.symmetric.service.impl.PurgeService" parent="abstractService">
         <property name="sql" ref="purgeServiceSql" />
-        <property name="parameterService" ref="parameterService" />
         <property name="clusterService" ref="clusterService" />
         <property name="nodeService" ref="nodeService" />
     </bean>

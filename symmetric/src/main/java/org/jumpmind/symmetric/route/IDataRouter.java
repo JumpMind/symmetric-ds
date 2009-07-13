@@ -4,10 +4,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.Trigger;
 
 /**
  * The data router is an extension point that allows the end user to target 
@@ -22,6 +20,6 @@ import org.jumpmind.symmetric.model.Trigger;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    Collection<String> routeToNodes(Data data, Trigger trigger, Set<Node> nodes, NodeChannel channel, boolean initialLoad);
+    Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
 
 }
