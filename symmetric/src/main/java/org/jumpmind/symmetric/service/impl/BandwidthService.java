@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
@@ -41,6 +42,8 @@ public class BandwidthService implements IBandwidthService {
         try {
             BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);            
             downloadSpeed = (int) bw.getKbps();
+        } catch (SocketTimeoutException e) {
+            logger.warn(String.format("Socket timeout while attempting to contact %s", syncUrl));
         } catch (Exception e) {
             logger.error(e,e);
         }
