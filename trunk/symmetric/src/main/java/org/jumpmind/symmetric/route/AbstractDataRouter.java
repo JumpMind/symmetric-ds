@@ -41,7 +41,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         this.autoRegister = autoRegister;
     }
     
-    protected Map<String, String> getNewDataAsString(DataMetaData dataMetaData, IDbDialect dbDialect) {
+    protected Map<String, String> getNewDataAsString(DataMetaData dataMetaData) {
         String[] rowData = dataMetaData.getData().getParsedRowData();
         Column[] columns = dataMetaData.getTable().getColumns();
         Map<String, String> map = new HashMap<String, String>(columns.length);
