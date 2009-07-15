@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -60,7 +58,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private List<String> rootConfigChannelTableNames;
 
-    // TODO 2.0 Does this go away??
     private Map<String, String> rootConfigChannelInitialLoadSelect;
 
     private IDbDialect dbDialect;
@@ -137,6 +134,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         trigger.setSourceTableName(tableName);
         trigger.setSourceGroupId(sourceGroupId);
         trigger.setTargetGroupId(targetGroupId);
+        trigger.setIntialLoadSelect(rootConfigChannelInitialLoadSelect.get(tableName));
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
         // little trick to force the rebuild of sym triggers every time
         // there is a new version of symmetricds
@@ -330,12 +328,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                trigger.getSyncOnDeleteCondition(), trigger.getRoutingExpression(),
-                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadOrder(),
+                trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
                 new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
                 Types.VARCHAR, Types.TIMESTAMP });
     }
@@ -441,7 +439,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trig.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trig.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
-            String schema = rs.getString("source_schema_name");
+            String schema = rs.getString("source_schema_name");            
             trig.setSourceSchemaName(schema);
             String catalog = rs.getString("source_catalog_name");
             if (catalog == null && schema != null && dbDialect instanceof MySqlDbDialect) {
@@ -466,13 +464,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trig.setSyncOnDeleteCondition(condition);
             }
             trig.setTxIdExpression(rs.getString("tx_id_expression"));
+            trig.setIntialLoadSelect(rs.getString("initial_load_select"));
             trig.setLastModifiedTime(rs.getTimestamp("last_updated_time"));
             trig.setUpdatedBy(rs.getString("last_updated_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
             trig.setInactiveTime(rs.getTimestamp("inactive_time"));
-            condition = rs.getString("routing_expression");
+            condition = rs.getString("router_expression");
             if (!StringUtils.isBlank(condition)) {
-                trig.setRoutingExpression(condition);
+                trig.setRouterExpression(condition);
             }
             trig.setRouterName(rs.getString("router_name"));
 

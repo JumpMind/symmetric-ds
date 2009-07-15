@@ -10,63 +10,63 @@ insert into sym_node_identity values ('00000');
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_very_long_table_name_1234','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, '$(curTriggerValue).$(curColumnPrefix)id', 1, 'chenson', current_timestamp,null,current_timestamp);
+values('test_very_long_table_name_1234','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, '$(curTriggerValue).$(curColumnPrefix)id', 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_triggers_table','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp,null,current_timestamp);
+values('test_triggers_table','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_triggers_table','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp,null,current_timestamp);
+values('test_triggers_table','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_customer','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_customer','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_order_header','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_order_header','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,router_name,routing_expression,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_order_header','test-root-group','test-node-group','testchannel', 1, 1, 1,'$(newTriggerValue).$(newColumnPrefix)status = ''C''', '$(newTriggerValue).$(newColumnPrefix)status = ''C''', null, 'column', 'status=''C''', null, 1, 'erilong', current_timestamp,null,current_timestamp);
-
-insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_order_detail','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,router_name,router_expression,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
+values('test_order_header','test-root-group','test-node-group','testchannel', 1, 1, 1,'$(newTriggerValue).$(newColumnPrefix)status = ''C''', '$(newTriggerValue).$(newColumnPrefix)status = ''C''', null, 'column', 'STATUS=C', null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_store_status','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_order_detail','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_key_word','test-root-group','test-node-group','testchannel', 0, 0, 0, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_store_status','test-node-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('TEST_ALL_CAPS','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_key_word','test-root-group','test-node-group','testchannel', 0, 0, 0, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('Test_Mixed_Case','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('TEST_ALL_CAPS','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('ONE_COLUMN_TABLE','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('Test_Mixed_Case','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('NO_PRIMARY_KEY_TABLE','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('ONE_COLUMN_TABLE','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
+
+insert into sym_trigger 
+(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
+values('NO_PRIMARY_KEY_TABLE','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_column_level,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('test_sync_column_level','test-root-group','test-node-group','testchannel', 1, 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+values('test_sync_column_level','test-root-group','test-node-group','testchannel', 1, 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into sym_trigger 
 (source_table_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_updated_by,last_updated_time,name_for_insert_trigger,create_time)
-values('TEST_TARGET_TABLE_A','TEST_TARGET_TABLE_B','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp,null,current_timestamp);
+values('TEST_TARGET_TABLE_A','TEST_TARGET_TABLE_B','test-root-group','test-node-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'unittester', current_timestamp,null,current_timestamp);
 
 insert into test_customer
 (customer_id, name, is_active, address, city, state, zip, entry_timestamp, entry_time)

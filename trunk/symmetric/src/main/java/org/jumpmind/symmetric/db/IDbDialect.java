@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db;
 import java.util.Set;
 
 import org.apache.ddlutils.Platform;
+import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -200,7 +201,9 @@ public interface IDbDialect {
     
     public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql, final SequenceIdentifier sequenceIde,
             final PreparedStatementCallback psCallback);
-
+    
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] metaData);
+    
     /**
      * Get the string prepended to the Symmetric configuration tables.
      * 

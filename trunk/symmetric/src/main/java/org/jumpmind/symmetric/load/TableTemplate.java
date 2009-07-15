@@ -21,27 +21,16 @@
 
 package org.jumpmind.symmetric.load;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,17 +41,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * table in the target database in case the table is missing or has missing
  * columns. It uses a cache of StatementBuilder objects that contain the SQL and
  * PreparedStatement.
- * 
- * @author elong
- * 
  */
 public class TableTemplate {
-    public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
-
-    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
-            "yyyy-MM-dd HH:mm:ss" };
 
     private JdbcTemplate jdbcTemplate;
 
@@ -304,81 +285,21 @@ public class TableTemplate {
     }
     
     public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
-        return getObjectValues(ctx, values, columnMetaData == null ? getColumnMetaData(columnNames) : columnMetaData);
+        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, columnMetaData == null ? getColumnMetaData(columnNames) : columnMetaData);
     }
     
     public Object[] getObjectKeyValues(IDataLoaderContext ctx, String[] values) {
-        return getObjectValues(ctx, values, keyMetaData == null ? getColumnMetaData(keyNames) : keyMetaData);
-    }    
-    
-    public Object[] getObjectValues(IDataLoaderContext ctx, String[] values, Column[] metaData) {
-        List<Object> list = new ArrayList<Object>(values.length);
-
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            Object objectValue = value;
-            Column column = metaData[i];
-
-            if (column != null) {
-                int type = column.getTypeCode();
-                if ((value == null || (dbDialect.isEmptyStringNulled() && value.equals(""))) && column.isRequired()
-                        && column.isOfTextType()) {
-                    objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
-                }
-                if (value != null) {
-                    if (type == Types.DATE && ! dbDialect.isDateOverrideToTimestamp()) {
-                        objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
-                    } else if (type == Types.TIMESTAMP
-                            || (type == Types.DATE && dbDialect.isDateOverrideToTimestamp())) {
-                        objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
-                    } else if (type == Types.CHAR && dbDialect.isCharSpacePadded()) {
-                        objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
-                    } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
-                        objectValue = Integer.valueOf(value);
-                    } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE) {
-                        // The number will have either one period or one comma for the decimal point, but we need a period
-                        objectValue = new BigDecimal(value.replace(',', '.'));
-                    } else if (type == Types.BOOLEAN) {
-                        objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY || type == Types.VARBINARY) {
-                        BinaryEncoding encoding = ctx.getBinaryEncoding();
-                        if (encoding == BinaryEncoding.NONE) {
-                            objectValue = value.getBytes();
-                        } else if (encoding == BinaryEncoding.BASE64) {
-                            objectValue = Base64.decodeBase64(value.getBytes());
-                        } else if (encoding == BinaryEncoding.HEX) {
-                            try {
-                                objectValue = Hex.decodeHex(value.toCharArray());
-                            } catch (DecoderException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    } else if (type == Types.TIME) {
-                        objectValue = new Time(getTime(value, TIME_PATTERNS));
-                    }
-                }
-                list.add(objectValue);
-            }
-        }
-        return list.toArray();  
-    }
+        return dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, keyMetaData == null ? getColumnMetaData(keyNames) : keyMetaData);
+    }        
 
     private int execute(IDataLoaderContext ctx, StatementBuilder st, String[] values, Column[] metaData) {        
-        Object[] objectValues = getObjectValues(ctx, values, metaData);
+        Object[] objectValues = dbDialect.getObjectValues(ctx.getBinaryEncoding(), values, metaData);
         if (columnFilters != null) {
             for (IColumnFilter columnFilter : columnFilters) {
                 objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
             }
         }
         return jdbcTemplate.update(st.getSql(), objectValues, st.getTypes());
-    }
-
-    private long getTime(String value, String[] pattern) {
-        try {
-            return DateUtils.parseDate(value, pattern).getTime();
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void setKeyNames(String[] keyNames) {
