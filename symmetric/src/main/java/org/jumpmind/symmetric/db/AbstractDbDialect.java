@@ -25,15 +25,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,8 +49,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
@@ -82,6 +91,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 abstract public class AbstractDbDialect implements IDbDialect {
 
+    public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
+    
+    public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM-dd" };
+
+    public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
+            "yyyy-MM-dd HH:mm:ss" };
+    
     protected final Log logger = LogFactory.getLog(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
@@ -892,6 +908,66 @@ abstract public class AbstractDbDialect implements IDbDialect {
             return "trigger_hist_id";
         }
         return null;
+    }
+    
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] metaData) {
+        List<Object> list = new ArrayList<Object>(values.length);
+
+        for (int i = 0; i < values.length; i++) {
+            String value = values[i];
+            Object objectValue = value;
+            Column column = metaData[i];
+
+            if (column != null) {
+                int type = column.getTypeCode();
+                if ((value == null || (isEmptyStringNulled() && value.equals(""))) && column.isRequired()
+                        && column.isOfTextType()) {
+                    objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
+                }
+                if (value != null) {
+                    if (type == Types.DATE && ! isDateOverrideToTimestamp()) {
+                        objectValue = new Date(getTime(value, TIMESTAMP_PATTERNS));
+                    } else if (type == Types.TIMESTAMP
+                            || (type == Types.DATE && isDateOverrideToTimestamp())) {
+                        objectValue = new Timestamp(getTime(value, TIMESTAMP_PATTERNS));
+                    } else if (type == Types.CHAR && isCharSpacePadded()) {
+                        objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
+                    } else if (type == Types.INTEGER || type == Types.SMALLINT || type == Types.BIT) {
+                        objectValue = Integer.valueOf(value);
+                    } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE) {
+                        // The number will have either one period or one comma for the decimal point, but we need a period
+                        objectValue = new BigDecimal(value.replace(',', '.'));
+                    } else if (type == Types.BOOLEAN) {
+                        objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
+                    } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY || type == Types.VARBINARY) {
+                        if (encoding == BinaryEncoding.NONE) {
+                            objectValue = value.getBytes();
+                        } else if (encoding == BinaryEncoding.BASE64) {
+                            objectValue = Base64.decodeBase64(value.getBytes());
+                        } else if (encoding == BinaryEncoding.HEX) {
+                            try {
+                                objectValue = Hex.decodeHex(value.toCharArray());
+                            } catch (DecoderException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    } else if (type == Types.TIME) {
+                        objectValue = new Time(getTime(value, TIME_PATTERNS));
+                    }
+                }
+                list.add(objectValue);
+            }
+        }
+        return list.toArray();  
+    }
+    
+
+    private long getTime(String value, String[] pattern) {
+        try {
+            return DateUtils.parseDate(value, pattern).getTime();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,

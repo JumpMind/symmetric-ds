@@ -92,7 +92,9 @@ public class Trigger {
     /**
      * Default to routing all data to all nodes.
      */
-    private String routingExpression = null;
+    private String routerExpression = null;
+    
+    private String intialLoadSelect = null;
 
     /**
      * This is a sql expression that creates a unique id which the sync process
@@ -428,12 +430,20 @@ public class Trigger {
         return routerName;
     }
     
-    public String getRoutingExpression() {
-        return routingExpression;
+    public void setIntialLoadSelect(String intialLoadSelect) {
+        this.intialLoadSelect = intialLoadSelect;
+    }
+    
+    public String getIntialLoadSelect() {
+        return intialLoadSelect;
+    }
+    
+    public String getRouterExpression() {
+        return routerExpression;
     }
 
-    public void setRoutingExpression(String routingExpression) {
-        this.routingExpression = routingExpression;
+    public void setRouterExpression(String routingExpression) {
+        this.routerExpression = routingExpression;
     }
 
     public long getHashedValue() {
@@ -508,8 +518,8 @@ public class Trigger {
             hashedValue += excludedColumnNames.hashCode();
         }
 
-        if (null != routingExpression) {
-            hashedValue += routingExpression.hashCode();
+        if (null != routerExpression) {
+            hashedValue += routerExpression.hashCode();
         }
 
         if (null != txIdExpression) {

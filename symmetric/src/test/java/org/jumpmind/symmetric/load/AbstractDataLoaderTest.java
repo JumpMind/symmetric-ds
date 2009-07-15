@@ -34,6 +34,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -97,7 +98,6 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         return " The database we are testing against is " + database + ".";
     }
 
-    @SuppressWarnings("unchecked")
     public void testSimple(String dmlType, String[] values, String[] expectedValues) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -191,7 +191,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected String translateExpectedString(String value, boolean isRequired) {
         if (isRequired && (value == null || (value.equals("") && getDbDialect().isEmptyStringNulled()))) {
-            return TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
+            return AbstractDbDialect.REQUIRED_FIELD_NULL_SUBSTITUTE;
         } else if (value != null && value.equals("") && getDbDialect().isEmptyStringNulled()) {
             return null;
         }
@@ -200,7 +200,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
 
     protected String translateExpectedCharString(String value, int size, boolean isRequired) {
         if (isRequired && value == null) {
-            value = TableTemplate.REQUIRED_FIELD_NULL_SUBSTITUTE;
+            value = AbstractDbDialect.REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
         if (value != null && getDbDialect().isCharSpacePadded()) {
             return StringUtils.rightPad(value, size);

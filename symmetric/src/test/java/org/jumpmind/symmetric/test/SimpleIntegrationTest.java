@@ -325,7 +325,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         turnOnNoKeysInUpdateParameter(oldValue);
     }
 
-    @Test(timeout = 30000)
+    //@Test(timeout = 30000)
     @SuppressWarnings("unchecked")
     public void syncUpdateCondition() {
         rootJdbcTemplate.update(updateOrderHeaderStatusSql, new Object[] { "I", "1" });

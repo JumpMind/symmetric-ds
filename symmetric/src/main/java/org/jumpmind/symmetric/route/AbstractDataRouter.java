@@ -1,15 +1,18 @@
 package org.jumpmind.symmetric.route;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.ddlutils.model.Column;
+import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 
 public abstract class AbstractDataRouter implements IDataRouter {
 
     private boolean autoRegister = true;
-
-    private boolean applyToInitialLoad = true;
 
     public boolean isAutoRegister() {
         return autoRegister;
@@ -18,13 +21,28 @@ public abstract class AbstractDataRouter implements IDataRouter {
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
     }
-
-    public void setApplyToInitialLoad(boolean applyToInitialLoad) {
-        this.applyToInitialLoad = applyToInitialLoad;
+    
+    protected Map<String, String> getNewDataAsString(DataMetaData dataMetaData, IDbDialect dbDialect) {
+        String[] rowData = dataMetaData.getData().getParsedRowData();
+        Column[] columns = dataMetaData.getTable().getColumns();
+        Map<String, String> map = new HashMap<String, String>(columns.length);
+        for (int i = 0; i < columns.length; i++) {
+            Column c = columns[i];
+            map.put(c.getName(), rowData[i]);
+        }
+        return map;        
     }
-
-    public boolean isApplyToInitialLoad() {
-        return applyToInitialLoad;
+  
+    protected Map<String, Object> getNewData(DataMetaData dataMetaData, IDbDialect dbDialect) {
+        String[] rowData = dataMetaData.getData().getParsedRowData();
+        Column[] columns = dataMetaData.getTable().getColumns();
+        Map<String, Object> map = new HashMap<String, Object>(columns.length);
+        Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(), rowData, columns);
+        for (int i = 0; i < columns.length; i++) {
+            Column c = columns[i];
+            map.put(c.getName(), objects[i]);
+        }
+        return map;        
     }
 
     protected Set<String> toNodeIds(Set<Node> nodes) {
