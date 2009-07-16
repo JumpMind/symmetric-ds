@@ -152,5 +152,22 @@
         <column name="ID1" type="VARCHAR" primaryKey="true" required="true" />
         <column name="TEST" type="DECIMAL" size="10" />
     </table>
+    
+    <table name="TEST_ROUTING_DATA_1">
+        <column name="ID1" type="INTEGER" primaryKey="true" required="true" />
+        <column name="ROUTING_INT" type="INTEGER" />
+        <column name="ROUTING_VARCHAR" type="VARCHAR" size="10" />
+        <column name="DATA_BLOB" type="BLOB" />
+        <column name="CURRENT_TIME" type="TIMESTAMP" />
+    </table>
+    
+    <table name="TEST_ROUTING_DATA_2">
+        <column name="ID1" type="INTEGER" primaryKey="true" autoIncrement="true" required="true" />
+        <column name="ROUTING_INT" type="INTEGER" />
+        <column name="ROUTING_VARCHAR" type="VARCHAR" size="10" />
+        <column name="DATA_BLOB" type="BLOB" />
+        <column name="CURRENT_TIME" type="TIMESTAMP" />
+    </table>    
+        
 
 </database>

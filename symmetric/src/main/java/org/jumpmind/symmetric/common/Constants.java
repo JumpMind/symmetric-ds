@@ -47,6 +47,8 @@ final public class Constants {
     public static final String BOOTSTRAP_SERVICE = "bootstrapService";
 
     public static final String NODE_SERVICE = "nodeService";
+    
+    public static final String ROUTING_SERVICE = "routingService";
 
     public static final String DATALOADER_SERVICE = "dataLoaderService";
 
