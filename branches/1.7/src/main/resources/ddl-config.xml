@@ -62,7 +62,7 @@
         <column name="failed_data_id" type="INTEGER" />
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
-        <column name="sql_message" type="VARCHAR" size="50" />
+        <column name="sql_message" type="VARCHAR" size="1000" />
         <index name="idx_outgoing_batch_hist">
             <index-column name="node_id" />
             <index-column name="batch_id" />
@@ -222,7 +222,7 @@
         <column name="missing_delete_count" type="INTEGER" />
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
-        <column name="sql_message" type="VARCHAR" size="50" />
+        <column name="sql_message" type="VARCHAR" size="1000" />
         <index name="idx_incoming_batch_hist">
             <index-column name="batch_id" />
             <index-column name="node_id" />
