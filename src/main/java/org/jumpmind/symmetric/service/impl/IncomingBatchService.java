@@ -107,7 +107,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 history.getStatementCount(), history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
                 history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
                 history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                StringUtils.abbreviate(history.getSqlMessage(), 50) }, new int[] { Types.INTEGER, Types.VARCHAR,
+                StringUtils.abbreviate(history.getSqlMessage(), 1000) }, new int[] { Types.INTEGER, Types.VARCHAR,
                 Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
                 Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
