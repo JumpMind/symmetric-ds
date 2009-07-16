@@ -35,15 +35,10 @@ import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 public class DbTriggerTest extends AbstractDatabaseTest {
 
@@ -159,43 +154,11 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     @Test
-    @ParameterExcluder("postgres")
-    @SuppressWarnings("unchecked")
-    public void validateTransactionFunctionailty() throws Exception {
-        final String SQL = "select transaction_id from " + TestConstants.TEST_PREFIX
-                + "data_event where transaction_id is not null group by transaction_id having count(*)>1";
-
-        final JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        List<String> batchIdList = (List<String>) jdbcTemplate.queryForList(SQL, String.class);
-
-        int currentNumberOfTransactions = batchIdList.size();
-
-        TransactionTemplate transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(
-                getDataSource()));
-        transactionTemplate.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-                jdbcTemplate.update("update " + TEST_TRIGGERS_TABLE + " set time_value=current_timestamp");
-                insert(INSERT2_VALUES, jdbcTemplate, getDbDialect());
-                return null;
-            }
-        });
-
-        batchIdList = (List<String>) jdbcTemplate.queryForList(SQL, String.class);
-
-        IDbDialect dbDialect = getDbDialect();
-        if (dbDialect.supportsTransactionId()) {
-            assertTrue(batchIdList != null && batchIdList.size() - currentNumberOfTransactions == 1);
-            assertNotNull(batchIdList.get(0));
-        }
-    }
-
-    @Test
     public void testExcludedColumnsFunctionality() throws Exception {
         IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
                 Constants.BOOTSTRAP_SERVICE);
         // need to wait for a second to make sure enough time has passed so the
-        // update of the config
-        // table will have a greater timestamp than the audit table.
+        // update of the config table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
@@ -251,17 +214,6 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void syncIncomingBatchTest() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        getDbDialect().disableSyncTriggers("00010");
-        jdbcTemplate.update(insertSyncIncomingBatchSql, new Object[] { 1, "testing" });
-        getDbDialect().enableSyncTriggers();
-        List<String> nodeList = getNextDataEvents();
-        Assert.assertEquals(2, nodeList.size());
-        Assert.assertEquals("00011", nodeList.get(0));
-    }
-
-    @Test
     public void testBinaryColumnTypesForOracle() {
         IDbDialect dialect = getDbDialect();
         if (dialect instanceof OracleDbDialect) {
@@ -269,7 +221,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
             IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
             bootstrapService.syncTriggers();
-            Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers().size());
+            Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers()
+                    .size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
             String csvString = getNextDataRow(getSymmetricEngine());
             Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
@@ -312,15 +265,6 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 .queryForObject("select row_data from " + TestConstants.TEST_PREFIX
                         + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
                         String.class);
-
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<String> getNextDataEvents() {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        return (List<String>) jdbcTemplate.queryForList("select node_id from " + TestConstants.TEST_PREFIX
-                + "data_event where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
-                String.class);
 
     }
 

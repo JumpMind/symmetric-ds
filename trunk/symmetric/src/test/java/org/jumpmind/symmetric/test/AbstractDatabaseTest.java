@@ -26,7 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -63,6 +66,18 @@ public class AbstractDatabaseTest {
 
     protected IDbDialect getDbDialect() {
         return AppUtils.find(Constants.DB_DIALECT, getSymmetricEngine());
+    }
+    
+    protected IConfigurationService getConfigurationService() {
+        return AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
+    }
+    
+    protected IBootstrapService getBootstrapService() {
+        return AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
+    }
+    
+    protected IRoutingService getRoutingService() {
+        return AppUtils.find(Constants.ROUTING_SERVICE, getSymmetricEngine());
     }
 
     protected DataSource getDataSource() {
