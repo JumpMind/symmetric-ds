@@ -214,7 +214,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
                 history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
                 history.getDataEventCount(), history.getFailedDataId(), history.getStartTime(), history.getEndTime(),
-                history.getSqlState(), history.getSqlCode(), StringUtils.abbreviate(history.getSqlMessage(), 50) },
+                history.getSqlState(), history.getSqlCode(), StringUtils.abbreviate(history.getSqlMessage(), 1000) },
                 new int[] { Types.INTEGER, Types.VARCHAR, Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                         Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
                         Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
