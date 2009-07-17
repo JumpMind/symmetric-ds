@@ -46,20 +46,6 @@
         <property name="attributeSource" ref="jmxAttributeSource" />
     </bean>
 
-    <bean id="managementService" class="org.jumpmind.symmetric.service.jmx.SymmetricManagementService"
-        lazy-init="true">
-        <property name="parameterService" ref="parameterService" />
-        <property name="bootstrapService" ref="bootstrapService" />
-        <property name="purgeService" ref="purgeService" />
-        <property name="dataService" ref="dataService" />
-        <property name="clusterService" ref="clusterService" />
-        <property name="registrationService" ref="registrationService" />
-        <property name="dataSource" ref="dataSource" />
-        <property name="outgoingBatchService" ref="outgoingBatchService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="dataExtractorService" ref="dataExtractorService" />
-    </bean>
-
     <bean id="nodeManagementService" class="org.jumpmind.symmetric.service.jmx.NodeManagementService">
         <property name="bootstrapService" ref="bootstrapService" />
         <property name="purgeService" ref="purgeService" />

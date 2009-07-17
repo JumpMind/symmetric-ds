@@ -323,11 +323,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
-    @Deprecated
-    public void register() {
-        validateConfiguration();
-    }
-
     /**
      * Simply check and make sure that this node is all configured properly for
      * operation.

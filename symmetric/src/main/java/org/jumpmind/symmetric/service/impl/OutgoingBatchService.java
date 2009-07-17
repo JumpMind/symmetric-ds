@@ -155,13 +155,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper());
     }
 
-    // Moving away from SENT status to reduce updates to outgoing_batch table
-    @Deprecated
-    public void markOutgoingBatchSent(OutgoingBatch batch) {
-        setBatchStatus(batch.getBatchId(), batch.getStatus());
-    }
-
-    @Deprecated
     public void setBatchStatus(long batchId, Status status) {
         jdbcTemplate.update(getSql("changeBatchStatusSql"), new Object[] { status.name(), batchId });
     }

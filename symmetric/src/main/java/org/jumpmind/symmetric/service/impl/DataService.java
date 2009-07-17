@@ -358,11 +358,6 @@ public class DataService extends AbstractService implements IDataService {
         data.setRowData(out.toString());
     }
 
-    @Deprecated
-    public String[] tokenizeCsvData(String csvData) {
-        return CsvUtil.tokenizeCsvData(csvData);
-    }
-
     public void setReloadListeners(List<IReloadListener> listeners) {
         this.listeners = listeners;
     }

@@ -60,8 +60,6 @@ public interface IDataService {
 
     public Data createData(String tableName, String whereClause);
 
-    public String[] tokenizeCsvData(String csvData);
-
     public Map<String, String> getRowDataAsMap(Data data);
 
     public void setRowDataFromMap(Data data, Map<String, String> map);
