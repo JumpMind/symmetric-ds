@@ -1,14 +1,15 @@
 package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.model.Data;
+import java.util.Set;
+
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
 
 
 public interface IRoutingService {
 
     public void routeData();
     
-    public boolean routeInitialLoadData(Data data, Trigger trigger, Node node);
+    public boolean shouldDataBeRouted(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
     
 }

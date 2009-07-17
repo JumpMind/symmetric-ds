@@ -52,7 +52,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private static final long MAX_CHANNEL_CACHE_TIME = 60000;
 
-    private static List<NodeChannel> channelCache;
+    private static List<NodeChannel> channelCache;    
 
     private static long channelCacheTime;
 
@@ -142,11 +142,17 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return trigger;
     }
 
-    @Deprecated
-    public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist) {
-        return getChannels();
+    
+    public NodeChannel getChannel(String channelId) {
+        List<NodeChannel> channels = getChannels();
+        for (NodeChannel nodeChannel : channels) {
+            if (nodeChannel.getId().equals(channelId)) {
+                return nodeChannel;
+            }
+        }
+        return null;
     }
-
+    
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannels() {
         if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {

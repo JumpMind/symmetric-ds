@@ -26,10 +26,17 @@ public class NodeChannel extends Channel {
 
     String nodeId;
 
-    private boolean ignored;
+    private boolean ignored = false;
 
-    private boolean suspended;
+    private boolean suspended = false;
 
+    public NodeChannel() {
+    }
+    
+    public NodeChannel(String channelId) {
+        this.setId(channelId);
+    }
+    
     public boolean isIgnored() {
         return ignored;
     }

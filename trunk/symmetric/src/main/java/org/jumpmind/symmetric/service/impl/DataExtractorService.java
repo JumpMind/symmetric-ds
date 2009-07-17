@@ -38,6 +38,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -51,7 +52,9 @@ import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
@@ -244,14 +247,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected void writeInitialLoad(final Node node, final Trigger trigger, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
-        
+
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
 
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    Set<Node> oneNodeSet = new HashSet<Node>();
+                    Table table = dbDialect.getMetaDataFor(trigger, true);
+                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
+                    Set<Node> oneNodeSet = new HashSet<Node>();                    
                     oneNodeSet.add(node);
                     PreparedStatement st = null;
                     ResultSet rs = null;
@@ -267,9 +272,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist, null, null);
-                            // TODO test       
-                            if (routingService.routeInitialLoadData(data, trigger, node)) {
+                                    .getSourceTableName(), null, hist, null, null);  
+                            DataMetaData dataMetaData = new DataMetaData(data, table, trigger, channel);
+                            if (routingService.shouldDataBeRouted(dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, ctxCopy);
                             }
                         }
