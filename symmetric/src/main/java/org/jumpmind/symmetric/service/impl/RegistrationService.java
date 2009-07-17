@@ -113,8 +113,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
         jdbcTemplate.update(getSql("registerNodeSql"), new Object[] { node.getSyncURL(), node.getSchemaVersion(),
                 node.getDatabaseType(), node.getDatabaseVersion(), node.getSymmetricVersion(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
-        if (node.getSymmetricVersion() != null && Version.isOlderThanVersion(node.getSymmetricVersion(),
-                UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
+        if (node.getSymmetricVersion() != null
+                && Version.isOlderThanVersion(node.getSymmetricVersion(),
+                        UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
             markNodeAsRegistered(nodeId);
         }
 
@@ -201,7 +202,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 if (node != null) {
                     logger.info(String.format("Successfully registered node [id=%s]", node.getNodeId()));
                 } else if (!errorOccurred) {
-                    logger.error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
+                    logger
+                            .error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
                 } else {
                     logger.error("Node registration is unavailable");
                 }
@@ -246,19 +248,24 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public void openRegistration(Node node) {
         Node me = nodeService.findIdentity();
-        String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
-        Node existingNode = nodeService.findNode(nodeId);
-        if (existingNode == null) {
-            String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
-            password = filterPasswordOnSaveIfNeeded(password);
-            jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
-                    node.getExternalId(), me.getNodeId() });
-            jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
-                    me.getNodeId() });
-            logger.info("Just opened registration for external id of " + node.getExternalId() + " and a node group of "
-                    + node.getNodeGroupId() + " and a node id of " + nodeId);
+        if (me != null) {
+            String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
+            Node existingNode = nodeService.findNode(nodeId);
+            if (existingNode == null) {
+                String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
+                password = filterPasswordOnSaveIfNeeded(password);
+                jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
+                        node.getExternalId(), me.getNodeId() });
+                jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
+                        me.getNodeId() });
+                logger.info("Just opened registration for external id of " + node.getExternalId()
+                        + " and a node group of " + node.getNodeGroupId() + " and a node id of " + nodeId);
+            } else {
+                reOpenRegistration(nodeId);
+            }
         } else {
-            reOpenRegistration(nodeId);
+            throw new IllegalStateException(
+                    "This node has not been configured.  Could not find a row in the identity table.");
         }
     }
 
