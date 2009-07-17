@@ -82,8 +82,14 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    public boolean routeInitialLoadData(Data data, Trigger trigger, Node node) {
-        // TODO use IDataRouter
+    public boolean shouldDataBeRouted(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+        IDataRouter router = getDataRouter(dataMetaData.getTrigger());
+        Collection<String> nodeIds = router.routeToNodes(dataMetaData, nodes, initialLoad);
+        for (Node node : nodes) {
+            if (nodeIds == null || !nodeIds.contains(node.getNodeId())) {
+                return false;
+            }
+        }
         return true;
     }
 

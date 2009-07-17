@@ -64,9 +64,9 @@ public interface IConfigurationService {
 
     public List<NodeChannel> getChannels();
     
-    public void flushChannels();
+    public NodeChannel getChannel(String channelId);
     
-    public List<NodeChannel> getChannelsFor(boolean failIfTableDoesNotExist);
+    public void flushChannels();
 
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 
