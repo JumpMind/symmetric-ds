@@ -27,8 +27,39 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IRegistrationService;
 
+/**
+ * This data router is invoked when the router_name='column'. The
+ * router_expression is always a name value pair of a column on the table that
+ * is being synchronized to the value it should be matched with.
+ * <P>
+ * The value can be a constant. In the data router the value of the new data is
+ * always represented by a string so all comparisons are done in the format that
+ * SymmetricDS transmits.
+ * <P>
+ * The value can also be one of the following expressions:
+ * <ol>
+ * <li>:NODE_ID</li>
+ * <li>:EXTERNAL_ID</li>
+ * <li>:NODE_GROUP_ID</li>
+ * <li>:REDIRECT_NODE</li>
+ * </ol>
+ * NODE_ID, EXTERNAL_ID, and NODE_GROUP_ID are instructions for the column
+ * matcher to select nodes that have a NODE_ID, EXTERNAL_ID or NODE_GROUP_ID
+ * that are equal to the value on the column.
+ * <P>
+ * REDIRECT_NODE is an instruction to match the specified column to a
+ * registrant_external_id on registration_redirect and return the associated
+ * registration_node_id in the list of node id to route to. For example, if the
+ * 'price' table was being routed to to a region 1 node based on the store_id,
+ * the store_id would be the external_id of a node in the registration_redirect
+ * table and the router_expression for trigger entry for the 'price' table would
+ * be 'store_id=:REDIRECT_NODE' and the router_name would be 'column'.
+ * 
+ */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
+    private IRegistrationService registrationService;
 
     public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
@@ -59,6 +90,17 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                         nodeIds.add(node.getNodeId());
                     }
                 }
+            } else if (value.equalsIgnoreCase(":REDIRECT_NODE")) {
+                nodeIds = new HashSet<String>();
+                // TODO should we do any caching here? I am starting to lose
+                // track of where all
+                // we cache. Maybe we need a pattern or central service or
+                // manager for caching??
+                Map<String, String> redirectMap = registrationService.getRegistrationRedirectMap();
+                String nodeId = redirectMap.get(columnValues.get(column));
+                if (nodeId != null) {
+                    nodeIds.add(nodeId);
+                }
             } else {
                 if (value.equals(columnValues.get(column))) {
                     nodeIds = toNodeIds(nodes);
@@ -73,4 +115,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     }
 
+    public void setRegistrationService(IRegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
 }

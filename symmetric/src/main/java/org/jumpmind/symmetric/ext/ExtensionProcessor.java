@@ -33,6 +33,8 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.ITableColumnFilter;
+import org.jumpmind.symmetric.route.IBatchAlgorithm;
+import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -42,6 +44,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -71,6 +74,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IRegistrationService registrationService;
 
     ITransportManager transportManager;
+    
+    IRoutingService routingService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -167,7 +172,13 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
             nodeService.setNodeIdGenerator((INodeIdGenerator) ext);
         }
         
-        // TODO Add new routing extensions
+        if (ext instanceof IDataRouter) {
+            routingService.addDataRouter(beanName, (IDataRouter)ext);
+        }
+        
+        if (ext instanceof IBatchAlgorithm) {
+            routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm)ext);
+        }
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
@@ -206,4 +217,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.transportManager = transportManager;
     }
 
+    public void setRoutingService(IRoutingService routingService) {
+        this.routingService = routingService;
+    }
 }

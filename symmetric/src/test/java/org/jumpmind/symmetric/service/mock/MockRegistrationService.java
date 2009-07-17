@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.mock;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -30,11 +31,9 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 public class MockRegistrationService implements IRegistrationService {
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	public boolean isAutoRegistration() {
+    public boolean isAutoRegistration() {
         return false;
     }
 
@@ -43,9 +42,9 @@ public class MockRegistrationService implements IRegistrationService {
     }
 
     public void markNodeAsRegistered(String nodeId) {
-        
+
     }
-    
+
     public void reOpenRegistration(String nodeId) {
 
     }
@@ -60,8 +59,11 @@ public class MockRegistrationService implements IRegistrationService {
     public boolean isRegisteredWithServer() {
         return true;
     }
-    
-    public void saveRegistrationRedirect(String externalIdToRedirect,
-            String nodeIdToRedirectTo) {
+
+    public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo) {
+    }
+
+    public Map<String, String> getRegistrationRedirectMap() {
+        return null;
     }
 }

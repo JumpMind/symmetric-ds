@@ -16,8 +16,10 @@
 			</bean>
 		</entry>
 		<entry key="column">
-			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter"/>
-		</entry>
+			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
+                <property name="registrationService" ref="registrationService" />
+            </bean>
+		</entry>      
 		<entry key="default">
 			<bean class="org.jumpmind.symmetric.route.DefaultDataRouter">
 			</bean>

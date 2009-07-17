@@ -24,8 +24,12 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -45,6 +49,8 @@ import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -158,6 +164,21 @@ public class RegistrationService extends AbstractService implements IRegistratio
     @Transactional
     public void markNodeAsRegistered(String nodeId) {
         jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
+
+    }
+
+    public Map<String, String> getRegistrationRedirectMap() {
+        SimpleJdbcTemplate template = new SimpleJdbcTemplate(this.jdbcTemplate);
+        return template.queryForObject(getSql("getRegistrationRedirectSql"),
+                new ParameterizedRowMapper<Map<String, String>>() {
+                    public Map<String, String> mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        Map<String, String> results = new HashMap<String, String>();
+                        do {
+                            results.put(rs.getString(1), rs.getString(2));
+                        } while (rs.next());
+                        return results;
+                    }
+                });
 
     }
 

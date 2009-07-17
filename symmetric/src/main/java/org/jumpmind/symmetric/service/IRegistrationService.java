@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -73,5 +74,7 @@ public interface IRegistrationService {
      * Add an entry to the registation_redirect table so that if a node tries to register here.  It will be redirected to the correct node.
      */
     public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);
+    
+    public Map<String,String> getRegistrationRedirectMap();
 
 }
