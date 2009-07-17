@@ -20,8 +20,6 @@
 
 package org.jumpmind.symmetric.service;
 
-import java.util.List;
-
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
@@ -31,6 +29,4 @@ public interface IAcknowledgeService {
     
     public void addAcknowledgeEventListener(IAcknowledgeEventListener statusChangeListner);
 
-    @Deprecated
-    public void ack(List<BatchInfo> batches);
 }

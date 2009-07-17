@@ -45,13 +45,6 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     
     private IRegistrationService registrationService;
 
-    @Deprecated
-    public void ack(final List<BatchInfo> batches) {
-        for (BatchInfo batch : batches) {
-            ack(batch);
-        }
-    }
-
     @Transactional
     public void ack(final BatchInfo batch) {
 

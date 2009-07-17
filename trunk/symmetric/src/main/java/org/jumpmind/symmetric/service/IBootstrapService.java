@@ -47,9 +47,6 @@ public interface IBootstrapService {
      */
     public void syncTriggers(StringBuilder sql, boolean gen_always);
 
-    @Deprecated
-    public void register();
-
     public void validateConfiguration();
 
     public void heartbeat();
