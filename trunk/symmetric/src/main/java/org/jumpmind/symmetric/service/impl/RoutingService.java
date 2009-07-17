@@ -109,9 +109,11 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
-     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
-     * to reduce the amount number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we
+     * decide to multi-thread the routing it is a simple matter of inserting a
+     * thread pool here and waiting for all channels to be processed. The other
+     * reason is to reduce the amount number of connections we are required to
+     * have.
      */
     protected void routeDataForEachChannel() {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -235,7 +237,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
                                         batch.getBatchId());
                                 if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
                                         routingContext.getChannel(), history, batch, data, databaseTransactionBoundary)) {
-                                    // TODO Add route_time_ms to history. Also fix outgoing batch so we don't end up
+                                    // TODO Add route_time_ms to history. Also
+                                    // fix outgoing batch so we don't end up
                                     // with so many history records
                                     outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(),
                                             history);
@@ -295,6 +298,14 @@ public class RoutingService extends AbstractService implements IRoutingService {
         OutgoingBatch batch = new OutgoingBatch(nodeId, channelId, BatchType.EVENTS);
         outgoingBatchService.insertOutgoingBatch(template, batch);
         return batch;
+    }
+
+    public void addDataRouter(String name, IDataRouter dataRouter) {
+        routers.put(name, dataRouter);
+    }
+
+    public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm) {
+        batchAlgorithms.put(name, algorithm);
     }
 
     public void setConfigurationService(IConfigurationService configurationService) {

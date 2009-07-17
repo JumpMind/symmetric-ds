@@ -14,6 +14,7 @@
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="registrationService" ref="registrationService" />
         <property name="transportManager" ref="transportManager" />
+        <property name="routingService" ref="routingService"/>
     </bean>
 
     <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">

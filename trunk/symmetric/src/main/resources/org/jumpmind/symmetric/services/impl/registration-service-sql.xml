@@ -59,6 +59,11 @@
         update $[sym.sync.table.prefix]_registration_redirect set registration_node_id=? where registrant_external_id=?
       </value>
     </entry>    
+     <entry key="getRegistrationRedirectSql">
+      <value>
+        select registrant_external_id, registration_node_id from $[sym.sync.table.prefix]_registration_redirect
+      </value>
+    </entry>        
   </util:map>
 
 </beans>
