@@ -103,7 +103,7 @@ public class SqlTemplate {
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns).columnString;
         sql = replace("columns", columnsText, sql);
-        sql = replace("whereClause", StringUtils.isBlank(trig.getIntialLoadSelect()) ? "1=1" : trig.getIntialLoadSelect(), sql);
+        sql = replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
         sql = replace("tableName", trig.getSourceTableName(), sql);
         sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
         sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData

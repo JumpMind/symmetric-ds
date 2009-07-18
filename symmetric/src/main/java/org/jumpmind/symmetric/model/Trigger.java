@@ -94,7 +94,7 @@ public class Trigger {
      */
     private String routerExpression = null;
     
-    private String intialLoadSelect = null;
+    private String initialLoadSelect = null;
 
     /**
      * This is a sql expression that creates a unique id which the sync process
@@ -430,13 +430,13 @@ public class Trigger {
         return routerName;
     }
     
-    public void setIntialLoadSelect(String intialLoadSelect) {
-        this.intialLoadSelect = intialLoadSelect;
+    public void setInitialLoadSelect(String intialLoadSelect) {
+        this.initialLoadSelect = intialLoadSelect;
     }
     
-    public String getIntialLoadSelect() {
-        return intialLoadSelect;
-    }
+    public String getInitialLoadSelect() {
+        return initialLoadSelect;
+    }    
     
     public String getRouterExpression() {
         return routerExpression;
