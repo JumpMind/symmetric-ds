@@ -66,7 +66,7 @@ public interface IConfigurationService {
     
     public NodeChannel getChannel(String channelId);
     
-    public void flushChannels();
+    public void reloadChannels();
 
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 

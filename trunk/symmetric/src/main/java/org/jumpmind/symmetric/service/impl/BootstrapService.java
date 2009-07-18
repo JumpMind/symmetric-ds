@@ -106,7 +106,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             logger.info("Initializing SymmetricDS database.");
             dbDialect.initSupportDb();
             if (defaultChannels != null) {
-                configurationService.flushChannels();
+                configurationService.reloadChannels();
                 List<NodeChannel> channels = configurationService.getChannels();
                 for (Channel defaultChannel : defaultChannels) {
                     if (!defaultChannel.isInList(channels)) {
@@ -116,7 +116,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel.getId()));
                     }
                 }
-                configurationService.flushChannels();
+                configurationService.reloadChannels();
             }
             parameterService.rereadParameters();
             logger.info("Done initializing SymmetricDS database.");
@@ -170,7 +170,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             try {
                 logger.info("Synchronizing triggers");
                 // make sure channels are read from the database
-                configurationService.flushChannels(); 
+                configurationService.reloadChannels(); 
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
             } finally {

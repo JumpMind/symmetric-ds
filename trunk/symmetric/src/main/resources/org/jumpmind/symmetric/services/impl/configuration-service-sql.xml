@@ -158,8 +158,8 @@
     <entry key="insertTriggerSql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger
-        (source_catalog_name,source_schema_name,source_table_name,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,router_expression,tx_id_expression,excluded_column_names,initial_load_select,initial_load_order,create_time,inactive_time,last_updated_by,last_updated_time)
-        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        (source_catalog_name,source_schema_name,source_table_name,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,router_name,router_expression,tx_id_expression,excluded_column_names,initial_load_select,initial_load_order,create_time,inactive_time,last_updated_by,last_updated_time)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="updateTriggerSql">
@@ -170,7 +170,7 @@
          target_node_group_id=?,channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,
          sync_on_incoming_batch=?,name_for_update_trigger=?,name_for_insert_trigger=?,
          name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,
-         sync_on_delete_condition=?,router_expression=?,tx_id_expression=?,excluded_column_names=?,
+         sync_on_delete_condition=?,router_name=?,router_expression=?,tx_id_expression=?,excluded_column_names=?,
          initial_load_select=?,initial_load_order=?,create_time=?,inactive_time=?,last_updated_by=?,last_updated_time=?
         where trigger_id=?
       </value>

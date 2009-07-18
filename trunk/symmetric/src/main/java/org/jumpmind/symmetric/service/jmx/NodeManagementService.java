@@ -99,7 +99,7 @@ public class NodeManagementService {
     
     @ManagedOperation(description = "Force the channel settings to be read from the database")
     public void clearChannelCache() {
-        configurationService.flushChannels();
+        configurationService.reloadChannels();
     }
 
     @ManagedOperation(description = "Synchronize the triggers")
