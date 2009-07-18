@@ -32,6 +32,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IRoutingContext {
 
+    /**
+     * Get the same template that is being used for inserts into data_event for routing.
+     */
     public JdbcTemplate getJdbcTemplate();
 
     public NodeChannel getChannel();
@@ -57,9 +60,9 @@ public interface IRoutingContext {
     public void setNeedsCommitted(boolean b);
 
     public void resetForNextData();
-    
+
     public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary);
-    
-     public boolean isEncountedTransactionBoundary();
+
+    public boolean isEncountedTransactionBoundary();
 
 }

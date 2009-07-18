@@ -36,9 +36,7 @@ import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler;
 import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.AuthenticationStatus;
 
 /**
- * This better be the first filter that executes ! TODO: if this thing fails,
- * should it prevent further processing of the request?
- * 
+ * This better be the first filter that executes! 
  */
 public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> {
 

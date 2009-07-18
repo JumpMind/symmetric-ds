@@ -52,7 +52,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private static final long MAX_CHANNEL_CACHE_TIME = 60000;
 
-    private static List<NodeChannel> channelCache;    
+    private static List<NodeChannel> channelCache;
 
     private static long channelCacheTime;
 
@@ -63,10 +63,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-    
+
     /**
-     * Cache the history for performance. History never changes and does not
-     * grow big so this should be OK.
+     * Cache the history for performance. History never changes and does not grow big so this should be OK.
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
@@ -90,7 +89,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveChannel(Channel channel) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
-                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0, channel.getId(), channel.getBatchAlgorithm() })) {
+                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0, channel.getId(),
+                channel.getBatchAlgorithm() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() });
@@ -111,12 +111,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         List<Trigger> triggers = new ArrayList<Trigger>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
             String tableName = tables.get(j);
-            boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);           
+            boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);
             Trigger trigger = buildConfigTrigger(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
             // TODO Set data router to replace the routing done by the node select
-            //String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
-            //trigger.setInitialLoadSelect(initialLoadSelect);
+            // String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
+            // trigger.setInitialLoadSelect(initialLoadSelect);
             triggers.add(trigger);
         }
         return triggers;
@@ -138,11 +138,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
         // little trick to force the rebuild of sym triggers every time
         // there is a new version of symmetricds
-        trigger.setLastModifiedTime(new Date(Version.version().hashCode()));        
+        trigger.setLastModifiedTime(new Date(Version.version().hashCode()));
         return trigger;
     }
 
-    
     public NodeChannel getChannel(String channelId) {
         List<NodeChannel> channels = getChannels();
         for (NodeChannel nodeChannel : channels) {
@@ -152,7 +151,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannels() {
         if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
@@ -196,8 +195,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     /**
-     * Create triggers on SymmetricDS tables so changes to configuration can be
-     * synchronized.
+     * Create triggers on SymmetricDS tables so changes to configuration can be synchronized.
      */
     protected List<Trigger> getConfigurationTriggers(String sourceNodeGroupId) {
         List<Trigger> triggers = new ArrayList<Trigger>();
@@ -209,10 +207,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
                 triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
                         false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
-                logger.info("Creating trigger hist entry for " + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+                logger.info("Creating trigger hist entry for "
+                        + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
             } else {
                 logger.warn("Unexpected node group link while creating configuration triggers: source_node_group_id="
-                    + sourceNodeGroupId + ", action=" + nodeGroupLink.getDataEventAction());
+                        + sourceNodeGroupId + ", action=" + nodeGroupLink.getDataEventAction());
             }
         }
         return triggers;
@@ -325,8 +324,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 Types.VARCHAR, Types.VARCHAR, Types.BIGINT });
     }
 
-    public void insert(Trigger trigger) {
-        jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
+    public void saveTrigger(Trigger trigger) {
+        if (0 == jdbcTemplate.update(getSql("updateTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
                 trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(),
                 trigger.getTargetSchemaName(), trigger.getTargetTableName(), trigger.getSourceGroupId(),
                 trigger.getTargetGroupId(), trigger.getChannelId(), trigger.isSyncOnUpdate() ? 1 : 0,
@@ -334,14 +333,32 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(),
-                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
-                new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(), trigger.getTxIdExpression(),
+                trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
+                new Date(), null, trigger.getUpdatedBy(), new Date(), trigger.getTriggerId() }, new int[] {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, 
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
-                Types.VARCHAR, Types.TIMESTAMP });
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
+                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.INTEGER })) {
+            jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
+                    trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(),
+                    trigger.getTargetSchemaName(), trigger.getTargetTableName(), trigger.getSourceGroupId(),
+                    trigger.getTargetGroupId(), trigger.getChannelId(), trigger.isSyncOnUpdate() ? 1 : 0,
+                    trigger.isSyncOnInsert() ? 1 : 0, trigger.isSyncOnDelete() ? 1 : 0,
+                    trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
+                    trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
+                    trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
+                    trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(), trigger.getTxIdExpression(),
+                    trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
+                    new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                    Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
+                    Types.VARCHAR, Types.TIMESTAMP });
+        }
+
     }
 
     public Map<Long, TriggerHistory> getHistoryRecords() {
@@ -445,7 +462,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             trig.setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trig.setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trig.setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));
-            String schema = rs.getString("source_schema_name");            
+            String schema = rs.getString("source_schema_name");
             trig.setSourceSchemaName(schema);
             String catalog = rs.getString("source_catalog_name");
             if (catalog == null && schema != null && dbDialect instanceof MySqlDbDialect) {

@@ -35,7 +35,6 @@ public class MockNodePasswordFilter implements INodePasswordFilter {
 	}
 
 	public boolean isAutoRegister() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

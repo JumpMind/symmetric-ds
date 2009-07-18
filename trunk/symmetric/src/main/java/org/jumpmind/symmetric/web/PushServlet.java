@@ -59,7 +59,8 @@ public class PushServlet extends AbstractTransportResourceServlet<PushResourceHa
 
         getTransportResourceHandler().push(inputStream, outputStream);
 
-        outputStream.flush(); // TODO: why is this necessary?
+        // Not sure if this is necessary, but it's been here and it hasn't hurt anything ...
+        outputStream.flush();
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Done with Push request from %s", nodeId));

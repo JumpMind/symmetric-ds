@@ -140,7 +140,7 @@ final public class Constants {
 
     public static final String OUTGOING_BATCH_SERVICE = "outgoingBatchService";
 
-    public static final String OUTGOING_BATCH_HISTORY_SERVICE = "outgoingBatchHistoryService";
+    public static final String TRANSACTION_TEMPLATE = "transactionTemplate";
 
     public static final String PURGE_SERVICE = "purgeService";
 
