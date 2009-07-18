@@ -111,7 +111,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
     /**
      * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
      * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
-     * to reduce the amount number of connections we are required to have.
+     * to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel() {
         final List<NodeChannel> channels = configurationService.getChannels();
