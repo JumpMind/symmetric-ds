@@ -135,7 +135,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         trigger.setSourceTableName(tableName);
         trigger.setSourceGroupId(sourceGroupId);
         trigger.setTargetGroupId(targetGroupId);
-        trigger.setIntialLoadSelect(rootConfigChannelInitialLoadSelect.get(tableName));
+        trigger.setInitialLoadSelect(rootConfigChannelInitialLoadSelect.get(tableName));
         trigger.setChannelId(Constants.CHANNEL_CONFIG);
         // little trick to force the rebuild of sym triggers every time
         // there is a new version of symmetricds
@@ -335,7 +335,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
                 trigger.getSyncOnDeleteCondition(), trigger.getRouterName(), trigger.getRouterExpression(),
-                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadSelect(),
                 trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date(),
                 trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
@@ -352,7 +352,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                     trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
                     trigger.getSyncOnDeleteCondition(), trigger.getRouterName(), trigger.getRouterExpression(),
-                    trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(),
+                    trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getInitialLoadSelect(),
                     trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
@@ -489,7 +489,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trig.setSyncOnDeleteCondition(condition);
             }
             trig.setTxIdExpression(rs.getString("tx_id_expression"));
-            trig.setIntialLoadSelect(rs.getString("initial_load_select"));
+            trig.setInitialLoadSelect(rs.getString("initial_load_select"));
             trig.setLastModifiedTime(rs.getTimestamp("last_updated_time"));
             trig.setUpdatedBy(rs.getString("last_updated_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
