@@ -4,10 +4,12 @@ insert into sym_node_group values ('symmetric','a group representing symmetric c
 insert into sym_node_group values ('test-root-group','a test config');
 insert into sym_node_group values ('test-node-group','a test config');
 insert into sym_node_group values ('test-node-group2','another test config');
+insert into sym_node_group values ('test-group-for-root-to-pull','another test config');
 insert into sym_node_group values ('unit-test-only','a group used for unit testing');
 insert into sym_node_group_link values ('test-root-group','test-root-group', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group2', 'P');
 insert into sym_node_group_link values ('test-root-group','test-node-group', 'W');
+insert into sym_node_group_link values ('test-group-for-root-to-pull','test-root-group', 'W');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
 insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','H2', '1.1', current_timestamp, null, '00000');
@@ -17,6 +19,10 @@ insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null,
 insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, '00000');
 insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
 insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
+insert into sym_node values ('pull1', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'H2', '5.0', current_timestamp, null, '00000');
+insert into sym_node values ('pull2', 'test-group-for-root-to-pull', 'test', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
+insert into sym_node values ('pull3', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, '00000');
+
 
 insert into sym_node values ('55555', 'test-node-group2', '00011', 1, 'http://snoopdog.com', null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
 

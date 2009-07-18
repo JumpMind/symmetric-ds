@@ -184,11 +184,6 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void testSyncBackToNode() {
-
-    }
-
-    @Test
     @ParameterExcluder("postgres")
     public void validateTransactionFunctionailty() throws Exception {
     }

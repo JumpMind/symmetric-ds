@@ -137,13 +137,13 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     @Test
     public void testFindPullNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPull();
-        assertEquals(list.size(), 4, "Wrong number of pull nodes");
+        assertEquals(list.size(), 3, "Wrong number of pull nodes");
     }
 
     @Test
     public void testFindPushNodes() throws Exception {
         List<Node> list = nodeService.findNodesToPushTo();
-        assertEquals(list.size(), 1, "Wrong number of push nodes");
+        assertEquals(list.size(), 4, "Wrong number of push nodes");
     }
 
     @Test
