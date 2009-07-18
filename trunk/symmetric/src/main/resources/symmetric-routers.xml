@@ -10,7 +10,7 @@
 		<entry key="subselect">
 			<bean class="org.jumpmind.symmetric.route.SubSelectDataRouter">
 				<property name="sql"
-					value="select c.node_id from $[sym.sync.table.prefix]_node c where c.node_group_id=? and c.sync_enabled=1 and " />
+					value="select c.node_id from $[sym.sync.table.prefix]_node c where c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and " />
 				<property name="jdbcTemplate" ref="jdbcTemplate" />
 				<property name="dbDialect" ref="dbDialect" />
 			</bean>
@@ -30,9 +30,12 @@
 		<entry key="default">
 			<bean class="org.jumpmind.symmetric.route.DefaultBatchAlgorithm" />
 		</entry>
-		<entry key="transaction">
+		<entry key="transactional">
 			<bean class="org.jumpmind.symmetric.route.TransactionalBatchAlgorithm" />
 		</entry>
+		<entry key="nontransactional">
+			<bean class="org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm" />
+		</entry>		
 	</util:map>
 
 </beans>
