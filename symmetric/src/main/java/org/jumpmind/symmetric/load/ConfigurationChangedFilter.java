@@ -104,7 +104,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             logger.info("Channels flushed because new channels came through the dataloader.");
-            configurationService.flushChannels();
+            configurationService.reloadChannels();
         }
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {

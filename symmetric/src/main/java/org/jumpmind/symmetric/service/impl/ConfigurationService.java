@@ -89,12 +89,13 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveChannel(Channel channel) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
-                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0, channel.getId(),
-                channel.getBatchAlgorithm() })) {
+                channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
+                channel.getBatchAlgorithm(), channel.getId() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() });
         }
+        reloadChannels();
     }
 
     public void deleteChannel(Channel channel) {
@@ -175,7 +176,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return channelCache;
     }
 
-    public void flushChannels() {
+    public void reloadChannels() {
         channelCache = null;
     }
 
@@ -333,14 +334,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(), trigger.getTxIdExpression(),
-                trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
-                new Date(), null, trigger.getUpdatedBy(), new Date(), trigger.getTriggerId() }, new int[] {
+                trigger.getSyncOnDeleteCondition(), trigger.getRouterName(), trigger.getRouterExpression(),
+                trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(),
+                trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date(),
+                trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
+                Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
-                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.INTEGER })) {
+                Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR,
+                Types.TIMESTAMP, Types.INTEGER })) {
             jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getTargetCatalogName(),
                     trigger.getTargetSchemaName(), trigger.getTargetTableName(), trigger.getSourceGroupId(),
@@ -349,14 +351,14 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     trigger.isSyncOnIncomingBatch() ? 1 : 0, trigger.getNameForUpdateTrigger(),
                     trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                     trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
-                    trigger.getSyncOnDeleteCondition(), trigger.getRouterExpression(), trigger.getTxIdExpression(),
-                    trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(), trigger.getInitialLoadOrder(),
-                    new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] { Types.VARCHAR, Types.VARCHAR,
+                    trigger.getSyncOnDeleteCondition(), trigger.getRouterName(), trigger.getRouterExpression(),
+                    trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getIntialLoadSelect(),
+                    trigger.getInitialLoadOrder(), new Date(), null, trigger.getUpdatedBy(), new Date() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                    Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
+                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                    Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                    Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
-                    Types.VARCHAR, Types.TIMESTAMP });
+                    Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP });
         }
 
     }
