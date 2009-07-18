@@ -61,7 +61,7 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
         trigger.setSyncOnDelete(true);
-        configService.insert(trigger);
+        configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into " + TABLE_NAME
                 + " values('00000',timestamp'2008-01-01 00:00:00.000',timestamp'2008-01-01 00:00:00.000')");

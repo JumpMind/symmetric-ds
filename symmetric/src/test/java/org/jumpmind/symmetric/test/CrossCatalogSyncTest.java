@@ -82,7 +82,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
         trigger.setSyncOnDelete(true);
-        configService.insert(trigger);
+        configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.other_table values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate
@@ -113,7 +113,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
         trigger.setSyncOnDelete(true);
-        configService.insert(trigger);
+        configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.dbo.other_table values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
@@ -143,7 +143,7 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
         trigger.setSyncOnDelete(true);
-        configService.insert(trigger);
+        configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.other_table2 values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate

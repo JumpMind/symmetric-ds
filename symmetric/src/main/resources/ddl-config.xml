@@ -21,7 +21,7 @@
        <column name="row_data" type="LONGVARCHAR" />
        <column name="pk_data" type="LONGVARCHAR" />
        <column name="old_data" type="LONGVARCHAR" />
-       <!-- It might be nice to add a router_select element that can be selected similar 
+       <!-- TODO It might be nice to add a router_select element that can be selected similar 
             to the old node_select which would be available to the routers.  This would allow
             SQL expressions back in the triggers w/out using sym_data_event -->
        <column name="trigger_hist_id" type="INTEGER" required="true" />

@@ -144,7 +144,5 @@ public class MockNodeService implements INodeService {
     }
 
 	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-		// TODO Auto-generated method stub
-		
 	}
 }

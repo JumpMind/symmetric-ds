@@ -88,6 +88,6 @@ public interface IConfigurationService {
 
     public Map<Long, TriggerHistory> getHistoryRecords();
 
-    public void insert(Trigger trigger);
+    public void saveTrigger(Trigger trigger);
 
 }

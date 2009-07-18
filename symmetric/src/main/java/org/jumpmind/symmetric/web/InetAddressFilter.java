@@ -38,8 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
 
 /**
- * This better be the first filter that executes ! TODO: if this thing fails,
- * should it prevent further processing of the request?
+ * This better be the first filter that executes!
  */
 public class InetAddressFilter extends AbstractTransportFilter<InetAddressResourceHandler> {
     public static final String INET_ADDRESS_FILTERS = "inetAddressFilters";
@@ -76,8 +75,6 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
 
     public void doFilter(final ServletRequest req, final ServletResponse resp, final FilterChain chain)
             throws IOException, ServletException {
-        // final IInetAddressAuthorizer authorizer =
-        // getTransportResourceHandler();
         final HttpServletRequest httpRequest = (HttpServletRequest) req;
         final String sourceAddrString = httpRequest.getRemoteAddr();
         try {

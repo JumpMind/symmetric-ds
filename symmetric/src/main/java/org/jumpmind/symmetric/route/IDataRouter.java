@@ -36,6 +36,8 @@ import org.jumpmind.symmetric.model.Node;
  * each data router is configured using the routing_expression according to its implementation. 
  * 
  * @since 2.0
+ * @see SubSelectDataRouter
+ * @see ColumnMatchDataRouter
  */
 public interface IDataRouter extends IExtensionPoint {
 

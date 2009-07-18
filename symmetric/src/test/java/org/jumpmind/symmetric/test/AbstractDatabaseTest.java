@@ -28,12 +28,14 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class AbstractDatabaseTest {
 
@@ -79,9 +81,17 @@ public class AbstractDatabaseTest {
     protected IRoutingService getRoutingService() {
         return AppUtils.find(Constants.ROUTING_SERVICE, getSymmetricEngine());
     }
-
+    
+    protected IOutgoingBatchService getOutgoingBatchService() {
+        return AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getSymmetricEngine());
+    }
+    
     protected DataSource getDataSource() {
         return AppUtils.find(Constants.DATA_SOURCE, getSymmetricEngine());
+    }
+    
+    protected TransactionTemplate getTransactionTemplate() {
+        return AppUtils.find(Constants.TRANSACTION_TEMPLATE, getSymmetricEngine());
     }
 
     protected JdbcTemplate getJdbcTemplate() {

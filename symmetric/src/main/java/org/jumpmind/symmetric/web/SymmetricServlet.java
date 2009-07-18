@@ -88,7 +88,7 @@ public class SymmetricServlet extends AbstractServlet {
         if (ctx.getParent() != null) {
             servletBeans.putAll(ctx.getParent().getBeansOfType(
                     IServletExtension.class));
-        }
+        }        
         // TODO order using initOrder
         for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans
                 .entrySet()) {
