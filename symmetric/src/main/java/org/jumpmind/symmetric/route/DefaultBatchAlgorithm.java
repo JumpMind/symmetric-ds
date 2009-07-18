@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 
 public class DefaultBatchAlgorithm implements IBatchAlgorithm {
 
-    public boolean completeBatch(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
+    public boolean isBatchComplete(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
             IRoutingContext routingContext) {
         return history.getDataEventCount() >= dataMetaData.getChannel().getMaxBatchSize()
                 && routingContext.isEncountedTransactionBoundary();

@@ -32,6 +32,6 @@ import org.jumpmind.symmetric.model.OutgoingBatchHistory;
  * @since 2.0
  */
 public interface IBatchAlgorithm extends IExtensionPoint {
-    public boolean completeBatch(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
+    public boolean isBatchComplete(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
             IRoutingContext routingContext);
 }
