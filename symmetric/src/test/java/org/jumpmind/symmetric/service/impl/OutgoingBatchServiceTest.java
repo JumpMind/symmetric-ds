@@ -31,6 +31,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -73,6 +74,10 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testDisabledChannel() {
+        NodeChannel channel = configService.getChannel(TestConstants.TEST_CHANNEL_ID);
+        channel.setEnabled(false);
+        configService.saveChannel(channel);
+        
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         int size = 50; // magic number
@@ -87,6 +92,9 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(list);
         assertEquals(list.size(), 0);
+        
+        channel.setEnabled(true);
+        configService.saveChannel(channel);
     }
 
 

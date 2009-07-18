@@ -216,6 +216,12 @@ public class RoutingService extends AbstractService implements IRoutingService {
         // TODO We really shouldn't be referencing the bootstrapService from
         // here ... maybe this method needs to move to the configurationService
         Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
+        if (trigger == null) {
+            trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
+            if (trigger == null) {
+                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data.getTriggerHistory().getTriggerId()));
+            }
+        }
         Table table = dbDialect.getMetaDataFor(trigger, true);
         DataMetaData dataMetaData = new DataMetaData(data, table, trigger, routingContext.getChannel());
         if (trigger != null) {

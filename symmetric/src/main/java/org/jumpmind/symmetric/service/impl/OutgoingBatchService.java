@@ -85,10 +85,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     /**
-     * Select batches to process. Batches that are NOT in error will be returned
-     * first. They will be ordered by batch id as the batches will have already
-     * been created by {@link #buildOutgoingBatches(String)} in channel priority
-     * order.
+     * Select batches to process. Batches that are NOT in error will be returned first. They will be ordered by batch id
+     * as the batches will have already been created by {@link #buildOutgoingBatches(String)} in channel priority order.
      */
     @SuppressWarnings("unchecked")
     public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
@@ -128,12 +126,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (batches != null && batches.size() > 0) {
             List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
             for (NodeChannel channel : channels) {
-                int max = channel.getMaxBatchToSend();
-                int count = 0;
-                for (OutgoingBatch outgoingBatch : batches) {
-                    if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
-                        filtered.add(outgoingBatch);
-                        count++;
+                if (channel.isEnabled()) {
+                    int max = channel.getMaxBatchToSend();
+                    int count = 0;
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
+                            filtered.add(outgoingBatch);
+                            count++;
+                        }
                     }
                 }
             }
@@ -187,13 +187,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         if (unsentCount > 0) {
             return true;
         }
-        
+
         // Do we need to check for unbatched data?
-//        int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
-//                nodeId, channelId });
-//        if (unbatchedCount > 0) {
-//            return true;
-//        }
+        // int unbatchedCount = jdbcTemplate.queryForInt(getSql("unbatchedCountForNodeIdChannelIdSql"), new Object[] {
+        // nodeId, channelId });
+        // if (unbatchedCount > 0) {
+        // return true;
+        // }
 
         return false;
     }
