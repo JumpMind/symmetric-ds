@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IRoutingContext {
-    
+
     public JdbcTemplate getJdbcTemplate();
 
     public NodeChannel getChannel();
@@ -43,9 +43,23 @@ public interface IRoutingContext {
     public Map<Trigger, Set<Node>> getAvailableNodes();
 
     public void commit() throws SQLException;
-    
+
     public void rollback();
-    
+
     public void cleanup();
+
+    public void setRouted(boolean b);
+
+    public boolean isNeedsCommitted();
+
+    public boolean isRouted();
+
+    public void setNeedsCommitted(boolean b);
+
+    public void resetForNextData();
     
+    public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary);
+    
+     public boolean isEncountedTransactionBoundary();
+
 }
