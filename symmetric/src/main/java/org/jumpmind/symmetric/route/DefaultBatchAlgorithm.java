@@ -19,16 +19,16 @@
  */
 package org.jumpmind.symmetric.route;
 
-import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 
 public class DefaultBatchAlgorithm implements IBatchAlgorithm {
 
-    public boolean completeBatch(NodeChannel channel, OutgoingBatchHistory history, OutgoingBatch batch, Data data,
-            boolean databaseTransactionBoundary) {        
-        return history.getDataEventCount() >= channel.getMaxBatchSize() && databaseTransactionBoundary;
+    public boolean completeBatch(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
+            IRoutingContext routingContext) {
+        return history.getDataEventCount() >= dataMetaData.getChannel().getMaxBatchSize()
+                && routingContext.isEncountedTransactionBoundary();
     }
 
     public boolean isAutoRegister() {
