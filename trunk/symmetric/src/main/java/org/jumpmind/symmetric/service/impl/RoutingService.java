@@ -264,7 +264,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     routingContext.setRouted(true);
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), dataMetaData.getData().getDataId(),
                             nodeId, batch.getBatchId());
-                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(history,
+                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).isBatchComplete(history,
                             batch, dataMetaData, routingContext)) {
                         // TODO Add route_time_ms to history. Also fix outgoing batch so we don't end up
                         // with so many history records
