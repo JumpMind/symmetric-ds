@@ -20,17 +20,18 @@
 package org.jumpmind.symmetric.route;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 
 /**
- * A possible extension point that could be configured by channels to allow further control over batching algorithms.  I am thinking that
- * we provide two implementations that can be configured at the channel level:  our default batching based on the number of events and another
- * implementation that would batch only on transaction boundaries.
+ * An extension point that can be configured for a channel to allow further control over batching algorithms.
+ * <P>
+ * This is the point where the decision is made whether to end a batch or not.
+ * 
  * @since 2.0
  */
-public interface IBatchAlgorithm extends IExtensionPoint {  
-    public boolean completeBatch(NodeChannel channel, OutgoingBatchHistory history, OutgoingBatch batch, Data data, boolean databaseTransactionBoundary);
+public interface IBatchAlgorithm extends IExtensionPoint {
+    public boolean completeBatch(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
+            IRoutingContext routingContext);
 }

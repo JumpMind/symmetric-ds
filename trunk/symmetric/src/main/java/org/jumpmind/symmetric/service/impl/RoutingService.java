@@ -170,10 +170,21 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
 
+    /**
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
+     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
+     * 
+     * @param conn
+     *            The connection to use for selecting the data.
+     * @param context
+     *            The current context of the routing process
+     */
     protected void selectDataAndRoute(Connection conn, IRoutingContext context) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
+            // TODO add a flag to sym_trigger to indicate whether we need to read the row_data and or old_data for
+            // routing. We will get better performance if we don't read the data.
             ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -181,8 +192,6 @@ public class RoutingService extends AbstractService implements IRoutingService {
             int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
             LinkedList<Data> dataQueue = new LinkedList<Data>();
-            // pre-populate data queue so we can look ahead to see if a
-            // transaction has finished.
             for (int i = 0; i < peekAheadLength && rs.next(); i++) {
                 readData(rs, dataQueue, transactionIdDataId);
             }
@@ -255,11 +264,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     routingContext.setRouted(true);
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), dataMetaData.getData().getDataId(),
                             nodeId, batch.getBatchId());
-                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
-                            routingContext.getChannel(), history, batch, dataMetaData.getData(),
-                            routingContext.isEncountedTransactionBoundary())) {
-                        // TODO Add route_time_ms to history. Also
-                        // fix outgoing batch so we don't end up
+                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(history,
+                            batch, dataMetaData, routingContext)) {
+                        // TODO Add route_time_ms to history. Also fix outgoing batch so we don't end up
                         // with so many history records
                         outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
                         routingContext.getBatchesByNodes().remove(nodeId);
