@@ -37,7 +37,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
 public class RoutingContext implements IRoutingContext {
-    
+
     protected final Log logger = LogFactory.getLog(getClass());
     private NodeChannel channel;
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
@@ -45,6 +45,9 @@ public class RoutingContext implements IRoutingContext {
     private Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
     private Connection connection;
     private JdbcTemplate jdbcTemplate;
+    private boolean needsCommitted = false;
+    private boolean routed = false;
+    private boolean encountedTransactionBoundary = false;
 
     public RoutingContext(NodeChannel channel, Connection connection) throws SQLException {
         this.channel = channel;
@@ -81,7 +84,7 @@ public class RoutingContext implements IRoutingContext {
         try {
             connection.rollback();
         } catch (SQLException e) {
-            logger.warn(e,e);
+            logger.warn(e, e);
         }
     }
 
@@ -89,4 +92,32 @@ public class RoutingContext implements IRoutingContext {
         JdbcUtils.closeConnection(this.connection);
     }
 
+    public void setNeedsCommitted(boolean b) {
+        this.needsCommitted = b;
+    }
+
+    public void setRouted(boolean b) {
+        this.routed = b;
+    }
+    
+    public boolean isNeedsCommitted() {
+        return needsCommitted;
+    }
+    
+    public boolean isRouted() {
+        return routed;
+    }
+
+    public void resetForNextData() {
+        this.routed = false;
+        this.needsCommitted = false;        
+    }
+    
+    public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary) {
+        this.encountedTransactionBoundary = encountedTransactionBoundary;
+    }
+    
+     public boolean isEncountedTransactionBoundary() {
+        return encountedTransactionBoundary;
+    }
 }

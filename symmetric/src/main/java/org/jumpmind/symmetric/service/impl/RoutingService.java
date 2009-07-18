@@ -109,11 +109,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we
-     * decide to multi-thread the routing it is a simple matter of inserting a
-     * thread pool here and waiting for all channels to be processed. The other
-     * reason is to reduce the amount number of connections we are required to
-     * have.
+     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
+     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
+     * to reduce the amount number of connections we are required to have.
      */
     protected void routeDataForEachChannel() {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -205,7 +203,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
     protected void routeData(Data data, Map<String, Long> transactionIdDataId, IRoutingContext routingContext)
             throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
-        boolean databaseTransactionBoundary = dataId == null ? true : dataId == data.getDataId();
+        routingContext.setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
         // TODO We really shouldn't be referencing the bootstrapService from
         // here ... maybe this method needs to move to the configurationService
         Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
@@ -214,48 +212,19 @@ public class RoutingService extends AbstractService implements IRoutingService {
         if (trigger != null) {
             String channelId = trigger.getChannelId();
             if (channelId.equals(routingContext.getChannel().getId())) {
-                boolean commit = false;
-                boolean routed = false;
+                routingContext.resetForNextData();
                 if (!routingContext.getChannel().isIgnored()) {
                     IDataRouter router = getDataRouter(trigger);
                     Collection<String> nodeIds = router.routeToNodes(dataMetaData, findAvailableNodes(trigger,
                             routingContext), false);
-                    if (nodeIds != null && nodeIds.size() > 0) {
-                        for (String nodeId : nodeIds) {
-                            if (data.getSourceNodeId() == null || !data.getSourceNodeId().equals(nodeId)) {
-                                OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
-                                OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
-                                if (batch == null) {
-                                    batch = createNewBatch(routingContext.getJdbcTemplate(), nodeId, channelId);
-                                    routingContext.getBatchesByNodes().put(nodeId, batch);
-                                    history = new OutgoingBatchHistory(batch);
-                                    routingContext.getBatchHistoryByNodes().put(nodeId, history);
-                                }
-                                history.incrementDataEventCount();
-                                routed = true;
-                                dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), nodeId,
-                                        batch.getBatchId());
-                                if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
-                                        routingContext.getChannel(), history, batch, data, databaseTransactionBoundary)) {
-                                    // TODO Add route_time_ms to history. Also
-                                    // fix outgoing batch so we don't end up
-                                    // with so many history records
-                                    outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(),
-                                            history);
-                                    routingContext.getBatchesByNodes().remove(nodeId);
-                                    routingContext.getBatchHistoryByNodes().remove(nodeId);
-                                    commit = true;
-                                }
-                            }
-                        }
-                    }
+                    insertDataEvents(routingContext, dataMetaData, nodeIds);
                 }
 
-                if (!routed) {
+                if (!routingContext.isRouted()) {
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), "-1", -1);
                 }
 
-                if (commit) {
+                if (routingContext.isNeedsCommitted()) {
                     routingContext.commit();
                 }
             }
@@ -265,6 +234,41 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             .getTriggerHistory().getTriggerId(), data.getDataId()));
         }
 
+    }
+
+    protected void insertDataEvents(IRoutingContext routingContext, DataMetaData dataMetaData,
+            Collection<String> nodeIds) {
+        if (nodeIds != null && nodeIds.size() > 0) {
+            for (String nodeId : nodeIds) {
+                if (dataMetaData.getData().getSourceNodeId() == null
+                        || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
+                    OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
+                    OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
+                    if (batch == null) {
+                        batch = createNewBatch(routingContext.getJdbcTemplate(), nodeId, dataMetaData.getChannel()
+                                .getId());
+                        routingContext.getBatchesByNodes().put(nodeId, batch);
+                        history = new OutgoingBatchHistory(batch);
+                        routingContext.getBatchHistoryByNodes().put(nodeId, history);
+                    }
+                    history.incrementDataEventCount();
+                    routingContext.setRouted(true);
+                    dataService.insertDataEvent(routingContext.getJdbcTemplate(), dataMetaData.getData().getDataId(),
+                            nodeId, batch.getBatchId());
+                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).completeBatch(
+                            routingContext.getChannel(), history, batch, dataMetaData.getData(),
+                            routingContext.isEncountedTransactionBoundary())) {
+                        // TODO Add route_time_ms to history. Also
+                        // fix outgoing batch so we don't end up
+                        // with so many history records
+                        outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
+                        routingContext.getBatchesByNodes().remove(nodeId);
+                        routingContext.getBatchHistoryByNodes().remove(nodeId);
+                        routingContext.setNeedsCommitted(true);
+                    }
+                }
+            }
+        }
     }
 
     protected IDataRouter getDataRouter(Trigger trigger) {
