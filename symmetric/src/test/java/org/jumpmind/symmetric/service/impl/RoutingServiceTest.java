@@ -111,13 +111,12 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
         getBootstrapService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
-        testChannel.setBatchAlgorithm("transaction");
+        testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel);
         
         // should be 51 batches for table 1
         insert(TEST_TABLE_1, 500, true);
         insert(TEST_TABLE_1, 50, false);
-        getRoutingService().routeData();
         getRoutingService().routeData();
         
         final int EXPECTED_BATCHES = 51;
@@ -139,6 +138,45 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
         
         resetBatches();      
     }    
+    
+    @Test
+    public void testSubSelectNonTransactionalRoutingToNode1() {
+        resetBatches();
+        
+        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.setRouterName("subselect");
+        trigger1.setRouterExpression("c.node_id=:ROUTING_VARCHAR");
+        getConfigurationService().saveTrigger(trigger1);
+        getBootstrapService().syncTriggers();
+        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(5);
+        testChannel.setBatchAlgorithm("nontransactional");
+        getConfigurationService().saveChannel(testChannel);
+        
+        // should be 51 batches for table 1
+        insert(TEST_TABLE_1, 500, true);
+        getRoutingService().routeData();
+        
+        final int EXPECTED_BATCHES = 100;
+        
+        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        filterForChannels(batches, testChannel);
+        Assert.assertEquals(EXPECTED_BATCHES, batches.size());
+        Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
+                
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
+        filterForChannels(batches, testChannel);
+        // Node 2 has sync disabled
+        Assert.assertEquals(0, batches.size());
+        
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        filterForChannels(batches, testChannel);
+        // Batch was targeted only at node 1
+        Assert.assertEquals(0, batches.size());
+        
+        resetBatches();      
+    }   
 
     @Test
     public void syncIncomingBatchTest() throws Exception {
