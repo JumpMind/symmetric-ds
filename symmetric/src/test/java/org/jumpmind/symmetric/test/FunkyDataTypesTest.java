@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterMatcher;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class FunkyDataTypesTest extends AbstractDatabaseTest {
 
@@ -45,7 +45,7 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
     @Test
     @ParameterMatcher("oracle")
     public void testOraclePrecisionTimestamp() {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        SimpleJdbcTemplate jdbcTemplate = getSimpleJdbcTemplate();
         try {
             jdbcTemplate.update("drop table " + TABLE_NAME + "");
         } catch (Exception ex) {
@@ -63,9 +63,11 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         trigger.setSyncOnDelete(true);
         configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
+        Assert.assertEquals("There should not be any data captured at this point.", jdbcTemplate.queryForInt("select count(*) from sym_data where table_name=?", TABLE_NAME),
+                0);
         jdbcTemplate.update("insert into " + TABLE_NAME
                 + " values('00000',timestamp'2008-01-01 00:00:00.000',timestamp'2008-01-01 00:00:00.000')");
-        Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate.queryForInt("select count(*) from sym_data_event where channel_id='other'"),
+        Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate.queryForInt("select count(*) from sym_data where table_name=?", TABLE_NAME),
                 1);
     }
 }
