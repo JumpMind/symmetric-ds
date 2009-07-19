@@ -64,27 +64,27 @@ import org.springframework.context.ApplicationContext;
  */
 public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
-    static final Log logger = LogFactory.getLog(ExtensionProcessor.class);
+    final Log logger = LogFactory.getLog(getClass());
 
-    IDataLoaderService dataLoaderService;
+    private IDataLoaderService dataLoaderService;
 
-    IDataService dataService;
+    private IDataService dataService;
 
-    IDataExtractorService dataExtractorService;
+    private IDataExtractorService dataExtractorService;
 
-    IParameterService parameterService;
+    private IParameterService parameterService;
 
-    INodeService nodeService;
+    private INodeService nodeService;
 
-    IBootstrapService bootstrapService;
+    private IBootstrapService bootstrapService;
 
-    IAcknowledgeService acknowledgeService;
+    private IAcknowledgeService acknowledgeService;
 
-    IRegistrationService registrationService;
+    private IRegistrationService registrationService;
 
-    ITransportManager transportManager;
+    private ITransportManager transportManager;
 
-    IRoutingService routingService;
+    private IRoutingService routingService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {

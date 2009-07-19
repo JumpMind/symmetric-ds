@@ -10,7 +10,6 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
@@ -180,12 +179,36 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void syncIncomingBatchTest() throws Exception {
+        resetBatches();
 
-    }
+        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.setSyncOnIncomingBatch(true);
+        trigger1.setRouterExpression(null);
+        trigger1.setRouterName(null);
+        getConfigurationService().saveTrigger(trigger1);
+        
+        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(50);
+        testChannel.setBatchAlgorithm("default");
+        getConfigurationService().saveChannel(testChannel);
+        
+        getBootstrapService().syncTriggers();
 
-    @Test
-    @ParameterExcluder("postgres")
-    public void validateTransactionFunctionailty() throws Exception {
+        insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1);
+
+        getRoutingService().routeData();
+
+        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        filterForChannels(batches, testChannel);
+        Assert.assertEquals("Should have been 0.  We did the insert as if the data had come from node 1." ,0 , batches.size());
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        filterForChannels(batches, testChannel);
+        Assert.assertEquals(1, batches.size());
+
+        resetBatches();
+
     }
 
     protected void filterForChannels(List<OutgoingBatch> batches, NodeChannel... channels) {
@@ -220,12 +243,27 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
     }
 
     protected void insert(final String tableName, final int count, boolean transactional) {
+        insert(tableName, count, transactional, null);
+    }
+
+    protected void insert(final String tableName, final int count, boolean transactional, final String node2disable) {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
-                for (int i = 0; i < count; i++) {
-                    t.update(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName), NODE_GROUP_NODE_1);
+                try {
+                    if (node2disable != null) {
+                        getDbDialect().disableSyncTriggers(node2disable);
+                    }
+                    for (int i = 0; i < count; i++) {
+                        t.update(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
+                                NODE_GROUP_NODE_1);
+                    }
+                } finally {
+                    if (node2disable != null) {
+                        getDbDialect().enableSyncTriggers();
+                    }
                 }
+
             }
         };
 
