@@ -109,16 +109,16 @@
                                 create or replace trigger $(triggerName) after insert on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'I',
                                       $(triggerHistoryId),
-                                      $(columns),                                
+                                      $(columns),                    
+                                      $(txIdExpression),
+                                      pack_symmetric.disable_node_id,       
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL, '$(channelName)', $(txIdExpression) from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (pack_symmetric.disable_node_id is null or pack_symmetric.disable_node_id != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>
@@ -130,7 +130,7 @@
                                  create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'U',
@@ -138,10 +138,10 @@
                                       $(oldKeys),
                                       $(columns),
                                       $(oldColumns),
+                                      $(txIdExpression),
+                                      pack_symmetric.disable_node_id,                                             
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL,'$(channelName)',$(txIdExpression) from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (pack_symmetric.disable_node_id is null or pack_symmetric.disable_node_id != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>
@@ -153,16 +153,16 @@
                                  create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time)
+                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'D',
                                       $(triggerHistoryId),
                                       $(oldKeys),
+                                      $(txIdExpression),
+                                      pack_symmetric.disable_node_id,       
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) (select node_id, $(defaultSchema)SEQ_$(prefixName)_data_data_id.CURRVAL, '$(channelName)', $(txIdExpression) from $(prefixName)_node c where 
-                                    c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (pack_symmetric.disable_node_id is null or pack_symmetric.disable_node_id != c.node_id) $(nodeSelectWhere));
                                   end if;
                                 end;
                                 ]]>
