@@ -52,7 +52,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
+/**
+ * This {@link BeanFactoryPostProcessor} runs after all the Spring configuration files have been read to give the
+ * application a chance to do a bit of configuration. This is where the application will register
+ * {@link IExtensionPoint}s defined both by SymmetricDS and others found in the {@link ApplicationContext}.
+ * <P>
+ * SymmetricDS reads in any Spring XML file found in the classpath of the application that matches the following
+ * pattern: /META-INF/services/symmetric-*-ext.xml
+ */
 public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     static final Log logger = LogFactory.getLog(ExtensionProcessor.class);
@@ -74,7 +83,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     IRegistrationService registrationService;
 
     ITransportManager transportManager;
-    
+
     IRoutingService routingService;
 
     @SuppressWarnings("unchecked")
@@ -114,6 +123,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     }
 
     private void registerExtension(String beanName, IExtensionPoint ext) {
+
+        logger.info(String.format("Registering an extension point named '%s' of type '%s' with SymmetricDS", beanName,
+                ext.getClass().getSimpleName()));
 
         if (ext instanceof ISyncUrlExtension) {
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
@@ -171,13 +183,13 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof INodeIdGenerator) {
             nodeService.setNodeIdGenerator((INodeIdGenerator) ext);
         }
-        
+
         if (ext instanceof IDataRouter) {
-            routingService.addDataRouter(beanName, (IDataRouter)ext);
+            routingService.addDataRouter(beanName, (IDataRouter) ext);
         }
-        
+
         if (ext instanceof IBatchAlgorithm) {
-            routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm)ext);
+            routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm) ext);
         }
     }
 
