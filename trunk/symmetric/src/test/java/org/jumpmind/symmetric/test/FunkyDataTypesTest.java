@@ -63,11 +63,12 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         trigger.setSyncOnDelete(true);
         configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
-        Assert.assertEquals("There should not be any data captured at this point.", jdbcTemplate.queryForInt("select count(*) from sym_data where table_name=?", TABLE_NAME),
+        final String VERIFICATION_SQL = "select count(*) from sym_data where table_name=? and data_id=(select max(data_id) from sym_data)";
+        Assert.assertEquals("There should not be any data captured at this point.", jdbcTemplate.queryForInt(VERIFICATION_SQL, TABLE_NAME),
                 0);
         jdbcTemplate.update("insert into " + TABLE_NAME
                 + " values('00000',timestamp'2008-01-01 00:00:00.000',timestamp'2008-01-01 00:00:00.000')");
-        Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate.queryForInt("select count(*) from sym_data where table_name=?", TABLE_NAME),
+        Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate.queryForInt(VERIFICATION_SQL, TABLE_NAME),
                 1);
     }
 }
