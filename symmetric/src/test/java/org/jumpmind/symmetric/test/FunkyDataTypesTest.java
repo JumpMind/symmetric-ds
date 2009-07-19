@@ -21,7 +21,6 @@ package org.jumpmind.symmetric.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterMatcher;
@@ -37,7 +36,7 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
     public FunkyDataTypesTest(String dbName) {
         super(dbName);
     }
-    
+
     public FunkyDataTypesTest() throws Exception {
         super();
     }
@@ -52,11 +51,11 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
             logger.info("The table did not exist.");
         }
         jdbcTemplate.update("create table " + TABLE_NAME + " (id char(5) not null, ts timestamp(6), ts2 timestamp(9))");
-        IConfigurationService configService = find(Constants.CONFIG_SERVICE);
+        IConfigurationService configService = getConfigurationService();
         Trigger trigger = new Trigger();
-        trigger.setChannelId("other");
+        trigger.setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
         trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         trigger.setSourceTableName(TABLE_NAME);
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
@@ -64,11 +63,11 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         configService.saveTrigger(trigger);
         getSymmetricEngine().syncTriggers();
         final String VERIFICATION_SQL = "select count(*) from sym_data where table_name=? and data_id=(select max(data_id) from sym_data)";
-        Assert.assertEquals("There should not be any data captured at this point.", jdbcTemplate.queryForInt(VERIFICATION_SQL, TABLE_NAME),
-                0);
+        Assert.assertEquals("There should not be any data captured at this point.", 0, jdbcTemplate.queryForInt(
+                VERIFICATION_SQL, TABLE_NAME));
         jdbcTemplate.update("insert into " + TABLE_NAME
                 + " values('00000',timestamp'2008-01-01 00:00:00.000',timestamp'2008-01-01 00:00:00.000')");
-        Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate.queryForInt(VERIFICATION_SQL, TABLE_NAME),
-                1);
+        Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
+                .queryForInt(VERIFICATION_SQL, TABLE_NAME));
     }
 }
