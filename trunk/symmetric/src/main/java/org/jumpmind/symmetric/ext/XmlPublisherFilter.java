@@ -35,21 +35,40 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.IncomingBatchHistory;
 
 /**
- * This is an optional data loader filter/listener that is capable of
- * translating table data to XML and publishing it to JMS for consumption by the
- * enterprise. It uses JDOM internally to create an XML representation of
+ * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that is capable of translating table data to
+ * XML and publishing it for consumption by the enterprise. It uses JDOM internally to create an XML representation of
  * SymmetricDS data.
- * </p>
+ * <p>
+ * This filter is typically configured as a Spring bean. The table names that should be published are identified by {@link #setTableNamesToPublishAsGroup(Set)}. Rows
+ * from tables can be grouped together (which get synchronized in the same batch) by identifying columns that are the
+ * same that act as a 'key' by setting {@link #setGroupByColumnNames(List)}
+ * <p>
+ * The {@link IPublisher} is typically configured and injected onto this bean as well.  Provided is a {@link SimpleJmsPublisher}.
+ * <p>
+ * An example of the XML that is published is as follows:
+ * <pre>
+ * &lt;batch id="2TEST2" nodeid="00001" time="12345678910"&gt;
+ *   &lt;row entity="TABLE_NAME" dml="I"&gt;
+ *     &lt;data key="id1"&gt;2&lt;/data&gt;
+ *     &lt;data key="id2"&gt;TEST&lt;/data&gt;
+ *     &lt;data key="id3"&gt;2&lt;/data&gt;
+ *     &lt;data key="data1"&gt;Me&lt;/data&gt;
+ *     &lt;data key="data2" nil="true"/&gt;
+ *   &lt;/row&gt;
+ * &lt;/batch&gt;
+ * </pre>
  */
 public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
 
-    private static final Log logger = LogFactory.getLog(XmlPublisherFilter.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     private final String XML_CACHE = "XML_CACHE_" + this.hashCode();
 
@@ -66,7 +85,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     private boolean loadDataInTargetDatabase = true;
 
     private boolean autoRegister = true;
-    
+
     private Format xmlFormat;
 
     private ITimeGenerator timeStringGenerator = new ITimeGenerator() {
@@ -74,7 +93,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
             return Long.toString(System.currentTimeMillis());
         }
     };
-    
+
     public XmlPublisherFilter() {
         xmlFormat = Format.getCompactFormat();
         xmlFormat.setOmitDeclaration(true);
@@ -140,13 +159,12 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     }
 
     /**
-     * Give the opportunity for the user of this publisher to add in additional
-     * attributes. The default implementation adds in the nodeId from the
-     * {@link IDataLoaderContext}.
+     * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation
+     * adds in the nodeId from the {@link IDataLoaderContext}.
      * 
      * @param ctx
      * @param xml
-     *                append XML attributes to this buffer
+     *            append XML attributes to this buffer
      */
     protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, Element xml) {
         xml.setAttribute("nodeid", ctx.getNodeId());
@@ -234,7 +252,8 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
                 return id.toString().replaceAll("-", "");
             }
         } else {
-            logger.warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
+            logger
+                    .warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
     }
@@ -263,7 +282,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     public void setTableNamesToPublishAsGroup(Set<String> tableNamesToPublishAsGroup) {
         this.tableNamesToPublishAsGroup = tableNamesToPublishAsGroup;
     }
-    
+
     public void setTableNameToPublish(String tableName) {
         this.tableNamesToPublishAsGroup = new HashSet<String>(1);
         this.tableNamesToPublishAsGroup.add(tableName);
@@ -274,8 +293,8 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     }
 
     /**
-     * This attribute is required.  It needs to identify the columns that will be used to key on
-     * rows in the specified tables that need to be grouped together in an 'XML batch.'
+     * This attribute is required. It needs to identify the columns that will be used to key on rows in the specified
+     * tables that need to be grouped together in an 'XML batch.'
      */
     public void setGroupByColumnNames(List<String> groupByColumnNames) {
         this.groupByColumnNames = groupByColumnNames;
@@ -311,10 +330,10 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
     public void setXmlFormat(Format xmlFormat) {
         this.xmlFormat = xmlFormat;
     }
-    
+
     public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
     }
-    
+
     public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
     }
 
