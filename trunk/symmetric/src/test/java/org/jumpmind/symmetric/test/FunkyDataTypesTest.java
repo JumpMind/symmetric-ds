@@ -31,7 +31,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 public class FunkyDataTypesTest extends AbstractDatabaseTest {
 
     static final Log logger = LogFactory.getLog(FunkyDataTypesTest.class);
-    static final String TABLE_NAME = "test_oracle_dates";
+    static final String TABLE_NAME = "TEST_ORACLE_DATES";
 
     public FunkyDataTypesTest(String dbName) {
         super(dbName);
@@ -42,7 +42,7 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
     }
 
     @Test
-    @ParameterMatcher("oracle")
+    @ParameterMatcher({"oracle","h2"})
     public void testOraclePrecisionTimestamp() {
         SimpleJdbcTemplate jdbcTemplate = getSimpleJdbcTemplate();
         try {
@@ -60,7 +60,7 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         trigger.setSyncOnInsert(true);
         trigger.setSyncOnUpdate(true);
         trigger.setSyncOnDelete(true);
-        configService.saveTrigger(trigger);
+        configService.saveTrigger(trigger);        
         getSymmetricEngine().syncTriggers();
         final String VERIFICATION_SQL = "select count(*) from sym_data where table_name=? and data_id=(select max(data_id) from sym_data)";
         Assert.assertEquals("There should not be any data captured at this point.", 0, jdbcTemplate.queryForInt(
