@@ -211,11 +211,13 @@ public class CsvLoader implements IDataLoader {
 
             if (parameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA)) {
                 Node sourceNode = nodeService.findNode(context.getNodeId());
+                // Get the Target Node
+                Node targetNode = nodeService.findIdentity();
                 if (sourceNode != null) {
-                    Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
-                        tableName = trigger.getTargetTableName();
-                    }                    
+                    // Get the trigger based upon table name , source node group
+                    // id , target node group id and channel id
+                    Trigger trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
+                            targetNode.getNodeGroupId(), context.getChannelId());
                     if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
                         schema = trigger.getTargetSchemaName();
                     }
