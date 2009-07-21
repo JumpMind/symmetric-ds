@@ -55,15 +55,15 @@ public class CsvExtractor16 extends CsvExtractor14 {
         } else if (!data.getTriggerHistory().getSourceTableName().toLowerCase().equals(data.getTableName().toLowerCase())) {
             throw new RuntimeException(String.format("The table name captured in the data table (%1$s) does not match the table name recorded in the trigger_hist table (%2$s).  Please drop the symmetric triggers on %1$s and restart the server",  data.getTableName(), data.getTriggerHistory().getSourceTableName() ));
         }
-        String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
-        if (!context.getAuditRecordsWritten().contains(auditKey)) {
+        String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
+        if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
             Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
             Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
             Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
             out.newLine();
-            context.getAuditRecordsWritten().add(auditKey);
+            context.getHistoryRecordsWritten().add(triggerHistId);
         } else if (!context.isLastTable(data.getTableName())) {
             Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();

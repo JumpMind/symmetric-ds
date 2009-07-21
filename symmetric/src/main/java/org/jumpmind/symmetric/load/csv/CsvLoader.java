@@ -208,6 +208,7 @@ public class CsvLoader implements IDataLoader {
             String schema = null;
             String catalog = null;
 
+            // TODO send this in csv or send the trigger id in the csv
             if (parameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA)) {
                 Node sourceNode = nodeService.findNode(context.getNodeId());
                 if (sourceNode != null) {

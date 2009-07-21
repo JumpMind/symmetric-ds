@@ -73,7 +73,7 @@ public class CsvExtractor10 implements IDataExtractor {
     public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
 
         String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
-        if (!context.getAuditRecordsWritten().contains(auditKey)) {
+        if (!context.getHistoryRecordsWritten().contains(auditKey)) {
             Util.write(out, "table, ", data.getTableName());
             out.newLine();
             Util.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
@@ -87,7 +87,7 @@ public class CsvExtractor10 implements IDataExtractor {
             }
             Util.write(out, "columns, ", columns);
             out.newLine();
-            context.getAuditRecordsWritten().add(auditKey);
+            context.getHistoryRecordsWritten().add(auditKey);
         } else if (!context.isLastTable(data.getTableName())) {
             Util.write(out, "table, ", data.getTableName());
             out.newLine();

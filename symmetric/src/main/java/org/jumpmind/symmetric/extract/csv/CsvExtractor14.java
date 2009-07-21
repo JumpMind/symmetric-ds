@@ -81,14 +81,14 @@ public class CsvExtractor14 implements IDataExtractor {
     public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
         if (data.getTriggerHistory() != null) {
             String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
-            if (!context.getAuditRecordsWritten().contains(auditKey)) {
+            if (!context.getHistoryRecordsWritten().contains(auditKey)) {
                 Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 out.newLine();
                 Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
                 out.newLine();
                 Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
                 out.newLine();
-                context.getAuditRecordsWritten().add(auditKey);
+                context.getHistoryRecordsWritten().add(auditKey);
             } else if (!context.isLastTable(data.getTableName())) {
                 Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 out.newLine();
