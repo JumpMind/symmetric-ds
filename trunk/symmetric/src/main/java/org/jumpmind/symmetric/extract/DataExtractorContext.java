@@ -44,7 +44,7 @@ public class DataExtractorContext implements Cloneable {
         }
     }
 
-    public List<String> getAuditRecordsWritten() {
+    public List<String> getHistoryRecordsWritten() {
         return auditRecordsWritten;
     }
 
