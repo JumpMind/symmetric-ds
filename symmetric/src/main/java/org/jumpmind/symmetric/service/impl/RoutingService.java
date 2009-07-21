@@ -62,6 +62,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
+ * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
+ * each node.
+ * 
  * @since 2.0
  */
 public class RoutingService extends AbstractService implements IRoutingService {
@@ -219,7 +222,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
         if (trigger == null) {
             trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
             if (trigger == null) {
-                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data.getTriggerHistory().getTriggerId()));
+                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data
+                        .getTriggerHistory().getTriggerId()));
             }
         }
         Table table = dbDialect.getMetaDataFor(trigger, true);

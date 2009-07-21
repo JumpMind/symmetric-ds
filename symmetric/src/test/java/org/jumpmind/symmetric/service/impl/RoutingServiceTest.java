@@ -5,11 +5,13 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
@@ -29,21 +31,6 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
     }
 
     public RoutingServiceTest() throws Exception {
-    }
-
-    protected Trigger getTestRoutingTableTrigger(String tableName) {
-        Trigger trigger = getConfigurationService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
-        if (trigger == null) {
-            trigger = new Trigger(tableName);
-            trigger.setSourceGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            trigger.setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
-            if (tableName.equals(TEST_TABLE_2)) {
-                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
-            } else {
-                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
-            }
-        }
-        return trigger;
     }
 
     @Test
@@ -178,7 +165,7 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void syncIncomingBatchTest() throws Exception {
+    public void testSyncIncomingBatch() throws Exception {
         resetBatches();
 
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
@@ -186,13 +173,13 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
         trigger1.setRouterExpression(null);
         trigger1.setRouterName(null);
         getConfigurationService().saveTrigger(trigger1);
-        
+
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(50);
         testChannel.setBatchAlgorithm("default");
         getConfigurationService().saveChannel(testChannel);
-        
+
         getBootstrapService().syncTriggers();
 
         insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1);
@@ -201,7 +188,8 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
 
         List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals("Should have been 0.  We did the insert as if the data had come from node 1." ,0 , batches.size());
+        Assert.assertEquals("Should have been 0.  We did the insert as if the data had come from node 1.", 0, batches
+                .size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
@@ -209,6 +197,59 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
 
+    }
+
+    @Ignore
+    @Test
+    public void testLargeNumberOfEventsToManyNodes() {
+        resetBatches();
+
+        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.setRouterName("column");
+        // set up a constant to force the data to be routed through the column data matcher, but to everyone
+        trigger1.setRouterExpression("ROUTING_VARCHAR=00001");
+        getConfigurationService().saveTrigger(trigger1);
+        getBootstrapService().syncTriggers();
+
+        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(100);
+        testChannel.setMaxBatchSize(10000);
+        testChannel.setBatchAlgorithm("default");
+        getConfigurationService().saveChannel(testChannel);
+        final int ROWS_TO_INSERT = 100000;
+        final int NODES_TO_INSERT = 1000;
+        logger.info(String.format("About to insert %s nodes",NODES_TO_INSERT));
+        for (int i = 0; i < 1000; i++) {
+            String nodeId = String.format("100%s", i);
+            getRegistrationService().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, nodeId);
+            Node node = getNodeService().findNode(nodeId);
+            node.setSyncEnabled(true);
+            getNodeService().updateNode(node);
+        }
+        logger.info(String.format("Done inserting %s nodes",NODES_TO_INSERT));
+
+        logger.info(String.format("About to insert %s rows", ROWS_TO_INSERT));
+        insert(TEST_TABLE_1, ROWS_TO_INSERT, false);
+        logger.info(String.format("Done inserting %s rows", ROWS_TO_INSERT));
+        
+        logger.info("About to route data");
+        getRoutingService().routeData();
+        logger.info("Done routing data");
+    }
+
+    protected Trigger getTestRoutingTableTrigger(String tableName) {
+        Trigger trigger = getConfigurationService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
+        if (trigger == null) {
+            trigger = new Trigger(tableName);
+            trigger.setSourceGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            trigger.setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+            if (tableName.equals(TEST_TABLE_2)) {
+                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
+            } else {
+                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+            }
+        }
+        return trigger;
     }
 
     protected void filterForChannels(List<OutgoingBatch> batches, NodeChannel... channels) {
