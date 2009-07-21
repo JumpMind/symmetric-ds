@@ -33,7 +33,7 @@ public interface IDataLoaderContext {
     public String getNodeId();
 
     public String getTableName();
-    
+
     public String getChannelId();
 
     public String getVersion();
@@ -41,25 +41,35 @@ public interface IDataLoaderContext {
     public boolean isSkipping();
 
     public String[] getColumnNames();
-    
+
+    /**
+     * Old data is only sent when the sync_column_level feature is enabled in the trigger configuration. It was needed for
+     * that feature, and there is some overhead to sending old data, so their is a flag to enable it. 
+     * <p/>
+     * <code>
+     * update sym_trigger set sync_column_level = 1, last_updated_time = current_timestamp where trigger_id = ?
+     * </code>
+     * 
+     * @return an array of the previous values of the row that is being data sync'd.
+     */
     public String[] getOldData();
 
     public String[] getKeyNames();
-    
+
     public int getColumnIndex(String columnName);
 
     public Table[] getAllTablesProcessed();
 
     public Map<String, Object> getContextCache();
-    
+
     public TableTemplate getTableTemplate();
-    
+
     public BinaryEncoding getBinaryEncoding();
-    
+
     public Object[] getObjectValues(String[] values);
-    
+
     public Object[] getObjectKeyValues(String[] values);
-    
+
     public Object[] getOldObjectValues();
 
 }
