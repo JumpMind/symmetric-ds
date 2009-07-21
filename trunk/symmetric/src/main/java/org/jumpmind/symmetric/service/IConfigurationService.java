@@ -80,7 +80,7 @@ public interface IConfigurationService {
     
     public Trigger getTriggerFor(String table, String sourceNodeGroupId);
 
-    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetDomainName, String channel);
+    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
 
     public Trigger getTriggerById(int triggerId);
 

@@ -218,14 +218,16 @@ public class CsvLoader implements IDataLoader {
                     // id , target node group id and channel id
                     Trigger trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
                             targetNode.getNodeGroupId(), context.getChannelId());
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
-                        tableName = trigger.getTargetTableName();
-                    }                  
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
-                        schema = trigger.getTargetSchemaName();
-                    }
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
-                        catalog = trigger.getTargetCatalogName();
+                    if (trigger != null) {
+                        if (!StringUtils.isBlank(trigger.getTargetTableName())) {
+                            tableName = trigger.getTargetTableName();
+                        }
+                        if (!StringUtils.isBlank(trigger.getTargetSchemaName())) {
+                            schema = trigger.getTargetSchemaName();
+                        }
+                        if (!StringUtils.isBlank(trigger.getTargetCatalogName())) {
+                            catalog = trigger.getTargetCatalogName();
+                        }
                     }
                 }
             }
