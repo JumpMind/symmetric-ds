@@ -191,8 +191,8 @@
     
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <!-- Optional: specify other Spring files to load into same context -->
-        <param-value>classpath:additional-spring.xml</param-value>
+        <!-- You can optionally specify other Spring files to load into same context here -->
+        <param-value>classpath:symmetric.xml</param-value>
     </context-param>
     
     <filter>
