@@ -43,8 +43,8 @@ public interface IDataLoaderContext {
     public String[] getColumnNames();
 
     /**
-     * Old data is only sent when the sync_column_level feature is enabled in the trigger configuration. It was needed for
-     * that feature, and there is some overhead to sending old data, so their is a flag to enable it. 
+     * Old data is only sent when the sync_column_level feature is enabled in the trigger configuration. There is some
+     * overhead to sending old data, so the flag is used to enable it when it is needed.
      * <p/>
      * <code>
      * update sym_trigger set sync_column_level = 1, last_updated_time = current_timestamp where trigger_id = ?
