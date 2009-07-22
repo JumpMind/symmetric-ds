@@ -130,6 +130,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 IRoutingContext context = null;
                 try {
+                    // TODO pass the datasource into the routingcontext
                     context = new RoutingContext(nodeChannel, dataSource.getConnection());
                     selectDataAndRoute(c, context);
                 } catch (Exception ex) {
@@ -186,6 +187,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
+            // TODO Test select query on oracle with lots of data
+            // TODO Add channel_id to sym_data and select by channel_id as well
             // TODO add a flag to sym_channel to indicate whether we need to read the row_data and or old_data for
             // routing. We will get better performance if we don't read the data.
             ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
@@ -240,6 +243,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                 }
 
                 if (!routingContext.isRouted()) {
+                    // mark as not routed anywhere
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), "-1", -1);
                 }
 
