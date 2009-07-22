@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
     private IRegistrationService registrationService;
 
+    // TODO Support other operators (like !=) and old data
     public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
         String expression = dataMetaData.getTrigger().getRouterExpression();
