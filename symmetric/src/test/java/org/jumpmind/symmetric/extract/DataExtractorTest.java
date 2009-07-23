@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,7 +100,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), hist, null, null);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), hist, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -135,10 +136,10 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, null, null);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history, null, null);
+            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -174,13 +175,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.begin(batch, writer);
 
             TriggerHistory history = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, null, null);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
 
             history = makeTableSynchistoryId(TD3.table, TD3.keyColumns, TD3.columns);
-            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(), history, null, null);
+            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
-            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(), history, null, null);
+            data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 
@@ -220,13 +221,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             batch.setBatchId(batchId);
             dataExtractor.begin(batch, writer);
 
-            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, null, null);
+            Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD4.dataId, TD4.key, TD4.rowData, DataEventType.UPDATE, TD4.table, new Date(), history2, null, null);
+            data = new Data(TD4.dataId, TD4.key, TD4.rowData, DataEventType.UPDATE, TD4.table, new Date(), history2,TestConstants.TEST_CHANNEL_ID, null, null);
             dataExtractor.write(writer, data, context);
 
-            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history, null, null);
+            data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history,TestConstants.TEST_CHANNEL_ID,  null, null);
             dataExtractor.write(writer, data, context);
             dataExtractor.commit(batch, writer);
 

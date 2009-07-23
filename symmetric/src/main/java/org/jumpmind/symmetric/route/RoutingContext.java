@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
@@ -49,9 +51,9 @@ public class RoutingContext implements IRoutingContext {
     private boolean routed = false;
     private boolean encountedTransactionBoundary = false;
 
-    public RoutingContext(NodeChannel channel, Connection connection) throws SQLException {
+    public RoutingContext(NodeChannel channel, DataSource dataSource) throws SQLException {
         this.channel = channel;
-        this.connection = connection;
+        this.connection = dataSource.getConnection();
         this.connection.setAutoCommit(false);
         this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
     }
