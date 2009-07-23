@@ -62,8 +62,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
- * each node.
+ * This service is responsible for routing data to specific nodes and managing
+ * the batching of data to be delivered to each node.
  * 
  * @since 2.0
  */
@@ -112,9 +112,10 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
-     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
-     * to reduce the number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we
+     * decide to multi-thread the routing it is a simple matter of inserting a
+     * thread pool here and waiting for all channels to be processed. The other
+     * reason is to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel() {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -130,8 +131,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 IRoutingContext context = null;
                 try {
-                    // TODO pass the datasource into the routingcontext
-                    context = new RoutingContext(nodeChannel, dataSource.getConnection());
+                    context = new RoutingContext(nodeChannel, dataSource);
                     selectDataAndRoute(c, context);
                 } catch (Exception ex) {
                     if (context != null) {
@@ -175,8 +175,10 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
-     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have
+     * crossed a database transaction boundary. Then route each {@link Data}
+     * while continuing to keep the queue filled until the result set is
+     * entirely read.
      * 
      * @param conn
      *            The connection to use for selecting the data.
@@ -188,12 +190,14 @@ public class RoutingService extends AbstractService implements IRoutingService {
         ResultSet rs = null;
         try {
             // TODO Test select query on oracle with lots of data
-            // TODO Add channel_id to sym_data and select by channel_id as well
-            // TODO add a flag to sym_channel to indicate whether we need to read the row_data and or old_data for
-            // routing. We will get better performance if we don't read the data.
+            // TODO add a flag to sym_channel to indicate whether we need to
+            // read the row_data and or old_data for
+            // routing. We will get better performance if we don't read the
+            // data.
             ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+            ps.setString(1, context.getChannel().getId());
             rs = ps.executeQuery();
             int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
@@ -219,37 +223,25 @@ public class RoutingService extends AbstractService implements IRoutingService {
             throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         routingContext.setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
-        // TODO We really shouldn't be referencing the bootstrapService from
-        // here ... maybe this method needs to move to the configurationService
-        Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
-        if (trigger == null) {
-            trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
-            if (trigger == null) {
-                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data
-                        .getTriggerHistory().getTriggerId()));
-            }
-        }
+        Trigger trigger = getTriggerForData(data);
         Table table = dbDialect.getMetaDataFor(trigger, true);
         DataMetaData dataMetaData = new DataMetaData(data, table, trigger, routingContext.getChannel());
         if (trigger != null) {
-            String channelId = trigger.getChannelId();
-            if (channelId.equals(routingContext.getChannel().getId())) {
-                routingContext.resetForNextData();
-                if (!routingContext.getChannel().isIgnored()) {
-                    IDataRouter router = getDataRouter(trigger);
-                    Collection<String> nodeIds = router.routeToNodes(dataMetaData, findAvailableNodes(trigger,
-                            routingContext), false);
-                    insertDataEvents(routingContext, dataMetaData, nodeIds);
-                }
+            routingContext.resetForNextData();
+            if (!routingContext.getChannel().isIgnored()) {
+                IDataRouter router = getDataRouter(trigger);
+                Collection<String> nodeIds = router.routeToNodes(dataMetaData, findAvailableNodes(trigger,
+                        routingContext), false);
+                insertDataEvents(routingContext, dataMetaData, nodeIds);
+            }
 
-                if (!routingContext.isRouted()) {
-                    // mark as not routed anywhere
-                    dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), "-1", -1);
-                }
+            if (!routingContext.isRouted()) {
+                // mark as not routed anywhere
+                dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), "-1", -1);
+            }
 
-                if (routingContext.isNeedsCommitted()) {
-                    routingContext.commit();
-                }
+            if (routingContext.isNeedsCommitted()) {
+                routingContext.commit();
             }
         } else {
             logger.warn(String.format(
@@ -280,7 +272,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             nodeId, batch.getBatchId());
                     if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).isBatchComplete(history,
                             batch, dataMetaData, routingContext)) {
-                        // TODO Add route_time_ms to history. Also fix outgoing batch so we don't end up
+                        // TODO Add route_time_ms to history. Also fix outgoing
+                        // batch so we don't end up
                         // with so many history records
                         outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
                         routingContext.getBatchesByNodes().remove(nodeId);
@@ -317,6 +310,20 @@ public class RoutingService extends AbstractService implements IRoutingService {
             transactionIdDataId.put(data.getTransactionId(), data.getDataId());
         }
         return data;
+    }
+
+    protected Trigger getTriggerForData(Data data) {
+        // TODO We really shouldn't be referencing the bootstrapService from
+        // here ... maybe this method needs to move to the configurationService
+        Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
+        if (trigger == null) {
+            trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
+            if (trigger == null) {
+                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data
+                        .getTriggerHistory().getTriggerId()));
+            }
+        }
+        return trigger;
     }
 
     protected OutgoingBatch createNewBatch(JdbcTemplate template, String nodeId, String channelId) {

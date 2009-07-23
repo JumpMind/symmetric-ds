@@ -72,7 +72,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
     protected Data createData(Object[] oldRow, Object[] newRow) {
         Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
                 .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
-                triggerHistory, getTransactionId(oldRow, newRow), getDbDialect().getSyncNodeDisabled());
+                triggerHistory, trigger.getChannelId(), getTransactionId(oldRow, newRow), getDbDialect().getSyncNodeDisabled());
         if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
             data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
         }

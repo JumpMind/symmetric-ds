@@ -171,7 +171,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
-                        null, hist, null, null);
+                        null, hist, trigger.getChannelId(), null, null);
                 ctx.getDataExtractor().write(writer, data, ctx);
             }
         }
@@ -272,7 +272,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist, null, null);  
+                                    .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);  
                             DataMetaData dataMetaData = new DataMetaData(data, table, trigger, channel);
                             if (routingService.shouldDataBeRouted(dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, ctxCopy);

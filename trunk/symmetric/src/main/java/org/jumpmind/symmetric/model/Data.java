@@ -60,6 +60,8 @@ public class Data extends AbstractCsvData {
     private DataEventType eventType;
 
     private String tableName;
+    
+    private String channelId;
 
     /**
      * This is populated by the trigger when the event happens. It will be
@@ -68,7 +70,7 @@ public class Data extends AbstractCsvData {
     private Date createTime;
 
     public Data(long dataId, String pkData, String rowData, DataEventType eventType, String tableName, Date createTime,
-            TriggerHistory triggerHistory, String transactionId, String sourceNodeId) {
+            TriggerHistory triggerHistory, String channelId, String transactionId, String sourceNodeId) {
         super();
         this.dataId = dataId;
         this.pkData = pkData;
@@ -77,16 +79,18 @@ public class Data extends AbstractCsvData {
         this.tableName = tableName;
         this.createTime = createTime;
         this.triggerHistory = triggerHistory;
+        this.channelId = channelId;
         this.transactionId = transactionId;
         this.sourceNodeId = sourceNodeId;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory, String transactionId, String sourceNodeId) {
+    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory, String channelId, String transactionId, String sourceNodeId) {
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
         this.pkData = pkData;
         this.triggerHistory = triggerHistory;
+        this.channelId = channelId;
         this.transactionId = transactionId;
         this.sourceNodeId = sourceNodeId;
     }
@@ -186,5 +190,11 @@ public class Data extends AbstractCsvData {
         this.transactionId = transactionId;
     }
     
-   
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+    
+    public String getChannelId() {
+        return channelId;
+    }
 }

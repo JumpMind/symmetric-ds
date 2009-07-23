@@ -25,6 +25,7 @@
             to the old node_select which would be available to the routers.  This would allow
             SQL expressions back in the triggers w/out using sym_data_event -->
        <column name="trigger_hist_id" type="INTEGER" required="true" />
+       <column name="channel_id" type="VARCHAR" size="50" />
        <column name="transaction_id" type="VARCHAR" size="1000" />
        <column name="source_node_id" type="VARCHAR" size="50" />       
        <column name="create_time" type="TIMESTAMP" />
