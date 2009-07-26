@@ -40,7 +40,7 @@ public interface IDataService {
 
     public long insertData(final Data data);
 
-    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId);
+    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId);
     
     public void insertDataEvent(DataEvent dataEvent);
 

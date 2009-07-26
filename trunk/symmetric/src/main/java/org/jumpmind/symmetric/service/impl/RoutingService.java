@@ -62,8 +62,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * This service is responsible for routing data to specific nodes and managing
- * the batching of data to be delivered to each node.
+ * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
+ * each node.
  * 
  * @since 2.0
  */
@@ -112,10 +112,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we
-     * decide to multi-thread the routing it is a simple matter of inserting a
-     * thread pool here and waiting for all channels to be processed. The other
-     * reason is to reduce the number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
+     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
+     * to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel() {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -175,10 +174,8 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     /**
-     * Pre-read data and fill up a queue so we can peek ahead to see if we have
-     * crossed a database transaction boundary. Then route each {@link Data}
-     * while continuing to keep the queue filled until the result set is
-     * entirely read.
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
+     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
      * 
      * @param conn
      *            The connection to use for selecting the data.
@@ -237,7 +234,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
             if (!routingContext.isRouted()) {
                 // mark as not routed anywhere
-                dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), "-1", -1);
+                dataService.insertDataEvent(routingContext.getJdbcTemplate(), data.getDataId(), -1);
             }
 
             if (routingContext.isNeedsCommitted()) {
@@ -269,7 +266,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     history.incrementDataEventCount();
                     routingContext.setRouted(true);
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), dataMetaData.getData().getDataId(),
-                            nodeId, batch.getBatchId());
+                            batch.getBatchId());
                     if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).isBatchComplete(history,
                             batch, dataMetaData, routingContext)) {
                         // TODO Add route_time_ms to history. Also fix outgoing

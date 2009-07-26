@@ -36,11 +36,10 @@
 
    <table name="data_event">
        <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
-       <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-       <column name="batch_id" type="INTEGER" required="true" default="-1" />
-       <index name="idx_de_batchid_nodeid">
+       <column name="batch_id" type="INTEGER" required="true" primaryKey="true"  default="-1" />
+       <column name="create_time" type="TIMESTAMP" />
+       <index name="idx_de_batchid">
            <index-column name="batch_id" />
-           <index-column name="node_id" />
        </index>
    </table>
      
