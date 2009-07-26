@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -45,6 +46,7 @@ import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
@@ -338,6 +340,15 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
         return data;
+    }
+    
+    public DataRef getDataRef() {
+        // TODO implement!
+        return new DataRef(0, new Date());
+    }
+    
+    public void saveDataRef(DataRef dataRef) {
+        // TODO implement!
     }
 
     public Map<String, String> getRowDataAsMap(Data data) {

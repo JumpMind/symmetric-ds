@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -104,7 +106,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
     public void routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             try {
-                routeDataForEachChannel();
+                DataRef ref = dataService.getDataRef();
+                routeDataForEachChannel(ref);
+                findAndSaveNextDataId(ref);
             } finally {
                 clusterService.unlock(LockActionConstants.ROUTE);
             }
@@ -116,22 +120,22 @@ public class RoutingService extends AbstractService implements IRoutingService {
      * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
      * to reduce the number of connections we are required to have.
      */
-    protected void routeDataForEachChannel() {
+    protected void routeDataForEachChannel(DataRef ref) {
         final List<NodeChannel> channels = configurationService.getChannels();
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspended()) {
-                routeDataForChannel(nodeChannel);
+                routeDataForChannel(ref, nodeChannel);
             }
         }
     }
 
-    protected void routeDataForChannel(final NodeChannel nodeChannel) {
+    protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 IRoutingContext context = null;
                 try {
                     context = new RoutingContext(nodeChannel, dataSource);
-                    selectDataAndRoute(c, context);
+                    selectDataAndRoute(c, ref, context);
                 } catch (Exception ex) {
                     if (context != null) {
                         context.rollback();
@@ -150,6 +154,48 @@ public class RoutingService extends AbstractService implements IRoutingService {
                 return null;
             }
         });
+    }
+
+    protected void findAndSaveNextDataId(final DataRef ref) {
+        jdbcTemplate.execute(new ConnectionCallback() {
+            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+                try {
+                    ps = c.prepareStatement(getSql("selectDistinctDataIdFromDataEventSql"),
+                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
+                    ps.setLong(1, ref.getRefDataid());
+                    rs = ps.executeQuery();
+                    long lastDataId = -1;
+                    while (rs.next()) {
+                        long dataId = rs.getLong(1);
+                        if (lastDataId == -1 || lastDataId + 1 == dataId) {
+                            lastDataId = dataId;
+                        } else {
+                            if (isDataGapExpired(dataId, ref)) {
+                                lastDataId = dataId;
+                            } else {
+                                // detected a gap!
+                                break;
+                            }
+                        }
+                    }
+
+                    dataService.saveDataRef(new DataRef(lastDataId, new Date()));
+
+                } finally {
+                    JdbcUtils.closeResultSet(rs);
+                    JdbcUtils.closeStatement(ps);
+                }
+                return null;
+            }
+        });
+    }
+
+    protected boolean isDataGapExpired(long dataId, DataRef ref) {
+        // TODO
+        return false;
     }
 
     protected Set<Node> findAvailableNodes(Trigger trigger, IRoutingContext context) {
@@ -182,7 +228,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
      * @param context
      *            The current context of the routing process
      */
-    protected void selectDataAndRoute(Connection conn, IRoutingContext context) throws SQLException {
+    protected void selectDataAndRoute(Connection conn, DataRef ref, IRoutingContext context) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -195,6 +241,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
             ps.setString(1, context.getChannel().getId());
+            ps.setLong(2, ref.getRefDataid());
             rs = ps.executeQuery();
             int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();

@@ -42,6 +42,11 @@
            <index-column name="batch_id" />
        </index>
    </table>
+   
+   <table name="data_ref">
+       <column name="ref_data_id" type="INTEGER" required="true" primaryKey="true" />
+       <column name="ref_time" type="TIMESTAMP" />
+   </table>   
      
     <table name="event_status">
         <column name="event_status_id" type="INTEGER" required="true" primaryKey="true" />

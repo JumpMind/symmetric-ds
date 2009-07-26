@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
+import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IDataService;
@@ -49,6 +50,14 @@ public class MockDataService implements IDataService {
 
     public Map<String, String> getRowDataAsMap(Data data) {
         return null;
+    }
+
+    public DataRef getDataRef() {
+        return null;
+    }
+
+    public void saveDataRef(DataRef dataRef) {
+
     }
 
     public void insertCreateEvent(Node targetNode, Trigger trigger, String xml) {

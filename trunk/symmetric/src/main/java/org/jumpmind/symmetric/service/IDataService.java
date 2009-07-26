@@ -8,6 +8,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
+import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,7 +35,7 @@ public interface IDataService {
     public void insertReloadEvent(final Node targetNode, final Trigger trigger);
     
     @Transactional
-    public void insertResendConfigEvent(final Node targetNode);
+    public void insertResendConfigEvent(final Node targetNode);        
 
     public void insertHeartbeatEvent(Node node);
 
@@ -55,6 +56,10 @@ public interface IDataService {
     public void insertSqlEvent(final Node targetNode, String sql);
 
     public void insertCreateEvent(Node targetNode, Trigger trigger, String xml);
+    
+    public void saveDataRef(DataRef dataRef);
+    
+    public DataRef getDataRef();
 
     public Data createData(String tableName);
 
