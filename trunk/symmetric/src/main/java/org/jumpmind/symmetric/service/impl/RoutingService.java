@@ -194,8 +194,15 @@ public class RoutingService extends AbstractService implements IRoutingService {
     }
 
     protected boolean isDataGapExpired(long dataId, DataRef ref) {
-        // TODO
-        return false;
+        long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
+        Date createTime = dataService.findCreateTimeOfEvent(dataId);
+        Date lastRecordedTime = ref.getRefTime();
+        if (lastRecordedTime != null && createTime != null
+                && lastRecordedTime.getTime() - createTime.getTime() > gapTimoutInMs) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     protected Set<Node> findAvailableNodes(Trigger trigger, IRoutingContext context) {

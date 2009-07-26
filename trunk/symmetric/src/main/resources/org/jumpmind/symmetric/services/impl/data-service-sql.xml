@@ -18,13 +18,27 @@
       <value>
         insert into $[sym.sync.table.prefix]_data_event (data_id, batch_id, create_time) values(?, ?, current_timestamp)
       </value>
-    </entry>
-    <entry key="updateNodeHeartbeatSql">
+    </entry>  
+    <entry key="findDataEventCreateTimeSql">
       <value>
-        update $[sym.sync.table.prefix]_node set heartbeat_time=current_timestamp where node_id=
+        select max(create_time) from $[sym.sync.table.prefix]_data_event where data_id=?
       </value>
     </entry>    
-    
+    <entry key="updateDataRefSql">
+      <value>
+       update $[sym.sync.table.prefix]_data_ref set ref_data_id=?, ref_time=?
+      </value>
+    </entry>
+    <entry key="insertDataRefSql">
+      <value>
+       insert into $[sym.sync.table.prefix]_data_ref (ref_data_id, ref_time) values(?,?)
+      </value>
+    </entry> 
+    <entry key="findDataRefSql">
+      <value>
+       select ref_data_id, ref_time from $[sym.sync.table.prefix]_data_ref
+      </value>
+    </entry>   
   </util:map>
 
 </beans>

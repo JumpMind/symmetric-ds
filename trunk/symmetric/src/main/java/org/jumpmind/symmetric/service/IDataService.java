@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,8 @@ public interface IDataService {
     public void saveDataRef(DataRef dataRef);
     
     public DataRef getDataRef();
+    
+    public Date findCreateTimeOfEvent(long dataId);
 
     public Data createData(String tableName);
 
