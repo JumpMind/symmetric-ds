@@ -59,6 +59,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
 import com.csvreader.CsvWriter;
 
@@ -341,14 +342,29 @@ public class DataService extends AbstractService implements IDataService {
         }
         return data;
     }
-    
+
     public DataRef getDataRef() {
-        // TODO implement!
-        return new DataRef(0, new Date());
+        List<DataRef> refs = getSimpleTemplate().query(getSql("findDataRefSql"), new ParameterizedRowMapper<DataRef>() {
+            public DataRef mapRow(ResultSet rs, int rowNum) throws SQLException {
+                return new DataRef(rs.getLong(1), rs.getDate(2));
+            }
+        });
+        if (refs.size() > 0) {
+            return refs.get(0);
+        } else {
+            return new DataRef(0, new Date());
+        }
     }
-    
+
     public void saveDataRef(DataRef dataRef) {
-        // TODO implement!
+        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {dataRef.getRefDataid(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP})) {
+            jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] {dataRef.getRefDataid(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP});
+        }
+    }
+
+    public Date findCreateTimeOfEvent(long dataId) {
+        return (Date) jdbcTemplate.queryForObject(getSql("findDataEventCreateTimeSql"), new Object[] { dataId },
+                new int[] { Types.INTEGER }, Date.class);
     }
 
     public Map<String, String> getRowDataAsMap(Data data) {

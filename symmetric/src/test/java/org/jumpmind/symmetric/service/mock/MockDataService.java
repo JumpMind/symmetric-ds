@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.mock;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,10 @@ public class MockDataService implements IDataService {
     }
 
     public Data createData(String tableName) {
+        return null;
+    }
+
+    public Date findCreateTimeOfEvent(long dataId) {
         return null;
     }
 
