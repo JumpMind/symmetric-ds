@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockDataService implements IDataService {
-    
+
     public void addReloadListener(IReloadListener listener) {
 
     }
@@ -59,10 +59,10 @@ public class MockDataService implements IDataService {
         return 0;
     }
 
-    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId) {
-        
+    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId) {
+
     }
-    
+
     public void insertDataEvent(DataEvent dataEvent) {
 
     }
@@ -100,9 +100,9 @@ public class MockDataService implements IDataService {
     }
 
     public void insertSqlEvent(Node targetNode, String sql) {
-        
+
     }
-    
+
     public String reloadNode(String nodeId) {
 
         return null;
@@ -137,7 +137,7 @@ public class MockDataService implements IDataService {
     public String sendSQL(String nodeId, String tableName, String sql) {
         return null;
     }
-    
+
     public void insertResendConfigEvent(Node targetNode) {
     }
 

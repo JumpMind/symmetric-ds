@@ -77,7 +77,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
         insertReloadEvent(targetNode, trigger, null);
     }
-    
+
     public void insertReloadEvent(final Node targetNode, final Trigger trigger, final String overrideInitialLoadSelect) {
         TriggerHistory history = lookupTriggerHistory(trigger);
         // initial_load_select for table can be overridden by populating the
@@ -86,11 +86,11 @@ public class DataService extends AbstractService implements IDataService {
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
-    
+
     public void insertResendConfigEvent(final Node targetNode) {
-        Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null, Constants.CHANNEL_CONFIG,  null, null);
+        Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null, Constants.CHANNEL_CONFIG, null, null);
         insertDataEvent(data, Constants.CHANNEL_CONFIG, targetNode.getNodeId());
-    }    
+    }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
@@ -109,14 +109,16 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, history, Constants.CHANNEL_RELOAD, null, null);
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null,
+                history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
-    
+
     public void insertSqlEvent(final Node targetNode, String sql) {
-        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null, Constants.CHANNEL_RELOAD, null, null);
+        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null,
+                Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
-    }    
+    }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
@@ -134,7 +136,8 @@ public class DataService extends AbstractService implements IDataService {
                         ps.setString(3, data.getRowData());
                         ps.setString(4, data.getPkData());
                         ps.setString(5, data.getOldData());
-                        ps.setLong(6, data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1);
+                        ps.setLong(6, data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId()
+                                : -1);
                         ps.setString(7, data.getChannelId());
                         return null;
                     }
@@ -142,12 +145,12 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(DataEvent dataEvent) {
-        this.insertDataEvent(jdbcTemplate, dataEvent.getDataId(), dataEvent.getNodeId(), dataEvent.getBatchId());    
+        this.insertDataEvent(jdbcTemplate, dataEvent.getDataId(), dataEvent.getBatchId());
     }
-    
-    public void insertDataEvent(JdbcTemplate template, long dataId, String nodeId, long batchId) {
-        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId,
-                nodeId, batchId }, new int[] { Types.INTEGER, Types.VARCHAR, Types.INTEGER });
+
+    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId) {
+        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId }, new int[] { Types.INTEGER,
+                Types.INTEGER });
     }
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes) {
@@ -156,16 +159,17 @@ public class DataService extends AbstractService implements IDataService {
             insertDataEvent(dataId, channelId, node.getNodeId());
         }
     }
-    
+
     public void insertDataEvent(Data data, String channelId, String nodeId) {
         long dataId = insertData(data);
         insertDataEvent(dataId, channelId, nodeId);
-    }    
-    
+    }
+
     public void insertDataEvent(long dataId, String channelId, String nodeId) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId, channelId == Constants.CHANNEL_RELOAD ? BatchType.INITIAL_LOAD : BatchType.EVENTS);
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId,
+                channelId == Constants.CHANNEL_RELOAD ? BatchType.INITIAL_LOAD : BatchType.EVENTS);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);
-        insertDataEvent(new DataEvent(dataId, nodeId, outgoingBatch.getBatchId()));        
+        insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId()));
     }
 
     public String reloadNode(String nodeId) {
@@ -187,13 +191,13 @@ public class DataService extends AbstractService implements IDataService {
                 listener.beforeReload(targetNode);
             }
         }
-        
+
         // outgoing data events are pointless because we are reloading all data
         outgoingBatchService.markAllAsSentForNode(targetNode.getNodeId());
 
         // insert node security so the client doing the initial load knows that an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
-        
+
         List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
 
@@ -203,7 +207,7 @@ public class DataService extends AbstractService implements IDataService {
                 insertCreateEvent(targetNode, trigger, xml);
             }
         }
-        
+
         if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
             for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
                 Trigger trigger = iterator.previous();
@@ -220,7 +224,7 @@ public class DataService extends AbstractService implements IDataService {
                 listener.afterReload(targetNode);
             }
         }
-        
+
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
         insertNodeSecurityUpdate(targetNode);
 
@@ -280,8 +284,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Because we can't add a trigger on the _node table, we are artificially
-     * generating heartbeat events.
+     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
      * 
      * @param node
      */
@@ -292,7 +295,8 @@ public class DataService extends AbstractService implements IDataService {
         if (data != null) {
             insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
         } else {
-            logger.info("Not generating data/data events for table " + tableName + " because a trigger or trigger hist is not created yet");
+            logger.info("Not generating data/data events for table " + tableName
+                    + " because a trigger or trigger hist is not created yet");
         }
     }
 
@@ -308,7 +312,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         return data;
     }
-    
+
     public Data createData(Trigger trigger, String whereClause) {
         Data data = null;
         if (trigger != null) {
@@ -324,11 +328,13 @@ public class DataService extends AbstractService implements IDataService {
             if (history == null) {
                 history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
                 if (history == null) {
-                    history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
+                    history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName()
+                            .toUpperCase());
                 }
             }
             if (history != null) {
-                data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history, Constants.CHANNEL_RELOAD, null, null);
+                data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history,
+                        Constants.CHANNEL_RELOAD, null, null);
             }
         }
         return data;
@@ -389,7 +395,7 @@ public class DataService extends AbstractService implements IDataService {
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
-    
+
     public Data readData(ResultSet results) throws SQLException {
         Data data = new Data();
         data.setDataId(results.getLong(1));
