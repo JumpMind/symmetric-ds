@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
 
 public class MockTransportManager implements ITransportManager {
@@ -42,7 +42,7 @@ public class MockTransportManager implements ITransportManager {
     public String resolveURL(String url) {
         return null;
     }
-    
+
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
     }
 
@@ -54,15 +54,16 @@ public class MockTransportManager implements ITransportManager {
         return outgoingTransport;
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
-        return true;
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
+        return false;
+    }
+
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {
+
     }
 
     public boolean sendMessage(Node node, String data) throws IOException {
         return true;
-    }
-
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {

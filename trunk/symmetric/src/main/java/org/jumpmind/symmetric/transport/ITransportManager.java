@@ -25,14 +25,14 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 
 public interface ITransportManager {
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException;
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException;
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException;
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException;
 
     public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
 

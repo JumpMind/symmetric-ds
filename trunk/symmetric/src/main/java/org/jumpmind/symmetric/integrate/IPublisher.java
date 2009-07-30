@@ -17,23 +17,10 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
+package org.jumpmind.symmetric.integrate;
 
-package org.jumpmind.symmetric.model;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
 
-import org.jumpmind.symmetric.util.ICoded;
-
-public enum BatchType implements ICoded {
-
-    EVENTS("EV"), INITIAL_LOAD("IL");
-
-    private String code;
-
-    BatchType(String code) {
-        this.code = code;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
+public interface IPublisher {
+    public void publish(IDataLoaderContext context, String text);
 }

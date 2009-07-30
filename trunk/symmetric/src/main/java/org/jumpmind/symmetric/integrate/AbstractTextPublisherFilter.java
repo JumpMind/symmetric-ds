@@ -17,15 +17,16 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.integrate;
 
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -128,7 +129,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         }
     }
 
-    public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
         IDataLoaderContext ctx = loader.getContext();
         if (doesTextExistToPublish(ctx)) {
             finalizeAndPublish(ctx);
@@ -185,9 +186,9 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
         this.tableName = tableName;
     }
     
-    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
 }

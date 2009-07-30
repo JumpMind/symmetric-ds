@@ -58,35 +58,21 @@
             autoIncrement="true" />
         <column name="node_id" type="VARCHAR" size="50" required="false" primaryKey="false" />
         <column name="channel_id" type="VARCHAR" size="50" />
-        <column name="batch_type" type="CHAR" size="2" required="true" default="EV" />
         <column name="status" type="CHAR" size="2" />
-        <column name="create_time" type="TIMESTAMP" />
-        <index name="idx_ob_node_id_status">
-            <index-column name="node_id" />
-            <index-column name="status" />
-        </index>        
-    </table>
-
-    <table name="outgoing_batch_hist">
-        <column name="batch_id" type="INTEGER" required="true" />
-        <column name="node_id" type="VARCHAR" size="50" />
-        <column name="status" type="CHAR" size="2" />
-        <column name="start_time" type="TIMESTAMP" />
-        <column name="end_time" type="TIMESTAMP" />
+        <column name="byte_count" type="INTEGER" />
+        <column name="sent_count" type="INTEGER" />        
+        <column name="data_event_count" type="INTEGER" />
+        <column name="routing_millis" type="INTEGER" />
         <column name="network_millis" type="INTEGER" />
         <column name="filter_millis" type="INTEGER" />
-        <column name="database_millis" type="INTEGER" />
-        <column name="host_name" type="VARCHAR" size="50" />
-        <column name="byte_count" type="INTEGER" />
-        <column name="data_event_count" type="INTEGER" />
-        <column name="failed_data_id" type="INTEGER" />
+        <column name="database_millis" type="INTEGER" />        
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
         <column name="sql_message" type="VARCHAR" size="1000" />
-        <index name="idx_outgoing_batch_hist">
-            <index-column name="node_id" />
-            <index-column name="batch_id" />
-        </index>
+        <column name="failed_data_id" type="INTEGER" />
+        <column name="last_updated_hostname" type="VARCHAR" size="50" />        
+        <column name="last_updated_time" type="TIMESTAMP" />
+        <column name="create_time" type="TIMESTAMP" />
     </table>
 
     <table name="node_group">
@@ -112,9 +98,20 @@
         <column name="symmetric_version" type="VARCHAR" size="50" />
         <column name="database_type" type="VARCHAR" size="50" />
         <column name="database_version" type="VARCHAR" size="50" />
+        <!-- TODO remove -->
         <column name="heartbeat_time" type="TIMESTAMP" />
+        <!-- TODO remove -->
         <column name="timezone_offset" type="VARCHAR" size="6" />
         <column name="created_at_node_id" type="VARCHAR" size="50" />        
+    </table>
+    
+    <table name="node_process">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="ip_address" type="VARCHAR" size="50" required="true" primaryKey="true" />                
+        <column name="host_name" type="VARCHAR" size="50" />
+        <column name="heartbeat_time" type="TIMESTAMP" />
+        <column name="timezone_offset" type="VARCHAR" size="6" />
+        <column name="symmetric_version" type="VARCHAR" size="50" />        
     </table>
     
     <table name="lock">
@@ -204,19 +201,9 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="channel_id" type="VARCHAR" size="50" />
         <column name="status" type="CHAR" size="2" />
-        <column name="create_time" type="TIMESTAMP" />
-    </table>
-
-    <table name="incoming_batch_hist">
-        <column name="batch_id" type="INTEGER" size="50" required="true"/>
-        <column name="node_id" type="VARCHAR" size="50" />
-        <column name="status" type="CHAR" size="2" />
-        <column name="start_time" type="TIMESTAMP" />
-        <column name="end_time" type="TIMESTAMP" />
         <column name="network_millis" type="INTEGER" />
         <column name="filter_millis" type="INTEGER" />
         <column name="database_millis" type="INTEGER" />
-        <column name="host_name" type="VARCHAR" size="50" />
         <column name="failed_row_number" type="INTEGER" />
         <column name="byte_count" type="INTEGER" />
         <column name="statement_count" type="INTEGER" />
@@ -226,10 +213,9 @@
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
         <column name="sql_message" type="VARCHAR" size="1000" />
-        <index name="idx_incoming_batch_hist">
-            <index-column name="batch_id" />
-            <index-column name="node_id" />
-        </index>
+        <column name="last_updated_hostname" type="VARCHAR" size="50" />        
+        <column name="last_updated_time" type="TIMESTAMP" />
+        <column name="create_time" type="TIMESTAMP" />        
     </table>
 
     <table name="statistic">
@@ -249,7 +235,7 @@
         </index>
     </table>
     
-    <!-- This table configures thresholds at which JMX notifications will be fired-->
+    <!-- This table configures thresholds at which JMX notifications will be fired -->
     <table name="statistic_alert">
         <column name="statistic_name" type="VARCHAR" size="50" required="true" primaryKey="true"/>
         <column name="threshold_total_max" type="DECIMAL" size="20" />

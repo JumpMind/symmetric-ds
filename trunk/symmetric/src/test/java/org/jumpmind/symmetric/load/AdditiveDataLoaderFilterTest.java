@@ -17,11 +17,12 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.load;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.jumpmind.symmetric.load.AdditiveDataLoaderFilter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;

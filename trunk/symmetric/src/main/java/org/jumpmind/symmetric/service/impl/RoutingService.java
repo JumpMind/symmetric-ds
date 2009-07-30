@@ -36,7 +36,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -44,7 +43,6 @@ import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -60,7 +58,6 @@ import org.jumpmind.symmetric.service.IRoutingService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
@@ -239,7 +236,6 @@ public class RoutingService extends AbstractService implements IRoutingService {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            // TODO Test select query on oracle with lots of data
             // TODO add a flag to sym_channel to indicate whether we need to
             // read the row_data and or old_data for
             // routing. We will get better performance if we don't read the
@@ -309,26 +305,19 @@ public class RoutingService extends AbstractService implements IRoutingService {
                 if (dataMetaData.getData().getSourceNodeId() == null
                         || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
                     OutgoingBatch batch = routingContext.getBatchesByNodes().get(nodeId);
-                    OutgoingBatchHistory history = routingContext.getBatchHistoryByNodes().get(nodeId);
                     if (batch == null) {
-                        batch = createNewBatch(routingContext.getJdbcTemplate(), nodeId, dataMetaData.getChannel()
-                                .getId());
+                        batch = new OutgoingBatch(nodeId, dataMetaData.getChannel().getId());                        
+                        outgoingBatchService.insertOutgoingBatch(routingContext.getJdbcTemplate(), batch);
                         routingContext.getBatchesByNodes().put(nodeId, batch);
-                        history = new OutgoingBatchHistory(batch);
-                        routingContext.getBatchHistoryByNodes().put(nodeId, history);
                     }
-                    history.incrementDataEventCount();
+                    batch.incrementDataEventCount();
                     routingContext.setRouted(true);
                     dataService.insertDataEvent(routingContext.getJdbcTemplate(), dataMetaData.getData().getDataId(),
                             batch.getBatchId());
-                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).isBatchComplete(history,
+                    if (batchAlgorithms.get(routingContext.getChannel().getBatchAlgorithm()).isBatchComplete(
                             batch, dataMetaData, routingContext)) {
-                        // TODO Add route_time_ms to history. Also fix outgoing
-                        // batch so we don't end up
-                        // with so many history records
-                        outgoingBatchService.insertOutgoingBatchHistory(routingContext.getJdbcTemplate(), history);
-                        routingContext.getBatchesByNodes().remove(nodeId);
-                        routingContext.getBatchHistoryByNodes().remove(nodeId);
+                        batch.setRouterMillis(System.currentTimeMillis()-batch.getCreateTime().getTime());
+                        outgoingBatchService.updateOutgoingBatch(routingContext.getJdbcTemplate(), batch);
                         routingContext.setNeedsCommitted(true);
                     }
                 }
@@ -375,12 +364,6 @@ public class RoutingService extends AbstractService implements IRoutingService {
             }
         }
         return trigger;
-    }
-
-    protected OutgoingBatch createNewBatch(JdbcTemplate template, String nodeId, String channelId) {
-        OutgoingBatch batch = new OutgoingBatch(nodeId, channelId, BatchType.EVENTS);
-        outgoingBatchService.insertOutgoingBatch(template, batch);
-        return batch;
     }
 
     public void addDataRouter(String name, IDataRouter dataRouter) {

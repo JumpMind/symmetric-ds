@@ -35,7 +35,6 @@ import org.jumpmind.symmetric.ext.TestDataLoaderFilter;
 import org.jumpmind.symmetric.load.AbstractDataLoaderTest;
 import org.jumpmind.symmetric.load.csv.CsvLoader;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.test.TestConstants;

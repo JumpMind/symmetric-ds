@@ -23,16 +23,11 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,10 +35,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
-
-    private static final Log logger = LogFactory.getLog(IncomingBatchService.class);
-
-    private IDbDialect dbDialect;
 
     public IncomingBatch findIncomingBatch(long batchId, String nodeId) {
         try {
@@ -60,12 +51,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 getSql("findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
     }
 
-    @SuppressWarnings("unchecked")
-    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId) {
-        return (List<IncomingBatchHistory>) jdbcTemplate.query(getSql("findIncomingBatchHistorySql"), new Object[] {
-                batchId, nodeId }, new IncomingBatchHistoryMapper());
-    }
-
     public boolean acquireIncomingBatch(final IncomingBatch status) {
         boolean okayToProcess = true;
         if (status.isPersistable()) {
@@ -78,8 +63,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 dbDialect.rollbackToSavepoint(savepoint);
                 status.setRetry(true);
                 okayToProcess = updateIncomingBatch(status) > 0
-                        || (!parameterService
-                                .is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
+                        || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
                 if (okayToProcess) {
                     logger.warn("Retrying batch " + status.getNodeBatchId());
                 } else {
@@ -90,27 +74,24 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return okayToProcess;
     }
 
-    public void insertIncomingBatch(IncomingBatch status) {
-        jdbcTemplate.update(getSql("insertIncomingBatchSql"), new Object[] { Long.valueOf(status.getBatchId()),
-                status.getNodeId(), status.getChannelId(), status.getStatus().toString() });
+    public void insertIncomingBatch(IncomingBatch batch) {
+        jdbcTemplate.update(getSql("insertIncomingBatchSql"), new Object[] { Long.valueOf(batch.getBatchId()),
+                batch.getNodeId(), batch.getChannelId(), batch.getStatus().toString(), batch.getNetworkMillis(),
+                batch.getFilterMillis(), batch.getDatabaseMillis(), batch.getFailedRowNumber(), batch.getByteCount(),
+                batch.getStatementCount(), batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
+                batch.getMissingDeleteCount(), batch.getSqlState(), batch.getSqlCode(),
+                StringUtils.abbreviate(batch.getSqlMessage(), 1000), batch.getLastUpdatedHostName(),
+                batch.getLastUpdatedTime() });
     }
 
-    public int updateIncomingBatch(IncomingBatch status) {
-        return jdbcTemplate.update(getSql("updateIncomingBatchSql"), new Object[] { status.getStatus().toString(),
-                Long.valueOf(status.getBatchId()), status.getNodeId(), IncomingBatch.Status.ER.toString() });
-    }
-
-    public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-        jdbcTemplate.update(getSql("insertIncomingBatchHistorySql"), new Object[] { Long.valueOf(history.getBatchId()),
-                history.getNodeId(), history.getStatus().toString(), history.getNetworkMillis(),
-                history.getFilterMillis(), history.getDatabaseMillis(), history.getHostName(), history.getByteCount(),
-                history.getStatementCount(), history.getFallbackInsertCount(), history.getFallbackUpdateCount(),
-                history.getMissingDeleteCount(), history.getFailedRowNumber(), history.getStartTime(),
-                history.getEndTime(), history.getSqlState(), history.getSqlCode(),
-                StringUtils.abbreviate(history.getSqlMessage(), 1000) }, new int[] { Types.INTEGER, Types.VARCHAR,
-                Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
-                Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP,
-                Types.VARCHAR, Types.INTEGER, Types.VARCHAR });
+    public int updateIncomingBatch(IncomingBatch batch) {
+        return jdbcTemplate.update(getSql("updateIncomingBatchSql"), new Object[] { batch.getStatus().toString(),
+                batch.getNetworkMillis(), batch.getFilterMillis(), batch.getDatabaseMillis(),
+                batch.getFailedRowNumber(), batch.getByteCount(), batch.getStatementCount(),
+                batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(), batch.getMissingDeleteCount(),
+                batch.getSqlState(), batch.getSqlCode(), StringUtils.abbreviate(batch.getSqlMessage(), 1000),
+                batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), Long.valueOf(batch.getBatchId()),
+                batch.getNodeId() });
     }
 
     class IncomingBatchMapper implements RowMapper {
@@ -120,37 +101,23 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setNodeId(rs.getString(2));
             batch.setChannelId(rs.getString(3));
             batch.setStatus(IncomingBatch.Status.valueOf(rs.getString(4)));
-            batch.setCreateTime(rs.getTimestamp(5));
+            batch.setNetworkMillis(rs.getLong(5));
+            batch.setFilterMillis(rs.getLong(6));
+            batch.setDatabaseMillis(rs.getLong(7));
+            batch.setFailedRowNumber(rs.getLong(8));
+            batch.setByteCount(rs.getLong(9));
+            batch.setStatementCount(rs.getLong(10));
+            batch.setFallbackInsertCount(rs.getLong(11));
+            batch.setFallbackUpdateCount(rs.getLong(12));
+            batch.setMissingDeleteCount(rs.getLong(13));
+            batch.setSqlState(rs.getString(14));
+            batch.setSqlCode(rs.getInt(15));
+            batch.setSqlMessage(rs.getString(16));
+            batch.setLastUpdatedHostName(rs.getString(17));
+            batch.setLastUpdatedTime(rs.getTimestamp(18));
+            batch.setCreateTime(rs.getTimestamp(19));
             return batch;
         }
-    }
-
-    class IncomingBatchHistoryMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
-            IncomingBatchHistory history = new IncomingBatchHistory();
-            history.setBatchId(rs.getLong(1));
-            history.setNodeId(rs.getString(2));
-            history.setStatus(IncomingBatchHistory.Status.valueOf(rs.getString(3)));
-            history.setStartTime(rs.getTime(4));
-            history.setEndTime(rs.getTime(5));
-            history.setFailedRowNumber(rs.getLong(6));
-            history.setByteCount(rs.getLong(7));
-            history.setNetworkMillis(rs.getLong(8));
-            history.setFilterMillis(rs.getLong(9));
-            history.setDatabaseMillis(rs.getLong(10));
-            history.setStatementCount(rs.getLong(11));
-            history.setFallbackInsertCount(rs.getLong(12));
-            history.setFallbackUpdateCount(rs.getLong(13));
-            history.setMissingDeleteCount(rs.getLong(14));
-            history.setSqlState(rs.getString(15));
-            history.setSqlCode(rs.getInt(16));
-            history.setSqlMessage(rs.getString(17));
-            return history;
-        }
-    }
-
-    public void setDbDialect(IDbDialect dbDialect) {
-        this.dbDialect = dbDialect;
     }
 
 }

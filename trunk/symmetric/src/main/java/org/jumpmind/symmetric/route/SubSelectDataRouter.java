@@ -32,6 +32,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
+/**
+ * TODO Javadoc
+ */
 public class SubSelectDataRouter extends AbstractDataRouter {
 
     private String sql;

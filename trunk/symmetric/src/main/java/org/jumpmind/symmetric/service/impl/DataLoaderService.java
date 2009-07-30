@@ -47,9 +47,7 @@ import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -71,7 +69,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 
 public class DataLoaderService extends AbstractService implements IDataLoaderService, BeanFactoryAware {
-    
+
     private IDbDialect dbDialect;
 
     private IIncomingBatchService incomingBatchService;
@@ -91,13 +89,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private List<IBatchListener> batchListeners;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of
-     * commit/error status is sent separately after the data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately after the
+     * data is processed.
      */
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
         try {
-            List<IncomingBatchHistory> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local));
+            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local));
             if (list.size() > 0) {
                 sendAck(remote, local, list);
                 wasWorkDone = true;
@@ -117,7 +115,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     /**
      * Try a configured number of times to get the ACK through.
      */
-    private void sendAck(Node remote, Node local, List<IncomingBatchHistory> list) throws IOException {
+    private void sendAck(Node remote, Node local, List<IncomingBatch> list) throws IOException {
         Exception error = null;
         boolean sendAck = false;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
@@ -163,7 +161,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         try {
             while (dataLoader.hasNext()) {
                 dataLoader.load();
-                IncomingBatchHistory history = new IncomingBatchHistory(new IncomingBatch(dataLoader.getContext()), dataLoader.getContext());
+                IncomingBatch history = new IncomingBatch(dataLoader.getContext());
                 history.setValues(dataLoader.getStatistics(), true);
                 fireBatchComplete(dataLoader, history);
             }
@@ -175,41 +173,36 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
-     * Load database from input stream and return a list of batch statuses. This
-     * is used for a pull request that responds with data, and the
-     * acknowledgment is sent later.
-     * 
-     * @param in
+     * Load database from input stream and return a list of batch statuses. This is used for a pull request that
+     * responds with data, and the acknowledgment is sent later.
      */
-    protected List<IncomingBatchHistory> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
+    protected List<IncomingBatch> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
-        List<IncomingBatchHistory> list = new ArrayList<IncomingBatchHistory>();
+        List<IncomingBatch> list = new ArrayList<IncomingBatch>();
         IncomingBatch status = null;
-        IncomingBatchHistory history = null;
         IDataLoader dataLoader = null;
         try {
             long totalNetworkMillis = System.currentTimeMillis();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 transport = writeToFile(transport);
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
-            }            
+            }
             dataLoader = openDataLoader(transport.open());
             while (dataLoader.hasNext()) {
                 status = new IncomingBatch(dataLoader.getContext());
-                history = new IncomingBatchHistory(status, dataLoader.getContext());
-                list.add(history);
-                loadBatch(dataLoader, status, history);
+                list.add(status);
+                loadBatch(dataLoader, status);
                 status = null;
             }
-            
+
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 estimateNetworkMillis(list, totalNetworkMillis);
             }
-            
-            for (IncomingBatchHistory incomingBatchHistory : list) {
-                if (incomingBatchHistory.getBatch().isPersistable()) {
-                    incomingBatchService.insertIncomingBatchHistory(incomingBatchHistory);
-                }  
+
+            for (IncomingBatch incomingBatchHistory : list) {
+                if (incomingBatchHistory.isPersistable()) {
+                    incomingBatchService.updateIncomingBatch(incomingBatchHistory);
+                }
             }
 
         } catch (RegistrationRequiredException ex) {
@@ -233,23 +226,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (dataLoader != null && status != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
-                    history.setSqlMessage(e.getMessage());
+                    status.setSqlMessage(e.getMessage());
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
                     logger.error("Failed to load batch " + status.getNodeBatchId(), e);
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
-                        history.setSqlState(se.getSQLState());
-                        history.setSqlCode(se.getErrorCode());
-                        history.setSqlMessage(se.getMessage());
+                        status.setSqlState(se.getSQLState());
+                        status.setSqlCode(se.getErrorCode());
+                        status.setSqlMessage(se.getMessage());
                     } else {
-                        history.setSqlMessage(e.getMessage());
+                        status.setSqlMessage(e.getMessage());
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }
-                history.setValues(dataLoader.getStatistics(), false);
-                handleBatchError(status, history);
+                status.setValues(dataLoader.getStatistics(), false);
+                handleBatchError(status);
             } else {
                 if (e instanceof IOException) {
                     logger.error("Failed while reading batch because: " + e.getMessage());
@@ -266,40 +259,41 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
         return list;
     }
-    
-    protected void estimateNetworkMillis(List<IncomingBatchHistory> list, long totalNetworkMillis) {
+
+    protected void estimateNetworkMillis(List<IncomingBatch> list, long totalNetworkMillis) {
         long totalNumberOfBytes = 0;
-        for (IncomingBatchHistory incomingBatchHistory : list) {
+        for (IncomingBatch incomingBatchHistory : list) {
             totalNumberOfBytes += incomingBatchHistory.getByteCount();
         }
-        for (IncomingBatchHistory incomingBatchHistory : list) {
+        for (IncomingBatch incomingBatchHistory : list) {
             if (totalNumberOfBytes > 0) {
-             double ratio = (double)incomingBatchHistory.getByteCount()/(double)totalNumberOfBytes;
-             incomingBatchHistory.setNetworkMillis((long)(totalNetworkMillis*ratio));
-            }                     
+                double ratio = (double) incomingBatchHistory.getByteCount() / (double) totalNumberOfBytes;
+                incomingBatchHistory.setNetworkMillis((long) (totalNetworkMillis * ratio));
+            }
         }
     }
 
-    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {        
+    protected IIncomingTransport writeToFile(IIncomingTransport transport) throws IOException {
         ThresholdFileWriter writer = null;
         try {
-            writer = new ThresholdFileWriter(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD), "load");
+            writer = new ThresholdFileWriter(parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD),
+                    "load");
             IOUtils.copy(transport.open(), writer);
         } finally {
             IOUtils.closeQuietly(writer);
-            transport.close();            
+            transport.close();
         }
         return new FileIncomingTransport(writer);
     }
 
-    private void recordStatistics(List<IncomingBatchHistory> list) {
+    private void recordStatistics(List<IncomingBatch> list) {
         if (list != null) {
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).add(list.size());
-            for (IncomingBatchHistory incomingBatchHistory : list) {
+            for (IncomingBatch incomingBatch : list) {
                 statisticManager.getStatistic(StatisticNameConstants.INCOMING_MS_PER_ROW).add(
-                        incomingBatchHistory.getDatabaseMillis(), incomingBatchHistory.getStatementCount());
+                        incomingBatch.getDatabaseMillis(), incomingBatch.getStatementCount());
                 statisticManager.getStatistic(StatisticNameConstants.INCOMING_BATCH_COUNT).increment();
-                if (IncomingBatchHistory.Status.SK.equals(incomingBatchHistory.getStatus())) {
+                if (org.jumpmind.symmetric.model.IncomingBatch.Status.SK.equals(incomingBatch.getStatus())) {
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_SKIP_BATCH_COUNT).increment();
                 }
             }
@@ -308,10 +302,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public boolean loadData(IIncomingTransport transport) throws IOException {
         boolean inError = false;
-        List<IncomingBatchHistory> list = loadDataAndReturnBatches(transport);
+        List<IncomingBatch> list = loadDataAndReturnBatches(transport);
         if (list != null && list.size() > 0) {
-            for (IncomingBatchHistory incomingBatchHistory : list) {
-                inError |= incomingBatchHistory.getStatus() != Status.OK;
+            for (IncomingBatch incomingBatch : list) {
+                inError |= incomingBatch.getStatus() != org.jumpmind.symmetric.model.IncomingBatch.Status.OK;
             }
         } else {
             inError = true;
@@ -319,43 +313,43 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return !inError;
     }
 
-    private void fireBatchComplete(IDataLoader loader, IncomingBatchHistory history) {
+    private void fireBatchComplete(IDataLoader loader, IncomingBatch batch) {
         if (batchListeners != null) {
             long ts = System.currentTimeMillis();
             for (IBatchListener listener : batchListeners) {
-                listener.batchComplete(loader, history);
+                listener.batchComplete(loader, batch);
             }
             // update the filter milliseconds so batch listeners are also
             // included
-            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
+            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
         }
     }
-    
-    private void fireBatchCommitted(IDataLoader loader, IncomingBatchHistory history) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.batchCommitted(loader, history);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }    
-    
-    private void fireBatchRolledback(IDataLoader loader, IncomingBatchHistory history) {
-        if (batchListeners != null) {
-            long ts = System.currentTimeMillis();
-            for (IBatchListener listener : batchListeners) {
-                listener.batchRolledback(loader, history);
-            }
-            // update the filter milliseconds so batch listeners are also
-            // included
-            history.setFilterMillis(history.getFilterMillis() + (System.currentTimeMillis() - ts));
-        }
-    }        
 
-    protected void handleBatchError(final IncomingBatch status, final IncomingBatchHistory history) {
+    private void fireBatchCommitted(IDataLoader loader, IncomingBatch batch) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchCommitted(loader, batch);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
+    private void fireBatchRolledback(IDataLoader loader, IncomingBatch batch) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.batchRolledback(loader, batch);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
+    }
+
+    protected void handleBatchError(final IncomingBatch status) {
         try {
             if (!status.isRetry()) {
                 status.setStatus(IncomingBatch.Status.ER);
@@ -364,25 +358,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (Exception e) {
             logger.error("Failed to record status of batch " + status.getNodeBatchId());
         }
-        try {
-            history.setStatus(IncomingBatchHistory.Status.ER);
-            incomingBatchService.insertIncomingBatchHistory(history);
-        } catch (Exception e) {
-            logger.error("Failed to record history of batch " + status.getNodeBatchId());
-        }
     }
 
     /**
-     * Load database from input stream and write acknowledgment to output
-     * stream. This is used for a "push" request with a response of an
-     * acknowledgment.
+     * Load database from input stream and write acknowledgment to output stream. This is used for a "push" request with
+     * a response of an acknowledgment.
      * 
      * @param in
      * @param out
      * @throws IOException
      */
     public void loadData(InputStream in, OutputStream out) throws IOException {
-        List<IncomingBatchHistory> list = loadDataAndReturnBatches(new InternalIncomingTransport(in));
+        List<IncomingBatch> list = loadDataAndReturnBatches(new InternalIncomingTransport(in));
         transportManager.writeAcknowledgement(out, list);
     }
 
@@ -439,13 +426,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-        
-    private enum LoadStatus { CONTINUE, DONE }
-    
-    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status,
-            final IncomingBatchHistory history) {
+
+    private enum LoadStatus {
+        CONTINUE, DONE
+    }
+
+    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status) {
         try {
-            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader, history);
+            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader);
             LoadStatus loadStatus = loadDelegate.getLoadStatus();
             do {
                 newTransactionTemplate.execute(loadDelegate);
@@ -455,23 +443,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             } while (LoadStatus.CONTINUE == loadStatus);
         } catch (RuntimeException ex) {
-            fireBatchRolledback(dataLoader, history);
+            fireBatchRolledback(dataLoader, status);
             throw ex;
         }
-        fireBatchCommitted(dataLoader, history);
+        fireBatchCommitted(dataLoader, status);
     }
-    
+
     class TransactionalLoadDelegate implements TransactionCallback {
         IncomingBatch status;
         IDataLoader dataLoader;
         LoadStatus loadStatus = LoadStatus.DONE;
-        IncomingBatchHistory history;
-        
-        public TransactionalLoadDelegate(IncomingBatch status, IDataLoader dataLoader,
-                IncomingBatchHistory history) {
+
+        public TransactionalLoadDelegate(IncomingBatch status, IDataLoader dataLoader) {
             this.status = status;
             this.dataLoader = dataLoader;
-            this.history = history;
         }
 
         public Object doInTransaction(TransactionStatus txStatus) {
@@ -481,11 +466,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(status)) {
                     done = dataLoader.load();
                 } else {
-                    history.setStatus(IncomingBatchHistory.Status.SK);
                     dataLoader.skip();
                 }
-                history.setValues(dataLoader.getStatistics(), true);
-                fireBatchComplete(dataLoader, history);
+                status.setValues(dataLoader.getStatistics(), true);
+                fireBatchComplete(dataLoader, status);
                 this.loadStatus = done ? LoadStatus.DONE : LoadStatus.CONTINUE;
                 return this.loadStatus;
             } catch (IOException e) {
@@ -498,7 +482,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public LoadStatus getLoadStatus() {
             return loadStatus;
         }
-                
+
     }
-    
+
 }

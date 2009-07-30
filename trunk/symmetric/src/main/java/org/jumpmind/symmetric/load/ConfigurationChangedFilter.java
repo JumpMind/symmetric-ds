@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -95,13 +95,13 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         return true;
     }
 
-    public void batchComplete(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
     }
     
-    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
     
-    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             logger.info("Channels flushed because new channels came through the dataloader.");
             configurationService.reloadChannels();

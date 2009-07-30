@@ -20,7 +20,7 @@
 package org.jumpmind.symmetric.load;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -34,15 +34,15 @@ public interface IBatchListener extends IExtensionPoint {
      * This method is called after a batch has been successfully processed. It
      * is called in the scope of the transaction that controls the batch commit.
      */
-    public void batchComplete(IDataLoader loader, IncomingBatchHistory history);
+    public void batchComplete(IDataLoader loader, IncomingBatch batch);
     
     /**
      * This method is called after the database transaction for the batch has been committed.
      */
-    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history);
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch);
     
     /**
      * This method is called after the database transaction for the batch has been rolled back.
      */
-    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history); 
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch); 
 }

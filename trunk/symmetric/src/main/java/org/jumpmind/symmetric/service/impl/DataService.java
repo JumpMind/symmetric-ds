@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.common.csv.CsvUtil;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
-import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -169,8 +168,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(long dataId, String channelId, String nodeId) {
-        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId,
-                channelId == Constants.CHANNEL_RELOAD ? BatchType.INITIAL_LOAD : BatchType.EVENTS);
+        OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);
         insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId()));
     }

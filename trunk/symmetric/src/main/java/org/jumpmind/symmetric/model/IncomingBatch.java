@@ -25,13 +25,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 
 public class IncomingBatch implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        OK, ER;
+        OK, ER, SK;
     }
 
     private long batchId;
@@ -41,7 +42,35 @@ public class IncomingBatch implements Serializable {
     private String channelId;
 
     private Status status;
+    
+    private long byteCount;
 
+    private long networkMillis;
+
+    private long filterMillis;
+
+    private long databaseMillis;
+
+    private long statementCount;
+
+    private long fallbackInsertCount;
+
+    private long fallbackUpdateCount;
+
+    private long missingDeleteCount;
+
+    private long failedRowNumber;
+
+    private String sqlState;
+
+    private int sqlCode;
+
+    private String sqlMessage;
+
+    private String lastUpdatedHostName;
+
+    private Date lastUpdatedTime;
+    
     private Date createTime;
 
     private boolean isRetry;
@@ -56,6 +85,21 @@ public class IncomingBatch implements Serializable {
         status = Status.OK;
     }
 
+    public void setValues(IDataLoaderStatistics statistics, boolean isSuccess) {
+        byteCount = statistics.getByteCount();
+        filterMillis = statistics.getFilterMillis();
+        databaseMillis = statistics.getDatabaseMillis();
+        statementCount = statistics.getStatementCount();
+        fallbackInsertCount = statistics.getFallbackInsertCount();
+        fallbackUpdateCount = statistics.getFallbackUpdateCount();
+        missingDeleteCount = statistics.getMissingDeleteCount();
+        lastUpdatedTime = new Date();
+        if (!isSuccess) {
+            status = Status.ER;
+            failedRowNumber = statistics.getStatementCount();
+        }
+    }
+    
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
     }
@@ -100,6 +144,118 @@ public class IncomingBatch implements Serializable {
         this.createTime = createTime;
     }
     
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void setByteCount(long byteCount) {
+        this.byteCount = byteCount;
+    }
+
+    public long getNetworkMillis() {
+        return networkMillis;
+    }
+
+    public void setNetworkMillis(long networkMillis) {
+        this.networkMillis = networkMillis;
+    }
+
+    public long getFilterMillis() {
+        return filterMillis;
+    }
+
+    public void setFilterMillis(long filterMillis) {
+        this.filterMillis = filterMillis;
+    }
+
+    public long getDatabaseMillis() {
+        return databaseMillis;
+    }
+
+    public void setDatabaseMillis(long databaseMillis) {
+        this.databaseMillis = databaseMillis;
+    }
+
+    public long getStatementCount() {
+        return statementCount;
+    }
+
+    public void setStatementCount(long statementCount) {
+        this.statementCount = statementCount;
+    }
+
+    public long getFallbackInsertCount() {
+        return fallbackInsertCount;
+    }
+
+    public void setFallbackInsertCount(long fallbackInsertCount) {
+        this.fallbackInsertCount = fallbackInsertCount;
+    }
+
+    public long getFallbackUpdateCount() {
+        return fallbackUpdateCount;
+    }
+
+    public void setFallbackUpdateCount(long fallbackUpdateCount) {
+        this.fallbackUpdateCount = fallbackUpdateCount;
+    }
+
+    public long getMissingDeleteCount() {
+        return missingDeleteCount;
+    }
+
+    public void setMissingDeleteCount(long missingDeleteCount) {
+        this.missingDeleteCount = missingDeleteCount;
+    }
+
+    public long getFailedRowNumber() {
+        return failedRowNumber;
+    }
+
+    public void setFailedRowNumber(long failedRowNumber) {
+        this.failedRowNumber = failedRowNumber;
+    }
+
+    public String getSqlState() {
+        return sqlState;
+    }
+
+    public void setSqlState(String sqlState) {
+        this.sqlState = sqlState;
+    }
+
+    public int getSqlCode() {
+        return sqlCode;
+    }
+
+    public void setSqlCode(int sqlCode) {
+        this.sqlCode = sqlCode;
+    }
+
+    public String getSqlMessage() {
+        return sqlMessage;
+    }
+
+    public void setSqlMessage(String sqlMessage) {
+        this.sqlMessage = sqlMessage;
+    }
+
+    public String getLastUpdatedHostName() {
+        return lastUpdatedHostName;
+    }
+
+    public void setLastUpdatedHostName(String lastUpdateHostName) {
+        this.lastUpdatedHostName = lastUpdateHostName;
+    }
+
+    public Date getLastUpdatedTime() {
+        return lastUpdatedTime;
+    }
+
+    public void setLastUpdatedTime(Date lastUpdateTime) {
+        this.lastUpdatedTime = lastUpdateTime;
+    }
+
     /**
      * An indicator to the incoming batch service as to whether this batch should be saved off.
      * @return

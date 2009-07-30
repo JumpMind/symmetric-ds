@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,11 +31,11 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     public void markAllAsSentForNode(String nodeId) {
     }
-    
+
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
         return false;
     }
-    
+
     public void buildOutgoingBatches(String nodeId, List<NodeChannel> channels) {
 
     }
@@ -57,14 +56,10 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
         return null;
     }
 
-    public void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history) {
-        
-    }
-    
     public void insertOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
-        
+
     }
-    
+
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch) {
 
     }
@@ -81,11 +76,15 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     }
 
-    public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId) {
+    public OutgoingBatch findOutgoingBatch(long batchId) {
         return null;
     }
 
-    public void insertOutgoingBatchHistory(OutgoingBatchHistory history) {
+    public void updateOutgoingBatch(JdbcTemplate jdbcTemplate, OutgoingBatch batch) {
+
     }
 
+    public void updateOutgoingBatch(OutgoingBatch batch) {
+
+    }
 }

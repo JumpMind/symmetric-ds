@@ -36,7 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
@@ -63,7 +63,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         this.nodeService = nodeService;
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
         if (list != null && list.size() > 0) {
             String data = getAcknowledgementData(local.getNodeId(), list);
             return sendMessage("ack", remote, local, data);
@@ -71,7 +71,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return true;
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {        
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {        
         writeMessage(out, getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
     }
 

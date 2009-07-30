@@ -25,7 +25,6 @@ package org.jumpmind.symmetric.service.mock;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 
 public class MockIncomingBatchService implements IIncomingBatchService {
@@ -45,18 +44,10 @@ public class MockIncomingBatchService implements IIncomingBatchService {
         return null;
     }
 
-    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId) {
-
-        return null;
-    }
-
     public void insertIncomingBatch(IncomingBatch status) {
 
     }
 
-    public void insertIncomingBatchHistory(IncomingBatchHistory history) {
-
-    }
 
     public int updateIncomingBatch(IncomingBatch status) {
 
