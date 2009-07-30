@@ -102,7 +102,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfDataEventsToPurgeInTx);
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), true, maxNumOfBatchIdsToPurgeInTx);
-        purgeByMinMax(minMax, getSql("deleteOutgoingBatchHistSql"), true, maxNumOfBatchIdsToPurgeInTx);
     }
 
     private void purgeDataRows(final Calendar time) {
@@ -182,7 +181,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
                         return new NodeBatchRange(rs.getString(1), rs.getLong(2), rs.getLong(3));
                     }
                 });
-        purgeByNodeBatchRangeList(getSql("deleteIncomingBatchHistSql"), nodeBatchRangeList);
         purgeByNodeBatchRangeList(getSql("deleteIncomingBatchSql"), nodeBatchRangeList);
     }
 
@@ -251,8 +249,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
     public void purgeAllIncomingEventsForNode(String nodeId) {
         int count = jdbcTemplate.update(getSql("deleteIncomingBatchByNodeSql"), new Object[] { nodeId });
         logger.info("Purged all " + count + " incoming batch for node " + nodeId);
-        count = jdbcTemplate.update(getSql("deleteIncomingBatchHistByNodeSql"), new Object[] { nodeId });
-        logger.info("Purged all " + count + " incoming batch hist for node " + nodeId);
     }
 
     public void setClusterService(IClusterService clusterService) {

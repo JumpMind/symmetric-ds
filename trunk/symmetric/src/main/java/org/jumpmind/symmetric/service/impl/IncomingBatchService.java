@@ -23,12 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -51,23 +53,26 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 getSql("findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
     }
 
-    public boolean acquireIncomingBatch(final IncomingBatch status) {
+    public boolean acquireIncomingBatch(IncomingBatch batch) {
         boolean okayToProcess = true;
-        if (status.isPersistable()) {
+        if (batch.isPersistable()) {
             Object savepoint = dbDialect.createSavepointForFallback();
 
             try {
-                insertIncomingBatch(status);
+                insertIncomingBatch(batch);
                 dbDialect.releaseSavepoint(savepoint);
             } catch (DataIntegrityViolationException e) {
                 dbDialect.rollbackToSavepoint(savepoint);
-                status.setRetry(true);
-                okayToProcess = updateIncomingBatch(status) > 0
+                // TODO Needs work ...
+                IncomingBatch existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
+                batch.setSkipCount(existingBatch.getSkipCount());
+                batch.setRetry(true);                
+                okayToProcess = updateIncomingBatch(batch) > 0
                         || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
                 if (okayToProcess) {
-                    logger.warn("Retrying batch " + status.getNodeBatchId());
+                    logger.warn("Retrying batch " + batch.getNodeBatchId());
                 } else {
-                    logger.warn("Skipping batch " + status.getNodeBatchId());
+                    logger.warn("Skipping batch " + batch.getNodeBatchId());
                 }
             }
         }
@@ -75,23 +80,27 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public void insertIncomingBatch(IncomingBatch batch) {
+        batch.setLastUpdatedHostName(AppUtils.getServerId());
+        batch.setLastUpdatedTime(new Date());
         jdbcTemplate.update(getSql("insertIncomingBatchSql"), new Object[] { Long.valueOf(batch.getBatchId()),
                 batch.getNodeId(), batch.getChannelId(), batch.getStatus().toString(), batch.getNetworkMillis(),
                 batch.getFilterMillis(), batch.getDatabaseMillis(), batch.getFailedRowNumber(), batch.getByteCount(),
                 batch.getStatementCount(), batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(),
-                batch.getMissingDeleteCount(), batch.getSqlState(), batch.getSqlCode(),
+                batch.getMissingDeleteCount(), batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
                 StringUtils.abbreviate(batch.getSqlMessage(), 1000), batch.getLastUpdatedHostName(),
                 batch.getLastUpdatedTime() });
     }
 
     public int updateIncomingBatch(IncomingBatch batch) {
+        batch.setLastUpdatedHostName(AppUtils.getServerId());
+        batch.setLastUpdatedTime(new Date());
         return jdbcTemplate.update(getSql("updateIncomingBatchSql"), new Object[] { batch.getStatus().toString(),
                 batch.getNetworkMillis(), batch.getFilterMillis(), batch.getDatabaseMillis(),
                 batch.getFailedRowNumber(), batch.getByteCount(), batch.getStatementCount(),
                 batch.getFallbackInsertCount(), batch.getFallbackUpdateCount(), batch.getMissingDeleteCount(),
-                batch.getSqlState(), batch.getSqlCode(), StringUtils.abbreviate(batch.getSqlMessage(), 1000),
-                batch.getLastUpdatedHostName(), batch.getLastUpdatedTime(), Long.valueOf(batch.getBatchId()),
-                batch.getNodeId() });
+                batch.getSkipCount(), batch.getSqlState(), batch.getSqlCode(),
+                StringUtils.abbreviate(batch.getSqlMessage(), 1000), batch.getLastUpdatedHostName(),
+                batch.getLastUpdatedTime(), Long.valueOf(batch.getBatchId()), batch.getNodeId() });
     }
 
     class IncomingBatchMapper implements RowMapper {
@@ -110,12 +119,13 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setFallbackInsertCount(rs.getLong(11));
             batch.setFallbackUpdateCount(rs.getLong(12));
             batch.setMissingDeleteCount(rs.getLong(13));
-            batch.setSqlState(rs.getString(14));
-            batch.setSqlCode(rs.getInt(15));
-            batch.setSqlMessage(rs.getString(16));
-            batch.setLastUpdatedHostName(rs.getString(17));
-            batch.setLastUpdatedTime(rs.getTimestamp(18));
-            batch.setCreateTime(rs.getTimestamp(19));
+            batch.setSkipCount(rs.getLong(14));
+            batch.setSqlState(rs.getString(15));
+            batch.setSqlCode(rs.getInt(16));
+            batch.setSqlMessage(rs.getString(17));
+            batch.setLastUpdatedHostName(rs.getString(18));
+            batch.setLastUpdatedTime(rs.getTimestamp(19));
+            batch.setCreateTime(rs.getTimestamp(20));
             return batch;
         }
     }

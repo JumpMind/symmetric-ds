@@ -65,7 +65,8 @@
         <column name="routing_millis" type="INTEGER" />
         <column name="network_millis" type="INTEGER" />
         <column name="filter_millis" type="INTEGER" />
-        <column name="database_millis" type="INTEGER" />        
+        <column name="load_millis" type="INTEGER" />        
+        <column name="extract_millis" type="INTEGER" />
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
         <column name="sql_message" type="VARCHAR" size="1000" />
@@ -210,6 +211,7 @@
         <column name="fallback_insert_count" type="INTEGER" />
         <column name="fallback_update_count" type="INTEGER" />
         <column name="missing_delete_count" type="INTEGER" />
+        <column name="skip_count" type="INTEGER" />
         <column name="sql_state" type="VARCHAR" size="10" />
         <column name="sql_code" type="INTEGER" />
         <column name="sql_message" type="VARCHAR" size="1000" />

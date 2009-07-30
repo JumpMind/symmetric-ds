@@ -55,7 +55,7 @@ public class MockTransportManager implements ITransportManager {
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
-        return false;
+        return true;
     }
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {

@@ -21,11 +21,7 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
@@ -43,8 +39,6 @@ import org.jumpmind.symmetric.transport.mock.MockAcknowledgeEventListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.jdbc.core.RowMapper;
-
 
 public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
@@ -64,29 +58,28 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
     @Before
     public void setUp() {
-        ackService = (IAcknowledgeService)find(Constants.ACKNOWLEDGE_SERVICE);
-        outgoingBatchService = (IOutgoingBatchService)find(Constants.OUTGOING_BATCH_SERVICE);
-        dataService = (IDataService)find(Constants.DATA_SERVICE);
+        ackService = (IAcknowledgeService) find(Constants.ACKNOWLEDGE_SERVICE);
+        outgoingBatchService = (IOutgoingBatchService) find(Constants.OUTGOING_BATCH_SERVICE);
+        dataService = (IDataService) find(Constants.DATA_SERVICE);
     }
 
     @Test
-    public void okTest() {
+    public void okTest() {        
         cleanSlate();
+
+        OutgoingBatch batch = createOutgoingBatch();
         
         ackService.addAcknowledgeEventListener(new MockAcknowledgeEventListener());
-        
+
         ackService.ack(new BatchInfo(1));
 
-        List<OutgoingBatchHistory> history = getOutgoingBatchHistory(1);
-        Assert.assertEquals(history.size(), 1);
-        OutgoingBatchHistory hist = history.get(0);
-        Assert.assertEquals(hist.getBatchId(), 1);
-        Assert.assertEquals(hist.getStatus(), OutgoingBatchHistory.Status.OK);
+        batch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
+        Assert.assertEquals(batch.getStatus(), OutgoingBatch.Status.OK);
     }
-    
+
     private void cleanSlate() {
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
-                TestConstants.TEST_PREFIX + "outgoing_batch_hist", TestConstants.TEST_PREFIX + "outgoing_batch");
+                TestConstants.TEST_PREFIX + "outgoing_batch");
     }
 
     @Test
@@ -131,38 +124,16 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
 
     protected void errorTestCore(long batchId, int errorLine, long expectedResults) {
         ackService.ack(new BatchInfo(batchId, errorLine));
-        List<OutgoingBatchHistory> history = getOutgoingBatchHistory(batchId);
-        Assert.assertEquals(history.size(), 1);
-        OutgoingBatchHistory hist = history.get(0);
-        Assert.assertEquals(hist.getBatchId(), batchId);
-        Assert.assertEquals(hist.getStatus(), OutgoingBatchHistory.Status.ER);
-        Assert.assertEquals(hist.getFailedDataId(), expectedResults);
-    }
-
-    protected List<OutgoingBatchHistory> getOutgoingBatchHistory(long batchId) {
-        final String sql = "select batch_id, status, data_event_count, start_time, " + "failed_data_id from "
-                + TestConstants.TEST_PREFIX + "outgoing_batch_hist where batch_id = ?";
-        final List<OutgoingBatchHistory> list = new ArrayList<OutgoingBatchHistory>();
-        getJdbcTemplate().query(sql, new Object[] { batchId }, new RowMapper() {
-            public Object[] mapRow(ResultSet rs, int row) throws SQLException {
-                OutgoingBatchHistory item = new OutgoingBatchHistory();
-                item.setBatchId(rs.getLong(1));
-                item.setStatus(OutgoingBatchHistory.Status.valueOf(rs.getString(2)));
-                item.setDataEventCount(rs.getLong(3));
-                item.setStartTime(rs.getTimestamp(4));
-                item.setFailedDataId(rs.getLong(5));
-                list.add(item);
-                return null;
-            }
-        });
-        return list;
+        OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId);
+        Assert.assertEquals(batch.getBatchId(), batchId);
+        Assert.assertEquals(batch.getStatus(), OutgoingBatch.Status.ER);
+        Assert.assertEquals(batch.getFailedDataId(), expectedResults);
     }
 
     protected OutgoingBatch createOutgoingBatch() {
         OutgoingBatch batch = new OutgoingBatch();
         batch.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         batch.setChannelId(TestConstants.TEST_CHANNEL_ID);
-        batch.setBatchType("EV");
         batch.setStatus("SE");
         batch.setCreateTime(new Date());
         outgoingBatchService.insertOutgoingBatch(batch);
@@ -174,10 +145,10 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         history.setTriggerHistoryId(TestConstants.TEST_TRIGGER_HISTORY_ID);
         final long[] id = new long[size];
         for (int i = 0; i < size; i++) {
-            Data data = new Data("table1", DataEventType.INSERT, "some data", "some data", history, TestConstants.TEST_CHANNEL_ID, null, null);
+            Data data = new Data("table1", DataEventType.INSERT, "some data", "some data", history,
+                    TestConstants.TEST_CHANNEL_ID, null, null);
             id[i] = dataService.insertData(data);
-            DataEvent dataEvent = new DataEvent(id[i], 
-                    batch.getBatchId());
+            DataEvent dataEvent = new DataEvent(id[i], batch.getBatchId());
             dataEvent.setBatchId(Long.valueOf(batch.getBatchId()));
             dataService.insertDataEvent(dataEvent);
         }
