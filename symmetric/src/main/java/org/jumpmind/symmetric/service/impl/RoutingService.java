@@ -141,6 +141,11 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             ex);
                 } finally {
                     try {
+                        Collection<OutgoingBatch> batches = context.getBatchesByNodes().values();
+                        for (OutgoingBatch outgoingBatch : batches) {
+                            outgoingBatch.setRouterMillis(System.currentTimeMillis()-outgoingBatch.getCreateTime().getTime());
+                            outgoingBatchService.updateOutgoingBatch(context.getJdbcTemplate(), outgoingBatch);                         
+                        }
                         context.commit();
                     } catch (SQLException e) {
                         logger.error(e, e);
@@ -318,6 +323,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                             batch, dataMetaData, routingContext)) {
                         batch.setRouterMillis(System.currentTimeMillis()-batch.getCreateTime().getTime());
                         outgoingBatchService.updateOutgoingBatch(routingContext.getJdbcTemplate(), batch);
+                        routingContext.getBatchesByNodes().remove(nodeId);
                         routingContext.setNeedsCommitted(true);
                     }
                 }

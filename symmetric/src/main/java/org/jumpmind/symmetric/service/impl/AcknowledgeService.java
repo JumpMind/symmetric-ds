@@ -60,6 +60,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
             outgoingBatch.setStatus(batch.isOk() ? Status.OK : Status.ER);
+            outgoingBatch.setByteCount(batch.getByteCount());
+            outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
+            outgoingBatch.setFilterMillis(batch.getFilterMillis());
+            outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
 
             if (!batch.isOk() && batch.getErrorLine() != 0) {
                 CallBackHandler handler = new CallBackHandler(batch.getErrorLine());

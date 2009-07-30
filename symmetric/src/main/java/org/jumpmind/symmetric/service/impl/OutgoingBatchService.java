@@ -78,10 +78,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
         template.update(getSql("updateOutgoingBatchSql"), new Object[] { outgoingBatch.getStatus().name(),
                 outgoingBatch.getByteCount(), outgoingBatch.getSentCount(), outgoingBatch.getDataEventCount(), outgoingBatch.getRouterMillis(),
-                outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(), outgoingBatch.getDatabaseMillis(), outgoingBatch.getSqlState(),
+                outgoingBatch.getNetworkMillis(), outgoingBatch.getFilterMillis(), outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(), outgoingBatch.getSqlState(),
                 outgoingBatch.getSqlCode(), StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000), outgoingBatch.getFailedDataId(),
                 outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getLastUpdatedTime(), outgoingBatch.getBatchId() }, new int[] {
-                Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
+                Types.CHAR, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER,
                 Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.VARCHAR,
                 Types.TIMESTAMP, Types.INTEGER });
     }
@@ -91,6 +91,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, final OutgoingBatch outgoingBatch) {
+        outgoingBatch.setLastUpdatedTime(new Date());
+        outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());        
         long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("insertOutgoingBatchSql"),
                 SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
@@ -103,13 +105,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setLong(7, outgoingBatch.getRouterMillis());
                         ps.setLong(8, outgoingBatch.getNetworkMillis());
                         ps.setLong(9, outgoingBatch.getFilterMillis());
-                        ps.setLong(10, outgoingBatch.getDatabaseMillis());
-                        ps.setString(11, outgoingBatch.getSqlState());
-                        ps.setInt(12, outgoingBatch.getSqlCode());
-                        ps.setString(13, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
-                        ps.setLong(14, outgoingBatch.getFailedDataId());
-                        ps.setString(15, outgoingBatch.getLastUpdatedHostName());
-                        ps.setTimestamp(16, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));                        
+                        ps.setLong(10, outgoingBatch.getLoadMillis());
+                        ps.setLong(11, outgoingBatch.getExtractMillis());
+                        ps.setString(12, outgoingBatch.getSqlState());
+                        ps.setInt(13, outgoingBatch.getSqlCode());
+                        ps.setString(14, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
+                        ps.setLong(15, outgoingBatch.getFailedDataId());
+                        ps.setString(16, outgoingBatch.getLastUpdatedHostName());
+                        ps.setTimestamp(17, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));                        
                         return null;
                     }
                 });
@@ -250,15 +253,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batch.setRouterMillis(rs.getLong(7));
             batch.setNetworkMillis(rs.getLong(8));
             batch.setFilterMillis(rs.getLong(9));
-            batch.setDatabaseMillis(rs.getLong(10));
-            batch.setSqlState(rs.getString(11));
-            batch.setSqlCode(rs.getInt(12));
-            batch.setSqlMessage(rs.getString(13));
-            batch.setFailedDataId(rs.getLong(14));
-            batch.setLastUpdatedHostName(rs.getString(15));
-            batch.setLastUpdatedTime(rs.getTimestamp(16));
-            batch.setCreateTime(rs.getTimestamp(17));
-            batch.setBatchId(rs.getLong(18));
+            batch.setLoadMillis(rs.getLong(10));
+            batch.setExtractMillis(rs.getLong(11));
+            batch.setSqlState(rs.getString(12));
+            batch.setSqlCode(rs.getInt(13));
+            batch.setSqlMessage(rs.getString(14));
+            batch.setFailedDataId(rs.getLong(15));
+            batch.setLastUpdatedHostName(rs.getString(16));
+            batch.setLastUpdatedTime(rs.getTimestamp(17));
+            batch.setCreateTime(rs.getTimestamp(18));
+            batch.setBatchId(rs.getLong(19));
             return batch;
         }
     }

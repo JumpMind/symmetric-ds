@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Level;
@@ -135,19 +134,16 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 1, "Wrong number of history. " + printDatabase());
-        IncomingBatchHistory history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. " + printDatabase());
-        assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
-        assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
-        assertEquals(history.getFailedRowNumber(), 8l, "Wrong failed row number. " + printDatabase());
-        assertEquals(history.getByteCount(), 322l, "Wrong byte count. " + printDatabase());
-        assertEquals(history.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
-        assertEquals(history.getFallbackInsertCount(), 1l, "Wrong fallback insert count. " + printDatabase());
-        assertEquals(history.getFallbackUpdateCount(), 2l, "Wrong fallback update count. " + printDatabase());
-        assertEquals(history.getMissingDeleteCount(), 3l, "Wrong missing delete count. " + printDatabase());
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
+        assertEquals(batch.getFailedRowNumber(), 8l, "Wrong failed row number. " + printDatabase());
+        assertEquals(batch.getByteCount(), 322l, "Wrong byte count. " + printDatabase());
+        assertEquals(batch.getStatementCount(), 8l, "Wrong statement count. " + printDatabase());
+        assertEquals(batch.getFallbackInsertCount(), 1l, "Wrong fallback insert count. " + printDatabase());
+        assertEquals(batch.getFallbackUpdateCount(), 2l, "Wrong fallback update count. " + printDatabase());
+        assertEquals(batch.getMissingDeleteCount(), 3l, "Wrong missing delete count. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 
@@ -184,23 +180,20 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 1, "Wrong number of history");
+        assertNotNull(batch);
 
         load(out);
 
-        IncomingBatchHistory history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
 
-        list = getIncomingBatchService().findIncomingBatchHistory(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 2, "Wrong number of history");
+        batch = getIncomingBatchService().findIncomingBatch(batchId,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batch);
+        
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
 
-        history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-
-        history = list.get(1);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
         setLoggingLevelForTest(old);
     }
 
@@ -239,21 +232,18 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.close();
         load(out);
 
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 1, "Wrong number of history");
-        IncomingBatchHistory history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. " + printDatabase());
-        assertNotNull(history.getStartTime(), "Start time cannot be null. " + printDatabase());
-        assertNotNull(history.getEndTime(), "End time cannot be null. " + printDatabase());
-        assertEquals(history.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
-        assertEquals(history.getByteCount(), 390l, "Wrong byte count. " + printDatabase());
-        assertEquals(history.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
-        assertEquals(history.getFallbackInsertCount(), 0l, "Wrong fallback insert count. " + printDatabase());
-        assertEquals(history.getFallbackUpdateCount(), 1l, "Wrong fallback update count. " + printDatabase());
-        assertEquals(history.getMissingDeleteCount(), 0l, "Wrong missing delete count. " + printDatabase());
-        assertNotNull(history.getSqlState(), "Sql state should not be null. " + printDatabase());
-        assertNotNull(history.getSqlMessage(), "Sql message should not be null. " + printDatabase());
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. " + printDatabase());
+        assertEquals(batch.getFailedRowNumber(), 3l, "Wrong failed row number. " + printDatabase());
+        assertEquals(batch.getByteCount(), 390l, "Wrong byte count. " + printDatabase());
+        assertEquals(batch.getStatementCount(), 3l, "Wrong statement count. " + printDatabase());
+        assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count. " + printDatabase());
+        assertEquals(batch.getFallbackUpdateCount(), 1l, "Wrong fallback update count. " + printDatabase());
+        assertEquals(batch.getMissingDeleteCount(), 0l, "Wrong missing delete count. " + printDatabase());
+        assertNotNull(batch.getSqlState(), "Sql state should not be null. " + printDatabase());
+        assertNotNull(batch.getSqlMessage(), "Sql message should not be null. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 
@@ -263,28 +253,26 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
                 "resend char not null", "2007-01-25 00:00:00.0", "2007-01-25 01:01:01.0", "0", "7", "10.10",
                 "0.474"};
         getNextBatchId();
-        for (int i = 0; i < 7; i++) {
+        for (long i = 0; i < 7; i++) {
             batchId--;
             testSimple(CsvConstants.INSERT, values, values);
-            IncomingBatchHistory.Status expectedStatus = IncomingBatchHistory.Status.OK;
             long expectedCount = 1;
             if (i > 0) {
-                expectedStatus = IncomingBatchHistory.Status.SK;
                 expectedCount = 0;
             }
             assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                     IncomingBatch.Status.OK, "Wrong status");
-            List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+            IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
-            assertEquals(list.size(), i + 1, "Wrong number of history");
-            IncomingBatchHistory history = list.get(i);
-            assertEquals(history.getStatus(), expectedStatus, "Wrong status");
-            assertEquals(history.getFailedRowNumber(), 0l, "Wrong failed row number");
-            assertEquals(history.getStatementCount(), expectedCount, "Wrong statement count");
-            assertEquals(history.getFallbackInsertCount(), 0l, "Wrong fallback insert count");
-            assertEquals(history.getFallbackUpdateCount(), 0l, "Wrong fallback update count");
+            assertNotNull(batch);
+            assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
+            assertEquals(batch.getSkipCount(), i);
+            assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
+            assertEquals(batch.getStatementCount(), expectedCount, "Wrong statement count");
+            assertEquals(batch.getFallbackInsertCount(), 0l, "Wrong fallback insert count");
+            assertEquals(batch.getFallbackUpdateCount(), 0l, "Wrong fallback update count");
             // pause to make sure we get a different start time on the incoming
-            // batch history
+            // batch batch
             Thread.sleep(10);
         }
     }
@@ -298,13 +286,12 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 1, "Wrong number of history");
-        IncomingBatchHistory history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.OK, "Wrong status");
-        assertEquals(history.getFailedRowNumber(), 0l, "Wrong failed row number");
-        assertEquals(history.getStatementCount(), 1l, "Wrong statement count");
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status");
+        assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
+        assertEquals(batch.getStatementCount(), 1l, "Wrong statement count");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
@@ -314,17 +301,17 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         writer.writeRecord(TEST_KEYS);
         writer.writeRecord(new String[] { CsvConstants.COMMIT, getBatchId() });
         writer.close();
-        // Pause a moment to guarantee our history comes back in time order
+        // Pause a moment to guarantee our batch comes back in time order
         Thread.sleep(10);       
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
-        list = getIncomingBatchService().findIncomingBatchHistory(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 2, "Wrong number of history");
-        history = list.get(1);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        assertEquals(history.getFailedRowNumber(), 0l, "Wrong failed row number");
-        assertEquals(history.getStatementCount(), 0l, "Wrong statement count");
+        batch = getIncomingBatchService().findIncomingBatch(batchId,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
+        assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
+        assertEquals(batch.getStatementCount(), 0l, "Wrong statement count");
         setLoggingLevelForTest(old);
     }
 
@@ -351,24 +338,22 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.ER, "Wrong status");
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(
-                batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 1, "Wrong number of history");
-        IncomingBatchHistory history = list.get(0);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        assertEquals(history.getFailedRowNumber(), 2l, "Wrong failed row number");
-        assertEquals(history.getStatementCount(), 2l, "Wrong statement count");
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
+        assertEquals(batch.getFailedRowNumber(), 2l, "Wrong failed row number");
+        assertEquals(batch.getStatementCount(), 2l, "Wrong statement count");
 
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.ER, "Wrong status");
-        list = getIncomingBatchService().findIncomingBatchHistory(
-                batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 2, "Wrong number of history");
-        history = list.get(1);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status");
-        assertEquals(history.getFailedRowNumber(), 2l, "Wrong failed row number");
-        assertEquals(history.getStatementCount(), 2l, "Wrong statement count");
+        batch = getIncomingBatchService().findIncomingBatch(batchId,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
+        assertEquals(batch.getFailedRowNumber(), 2l, "Wrong failed row number");
+        assertEquals(batch.getStatementCount(), 2l, "Wrong statement count");
 
         paramService.saveParameter("dataloader.enable.fallback.update", "true");
         setLoggingLevelForTest(old);
@@ -396,9 +381,9 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID), null,
                 "Wrong status");
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), 0, "Wrong number of history");
+        assertNotNull(batch);
         setLoggingLevelForTest(old);
     }
 
@@ -416,16 +401,15 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
             testSimple(CsvConstants.INSERT, values, null);
             assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                     IncomingBatch.Status.ER, "Wrong status");
-            List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+            IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
-            assertEquals(list.size(), i + 1, "Wrong number of history. " + printDatabase());
-            IncomingBatchHistory history = list.get(i);
-            assertEquals(history.getStatus(), IncomingBatchHistory.Status.ER, "Wrong status. "
+            assertNotNull(batch);
+            assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status. "
                             + printDatabase());
-            assertEquals(history.getFailedRowNumber(), 1l, "Wrong failed row number. " + printDatabase());
-            assertEquals(history.getStatementCount(), 1l, "Wrong statement count. " + printDatabase());
+            assertEquals(batch.getFailedRowNumber(), 1l, "Wrong failed row number. " + printDatabase());
+            assertEquals(batch.getStatementCount(), 1l, "Wrong statement count. " + printDatabase());
             // pause to make sure we get a different start time on the incoming
-            // batch history
+            // batch batch
             Thread.sleep(10);
         }
 
@@ -434,13 +418,12 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         testSimple(CsvConstants.INSERT, values, values);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
-        List<IncomingBatchHistory> list = getIncomingBatchService().findIncomingBatchHistory(batchId,
+        IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(list.size(), retries + 1, "Wrong number of history. " + printDatabase());
-        IncomingBatchHistory history = list.get(retries);
-        assertEquals(history.getStatus(), IncomingBatchHistory.Status.OK, "Wrong status. " + printDatabase());
-        assertEquals(history.getFailedRowNumber(), 0l, "Wrong failed row number. " + printDatabase());
-        assertEquals(history.getStatementCount(), 1l, "Wrong statement count. " + printDatabase());
+        assertNotNull(batch);
+        assertEquals(batch.getStatus(), IncomingBatch.Status.OK, "Wrong status. " + printDatabase());
+        assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number. " + printDatabase());
+        assertEquals(batch.getStatementCount(), 1l, "Wrong statement count. " + printDatabase());
         setLoggingLevelForTest(old);
     }
 

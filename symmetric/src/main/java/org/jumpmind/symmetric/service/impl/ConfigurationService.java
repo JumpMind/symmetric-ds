@@ -65,7 +65,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private String tablePrefix;
 
     /**
-     * Cache the history for performance. History never changes and does not grow big so this should be OK.
+     * Cache the history for performance. History never changes and does not
+     * grow big so this should be OK.
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
 
@@ -115,8 +116,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             boolean syncChanges = !TableConstants.getNodeTablesAsSet(tablePrefix).contains(tableName);
             Trigger trigger = buildConfigTrigger(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
-            // TODO Set data router to replace the routing done by the node select
-            // String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
+            // TODO Set data router to replace the routing done by the node
+            // select
+            // String initialLoadSelect =
+            // rootConfigChannelInitialLoadSelect.get(tableName);
             // trigger.setInitialLoadSelect(initialLoadSelect);
             triggers.add(trigger);
         }
@@ -196,7 +199,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     /**
-     * Create triggers on SymmetricDS tables so changes to configuration can be synchronized.
+     * Create triggers on SymmetricDS tables so changes to configuration can be
+     * synchronized.
      */
     protected List<Trigger> getConfigurationTriggers(String sourceNodeGroupId) {
         List<Trigger> triggers = new ArrayList<Trigger>();
@@ -208,8 +212,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
                 triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
                         false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
-                logger.info("Creating trigger hist entry for "
-                        + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Creating trigger hist entry for "
+                            + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+                }
             } else {
                 logger.warn("Unexpected node group link while creating configuration triggers: source_node_group_id="
                         + sourceNodeGroupId + ", action=" + nodeGroupLink.getDataEventAction());

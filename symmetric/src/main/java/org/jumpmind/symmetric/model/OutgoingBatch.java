@@ -45,7 +45,9 @@ public class OutgoingBatch implements Serializable {
 
     private long filterMillis;
 
-    private long databaseMillis;
+    private long loadMillis;
+    
+    private long extractMillis;
 
     private long byteCount;
 
@@ -153,12 +155,12 @@ public class OutgoingBatch implements Serializable {
         this.filterMillis = filterMillis;
     }
 
-    public long getDatabaseMillis() {
-        return databaseMillis;
+    public long getLoadMillis() {
+        return loadMillis;
     }
 
-    public void setDatabaseMillis(long databaseMillis) {
-        this.databaseMillis = databaseMillis;
+    public void setLoadMillis(long databaseMillis) {
+        this.loadMillis = databaseMillis;
     }
 
     public long getByteCount() {
@@ -177,8 +179,20 @@ public class OutgoingBatch implements Serializable {
         this.dataEventCount = dataEventCount;
     }
     
+    public void setExtractMillis(long extractMillis) {
+        this.extractMillis = extractMillis;
+    }
+    
+    public long getExtractMillis() {
+        return extractMillis;
+    }
+    
     public void incrementDataEventCount() {
         this.dataEventCount++;
+    }
+    
+    public void incrementByteCount(int size) {
+        this.byteCount += size;
     }
 
     public long getFailedDataId() {

@@ -179,7 +179,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     protected List<IncomingBatch> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
         List<IncomingBatch> list = new ArrayList<IncomingBatch>();
-        IncomingBatch status = null;
+        IncomingBatch batch = null;
         IDataLoader dataLoader = null;
         try {
             long totalNetworkMillis = System.currentTimeMillis();
@@ -189,19 +189,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
             dataLoader = openDataLoader(transport.open());
             while (dataLoader.hasNext()) {
-                status = new IncomingBatch(dataLoader.getContext());
-                list.add(status);
-                loadBatch(dataLoader, status);
-                status = null;
+                batch = new IncomingBatch(dataLoader.getContext());
+                list.add(batch);
+                loadBatch(dataLoader, batch);
+                batch = null;
             }
 
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 estimateNetworkMillis(list, totalNetworkMillis);
             }
 
-            for (IncomingBatch incomingBatchHistory : list) {
-                if (incomingBatchHistory.isPersistable()) {
-                    incomingBatchService.updateIncomingBatch(incomingBatchHistory);
+            for (IncomingBatch incomingBatch : list) {
+                if (incomingBatch.isPersistable()) {
+                    incomingBatchService.updateIncomingBatch(incomingBatch);
                 }
             }
 
@@ -223,26 +223,26 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Throwable e) {
-            if (dataLoader != null && status != null) {
+            if (dataLoader != null && batch != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
-                    logger.warn("Failed to load batch " + status.getNodeBatchId() + " because: " + e.getMessage());
-                    status.setSqlMessage(e.getMessage());
+                    logger.warn("Failed to load batch " + batch.getNodeBatchId() + " because: " + e.getMessage());
+                    batch.setSqlMessage(e.getMessage());
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
-                    logger.error("Failed to load batch " + status.getNodeBatchId(), e);
+                    logger.error("Failed to load batch " + batch.getNodeBatchId(), e);
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
-                        status.setSqlState(se.getSQLState());
-                        status.setSqlCode(se.getErrorCode());
-                        status.setSqlMessage(se.getMessage());
+                        batch.setSqlState(se.getSQLState());
+                        batch.setSqlCode(se.getErrorCode());
+                        batch.setSqlMessage(se.getMessage());
                     } else {
-                        status.setSqlMessage(e.getMessage());
+                        batch.setSqlMessage(e.getMessage());
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_OTHER_ERROR_COUNT).increment();
                     }
                 }
-                status.setValues(dataLoader.getStatistics(), false);
-                handleBatchError(status);
+                batch.setValues(dataLoader.getStatistics(), false);
+                handleBatchError(batch);
             } else {
                 if (e instanceof IOException) {
                     logger.error("Failed while reading batch because: " + e.getMessage());
@@ -262,13 +262,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected void estimateNetworkMillis(List<IncomingBatch> list, long totalNetworkMillis) {
         long totalNumberOfBytes = 0;
-        for (IncomingBatch incomingBatchHistory : list) {
-            totalNumberOfBytes += incomingBatchHistory.getByteCount();
+        for (IncomingBatch incomingBatch : list) {
+            totalNumberOfBytes += incomingBatch.getByteCount();
         }
-        for (IncomingBatch incomingBatchHistory : list) {
+        for (IncomingBatch incomingBatch : list) {
             if (totalNumberOfBytes > 0) {
-                double ratio = (double) incomingBatchHistory.getByteCount() / (double) totalNumberOfBytes;
-                incomingBatchHistory.setNetworkMillis((long) (totalNetworkMillis * ratio));
+                double ratio = (double) incomingBatch.getByteCount() / (double) totalNumberOfBytes;
+                incomingBatch.setNetworkMillis((long) (totalNetworkMillis * ratio));
             }
         }
     }
@@ -431,9 +431,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         CONTINUE, DONE
     }
 
-    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch status) {
+    protected void loadBatch(final IDataLoader dataLoader, final IncomingBatch batch) {
         try {
-            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(status, dataLoader);
+            TransactionalLoadDelegate loadDelegate = new TransactionalLoadDelegate(batch, dataLoader);
             LoadStatus loadStatus = loadDelegate.getLoadStatus();
             do {
                 newTransactionTemplate.execute(loadDelegate);
@@ -443,19 +443,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             } while (LoadStatus.CONTINUE == loadStatus);
         } catch (RuntimeException ex) {
-            fireBatchRolledback(dataLoader, status);
+            fireBatchRolledback(dataLoader, batch);
             throw ex;
         }
-        fireBatchCommitted(dataLoader, status);
+        fireBatchCommitted(dataLoader, batch);
     }
 
     class TransactionalLoadDelegate implements TransactionCallback {
-        IncomingBatch status;
+        IncomingBatch batch;
         IDataLoader dataLoader;
         LoadStatus loadStatus = LoadStatus.DONE;
 
         public TransactionalLoadDelegate(IncomingBatch status, IDataLoader dataLoader) {
-            this.status = status;
+            this.batch = status;
             this.dataLoader = dataLoader;
         }
 
@@ -463,13 +463,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 boolean done = true;
                 dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());
-                if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(status)) {
+                if (this.loadStatus == LoadStatus.CONTINUE || incomingBatchService.acquireIncomingBatch(batch)) {
                     done = dataLoader.load();
                 } else {
                     dataLoader.skip();
+                    batch.incrementSkipCount();
                 }
-                status.setValues(dataLoader.getStatistics(), true);
-                fireBatchComplete(dataLoader, status);
+                batch.setValues(dataLoader.getStatistics(), true);
+                fireBatchComplete(dataLoader, batch);
                 this.loadStatus = done ? LoadStatus.DONE : LoadStatus.CONTINUE;
                 return this.loadStatus;
             } catch (IOException e) {

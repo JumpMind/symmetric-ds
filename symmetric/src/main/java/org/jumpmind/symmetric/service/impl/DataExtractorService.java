@@ -119,13 +119,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);            
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
+                outgoingBatchService.insertOutgoingBatch(batch);
                 // acknowledge right away, because the acknowledgment is not
                 // built into the registration protocol.
                 acknowledgeService.ack(batch.getBatchInfo());
             } else {
                 batch.setBatchId(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION);
             }
-            outgoingBatchService.insertOutgoingBatch(batch);
 
             final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             final DataExtractorContext ctxCopy = clonableContext.copy(dataExtractor);
@@ -350,7 +350,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
-                batch.setDatabaseMillis(System.currentTimeMillis() - ts);
+                batch.setExtractMillis(System.currentTimeMillis() - ts);
+                batch.setSentCount(batch.getSentCount()+1);
                 batch.setStatus(OutgoingBatch.Status.SE);
                 outgoingBatchService.updateOutgoingBatch(batch);
             }

@@ -21,13 +21,6 @@
         and ?)
       </value>
     </entry>
-    <entry key="deleteOutgoingBatchHistSql">
-      <value>
-        delete from $[sym.sync.table.prefix]_outgoing_batch_hist where batch_id between ? and ? and
-        batch_id not in (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where batch_id
-        between ? and ? and status != 'OK')
-      </value>
-    </entry>
     <entry key="deleteDataEventSql">
       <value>
         delete from $[sym.sync.table.prefix]_data_event where batch_id not in (select batch_id from
@@ -60,20 +53,11 @@
         ? and status = 'OK'
       </value>
     </entry>
-    <entry key="deleteIncomingBatchHistSql">
-      <value>
-        delete from $[sym.sync.table.prefix]_incoming_batch_hist where batch_id between ? and ? and
-        node_id = ?
-      </value>
-    </entry>
     <entry key="deleteFromStatisticSql">
       <value>delete from $[sym.sync.table.prefix]_statistic where capture_end_time &lt; ?</value>
     </entry>
     <entry key="deleteIncomingBatchByNodeSql">
       <value>delete from $[sym.sync.table.prefix]_incoming_batch where node_id = ?</value>
-    </entry>
-    <entry key="deleteIncomingBatchHistByNodeSql">
-      <value>delete from $[sym.sync.table.prefix]_incoming_batch_hist where node_id = ?</value>
     </entry>
   </util:map>
 

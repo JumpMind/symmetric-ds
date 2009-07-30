@@ -58,6 +58,8 @@ public class IncomingBatch implements Serializable {
     private long fallbackUpdateCount;
 
     private long missingDeleteCount;
+    
+    private long skipCount;
 
     private long failedRowNumber;
 
@@ -206,6 +208,18 @@ public class IncomingBatch implements Serializable {
 
     public void setMissingDeleteCount(long missingDeleteCount) {
         this.missingDeleteCount = missingDeleteCount;
+    }
+    
+    public void setSkipCount(long skipCount) {
+        this.skipCount = skipCount;
+    }
+    
+    public void incrementSkipCount() {
+        this.skipCount++;
+    }
+    
+    public long getSkipCount() {
+        return skipCount;
     }
 
     public long getFailedRowNumber() {
