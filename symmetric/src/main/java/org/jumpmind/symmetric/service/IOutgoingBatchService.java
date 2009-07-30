@@ -24,34 +24,30 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IOutgoingBatchService {
-    
-    public void insertOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch);
-    
-    public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
 
     public void markAllAsSentForNode(String nodeId);
 
+    public OutgoingBatch findOutgoingBatch(long batchId); 
+    
     public List<OutgoingBatch> getOutgoingBatches(String nodeId);
 
     public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId);
 
     public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows);
 
-    public void setBatchStatus(long batchId, Status status);
-
     public boolean isInitialLoadComplete(String nodeId);
-    
+
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId);
 
-    public List<OutgoingBatchHistory> findOutgoingBatchHistory(long batchId, String nodeId);
+    public void updateOutgoingBatch(OutgoingBatch batch);
 
-    public void insertOutgoingBatchHistory(OutgoingBatchHistory history);
-    
-    public void insertOutgoingBatchHistory(JdbcTemplate template, OutgoingBatchHistory history);
+    public void updateOutgoingBatch(JdbcTemplate jdbcTemplate, OutgoingBatch batch);
+
+    public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
+
+    public void insertOutgoingBatch(JdbcTemplate jdbcTemplate, OutgoingBatch outgoingBatch);
 
 }

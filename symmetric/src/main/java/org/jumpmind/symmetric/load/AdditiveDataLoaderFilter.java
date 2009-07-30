@@ -17,15 +17,13 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.load;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.INodeGroupDataLoaderFilter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**

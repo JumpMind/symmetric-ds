@@ -36,8 +36,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
-import org.jumpmind.symmetric.model.IncomingBatchHistory.Status;
+import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.WebConstants;
 
@@ -96,9 +96,9 @@ abstract public class AbstractTransportManager {
         }
     }
     
-    protected String getAcknowledgementData(String nodeId, List<IncomingBatchHistory> list) throws IOException {
+    protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (IncomingBatchHistory status : list) {
+        for (IncomingBatch status : list) {
             Object value = null;
             if (status.getStatus() == Status.OK || status.getStatus() == Status.SK) {
                 value = WebConstants.ACK_BATCH_OK;
@@ -112,7 +112,7 @@ abstract public class AbstractTransportManager {
         // the original acknowledgment data and the second line contains more
         // information
         builder.append("\n");
-        for (IncomingBatchHistory status : list) {
+        for (IncomingBatch status : list) {
             long batchId = status.getBatchId();
             append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
             append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, status.getNetworkMillis());

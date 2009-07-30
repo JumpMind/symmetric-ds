@@ -30,7 +30,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,17 +48,14 @@ import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.extract.csv.Util;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.BatchType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -120,21 +116,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
         try {
-            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG, BatchType.INITIAL_LOAD);
+            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);            
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
-                outgoingBatchService.insertOutgoingBatch(batch);
-                OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
-                history.setStatus(OutgoingBatchHistory.Status.SE);
-                history.setEndTime(new Date());
-                outgoingBatchService.insertOutgoingBatchHistory(history);
-
                 // acknowledge right away, because the acknowledgment is not
                 // built into the registration protocol.
                 acknowledgeService.ack(batch.getBatchInfo());
             } else {
                 batch.setBatchId(BatchInfo.VIRTUAL_BATCH_FOR_REGISTRATION);
             }
+            outgoingBatchService.insertOutgoingBatch(batch);
 
             final IDataExtractor dataExtractor = getDataExtractor(node.getSymmetricVersion());
             final DataExtractorContext ctxCopy = clonableContext.copy(dataExtractor);
@@ -212,13 +203,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public OutgoingBatch extractInitialLoadFor(Node node, Trigger trigger, BufferedWriter writer) {
-        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getChannelId(), BatchType.INITIAL_LOAD);
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getChannelId());
         outgoingBatchService.insertOutgoingBatch(batch);
-        OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
         writeInitialLoad(node, trigger, writer, batch, null);
-        history.setStatus(OutgoingBatchHistory.Status.SE);
-        history.setEndTime(new Date());
-        outgoingBatchService.insertOutgoingBatchHistory(history);
         return batch;
     }
 
@@ -350,11 +337,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * data to other types of handlers for processing.
      */
     protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws IOException {
-        OutgoingBatchHistory history = null;
+        OutgoingBatch currentBatch = null;
         try {
             boolean initialized = false;
             for (final OutgoingBatch batch : batches) {
-                history = new OutgoingBatchHistory(batch);
+                currentBatch = batch;
                 long ts = System.currentTimeMillis();
                 if (!initialized) {
                     handler.init();
@@ -363,27 +350,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 handler.startBatch(batch);
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
-                history.setDatabaseMillis(System.currentTimeMillis() - ts);
-                history.setStatus(OutgoingBatchHistory.Status.SE);
-                history.setEndTime(new Date());
-                outgoingBatchService.insertOutgoingBatchHistory(history);
+                batch.setDatabaseMillis(System.currentTimeMillis() - ts);
+                batch.setStatus(OutgoingBatch.Status.SE);
+                outgoingBatchService.updateOutgoingBatch(batch);
             }
         } catch (RuntimeException e) {
             SQLException se = unwrapSqlException(e);
-            if (history != null) {
+            if (currentBatch != null) {
                 if (se != null) {
-                    history.setSqlState(se.getSQLState());
-                    history.setSqlCode(se.getErrorCode());
-                    history.setSqlMessage(se.getMessage());
+                    currentBatch.setSqlState(se.getSQLState());
+                    currentBatch.setSqlCode(se.getErrorCode());
+                    currentBatch.setSqlMessage(se.getMessage());
                 } else {
-                    history.setSqlMessage(e.getMessage());
+                    currentBatch.setSqlMessage(e.getMessage());
                 }
-                history.setStatus(OutgoingBatchHistory.Status.SE);
-                history.setEndTime(new Date());
-                outgoingBatchService.setBatchStatus(history.getBatchId(), Status.ER);
-                outgoingBatchService.insertOutgoingBatchHistory(history);
+                currentBatch.setStatus(OutgoingBatch.Status.ER);
+                outgoingBatchService.updateOutgoingBatch(currentBatch);
             } else {
-                logger.error("Could not log the outgoing batch status because the batch history has not been created.",
+                logger.error("Could not log the outgoing batch status because the batch is null.",
                         e);
             }
             throw e;

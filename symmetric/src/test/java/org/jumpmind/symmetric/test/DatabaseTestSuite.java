@@ -23,9 +23,9 @@ import java.util.Collection;
 
 import org.jumpmind.symmetric.config.ParameterFilterTest;
 import org.jumpmind.symmetric.db.DbTriggerTest;
-import org.jumpmind.symmetric.ext.AdditiveDataLoaderFilterTest;
-import org.jumpmind.symmetric.ext.XmlPublisherFilterTest;
 import org.jumpmind.symmetric.extract.DataExtractorTest;
+import org.jumpmind.symmetric.integrate.XmlPublisherFilterTest;
+import org.jumpmind.symmetric.load.AdditiveDataLoaderFilterTest;
 import org.jumpmind.symmetric.load.DataLoaderTest;
 import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;

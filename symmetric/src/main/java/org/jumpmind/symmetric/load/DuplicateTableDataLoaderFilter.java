@@ -17,14 +17,11 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.load;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.IDataLoaderFilter;
-import org.jumpmind.symmetric.load.TableTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**

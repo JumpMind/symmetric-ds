@@ -1,7 +1,5 @@
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.load;
 
-import org.jumpmind.symmetric.load.IDataLoaderContext;
-import org.jumpmind.symmetric.load.INodeGroupDataLoaderFilter;
 
 abstract public class AbstractTableDataLoaderFilter implements INodeGroupDataLoaderFilter {
 

@@ -39,19 +39,51 @@ public class OutgoingBatch implements Serializable {
 
     private Status status = Status.NE;
 
-    private BatchType batchType = BatchType.EVENTS;
+    private long routerMillis;
+
+    private long networkMillis;
+
+    private long filterMillis;
+
+    private long databaseMillis;
+
+    private long byteCount;
+
+    private long sentCount;
+
+    private long dataEventCount;
+
+    private long failedDataId;
+
+    private String sqlState;
+
+    private int sqlCode;
+
+    private String sqlMessage;
+
+    private String lastUpdatedHostName;
+
+    private Date lastUpdatedTime;
 
     private Date createTime;
 
     public OutgoingBatch() {
     }
 
-    public OutgoingBatch(String nodeId, String channelId, BatchType batchType) {
+    public OutgoingBatch(String nodeId, String channelId) {
         this.nodeId = nodeId;
         this.channelId = channelId;
         this.status = Status.NE;
-        this.batchType = batchType;
-    }        
+        this.createTime = new Date();
+    }
+
+    public void setSentCount(long sentCount) {
+        this.sentCount = sentCount;
+    }
+
+    public long getSentCount() {
+        return sentCount;
+    }
 
     public String getNodeBatchId() {
         return nodeId + "-" + batchId;
@@ -93,26 +125,112 @@ public class OutgoingBatch implements Serializable {
         this.status = Status.valueOf(status);
     }
 
-    public BatchType getBatchType() {
-        return batchType;
-    }
-
     public BatchInfo getBatchInfo() {
         return new BatchInfo(this.batchId);
     }
 
-    public void setBatchType(BatchType batchType) {
-        this.batchType = batchType;
+    public long getRouterMillis() {
+        return routerMillis;
     }
 
-    public void setBatchType(String batchType) {
-        if (BatchType.EVENTS.getCode().equals(batchType)) {
-            this.batchType = BatchType.EVENTS;
-        } else if (BatchType.INITIAL_LOAD.getCode().equals(batchType)) {
-            this.batchType = BatchType.INITIAL_LOAD;
+    public void setRouterMillis(long routerMillis) {
+        this.routerMillis = routerMillis;
+    }
+
+    public long getNetworkMillis() {
+        return networkMillis;
+    }
+
+    public void setNetworkMillis(long networkMillis) {
+        this.networkMillis = networkMillis;
+    }
+
+    public long getFilterMillis() {
+        return filterMillis;
+    }
+
+    public void setFilterMillis(long filterMillis) {
+        this.filterMillis = filterMillis;
+    }
+
+    public long getDatabaseMillis() {
+        return databaseMillis;
+    }
+
+    public void setDatabaseMillis(long databaseMillis) {
+        this.databaseMillis = databaseMillis;
+    }
+
+    public long getByteCount() {
+        return byteCount;
+    }
+
+    public void setByteCount(long byteCount) {
+        this.byteCount = byteCount;
+    }
+
+    public long getDataEventCount() {
+        return dataEventCount;
+    }
+
+    public void setDataEventCount(long dataEventCount) {
+        this.dataEventCount = dataEventCount;
+    }
+    
+    public void incrementDataEventCount() {
+        this.dataEventCount++;
+    }
+
+    public long getFailedDataId() {
+        return failedDataId;
+    }
+
+    public void setFailedDataId(long failedDataId) {
+        this.failedDataId = failedDataId;
+    }
+
+    public String getSqlState() {
+        return sqlState;
+    }
+
+    public void setSqlState(String sqlState) {
+        this.sqlState = sqlState;
+    }
+
+    public int getSqlCode() {
+        return sqlCode;
+    }
+
+    public void setSqlCode(int sqlCode) {
+        this.sqlCode = sqlCode;
+    }
+
+    public String getSqlMessage() {
+        return sqlMessage;
+    }
+
+    public void setSqlMessage(String sqlMessage) {
+        this.sqlMessage = sqlMessage;
+    }
+
+    public String getLastUpdatedHostName() {
+        return lastUpdatedHostName;
+    }
+
+    public void setLastUpdatedHostName(String lastUpdatedHostName) {
+        this.lastUpdatedHostName = lastUpdatedHostName;
+    }
+
+    public Date getLastUpdatedTime() {
+        if (lastUpdatedTime == null) {
+            return new Date();
         } else {
-            batchType = null;
+            return lastUpdatedTime;
         }
+    }
+
+    public void setLastUpdatedTime(Date lastUpdatedTime) {
+        this.lastUpdatedTime = lastUpdatedTime;
     }
 
     public Date getCreateTime() {

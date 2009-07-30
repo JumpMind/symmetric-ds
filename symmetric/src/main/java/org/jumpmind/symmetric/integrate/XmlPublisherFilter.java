@@ -17,7 +17,7 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.integrate;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,12 +35,13 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.DataEventType;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 
 /**
  * This is an optional {@link IDataLoaderFilter} and {@link IBatchListener} that is capable of translating table data to
@@ -272,7 +273,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
 
     }
 
-    public void batchComplete(IDataLoader loader, IncomingBatchHistory hist) {
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
         IDataLoaderContext ctx = loader.getContext();
         if (doesXmlExistToPublish(ctx)) {
             finalizeXmlAndPublish(ctx);
@@ -331,10 +332,10 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         this.xmlFormat = xmlFormat;
     }
 
-    public void batchCommitted(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
 
-    public void batchRolledback(IDataLoader loader, IncomingBatchHistory history) {
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
 
 }

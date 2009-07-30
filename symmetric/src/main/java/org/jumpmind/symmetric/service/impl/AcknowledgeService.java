@@ -24,11 +24,10 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -59,17 +58,16 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
         } else {
-            OutgoingBatchHistory history = new OutgoingBatchHistory(batch);
-            outgoingBatchService.setBatchStatus(batch.getBatchId(), batch.isOk() ? Status.OK : Status.ER);
+            OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
+            outgoingBatch.setStatus(batch.isOk() ? Status.OK : Status.ER);
 
             if (!batch.isOk() && batch.getErrorLine() != 0) {
                 CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-                jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { history.getBatchId() }, handler);
-                history.setFailedDataId(handler.getDataId());
+                jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { outgoingBatch.getBatchId() }, handler);
+                outgoingBatch.setFailedDataId(handler.getDataId());
             }
 
-            history.setEndTime(new Date());
-            outgoingBatchService.insertOutgoingBatchHistory(history);
+            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
         }
     }
 

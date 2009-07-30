@@ -32,7 +32,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -43,7 +42,6 @@ public class RoutingContext implements IRoutingContext {
     protected final Log logger = LogFactory.getLog(getClass());
     private NodeChannel channel;
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
-    private Map<String, OutgoingBatchHistory> batchHistoryByNodes = new HashMap<String, OutgoingBatchHistory>();
     private Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
     private Connection connection;
     private JdbcTemplate jdbcTemplate;
@@ -68,10 +66,6 @@ public class RoutingContext implements IRoutingContext {
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {
         return batchesByNodes;
-    }
-
-    public Map<String, OutgoingBatchHistory> getBatchHistoryByNodes() {
-        return batchHistoryByNodes;
     }
 
     public Map<Trigger, Set<Node>> getAvailableNodes() {
@@ -101,25 +95,25 @@ public class RoutingContext implements IRoutingContext {
     public void setRouted(boolean b) {
         this.routed = b;
     }
-    
+
     public boolean isNeedsCommitted() {
         return needsCommitted;
     }
-    
+
     public boolean isRouted() {
         return routed;
     }
 
     public void resetForNextData() {
         this.routed = false;
-        this.needsCommitted = false;        
+        this.needsCommitted = false;
     }
-    
+
     public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary) {
         this.encountedTransactionBoundary = encountedTransactionBoundary;
     }
-    
-     public boolean isEncountedTransactionBoundary() {
+
+    public boolean isEncountedTransactionBoundary() {
         return encountedTransactionBoundary;
     }
 }

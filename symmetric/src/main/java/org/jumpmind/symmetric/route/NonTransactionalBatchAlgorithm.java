@@ -21,13 +21,12 @@ package org.jumpmind.symmetric.route;
 
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchHistory;
 
 public class NonTransactionalBatchAlgorithm implements IBatchAlgorithm {
 
-    public boolean isBatchComplete(OutgoingBatchHistory history, OutgoingBatch batch, DataMetaData dataMetaData,
+    public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
             IRoutingContext routingContext) {
-        return history.getDataEventCount() >= dataMetaData.getChannel().getMaxBatchSize();
+        return batch.getDataEventCount() >= dataMetaData.getChannel().getMaxBatchSize();
     }
 
     public boolean isAutoRegister() {

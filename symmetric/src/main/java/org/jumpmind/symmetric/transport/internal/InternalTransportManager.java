@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
@@ -123,7 +123,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatchHistory> list, Node local) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
@@ -144,7 +144,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         }
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatchHistory> list) throws IOException {
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
         pw.println(getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
         pw.close();

@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.IncomingBatchHistory;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface IIncomingBatchService {
@@ -33,8 +32,6 @@ public interface IIncomingBatchService {
 
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows);
 
-    public List<IncomingBatchHistory> findIncomingBatchHistory(long batchId, String nodeId);
-
     @Transactional
     public boolean acquireIncomingBatch(IncomingBatch status);
 
@@ -42,9 +39,6 @@ public interface IIncomingBatchService {
     public void insertIncomingBatch(IncomingBatch status);
 
     @Transactional
-    public void insertIncomingBatchHistory(IncomingBatchHistory history);
-
-    @Transactional
-    public int updateIncomingBatch(IncomingBatch status);
+    public int updateIncomingBatch(IncomingBatch batch);
 
 }
