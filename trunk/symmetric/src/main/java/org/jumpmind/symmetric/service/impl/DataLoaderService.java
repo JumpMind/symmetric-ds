@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -223,6 +224,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (AuthenticationException ex) {
             logger.warn(ErrorConstants.NOT_AUTHENTICATED);
         } catch (Throwable e) {
+            if (dataLoader != null && dataLoader.getContext().getBatchId() > 0) {
+                batch = new IncomingBatch(dataLoader.getContext());
+            }
             if (dataLoader != null && batch != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
                     logger.warn("Failed to load batch " + batch.getNodeBatchId() + " because: " + e.getMessage());
@@ -311,6 +315,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             inError = true;
         }
         return !inError;
+    }
+
+    private void fireEarlyCommit(IDataLoader loader, IncomingBatch batch) {
+        if (batchListeners != null) {
+            long ts = System.currentTimeMillis();
+            for (IBatchListener listener : batchListeners) {
+                listener.earlyCommit(loader, batch);
+            }
+            // update the filter milliseconds so batch listeners are also
+            // included
+            batch.setFilterMillis(batch.getFilterMillis() + (System.currentTimeMillis() - ts));
+        }
     }
 
     private void fireBatchComplete(IDataLoader loader, IncomingBatch batch) {
@@ -440,13 +456,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 loadStatus = loadDelegate.getLoadStatus();
                 if (loadStatus == LoadStatus.CONTINUE) {
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
+                    // Chances are if SymmetricDS is configured to commit early in a batch we
+                    // want to give other threads a chance to do work and access the database.
+                    AppUtils.sleep(5);
                 }
             } while (LoadStatus.CONTINUE == loadStatus);
+            fireBatchCommitted(dataLoader, batch);
         } catch (RuntimeException ex) {
             fireBatchRolledback(dataLoader, batch);
             throw ex;
         }
-        fireBatchCommitted(dataLoader, batch);
     }
 
     class TransactionalLoadDelegate implements TransactionCallback {
@@ -467,11 +486,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     done = dataLoader.load();
                 } else {
                     dataLoader.skip();
-                    batch.incrementSkipCount();
                 }
                 batch.setValues(dataLoader.getStatistics(), true);
-                fireBatchComplete(dataLoader, batch);
-                this.loadStatus = done ? LoadStatus.DONE : LoadStatus.CONTINUE;
+                if (done) {
+                    fireBatchComplete(dataLoader, batch);
+                    this.loadStatus = LoadStatus.DONE;
+                } else {
+                    fireEarlyCommit(dataLoader, batch);
+                    this.loadStatus = LoadStatus.CONTINUE;
+                }
                 return this.loadStatus;
             } catch (IOException e) {
                 throw new TransportException(e);

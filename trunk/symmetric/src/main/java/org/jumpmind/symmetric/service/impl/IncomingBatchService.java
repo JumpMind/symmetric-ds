@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.IncomingBatch.Status;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.MaxRowsStatementCreator;
@@ -63,15 +64,15 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 dbDialect.releaseSavepoint(savepoint);
             } catch (DataIntegrityViolationException e) {
                 dbDialect.rollbackToSavepoint(savepoint);
-                // TODO Needs work ...
+                batch.setRetry(true);
                 IncomingBatch existingBatch = findIncomingBatch(batch.getBatchId(), batch.getNodeId());
-                batch.setSkipCount(existingBatch.getSkipCount());
-                batch.setRetry(true);                
-                okayToProcess = updateIncomingBatch(batch) > 0
-                        || (!parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED));
-                if (okayToProcess) {
+                if (existingBatch.getStatus() == Status.ER
+                        || !parameterService.is(ParameterConstants.INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED)) {
+                    okayToProcess = true;
                     logger.warn("Retrying batch " + batch.getNodeBatchId());
                 } else {
+                    okayToProcess = false;
+                    batch.setSkipCount(existingBatch.getSkipCount() + 1);
                     logger.warn("Skipping batch " + batch.getNodeBatchId());
                 }
             }

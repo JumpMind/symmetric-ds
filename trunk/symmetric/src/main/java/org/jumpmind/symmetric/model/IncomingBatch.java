@@ -214,10 +214,6 @@ public class IncomingBatch implements Serializable {
         this.skipCount = skipCount;
     }
     
-    public void incrementSkipCount() {
-        this.skipCount++;
-    }
-    
     public long getSkipCount() {
         return skipCount;
     }

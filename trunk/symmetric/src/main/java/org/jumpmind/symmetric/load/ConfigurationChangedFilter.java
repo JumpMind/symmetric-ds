@@ -129,4 +129,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         this.configurationService = configurationService;
     }
     
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    }
+    
 }

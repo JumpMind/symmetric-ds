@@ -306,12 +306,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         load(out);
         assertEquals(findIncomingBatchStatus(batchId, TestConstants.TEST_CLIENT_EXTERNAL_ID),
                 IncomingBatch.Status.OK, "Wrong status");
-        batch = getIncomingBatchService().findIncomingBatch(batchId,
-                TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertNotNull(batch);
-        assertEquals(batch.getStatus(), IncomingBatch.Status.ER, "Wrong status");
-        assertEquals(batch.getFailedRowNumber(), 0l, "Wrong failed row number");
-        assertEquals(batch.getStatementCount(), 0l, "Wrong statement count");
         setLoggingLevelForTest(old);
     }
 
@@ -368,8 +362,8 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = getWriter(out);
-        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
         writer.write("UnknownTokenOutsideBatch");
+        writer.writeRecord(new String[] { CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID });
         String nextBatchId = getNextBatchId();
         writer.writeRecord(new String[] { CsvConstants.BATCH, nextBatchId });
         writer.writeRecord(new String[] { CsvConstants.TABLE, TEST_TABLE });
@@ -383,7 +377,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
                 "Wrong status");
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertNotNull(batch);
+        assertNull(batch);
         setLoggingLevelForTest(old);
     }
 
