@@ -99,20 +99,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
                         ps.setString(3, outgoingBatch.getStatus().name());
-                        ps.setLong(4, outgoingBatch.getByteCount());
-                        ps.setLong(5, outgoingBatch.getSentCount());
-                        ps.setLong(6, outgoingBatch.getDataEventCount());
-                        ps.setLong(7, outgoingBatch.getRouterMillis());
-                        ps.setLong(8, outgoingBatch.getNetworkMillis());
-                        ps.setLong(9, outgoingBatch.getFilterMillis());
-                        ps.setLong(10, outgoingBatch.getLoadMillis());
-                        ps.setLong(11, outgoingBatch.getExtractMillis());
-                        ps.setString(12, outgoingBatch.getSqlState());
-                        ps.setInt(13, outgoingBatch.getSqlCode());
-                        ps.setString(14, StringUtils.abbreviate(outgoingBatch.getSqlMessage(), 1000));
-                        ps.setLong(15, outgoingBatch.getFailedDataId());
-                        ps.setString(16, outgoingBatch.getLastUpdatedHostName());
-                        ps.setTimestamp(17, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));                        
+                        ps.setString(4, outgoingBatch.getLastUpdatedHostName());
+                        ps.setTimestamp(5, new Timestamp(outgoingBatch.getLastUpdatedTime().getTime()));                        
                         return null;
                     }
                 });
