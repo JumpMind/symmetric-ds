@@ -71,7 +71,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         
         ackService.addAcknowledgeEventListener(new MockAcknowledgeEventListener());
 
-        ackService.ack(new BatchInfo(1));
+        ackService.ack(batch.getBatchInfo());
 
         batch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
         Assert.assertEquals(batch.getStatus(), OutgoingBatch.Status.OK);
