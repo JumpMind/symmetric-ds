@@ -191,4 +191,7 @@ abstract public class AbstractTextPublisherFilter implements IPublisherFilter, I
 
     public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
+    
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    }
 }
