@@ -20,9 +20,8 @@
     </entry>         
     <entry key="insertOutgoingBatchSql">
       <value>
-        insert into $[sym.sync.table.prefix]_outgoing_batch (batch_id, node_id, channel_id, status,
-        byte_count, sent_count, data_event_count, routing_millis, network_millis, filter_millis, load_millis, extract_millis, sql_state, sql_code, sql_message,
-        failed_data_id, last_updated_hostname, last_updated_time, create_time) values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)
+        insert into $[sym.sync.table.prefix]_outgoing_batch (batch_id, 
+        node_id, channel_id, status, last_updated_hostname, last_updated_time, create_time) values (null, ?, ?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
     <entry key="updateOutgoingBatchSql">

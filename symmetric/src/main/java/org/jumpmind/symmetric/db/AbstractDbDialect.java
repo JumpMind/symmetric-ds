@@ -975,7 +975,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
     }
     
-    public long insertWithGeneratedKey(JdbcTemplate template, final String sql, final SequenceIdentifier sequenceId,
+    public long insertWithGeneratedKey(final JdbcTemplate template, final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback callback) {
         return (Long) template.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -1001,7 +1001,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             ps = conn.prepareStatement(replaceSql);
                         }
                     }
-                    ps.setQueryTimeout(jdbcTemplate.getQueryTimeout());
+                    ps.setQueryTimeout(template.getQueryTimeout());
                     if (callback != null) {
                         callback.doInPreparedStatement(ps);
                     }
