@@ -33,9 +33,9 @@ import org.springframework.beans.factory.BeanNameAware;
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  */
-abstract public class AbstractTextPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
+abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
 
-    private static final Log logger = LogFactory.getLog(AbstractTextPublisherFilter.class);
+    private static final Log logger = LogFactory.getLog(AbstractTextPublisherDataLoaderFilter.class);
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 

@@ -32,7 +32,7 @@ public class DefaultDataRouter extends AbstractDataRouter {
         return toNodeIds(nodes);
     }
 
-    public void commit(IRouterContext context) {
+    public void completeBatch(IRouterContext context) {
 
     }
 

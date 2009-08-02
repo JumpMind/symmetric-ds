@@ -44,9 +44,9 @@ import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
  * If you have special formatting needs, implement the {@link IFormat} interface
  * and map your formatter to the column you want to 'massage.'
  */
-public class TemplatedPublisherFilter extends AbstractTextPublisherFilter {
+public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
 
-    static final Log logger = LogFactory.getLog(TemplatedPublisherFilter.class);
+    static final Log logger = LogFactory.getLog(TemplatedPublisherDataLoaderFilter.class);
 
     private String headerTableTemplate;
     private String footerTableTemplate;
