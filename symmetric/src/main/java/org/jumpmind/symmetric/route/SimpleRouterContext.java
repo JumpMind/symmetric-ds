@@ -15,19 +15,25 @@ public class SimpleRouterContext implements IRouterContext {
     protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
     protected Map<String, Object> contextCache = new HashMap<String, Object>();
+    protected String nodeId;
 
-    public SimpleRouterContext(JdbcTemplate jdbcTemplate, NodeChannel channel) {
-        this.init(jdbcTemplate, channel);
+    public SimpleRouterContext(String nodeId, JdbcTemplate jdbcTemplate, NodeChannel channel) {
+        this.init(jdbcTemplate, channel, nodeId);
     }
 
     public SimpleRouterContext() {
     }
-
-    protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel) {
+    
+    protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel, String nodeId) {
         this.channel = channel;
         this.jdbcTemplate = jdbcTemplate;
+        this.nodeId = nodeId;
     }
 
+    public String getNodeId() {
+        return nodeId;
+    }
+    
     public NodeChannel getChannel() {
         return this.channel;
     }
