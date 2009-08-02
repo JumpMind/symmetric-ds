@@ -27,8 +27,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -37,31 +35,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class RoutingContext implements IRoutingContext {
+public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
-    protected final Log logger = LogFactory.getLog(getClass());
-    private NodeChannel channel;
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
     private Connection connection;
-    private JdbcTemplate jdbcTemplate;
     private boolean needsCommitted = false;
     private boolean routed = false;
-    private boolean encountedTransactionBoundary = false;
 
-    public RoutingContext(NodeChannel channel, DataSource dataSource) throws SQLException {
-        this.channel = channel;
+    public RouterContext(NodeChannel channel, DataSource dataSource) throws SQLException {
         this.connection = dataSource.getConnection();
         this.connection.setAutoCommit(false);
-        this.jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
-    }
-
-    public JdbcTemplate getJdbcTemplate() {
-        return jdbcTemplate;
-    }
-
-    public NodeChannel getChannel() {
-        return channel;
+        this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel);
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {
@@ -107,13 +92,5 @@ public class RoutingContext implements IRoutingContext {
     public void resetForNextData() {
         this.routed = false;
         this.needsCommitted = false;
-    }
-
-    public void setEncountedTransactionBoundary(boolean encountedTransactionBoundary) {
-        this.encountedTransactionBoundary = encountedTransactionBoundary;
-    }
-
-    public boolean isEncountedTransactionBoundary() {
-        return encountedTransactionBoundary;
     }
 }

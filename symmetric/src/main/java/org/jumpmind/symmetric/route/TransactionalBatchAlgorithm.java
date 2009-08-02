@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 public class TransactionalBatchAlgorithm implements IBatchAlgorithm {
 
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
-            IRoutingContext routingContext) {
+            IRouterContext routingContext) {
         return routingContext.isEncountedTransactionBoundary();
     }
 

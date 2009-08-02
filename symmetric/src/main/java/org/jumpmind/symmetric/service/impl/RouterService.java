@@ -46,15 +46,15 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
-import org.jumpmind.symmetric.route.IRoutingContext;
-import org.jumpmind.symmetric.route.RoutingContext;
+import org.jumpmind.symmetric.route.IRouterContext;
+import org.jumpmind.symmetric.route.RouterContext;
 import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IRoutingService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -66,7 +66,7 @@ import org.springframework.jdbc.support.JdbcUtils;
  * 
  * @since 2.0
  */
-public class RoutingService extends AbstractService implements IRoutingService {
+public class RouterService extends AbstractService implements IRouterService {
 
     private IClusterService clusterService;
 
@@ -84,9 +84,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    public boolean shouldDataBeRouted(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+    public boolean shouldDataBeRouted(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         IDataRouter router = getDataRouter(dataMetaData.getTrigger());
-        Collection<String> nodeIds = router.routeToNodes(dataMetaData, nodes, initialLoad);
+        Collection<String> nodeIds = router.routeToNodes(routingContext, dataMetaData, nodes, initialLoad);
         for (Node node : nodes) {
             if (nodeIds == null || !nodeIds.contains(node.getNodeId())) {
                 return false;
@@ -129,9 +129,9 @@ public class RoutingService extends AbstractService implements IRoutingService {
     protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                IRoutingContext context = null;
+                RouterContext context = null;
                 try {
-                    context = new RoutingContext(nodeChannel, dataSource);
+                    context = new RouterContext(nodeChannel, dataSource);
                     selectDataAndRoute(c, ref, context);
                 } catch (Exception ex) {
                     if (context != null) {
@@ -167,7 +167,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     ps = c.prepareStatement(getSql("selectDistinctDataIdFromDataEventSql"),
                             ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ps.setLong(1, ref.getRefDataid());
+                    ps.setLong(1, ref.getRefDataId());
                     rs = ps.executeQuery();
                     long lastDataId = -1;
                     while (rs.next()) {
@@ -207,7 +207,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
 
-    protected Set<Node> findAvailableNodes(Trigger trigger, IRoutingContext context) {
+    protected Set<Node> findAvailableNodes(Trigger trigger, RouterContext context) {
         Set<Node> nodes = context.getAvailableNodes().get(trigger);
         if (nodes == null) {
             nodes = new HashSet<Node>();
@@ -237,7 +237,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
      * @param context
      *            The current context of the routing process
      */
-    protected void selectDataAndRoute(Connection conn, DataRef ref, IRoutingContext context) throws SQLException {
+    protected void selectDataAndRoute(Connection conn, DataRef ref, RouterContext context) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
@@ -249,7 +249,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
             ps.setString(1, context.getChannel().getId());
-            ps.setLong(2, ref.getRefDataid());
+            ps.setLong(2, ref.getRefDataId());
             rs = ps.executeQuery();
             int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
@@ -271,7 +271,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
         }
     }
 
-    protected void routeData(Data data, Map<String, Long> transactionIdDataId, IRoutingContext routingContext)
+    protected void routeData(Data data, Map<String, Long> transactionIdDataId, RouterContext routingContext)
             throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         routingContext.setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
@@ -282,7 +282,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
             routingContext.resetForNextData();
             if (!routingContext.getChannel().isIgnored()) {
                 IDataRouter router = getDataRouter(trigger);
-                Collection<String> nodeIds = router.routeToNodes(dataMetaData, findAvailableNodes(trigger,
+                Collection<String> nodeIds = router.routeToNodes(routingContext, dataMetaData, findAvailableNodes(trigger,
                         routingContext), false);
                 insertDataEvents(routingContext, dataMetaData, nodeIds);
             }
@@ -303,7 +303,7 @@ public class RoutingService extends AbstractService implements IRoutingService {
 
     }
 
-    protected void insertDataEvents(IRoutingContext routingContext, DataMetaData dataMetaData,
+    protected void insertDataEvents(RouterContext routingContext, DataMetaData dataMetaData,
             Collection<String> nodeIds) {
         if (nodeIds != null && nodeIds.size() > 0) {
             for (String nodeId : nodeIds) {

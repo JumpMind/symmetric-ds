@@ -17,23 +17,27 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.service;
+package org.jumpmind.symmetric.route;
 
-import java.util.Set;
+import java.util.Map;
 
-import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.route.IBatchAlgorithm;
-import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.model.NodeChannel;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+public interface IRouterContext {
 
-public interface IRoutingService {
+    /**
+     * Get the same template that is being used for inserts into data_event for routing.
+     */
+    public JdbcTemplate getJdbcTemplate();
 
-    public void routeData();
+    /**
+     * Get the channel that is currently being routed
+     */
+    public NodeChannel getChannel();
+
+    public boolean isEncountedTransactionBoundary();
     
-    public boolean shouldDataBeRouted(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
- 
-    public void addDataRouter(String name, IDataRouter dataRouter);
+    public Map<String, Object> getContextCache();
     
-    public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm);
 }

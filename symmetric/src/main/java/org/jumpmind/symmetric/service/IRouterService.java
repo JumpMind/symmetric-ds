@@ -17,20 +17,24 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.route;
+package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.ext.IExtensionPoint;
+import java.util.Set;
+
 import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.route.IBatchAlgorithm;
+import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IRouterContext;
 
-/**
- * An extension point that can be configured for a channel to allow further control over batching algorithms.
- * <P>
- * This is the point where the decision is made whether to end a batch or not.
- * 
- * @since 2.0
- */
-public interface IBatchAlgorithm extends IExtensionPoint {
-    public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
-            IRouterContext routingContext);
+
+public interface IRouterService {
+
+    public void routeData();
+    
+    public boolean shouldDataBeRouted(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+ 
+    public void addDataRouter(String name, IDataRouter dataRouter);
+    
+    public void addBatchAlgorithm(String name, IBatchAlgorithm algorithm);
 }

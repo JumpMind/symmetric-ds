@@ -98,7 +98,7 @@
         </property>
     </bean>
     
-    <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RoutingService" scope="singleton" parent="abstractService">
+    <bean id="routingService" class="org.jumpmind.symmetric.service.impl.RouterService" scope="singleton" parent="abstractService">
         <property name="sql" ref="routingServiceSql" />
         <property name="routers" ref="routers" />
         <property name="batchAlgorithms" ref="batchAlgorithms"/>

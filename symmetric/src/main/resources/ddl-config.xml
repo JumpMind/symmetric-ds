@@ -56,13 +56,13 @@
     <table name="outgoing_batch">
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true"
             autoIncrement="true" />
-        <column name="node_id" type="VARCHAR" size="50" required="false" primaryKey="false" />
+        <column name="node_id" type="VARCHAR" size="50" />
         <column name="channel_id" type="VARCHAR" size="50" />
         <column name="status" type="CHAR" size="2" />
         <column name="byte_count" type="INTEGER" />
         <column name="sent_count" type="INTEGER" />        
         <column name="data_event_count" type="INTEGER" />
-        <column name="routing_millis" type="INTEGER" />
+        <column name="router_millis" type="INTEGER" />
         <column name="network_millis" type="INTEGER" />
         <column name="filter_millis" type="INTEGER" />
         <column name="load_millis" type="INTEGER" />        
