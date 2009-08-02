@@ -177,7 +177,7 @@ public class TriggerHistory extends AbstractCsvData {
     public void setSourceTableName(String tableName) {
         this.sourceTableName = tableName;
     }
-
+    
     public String getColumnNames() {
         return columnNames;
     }
@@ -281,5 +281,6 @@ public class TriggerHistory extends AbstractCsvData {
     public void setTriggerRowHash(long triggerRowHash) {
         this.triggerRowHash = triggerRowHash;
     }
+    
 
 }

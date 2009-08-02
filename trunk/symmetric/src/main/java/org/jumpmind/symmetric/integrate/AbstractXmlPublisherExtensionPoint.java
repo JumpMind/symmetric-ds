@@ -1,3 +1,22 @@
+/*
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.jumpmind.symmetric.integrate;
 
 import java.util.Collection;
@@ -19,7 +38,6 @@ import org.jdom.output.XMLOutputter;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.model.DataEventType;
 
 public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
@@ -118,7 +136,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     
     /**
      * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation
-     * adds in the nodeId from the {@link IDataLoaderContext}.
+     * adds in the nodeId from the {@link ICacheContext}.
      * 
      * @param ctx
      * @param xml
@@ -131,7 +149,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
         }
     }
     
-    protected Element getXmlFromCache(IDataLoaderContext ctx, String[] columnNames, String[] data, String[] keyNames, String[] keys) {
+    protected Element getXmlFromCache(ICacheContext ctx, String[] columnNames, String[] data, String[] keyNames, String[] keys) {
         Element xml = null;
         Map<String, Element> ctxCache = getXmlCache(ctx);
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
