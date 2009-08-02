@@ -109,7 +109,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     }
 
-    public void commit(IRouterContext context) {
+    public void completeBatch(IRouterContext context) {
         
     }
     

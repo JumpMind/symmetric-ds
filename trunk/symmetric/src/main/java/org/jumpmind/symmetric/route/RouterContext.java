@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.route;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
+    private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
     private Connection connection;
     private boolean needsCommitted = false;
     private boolean routed = false;
@@ -59,6 +61,10 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
 
     public void commit() throws SQLException {
         connection.commit();
+        this.usedDataRouters.clear();
+        this.encountedTransactionBoundary = false;
+        this.batchesByNodes.clear();
+        this.availableNodes.clear();
     }
 
     public void rollback() {
@@ -87,6 +93,14 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
 
     public boolean isRouted() {
         return routed;
+    }
+    
+    public Set<IDataRouter> getUsedDataRouters() {
+        return usedDataRouters;
+    }
+    
+    public void addUsedDataRouter(IDataRouter dataRouter) {
+        this.usedDataRouters.add(dataRouter);
     }
 
     public void resetForNextData() {

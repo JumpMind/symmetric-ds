@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.jumpmind.symmetric.integrate.IPublisher;
-import org.jumpmind.symmetric.integrate.XmlPublisherFilter;
+import org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;
@@ -62,8 +62,8 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
 
     @Test
     public void testSimpleTransform() {
-        XmlPublisherFilter filter = new XmlPublisherFilter();
-        filter.setTimeStringGenerator(new XmlPublisherFilter.ITimeGenerator() {
+        XmlPublisherDataLoaderFilter filter = new XmlPublisherDataLoaderFilter();
+        filter.setTimeStringGenerator(new XmlPublisherDataLoaderFilter.ITimeGenerator() {
             public String getTime() {
                 return "test";
             }

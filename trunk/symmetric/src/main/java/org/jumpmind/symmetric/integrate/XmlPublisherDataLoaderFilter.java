@@ -67,7 +67,7 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * &lt;/batch&gt;
  * </pre>
  */
-public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtensionPoint {
+public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint {
 
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -95,7 +95,7 @@ public class XmlPublisherFilter implements IPublisherFilter, INodeGroupExtension
         }
     };
 
-    public XmlPublisherFilter() {
+    public XmlPublisherDataLoaderFilter() {
         xmlFormat = Format.getCompactFormat();
         xmlFormat.setOmitDeclaration(true);
     }

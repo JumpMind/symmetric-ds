@@ -58,7 +58,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         return nodeIds;
     }
     
-    public void commit(IRouterContext context) {
+    public void completeBatch(IRouterContext context) {
         
     }
     

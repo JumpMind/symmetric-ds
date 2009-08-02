@@ -43,6 +43,6 @@ public interface IDataRouter extends IExtensionPoint {
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
     
-    public void commit(IRouterContext context);
+    public void completeBatch(IRouterContext context);
 
 }
