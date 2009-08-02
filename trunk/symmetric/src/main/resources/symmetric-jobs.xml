@@ -46,7 +46,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         </property>
     </bean>
     
-    <bean id="routingTimerTask" class="org.jumpmind.symmetric.job.RoutingJob" scope="prototype">
+    <bean id="routingTimerTask" class="org.jumpmind.symmetric.job.RouterJob" scope="prototype">
         <property name="parameterService" ref="parameterService" />
         <property name="routingService" ref="routingService" />
         <property name="needsRescheduled" value="true" />
