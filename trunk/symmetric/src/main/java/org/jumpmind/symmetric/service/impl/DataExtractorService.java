@@ -258,7 +258,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.init(writer, ctxCopy);
                             dataExtractor.begin(batch, writer);
                         }
-                        SimpleRouterContext routingContext  = new SimpleRouterContext(jdbcTemplate, channel);
+                        SimpleRouterContext routingContext  = new SimpleRouterContext( node.getNodeId(), jdbcTemplate, channel);
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
                                     .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);  

@@ -20,10 +20,8 @@
 package org.jumpmind.symmetric.integrate;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.jdom.Element;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IBatchListener;
@@ -66,9 +64,9 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, null, keys);
+            Element xml = getXmlFromCache(ctx, null, null, ctx.getKeyNames(), keys);
             if (xml != null) {
-                toXmlElement(DataEventType.UPDATE, xml, ctx, null, keys);
+                toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), null, null, ctx.getKeyNames(), keys);
             }
         }
         return loadDataInTargetDatabase;
@@ -76,9 +74,9 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
 
     public boolean filterUpdate(IDataLoaderContext ctx, String[] data, String[] keys) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, data, keys);
+            Element xml = getXmlFromCache(ctx, ctx.getColumnNames(), data, ctx.getKeyNames(), keys);
             if (xml != null) {
-                toXmlElement(DataEventType.UPDATE, xml, ctx, data, keys);
+                toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), ctx.getColumnNames(), data, ctx.getKeyNames(), keys);
             }
         }
         return loadDataInTargetDatabase;
@@ -86,9 +84,9 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
 
     public boolean filterInsert(IDataLoaderContext ctx, String[] data) {
         if (tableNamesToPublishAsGroup == null || tableNamesToPublishAsGroup.contains(ctx.getTableName())) {
-            Element xml = getXmlFromCache(ctx, data, null);
+            Element xml = getXmlFromCache(ctx, ctx.getColumnNames(), data, null, null);
             if (xml != null) {
-                toXmlElement(DataEventType.INSERT, xml, ctx, data, null);
+                toXmlElement(DataEventType.INSERT, xml, ctx.getTableName(), ctx.getColumnNames(), data, null, null);
             }
         }
         return loadDataInTargetDatabase;
@@ -100,109 +98,10 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
             finalizeXmlAndPublish(ctx);
         }
     }
-    /**
-     * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation
-     * adds in the nodeId from the {@link IDataLoaderContext}.
-     * 
-     * @param ctx
-     * @param xml
-     *            append XML attributes to this buffer
-     */
-    protected void addFormattedExtraGroupAttributes(IDataLoaderContext ctx, Element xml) {
-        xml.setAttribute("nodeid", ctx.getNodeId());
-        if (timeStringGenerator != null) {
-            xml.setAttribute("time", timeStringGenerator.getTime());
-        }
-    }
     
-    protected void toXmlElement(DataEventType dml, Element xml, IDataLoaderContext ctx, String[] data, String[] keys) {
-        Element row = new Element("row");
-        xml.addContent(row);
-        row.setAttribute("entity", ctx.getTableName());
-        row.setAttribute("dml", dml.getCode());
-
-        String[] colNames = null;
-
-        if (data == null) {
-            colNames = ctx.getKeyNames();
-            data = keys;
-        } else {
-            colNames = ctx.getColumnNames();
-        }
-
-        for (int i = 0; i < data.length; i++) {
-            String col = colNames[i];
-            Element dataElement = new Element("data");
-            row.addContent(dataElement);
-            dataElement.setAttribute("key", col);
-            if (data[i] != null) {
-                dataElement.setText(data[i]);
-            } else {
-                dataElement.setAttribute("nil", "true", getXmlNamespace());
-            }
-        }
-    }
-    
-    
-    protected Element getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
-        Element xml = null;
-        Map<String, Element> ctxCache = getXmlCache(ctx);
-        String txId = toXmlGroupId(ctx, data, keys);
-        if (txId != null) {
-            xml = ctxCache.get(txId);
-            if (xml == null) {
-                xml = new Element(xmlTagNameToUseForGroup);
-                xml.addNamespaceDeclaration(getXmlNamespace());
-                xml.setAttribute("id", txId);
-                addFormattedExtraGroupAttributes(ctx, xml);
-                ctxCache.put(txId, xml);
-            }
-        }
-        return xml;
-    }
-
-    protected String toXmlGroupId(IDataLoaderContext ctx, String[] data, String[] keys) {
-        if (groupByColumnNames != null) {
-            StringBuilder id = new StringBuilder();
-
-            if (keys != null) {
-                String[] columns = ctx.getKeyNames();
-                for (String col : groupByColumnNames) {
-                    int index = ArrayUtils.indexOf(columns, col, 0);
-                    if (index >= 0) {
-                        id.append(data[index]);
-                    } else {
-                        id = new StringBuilder();
-                        break;
-                    }
-                }
-            }
-
-            if (id.length() == 0) {
-                String[] columns = ctx.getColumnNames();
-                for (String col : groupByColumnNames) {
-                    int index = ArrayUtils.indexOf(columns, col, 0);
-                    if (index >= 0) {
-                        id.append(data[index]);
-                    } else {
-                        return null;
-                    }
-                }
-            }
-
-            if (id.length() > 0) {
-                return id.toString().replaceAll("-", "");
-            }
-        } else {
-            logger
-                    .warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
-        }
-        return null;
-    }
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
-
 
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }

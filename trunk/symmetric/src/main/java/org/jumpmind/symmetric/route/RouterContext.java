@@ -45,10 +45,10 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private boolean needsCommitted = false;
     private boolean routed = false;
 
-    public RouterContext(NodeChannel channel, DataSource dataSource) throws SQLException {
+    public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource) throws SQLException {
         this.connection = dataSource.getConnection();
         this.connection.setAutoCommit(false);
-        this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel);
+        this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel, nodeId);
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {

@@ -105,8 +105,9 @@ public class RouterService extends AbstractService implements IRouterService {
     public void routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             try {
+                Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
-                routeDataForEachChannel(ref);
+                routeDataForEachChannel(ref, sourceNode);
                 findAndSaveNextDataId(ref);
             } finally {
                 clusterService.unlock(LockActionConstants.ROUTE);
@@ -119,21 +120,21 @@ public class RouterService extends AbstractService implements IRouterService {
      * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
      * to reduce the number of connections we are required to have.
      */
-    protected void routeDataForEachChannel(DataRef ref) {
+    protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getChannels();
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspended()) {
-                routeDataForChannel(ref, nodeChannel);
+                routeDataForChannel(ref, nodeChannel, sourceNode);
             }
         }
     }
 
-    protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel) {
+    protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel, final Node sourceNode) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 RouterContext context = null;
                 try {
-                    context = new RouterContext(nodeChannel, dataSource);
+                    context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
                     selectDataAndRoute(c, ref, context);
                 } catch (Exception ex) {
                     if (context != null) {
