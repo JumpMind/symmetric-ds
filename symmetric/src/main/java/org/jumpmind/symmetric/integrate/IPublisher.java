@@ -19,8 +19,8 @@
  */
 package org.jumpmind.symmetric.integrate;
 
-import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.ext.ICacheContext;
 
 public interface IPublisher {
-    public void publish(IDataLoaderContext context, String text);
+    public void publish(ICacheContext context, String text);
 }

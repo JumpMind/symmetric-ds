@@ -19,22 +19,12 @@
  */
 package org.jumpmind.symmetric.integrate;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
@@ -67,45 +57,11 @@ import org.jumpmind.symmetric.model.IncomingBatch;
  * &lt;/batch&gt;
  * </pre>
  */
-public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint {
-
-    protected final Log logger = LogFactory.getLog(getClass());
-
-    private final String XML_CACHE = "XML_CACHE_" + this.hashCode();
-
-    protected IPublisher publisher;
-
-    private Set<String> tableNamesToPublishAsGroup;
-
-    private String xmlTagNameToUseForGroup = "batch";
-
-    private List<String> groupByColumnNames;
-
-    private String[] nodeGroups;
-
-    private boolean loadDataInTargetDatabase = true;
-
-    private boolean autoRegister = true;
-
-    private Format xmlFormat;
-
-    private ITimeGenerator timeStringGenerator = new ITimeGenerator() {
-        public String getTime() {
-            return Long.toString(System.currentTimeMillis());
-        }
-    };
+public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionPoint implements IPublisherFilter, INodeGroupExtensionPoint {
+    
+    protected boolean loadDataInTargetDatabase = true;
 
     public XmlPublisherDataLoaderFilter() {
-        xmlFormat = Format.getCompactFormat();
-        xmlFormat.setOmitDeclaration(true);
-    }
-
-    public boolean isAutoRegister() {
-        return autoRegister;
-    }
-
-    public String[] getNodeGroupIdsToApplyTo() {
-        return nodeGroups;
     }
 
     public boolean filterDelete(IDataLoaderContext ctx, String[] keys) {
@@ -138,27 +94,12 @@ public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGrou
         return loadDataInTargetDatabase;
     }
 
-    private Element getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
-        Element xml = null;
-        Map<String, Element> ctxCache = getXmlCache(ctx);
-        String txId = toXmlGroupId(ctx, data, keys);
-        if (txId != null) {
-            xml = ctxCache.get(txId);
-            if (xml == null) {
-                xml = new Element(xmlTagNameToUseForGroup);
-                xml.addNamespaceDeclaration(getXmlNamespace());
-                xml.setAttribute("id", txId);
-                addFormattedExtraGroupAttributes(ctx, xml);
-                ctxCache.put(txId, xml);
-            }
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+        IDataLoaderContext ctx = loader.getContext();
+        if (doesXmlExistToPublish(ctx)) {
+            finalizeXmlAndPublish(ctx);
         }
-        return xml;
     }
-
-    private final static Namespace getXmlNamespace() {
-        return Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-    }
-
     /**
      * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation
      * adds in the nodeId from the {@link IDataLoaderContext}.
@@ -173,26 +114,8 @@ public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGrou
             xml.setAttribute("time", timeStringGenerator.getTime());
         }
     }
-
-    @SuppressWarnings("unchecked")
-    protected Map<String, Element> getXmlCache(IDataLoaderContext ctx) {
-        Map<String, Object> cache = ctx.getContextCache();
-        Map<String, Element> xmlCache = (Map<String, Element>) cache.get(XML_CACHE);
-        if (xmlCache == null) {
-            xmlCache = new HashMap<String, Element>();
-            cache.put(XML_CACHE, xmlCache);
-        }
-        return xmlCache;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected boolean doesXmlExistToPublish(IDataLoaderContext ctx) {
-        Map<String, Object> cache = ctx.getContextCache();
-        Map<String, StringBuilder> xmlCache = (Map<String, StringBuilder>) cache.get(XML_CACHE);
-        return xmlCache != null && xmlCache.size() > 0;
-    }
-
-    private void toXmlElement(DataEventType dml, Element xml, IDataLoaderContext ctx, String[] data, String[] keys) {
+    
+    protected void toXmlElement(DataEventType dml, Element xml, IDataLoaderContext ctx, String[] data, String[] keys) {
         Element row = new Element("row");
         xml.addContent(row);
         row.setAttribute("entity", ctx.getTableName());
@@ -219,8 +142,26 @@ public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGrou
             }
         }
     }
+    
+    
+    protected Element getXmlFromCache(IDataLoaderContext ctx, String[] data, String[] keys) {
+        Element xml = null;
+        Map<String, Element> ctxCache = getXmlCache(ctx);
+        String txId = toXmlGroupId(ctx, data, keys);
+        if (txId != null) {
+            xml = ctxCache.get(txId);
+            if (xml == null) {
+                xml = new Element(xmlTagNameToUseForGroup);
+                xml.addNamespaceDeclaration(getXmlNamespace());
+                xml.setAttribute("id", txId);
+                addFormattedExtraGroupAttributes(ctx, xml);
+                ctxCache.put(txId, xml);
+            }
+        }
+        return xml;
+    }
 
-    private String toXmlGroupId(IDataLoaderContext ctx, String[] data, String[] keys) {
+    protected String toXmlGroupId(IDataLoaderContext ctx, String[] data, String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
 
@@ -258,79 +199,10 @@ public class XmlPublisherDataLoaderFilter implements IPublisherFilter, INodeGrou
         }
         return null;
     }
-
-    private void finalizeXmlAndPublish(IDataLoaderContext ctx) {
-        Map<String, Element> ctxCache = getXmlCache(ctx);
-        Collection<Element> buffers = ctxCache.values();
-        for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
-            String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
-            if (logger.isDebugEnabled()) {
-                logger.debug("Sending XML to IPublisher -> " + xml);
-            }
-            iterator.remove();
-            publisher.publish(ctx, xml.toString());
-        }
-
-    }
-
-    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
-        IDataLoaderContext ctx = loader.getContext();
-        if (doesXmlExistToPublish(ctx)) {
-            finalizeXmlAndPublish(ctx);
-        }
-    }
-
-    public void setTableNamesToPublishAsGroup(Set<String> tableNamesToPublishAsGroup) {
-        this.tableNamesToPublishAsGroup = tableNamesToPublishAsGroup;
-    }
-
-    public void setTableNameToPublish(String tableName) {
-        this.tableNamesToPublishAsGroup = new HashSet<String>(1);
-        this.tableNamesToPublishAsGroup.add(tableName);
-    }
-
-    public void setXmlTagNameToUseForGroup(String xmlTagNameToUseForGroup) {
-        this.xmlTagNameToUseForGroup = xmlTagNameToUseForGroup;
-    }
-
-    /**
-     * This attribute is required. It needs to identify the columns that will be used to key on rows in the specified
-     * tables that need to be grouped together in an 'XML batch.'
-     */
-    public void setGroupByColumnNames(List<String> groupByColumnNames) {
-        this.groupByColumnNames = groupByColumnNames;
-    }
-
     public void setLoadDataInTargetDatabase(boolean loadDataInTargetDatabase) {
         this.loadDataInTargetDatabase = loadDataInTargetDatabase;
     }
 
-    public void setPublisher(IPublisher publisher) {
-        this.publisher = publisher;
-    }
-
-    public void setNodeGroups(String[] nodeGroups) {
-        this.nodeGroups = nodeGroups;
-    }
-
-    public void setAutoRegister(boolean autoRegister) {
-        this.autoRegister = autoRegister;
-    }
-
-    interface ITimeGenerator {
-        public String getTime();
-    }
-
-    /**
-     * Used to populate the time attribute of an XML message.
-     */
-    public void setTimeStringGenerator(ITimeGenerator timeStringGenerator) {
-        this.timeStringGenerator = timeStringGenerator;
-    }
-
-    public void setXmlFormat(Format xmlFormat) {
-        this.xmlFormat = xmlFormat;
-    }
 
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
