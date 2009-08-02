@@ -21,7 +21,7 @@ package org.jumpmind.symmetric.integrate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.ext.ICacheContext;
 import org.springframework.jms.core.JmsTemplate;
 
 public class SimpleJmsPublisher implements IPublisher {
@@ -32,7 +32,7 @@ public class SimpleJmsPublisher implements IPublisher {
 
     public boolean enabled = true;
 
-    public void publish(IDataLoaderContext ctx, String text) {
+    public void publish(ICacheContext ctx, String text) {
         if (logger.isDebugEnabled()) {
             logger.debug(text);
         }

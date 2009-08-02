@@ -19,12 +19,11 @@
  */
 package org.jumpmind.symmetric.route;
 
-import java.util.Map;
-
+import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public interface IRouterContext {
+public interface IRouterContext extends ICacheContext {
 
     /**
      * Get the same template that is being used for inserts into data_event for routing.
@@ -37,7 +36,5 @@ public interface IRouterContext {
     public NodeChannel getChannel();
 
     public boolean isEncountedTransactionBoundary();
-    
-    public Map<String, Object> getContextCache();
     
 }

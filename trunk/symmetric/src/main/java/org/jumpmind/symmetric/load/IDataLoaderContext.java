@@ -21,12 +21,11 @@
 
 package org.jumpmind.symmetric.load;
 
-import java.util.Map;
-
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.ext.ICacheContext;
 
-public interface IDataLoaderContext {
+public interface IDataLoaderContext extends ICacheContext {
 
     public long getBatchId();
 
@@ -59,8 +58,6 @@ public interface IDataLoaderContext {
     public int getColumnIndex(String columnName);
 
     public Table[] getAllTablesProcessed();
-
-    public Map<String, Object> getContextCache();
 
     public TableTemplate getTableTemplate();
 

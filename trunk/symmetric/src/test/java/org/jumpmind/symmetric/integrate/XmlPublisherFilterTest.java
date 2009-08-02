@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.integrate.IPublisher;
 import org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
@@ -97,7 +98,7 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
     class Output implements IPublisher {
         private String output;
 
-        public void publish(IDataLoaderContext context, String text) {
+        public void publish(ICacheContext context, String text) {
             this.output = text;
         }
 
