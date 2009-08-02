@@ -355,8 +355,8 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void saveDataRef(DataRef dataRef) {
-        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {dataRef.getRefDataid(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP})) {
-            jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] {dataRef.getRefDataid(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP});
+        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {dataRef.getRefDataId(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP})) {
+            jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] {dataRef.getRefDataId(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP});
         }
     }
 

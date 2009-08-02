@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.IRoutingService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -84,7 +84,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private ITransportManager transportManager;
 
-    private IRoutingService routingService;
+    private IRouterService routingService;
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -229,7 +229,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.transportManager = transportManager;
     }
 
-    public void setRoutingService(IRoutingService routingService) {
+    public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
 }

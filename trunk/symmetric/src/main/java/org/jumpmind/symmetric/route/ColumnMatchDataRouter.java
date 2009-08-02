@@ -57,7 +57,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     private IRegistrationService registrationService;
 
     // TODO Support other operators (like !=) and old data
-    public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
         String expression = dataMetaData.getTrigger().getRouterExpression();
         if (!StringUtils.isBlank(expression)) {
@@ -109,6 +109,10 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     }
 
+    public void commit(IRouterContext context) {
+        
+    }
+    
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
     }

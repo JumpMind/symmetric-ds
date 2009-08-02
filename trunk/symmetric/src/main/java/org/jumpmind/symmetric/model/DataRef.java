@@ -23,21 +23,21 @@ import java.util.Date;
 
 public class DataRef {
 
-    private long refDataid;
+    private long refDataId;
     private Date refTime;
 
     public DataRef(long refDataid, Date refTime) {
         super();
-        this.refDataid = refDataid;
+        this.refDataId = refDataid;
         this.refTime = refTime;
     }
 
-    public void setRefDataid(long refDataid) {
-        this.refDataid = refDataid;
+    public void setRefDataId(long refDataid) {
+        this.refDataId = refDataid;
     }
 
-    public long getRefDataid() {
-        return refDataid;
+    public long getRefDataId() {
+        return refDataId;
     }
 
     public void setRefTime(Date refTime) {

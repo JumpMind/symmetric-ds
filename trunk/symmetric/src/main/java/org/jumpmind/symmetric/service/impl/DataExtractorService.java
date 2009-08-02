@@ -56,6 +56,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -63,7 +64,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
-import org.jumpmind.symmetric.service.IRoutingService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -81,7 +82,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IOutgoingBatchService outgoingBatchService;
     
-    private IRoutingService routingService;
+    private IRouterService routingService;
     
     private IDataService dataService;
 
@@ -257,11 +258,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.init(writer, ctxCopy);
                             dataExtractor.begin(batch, writer);
                         }
+                        SimpleRouterContext routingContext  = new SimpleRouterContext(jdbcTemplate, channel);
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
                                     .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);  
                             DataMetaData dataMetaData = new DataMetaData(data, table, trigger, channel);
-                            if (routingService.shouldDataBeRouted(dataMetaData, oneNodeSet, true)) {
+                            if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, ctxCopy);
                             }
                         }
@@ -535,7 +537,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.nodeService = nodeService;
     }
     
-    public void setRoutingService(IRoutingService routingService) {
+    public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
 

@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-public class RoutingServiceTest extends AbstractDatabaseTest {
+public class RouterServiceTest extends AbstractDatabaseTest {
 
     final static String TEST_TABLE_1 = "TEST_ROUTING_DATA_1";
     final static String TEST_TABLE_2 = "TEST_ROUTING_DATA_2";
@@ -26,11 +26,11 @@ public class RoutingServiceTest extends AbstractDatabaseTest {
     final static String NODE_GROUP_NODE_2 = "00002";
     final static String NODE_GROUP_NODE_3 = "00003";
 
-    public RoutingServiceTest(String dbName) {
+    public RouterServiceTest(String dbName) {
         super(dbName);
     }
 
-    public RoutingServiceTest() throws Exception {
+    public RouterServiceTest() throws Exception {
     }
 
     @Test

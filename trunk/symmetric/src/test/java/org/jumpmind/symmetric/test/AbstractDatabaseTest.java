@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.IRoutingService;
+import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -89,7 +89,7 @@ public class AbstractDatabaseTest {
         return AppUtils.find(Constants.NODE_SERVICE, getSymmetricEngine());
     }
 
-    protected IRoutingService getRoutingService() {
+    protected IRouterService getRoutingService() {
         return AppUtils.find(Constants.ROUTING_SERVICE, getSymmetricEngine());
     }
 

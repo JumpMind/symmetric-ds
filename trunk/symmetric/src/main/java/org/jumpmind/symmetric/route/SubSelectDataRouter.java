@@ -43,7 +43,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
     
     private IDbDialect dbDialect;
     
-    public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Trigger trigger = dataMetaData.getTrigger();
         String subSelect = trigger.getRouterExpression();
         Collection<String> nodeIds = null;
@@ -56,6 +56,10 @@ public class SubSelectDataRouter extends AbstractDataRouter {
             nodeIds = toNodeIds(nodes);
         }
         return nodeIds;
+    }
+    
+    public void commit(IRouterContext context) {
+        
     }
     
     public void setSql(String sql) {

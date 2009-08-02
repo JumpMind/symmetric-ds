@@ -19,19 +19,19 @@
  */
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.service.IRoutingService;
+import org.jumpmind.symmetric.service.IRouterService;
 
 
 public class RoutingJob extends AbstractJob {
 
-    IRoutingService routingService;
+    IRouterService routingService;
     
     @Override
     void doJob() throws Exception {
         routingService.routeData();
     }
     
-    public void setRoutingService(IRoutingService routingService) {
+    public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
 

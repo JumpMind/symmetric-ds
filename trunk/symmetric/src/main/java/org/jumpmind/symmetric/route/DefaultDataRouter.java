@@ -27,8 +27,13 @@ import org.jumpmind.symmetric.model.Node;
 
 public class DefaultDataRouter extends AbstractDataRouter {
 
-    public Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
+    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
+            boolean initialLoad) {
         return toNodeIds(nodes);
+    }
+
+    public void commit(IRouterContext context) {
+
     }
 
 }

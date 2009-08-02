@@ -41,6 +41,8 @@ import org.jumpmind.symmetric.model.Node;
  */
 public interface IDataRouter extends IExtensionPoint {
 
-    Collection<String> routeToNodes(DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad);
+    
+    public void commit(IRouterContext context);
 
 }
