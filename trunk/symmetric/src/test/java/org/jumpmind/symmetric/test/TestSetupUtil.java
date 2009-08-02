@@ -70,7 +70,7 @@ public class TestSetupUtil {
     private static SymmetricWebServer rootServer;
 
     public static final int TEST_PORT = 51413;
-    
+
     public static Collection<String[]> lookupDatabasePairs(String testPrefix) {
         Properties properties = getTestProperties(testPrefix);
         String[] clientDatabaseTypes = StringUtils.split(properties.getProperty(testPrefix + CLIENT), ",");
@@ -109,15 +109,15 @@ public class TestSetupUtil {
 
         closeDerbyAndReloadDriver();
     }
-    
+
     /**
-     * Unit tests were failing after opening and closing several data connection pools against the 
-     * same database in memory.  After shutting down the connection pool, it seems to help by shutting
-     * down the entire database.
+     * Unit tests were failing after opening and closing several data connection
+     * pools against the same database in memory. After shutting down the
+     * connection pool, it seems to help by shutting down the entire database.
      */
     protected static void closeDerbyAndReloadDriver() throws SQLException {
         try {
-            DriverManager.getConnection("jdbc:derby:;shutdown=true");            
+            DriverManager.getConnection("jdbc:derby:;shutdown=true");
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 50000) {
                 DriverManager.registerDriver(new EmbeddedDriver());
@@ -229,9 +229,9 @@ public class TestSetupUtil {
                 newProperties.setProperty(ParameterConstants.EXTERNAL_ID,
                         databaseRole == DatabaseRole.ROOT ? TestConstants.TEST_ROOT_EXTERNAL_ID
                                 : TestConstants.TEST_CLIENT_EXTERNAL_ID);
-                newProperties.setProperty(ParameterConstants.MY_URL, "http://localhost:"+TEST_PORT+"/sync");
+                newProperties.setProperty(ParameterConstants.MY_URL, "http://localhost:" + TEST_PORT + "/sync");
                 newProperties.setProperty(ParameterConstants.REGISTRATION_URL,
-                        databaseRole == DatabaseRole.CLIENT ? "http://localhost:"+TEST_PORT+"/sync" : "");
+                        databaseRole == DatabaseRole.CLIENT ? "http://localhost:" + TEST_PORT + "/sync" : "");
                 newProperties.setProperty(ParameterConstants.ENGINE_NAME, databaseRole.name().toLowerCase());
 
                 File propertiesFile = File.createTempFile("symmetric-test.", ".properties");
@@ -266,10 +266,12 @@ public class TestSetupUtil {
                 properties.load(f);
                 f.close();
             } else {
-                logger.info("Could not find " + propertiesFile.getAbsolutePath()
-                        + ". Using all of the default properties");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Could not find " + propertiesFile.getAbsolutePath()
+                            + ". Using all of the default properties");
+                }
             }
-            
+
             String rootDbs = System.getProperty(testPrefix + ROOT);
             String clientDbs = System.getProperty(testPrefix + CLIENT);
             if (!StringUtils.isBlank(rootDbs) && !rootDbs.startsWith("${")) {

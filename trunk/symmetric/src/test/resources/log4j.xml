@@ -27,9 +27,15 @@
     </category>
 
     <category name="org.springframework">
-        <priority value="WARN" />
+        <priority value="ERROR" />
     </category>
 
+<!-- 
+    <category name="org.springframework.jdbc.core.JdbcTemplate">
+        <priority value="DEBUG" />
+    </category>
+ -->
+ 
     <category name="org.springframework.jmx.export.MBeanExporter">
         <priority value="ERROR" />
     </category>
