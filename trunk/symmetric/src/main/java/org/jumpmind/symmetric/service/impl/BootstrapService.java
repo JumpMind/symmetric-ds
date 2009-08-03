@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,8 +89,6 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     private boolean initialized = false;
 
     private TriggerFailureListener failureListener = new TriggerFailureListener();
-
-    private Map<Integer, Trigger> triggerCache;
 
     public BootstrapService() {
         this.addTriggerCreationListeners(this.failureListener);
@@ -226,23 +223,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
         }
     }
 
-    // TODO Should this be in ConfigurationService?
-    public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache) {
-        if (triggerCache == null || refreshCache) {
-            synchronized (this) {
-                triggerCache = new HashMap<Integer, Trigger>();
-                List<Trigger> triggers = configurationService.getActiveTriggersForSourceNodeGroup(parameterService
-                        .getString(ParameterConstants.NODE_GROUP_ID));
-                for (Trigger trigger : triggers) {
-                    triggerCache.put(trigger.getTriggerId(), trigger);
-                }
-            }
-        }
-        return triggerCache;
-    }
-
     private void updateOrCreateSymmetricTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        Collection<Trigger> triggers = getCachedTriggers(true).values();
+        Collection<Trigger> triggers = configurationService.getCachedTriggers(true).values();
 
         for (Trigger trigger : triggers) {
 
