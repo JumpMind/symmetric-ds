@@ -67,6 +67,8 @@ public interface IConfigurationService {
     public NodeChannel getChannel(String channelId);
     
     public void reloadChannels();
+    
+    public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache);
 
     public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 

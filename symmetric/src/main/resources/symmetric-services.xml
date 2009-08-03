@@ -103,7 +103,6 @@
         <property name="routers" ref="routers" />
         <property name="batchAlgorithms" ref="batchAlgorithms"/>
         <property name="dataService" ref="dataService" />
-        <property name="bootstrapService" ref="bootstrapService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />

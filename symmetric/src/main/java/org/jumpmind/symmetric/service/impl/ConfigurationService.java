@@ -63,6 +63,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private IDbDialect dbDialect;
 
     private String tablePrefix;
+    
+    private Map<Integer, Trigger> triggerCache;
 
     /**
      * Cache the history for performance. History never changes and does not
@@ -198,6 +200,20 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return DataEventAction.fromCode(code);
     }
 
+    public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache) {
+        if (triggerCache == null || refreshCache) {
+            synchronized (this) {
+                triggerCache = new HashMap<Integer, Trigger>();
+                List<Trigger> triggers = getActiveTriggersForSourceNodeGroup(parameterService
+                        .getString(ParameterConstants.NODE_GROUP_ID));
+                for (Trigger trigger : triggers) {
+                    triggerCache.put(trigger.getTriggerId(), trigger);
+                }
+            }
+        }
+        return triggerCache;
+    }
+    
     /**
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.

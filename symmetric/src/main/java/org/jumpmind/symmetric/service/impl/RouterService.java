@@ -49,7 +49,6 @@ import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
 import org.jumpmind.symmetric.route.RouterContext;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -76,8 +75,6 @@ public class RouterService extends AbstractService implements IRouterService {
     private IConfigurationService configurationService;
 
     private IOutgoingBatchService outgoingBatchService;
-
-    private IBootstrapService bootstrapService;
 
     private INodeService nodeService;
 
@@ -369,9 +366,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected Trigger getTriggerForData(Data data) {
-        // TODO We really shouldn't be referencing the bootstrapService from
-        // here ... maybe this method needs to move to the configurationService
-        Trigger trigger = bootstrapService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
+        Trigger trigger = configurationService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
         if (trigger == null) {
             trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
             if (trigger == null) {
@@ -400,10 +395,6 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
-    }
-
-    public void setBootstrapService(IBootstrapService bootstrapService) {
-        this.bootstrapService = bootstrapService;
     }
 
     public void setNodeService(INodeService nodeService) {

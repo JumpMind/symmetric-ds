@@ -80,7 +80,7 @@ public abstract class AbstractEmbeddedTrigger {
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
         this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
-        this.trigger = bootstrapService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
+        this.trigger = configurationService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
             logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.",
                     triggerType.name(), tableName, getTriggerHistId()));

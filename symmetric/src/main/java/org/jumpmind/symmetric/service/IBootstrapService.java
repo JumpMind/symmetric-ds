@@ -51,8 +51,6 @@ public interface IBootstrapService {
 
     public void heartbeat();
     
-    public Map<Integer,Trigger> getCachedTriggers(boolean refreshCache);
-    
     public void addTriggerCreationListeners(ITriggerCreationListener l);
 
     /**
