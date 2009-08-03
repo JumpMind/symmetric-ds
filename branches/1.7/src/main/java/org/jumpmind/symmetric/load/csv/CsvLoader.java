@@ -214,18 +214,23 @@ public class CsvLoader implements IDataLoader {
                 // Get the Target Node
                 Node targetNode = nodeService.findIdentity();
                 if (sourceNode != null) {
-                    // Get the trigger based upon table name , source node group
-                    // id , target node group id and channel id
-                    Trigger trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
-                            targetNode.getNodeGroupId(), context.getChannelId());
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
-                        tableName = trigger.getTargetTableName();
-                    } 
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
-                        schema = trigger.getTargetSchemaName();
-                    }
-                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
-                        catalog = trigger.getTargetCatalogName();
+                    Trigger trigger = null;
+                    if (targetNode == null) {
+                        trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                    } else {
+                        // Get the trigger based upon table name , source node
+                        // group id , target node group id and channel id
+                        trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
+                                targetNode.getNodeGroupId(), context.getChannelId());
+                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
+                            tableName = trigger.getTargetTableName();
+                        }
+                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
+                            schema = trigger.getTargetSchemaName();
+                        }
+                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
+                            catalog = trigger.getTargetCatalogName();
+                        }
                     }
                 }
             }
