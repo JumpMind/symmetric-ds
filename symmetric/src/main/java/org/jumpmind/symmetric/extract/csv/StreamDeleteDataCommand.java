@@ -27,11 +27,12 @@ import java.io.IOException;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 class StreamDeleteDataCommand extends AbstractStreamDataCommand {
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        Util.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData());
+        CsvUtils.write(out, CsvConstants.DELETE, DELIMITER, data.getPkData());
         out.newLine();
     }
     

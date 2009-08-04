@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 public class CsvExtractor14 implements IDataExtractor {
 
@@ -50,19 +51,19 @@ public class CsvExtractor14 implements IDataExtractor {
         Node nodeIdentity = nodeService.findIdentity();
         String nodeId = (nodeIdentity == null) ? parameterService.getString(ParameterConstants.EXTERNAL_ID)
                 : nodeIdentity.getNodeId();
-        Util.write(writer, CsvConstants.NODEID, Util.DELIMITER, nodeId);
+        CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, nodeId);
         writer.newLine();
     }
 
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.BATCH, Util.DELIMITER, Long.toString(batch.getBatchId()));
+        CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
-        Util.write(writer, CsvConstants.BINARY, Util.DELIMITER, dbDialect.getBinaryEncoding().name());
+        CsvUtils.write(writer, CsvConstants.BINARY, CsvUtils.DELIMITER, dbDialect.getBinaryEncoding().name());
         writer.newLine();
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, Util.DELIMITER, Long.toString(batch.getBatchId()));
+        CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
@@ -82,15 +83,15 @@ public class CsvExtractor14 implements IDataExtractor {
         if (data.getTriggerHistory() != null) {
             String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
             if (!context.getHistoryRecordsWritten().contains(auditKey)) {
-                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+                CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 out.newLine();
-                Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
+                CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
                 out.newLine();
-                Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
+                CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
                 out.newLine();
                 context.getHistoryRecordsWritten().add(auditKey);
             } else if (!context.isLastTable(data.getTableName())) {
-                Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+                CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
                 out.newLine();
             }
 
