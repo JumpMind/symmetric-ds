@@ -23,8 +23,9 @@ package org.jumpmind.symmetric.extract.csv;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 abstract class AbstractStreamDataCommand implements IStreamDataCommand {
-    protected static final String DELIMITER = Util.DELIMITER;
+    protected static final String DELIMITER = CsvUtils.DELIMITER;
     protected Log logger = LogFactory.getLog(getClass());
 }

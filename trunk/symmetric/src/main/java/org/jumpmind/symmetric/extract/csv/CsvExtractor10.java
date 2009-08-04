@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 public class CsvExtractor10 implements IDataExtractor {
 
@@ -43,18 +44,18 @@ public class CsvExtractor10 implements IDataExtractor {
     private String tablePrefix;
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
-        Util.write(writer, CsvConstants.NODEID, Util.DELIMITER, parameterService
+        CsvUtils.write(writer, CsvConstants.NODEID, CsvUtils.DELIMITER, parameterService
                 .getString(ParameterConstants.EXTERNAL_ID));
         writer.newLine();
     }
 
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.BATCH, Util.DELIMITER, Long.toString(batch.getBatchId()));
+        CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
     public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        Util.write(writer, CsvConstants.COMMIT, Util.DELIMITER, Long.toString(batch.getBatchId()));
+        CsvUtils.write(writer, CsvConstants.COMMIT, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
         writer.newLine();
     }
 
@@ -74,9 +75,9 @@ public class CsvExtractor10 implements IDataExtractor {
 
         String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(auditKey)) {
-            Util.write(out, "table, ", data.getTableName());
+            CsvUtils.write(out, "table, ", data.getTableName());
             out.newLine();
-            Util.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
+            CsvUtils.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
             String columns = data.getTriggerHistory().getColumnNames();
             if (data.getTableName().equalsIgnoreCase(tablePrefix + "_node_security")) {
@@ -85,11 +86,11 @@ public class CsvExtractor10 implements IDataExtractor {
                 columns = columns.replaceFirst(",node_password,", ",password,");
                 columns = columns.replaceFirst(",NODE_PASSWORD,", ",PASSWORD,");
             }
-            Util.write(out, "columns, ", columns);
+            CsvUtils.write(out, "columns, ", columns);
             out.newLine();
             context.getHistoryRecordsWritten().add(auditKey);
         } else if (!context.isLastTable(data.getTableName())) {
-            Util.write(out, "table, ", data.getTableName());
+            CsvUtils.write(out, "table, ", data.getTableName());
             out.newLine();
         }
 

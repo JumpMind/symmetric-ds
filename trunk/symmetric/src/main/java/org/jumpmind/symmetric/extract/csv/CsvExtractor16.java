@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 public class CsvExtractor16 extends CsvExtractor14 {
 
@@ -57,19 +58,19 @@ public class CsvExtractor16 extends CsvExtractor14 {
         }
         String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
-            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
-            Util.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
+            CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
-            Util.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
+            CsvUtils.write(out, CsvConstants.COLUMNS, ", ", data.getTriggerHistory().getColumnNames());
             out.newLine();
             context.getHistoryRecordsWritten().add(triggerHistId);
         } else if (!context.isLastTable(data.getTableName())) {
-            Util.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
         }
         if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
-            Util.write(out, CsvConstants.OLD, ", ", data.getOldData());
+            CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
             out.newLine();
         }
         context.setLastTableName(data.getTableName());

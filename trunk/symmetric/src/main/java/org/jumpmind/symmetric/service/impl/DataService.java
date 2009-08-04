@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.common.csv.CsvUtil;
+import org.jumpmind.symmetric.util.CsvUtils;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -111,20 +111,20 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtil.escapeCsvData(sql), null,
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
     public void insertSqlEvent(final Node targetNode, String sql) {
-        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtil.escapeCsvData(sql), null, null,
+        Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, null,
                 Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
         TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtil.escapeCsvData(xml), null,
+        Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtils.escapeCsvData(xml), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
@@ -367,8 +367,8 @@ public class DataService extends AbstractService implements IDataService {
 
     public Map<String, String> getRowDataAsMap(Data data) {
         Map<String, String> map = new HashMap<String, String>();
-        String[] columnNames = CsvUtil.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
-        String[] columnData = CsvUtil.tokenizeCsvData(data.getRowData());
+        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
+        String[] columnData = CsvUtils.tokenizeCsvData(data.getRowData());
         for (int i = 0; i < columnNames.length; i++) {
             map.put(columnNames[i].toLowerCase(), columnData[i]);
         }
@@ -376,7 +376,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void setRowDataFromMap(Data data, Map<String, String> map) {
-        String[] columnNames = CsvUtil.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
+        String[] columnNames = CsvUtils.tokenizeCsvData(data.getTriggerHistory().getColumnNames());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);

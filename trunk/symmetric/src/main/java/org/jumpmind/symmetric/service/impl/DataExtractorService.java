@@ -46,7 +46,6 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
-import org.jumpmind.symmetric.extract.csv.Util;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -69,6 +68,7 @@ import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
+import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -151,7 +151,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 Trigger trigger = triggers.get(i);
                 StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger, null));
                 addPurgeCriteriaToConfigurationTables(trigger.getSourceTableName(), sql);
-                Util.writeSql(sql.toString(), writer);
+                CsvUtils.writeSql(sql.toString(), writer);
             }
         }
 

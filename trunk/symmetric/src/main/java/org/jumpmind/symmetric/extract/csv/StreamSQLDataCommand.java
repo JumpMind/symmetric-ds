@@ -27,11 +27,12 @@ import java.io.IOException;
 
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.util.CsvUtils;
 
 class StreamSQLDataCommand extends AbstractStreamDataCommand {
 
     public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
-        Util.writeSql(data.getRowData(), writer);
+        CsvUtils.writeSql(data.getRowData(), writer);
     }
     
     public boolean isTriggerHistoryRequired() {
