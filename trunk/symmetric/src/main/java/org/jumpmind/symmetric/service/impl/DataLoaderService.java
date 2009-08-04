@@ -124,28 +124,21 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local);
             } catch (IOException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + (i + 1) + ". " + ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                logger.warn("Ack was not sent successfully on try number " + i + 1 + ". " + ex.getMessage());
+                logger.warn("Ack was not sent successfully on try number " + (i + 1) + ". " + ex.getMessage());
                 error = ex;
             }
             if (!sendAck) {
                 if (i < numberOfStatusSendRetries - 1) {
-                    sleepBetweenFailedAcks();
+                    AppUtils.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
                 } else if (error instanceof RuntimeException) {
                     throw (RuntimeException) error;
                 } else if (error instanceof IOException) {
                     throw (IOException) error;
                 }
             }
-        }
-    }
-
-    private final void sleepBetweenFailedAcks() {
-        try {
-            Thread.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
-        } catch (InterruptedException e) {
         }
     }
 
