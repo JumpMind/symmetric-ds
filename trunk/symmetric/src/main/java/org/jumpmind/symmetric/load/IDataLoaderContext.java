@@ -46,7 +46,7 @@ public interface IDataLoaderContext extends ICacheContext {
      * overhead to sending old data, so the flag is used to enable it when it is needed.
      * <p/>
      * <code>
-     * update sym_trigger set sync_column_level = 1, last_updated_time = current_timestamp where trigger_id = ?
+     * update sym_trigger set sync_column_level = 1, last_update_time = current_timestamp where trigger_id = ?
      * </code>
      * 
      * @return an array of the previous values of the row that is being data sync'd.

@@ -174,7 +174,7 @@
         <column name="create_time" type="TIMESTAMP" required="true" />
         <column name="inactive_time" type="TIMESTAMP" />
         <column name="last_updated_by" type="VARCHAR" size="50" />
-        <column name="last_updated_time" type="TIMESTAMP" required="true" />
+        <column name="last_update_time" type="TIMESTAMP" required="true" />
     </table>
 
     <table name="trigger_hist">

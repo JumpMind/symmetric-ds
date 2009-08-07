@@ -92,7 +92,7 @@
 <![CDATA[insert into SYM_TRIGGER 
   (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
    sync_on_insert, sync_on_update, sync_on_delete, 
-   initial_load_order, last_updated_by, last_updated_time, create_time)
+   initial_load_order, last_updated_by, last_update_time, create_time)
 values
   ('sale_transaction', 'corp', 'store', 'sale_transaction', 
    0, 0, 0, 

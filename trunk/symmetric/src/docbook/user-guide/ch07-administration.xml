@@ -18,7 +18,7 @@
 <![CDATA[update SYM_TRIGGER
 set channel_id = 'price',
     last_updated_by = 'jsmith',
-    last_updated_time = current_timestamp
+    last_update_time = current_timestamp
 where source_table_name = 'price_changes';
 ]]></programlisting>
             
@@ -30,7 +30,7 @@ where source_table_name = 'price_changes';
 <![CDATA[update SYM_TRIGGER
 set inactive_time = current_timestamp,
     last_updated_by = 'jsmith',
-    last_updated_time = current_timestamp
+    last_update_time = current_timestamp
 where source_node_group_id = 'client';
 ]]></programlisting>
             All configuration should be managed centrally at the registration node.  If enabled, configuration 
@@ -82,7 +82,7 @@ where source_node_group_id = 'client';
             A configuration entry in Trigger without any history in Trigger Hist results in a new
             trigger being created (N).  The Trigger Hist stores a hash of the underlying table, so
             any alteration to the table causes the trigger to be rebuilt (S).  When the 
-            last_updated_time is changed on the Trigger entry, the configuration change causes
+            last_update_time is changed on the Trigger entry, the configuration change causes
             the trigger to be rebuilt (C).  If an entry in Trigger Hist is missing the
             corresponding database trigger, the trigger is created (T).
         </para>

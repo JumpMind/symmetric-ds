@@ -303,7 +303,7 @@
                   alter table $[sym.sync.table.prefix]_data drop column transaction_id
                 </value>
                 <value>
-                  update sym_trigger set last_updated_time=current_timestamp
+                  update sym_trigger set last_update_time=current_timestamp
                 </value>
             </list>
         </property>
