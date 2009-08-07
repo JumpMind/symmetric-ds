@@ -26,14 +26,9 @@
                 <property name="functionInstalledSql" value="select count(*) from INFORMATION_SCHEMA.FUNCTION_ALIASES where ALIAS_NAME='$(functionName)'"/>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="SYM_BASE64_ENCODE">
+                        <entry key="BASE64_ENCODE">
                             <value>
                                 <![CDATA[CREATE ALIAS IF NOT EXISTS $(functionName) for "org.jumpmind.symmetric.db.h2.H2Functions.encodeBase64";]]>
-                            </value>
-                        </entry>
-                        <entry key="SYM_TRANSACTION_ID">
-                            <value>
-                                <![CDATA[CREATE ALIAS IF NOT EXISTS $(functionName) for "org.jumpmind.symmetric.db.h2.H2Functions.getTransactionId";]]>
                             </value>
                         </entry>
                     </map>
@@ -42,7 +37,7 @@
                 <property name="clobColumnTemplate" ref="h2StringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace(SYM_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\\'',''\\\\''),''"'',''\"'')||''"'' end ||'',''||]]>
+                         <![CDATA[ case when $(tableAlias)"$(columnName)" is null then '''' else ''"''||replace(replace($[sym.sync.table.prefix]_BASE64_ENCODE($(tableAlias)"$(columnName)"),''\\'',''\\\\''),''"'',''\"'')||''"'' end ||'',''||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">

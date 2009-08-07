@@ -131,7 +131,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
      */
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "SYM_TRANSACTION_ID()";
+        return "TRANSACTION_ID()";
     }
 
     @Override

@@ -20,7 +20,6 @@
 
 package org.jumpmind.symmetric.db.oracle;
 
-import java.net.URL;
 import java.sql.Types;
 import java.util.Map;
 
@@ -32,7 +31,6 @@ import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -43,24 +41,8 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final Log logger = LogFactory.getLog(OracleDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
-    static final String PACKAGE = "pack_symmetric";
-
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
-    @Override
-    protected void initForSpecificDialect() {
-        try {
-            if (!isPackageUpToDate(PACKAGE)) {
-                logger.info("Creating package " + PACKAGE);
-                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), '/').execute();
-            }
-        } catch (Exception ex) {
-            logger.error("Error while initializing Oracle.", ex);
-        }
-    }
-    
     @SuppressWarnings("unchecked")
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {
@@ -70,17 +52,16 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             return Types.TIMESTAMP;
             // This is for Oracle's NVARCHAR type
         } else if (typeName != null && typeName.startsWith("NVARCHAR")) {
-            return Types.VARCHAR;        
+            return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("BINARY_FLOAT")) {
             return Types.FLOAT;
         } else if (typeName != null && typeName.startsWith("BINARY_DOUBLE")) {
             return Types.DOUBLE;
         } else {
-          return super.overrideJdbcTypeForColumn(values);
+            return super.overrideJdbcTypeForColumn(values);
         }
     }
 
-    
     @Override
     public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
             String tablePrefix, Table table) {
@@ -98,15 +79,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             }
             throw ex;
         }
-    }
-    
-    private URL getSqlScriptUrl() {
-        return getClass().getResource("/dialects/oracle.sql");
-    }
-
-    private boolean isPackageUpToDate(String name) throws Exception {
-        return jdbcTemplate.queryForInt("select count(*) from user_objects where object_name= upper(?) ",
-                new Object[] { name }) > 0;
     }
 
     @Override
@@ -138,14 +110,14 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return TRANSACTION_ID_FUNCTION_NAME + "()";
+        return tablePrefix + "_" + "transaction_id()";
     }
 
     @Override
     public boolean supportsTransactionId() {
         return true;
     }
-    
+
     @Override
     protected String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
@@ -179,21 +151,25 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
     }
+    
+    protected String getSymmetricPackageName() {
+        return tablePrefix + "_pkg";
+    }
 
     public void disableSyncTriggers(String nodeId) {
-        jdbcTemplate.update("call pack_symmetric.setValue(1)");
+        jdbcTemplate.update(String.format("call %s.setValue(1)", getSymmetricPackageName()));
         if (nodeId != null) {
-            jdbcTemplate.update("call pack_symmetric.setNodeValue('" + nodeId + "')");
+            jdbcTemplate.update(String.format("call %s.setNodeValue('" + nodeId + "')", getSymmetricPackageName()));
         }
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("call pack_symmetric.setValue(null)");
-        jdbcTemplate.update("call pack_symmetric.setNodeValue(null)");
+        jdbcTemplate.update(String.format("call %s.setValue(null)", getSymmetricPackageName()));
+        jdbcTemplate.update(String.format("call %s.setNodeValue(null)", getSymmetricPackageName()));
     }
 
     public String getSyncTriggersExpression() {
-        return "fn_trigger_disabled() is null";
+        return tablePrefix + "_trigger_disabled() is null";
     }
 
     public String getDefaultCatalog() {
@@ -207,6 +183,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
                     "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
+    }
+
+    @Override
+    protected void initForSpecificDialect() {
     }
 
 }
