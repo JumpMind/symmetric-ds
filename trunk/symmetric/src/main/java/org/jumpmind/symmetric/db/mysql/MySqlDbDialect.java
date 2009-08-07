@@ -67,10 +67,11 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected void createRequiredFunctions() {
         String[] functions = sqlTemplate.getFunctionsToInstall();
-        for (String funcName : functions) {
+        for (String funcKey : functions) {
+            String funcName = tablePrefix + "_" + funcKey;
             if (! funcName.equals("fn_transaction_id") || supportsTransactionId) {
-                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, defaultSchema)) == 0) {
-                    jdbcTemplate.update(sqlTemplate.getFunctionSql(funcName, defaultSchema));
+                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
+                    jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
                     logger.info("Just installed " + funcName);
                 }
             }

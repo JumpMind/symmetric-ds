@@ -22,10 +22,10 @@
                 </property>               
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="fn_sym_blob2clob">
+                        <entry key="blob2clob">
                             <value>
                                 <![CDATA[ 
-                                CREATE OR REPLACE FUNCTION fn_sym_blob2clob (blob_in IN BLOB)
+                                CREATE OR REPLACE FUNCTION $(functionName) (blob_in IN BLOB)
                                   RETURN CLOB
                                 AS
                                     v_clob    CLOB := null;
@@ -46,14 +46,14 @@
                                         END IF;
                                     END IF;
                                     RETURN v_clob; 
-                                END fn_sym_blob2clob;
+                                END $(functionName);
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_transaction_id">
+                        <entry key="transaction_id">
                             <value>
                                 <![CDATA[ 
-                                CREATE OR REPLACE function fn_transaction_id
+                                CREATE OR REPLACE function $(functionName)
                                     return varchar is
                                     begin
                                        return DBMS_TRANSACTION.local_transaction_id(false);
@@ -61,16 +61,44 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_trigger_disabled">
+                        <entry key="trigger_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE OR REPLACE function fn_trigger_disabled return varchar is 
+                                CREATE OR REPLACE function $(functionName) return varchar is 
                                   begin 
-                                     return pack_symmetric.disable_trigger;
+                                     return $[sym.sync.table.prefix]_pkg.disable_trigger;
                                   end;
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="set_node_value">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE package $[sym.sync.table.prefix]_pkg as
+                                    disable_trigger pls_integer;
+                                    disable_node_id varchar(50);
+                                    procedure setValue (a IN number);
+                                    procedure setNodeValue (node_id IN varchar);
+                                end $[sym.sync.table.prefix]_pkg;
+                                ]]>
+                            </value>
+                        </entry>                        
+                        <entry key="disable_trigger">
+                            <value>
+                                <![CDATA[ 
+                                CREATE OR REPLACE package body $[sym.sync.table.prefix]_pkg as
+                                    procedure setValue(a IN number) is
+                                    begin
+                                         $[sym.sync.table.prefix]_pkg.disable_trigger:=a;
+                                    end;
+                                    procedure setNodeValue(node_id IN varchar) is
+                                    begin
+                                         $[sym.sync.table.prefix]_pkg.disable_node_id := node_id;
+                                    end;
+                                end $[sym.sync.table.prefix]_pkg;
+                                ]]>
+                            </value>
+                        </entry> 
                     </map>
                 </property>
                 <property name="stringColumnTemplate" >
@@ -85,7 +113,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[fn_sym_blob2clob($(tableAlias)."$(columnName)")||','||]]>
+                        <![CDATA[$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
@@ -117,7 +145,7 @@
                                       $(columns),          
                                       '$(channelName)',          
                                       $(txIdExpression),
-                                      pack_symmetric.disable_node_id,       
+                                      $[sym.sync.table.prefix]_pkg.disable_node_id,       
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
@@ -141,7 +169,7 @@
                                       $(oldColumns),
                                       '$(channelName)',  
                                       $(txIdExpression),
-                                      pack_symmetric.disable_node_id,                                             
+                                      $[sym.sync.table.prefix]_pkg.disable_node_id,                                             
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
@@ -163,7 +191,7 @@
                                       $(oldKeys),
                                       '$(channelName)',  
                                       $(txIdExpression),
-                                      pack_symmetric.disable_node_id,       
+                                      $[sym.sync.table.prefix]_pkg.disable_node_id,       
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
