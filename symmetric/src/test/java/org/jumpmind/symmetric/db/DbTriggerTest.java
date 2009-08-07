@@ -48,7 +48,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
     public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
             + TestConstants.TEST_PREFIX
-            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
+            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
 
@@ -106,7 +106,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                         .update(
                                 "update "
                                         + TestConstants.TEST_PREFIX
-                                        + "trigger set last_updated_time=current_timestamp where inactive_time is null and source_node_group_id='"
+                                        + "trigger set last_update_time=current_timestamp where inactive_time is null and source_node_group_id='"
                                         + TestConstants.TEST_ROOT_NODE_GROUP
                                         + "' and (sync_on_update = 1 or sync_on_insert = 1 or sync_on_delete = 1)");
 
@@ -162,7 +162,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
-                + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
+                + "trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=current_timestamp "
                 + TEST_TRIGGER_WHERE_CLAUSE));
 
         configService.syncTriggers();

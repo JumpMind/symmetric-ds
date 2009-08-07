@@ -887,7 +887,7 @@
                             <entry>The user who last updated this entry.</entry>
                         </row>
                         <row>
-                            <entry>last_updated_time</entry>
+                            <entry>last_update_time</entry>
                             <entry>timestamp</entry>
                             <entry>N</entry>
                             <entry></entry>

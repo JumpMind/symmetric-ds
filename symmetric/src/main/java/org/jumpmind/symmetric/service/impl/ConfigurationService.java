@@ -760,7 +760,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
             trig.setTxIdExpression(rs.getString("tx_id_expression"));
             trig.setInitialLoadSelect(rs.getString("initial_load_select"));
-            trig.setLastModifiedTime(rs.getTimestamp("last_updated_time"));
+            trig.setLastModifiedTime(rs.getTimestamp("last_update_time"));
             trig.setUpdatedBy(rs.getString("last_updated_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
             trig.setInactiveTime(rs.getTimestamp("inactive_time"));

@@ -12,7 +12,7 @@
       <value>
         select batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, byte_count, 
         statement_count, fallback_insert_count, fallback_update_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,
-        last_updated_hostname, last_updated_time, create_time from $[sym.sync.table.prefix]_incoming_batch where
+        last_update_hostname, last_update_time, create_time from $[sym.sync.table.prefix]_incoming_batch where
         batch_id = ? and node_id = ?
       </value>
     </entry>
@@ -20,7 +20,7 @@
       <value>
         select batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, byte_count, 
         statement_count, fallback_insert_count, fallback_update_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,
-        last_updated_hostname, last_updated_time, create_time from $[sym.sync.table.prefix]_incoming_batch where
+        last_update_hostname, last_update_time, create_time from $[sym.sync.table.prefix]_incoming_batch where
         status = 'ER' order by batch_id
       </value>
     </entry>    
@@ -28,7 +28,7 @@
       <value>
         insert into $[sym.sync.table.prefix]_incoming_batch (batch_id, node_id, channel_id, status, network_millis, filter_millis, database_millis, failed_row_number, byte_count, 
         statement_count, fallback_insert_count, fallback_update_count, missing_delete_count, skip_count, sql_state, sql_code, sql_message,
-        last_updated_hostname, last_updated_time, create_time)
+        last_update_hostname, last_update_time, create_time)
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)
       </value>
     </entry>
@@ -36,7 +36,7 @@
       <value>
         update $[sym.sync.table.prefix]_incoming_batch set status = ?, network_millis = ?, filter_millis = ?, database_millis = ?, failed_row_number = ?, byte_count = ?, 
         statement_count = ?, fallback_insert_count = ?, fallback_update_count = ?, missing_delete_count = ?, skip_count = ?,  sql_state = ?, sql_code = ?, sql_message = ?,
-        last_updated_hostname = ?, last_updated_time = ? where batch_id = ? and node_id = ?
+        last_update_hostname = ?, last_update_time = ? where batch_id = ? and node_id = ?
       </value>
     </entry>
   </util:map>
