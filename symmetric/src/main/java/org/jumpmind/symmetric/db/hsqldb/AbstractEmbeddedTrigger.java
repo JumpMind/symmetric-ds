@@ -43,7 +43,6 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -59,7 +58,6 @@ public abstract class AbstractEmbeddedTrigger {
     protected static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
     protected IDataService dataService;
     protected IConfigurationService configurationService;
-    protected IBootstrapService bootstrapService;
     protected INodeService nodeService;
     protected IDbDialect dbDialect;
     protected Table table;
@@ -75,7 +73,6 @@ public abstract class AbstractEmbeddedTrigger {
         this.tableName = tableName;
         SymmetricEngine engine = SymmetricEngine.findEngineByName(getEngineName().toLowerCase());
         this.dataService = getDataService(engine);
-        this.bootstrapService = getBootstrapService(engine);
         this.configurationService = getConfigurationService(engine);
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
@@ -231,10 +228,6 @@ public abstract class AbstractEmbeddedTrigger {
 
     private INodeService getNodeService(SymmetricEngine engine) {
         return AppUtils.find(Constants.NODE_SERVICE, engine);
-    }
-
-    private IBootstrapService getBootstrapService(SymmetricEngine engine) {
-        return AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
     }
 
     private IDataService getDataService(SymmetricEngine engine) {

@@ -31,7 +31,6 @@ import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
@@ -90,8 +89,8 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test
     public void testBootstrapSchemaSync() throws Exception {
-        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
-                "bootstrapService");
+        IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
+                Constants.CONFIG_SERVICE);
 
         // baseline
         service.syncTriggers();
@@ -155,8 +154,9 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test
     public void testExcludedColumnsFunctionality() throws Exception {
-        IBootstrapService service = (IBootstrapService) getSymmetricEngine().getApplicationContext().getBean(
-                Constants.BOOTSTRAP_SERVICE);
+        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
+        .getBean(Constants.CONFIG_SERVICE);
+        
         // need to wait for a second to make sure enough time has passed so the
         // update of the config table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
@@ -165,10 +165,9 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger set excluded_column_names='BOOLEAN_VALUE', last_updated_time=current_timestamp "
                 + TEST_TRIGGER_WHERE_CLAUSE));
 
-        service.syncTriggers();
+        configService.syncTriggers();
 
-        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
-                .getBean(Constants.CONFIG_SERVICE);
+
         Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
         assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
@@ -219,9 +218,9 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         if (dialect instanceof OracleDbDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
-            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
-            bootstrapService.syncTriggers();
-            Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers()
+            IConfigurationService configService = AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
+            configService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, configService.getFailedTriggers()
                     .size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
             String csvString = getNextDataRow(getSymmetricEngine());

@@ -44,7 +44,6 @@ import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -115,9 +114,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     protected void checkForFailedTriggers() {
-        IBootstrapService service = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getClientEngine());
+        IConfigurationService service = AppUtils.find(Constants.CONFIG_SERVICE, getClientEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
-        service = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getRootEngine());
+        service = AppUtils.find(Constants.CONFIG_SERVICE, getRootEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
     }
     

@@ -34,12 +34,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.util.CsvUtils;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -50,11 +51,15 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
+import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
@@ -71,6 +76,8 @@ public class DataService extends AbstractService implements IDataService {
     private INodeService nodeService;
 
     private IPurgeService purgeService;
+    
+    private IClusterService clusterService;
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -389,6 +396,54 @@ public class DataService extends AbstractService implements IDataService {
         writer.close();
         data.setRowData(out.toString());
     }
+    
+    public void heartbeat() {
+        if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
+            try {
+                List<Node> heartbeatNodesToPush = new ArrayList<Node>();
+                Node me = nodeService.findIdentity();
+                if (me != null) {
+                    logger.info("Updating time and version node info");
+                    me.setHeartbeatTime(new Date());
+                    me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                    me.setSymmetricVersion(Version.version());
+                    me.setDatabaseType(dbDialect.getName());
+                    me.setDatabaseVersion(dbDialect.getVersion());
+                    if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
+                        logger.info("Updating my node configuration info according to the symmetric properties");
+                        me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                        me.setExternalId(parameterService.getExternalId());
+                        me.setNodeGroupId(parameterService.getNodeGroupId());
+                        if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                            me.setSyncURL(parameterService.getMyUrl());
+                        }
+                    }
+                    nodeService.updateNode(me);
+                    logger.info("Done updating my node info");
+                }
+
+                if (!nodeService.isRegistrationServer() && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
+                        && me != null) {
+                    heartbeatNodesToPush.add(me);
+                    heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
+                    for (Node node : heartbeatNodesToPush) {
+                        // don't send new heart beat events if we haven't sent
+                        // the last ones ...
+                        if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node
+                                .getNodeId())) {
+                            insertHeartbeatEvent(node);
+                        }
+                    }
+                }
+            } finally {
+                clusterService.unlock(LockActionConstants.HEARTBEAT);
+
+            }
+        } else {
+            logger.info("Did not run the heartbeat process because the cluster service has it locked ");
+        }
+    }
+    
 
     public void setReloadListeners(List<IReloadListener> listeners) {
         this.listeners = listeners;
@@ -419,6 +474,10 @@ public class DataService extends AbstractService implements IDataService {
 
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
+    }
+    
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
     public Data readData(ResultSet results) throws SQLException {

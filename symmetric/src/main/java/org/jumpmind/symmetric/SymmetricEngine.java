@@ -20,6 +20,10 @@
 
 package org.jumpmind.symmetric;
 
+import java.io.File;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,18 +34,24 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ddlutils.Platform;
+import org.apache.ddlutils.io.DatabaseIO;
+import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeStatus;
-import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -49,22 +59,25 @@ import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IUpgradeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * This is the preferred way to create, configure, start and manage a client-only instance
- * of SymmetricDS. The engine will bootstrap the symmetric.xml Spring context.
- * <p/> 
- * The SymmetricDS instance is configured by properties configuration files.
- * By default the engine will look for and override existing properties with
- * ones found in the properties files. SymmetricDS looks for: symmetric.properties
- * in the classpath (it will use the first one it finds), and then for a
+ * This is the preferred way to create, configure, start and manage a
+ * client-only instance of SymmetricDS. The engine will bootstrap the
+ * symmetric.xml Spring context.
+ * <p/>
+ * The SymmetricDS instance is configured by properties configuration files. By
+ * default the engine will look for and override existing properties with ones
+ * found in the properties files. SymmetricDS looks for: symmetric.properties in
+ * the classpath (it will use the first one it finds), and then for a
  * symmetric.properties found in the user.home system property location. Next,
  * if provided, in the constructor of the SymmetricEngine, it will locate and
- * use the properties file passed to the engine. <p/> When the engine is ready
- * to be started, the {@link #start()} method should be called. It should only
- * be called once.
+ * use the properties file passed to the engine.
+ * <p/>
+ * When the engine is ready to be started, the {@link #start()} method should be
+ * called. It should only be called once.
  */
 public class SymmetricEngine {
 
@@ -72,13 +85,17 @@ public class SymmetricEngine {
 
     private ApplicationContext applicationContext;
 
-    private IBootstrapService bootstrapService;
+    private IConfigurationService configurationService;
 
     private IParameterService parameterService;
 
     private INodeService nodeService;
 
     private IRegistrationService registrationService;
+
+    private IUpgradeService upgradeService;
+
+    private IClusterService clusterService;
 
     private IPurgeService purgeService;
 
@@ -91,7 +108,7 @@ public class SymmetricEngine {
     private boolean setup = false;
 
     private IDbDialect dbDialect;
-    
+
     private IJobManager jobManager;
 
     private static Map<String, SymmetricEngine> registeredEnginesByUrl = new HashMap<String, SymmetricEngine>();
@@ -103,8 +120,10 @@ public class SymmetricEngine {
     }
 
     /**
-     * Create a SymmetricDS instance using an existing {@link ApplicationContext} as the parent.  This
-     * gives the SymmetricDS context access to beans in the parent context.
+     * Create a SymmetricDS instance using an existing
+     * {@link ApplicationContext} as the parent. This gives the SymmetricDS
+     * context access to beans in the parent context.
+     * 
      * @param parentContext
      * @param overridePropertiesResources
      */
@@ -121,18 +140,19 @@ public class SymmetricEngine {
     }
 
     /**
-     * Create a SymmetricDS node.  This constructor creates a new {@link ApplicationContext} using
-     * SymmetricDS's classpath:/symmetric.xml.
+     * Create a SymmetricDS node. This constructor creates a new
+     * {@link ApplicationContext} using SymmetricDS's classpath:/symmetric.xml.
      */
     public SymmetricEngine() {
         init(createContext(null));
     }
 
     /**
-     * Pass in the {@link ApplicationContext} to be used. The context passed in needs to load classpath:/symmetric.xml.
+     * Pass in the {@link ApplicationContext} to be used. The context passed in
+     * needs to load classpath:/symmetric.xml.
      * 
      * @param ctx
-     *                A Spring framework context to use for this SymmetricEngine
+     *            A Spring framework context to use for this SymmetricEngine
      */
     public SymmetricEngine(ApplicationContext ctx) {
         init(ctx);
@@ -153,8 +173,10 @@ public class SymmetricEngine {
             }
         }
         applicationContext = null;
-        bootstrapService = null;
+        configurationService = null;
         parameterService = null;
+        clusterService = null;
+        upgradeService = null;
         nodeService = null;
         registrationService = null;
         purgeService = null;
@@ -174,20 +196,23 @@ public class SymmetricEngine {
     }
 
     private ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] {"classpath:/symmetric.xml"}, parentContext);
+        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
     }
 
     /**
      * @param overridePropertiesResource1
-     *                Provide a Spring resource path to a properties file to be
-     *                used for configuration
+     *            Provide a Spring resource path to a properties file to be used
+     *            for configuration
      * @param overridePropertiesResource2
-     *                Provide a Spring resource path to a properties file to be
-     *                used for configuration
+     *            Provide a Spring resource path to a properties file to be used
+     *            for configuration
      */
-    private void init(ApplicationContext parentContext, String overridePropertiesResource1, String overridePropertiesResource2) {
-        // Setting system properties is probably not the best way to accomplish this setup.
-        // Synchronizing on the class so creating multiple engines is thread safe.
+    private void init(ApplicationContext parentContext, String overridePropertiesResource1,
+            String overridePropertiesResource2) {
+        // Setting system properties is probably not the best way to accomplish
+        // this setup.
+        // Synchronizing on the class so creating multiple engines is thread
+        // safe.
         synchronized (SymmetricEngine.class) {
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
                     : overridePropertiesResource1);
@@ -199,14 +224,16 @@ public class SymmetricEngine {
 
     private void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        bootstrapService = (IBootstrapService) applicationContext.getBean(Constants.BOOTSTRAP_SERVICE);
+        configurationService = (IConfigurationService) applicationContext.getBean(Constants.CONFIG_SERVICE);
         parameterService = (IParameterService) applicationContext.getBean(Constants.PARAMETER_SERVICE);
         nodeService = (INodeService) applicationContext.getBean(Constants.NODE_SERVICE);
         registrationService = (IRegistrationService) applicationContext.getBean(Constants.REGISTRATION_SERVICE);
+        upgradeService = (IUpgradeService) applicationContext.getBean(Constants.UPGRADE_SERVICE);
+        clusterService = (IClusterService) applicationContext.getBean(Constants.CLUSTER_SERVICE);
         purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
         dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
         dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
-        jobManager = (IJobManager)applicationContext.getBean(Constants.JOB_MANAGER);
+        jobManager = (IJobManager) applicationContext.getBean(Constants.JOB_MANAGER);
     }
 
     /**
@@ -219,7 +246,7 @@ public class SymmetricEngine {
         registeredEnginesByUrl.put(getMyUrl(), this);
         registeredEnginesByName.put(getEngineName(), this);
     }
-    
+
     /**
      * @return the URL that represents this engine
      */
@@ -245,7 +272,6 @@ public class SymmetricEngine {
             }
         }
     }
-
 
     /**
      * Get a list of configured properties for Symmetric. Read-only.
@@ -273,7 +299,7 @@ public class SymmetricEngine {
      */
     public synchronized void setup() {
         if (!setup) {
-            bootstrapService.setupDatabase();
+            setupDatabase(true);
             setup = true;
         }
     }
@@ -282,11 +308,11 @@ public class SymmetricEngine {
      * Must be called to start SymmetricDS.
      */
     public synchronized void start() {
-        if (!starting && !started) {                      
+        if (!starting && !started) {
             try {
                 starting = true;
                 setup();
-                bootstrapService.validateConfiguration();
+                validateConfiguration();
                 registerEngine();
                 startDefaultServerJMXExport();
                 Node node = nodeService.findIdentity();
@@ -294,12 +320,12 @@ public class SymmetricEngine {
                     logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
                             + ", externalId=" + node.getExternalId() + "]");
                 } else {
-                    logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId() + ", externalId="
-                            + parameterService.getExternalId() + "]");
+                    logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId()
+                            + ", externalId=" + parameterService.getExternalId() + "]");
                 }
-                bootstrapService.syncTriggers();
+                configurationService.syncTriggers();
                 heartbeat();
-                jobManager.startJobs();                
+                jobManager.startJobs();
                 logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
                         + Version.version() + " database=" + dbDialect.getName());
                 started = true;
@@ -333,14 +359,15 @@ public class SymmetricEngine {
     /**
      * Call this to resync triggers
      * 
-     * @see IBootstrapService#syncTriggers()
+     * @see IconfigurationService#syncTriggers()
      */
     public void syncTriggers() {
-        bootstrapService.syncTriggers();
+        configurationService.syncTriggers();
     }
-    
+
     /**
      * Get the current status of this node.
+     * 
      * @return {@link NodeStatus}
      */
     public NodeStatus getNodeStatus() {
@@ -370,14 +397,139 @@ public class SymmetricEngine {
         }
     }
 
+    protected void setupDatabase(boolean force) {
+        configurationService.autoConfigDatabase(force);
+        if (upgradeService.isUpgradeNecessary()) {
+            if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
+                try {
+                    upgradeService.upgrade();
+                    // rerun the auto configuration to make sure things are
+                    // kosher after the upgrade
+                    configurationService.autoConfigDatabase(force);
+                } catch (RuntimeException ex) {
+                    logger
+                            .fatal(
+                                    "The upgrade failed. The system may be unstable.  Please resolve the problem manually.",
+                                    ex);
+                    throw ex;
+                }
+            } else {
+                throw new RuntimeException("Upgrade of node is necessary.  "
+                        + "Please set auto.upgrade property to true for an automated upgrade.");
+            }
+        }
+
+        if (nodeService.findIdentity() == null) {
+            buildTablesFromDdlUtilXmlIfProvided();
+            loadFromScriptIfProvided();
+        }
+
+        // lets do this every time init is called.
+        clusterService.initLockTable();
+    }
+
+    /**
+     * Simply check and make sure that this node is all configured properly for
+     * operation.
+     */
+    public void validateConfiguration() {
+        Node node = nodeService.findIdentity();
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl())) {
+            throw new IllegalStateException(
+                    String
+                            .format(
+                                    "Please set the property %s so this node may pull registration or manually insert configuration into the configuration tables.",
+                                    ParameterConstants.REGISTRATION_URL));
+        } else if (node != null
+                && (!node.getExternalId().equals(parameterService.getExternalId()) || !node.getNodeGroupId().equals(
+                        parameterService.getNodeGroupId()))) {
+            throw new IllegalStateException(
+                    "The configured state does not match recorded database state.  The recorded external id is "
+                            + node.getExternalId() + " while the configured external id is "
+                            + parameterService.getExternalId() + ".  The recorded node group id is "
+                            + node.getNodeGroupId() + " while the configured node group id is "
+                            + parameterService.getNodeGroupId());
+        }
+        // TODO Add more validation checks to make sure that the system is
+        // configured correctly
+
+        // TODO Add method to configuration service to validate triggers and
+        // call from here.
+        // Make sure there are not duplicate trigger rows with the same name
+    }
+
+    private boolean buildTablesFromDdlUtilXmlIfProvided() {
+        boolean loaded = false;
+        String xml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML);
+        if (!StringUtils.isBlank(xml)) {
+            File file = new File(xml);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(xml);
+            }
+
+            if (fileUrl != null) {
+                try {
+                    logger.info("Building database schema from: " + xml);
+                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl.openStream()));
+                    Platform platform = dbDialect.getPlatform();
+                    platform.createTables(database, false, true);
+                    loaded = true;
+                } catch (Exception e) {
+                    logger.error(e, e);
+                }
+            }
+        }
+        return loaded;
+    }
+
+    /**
+     * Give the end user the option to provide a script that will load a
+     * registration server with an initial SymmetricDS setup.
+     * 
+     * Look first on the file system, then in the classpath for the SQL file.
+     * 
+     * @return true if the script was executed
+     */
+    private boolean loadFromScriptIfProvided() {
+        boolean loaded = false;
+        String sqlScript = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_SQL_SCRIPT);
+        if (!StringUtils.isBlank(sqlScript)) {
+            File file = new File(sqlScript);
+            URL fileUrl = null;
+            if (file.isFile()) {
+                try {
+                    fileUrl = file.toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                fileUrl = getClass().getResource(sqlScript);
+            }
+
+            if (fileUrl != null) {
+                logger.info("Running the following SQL script: " + sqlScript);
+                new SqlScript(fileUrl, dbDialect.getJdbcTemplate().getDataSource(), true).execute();
+                loaded = true;
+            }
+        }
+        return loaded;
+    }
+
     /**
      * Push a copy of the node onto the push queue so the SymmetricDS node
      * 'checks' in with it's root node.
      * 
-     * @see IBootstrapService#heartbeat()
+     * @see IconfigurationService#heartbeat()
      */
     public void heartbeat() {
-        bootstrapService.heartbeat();
+        dataService.heartbeat();
     }
 
     /**
@@ -392,7 +544,7 @@ public class SymmetricEngine {
     public void reOpenRegistration(String nodeId) {
         registrationService.reOpenRegistration(nodeId);
     }
-    
+
     /**
      * Check to see if this node has been registered.
      * 
@@ -451,8 +603,8 @@ public class SymmetricEngine {
             return null;
         }
     }
-    
-    /**
+
+/**
      * Locate the one and only registered {@link SymmetricEngine}.  Use {@link #findEngineByName(String)} or
      * {@link #findEngineByUrl(String) if there is more than on engine registered.
      * @throws IllegalStateException This exception happens if more than one engine is 

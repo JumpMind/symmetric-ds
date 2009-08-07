@@ -34,7 +34,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -59,8 +58,6 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for a node")
 public class NodeManagementService {
-
-    private IBootstrapService bootstrapService;
 
     private IPurgeService purgeService;
 
@@ -104,7 +101,7 @@ public class NodeManagementService {
 
     @ManagedOperation(description = "Synchronize the triggers")
     public void syncTriggers() {
-        bootstrapService.syncTriggers();
+        configurationService.syncTriggers();
     }
 
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
@@ -350,11 +347,6 @@ public class NodeManagementService {
         }
         return "";
     }
-
-    public void setBootstrapService(IBootstrapService bootstrapService) {
-        this.bootstrapService = bootstrapService;
-    }
-
     public void setPurgeService(IPurgeService purgeService) {
         this.purgeService = purgeService;
     }

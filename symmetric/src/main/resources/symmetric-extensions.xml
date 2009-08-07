@@ -10,7 +10,7 @@
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
-        <property name="bootstrapService" ref="bootstrapService" />
+        <property name="configurationService" ref="configurationService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="registrationService" ref="registrationService" />
         <property name="transportManager" ref="transportManager" />
@@ -18,7 +18,6 @@
     </bean>
 
     <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
-        <property name="bootstrapService" ref="bootstrapService" />
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />

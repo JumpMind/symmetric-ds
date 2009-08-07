@@ -99,20 +99,9 @@
         <column name="symmetric_version" type="VARCHAR" size="50" />
         <column name="database_type" type="VARCHAR" size="50" />
         <column name="database_version" type="VARCHAR" size="50" />
-        <!-- TODO remove -->
         <column name="heartbeat_time" type="TIMESTAMP" />
-        <!-- TODO remove -->
         <column name="timezone_offset" type="VARCHAR" size="6" />
         <column name="created_at_node_id" type="VARCHAR" size="50" />        
-    </table>
-    
-    <table name="node_process">
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="ip_address" type="VARCHAR" size="50" required="true" primaryKey="true" />                
-        <column name="host_name" type="VARCHAR" size="50" />
-        <column name="heartbeat_time" type="TIMESTAMP" />
-        <column name="timezone_offset" type="VARCHAR" size="6" />
-        <column name="symmetric_version" type="VARCHAR" size="50" />        
     </table>
     
     <table name="lock">

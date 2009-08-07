@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -55,12 +55,15 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
- * This {@link BeanFactoryPostProcessor} runs after all the Spring configuration files have been read to give the
- * application a chance to do a bit of configuration. This is where the application will register
- * {@link IExtensionPoint}s defined both by SymmetricDS and others found in the {@link ApplicationContext}.
+ * This {@link BeanFactoryPostProcessor} runs after all the Spring configuration
+ * files have been read to give the application a chance to do a bit of
+ * configuration. This is where the application will register
+ * {@link IExtensionPoint}s defined both by SymmetricDS and others found in the
+ * {@link ApplicationContext}.
  * <P>
- * SymmetricDS reads in any Spring XML file found in the classpath of the application that matches the following
- * pattern: /META-INF/services/symmetric-*-ext.xml
+ * SymmetricDS reads in any Spring XML file found in the classpath of the
+ * application that matches the following pattern:
+ * /META-INF/services/symmetric-*-ext.xml
  */
 public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
@@ -76,7 +79,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private INodeService nodeService;
 
-    private IBootstrapService bootstrapService;
+    private IConfigurationService configurationService;
 
     private IAcknowledgeService acknowledgeService;
 
@@ -141,7 +144,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         }
 
         if (ext instanceof ITriggerCreationListener) {
-            bootstrapService.addTriggerCreationListeners((ITriggerCreationListener) ext);
+            configurationService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
 
         if (ext instanceof IBatchListener) {
@@ -213,8 +216,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.nodeService = nodeService;
     }
 
-    public void setBootstrapService(IBootstrapService bootstrapService) {
-        this.bootstrapService = bootstrapService;
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
     public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {

@@ -25,26 +25,33 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -57,20 +64,32 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private static long channelCacheTime;
 
     private List<String> rootConfigChannelTableNames;
+    
+    private List<Channel> defaultChannels;
 
     private Map<String, String> rootConfigChannelInitialLoadSelect;
+
+    private IClusterService clusterService;
 
     private IDbDialect dbDialect;
 
     private String tablePrefix;
-    
+
     private Map<Integer, Trigger> triggerCache;
+
+    private List<ITriggerCreationListener> triggerCreationListeners;
+
+    private TriggerFailureListener failureListener = new TriggerFailureListener();
 
     /**
      * Cache the history for performance. History never changes and does not
      * grow big so this should be OK.
      */
     private HashMap<Integer, TriggerHistory> historyMap = new HashMap<Integer, TriggerHistory>();
+
+    public ConfigurationService() {
+        this.addTriggerCreationListeners(this.failureListener);
+    }
 
     public void inactivateTriggerHistory(TriggerHistory history) {
         jdbcTemplate.update(getSql("inactivateTriggerHistorySql"), new Object[] { history.getTriggerHistoryId() });
@@ -213,7 +232,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return triggerCache;
     }
-    
+
     /**
      * Create triggers on SymmetricDS tables so changes to configuration can be
      * synchronized.
@@ -425,6 +444,235 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
+    public void syncTriggers() {
+        syncTriggers(null, false);
+    }
+
+    synchronized public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
+        if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
+            try {
+                logger.info("Synchronizing triggers");
+                // make sure channels are read from the database
+                reloadChannels();
+                removeInactiveTriggers(sqlBuffer);
+                updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
+            } finally {
+                clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
+                logger.info("Done synchronizing triggers");
+            }
+        } else {
+            logger.info("Did not run the syncTriggers process because the cluster service has it locked");
+        }
+    }
+
+    private void removeInactiveTriggers(StringBuilder sqlBuffer) {
+        List<Trigger> triggers = getInactiveTriggersForSourceNodeGroup(parameterService
+                .getString(ParameterConstants.NODE_GROUP_ID));
+        for (Trigger trigger : triggers) {
+            TriggerHistory history = getLatestHistoryRecordFor(trigger.getTriggerId());
+            if (history != null) {
+                logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForInsertTrigger(), trigger.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForDeleteTrigger(), trigger.getSourceTableName(), history);
+                dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
+
+                if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.triggerInactivated(trigger, history);
+                        }
+                    }
+                }
+
+                boolean triggerExists = dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForInsertTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForUpdateTrigger());
+                triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
+                        .getSourceSchemaName(), history.getSourceTableName(), history.getNameForDeleteTrigger());
+                if (triggerExists) {
+                    logger
+                            .warn(String
+                                    .format(
+                                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id=%s and trigger_hist_id=%s",
+                                            history.getTriggerId(), history.getTriggerHistoryId()));
+                } else {
+                    inactivateTriggerHistory(history);
+                }
+
+            } else {
+                logger.info("A trigger was inactivated that had not yet been built, taking no action");
+            }
+        }
+    }
+
+    private void updateOrCreateSymmetricTriggers(StringBuilder sqlBuffer, boolean gen_always) {
+        Collection<Trigger> triggers = getCachedTriggers(true).values();
+
+        for (Trigger trigger : triggers) {
+
+            String schemaPlusTriggerName = (trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "."
+                    : "")
+                    + trigger.getSourceTableName();
+
+            try {
+
+                TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
+
+                Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false);
+
+                if (table != null) {
+                    TriggerHistory latestHistoryBeforeRebuild = getLatestHistoryRecordFor(trigger.getTriggerId());
+
+                    boolean forceRebuildOfTriggers = false;
+                    if (latestHistoryBeforeRebuild == null) {
+                        reason = TriggerReBuildReason.NEW_TRIGGERS;
+                        forceRebuildOfTriggers = true;
+
+                    } else if (TriggerHistory.calculateTableHashFor(table) != latestHistoryBeforeRebuild.getTableHash()) {
+                        reason = TriggerReBuildReason.TABLE_SCHEMA_CHANGED;
+                        forceRebuildOfTriggers = true;
+
+                    } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())
+                            || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
+                        reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
+                        forceRebuildOfTriggers = true;
+                    } else if (gen_always) {
+                        reason = TriggerReBuildReason.FORCED;
+                        forceRebuildOfTriggers = true;
+                    }
+
+                    TriggerHistory newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers,
+                            trigger, DataEventType.DELETE, reason, latestHistoryBeforeRebuild,
+                            rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger, DataEventType.UPDATE,
+                                    reason, latestHistoryBeforeRebuild, rebuildTriggerIfNecessary(sqlBuffer,
+                                            forceRebuildOfTriggers, trigger, DataEventType.INSERT, reason,
+                                            latestHistoryBeforeRebuild, null, trigger.isSyncOnInsert(), table), trigger
+                                            .isSyncOnUpdate(), table), trigger.isSyncOnDelete(), table);
+
+                    if (latestHistoryBeforeRebuild != null && newestHistory != null) {
+                        inactivateTriggerHistory(latestHistoryBeforeRebuild);
+                    }
+
+                    if (newestHistory != null) {
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                            if (this.triggerCreationListeners != null) {
+                                for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                                    l.triggerCreated(trigger, newestHistory);
+                                }
+                            }
+                        }
+                    }
+
+                } else {
+                    logger.error("The configured table does not exist in the datasource that is configured: "
+                            + schemaPlusTriggerName);
+
+                    if (this.triggerCreationListeners != null) {
+                        for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                            l.tableDoesNotExist(trigger);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                logger.error("Failed to synchronize trigger for " + schemaPlusTriggerName, ex);
+                if (this.triggerCreationListeners != null) {
+                    for (ITriggerCreationListener l : this.triggerCreationListeners) {
+                        l.triggerFailed(trigger, ex);
+                    }
+                }
+            }
+
+        }
+    }
+
+    private TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer, boolean forceRebuild, Trigger trigger,
+            DataEventType dmlType, TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
+            boolean triggerIsActive, Table table) {
+
+        boolean triggerExists = false;
+
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
+        int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
+        String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
+        newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+        newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+        newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, triggerPrefix,
+                maxTriggerNameLength, trigger, hist).toUpperCase());
+
+        String oldTriggerName = null;
+        String oldSourceSchema = null;
+        String oldCatalogName = null;
+        if (oldhist != null) {
+            oldTriggerName = oldhist.getTriggerNameForDmlType(dmlType);
+            oldSourceSchema = oldhist.getSourceSchemaName();
+            oldCatalogName = oldhist.getSourceCatalogName();
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, oldhist.getSourceTableName(),
+                    oldTriggerName);
+        } else {
+            // We had no trigger_hist row, lets validate that the trigger as
+            // defined in the trigger row data does not exist as well.
+            oldTriggerName = newTriggerHist.getTriggerNameForDmlType(dmlType);
+            oldSourceSchema = trigger.getSourceSchemaName();
+            oldCatalogName = trigger.getSourceCatalogName();
+            triggerExists = dbDialect.doesTriggerExist(oldCatalogName, oldSourceSchema, trigger.getSourceTableName(),
+                    oldTriggerName);
+        }
+
+        if (!triggerExists && forceRebuild) {
+            reason = TriggerReBuildReason.TRIGGERS_MISSING;
+        }
+
+        if ((forceRebuild || !triggerIsActive) && triggerExists) {
+            dbDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema, oldTriggerName, trigger
+                    .getSourceTableName(), oldhist);
+            triggerExists = false;
+        }
+
+        boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
+
+        if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
+            insert(newTriggerHist);
+            hist = getLatestHistoryRecordFor(trigger.getTriggerId());
+        }
+
+        if (!triggerExists && triggerIsActive) {
+            dbDialect.initTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
+        }
+
+        return hist;
+    }
+    
+    public void autoConfigDatabase(boolean force) {
+        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
+            logger.info("Initializing SymmetricDS database.");
+            dbDialect.initSupportDb();
+            if (defaultChannels != null) {
+                reloadChannels();
+                List<NodeChannel> channels = getChannels();
+                for (Channel defaultChannel : defaultChannels) {
+                    if (!defaultChannel.isInList(channels)) {
+                        logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
+                        saveChannel(defaultChannel);
+                    } else {
+                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel.getId()));
+                    }
+                }
+                reloadChannels();
+            }
+            parameterService.rereadParameters();
+            logger.info("Done initializing SymmetricDS database.");
+        } else {
+            logger.info("SymmetricDS is not configured to auto create the database.");
+        }
+    }
+
     class NodeGroupLinkMapper implements RowMapper {
         public Object mapRow(ResultSet rs, int num) throws SQLException {
             NodeGroupLink node_groupTarget = new NodeGroupLink();
@@ -542,4 +790,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         this.tablePrefix = tablePrefix;
     }
 
+    public void setClusterService(IClusterService clusterService) {
+        this.clusterService = clusterService;
+    }
+
+    public void setTriggerCreationListeners(List<ITriggerCreationListener> autoTriggerCreationListeners) {
+        if (triggerCreationListeners != null) {
+            for (ITriggerCreationListener l : triggerCreationListeners) {
+                addTriggerCreationListeners(l);
+            }
+        }
+    }
+
+    public void setDefaultChannels(List<Channel> defaultChannels) {
+        this.defaultChannels = defaultChannels;
+    }
+    
+    public void addTriggerCreationListeners(ITriggerCreationListener l) {
+        if (this.triggerCreationListeners == null) {
+            this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();
+        }
+        this.triggerCreationListeners.add(l);
+    }
+
+    public Map<Trigger, Exception> getFailedTriggers() {
+        return this.failureListener.getFailures();
+    }
 }
