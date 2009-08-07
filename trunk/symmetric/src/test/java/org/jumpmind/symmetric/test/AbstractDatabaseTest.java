@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -75,10 +74,6 @@ public class AbstractDatabaseTest {
 
     protected IConfigurationService getConfigurationService() {
         return AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
-    }
-
-    protected IBootstrapService getBootstrapService() {
-        return AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
     }
     
     protected IRegistrationService getRegistrationService() {

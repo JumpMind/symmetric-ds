@@ -21,9 +21,6 @@ package org.jumpmind.symmetric.test;
 
 import javax.servlet.ServletContext;
 
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.service.IBootstrapService;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,8 +38,7 @@ public class AbstractWebTest {
     public static void setupTest() throws Exception {
         TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null,
                 "h2");
-        IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, TestSetupUtil.getRootEngine());
-        bootstrapService.setupDatabase();        
+        TestSetupUtil.getRootEngine().setup();  
     }
 
     @Before

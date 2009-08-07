@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -74,7 +73,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testInitialLoadExtract() throws Exception {
-        ((IBootstrapService) find(Constants.BOOTSTRAP_SERVICE)).syncTriggers();
+        ((IConfigurationService) find(Constants.CONFIG_SERVICE)).syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();

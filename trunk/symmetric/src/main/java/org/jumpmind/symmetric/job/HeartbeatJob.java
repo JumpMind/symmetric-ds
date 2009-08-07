@@ -20,20 +20,20 @@
 
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IDataService;
 
 public class HeartbeatJob extends AbstractJob {
 
-    private IBootstrapService bootstrapService;
+    private IDataService dataService;
 
     @Override
     public void doJob() throws Exception {
         printDatabaseStats();
-        bootstrapService.heartbeat();
+        dataService.heartbeat();
     }
 
-    public void setBootstrapService(IBootstrapService bootstrapService) {
-        this.bootstrapService = bootstrapService;
+    public void setDataService(IDataService dataService) {
+        this.dataService = dataService;
     }
 
 }

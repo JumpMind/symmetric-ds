@@ -52,8 +52,6 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.service.IBootstrapService;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -134,8 +132,7 @@ public class TestSetupUtil {
             rootServer = new SymmetricWebServer("file:"
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath());
             dropAndCreateDatabaseTables(rootDb, rootServer.getEngine());
-            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, rootServer.getEngine());
-            bootstrapService.setupDatabase();
+            rootServer.getEngine().setup();
             new SqlScript(getResource("/" + testPrefix + sqlScriptSuffix), (DataSource) rootServer.getEngine()
                     .getApplicationContext().getBean(Constants.DATA_SOURCE), true).execute();
             rootServer.setJoin(false);

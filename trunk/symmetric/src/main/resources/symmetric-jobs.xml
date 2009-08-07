@@ -147,7 +147,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="period" value="86400000" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.SyncTriggersJob">
-                            <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="configurationService" ref="configurationService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
                             <property name="jobManager" ref="jobManager"/>
@@ -166,7 +166,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <property name="period" value="900000" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
-                            <property name="bootstrapService" ref="bootstrapService" />
+                            <property name="dataService" ref="dataService" />
                             <property name="dataSource" ref="dataSource"/>
                             <property name="parameterService" ref="parameterService" />
                             <property name="jobManager" ref="jobManager"/>

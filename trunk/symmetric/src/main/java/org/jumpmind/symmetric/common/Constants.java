@@ -44,8 +44,6 @@ final public class Constants {
 
     public static final String DATA_SOURCE = "dataSource";
 
-    public static final String BOOTSTRAP_SERVICE = "bootstrapService";
-
     public static final String NODE_SERVICE = "nodeService";
     
     public static final String ROUTING_SERVICE = "routingService";
@@ -69,6 +67,8 @@ final public class Constants {
     public static final String ACKNOWLEDGE_SERVICE = "acknowledgeService";
 
     public static final String REGISTRATION_SERVICE = "registrationService";
+    
+    public static final String UPGRADE_SERVICE = "upgradeService";
 
     public static final String DATA_SERVICE = "dataService";
 

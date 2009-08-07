@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -91,5 +92,15 @@ public interface IConfigurationService {
     public Map<Long, TriggerHistory> getHistoryRecords();
 
     public void saveTrigger(Trigger trigger);
+    
+    public void syncTriggers();
+
+    public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
+    
+    public void autoConfigDatabase(boolean force);
+    
+    public void addTriggerCreationListeners(ITriggerCreationListener l);
+
+    public Map<Trigger, Exception> getFailedTriggers();
 
 }

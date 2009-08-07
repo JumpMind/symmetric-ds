@@ -36,7 +36,10 @@ public interface IDataService {
     public void insertReloadEvent(final Node targetNode, final Trigger trigger);
     
     @Transactional
-    public void insertResendConfigEvent(final Node targetNode);        
+    public void insertResendConfigEvent(final Node targetNode);    
+    
+    @Transactional
+    public void heartbeat();
 
     public void insertHeartbeatEvent(Node node);
 

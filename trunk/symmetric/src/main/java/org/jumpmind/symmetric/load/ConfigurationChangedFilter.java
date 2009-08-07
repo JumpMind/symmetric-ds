@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.service.IBootstrapService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -40,8 +39,6 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     final String CTX_KEY_RESYNC_NEEDED = "Resync." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
     
     final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
-
-    private IBootstrapService bootstrapService;
 
     private IParameterService parameterService;
     
@@ -109,12 +106,8 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             logger.info("About to syncTriggers because new configuration came through the dataloader.");
-            bootstrapService.syncTriggers();
+            configurationService.syncTriggers();
         }
-    }
-
-    public void setBootstrapService(IBootstrapService bootstrapService) {
-        this.bootstrapService = bootstrapService;
     }
 
     public void setParameterService(IParameterService parameterService) {

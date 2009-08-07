@@ -50,7 +50,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.service.IBootstrapService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -441,9 +441,9 @@ public class SymmetricLauncher {
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
             }
-            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, engine);
+            IConfigurationService configurationService = AppUtils.find(Constants.CONFIG_SERVICE, engine);
             StringBuilder sqlBuffer = new StringBuilder();
-            bootstrapService.syncTriggers(sqlBuffer, gen_always);
+            configurationService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
         } else {
             throw new IllegalStateException("Please provide a file name to write the trigger SQL to");
@@ -484,9 +484,7 @@ public class SymmetricLauncher {
     }
 
     private static void autoCreateDatabase(SymmetricEngine engine) {
-        IBootstrapService bootstrapService = (IBootstrapService) engine
-                .getApplicationContext().getBean(Constants.BOOTSTRAP_SERVICE);
-        bootstrapService.setupDatabase(true);
+        engine.setupDatabase(true);
     }
 
     private static void runDdlXml(SymmetricEngine engine, String fileName)
