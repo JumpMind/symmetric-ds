@@ -1166,6 +1166,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         String triggerName = null;
         if (triggerPrefix == null) {
             triggerPrefix = "";
+        } else {
+            triggerPrefix = triggerPrefix + "_";
         }
         switch (dml) {
         case INSERT:

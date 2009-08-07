@@ -64,7 +64,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     private static long channelCacheTime;
 
     private List<String> rootConfigChannelTableNames;
-    
+
     private List<Channel> defaultChannels;
 
     private Map<String, String> rootConfigChannelInitialLoadSelect;
@@ -598,7 +598,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
         int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
-        String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX);
+        String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, triggerPrefix,
                 maxTriggerNameLength, trigger, hist).toUpperCase());
         newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, triggerPrefix,
@@ -648,7 +648,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
         return hist;
     }
-    
+
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             logger.info("Initializing SymmetricDS database.");
@@ -661,7 +661,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
                         saveChannel(defaultChannel);
                     } else {
-                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel.getId()));
+                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel
+                                .getId()));
                     }
                 }
                 reloadChannels();
@@ -805,7 +806,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void setDefaultChannels(List<Channel> defaultChannels) {
         this.defaultChannels = defaultChannels;
     }
-    
+
     public void addTriggerCreationListeners(ITriggerCreationListener l) {
         if (this.triggerCreationListeners == null) {
             this.triggerCreationListeners = new ArrayList<ITriggerCreationListener>();

@@ -345,17 +345,6 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>trigger.prefix</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Set this if the trigger names need to be prefixed. This is useful when running two
-                            symmetric instances against the same database. [&#xA0;Default:&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
                         <command>engine.name</command>
                     </term>
                     <listitem>
