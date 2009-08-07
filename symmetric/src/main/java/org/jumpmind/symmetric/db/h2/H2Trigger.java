@@ -170,7 +170,7 @@ public class H2Trigger implements org.h2.api.Trigger {
     protected Map<String, String> getTemplates(Connection conn) throws SQLException {
         Map<String, String> templates = new HashMap<String, String>();
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(String.format("select * from %s_VIEW", triggerName));
+        ResultSet rs = stmt.executeQuery(String.format("select * from %s_CONFIG", triggerName));
         if (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -179,7 +179,7 @@ public class H2Trigger implements org.h2.api.Trigger {
             }
             return templates;
         } else {
-            throw new SQLException(String.format("%s is in an invalid state.  %s_VIEW did not return a row.",
+            throw new SQLException(String.format("%s is in an invalid state.  %s_CONFIG did not return a row.",
                     triggerName, triggerName));
         }
     }

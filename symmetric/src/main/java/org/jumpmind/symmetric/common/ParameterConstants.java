@@ -98,7 +98,6 @@ final public class ParameterConstants {
     public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
-    public final static String RUNTIME_CONFIG_TRIGGER_PREFIX = "trigger.prefix";
 
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
     public final static String CLUSTER_LOCK_DURING_PURGE = "cluster.lock.during.purge";
