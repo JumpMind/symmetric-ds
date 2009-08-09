@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
@@ -114,9 +115,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     protected void checkForFailedTriggers() {
-        IConfigurationService service = AppUtils.find(Constants.CONFIG_SERVICE, getClientEngine());
+        ITriggerService service = AppUtils.find(Constants.TRIGGER_SERVICE, getClientEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
-        service = AppUtils.find(Constants.CONFIG_SERVICE, getRootEngine());
+        service = AppUtils.find(Constants.TRIGGER_SERVICE, getRootEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
     }
     

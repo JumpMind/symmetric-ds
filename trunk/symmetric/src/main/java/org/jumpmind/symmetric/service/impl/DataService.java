@@ -52,11 +52,11 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
@@ -71,12 +71,12 @@ public class DataService extends AbstractService implements IDataService {
 
     static final Log logger = LogFactory.getLog(DataService.class);
 
-    private IConfigurationService configurationService;
+    private ITriggerService triggerService;
 
     private INodeService nodeService;
 
     private IPurgeService purgeService;
-    
+
     private IClusterService clusterService;
 
     private IOutgoingBatchService outgoingBatchService;
@@ -102,7 +102,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
-        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
         if (history == null) {
             throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
@@ -117,7 +117,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
-        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -130,7 +130,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
-        TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtils.escapeCsvData(xml), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -203,11 +203,12 @@ public class DataService extends AbstractService implements IDataService {
         // outgoing data events are pointless because we are reloading all data
         outgoingBatchService.markAllAsSentForNode(targetNode.getNodeId());
 
-        // insert node security so the client doing the initial load knows that an initial load is currently happening
+        // insert node security so the client doing the initial load knows that
+        // an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
 
-        List<Trigger> triggers = configurationService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
-                targetNode.getNodeGroupId());
+        List<Trigger> triggers = triggerService.getActiveTriggersForReload(sourceNode.getNodeGroupId(), targetNode
+                .getNodeGroupId());
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
             for (Trigger trigger : triggers) {
@@ -254,7 +255,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        Trigger trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
@@ -274,7 +275,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Trigger trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        Trigger trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
@@ -292,7 +293,8 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
+     * Because we can't add a trigger on the _node table, we are artificially
+     * generating heartbeat events.
      * 
      * @param node
      */
@@ -314,7 +316,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        Trigger trigger = configurationService.getTriggerFor(tableName, parameterService.getNodeGroupId());
+        Trigger trigger = triggerService.getTriggerFor(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
             data = createData(trigger, whereClause);
         }
@@ -332,12 +334,12 @@ public class DataService extends AbstractService implements IDataService {
                 pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger, whereClause),
                         String.class);
             }
-            TriggerHistory history = configurationService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history == null) {
-                history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
+                history = triggerService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
                 if (history == null) {
-                    history = configurationService.getTriggerHistoryForSourceTable(trigger.getSourceTableName()
-                            .toUpperCase());
+                    history = triggerService
+                            .getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
                 }
             }
             if (history != null) {
@@ -362,8 +364,11 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void saveDataRef(DataRef dataRef) {
-        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] {dataRef.getRefDataId(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP})) {
-            jdbcTemplate.update(getSql("insertDataRefSql"), new Object[] {dataRef.getRefDataId(), dataRef.getRefTime()}, new int[] { Types.INTEGER, Types.TIMESTAMP});
+        if (0 >= jdbcTemplate.update(getSql("updateDataRefSql"), new Object[] { dataRef.getRefDataId(),
+                dataRef.getRefTime() }, new int[] { Types.INTEGER, Types.TIMESTAMP })) {
+            jdbcTemplate.update(getSql("insertDataRefSql"),
+                    new Object[] { dataRef.getRefDataId(), dataRef.getRefTime() }, new int[] { Types.INTEGER,
+                            Types.TIMESTAMP });
         }
     }
 
@@ -396,7 +401,7 @@ public class DataService extends AbstractService implements IDataService {
         writer.close();
         data.setRowData(out.toString());
     }
-    
+
     public void heartbeat() {
         if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
             try {
@@ -443,7 +448,6 @@ public class DataService extends AbstractService implements IDataService {
             logger.info("Did not run the heartbeat process because the cluster service has it locked ");
         }
     }
-    
 
     public void setReloadListeners(List<IReloadListener> listeners) {
         this.listeners = listeners;
@@ -460,8 +464,8 @@ public class DataService extends AbstractService implements IDataService {
         listeners.remove(listener);
     }
 
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {
@@ -475,7 +479,7 @@ public class DataService extends AbstractService implements IDataService {
     public void setOutgoingBatchService(IOutgoingBatchService outgoingBatchService) {
         this.outgoingBatchService = outgoingBatchService;
     }
-    
+
     public void setClusterService(IClusterService clusterService) {
         this.clusterService = clusterService;
     }
@@ -490,7 +494,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setOldData(results.getString(6));
         data.setCreateTime(results.getDate(7));
         int histId = results.getInt(8);
-        data.setTriggerHistory(configurationService.getHistoryRecordFor(histId));
+        data.setTriggerHistory(triggerService.getHistoryRecordFor(histId));
         data.setChannelId(results.getString(9));
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));

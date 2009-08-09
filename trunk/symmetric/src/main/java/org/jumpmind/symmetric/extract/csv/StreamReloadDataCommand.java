@@ -28,21 +28,21 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.ITriggerService;
 
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     private IDataExtractorService dataExtractorService;
 
-    private IConfigurationService configurationService;
+    private ITriggerService triggerService;
 
     private INodeService nodeService;
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
         int id = data.getTriggerHistory().getTriggerId();
-        Trigger trigger = configurationService.getTriggerById(id);
+        Trigger trigger = triggerService.getTriggerById(id);
         if (trigger != null) {
             // The initial_load_select can be overridden
             if (data.getRowData() != null) {                
@@ -60,8 +60,8 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
         this.dataExtractorService = dataExtractorService;
     }
 
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {

@@ -26,23 +26,27 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 
 /**
- * An out of the box filter that checks to see if the SymmetricDS 
- * configuration has changed. If it has, it will take the correct action
- * to apply the configuration change to the current node.
+ * An out of the box filter that checks to see if the SymmetricDS configuration
+ * has changed. If it has, it will take the correct action to apply the
+ * configuration change to the current node.
  */
 public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchListener {
 
     static final Log logger = LogFactory.getLog(ConfigurationChangedFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
-    
-    final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
+
+    final String CTX_KEY_FLUSH_CHANNELS_NEEDED = "FlushChannels." + ConfigurationChangedFilter.class.getSimpleName()
+            + hashCode();
 
     private IParameterService parameterService;
-    
+
     private IConfigurationService configurationService;
+    
+    private ITriggerService triggerService;
 
     private String tablePrefix;
 
@@ -69,7 +73,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
             context.getContextCache().put(CTX_KEY_RESYNC_NEEDED, true);
         }
     }
-    
+
     private void recordChannelFlushNeeded(IDataLoaderContext context) {
         if (isChannelFlushNeeded(context)) {
             context.getContextCache().put(CTX_KEY_FLUSH_CHANNELS_NEEDED, true);
@@ -79,7 +83,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     private boolean isSyncTriggersNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_TRIGGER);
     }
-    
+
     private boolean isChannelFlushNeeded(IDataLoaderContext context) {
         return matchesTable(context, TableConstants.SYM_CHANNEL);
     }
@@ -94,10 +98,10 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
 
     public void batchComplete(IDataLoader loader, IncomingBatch batch) {
     }
-    
+
     public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
-    
+
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
             logger.info("Channels flushed because new channels came through the dataloader.");
@@ -106,7 +110,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             logger.info("About to syncTriggers because new configuration came through the dataloader.");
-            configurationService.syncTriggers();
+            triggerService.syncTriggers();
         }
     }
 
@@ -117,12 +121,16 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
-    
+
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
+    }
+
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
+    }
+
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
-    }
-    
-    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
     }
     
 }

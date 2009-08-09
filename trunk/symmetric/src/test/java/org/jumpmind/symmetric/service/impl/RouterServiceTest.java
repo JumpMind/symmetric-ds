@@ -38,10 +38,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        getConfigurationService().saveTrigger(trigger1);
+        getTriggerService().saveTrigger(trigger1);
         Trigger trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
-        getConfigurationService().saveTrigger(trigger2);
-        getConfigurationService().syncTriggers();
+        getTriggerService().saveTrigger(trigger2);
+        getTriggerService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         NodeChannel otherChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID_OTHER);
         Assert.assertEquals(50, testChannel.getMaxBatchSize());
@@ -93,8 +93,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.setRouterName("column");
         trigger1.setRouterExpression("ROUTING_VARCHAR=:NODE_ID");
-        getConfigurationService().saveTrigger(trigger1);
-        getConfigurationService().syncTriggers();
+        getTriggerService().saveTrigger(trigger1);
+        getTriggerService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         testChannel.setBatchAlgorithm("transactional");
@@ -132,8 +132,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.setRouterName("subselect");
         trigger1.setRouterExpression("c.node_id=:ROUTING_VARCHAR");
-        getConfigurationService().saveTrigger(trigger1);
-        getConfigurationService().syncTriggers();
+        getTriggerService().saveTrigger(trigger1);
+        getTriggerService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
@@ -172,7 +172,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         trigger1.setSyncOnIncomingBatch(true);
         trigger1.setRouterExpression(null);
         trigger1.setRouterName(null);
-        getConfigurationService().saveTrigger(trigger1);
+        getTriggerService().saveTrigger(trigger1);
 
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
@@ -180,7 +180,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setBatchAlgorithm("default");
         getConfigurationService().saveChannel(testChannel);
 
-        getConfigurationService().syncTriggers();
+        getTriggerService().syncTriggers();
 
         insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1);
 
@@ -208,8 +208,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         trigger1.setRouterName("column");
         // set up a constant to force the data to be routed through the column data matcher, but to everyone
         trigger1.setRouterExpression("ROUTING_VARCHAR=00001");
-        getConfigurationService().saveTrigger(trigger1);
-        getConfigurationService().syncTriggers();
+        getTriggerService().saveTrigger(trigger1);
+        getTriggerService().syncTriggers();
 
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
@@ -238,7 +238,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
 
     protected Trigger getTestRoutingTableTrigger(String tableName) {
-        Trigger trigger = getConfigurationService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
+        Trigger trigger = getTriggerService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
         if (trigger == null) {
             trigger = new Trigger(tableName);
             trigger.setSourceGroupId(TestConstants.TEST_ROOT_NODE_GROUP);

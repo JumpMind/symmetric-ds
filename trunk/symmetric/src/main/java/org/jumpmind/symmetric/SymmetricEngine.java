@@ -59,7 +59,9 @@ import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.service.IUpgradeService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -98,6 +100,8 @@ public class SymmetricEngine {
     private IClusterService clusterService;
 
     private IPurgeService purgeService;
+    
+    private ITriggerService triggerService;
 
     private IDataService dataService;
 
@@ -177,6 +181,7 @@ public class SymmetricEngine {
         parameterService = null;
         clusterService = null;
         upgradeService = null;
+        triggerService = null;
         nodeService = null;
         registrationService = null;
         purgeService = null;
@@ -224,16 +229,17 @@ public class SymmetricEngine {
 
     private void init(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        configurationService = (IConfigurationService) applicationContext.getBean(Constants.CONFIG_SERVICE);
-        parameterService = (IParameterService) applicationContext.getBean(Constants.PARAMETER_SERVICE);
-        nodeService = (INodeService) applicationContext.getBean(Constants.NODE_SERVICE);
-        registrationService = (IRegistrationService) applicationContext.getBean(Constants.REGISTRATION_SERVICE);
-        upgradeService = (IUpgradeService) applicationContext.getBean(Constants.UPGRADE_SERVICE);
-        clusterService = (IClusterService) applicationContext.getBean(Constants.CLUSTER_SERVICE);
-        purgeService = (IPurgeService) applicationContext.getBean(Constants.PURGE_SERVICE);
-        dataService = (IDataService) applicationContext.getBean(Constants.DATA_SERVICE);
-        dbDialect = (IDbDialect) applicationContext.getBean(Constants.DB_DIALECT);
-        jobManager = (IJobManager) applicationContext.getBean(Constants.JOB_MANAGER);
+        configurationService = AppUtils.find(Constants.CONFIG_SERVICE, this);
+        parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, this);
+        nodeService = AppUtils.find(Constants.NODE_SERVICE, this);
+        registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, this);
+        upgradeService = AppUtils.find(Constants.UPGRADE_SERVICE, this);
+        clusterService = AppUtils.find(Constants.CLUSTER_SERVICE, this);
+        purgeService = AppUtils.find(Constants.PURGE_SERVICE, this);
+        dataService = AppUtils.find(Constants.DATA_SERVICE, this);
+        triggerService = AppUtils.find(Constants.TRIGGER_SERVICE, this);
+        dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
+        jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
     }
 
     /**
@@ -323,7 +329,7 @@ public class SymmetricEngine {
                     logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId()
                             + ", externalId=" + parameterService.getExternalId() + "]");
                 }
-                configurationService.syncTriggers();
+                triggerService.syncTriggers();
                 heartbeat();
                 jobManager.startJobs();
                 logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
@@ -359,10 +365,10 @@ public class SymmetricEngine {
     /**
      * Call this to resync triggers
      * 
-     * @see IconfigurationService#syncTriggers()
+     * @see ITriggerService#syncTriggers()
      */
     public void syncTriggers() {
-        configurationService.syncTriggers();
+        triggerService.syncTriggers();
     }
 
     /**

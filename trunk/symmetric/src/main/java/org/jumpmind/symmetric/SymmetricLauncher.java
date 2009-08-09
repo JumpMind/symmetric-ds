@@ -50,13 +50,13 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -441,9 +441,9 @@ public class SymmetricLauncher {
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
             }
-            IConfigurationService configurationService = AppUtils.find(Constants.CONFIG_SERVICE, engine);
+            ITriggerService triggerService = AppUtils.find(Constants.TRIGGER_SERVICE, engine);
             StringBuilder sqlBuffer = new StringBuilder();
-            configurationService.syncTriggers(sqlBuffer, gen_always);
+            triggerService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
         } else {
             throw new IllegalStateException("Please provide a file name to write the trigger SQL to");

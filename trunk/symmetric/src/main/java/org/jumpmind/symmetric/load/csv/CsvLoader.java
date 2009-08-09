@@ -44,9 +44,9 @@ import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -63,7 +63,7 @@ public class CsvLoader implements IDataLoader {
 
     protected IParameterService parameterService;
 
-    protected IConfigurationService configurationService;
+    protected ITriggerService triggerService;
 
     protected INodeService nodeService;
 
@@ -130,22 +130,22 @@ public class CsvLoader implements IDataLoader {
 
                     if (tokens[0].equals(CsvConstants.INSERT)) {
                         if (context.getTableTemplate() == null) {
-                          throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
                         } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             insert(tokens);
                             rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.UPDATE)) {
                         if (context.getTableTemplate() == null) {
-                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
-                          } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
+                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             update(tokens);
                             rowsProcessed++;
                         }
                     } else if (tokens[0].equals(CsvConstants.DELETE)) {
                         if (context.getTableTemplate() == null) {
-                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);     
-                          } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
+                            throw new IllegalStateException(ErrorConstants.METADATA_MISSING);
+                        } else if (!context.getTableTemplate().isIgnoreThisTable() && !context.isSkipping()) {
                             delete(tokens);
                             rowsProcessed++;
                         }
@@ -157,7 +157,8 @@ public class CsvLoader implements IDataLoader {
                         rowsProcessed = 0;
                         break;
                     } else if (tokens[0].equals(CsvConstants.SQL)) {
-                        if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable()) && !context.isSkipping()) {
+                        if ((context.getTableTemplate() == null || !context.getTableTemplate().isIgnoreThisTable())
+                                && !context.isSkipping()) {
                             runSql(tokens[1]);
                             rowsProcessed++;
                         }
@@ -167,15 +168,15 @@ public class CsvLoader implements IDataLoader {
                             rowsProcessed++;
                         }
                     } else {
-                        logger.warn("Unexpected token '" + tokens[0] + "' on line "
-                                + stats.getLineCount() + " of batch " + context.getBatchId());
-                    }                    
+                        logger.warn("Unexpected token '" + tokens[0] + "' on line " + stats.getLineCount()
+                                + " of batch " + context.getBatchId());
+                    }
                 }
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
                     return false;
                 }
             }
-            
+
             return true;
         } finally {
             cleanupAfterDataLoad();
@@ -216,11 +217,11 @@ public class CsvLoader implements IDataLoader {
                 if (sourceNode != null) {
                     Trigger trigger = null;
                     if (targetNode == null) {
-                        trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                        trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
                     } else {
                         // Get the trigger based upon table name , source node
                         // group id , target node group id and channel id
-                        trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
+                        trigger = triggerService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
                                 targetNode.getNodeGroupId(), context.getChannelId());
                         if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
                             tableName = trigger.getTargetTableName();
@@ -231,7 +232,7 @@ public class CsvLoader implements IDataLoader {
                         if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
                             catalog = trigger.getTargetCatalogName();
                         }
-                    }                
+                    }
                 }
             }
 
@@ -430,7 +431,7 @@ public class CsvLoader implements IDataLoader {
         dataLoader.setJdbcTemplate(jdbcTemplate);
         dataLoader.setDbDialect(dbDialect);
         dataLoader.setParameterService(parameterService);
-        dataLoader.setConfigurationService(configurationService);
+        dataLoader.setTriggerService(triggerService);
         dataLoader.setNodeService(nodeService);
         return dataLoader;
     }
@@ -461,8 +462,8 @@ public class CsvLoader implements IDataLoader {
         this.parameterService = parameterService;
     }
 
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {
