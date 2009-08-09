@@ -20,23 +20,22 @@
 
 package org.jumpmind.symmetric.job;
 
-import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.ITriggerService;
 
 public class SyncTriggersJob extends AbstractJob {
 
-    private IConfigurationService configurationService;
+    private ITriggerService triggerService;
 
     public SyncTriggersJob() {
     }
 
     @Override
     public void doJob() throws Exception {
-        configurationService.syncTriggers();
+        triggerService.syncTriggers();
     }
 
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
-
 
 }

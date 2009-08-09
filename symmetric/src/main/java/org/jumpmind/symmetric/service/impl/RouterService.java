@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -73,6 +74,8 @@ public class RouterService extends AbstractService implements IRouterService {
     private IDataService dataService;
 
     private IConfigurationService configurationService;
+    
+    private ITriggerService triggerService;
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -366,9 +369,10 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected Trigger getTriggerForData(Data data) {
-        Trigger trigger = configurationService.getCachedTriggers(false).get((data.getTriggerHistory().getTriggerId()));
+        Trigger trigger = triggerService.getActiveTriggersForSourceNodeGroup(parameterService
+                                .getString(ParameterConstants.NODE_GROUP_ID), false).get((data.getTriggerHistory().getTriggerId()));
         if (trigger == null) {
-            trigger = configurationService.getTriggerById(data.getTriggerHistory().getTriggerId());
+            trigger = triggerService.getTriggerById(data.getTriggerHistory().getTriggerId());
             if (trigger == null) {
                 throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data
                         .getTriggerHistory().getTriggerId()));
@@ -411,5 +415,9 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public void setBatchAlgorithms(Map<String, IBatchAlgorithm> batchAlgorithms) {
         this.batchAlgorithms = batchAlgorithms;
+    }
+    
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 }

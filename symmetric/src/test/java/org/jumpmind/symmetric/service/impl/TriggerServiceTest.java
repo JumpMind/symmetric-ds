@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-package org.jumpmind.symmetric.db;
+package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
 import java.util.List;
@@ -26,29 +26,28 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
-import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class DbTriggerTest extends AbstractDatabaseTest {
+public class TriggerServiceTest extends AbstractDatabaseTest {
 
-    static final Log logger = LogFactory.getLog(DbTriggerTest.class);
+    static final Log logger = LogFactory.getLog(TriggerServiceTest.class);
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
     public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
     public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
             + TestConstants.TEST_PREFIX
-            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
+            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_update_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
 
@@ -79,18 +78,17 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)";
 
-    public DbTriggerTest() throws Exception {
+    public TriggerServiceTest() throws Exception {
         super();
     }
 
-    public DbTriggerTest(String dbName) {
+    public TriggerServiceTest(String dbName) {
         super(dbName);
     }
 
     @Test
-    public void testBootstrapSchemaSync() throws Exception {
-        IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
-                Constants.CONFIG_SERVICE);
+    public void testSchemaSync() throws Exception {
+        ITriggerService service = getTriggerService();
 
         // baseline
         service.syncTriggers();
@@ -138,8 +136,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testInitialLoadSql() throws Exception {
-        IConfigurationService service = (IConfigurationService) getSymmetricEngine().getApplicationContext().getBean(
-                "configurationService");
+        ITriggerService service = getTriggerService();
         service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
         String sql = getDbDialect().createInitalLoadSqlFor(new Node("1", null, "1.0"),
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
@@ -154,8 +151,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
 
     @Test
     public void testExcludedColumnsFunctionality() throws Exception {
-        IConfigurationService configService = (IConfigurationService) getSymmetricEngine().getApplicationContext()
-        .getBean(Constants.CONFIG_SERVICE);
+        ITriggerService service = getTriggerService();
         
         // need to wait for a second to make sure enough time has passed so the
         // update of the config table will have a greater timestamp than the audit table.
@@ -165,10 +161,10 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 + "trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=current_timestamp "
                 + TEST_TRIGGER_WHERE_CLAUSE));
 
-        configService.syncTriggers();
+        service.syncTriggers();
 
 
-        Trigger trigger = configService.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        Trigger trigger = service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
         assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
                 + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
@@ -218,8 +214,7 @@ public class DbTriggerTest extends AbstractDatabaseTest {
         if (dialect instanceof OracleDbDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
-            IConfigurationService configService = AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
-            configService.syncTriggers();
+            ITriggerService configService = getTriggerService();;
             Assert.assertEquals("Some triggers must have failed to build.", 0, configService.getFailedTriggers()
                     .size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);

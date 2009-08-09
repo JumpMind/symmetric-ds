@@ -37,7 +37,6 @@ import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -45,6 +44,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -79,11 +79,11 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private INodeService nodeService;
 
-    private IConfigurationService configurationService;
-
     private IAcknowledgeService acknowledgeService;
 
     private IRegistrationService registrationService;
+    
+    private ITriggerService triggerService;
 
     private ITransportManager transportManager;
 
@@ -144,7 +144,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         }
 
         if (ext instanceof ITriggerCreationListener) {
-            configurationService.addTriggerCreationListeners((ITriggerCreationListener) ext);
+            triggerService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
 
         if (ext instanceof IBatchListener) {
@@ -216,10 +216,6 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         this.nodeService = nodeService;
     }
 
-    public void setConfigurationService(IConfigurationService configurationService) {
-        this.configurationService = configurationService;
-    }
-
     public void setAcknowledgeService(IAcknowledgeService acknowledgeService) {
         this.acknowledgeService = acknowledgeService;
     }
@@ -234,5 +230,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
+    }
+    
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 }

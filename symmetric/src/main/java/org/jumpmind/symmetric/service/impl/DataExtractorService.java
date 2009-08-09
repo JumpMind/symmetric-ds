@@ -64,6 +64,7 @@ import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -89,6 +90,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IConfigurationService configurationService;
 
     private IAcknowledgeService acknowledgeService;
+    
+    private ITriggerService triggerService;
 
     private INodeService nodeService;
 
@@ -144,7 +147,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<Trigger> triggers = configurationService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
+        List<Trigger> triggers = triggerService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
                 .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {
@@ -217,7 +220,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void writeInitialLoad(Node node, Trigger trigger, BufferedWriter writer, final OutgoingBatch batch,
             final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, configurationService.getLatestHistoryRecordFor(trigger.getTriggerId()), writer,
+        writeInitialLoad(node, trigger, triggerService.getLatestHistoryRecordFor(trigger.getTriggerId()), writer,
                 batch, ctx);
     }
 
@@ -543,5 +546,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
+    }
+    
+    public void setTriggerService(ITriggerService triggerService) {
+        this.triggerService = triggerService;
     }
 }

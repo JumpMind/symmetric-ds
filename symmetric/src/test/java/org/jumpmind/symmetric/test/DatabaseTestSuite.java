@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.test;
 import java.util.Collection;
 
 import org.jumpmind.symmetric.config.ParameterFilterTest;
-import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.extract.DataExtractorTest;
 import org.jumpmind.symmetric.integrate.XmlPublisherFilterTest;
 import org.jumpmind.symmetric.load.AdditiveDataLoaderFilterTest;
@@ -31,6 +30,7 @@ import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
 import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
+import org.jumpmind.symmetric.service.impl.TriggerServiceTest;
 import org.jumpmind.symmetric.service.impl.NodeServiceTest;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchServiceTest;
 import org.jumpmind.symmetric.service.impl.ParameterServiceTest;
@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { DbTriggerTest.class, DataLoaderTest.class, DataExtractorTest.class, ParameterFilterTest.class,
+@SuiteClasses( { TriggerServiceTest.class, DataLoaderTest.class, DataExtractorTest.class, ParameterFilterTest.class,
         RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class, NodeConcurrencyFilterTest.class,
         AcknowledgeServiceTest.class, ClusterServiceTest.class, DataExtractorServiceTest.class,
         DataLoaderServiceTest.class, NodeServiceTest.class, OutgoingBatchServiceTest.class, ParameterServiceTest.class,

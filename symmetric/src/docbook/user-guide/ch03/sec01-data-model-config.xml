@@ -879,7 +879,7 @@
                             </entry>
                         </row>
                         <row>
-                            <entry>last_updated_by</entry>
+                            <entry>last_update_by</entry>
                             <entry>varchar(50)</entry>
                             <entry>Y</entry>
                             <entry></entry>

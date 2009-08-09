@@ -17,7 +17,7 @@
             <programlisting>
 <![CDATA[update SYM_TRIGGER
 set channel_id = 'price',
-    last_updated_by = 'jsmith',
+    last_update_by = 'jsmith',
     last_update_time = current_timestamp
 where source_table_name = 'price_changes';
 ]]></programlisting>
@@ -29,7 +29,7 @@ where source_table_name = 'price_changes';
             <programlisting>
 <![CDATA[update SYM_TRIGGER
 set inactive_time = current_timestamp,
-    last_updated_by = 'jsmith',
+    last_update_by = 'jsmith',
     last_update_time = current_timestamp
 where source_node_group_id = 'client';
 ]]></programlisting>

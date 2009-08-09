@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -50,8 +49,6 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     private IDataService dataService;
 
-    private IConfigurationService configService;
-
     private int triggerHistId;
 
     public OutgoingBatchServiceTest() throws Exception {
@@ -66,18 +63,17 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     public void setUp() {
         batchService = (IOutgoingBatchService) find(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) find(Constants.DATA_SERVICE);
-        configService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
-        Set<Long> histKeys = configService.getHistoryRecords().keySet();
+        Set<Long> histKeys = getTriggerService().getHistoryRecords().keySet();
         assertFalse(histKeys.isEmpty());
         triggerHistId = histKeys.iterator().next().intValue();
     }
 
     @Test
     public void testDisabledChannel() {
-        NodeChannel channel = configService.getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel channel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         channel.setEnabled(false);
-        configService.saveChannel(channel);
-        
+        getConfigurationService().saveChannel(channel);
+
         cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
                 TestConstants.TEST_PREFIX + "outgoing_batch");
         int size = 50; // magic number
@@ -92,13 +88,13 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(list);
         assertEquals(list.size(), 0);
-        
+
         channel.setEnabled(true);
-        configService.saveChannel(channel);
+        getConfigurationService().saveChannel(channel);
     }
 
-
-    protected void createDataEvent(String tableName, int triggerHistoryId, String channelId, DataEventType type, String nodeId) {
+    protected void createDataEvent(String tableName, int triggerHistoryId, String channelId, DataEventType type,
+            String nodeId) {
         TriggerHistory history = new TriggerHistory();
         history.setTriggerHistoryId(triggerHistoryId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, channelId, null, null);

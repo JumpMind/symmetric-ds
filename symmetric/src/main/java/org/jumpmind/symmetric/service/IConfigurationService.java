@@ -22,34 +22,20 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
-import java.util.Map;
 
-import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 
 /**
  * Provides an API to configure data synchronizations.
  */
 public interface IConfigurationService {
 
-    /**
-     * Return a list of triggers used when extraction configuration data during 
-     * the registration process.
-     * @param sourceGroupId group id of the node being registered with
-     * @param targetGroupId group id of the node that is registering
-     */
-    public List<Trigger> getRegistrationTriggers(String sourceGroupId, String targetGroupId);
-    
     public List<NodeGroupLink> getGroupLinks();
 
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
-
-    public List<String> getRootConfigChannelTableNames();
 
     public void saveChannel(Channel channel);
 
@@ -57,50 +43,12 @@ public interface IConfigurationService {
 
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
-    public Map<String, List<Trigger>> getTriggersByChannelFor(String configurationTypeId);
-
-    public void inactivateTriggerHistory(TriggerHistory history);
-
-    public TriggerHistory getLatestHistoryRecordFor(int triggerId);
-
     public List<NodeChannel> getChannels();
     
     public NodeChannel getChannel(String channelId);
     
     public void reloadChannels();
-    
-    public Map<Integer, Trigger> getCachedTriggers(boolean refreshCache);
-
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
-
-    public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
-
-    public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
-
-    public TriggerHistory getHistoryRecordFor(int auditId);
-    
-    public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName);
-    
-    public Trigger getTriggerFor(String table, String sourceNodeGroupId);
-
-    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
-
-    public Trigger getTriggerById(int triggerId);
-
-    public void insert(TriggerHistory newAuditRecord);
-
-    public Map<Long, TriggerHistory> getHistoryRecords();
-
-    public void saveTrigger(Trigger trigger);
-    
-    public void syncTriggers();
-
-    public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always);
-    
+       
     public void autoConfigDatabase(boolean force);
     
-    public void addTriggerCreationListeners(ITriggerCreationListener l);
-
-    public Map<Trigger, Exception> getFailedTriggers();
-
 }

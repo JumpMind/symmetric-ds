@@ -24,13 +24,11 @@ import java.io.BufferedWriter;
 import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.db.DbTriggerTest;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -43,8 +41,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     protected IDataExtractorService dataExtractorService;
-
-    protected IConfigurationService configurationService;
 
     protected IDataService dataService;
 
@@ -63,29 +59,28 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
     @Before
     public void setUp() {
         dataExtractorService = (IDataExtractorService) find(Constants.DATAEXTRACTOR_SERVICE);
-        configurationService = (IConfigurationService) find(Constants.CONFIG_SERVICE);
         dataService = (IDataService) find(Constants.DATA_SERVICE);
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
-        triggerHistory = configurationService.getHistoryRecords().values().iterator().next();
+        triggerHistory = getTriggerService().getHistoryRecords().values().iterator().next();
     }
 
     @Test
     public void testInitialLoadExtract() throws Exception {
-        ((IConfigurationService) find(Constants.CONFIG_SERVICE)).syncTriggers();
+        getTriggerService().syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();
-        template.update("delete from " + DbTriggerTest.TEST_TRIGGERS_TABLE);
-        Trigger trigger = configurationService.getTriggerFor(DbTriggerTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        template.update("delete from " + TriggerServiceTest.TEST_TRIGGERS_TABLE);
+        Trigger trigger = getTriggerService().getTriggerFor(TriggerServiceTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
         
-        DbTriggerTest.insert(DbTriggerTest.INSERT1_VALUES, template, getDbDialect());
-        DbTriggerTest.insert(DbTriggerTest.INSERT2_VALUES, template, getDbDialect());
+        TriggerServiceTest.insert(TriggerServiceTest.INSERT1_VALUES, template, getDbDialect());
+        TriggerServiceTest.insert(TriggerServiceTest.INSERT2_VALUES, template, getDbDialect());
         
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         loadResults = mockTransport.toString();

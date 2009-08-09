@@ -39,13 +39,15 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITriggerService;
 import org.jumpmind.symmetric.util.AppUtils;
 
 /**
@@ -57,8 +59,9 @@ public abstract class AbstractEmbeddedTrigger {
     protected static final Log logger = LogFactory.getLog(AbstractEmbeddedTrigger.class);
     protected static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
     protected IDataService dataService;
-    protected IConfigurationService configurationService;
+    protected ITriggerService triggerService;
     protected INodeService nodeService;
+    protected IParameterService parameterService;
     protected IDbDialect dbDialect;
     protected Table table;
     protected TriggerHistory triggerHistory;
@@ -73,11 +76,13 @@ public abstract class AbstractEmbeddedTrigger {
         this.tableName = tableName;
         SymmetricEngine engine = SymmetricEngine.findEngineByName(getEngineName().toLowerCase());
         this.dataService = getDataService(engine);
-        this.configurationService = getConfigurationService(engine);
+        this.triggerService = getTriggerService(engine);
+        this.parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, engine);
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
-        this.triggerHistory = configurationService.getHistoryRecordFor(getTriggerHistId());
-        this.trigger = configurationService.getCachedTriggers(true).get(triggerHistory.getTriggerId());
+        this.triggerHistory = triggerService.getHistoryRecordFor(getTriggerHistId());
+        this.trigger = triggerService.getActiveTriggersForSourceNodeGroup(parameterService
+                                .getString(ParameterConstants.NODE_GROUP_ID), true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
             logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.",
                     triggerType.name(), tableName, getTriggerHistId()));
@@ -222,8 +227,8 @@ public abstract class AbstractEmbeddedTrigger {
         return AppUtils.find(Constants.DB_DIALECT, engine);
     }
 
-    private IConfigurationService getConfigurationService(SymmetricEngine engine) {
-        return AppUtils.find(Constants.CONFIG_SERVICE, engine);
+    private ITriggerService getTriggerService(SymmetricEngine engine) {
+        return AppUtils.find(Constants.TRIGGER_SERVICE, engine);
     }
 
     private INodeService getNodeService(SymmetricEngine engine) {

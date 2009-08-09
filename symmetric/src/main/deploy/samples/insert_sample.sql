@@ -44,27 +44,27 @@ values('item', 1, 100000, 1, 'Item and pricing data');
 -- Triggers
 --
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_update_by, last_update_time, create_time)
 values('item_selling_price', 'corp', 'store', 'item', 1, 1, 1, 100, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_update_by, last_update_time, create_time)
 values('item', 'corp', 'store', 'item', 1, 1, 1, 105, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_update_by, last_update_time, create_time)
 values('sale_transaction', 'store', 'corp', 'sale_transaction', 1, 1, 1, 200, 'demo', current_timestamp, current_timestamp);
 
 -- Example of a "dead" trigger, which is used to only sync the table during initial load
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_update_by, last_update_time, create_time)
 values('sale_transaction', 'corp', 'store', 'sale_transaction', 0, 0, 0, 200, 'demo', current_timestamp, current_timestamp);
 
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, last_update_by, last_update_time, create_time)
 values('sale_return_line_item', 'store', 'corp', 'sale_transaction', 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);
 
 -- Example of using sync_on_incoming_batch to sync a change arriving at corp from one store back out to all stores
 insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, sync_on_incoming_batch, initial_load_order, last_updated_by, last_update_time, create_time)
+(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, sync_on_incoming_batch, initial_load_order, last_update_by, last_update_time, create_time)
 values('sale_return_line_item', 'corp', 'store', 'sale_transaction', 1, 1, 1, 1, 205, 'demo', current_timestamp, current_timestamp);

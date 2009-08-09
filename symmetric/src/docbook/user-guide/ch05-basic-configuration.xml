@@ -285,7 +285,7 @@ values
 <![CDATA[insert into SYM_TRIGGER 
   (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
    sync_on_insert, sync_on_update, sync_on_delete, 
-   initial_load_order, last_updated_by, last_update_time, create_time)
+   initial_load_order, last_update_by, last_update_time, create_time)
 values
   ('item', 'corp', 'store', 'item', 
    1, 1, 1, 
@@ -322,7 +322,7 @@ values
   (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
    sync_on_insert, sync_on_update, sync_on_delete,
    sync_on_insert_condition, sync_on_update_condition, sync_on_delete_condition, 
-   initial_load_order, last_updated_by, last_update_time, create_time)
+   initial_load_order, last_update_by, last_update_time, create_time)
 values
   ('sale_transaction', 'corp', 'store', 'sale_transaction', 
    1, 1, 1, 
@@ -380,7 +380,7 @@ values
   (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
    sync_on_insert, sync_on_update, sync_on_delete,
    node_select, 
-   initial_load_order, last_updated_by, last_update_time, create_time)
+   initial_load_order, last_update_by, last_update_time, create_time)
 values
   ('sale_transaction', 'corp', 'store', 'sale_transaction', 
    1, 1, 1, 
@@ -436,7 +436,7 @@ values
    sync_on_insert, sync_on_update, sync_on_delete,
    sync_on_insert_condition, sync_on_update_condition, sync_on_delete_condition, 
    initial_load_select,
-   initial_load_order, last_updated_by, last_update_time, create_time)
+   initial_load_order, last_update_by, last_update_time, create_time)
 values
   ('sale_transaction', 'corp', 'store', 'sale_transaction', 
    1, 1, 1, 
