@@ -125,7 +125,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
         assertTrue(count == 1);
-        String csvString = getNextDataRow(getSymmetricEngine());
+        String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT1_CSV_ENDSWITH);
@@ -171,7 +171,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
 
         assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
 
-        String csvString = getNextDataRow(getSymmetricEngine());
+        String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -186,7 +186,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         int count = insert(INSERT1_VALUES, jdbcTemplate, getDbDialect());
         getDbDialect().enableSyncTriggers();
         assertTrue(count == 1);
-        String csvString = getNextDataRow(getSymmetricEngine());
+        String csvString = getNextDataRow();
         // DB2 captures decimal differently
         csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
@@ -202,7 +202,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         getSymmetricEngine().syncTriggers();
 
         Assert.assertEquals(1, insert(INSERT3_VALUES, jdbcTemplate, getDbDialect()));
-        String csvString = getNextDataRow(getSymmetricEngine());
+        String csvString = getNextDataRow();
         Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString,
                 "Data was captured when it should not have been");
 
@@ -214,11 +214,12 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         if (dialect instanceof OracleDbDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
-            ITriggerService configService = getTriggerService();;
-            Assert.assertEquals("Some triggers must have failed to build.", 0, configService.getFailedTriggers()
+            ITriggerService triggerService = getTriggerService();
+            triggerService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
                     .size());
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
-            String csvString = getNextDataRow(getSymmetricEngine());
+            String csvString = getNextDataRow();
             Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
         }
     }
@@ -253,7 +254,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         return filteredValues;
     }
 
-    private String getNextDataRow(SymmetricEngine engine) {
+    private String getNextDataRow() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         return (String) jdbcTemplate
                 .queryForObject("select row_data from " + TestConstants.TEST_PREFIX
