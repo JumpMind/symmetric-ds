@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -31,6 +33,8 @@ import org.jumpmind.symmetric.model.Node;
 
 public abstract class AbstractDataRouter implements IDataRouter {
 
+    protected final Log logger = LogFactory.getLog(getClass());
+    
     private boolean autoRegister = true;
 
     public boolean isAutoRegister() {
