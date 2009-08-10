@@ -558,6 +558,11 @@
             <artifactId>commons-math</artifactId>
             <version>1.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.beanshell</groupId>
+            <artifactId>bsh</artifactId>
+            <version>2.0b4</version>
+        </dependency>         
         <!-- Should the jetty stuff be split to another project: symmetric-jetty? -->
         <dependency>
             <groupId>org.mortbay.jetty</groupId>
