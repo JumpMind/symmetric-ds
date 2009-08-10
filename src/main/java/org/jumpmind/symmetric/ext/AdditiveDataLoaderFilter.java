@@ -130,7 +130,7 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
     protected String buildSetClause(IDataLoaderContext context, Object[] columnValues, List<Object> values) {
         StringBuilder s = new StringBuilder();
 
-        if (overrideColumnNames != null && additiveColumnNames != null) {
+        if (overrideColumnNames != null || additiveColumnNames != null) {
             s.append(" set ");
 
             // Track the moment when we add our first name=value pair to the set
