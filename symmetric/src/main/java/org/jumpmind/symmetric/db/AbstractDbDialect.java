@@ -136,7 +136,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     
     protected Set<String> sqlKeywords;
     
-    protected String defaultSchema;
+    protected String defaultSchema;    
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -911,13 +911,32 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
     
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] metaData) {
+    protected Column[] orderColumns (String[] columnNames, Table table) {
+        Column[] unorderedColumns = table.getColumns();
+        Column[] orderedColumns = new Column[columnNames.length];
+        for (int i = 0; i < columnNames.length; i++) {
+            String name = columnNames[i];
+            for (Column column : unorderedColumns) {
+                if (column.getName().equalsIgnoreCase(name)) {
+                    orderedColumns[i] = column;
+                    break;
+                }
+            }
+        }
+        return orderedColumns;
+    }
+    
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values) {        
+        Column[] metaData = orderColumns(columnNames, table);
+        return getObjectValues(encoding, values, metaData);
+    }
+    
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData) {        
         List<Object> list = new ArrayList<Object>(values.length);
-
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
             Object objectValue = value;
-            Column column = metaData[i];
+            Column column = orderedMetaData[i];
 
             if (column != null) {
                 int type = column.getTypeCode();
