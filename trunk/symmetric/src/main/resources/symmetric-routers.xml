@@ -15,6 +15,11 @@
 				<property name="dbDialect" ref="dbDialect" />
 			</bean>
 		</entry>
+        <entry key="bsh">
+            <bean class="org.jumpmind.symmetric.route.BshDataRouter">
+                <property name="dbDialect" ref="dbDialect" />
+            </bean>
+        </entry>        
 		<entry key="column">
 			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
                 <property name="registrationService" ref="registrationService" />
