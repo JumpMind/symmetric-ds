@@ -125,4 +125,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
         return nodeIds;
     }
 
+    /**
+     * Override if needed.
+     */
+    public void completeBatch(IRouterContext context) {
+    }
 }

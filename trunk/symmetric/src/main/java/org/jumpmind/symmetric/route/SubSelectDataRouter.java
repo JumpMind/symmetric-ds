@@ -58,10 +58,6 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         return nodeIds;
     }
     
-    public void completeBatch(IRouterContext context) {
-        
-    }
-    
     public void setSql(String sql) {
         this.sql = sql;
     }
