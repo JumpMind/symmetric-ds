@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.ddlutils.model.Column;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -47,11 +46,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
     
     protected Map<String, String> getNewDataAsString(DataMetaData dataMetaData) {
         String[] rowData = dataMetaData.getData().getParsedRowData();
-        Column[] columns = dataMetaData.getTable().getColumns();
+        String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         for (int i = 0; i < columns.length; i++) {
-            Column c = columns[i];
-            map.put(c.getName(), rowData[i]);
+            String name = columns[i];
+            map.put(name, rowData[i]);
         }
         return map;        
     }
