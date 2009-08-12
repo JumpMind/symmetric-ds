@@ -236,6 +236,85 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getRoutingService().routeData();
         logger.info("Done routing data");
     }
+    
+    @Test
+    public void testBshTransactionalRoutingOnUpdate() {
+        resetBatches();
+
+        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.setRouterName("bsh");
+        trigger1.setRouterExpression("HashSet set = new HashSet(2); set.add(ROUTING_VARCHAR); set.add(OLD_ROUTING_VARCHAR); return set;");
+        
+        getTriggerService().saveTrigger(trigger1);
+        getTriggerService().syncTriggers();
+        
+        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(5);
+        testChannel.setBatchAlgorithm("transactional");
+        getConfigurationService().saveChannel(testChannel);
+
+        SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
+        int count = t.update(String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1),
+                        NODE_GROUP_NODE_3);
+        logger.info("Just recorded a change to " + count + " rows in " + TEST_TABLE_1);
+        getRoutingService().routeData();
+
+        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        filterForChannels(batches, testChannel);        
+        Assert.assertEquals(1, batches.size());
+        Assert.assertEquals(count, (int)batches.get(0).getDataEventCount());
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
+        filterForChannels(batches, testChannel);
+        // Node 2 has sync disabled
+        Assert.assertEquals(0, batches.size());
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        filterForChannels(batches, testChannel);
+        Assert.assertEquals(1, batches.size());
+        Assert.assertEquals(count, (int)batches.get(0).getDataEventCount());
+        
+        resetBatches();
+    }    
+    
+    @Test
+    public void testBshTransactionalRoutingInsert() {
+        resetBatches();
+
+        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.setRouterName("bsh");
+        trigger1.setRouterExpression("HashSet set = new HashSet(2); set.add(ROUTING_VARCHAR); set.add(OLD_ROUTING_VARCHAR); return set;");
+        
+        getTriggerService().saveTrigger(trigger1);
+        getTriggerService().syncTriggers();
+        
+        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(1000);
+        testChannel.setMaxBatchSize(5);
+        testChannel.setBatchAlgorithm("transactional");
+        getConfigurationService().saveChannel(testChannel);
+
+        insert(TEST_TABLE_1, 5, true);
+        getRoutingService().routeData();
+
+        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        filterForChannels(batches, testChannel);        
+        Assert.assertEquals(1, batches.size());
+        Assert.assertEquals(5, (int)batches.get(0).getDataEventCount());
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
+        filterForChannels(batches, testChannel);
+        // Node 2 has sync disabled
+        Assert.assertEquals(0, batches.size());
+
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        filterForChannels(batches, testChannel);
+        // Batch was targeted only at node 1
+        Assert.assertEquals(0, batches.size());
+        
+        resetBatches();
+    }        
 
     protected Trigger getTestRoutingTableTrigger(String tableName) {
         Trigger trigger = getTriggerService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
@@ -314,5 +393,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             callback.doInTransaction(null);
         }
     }
+    
+    
 
 }
