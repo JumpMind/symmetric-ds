@@ -108,10 +108,6 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         return nodeIds;
 
     }
-
-    public void completeBatch(IRouterContext context) {
-        
-    }
     
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;

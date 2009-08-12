@@ -20,9 +20,6 @@ public class BshDataRouter extends AbstractDataRouter {
 
     protected IDbDialect dbDialect;
 
-    public void completeBatch(IRouterContext context) {
-    }
-
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         try {
@@ -31,9 +28,9 @@ public class BshDataRouter extends AbstractDataRouter {
             Object value = interpreter.eval(dataMetaData.getTrigger().getRouterExpression());
             return eval(value, nodes);
         } catch (EvalError e) {
-            logger.error(e, e);
+            logger.error("Error in data router.  Routing to nobody.", e);
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
     }
 
     protected Collection<String> eval(Object value, Set<Node> nodes) {
