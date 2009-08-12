@@ -35,8 +35,9 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
-    
-    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist, String tablePrefix, Table table);
+
+    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
+            String tablePrefix, Table table);
 
     /**
      * Get the name of this symmetric instance. This can be set in
@@ -44,7 +45,8 @@ public interface IDbDialect {
      */
     public String getEngineName();
 
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName, TriggerHistory oldHistory);
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, TriggerHistory oldHistory);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
 
@@ -61,10 +63,10 @@ public interface IDbDialect {
      * dialect an opportunity to do any post loading work for the given table.
      */
     public void cleanupAfterDataLoad(Table table);
-    
+
     /**
-     * For performance reasons, the as table metadata is read in, it is cached.  This method will
-     * clear that cache.
+     * For performance reasons, the as table metadata is read in, it is cached.
+     * This method will clear that cache.
      */
     public void resetCachedTableModel();
 
@@ -87,13 +89,13 @@ public interface IDbDialect {
     public int getMajorVersion();
 
     public int getMinorVersion();
-    
+
     public String getProductVersion();
 
     public BinaryEncoding getBinaryEncoding();
 
     public Table getMetaDataFor(String catalog, String schema, final String tableName, boolean useCache);
-    
+
     public Table getMetaDataFor(Trigger trigger, boolean useCache);
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
@@ -111,7 +113,7 @@ public interface IDbDialect {
     public boolean isCharSpaceTrimmed();
 
     public boolean isEmptyStringNulled();
-    
+
     /**
      * Get the maximum size the name of a trigger can be for the database
      * platform. If the generated symmetric trigger name is greater than the max
@@ -152,7 +154,7 @@ public interface IDbDialect {
     public void disableSyncTriggers(String nodeId);
 
     public void enableSyncTriggers();
-    
+
     public String getSyncTriggersExpression();
 
     public String getDefaultSchema();
@@ -172,7 +174,7 @@ public interface IDbDialect {
     public boolean isBlobSyncSupported();
 
     public boolean isBlobOverrideToBinary();
-    
+
     public boolean isDateOverrideToTimestamp();
 
     public boolean isClobSyncSupported();
@@ -185,25 +187,27 @@ public interface IDbDialect {
     public boolean isTransactionIdOverrideSupported();
 
     public String getIdentifierQuoteString();
-    
+
     public void createTables(String xml);
 
     public boolean supportsGetGeneratedKeys();
-    
+
     public boolean supportsReturningKeys();
-    
+
     public String getSelectLastInsertIdSql(String sequenceName);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceIde,
             final PreparedStatementCallback psCallback);
-    
-    public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql, final SequenceIdentifier sequenceIde,
-            final PreparedStatementCallback psCallback);
-    
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] metaData);
-    
+
+    public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql,
+            final SequenceIdentifier sequenceIde, final PreparedStatementCallback psCallback);
+
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData);
+
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values);
+
     /**
      * Get the string prepended to the Symmetric configuration tables.
      * 
@@ -218,16 +222,17 @@ public interface IDbDialect {
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
             String targetString);
 
-    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger, TriggerHistory hist);
+    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger,
+            TriggerHistory hist);
 
     public boolean supportsOpenCursorsAcrossCommit();
-    
+
     /**
      * Retrieves a list of keywords for the database.
      */
     public Set<String> getSqlKeywords();
-    
+
     public String getInitialLoadTableAlias();
-    
+
     public String preProcessTriggerSqlClause(String sqlClause);
 }

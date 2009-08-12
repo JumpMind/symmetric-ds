@@ -57,16 +57,17 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
   
     protected Map<String, Object> getNewData(DataMetaData dataMetaData, IDbDialect dbDialect) {
+        Map<String, Object> newData = new HashMap<String, Object>();
         String[] rowData = dataMetaData.getData().getParsedRowData();
-        Column[] columns = dataMetaData.getTable().getColumns();
-        Map<String, Object> map = new HashMap<String, Object>(columns.length);
-        Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(), rowData, columns);
-        for (int i = 0; i < columns.length; i++) {
-            Column c = columns[i];
-            map.put(c.getName(), objects[i]);
+        String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
+        Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames, rowData);
+        for (int i = 0; i < columnNames.length; i++) {
+            newData.put(columnNames[i], objects[i]);
         }
-        return map;        
+        return newData;        
     }
+    
+    
 
     protected Set<String> toNodeIds(Set<Node> nodes) {
         Set<String> nodeIds = new HashSet<String>(nodes.size());
