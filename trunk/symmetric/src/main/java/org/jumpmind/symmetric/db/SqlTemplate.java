@@ -245,12 +245,7 @@ public class SqlTemplate {
         ddl = replace("columns", columnString.columnString, ddl);
         ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
-        String oldColumnString = "null";
-        if (trigger.isSyncColumnLevel()) {
-            oldColumnString = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString;
-        } 
-        
-        ddl = replace("oldColumns", oldColumnString, ddl);
+        ddl = replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString, ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
@@ -261,8 +256,7 @@ public class SqlTemplate {
                         + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        oldColumnString = buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString;
-        ddl = replace("oldKeys", oldColumnString, ddl);
+        ddl = replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
         ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(newTriggerValue, columns), ddl);
