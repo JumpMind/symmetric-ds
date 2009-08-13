@@ -23,15 +23,31 @@ public class BshDataRouter extends AbstractDataRouter {
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
         try {
-            Interpreter interpreter = new Interpreter();
+            long ts = System.currentTimeMillis();
+            Interpreter interpreter = getInterpreter(context);
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.init");
             HashSet<String> targetNodes = new HashSet<String>();
+            ts = System.currentTimeMillis();
             bind(interpreter, dataMetaData, nodes, targetNodes);
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind");
+            ts = System.currentTimeMillis();
             Object returnValue = interpreter.eval(dataMetaData.getTrigger().getRouterExpression());
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
             logger.error("Error in data router.  Routing to nobody.", e);
             return Collections.emptySet();
         }
+    }
+
+    protected Interpreter getInterpreter(IRouterContext context) {
+        final String KEY = String.format("%s.Interpreter", getClass().getName());
+        Interpreter interpreter = (Interpreter) context.getContextCache().get(KEY);
+        if (interpreter == null) {
+            interpreter = new Interpreter();
+            context.getContextCache().put(KEY, interpreter);
+        }
+        return interpreter;
     }
 
     protected Collection<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {

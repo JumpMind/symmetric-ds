@@ -62,8 +62,8 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
- * each node.
+ * This service is responsible for routing data to specific nodes and managing
+ * the batching of data to be delivered to each node.
  * 
  * @since 2.0
  */
@@ -74,7 +74,7 @@ public class RouterService extends AbstractService implements IRouterService {
     private IDataService dataService;
 
     private IConfigurationService configurationService;
-    
+
     private ITriggerService triggerService;
 
     private IOutgoingBatchService outgoingBatchService;
@@ -116,9 +116,10 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
-     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
-     * to reduce the number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we
+     * decide to multi-thread the routing it is a simple matter of inserting a
+     * thread pool here and waiting for all channels to be processed. The other
+     * reason is to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -135,7 +136,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 RouterContext context = null;
                 try {
                     context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
-                    selectDataAndRoute(c, ref, context);
+                    selectDataAndRoute(c, ref, context);                    
                 } catch (Exception ex) {
                     if (context != null) {
                         context.rollback();
@@ -152,7 +153,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     } catch (SQLException e) {
                         logger.error(e, e);
                     } finally {
-                        context.cleanup();
+                        context.logStats(logger);
+                        context.cleanup();                        
                     }
                 }
                 return null;
@@ -231,8 +233,10 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
-     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have
+     * crossed a database transaction boundary. Then route each {@link Data}
+     * while continuing to keep the queue filled until the result set is
+     * entirely read.
      * 
      * @param conn
      *            The connection to use for selecting the data.
@@ -257,13 +261,17 @@ public class RouterService extends AbstractService implements IRouterService {
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
             LinkedList<Data> dataQueue = new LinkedList<Data>();
             for (int i = 0; i < peekAheadLength && rs.next(); i++) {
+                long ts = System.currentTimeMillis();
                 readData(rs, dataQueue, transactionIdDataId);
+                context.incrementStat(System.currentTimeMillis()-ts, "readData");
             }
 
             while (dataQueue.size() > 0) {
                 routeData(dataQueue.poll(), transactionIdDataId, context);
                 if (rs.next()) {
+                    long ts = System.currentTimeMillis();
                     readData(rs, dataQueue, transactionIdDataId);
+                    context.incrementStat(System.currentTimeMillis()-ts, "readData");
                 }
             }
 
@@ -285,9 +293,12 @@ public class RouterService extends AbstractService implements IRouterService {
             if (!context.getChannel().isIgnored()) {
                 IDataRouter dataRouter = getDataRouter(trigger);
                 context.addUsedDataRouter(dataRouter);
-                Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
-                        trigger, context), false);
+                long ts = System.currentTimeMillis();
+                Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(trigger,
+                        context), false);            
+                context.incrementStat(System.currentTimeMillis()-ts, "dataRouter");
                 insertDataEvents(context, dataMetaData, nodeIds);
+                
             }
 
             if (!context.isRouted()) {
@@ -308,6 +319,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds) {
         if (nodeIds != null && nodeIds.size() > 0) {
+            long ts = System.currentTimeMillis();
             for (String nodeId : nodeIds) {
                 if (dataMetaData.getData().getSourceNodeId() == null
                         || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
@@ -319,22 +331,24 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                     batch.incrementDataEventCount();
                     context.setRouted(true);
-                    dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData().getDataId(),
-                            batch.getBatchId());
+                    dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData().getDataId(), batch
+                            .getBatchId());
                     if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(batch,
                             dataMetaData, context)) {
                         completeBatch(batch, context);
                     }
                 }
             }
+            context.incrementStat(System.currentTimeMillis()-ts, "insertDataEvents");
         }
+        
     }
 
     protected void completeBatch(OutgoingBatch batch, RouterContext context) {
         batch.setRouterMillis(System.currentTimeMillis() - batch.getCreateTime().getTime());
         Set<IDataRouter> usedRouters = context.getUsedDataRouters();
         for (IDataRouter dataRouter : usedRouters) {
-            dataRouter.completeBatch(context);
+            dataRouter.completeBatch(context, batch);
         }
         outgoingBatchService.updateOutgoingBatch(context.getJdbcTemplate(), batch);
         context.getBatchesByNodes().remove(batch.getNodeId());
@@ -369,8 +383,9 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected Trigger getTriggerForData(Data data) {
-        Trigger trigger = triggerService.getActiveTriggersForSourceNodeGroup(parameterService
-                                .getString(ParameterConstants.NODE_GROUP_ID), false).get((data.getTriggerHistory().getTriggerId()));
+        Trigger trigger = triggerService.getActiveTriggersForSourceNodeGroup(
+                parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
+                (data.getTriggerHistory().getTriggerId()));
         if (trigger == null) {
             trigger = triggerService.getTriggerById(data.getTriggerHistory().getTriggerId());
             if (trigger == null) {
@@ -416,7 +431,7 @@ public class RouterService extends AbstractService implements IRouterService {
     public void setBatchAlgorithms(Map<String, IBatchAlgorithm> batchAlgorithms) {
         this.batchAlgorithms = batchAlgorithms;
     }
-    
+
     public void setTriggerService(ITriggerService triggerService) {
         this.triggerService = triggerService;
     }

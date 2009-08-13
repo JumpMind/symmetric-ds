@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public class DefaultDataRouter extends AbstractDataRouter {
 
@@ -32,7 +33,7 @@ public class DefaultDataRouter extends AbstractDataRouter {
         return toNodeIds(nodes);
     }
 
-    public void completeBatch(IRouterContext context) {
+    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
 
     }
 

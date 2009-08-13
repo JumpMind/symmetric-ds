@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 
 public abstract class AbstractDataRouter implements IDataRouter {
 
@@ -91,7 +92,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     protected Map<String, Object> getOldData(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect) {
         return getData(prefix, dataMetaData, dbDialect, dataMetaData.getData().getParsedOldData());
     }
-    
+
     protected Map<String, Object> getNullData(String prefix, DataMetaData dataMetaData) {
         String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, Object> data = new HashMap<String, Object>(columnNames.length);
@@ -128,6 +129,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
     /**
      * Override if needed.
      */
-    public void completeBatch(IRouterContext context) {
+    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Completing batch " + batch.getBatchId());
+        }
     }
 }

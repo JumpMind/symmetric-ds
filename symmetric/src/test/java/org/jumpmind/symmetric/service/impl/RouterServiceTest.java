@@ -254,11 +254,14 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel);
 
+        long ts = System.currentTimeMillis();
         SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
         int count = t.update(String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1),
                         NODE_GROUP_NODE_3);
-        logger.info("Just recorded a change to " + count + " rows in " + TEST_TABLE_1);
+        logger.info("Just recorded a change to " + count + " rows in " + TEST_TABLE_1 + " in " + (System.currentTimeMillis()-ts) + "ms");
+        ts = System.currentTimeMillis();
         getRoutingService().routeData();
+        logger.info("Just routed " + count + " rows in " + TEST_TABLE_1 + " in " + (System.currentTimeMillis()-ts) + "ms");
 
         List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);        
