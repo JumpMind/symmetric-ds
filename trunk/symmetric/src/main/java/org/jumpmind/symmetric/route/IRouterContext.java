@@ -37,4 +37,6 @@ public interface IRouterContext extends ICacheContext {
 
     public boolean isEncountedTransactionBoundary();
     
+    public void incrementStat(long amount, String name);
+    
 }

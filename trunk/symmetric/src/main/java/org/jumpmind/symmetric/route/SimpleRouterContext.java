@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.route;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,4 +55,35 @@ public class SimpleRouterContext implements IRouterContext {
         return this.encountedTransactionBoundary;
     }
 
+    private final String getStatKey(String name) {
+        return String.format("Stat.%s", name);
+    }
+
+    public void incrementStat(long amount, String name) {
+        final String KEY = getStatKey(name);
+        Long val = (Long) contextCache.get(KEY);
+        if (val == null) {
+            val = 0l;
+        }
+        val += amount;
+        contextCache.put(KEY, val);
+    }
+
+    public long getStat(String name) {
+        final String KEY = getStatKey(name);
+        Long val = (Long) contextCache.get(KEY);
+        if (val == null) {
+            val = 0l;
+        }
+        return val;
+    }
+
+    public void logStats(Log logger) {
+        Set<String> keys = contextCache.keySet();
+        for (String key : keys) {
+            if (key.startsWith("Stat.")) {
+                logger.info(String.format("routing '%s' stat %s=%s", channel.getId(), key.substring(key.indexOf(".")+1), contextCache.get(key)));
+            }
+        }
+    }
 }

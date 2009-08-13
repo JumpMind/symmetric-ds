@@ -26,6 +26,7 @@ import java.util.Set;
 import org.jdom.Element;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
 
@@ -36,7 +37,7 @@ import org.jumpmind.symmetric.route.IRouterContext;
  */
 public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter {
 
-    public void completeBatch(IRouterContext context) {
+    public void completeBatch(IRouterContext context, OutgoingBatch batch) {
         if (doesXmlExistToPublish(context)) {
             finalizeXmlAndPublish(context);
         }
