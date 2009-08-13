@@ -24,18 +24,19 @@ public class BshDataRouter extends AbstractDataRouter {
             boolean initialLoad) {
         try {
             Interpreter interpreter = new Interpreter();
-            bind(interpreter, dataMetaData, nodes);
-            Object value = interpreter.eval(dataMetaData.getTrigger().getRouterExpression());
-            return eval(value, nodes);
+            HashSet<String> targetNodes = new HashSet<String>();
+            bind(interpreter, dataMetaData, nodes, targetNodes);
+            Object returnValue = interpreter.eval(dataMetaData.getTrigger().getRouterExpression());
+            return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
             logger.error("Error in data router.  Routing to nobody.", e);
             return Collections.emptySet();
         }
     }
 
-    protected Collection<String> eval(Object value, Set<Node> nodes) {
-        if (value instanceof Boolean && value.equals(Boolean.TRUE)) {
-            return toNodeIds(nodes);
+    protected Collection<String> eval(Object value, Set<Node> nodes, Set<String> targetNodes) {
+        if (targetNodes.size() > 0) {
+            return targetNodes;
         } else if (value instanceof Collection<?>) {
             Collection<?> values = (Collection<?>) value;
             Set<String> nodeIds = new HashSet<String>(values.size());
@@ -45,13 +46,17 @@ public class BshDataRouter extends AbstractDataRouter {
                 }
             }
             return nodeIds;
+        } else if (value instanceof Boolean && value.equals(Boolean.TRUE)) {
+            return toNodeIds(nodes);
         } else {
             return Collections.emptySet();
         }
     }
 
-    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes) throws EvalError {
+    protected void bind(Interpreter interpreter, DataMetaData dataMetaData, Set<Node> nodes, Set<String> targetNodes)
+            throws EvalError {
         interpreter.set("nodes", nodes);
+        interpreter.set("targetNodes", targetNodes);
         Map<String, Object> params = getDataObjectMap(dataMetaData, dbDialect);
         if (params != null) {
             for (String param : params.keySet()) {
