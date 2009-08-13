@@ -243,7 +243,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.setRouterName("bsh");
-        trigger1.setRouterExpression("HashSet set = new HashSet(2); set.add(ROUTING_VARCHAR); set.add(OLD_ROUTING_VARCHAR); return set;");
+        trigger1.setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         
         getTriggerService().saveTrigger(trigger1);
         getTriggerService().syncTriggers();
@@ -284,7 +284,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.setRouterName("bsh");
-        trigger1.setRouterExpression("HashSet set = new HashSet(2); set.add(ROUTING_VARCHAR); set.add(OLD_ROUTING_VARCHAR); return set;");
+        trigger1.setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         
         getTriggerService().saveTrigger(trigger1);
         getTriggerService().syncTriggers();
