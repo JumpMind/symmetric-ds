@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.springframework.jdbc.core.RowMapper;
@@ -84,22 +85,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannels() {
         if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
-            channelCache = jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] {}, new RowMapper() {
-                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-                    NodeChannel channel = new NodeChannel();
-                    channel.setId(rs.getString(1));
-                    channel.setNodeId(rs.getString(2));
-                    channel.setIgnored(isSet(rs.getObject(3)));
-                    channel.setSuspended(isSet(rs.getObject(4)));
-                    channel.setProcessingOrder(rs.getInt(5));
-                    channel.setMaxBatchSize(rs.getInt(6));
-                    channel.setEnabled(rs.getBoolean(7));
-                    channel.setMaxBatchToSend(rs.getInt(8));
-                    channel.setBatchAlgorithm(rs.getString(9));
-                    return channel;
-                };
-            });
-            channelCacheTime = System.currentTimeMillis();
+            synchronized (this) {
+                if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
+                    channelCache = jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] {}, new RowMapper() {
+                        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                            NodeChannel channel = new NodeChannel();
+                            channel.setId(rs.getString(1));
+                            channel.setNodeId(rs.getString(2));
+                            channel.setIgnored(isSet(rs.getObject(3)));
+                            channel.setSuspended(isSet(rs.getObject(4)));
+                            channel.setProcessingOrder(rs.getInt(5));
+                            channel.setMaxBatchSize(rs.getInt(6));
+                            channel.setEnabled(rs.getBoolean(7));
+                            channel.setMaxBatchToSend(rs.getInt(8));
+                            channel.setBatchAlgorithm(rs.getString(9));
+                            return channel;
+                        };
+                    });
+                    
+                    for (NodeChannel channel : channelCache) {
+                        getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
+                    }
+                    channelCacheTime = System.currentTimeMillis();
+                }
+            }
         }
         return channelCache;
     }
@@ -145,6 +154,24 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             logger.info("Done initializing SymmetricDS database.");
         } else {
             logger.info("SymmetricDS is not configured to auto create the database.");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId, String channelId) {
+        return (List<NodeGroupChannelWindow>) jdbcTemplate.query(getSql("selectNodeGroupChannelWindowSql"),
+                new Object[] { nodeGroupId, channelId }, new NodeGroupChannelWindowMapper());
+    }
+
+    class NodeGroupChannelWindowMapper implements RowMapper {
+        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+            NodeGroupChannelWindow window = new NodeGroupChannelWindow();
+            window.setNodeGroupId(rs.getString(1));
+            window.setChannelId(rs.getString(2));
+            window.setStartTime(rs.getTime(3));
+            window.setEndTime(rs.getTime(4));
+            window.setEnabled(rs.getBoolean(5));
+            return window;
         }
     }
 

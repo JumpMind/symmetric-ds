@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -94,6 +95,9 @@ public class AppUtils {
         return (T) engine.getApplicationContext().getBean(name);
     }
     
+    /**
+     * @see #find(String, SymmetricEngine)
+     */
     @SuppressWarnings("unchecked")
     public static <T> T find(String name, SymmetricWebServer server) {
         return (T) server.getEngine().getApplicationContext().getBean(name);
@@ -106,6 +110,21 @@ public class AppUtils {
         return File.createTempFile("sym." + token + ".", ".tmp");
     }
     
+    /**
+     * @param timezoneOffset see description for {@link #getTimezoneOffset()}
+     * @return a date object that represents the local date and time at the passed in offset
+     */
+    public static Date getLocalDateForOffset(String timezoneOffset) {
+        long currentTime = System.currentTimeMillis();
+        int myOffset = TimeZone.getDefault().getOffset(currentTime);
+        int theirOffset = TimeZone.getTimeZone("GMT"+timezoneOffset).getOffset(currentTime);
+        return new Date(currentTime - myOffset + theirOffset);
+    }
+    
+    /**
+     * Useful method to sleep that catches and ignores the {@link InterruptedException}
+     * @param ms milliseconds to sleep
+     */
     public static void sleep(long ms) {
         try {
             Thread.sleep(ms);

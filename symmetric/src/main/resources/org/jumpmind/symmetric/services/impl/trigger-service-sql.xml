@@ -17,10 +17,13 @@
     </entry>
     <entry key="$[sym.sync.table.prefix]_parameter">
       <value>1=1</value>
-    </entry>
+    </entry> 
     <entry key="$[sym.sync.table.prefix]_channel">
       <value>1=1</value>
     </entry>
+    <entry key="$[sym.sync.table.prefix]_node_group_channel_window">
+      <value>1=1</value>
+    </entry>       
     <entry key="$[sym.sync.table.prefix]_trigger">
       <value>1=1</value>
     </entry> 
