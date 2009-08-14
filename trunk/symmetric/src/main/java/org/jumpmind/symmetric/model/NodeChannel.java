@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric.model;
 
+import java.util.List;
+
 public class NodeChannel extends Channel {
 
     private static final long serialVersionUID = -2493052366767513160L;
@@ -30,13 +32,15 @@ public class NodeChannel extends Channel {
 
     private boolean suspended = false;
 
+    private List<NodeGroupChannelWindow> nodeGroupChannelWindows;
+
     public NodeChannel() {
     }
-    
+
     public NodeChannel(String channelId) {
         this.setId(channelId);
     }
-    
+
     public boolean isIgnored() {
         return ignored;
     }
@@ -60,4 +64,31 @@ public class NodeChannel extends Channel {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
+
+    public void setNodeGroupChannelWindows(List<NodeGroupChannelWindow> nodeGroupChannelWindows) {
+        this.nodeGroupChannelWindows = nodeGroupChannelWindows;
+    }
+
+    public List<NodeGroupChannelWindow> getNodeGroupChannelWindows() {
+        return nodeGroupChannelWindows;
+    }
+
+    /**
+     * If {@link NodeGroupChannelWindow}s are defined for this channel, then check to 
+     * see if the time (according to the offset passed in) is within on of the configured windows.
+     */
+    public boolean inTimeWindow(String timezoneOffset) {
+        if (nodeGroupChannelWindows != null && nodeGroupChannelWindows.size() > 0) {
+            for (NodeGroupChannelWindow window : nodeGroupChannelWindows) {
+                if (window.inTimeWindow(timezoneOffset)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
 }

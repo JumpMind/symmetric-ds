@@ -36,6 +36,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -124,9 +125,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * as the batches will have already been created by {@link #buildOutgoingBatches(String)} in channel priority order.
      */
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
+    public List<OutgoingBatch> getOutgoingBatches(String targetNodeId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
-                new Object[] { nodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
+                new Object[] { targetNodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
                         OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
         final HashSet<String> errorChannels = new HashSet<String>();
         for (OutgoingBatch batch : list) {
@@ -134,7 +135,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 errorChannels.add(batch.getChannelId());
             }
         }
-
+        
         List<NodeChannel> channels = configurationService.getChannels();
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
@@ -150,18 +151,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         });
 
-        return filterMaxNumberOfOutgoingBatchesByChannel(list, channels);
+        return filterOutgoingBatchesForChannels(targetNodeId, list, channels);
     }
 
     /**
      * Filter out the maximum number of batches to send.
      */
-    private List<OutgoingBatch> filterMaxNumberOfOutgoingBatchesByChannel(List<OutgoingBatch> batches,
+    protected List<OutgoingBatch> filterOutgoingBatchesForChannels(String targetNodeId, List<OutgoingBatch> batches,
             List<NodeChannel> channels) {
         if (batches != null && batches.size() > 0) {
+            Node node = nodeService.findNode(targetNodeId);
             List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
             for (NodeChannel channel : channels) {
-                if (channel.isEnabled()) {
+                if (channel.isEnabled() && channel.inTimeWindow(node.getTimezoneOffset())) {
                     int max = channel.getMaxBatchToSend();
                     int count = 0;
                     for (OutgoingBatch outgoingBatch : batches) {

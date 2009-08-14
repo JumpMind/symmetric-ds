@@ -50,6 +50,12 @@
     <entry key="deleteChannelSql">
       <value>delete from $[sym.sync.table.prefix]_channel where channel_id=?</value>
     </entry>
+    <entry key="selectNodeGroupChannelWindowSql">
+      <value>
+        select node_group_id, channel_id, start_time, end_time, enabled  
+        from $[sym.sync.table.prefix]_node_group_channel_window where node_group_id=? and channel_id=?
+      </value>
+    </entry>
   </util:map>
 
 </beans>
