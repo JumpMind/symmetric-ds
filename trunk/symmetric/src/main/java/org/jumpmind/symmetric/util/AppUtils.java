@@ -27,16 +27,16 @@ import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 public class AppUtils {
 
-    private static Log logger = LogFactory.getLog(AppUtils.class);
-    
+    private static ILog log = LogFactory.getLog(AppUtils.class);
+
     private static String serverId;
 
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
@@ -65,16 +65,15 @@ public class AppUtils {
     }
 
     /**
-     * This method will return the timezone in RFC822 format.
-     * </p>
-     * The format ("-+HH:MM") has advantages over the older timezone codes
-     * ("AAA"). The difference of 5 hours from GMT is obvious with "-05:00" but
-     * only implied with "EST". There is no ambiguity saying "-06:00", but you
-     * don't know if "CST" means Central Standard Time ("-06:00") or China
-     * Standard Time ("+08:00"). The timezone codes need to be loaded on the
-     * system, and definitions are not standardized between systems. Therefore,
-     * to remain agnostic to operating systems and databases, the RFC822 format
-     * is the best choice.
+     * This method will return the timezone in RFC822 format. </p> The format
+     * ("-+HH:MM") has advantages over the older timezone codes ("AAA"). The
+     * difference of 5 hours from GMT is obvious with "-05:00" but only implied
+     * with "EST". There is no ambiguity saying "-06:00", but you don't know if
+     * "CST" means Central Standard Time ("-06:00") or China Standard Time
+     * ("+08:00"). The timezone codes need to be loaded on the system, and
+     * definitions are not standardized between systems. Therefore, to remain
+     * agnostic to operating systems and databases, the RFC822 format is the
+     * best choice.
      */
     public static String getTimezoneOffset() {
         String tz = timezoneFormatter.format(new Date());
@@ -83,7 +82,7 @@ public class AppUtils {
         }
         return null;
     }
-    
+
     /**
      * Handy utility method to look up a SymmetricDS component given the bean
      * name.
@@ -94,7 +93,7 @@ public class AppUtils {
     public static <T> T find(String name, SymmetricEngine engine) {
         return (T) engine.getApplicationContext().getBean(name);
     }
-    
+
     /**
      * @see #find(String, SymmetricEngine)
      */
@@ -102,34 +101,39 @@ public class AppUtils {
     public static <T> T find(String name, SymmetricWebServer server) {
         return (T) server.getEngine().getApplicationContext().getBean(name);
     }
-    
+
     /**
      * Use this method to create any needed temporary files for SymmetricDS.
      */
     public static File createTempFile(String token) throws IOException {
         return File.createTempFile("sym." + token + ".", ".tmp");
     }
-    
+
     /**
-     * @param timezoneOffset see description for {@link #getTimezoneOffset()}
-     * @return a date object that represents the local date and time at the passed in offset
+     * @param timezoneOffset
+     *            see description for {@link #getTimezoneOffset()}
+     * @return a date object that represents the local date and time at the
+     *         passed in offset
      */
     public static Date getLocalDateForOffset(String timezoneOffset) {
         long currentTime = System.currentTimeMillis();
         int myOffset = TimeZone.getDefault().getOffset(currentTime);
-        int theirOffset = TimeZone.getTimeZone("GMT"+timezoneOffset).getOffset(currentTime);
+        int theirOffset = TimeZone.getTimeZone("GMT" + timezoneOffset).getOffset(currentTime);
         return new Date(currentTime - myOffset + theirOffset);
     }
-    
+
     /**
-     * Useful method to sleep that catches and ignores the {@link InterruptedException}
-     * @param ms milliseconds to sleep
+     * Useful method to sleep that catches and ignores the
+     * {@link InterruptedException}
+     * 
+     * @param ms
+     *            milliseconds to sleep
      */
     public static void sleep(long ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
-            logger.warn(e.getMessage());
+            log.warn("Message", e.getMessage());
         }
     }
 }

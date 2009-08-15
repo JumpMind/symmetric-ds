@@ -27,6 +27,8 @@ public interface ILog {
     public abstract void warn(String messageKey, Object... args);
 
     public abstract void warn(String messageKey, Throwable t, Object... args);
+    
+    public abstract void warn(Throwable t);
 
     public abstract void error(String messageKey);
 

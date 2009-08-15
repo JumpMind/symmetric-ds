@@ -22,14 +22,14 @@ package org.jumpmind.symmetric.upgrade;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 
-    private static final Log logger = LogFactory.getLog(SqlUpgradeTask.class);
+    private static final ILog log = LogFactory.getLog(SqlUpgradeTask.class);
 
     protected IDbDialect dbDialect;
 
@@ -41,7 +41,7 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
 
     public void upgrade(int[] fromVersion) {
         for (String sql : sqlList) {
-            logger.warn("Upgrade: " + sql);
+            log.warn("SqlUpgrade", sql);
             jdbcTemplate.update(sql);
         }
     }
@@ -50,12 +50,12 @@ public class SqlUpgradeTask extends AbstractSqlUpgradeTask {
         if (dialectName == null || (dbDialect != null && dbDialect.getName().equalsIgnoreCase((dialectName)))) {
             for (String sql : sqlList) {
                 sql = prepareSql(nodeId, parameterService, sql);
-                logger.warn("Upgrade: " + sql);
+                log.warn("SqlUpgrade", sql);
                 if (ignoreFailure) {
                     try {
                         jdbcTemplate.update(sql);
                     } catch (Exception e) {
-                        logger.warn("Ignoring failure of last upgrade statement: " + e.getMessage());
+                        log.warn("SqlUpgradeIgnoring", e.getMessage());
                     }
                 } else {
                     jdbcTemplate.update(sql);

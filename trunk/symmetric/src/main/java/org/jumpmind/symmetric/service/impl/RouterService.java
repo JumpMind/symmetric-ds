@@ -136,7 +136,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 RouterContext context = null;
                 try {
                     context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
-                    selectDataAndRoute(c, ref, context);                    
+                    selectDataAndRoute(c, ref, context);
                 } catch (Exception ex) {
                     if (context != null) {
                         context.rollback();
@@ -154,7 +154,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         logger.error(e, e);
                     } finally {
                         context.logStats(logger);
-                        context.cleanup();                        
+                        context.cleanup();
                     }
                 }
                 return null;
@@ -263,7 +263,7 @@ public class RouterService extends AbstractService implements IRouterService {
             for (int i = 0; i < peekAheadLength && rs.next(); i++) {
                 long ts = System.currentTimeMillis();
                 readData(rs, dataQueue, transactionIdDataId);
-                context.incrementStat(System.currentTimeMillis()-ts, "readData");
+                context.incrementStat(System.currentTimeMillis() - ts, "readData");
             }
 
             while (dataQueue.size() > 0) {
@@ -271,7 +271,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (rs.next()) {
                     long ts = System.currentTimeMillis();
                     readData(rs, dataQueue, transactionIdDataId);
-                    context.incrementStat(System.currentTimeMillis()-ts, "readData");
+                    context.incrementStat(System.currentTimeMillis() - ts, "readData");
                 }
             }
 
@@ -295,10 +295,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 context.addUsedDataRouter(dataRouter);
                 long ts = System.currentTimeMillis();
                 Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(trigger,
-                        context), false);            
-                context.incrementStat(System.currentTimeMillis()-ts, "dataRouter");
+                        context), false);
+                context.incrementStat(System.currentTimeMillis() - ts, "dataRouter");
                 insertDataEvents(context, dataMetaData, nodeIds);
-                
+
             }
 
             if (!context.isRouted()) {
@@ -339,9 +339,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            context.incrementStat(System.currentTimeMillis()-ts, "insertDataEvents");
+            context.incrementStat(System.currentTimeMillis() - ts, "insertDataEvents");
         }
-        
+
     }
 
     protected void completeBatch(OutgoingBatch batch, RouterContext context) {

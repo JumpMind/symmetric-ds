@@ -148,6 +148,18 @@ public class CommonsResourceLog implements ILog {
     /*
      * (non-Javadoc)
      * 
+     * @see
+     * org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.Throwable)
+     */
+    public void warn(Throwable t) {
+        if (commonsLog.isWarnEnabled()) {
+            commonsLog.warn(t, t);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.jumpmind.symmetric.common.logging.ILog#warn(java.lang.String,
      * java.lang.Throwable, java.lang.Object)
      */

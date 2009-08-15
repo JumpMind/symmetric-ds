@@ -19,10 +19,10 @@
  */
 package org.jumpmind.symmetric.load;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.service.ITriggerService;
  */
 public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchListener {
 
-    static final Log logger = LogFactory.getLog(ConfigurationChangedFilter.class);
+    static final ILog log = LogFactory.getLog(ConfigurationChangedFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync." + ConfigurationChangedFilter.class.getSimpleName() + hashCode();
 
@@ -45,7 +45,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
-    
+
     private ITriggerService triggerService;
 
     private String tablePrefix;
@@ -104,12 +104,12 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
 
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
         if (loader.getContext().getContextCache().get(CTX_KEY_FLUSH_CHANNELS_NEEDED) != null) {
-            logger.info("Channels flushed because new channels came through the dataloader.");
+            log.info("ChannelFlushed");
             configurationService.reloadChannels();
         }
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
-            logger.info("About to syncTriggers because new configuration came through the dataloader.");
+            log.info("ConfigurationChanged");
             triggerService.syncTriggers();
         }
     }
@@ -132,5 +132,5 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
-    
+
 }
