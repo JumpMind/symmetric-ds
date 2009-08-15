@@ -24,7 +24,7 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.Message;
+import org.jumpmind.symmetric.SymmetricDSException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -61,7 +61,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             enableSyncTriggers();
         } catch (Exception e) {
             log.error("PostgreSqlCustomVariableMissing");
-            throw new RuntimeException(Message.get("PostgreSqlCustomVariableMissing"), e);
+            throw new SymmetricDSException("PostgreSqlCustomVariableMissing", e);
         }
 
     }

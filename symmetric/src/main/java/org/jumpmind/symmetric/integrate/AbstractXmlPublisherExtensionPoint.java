@@ -28,13 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.ICacheContext;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 
 public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INodeGroupExtensionPoint {
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 
     protected final String XML_CACHE = "XML_CACHE_" + this.hashCode();
 
@@ -98,15 +98,14 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
         Collection<Element> buffers = ctxCache.values();
         for (Iterator<Element> iterator = buffers.iterator(); iterator.hasNext();) {
             String xml = new XMLOutputter(xmlFormat).outputString(new Document(iterator.next()));
-            if (logger.isDebugEnabled()) {
-                logger.debug("Sending XML to IPublisher -> " + xml);
-            }
+            log.debug("XMLSending", xml);
             iterator.remove();
             publisher.publish(ctx, xml.toString());
         }
     }
-        
-    protected void toXmlElement(DataEventType dml, Element xml, String tableName, String[] columnNames, String[] data, String[] keyNames, String[] keys) {
+
+    protected void toXmlElement(DataEventType dml, Element xml, String tableName, String[] columnNames, String[] data,
+            String[] keyNames, String[] keys) {
         Element row = new Element("row");
         xml.addContent(row);
         row.setAttribute("entity", tableName);
@@ -133,10 +132,11 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
             }
         }
     }
-    
+
     /**
-     * Give the opportunity for the user of this publisher to add in additional attributes. The default implementation
-     * adds in the nodeId from the {@link ICacheContext}.
+     * Give the opportunity for the user of this publisher to add in additional
+     * attributes. The default implementation adds in the nodeId from the
+     * {@link ICacheContext}.
      * 
      * @param ctx
      * @param xml
@@ -148,8 +148,9 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
             xml.setAttribute("time", timeStringGenerator.getTime());
         }
     }
-    
-    protected Element getXmlFromCache(ICacheContext ctx, String[] columnNames, String[] data, String[] keyNames, String[] keys) {
+
+    protected Element getXmlFromCache(ICacheContext ctx, String[] columnNames, String[] data, String[] keyNames,
+            String[] keys) {
         Element xml = null;
         Map<String, Element> ctxCache = getXmlCache(ctx);
         String txId = toXmlGroupId(columnNames, data, keyNames, keys);
@@ -165,7 +166,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
         }
         return xml;
     }
-    
+
     protected String toXmlGroupId(String[] columnNames, String[] data, String[] keyNames, String[] keys) {
         if (groupByColumnNames != null) {
             StringBuilder id = new StringBuilder();
@@ -199,7 +200,7 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
                 return id.toString().replaceAll("-", "");
             }
         } else {
-            logger
+            log
                     .warn("You did not specify 'groupByColumnNames'.  We cannot find any matches in the data to publish as XML if you don't.  You might as well turn off this filter!");
         }
         return null;
@@ -250,8 +251,9 @@ public class AbstractXmlPublisherExtensionPoint implements IExtensionPoint, INod
     }
 
     /**
-     * This attribute is required. It needs to identify the columns that will be used to key on rows in the specified
-     * tables that need to be grouped together in an 'XML batch.'
+     * This attribute is required. It needs to identify the columns that will be
+     * used to key on rows in the specified tables that need to be grouped
+     * together in an 'XML batch.'
      */
     public void setGroupByColumnNames(List<String> groupByColumnNames) {
         this.groupByColumnNames = groupByColumnNames;

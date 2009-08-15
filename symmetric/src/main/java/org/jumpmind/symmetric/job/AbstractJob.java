@@ -26,11 +26,11 @@ import java.util.TimerTask;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.springframework.beans.factory.BeanFactory;
@@ -41,7 +41,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     DataSource dataSource;
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 
     private boolean needsRescheduled;
 
@@ -58,12 +58,12 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     private SymmetricEngine engine;
 
     protected boolean rescheduleImmediately = false;
-    
+
     private IJobManager jobManager;
 
     @Override
     public boolean cancel() {
-        logger.info("This job, " + beanName + ", has been cancelled.");
+        log.info("JobCancelled", beanName);
         return super.cancel();
     }
 
@@ -75,20 +75,20 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
             }
 
             if (engine == null) {
-                logger.info("Could not find a reference to the SymmetricEngine from " + beanName);
+                log.info("SymmetricEngineMissing", beanName);
             } else if (engine.isStarted()) {
                 IRegistrationService service = (IRegistrationService) beanFactory
                         .getBean(Constants.REGISTRATION_SERVICE);
                 if (!requiresRegistration || (requiresRegistration && service.isRegisteredWithServer())) {
                     doJob();
                 } else {
-                    logger.warn("Did not run job because the engine is not registered.");
+                    log.warn("SymmetricEngineNotRegistered");
                 }
             } else {
-                logger.info("The engine is not currently started.");
+                log.info("SymmetricEngineNotStarted");
             }
         } catch (final Throwable ex) {
-            logger.error(ex, ex);
+            log.error(ex);
         } finally {
             reschedule();
         }
@@ -105,20 +105,16 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
                     .getLong(rescheduleDelayParameter));
             jobManager.addTimer(timerName, timer);
             rescheduleImmediately = false;
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Rescheduling " + beanName + " with " + parameterService.getLong(rescheduleDelayParameter)
-                                + " ms delay.");
-            }
+            log.debug("JobRescheduling", beanName, parameterService.getLong(rescheduleDelayParameter));
         } else if (needsRescheduled) {
-            logger.warn("Did not reschedule because the engine was not set.");
+            log.warn("Did not reschedule because the engine was not set.");
         }
     }
 
     protected void printDatabaseStats() {
-        if (logger.isDebugEnabled() && dataSource instanceof BasicDataSource) {
+        if (dataSource instanceof BasicDataSource) {
             final BasicDataSource ds = (BasicDataSource) dataSource;
-            logger.debug("There are currently " + ds.getNumActive() + " active database connections.");
+            log.debug("DatabaseStats", ds.getNumActive());
         }
     }
 
