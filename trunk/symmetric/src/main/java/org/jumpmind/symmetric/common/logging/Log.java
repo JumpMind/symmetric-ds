@@ -54,6 +54,29 @@ public class Log {
         }
     }
 
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+        try {
+            this.bundle = ResourceBundle.getBundle(bundleName, locale);
+        } catch (MissingResourceException e) {
+            this.bundle = null;
+            logger.error("Unable to locate resource bundle: " + bundleName);
+        }
+    }
+
+    public String getBundleName() {
+        return bundleName;
+    }
+
+    public void setBundleName(String bundleName) {
+        this.bundleName = bundleName;
+        this.bundle = ResourceBundle.getBundle(bundleName, locale);
+    }
+
     // Debug
 
     public void debug(String messageKey) {
@@ -80,27 +103,82 @@ public class Log {
         }
     }
 
-    public Locale getLocale() {
-        return locale;
-    }
+    // info
 
-    public void setLocale(Locale locale) {
-        this.locale = locale;
-        try {
-            this.bundle = ResourceBundle.getBundle(bundleName, locale);
-        } catch (MissingResourceException e) {
-            this.bundle = null;
-            logger.error("Unable to locate resource bundle: " + bundleName);
+    public void info(String messageKey) {
+        if (logger.isInfoEnabled()) {
+            logger.info(getMessage(messageKey));
         }
     }
 
-    public String getBundleName() {
-        return bundleName;
+    public void info(String messageKey, Throwable t) {
+        if (logger.isInfoEnabled()) {
+            logger.info(getMessage(messageKey), t);
+        }
     }
 
-    public void setBundleName(String bundleName) {
-        this.bundleName = bundleName;
-        this.bundle = ResourceBundle.getBundle(bundleName, locale);
+    public void info(String messageKey, Object... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(getMessage(messageKey, args));
+        }
+    }
+
+    public void info(String messageKey, Throwable t, Object... args) {
+        if (logger.isInfoEnabled()) {
+            logger.info(getMessage(messageKey, args), t);
+        }
+    }
+
+    // warn
+
+    public void warn(String messageKey) {
+        if (logger.isWarnEnabled()) {
+            logger.info(getMessage(messageKey));
+        }
+    }
+
+    public void warn(String messageKey, Throwable t) {
+        if (logger.isWarnEnabled()) {
+            logger.info(getMessage(messageKey), t);
+        }
+    }
+
+    public void warn(String messageKey, Object... args) {
+        if (logger.isWarnEnabled()) {
+            logger.info(getMessage(messageKey, args));
+        }
+    }
+
+    public void warn(String messageKey, Throwable t, Object... args) {
+        if (logger.isWarnEnabled()) {
+            logger.info(getMessage(messageKey, args), t);
+        }
+    }
+
+    // error
+
+    public void error(String messageKey) {
+        if (logger.isErrorEnabled()) {
+            logger.info(getMessage(messageKey));
+        }
+    }
+
+    public void error(String messageKey, Throwable t) {
+        if (logger.isErrorEnabled()) {
+            logger.info(getMessage(messageKey), t);
+        }
+    }
+
+    public void error(String messageKey, Object... args) {
+        if (logger.isErrorEnabled()) {
+            logger.info(getMessage(messageKey, args));
+        }
+    }
+
+    public void error(String messageKey, Throwable t, Object... args) {
+        if (logger.isErrorEnabled()) {
+            logger.info(getMessage(messageKey, args), t);
+        }
     }
 
 }
