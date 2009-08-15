@@ -24,11 +24,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -42,7 +42,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
-    
+
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
 
     private boolean supportsTransactionId = false;
@@ -50,17 +50,16 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected void initForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());
-        if (getMajorVersion() == 5
-                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
-            logger.info("Enabling transaction ID support");
+        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+            logger.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
         }
     }
-    
+
     @Override
-    public Table findTable(String catalogName, String schemaName, String tblName)
-            throws Exception {
-        catalogName = StringUtils.isBlank(catalogName) ? StringUtils.isBlank(schemaName) ? getDefaultCatalog() :schemaName : catalogName; 
+    public Table findTable(String catalogName, String schemaName, String tblName) throws Exception {
+        catalogName = StringUtils.isBlank(catalogName) ? StringUtils.isBlank(schemaName) ? getDefaultCatalog()
+                : schemaName : catalogName;
         return super.findTable(catalogName, schemaName, tblName);
     }
 
@@ -69,10 +68,10 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         String[] functions = sqlTemplate.getFunctionsToInstall();
         for (String funcKey : functions) {
             String funcName = tablePrefix + "_" + funcKey;
-            if (! funcName.equals("fn_transaction_id") || supportsTransactionId) {
+            if (!funcName.equals("fn_transaction_id") || supportsTransactionId) {
                 if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
                     jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
-                    logger.info("Just installed " + funcName);
+                    logger.info("FunctionInstalled", funcName);
                 }
             }
         }
@@ -98,7 +97,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 jdbcTemplate.update(sql);
             } catch (Exception e) {
-                logger.warn("Trigger does not exist");
+                logger.warn("TriggerDoesNotExist");
             }
         }
     }
@@ -185,10 +184,9 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
     }
-    
+
     @Override
-    public String getIdentifierQuoteString()
-    {
+    public String getIdentifierQuoteString() {
         return "`";
     }
 

@@ -24,9 +24,9 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -42,7 +42,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 
     static final String SYNC_TRIGGERS_DISABLED_VARIABLE = "symmetric.triggers_disabled";
-    
+
     static final String SYNC_NODE_DISABLED_VARIABLE = "symmetric.node_disabled";
 
     private boolean supportsTransactionId = false;
@@ -52,17 +52,17 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     @Override
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
-            logger.info("Enabling transaction ID support");
+            logger.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
         try {
             enableSyncTriggers();
         } catch (Exception e) {
-            logger.error("Please add \"custom_variable_classes = 'symmetric'\" to your postgresql.conf file");
-            throw new RuntimeException("Missing custom variable class 'symmetric'", e);
+            logger.error("PostgreSqlCustomVariableMissing");
+            throw new RuntimeException("PostgreSqlCustomVariableMissing", e);
         }
-             
+
     }
 
     @SuppressWarnings("unchecked")
@@ -71,18 +71,16 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
-        }
-        else {
+        } else {
             return super.overrideJdbcTypeForColumn(values);
         }
     }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        return jdbcTemplate.queryForInt(
-            "select count(*) from information_schema.triggers where trigger_name = ? " +
-            "and event_object_table = ? and trigger_schema = ?",
-            new Object[] { triggerName.toLowerCase(), tableName.toLowerCase(), schema == null ? defaultSchema : schema }) > 0;
+        return jdbcTemplate.queryForInt("select count(*) from information_schema.triggers where trigger_name = ? "
+                + "and event_object_table = ? and trigger_schema = ?", new Object[] { triggerName.toLowerCase(),
+                tableName.toLowerCase(), schema == null ? defaultSchema : schema }) > 0;
     }
 
     @Override
@@ -98,7 +96,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 jdbcTemplate.update(dropSql);
                 jdbcTemplate.update(dropFunction);
             } catch (Exception e) {
-                logger.warn("Trigger does not exist");
+                logger.warn("TriggerDoesNotExist");
             }
         }
     }
@@ -114,8 +112,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     public void enableSyncTriggers() {
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             protected void doInTransactionWithoutResult(TransactionStatus transactionstatus) {
-                if (! transactionstatus.isRollbackOnly()) {
-                    jdbcTemplate.queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
+                if (!transactionstatus.isRollbackOnly()) {
+                    jdbcTemplate
+                            .queryForList("select set_config('" + SYNC_TRIGGERS_DISABLED_VARIABLE + "', '', false)");
                     jdbcTemplate.queryForList("select set_config('" + SYNC_NODE_DISABLED_VARIABLE + "', '', false)");
                 }
             }

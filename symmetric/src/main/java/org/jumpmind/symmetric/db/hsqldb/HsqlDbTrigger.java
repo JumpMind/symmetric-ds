@@ -27,6 +27,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hsqldb.Token;
 import org.hsqldb.types.Binary;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 
@@ -93,9 +95,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             if (initialize(getDataEventType(type), tableName)) {
                 buildDataSelectSql();
                 buildTransactionIdSql();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("TriggerInitializing", triggerName, triggerType);
-                }
+                logger.debug("TriggerInitializing", triggerName, triggerType);
                 initialized = true;
             }
         }

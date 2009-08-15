@@ -24,9 +24,9 @@ import java.sql.Types;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -71,9 +71,9 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
             if (ex.getSQLException().getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name must already exist on a table
-                    logger.warn("A trigger already exists for that name.  Details are as follows: "
-                            + jdbcTemplate.queryForMap("select * from user_triggers where trigger_name like upper(?)",
-                                    new Object[] { hist.getTriggerNameForDmlType(dml) }));
+                    logger.warn("TriggerAlreadyExists", jdbcTemplate.queryForMap(
+                            "select * from user_triggers where trigger_name like upper(?)", new Object[] { hist
+                                    .getTriggerNameForDmlType(dml) }));
                 } catch (DataAccessException e) {
                 }
             }
@@ -151,7 +151,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     public void purge() {
         jdbcTemplate.update("purge recyclebin");
     }
-    
+
     protected String getSymmetricPackageName() {
         return tablePrefix + "_pkg";
     }
