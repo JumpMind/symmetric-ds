@@ -1,5 +1,7 @@
-drop package pack_symmetric;
-drop function fn_sym_blob2clob;
+drop package sym_pkg;
+drop function sym_blob2clob;
+drop function sym_transaction_id;
+drop function sym_trigger_disabled;
 drop sequence seq_sym_data_data_id;
 drop sequence seq_sym_outgoin_batch_batch_id;
 drop sequence seq_sym_trigger_trigger_id;
