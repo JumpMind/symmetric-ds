@@ -49,5 +49,15 @@ public interface ILog {
     public abstract void error(String messageKey, Throwable t, Object... args);
 
     public abstract void error(Throwable t);
+    
+    public abstract void fatal(String messageKey);
+
+    public abstract void fatal(String messageKey, Throwable t);
+
+    public abstract void fatal(String messageKey, Object... args);
+
+    public abstract void fatal(String messageKey, Throwable t, Object... args);
+
+    public abstract void fatal(Throwable t);
 
 }
