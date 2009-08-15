@@ -29,11 +29,11 @@ import java.util.ArrayList;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -116,10 +116,10 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
         };
     }
-    
+
     @Override
-    public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName, final String triggerName,
-            String tableName, TriggerHistory oldHistory) {
+    public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
+            final String triggerName, String tableName, TriggerHistory oldHistory) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
@@ -134,24 +134,23 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                         }
                         stmt = con.createStatement();
                         stmt.execute(sql);
-                    }
-                    catch (Exception e) {
-                        logger.warn("Could not drop trigger " + triggerName);
-                    }
-                    finally {
+                    } catch (Exception e) {
+                        logger.warn("TriggerDropError", triggerName);
+                    } finally {
                         if (catalogName != null) {
                             con.setCatalog(previousCatalog);
                         }
                         try {
                             stmt.close();
-                        } catch (Exception e) { }
+                        } catch (Exception e) {
+                        }
                     }
                     return Boolean.FALSE;
                 }
             });
         }
     }
-    
+
     @Override
     protected String switchCatalogForTriggerInstall(String catalog, Connection c) throws SQLException {
         if (catalog != null) {
@@ -161,7 +160,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         } else {
             return null;
         }
-    }    
+    }
 
     @Override
     public void prepareTableForDataLoad(Table table) {
@@ -183,18 +182,20 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName, final String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
+            final String triggerName) {
         return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String previousCatalog = con.getCatalog();
-                PreparedStatement stmt = con.prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
+                PreparedStatement stmt = con
+                        .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
                 try {
                     if (catalogName != null) {
                         con.setCatalog(catalogName);
                     }
                     stmt.setString(1, triggerName);
                     ResultSet rs = stmt.executeQuery();
-                    if (rs.next()){
+                    if (rs.next()) {
                         int count = rs.getInt(1);
                         return count > 0;
                     }
@@ -213,8 +214,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         if (nodeId == null) {
             nodeId = "";
         }
-        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId
-                + "' as varbinary(128));" + "SET context_info @CI;");
+        jdbcTemplate.update("DECLARE @CI VarBinary(128);" + "SET @CI=cast ('1" + nodeId + "' as varbinary(128));"
+                + "SET context_info @CI;");
     }
 
     public void enableSyncTriggers() {
