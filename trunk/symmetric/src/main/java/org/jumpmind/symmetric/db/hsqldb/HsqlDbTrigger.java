@@ -25,8 +25,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hsqldb.Token;
 import org.hsqldb.types.Binary;
 import org.jumpmind.symmetric.model.Data;
@@ -62,17 +60,18 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 }
             }
         } catch (RuntimeException ex) {
-            logger.error(ex, ex);
+            logger.error(ex);
             throw ex;
         } finally {
             lastTransactionIdUpdate = System.currentTimeMillis();
         }
     }
-    
+
     protected Data createData(Object[] oldRow, Object[] newRow) {
         Data data = new Data(StringUtils.isBlank(trigger.getTargetTableName()) ? tableName : trigger
                 .getTargetTableName(), triggerType, formatRowData(oldRow, newRow), formatPkRowData(oldRow, newRow),
-                triggerHistory, trigger.getChannelId(), getTransactionId(oldRow, newRow), getDbDialect().getSyncNodeDisabled());
+                triggerHistory, trigger.getChannelId(), getTransactionId(oldRow, newRow), getDbDialect()
+                        .getSyncNodeDisabled());
         if (triggerType == DataEventType.UPDATE && trigger.isSyncColumnLevel()) {
             data.setOldData(formatAsCsv(getOrderedColumnValues(oldRow)));
         }
@@ -95,7 +94,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 buildDataSelectSql();
                 buildTransactionIdSql();
                 if (logger.isDebugEnabled()) {
-                    logger.debug("initializing " + triggerName + " for " + triggerType);
+                    logger.debug("TriggerInitializing", triggerName, triggerType);
                 }
                 initialized = true;
             }

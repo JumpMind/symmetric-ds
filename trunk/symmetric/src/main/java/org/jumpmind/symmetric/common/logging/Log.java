@@ -133,25 +133,25 @@ public class Log {
 
     public void warn(String messageKey) {
         if (logger.isWarnEnabled()) {
-            logger.info(getMessage(messageKey));
+            logger.warn(getMessage(messageKey));
         }
     }
 
     public void warn(String messageKey, Throwable t) {
         if (logger.isWarnEnabled()) {
-            logger.info(getMessage(messageKey), t);
+            logger.warn(getMessage(messageKey), t);
         }
     }
 
     public void warn(String messageKey, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.info(getMessage(messageKey, args));
+            logger.warn(getMessage(messageKey, args));
         }
     }
 
     public void warn(String messageKey, Throwable t, Object... args) {
         if (logger.isWarnEnabled()) {
-            logger.info(getMessage(messageKey, args), t);
+            logger.warn(getMessage(messageKey, args), t);
         }
     }
 
@@ -159,25 +159,32 @@ public class Log {
 
     public void error(String messageKey) {
         if (logger.isErrorEnabled()) {
-            logger.info(getMessage(messageKey));
+            logger.error(getMessage(messageKey));
         }
     }
 
     public void error(String messageKey, Throwable t) {
         if (logger.isErrorEnabled()) {
-            logger.info(getMessage(messageKey), t);
+            logger.error(getMessage(messageKey), t);
         }
     }
 
     public void error(String messageKey, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.info(getMessage(messageKey, args));
+            logger.error(getMessage(messageKey, args));
         }
     }
 
     public void error(String messageKey, Throwable t, Object... args) {
         if (logger.isErrorEnabled()) {
-            logger.info(getMessage(messageKey, args), t);
+            logger.error(getMessage(messageKey, args), t);
+        }
+    }
+    
+
+    public void error(Throwable t) {
+        if (logger.isErrorEnabled()) {
+            logger.error(t,t);
         }
     }
 
