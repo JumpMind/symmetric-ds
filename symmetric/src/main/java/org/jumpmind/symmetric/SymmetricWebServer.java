@@ -29,11 +29,11 @@ import javax.management.ObjectName;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.web.SymmetricFilter;
@@ -54,10 +54,10 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class SymmetricWebServer implements ApplicationContextAware {
 
-    protected static final Log logger = LogFactory.getLog(SymmetricWebServer.class);
+    protected static final ILog log = LogFactory.getLog(SymmetricWebServer.class);
 
     /**
-     * The type of HTTP connection to create for this SymmetricDS web server 
+     * The type of HTTP connection to create for this SymmetricDS web server
      */
     public enum Mode {
         HTTP, HTTPS, MIXED;
@@ -80,7 +80,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected int httpsPort = -1;
 
     protected String[] propertiesFiles;
-        
+
     protected String host;
 
     /**
@@ -90,30 +90,30 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected ApplicationContext parentContext;
 
     public SymmetricWebServer() {
-     }
-    
+    }
+
     public SymmetricWebServer(String[] propertiesUrls) {
         this.propertiesFiles = propertiesUrls;
-     }
-    
+    }
+
     public SymmetricWebServer(String propertiesUrl) {
-       this.propertiesFiles = new String[] {propertiesUrl};
+        this.propertiesFiles = new String[] { propertiesUrl };
     }
 
     public SymmetricWebServer(int maxIdleTime) {
         this.maxIdleTime = maxIdleTime;
     }
-    
+
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join) {
-        this.propertiesFiles = new String[] {propertiesUrl};
+        this.propertiesFiles = new String[] { propertiesUrl };
         this.maxIdleTime = maxIdleTime;
         this.join = join;
-    }     
-    
+    }
+
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
-        this.propertiesFiles = new String[] {propertiesUrl};
+        this.propertiesFiles = new String[] { propertiesUrl };
         this.maxIdleTime = maxIdleTime;
-    }    
+    }
 
     public void start(int port, String propertiesUrl) throws Exception {
         this.propertiesFiles = new String[] { propertiesUrl };
@@ -122,7 +122,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     public SymmetricEngine getEngine() {
         if (contextListener == null) {
-            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext, propertiesFiles));
+            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext,
+                    propertiesFiles));
         }
         return contextListener.getEngine();
     }
@@ -181,7 +182,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
         if (join) {
             server.join();
         }
-        
+
         return this;
     }
 
@@ -195,7 +196,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
             connector.setHost(host);
             ((SelectChannelConnector) connector).setMaxIdleTime(maxIdleTime);
             connectors.add(connector);
-            logger.info("About to start SymmetricDS web server on port " + port);
+            log.info("WebServerStarting", port);
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             Connector connector = new SslSocketConnector();
@@ -207,7 +208,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
             connector.setPort(securePort);
             connector.setHost(host);
             connectors.add(connector);
-            logger.info("About to start SymmetricDS web server on secure port " + securePort);
+            log.info("WebServerSecureStarting", securePort);
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
@@ -215,7 +216,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
     protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getEngine());
         if (parameterService.is(ParameterConstants.JMX_HTTP_CONSOLE_ENABLED)) {
-            logger.info("Starting JMX HTTP console on port " + jmxPort);
+            log.info("JMXConsoleStarting", jmxPort);
             MBeanServer mbeanServer = AppUtils.find(Constants.MBEAN_SERVER, getEngine());
             ObjectName name = getHttpJmxAdaptorName();
             mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
@@ -243,7 +244,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
                 mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
                 mbeanServer.unregisterMBean(getXslJmxAdaptorName());
             } catch (Exception e) {
-                logger.warn("Could not unregister the JMX HTTP Adaptor");
+                log.warn("JMXAdaptorUnregisterFailed");
             }
         }
     }
@@ -307,7 +308,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
     public void setPropertiesFile(String propertiesFile) {
         this.propertiesFiles = new String[] { propertiesFile };
     }
-    
+
     public void setPropertiesFiles(String[] propertiesFiles) {
         this.propertiesFiles = propertiesFiles;
     }

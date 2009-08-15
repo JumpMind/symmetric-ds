@@ -24,18 +24,17 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * Filter compiler for IPv4 addresses.
  * 
  * @author dmichels2
  */
-public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorizerCompiler
-{
-    private static final Log logger = LogFactory.getLog(Inet4AddressAuthorizerCompiler.class);
-    
+public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorizerCompiler {
+    private static final ILog log = LogFactory.getLog(Inet4AddressAuthorizerCompiler.class);
+
     public static final String IPv4_OCTET_SEPARATOR = ".";
 
     public static final String BROADCAST_OCTET = "255";
@@ -47,38 +46,34 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
     public static final byte ANY = (byte) 0xFF;
 
     /**
-     * Used for comparison of a 'range' of IPv4 addresses. Specifically, the address space between 2 IPv4 addresses,
-     * inclusive of the bounds (highest and lowest possible) addresses themselves.
+     * Used for comparison of a 'range' of IPv4 addresses. Specifically, the
+     * address space between 2 IPv4 addresses, inclusive of the bounds (highest
+     * and lowest possible) addresses themselves.
      * 
      * @author dmichels
      */
-    static class RawInet4AddressRangeAuthorizer implements IRawInetAddressAuthorizer
-    {
+    static class RawInet4AddressRangeAuthorizer implements IRawInetAddressAuthorizer {
         private final short[] startAddress;
 
         private final short[] endAddress;
 
-        RawInet4AddressRangeAuthorizer(final short[] startAddress, final short[] endAddress)
-        {
+        RawInet4AddressRangeAuthorizer(final short[] startAddress, final short[] endAddress) {
             super();
-            if ((startAddress.length != NUM_IPv4_OCTETS) || (endAddress.length != NUM_IPv4_OCTETS))
-            {
+            if ((startAddress.length != NUM_IPv4_OCTETS) || (endAddress.length != NUM_IPv4_OCTETS)) {
                 throw new IllegalArgumentException("Invalid number of octets in IPv4 address filter");
             }
             this.startAddress = startAddress;
             this.endAddress = endAddress;
         }
 
-        public boolean isAuthorized(final byte[] addrBytes)
-        {
+        public boolean isAuthorized(final byte[] addrBytes) {
             final short[] addrAsShorts = convertAddressBytesToShort(addrBytes);
-            for (int i = 0; i < addrAsShorts.length; i++)
-            {
-                // if we don't have an all inclusive octet at the start (255) offset and the octet
+            for (int i = 0; i < addrAsShorts.length; i++) {
+                // if we don't have an all inclusive octet at the start (255)
+                // offset and the octet
                 // does not fall within the bounds, it's nix'd
                 if ((startAddress[i] != SHORT_MASK)
-                    && ((addrAsShorts[i] < startAddress[i]) || (addrAsShorts[i] > endAddress[i])))
-                {
+                        && ((addrAsShorts[i] < startAddress[i]) || (addrAsShorts[i] > endAddress[i]))) {
                     return false;
                 }
             }
@@ -87,26 +82,24 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
     }
 
     /**
-     * Used for comparison of addresses to a CIDR (Classless Inter-Domain Routing) address block (i.e. '10.5.5.32/27')
+     * Used for comparison of addresses to a CIDR (Classless Inter-Domain
+     * Routing) address block (i.e. '10.5.5.32/27')
      * 
      * @author dmichels
      */
-    static class RawInet4AddressCidrAuthorizer implements IRawInetAddressAuthorizer
-    {
+    static class RawInet4AddressCidrAuthorizer implements IRawInetAddressAuthorizer {
         private final int checkAddress;
 
         private int cidrMask = 0x80000000;
 
         private final byte significantBits;
 
-        RawInet4AddressCidrAuthorizer(final byte[] address, final byte signifcantBits)
-        {
+        RawInet4AddressCidrAuthorizer(final byte[] address, final byte signifcantBits) {
             super();
             // Make sure the CIDR notation is valid (0-32 excluding 31)
-            if ((signifcantBits < 0) || (signifcantBits > 32))
-            {
+            if ((signifcantBits < 0) || (signifcantBits > 32)) {
                 throw new IllegalArgumentException(String.format("Invalid CIDR Notation '/%s'. Values must be 0-32.",
-                    signifcantBits));
+                        signifcantBits));
             }
 
             cidrMask = cidrMask >> (signifcantBits - 1);
@@ -114,25 +107,21 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
             this.significantBits = signifcantBits;
         }
 
-        public boolean isAuthorized(final byte[] addrBytes)
-        {
-            // This means that all addrs are allowed (i.e. CIDR notation '<ip address>/0')
-            if (significantBits == 0)
-            {
+        public boolean isAuthorized(final byte[] addrBytes) {
+            // This means that all addrs are allowed (i.e. CIDR notation '<ip
+            // address>/0')
+            if (significantBits == 0) {
                 return true;
             }
             final int convertedAddress = bytesToCidrInt(addrBytes);
-            if ((convertedAddress & checkAddress) == convertedAddress)
-            {
+            if ((convertedAddress & checkAddress) == convertedAddress) {
                 return true;
             }
             return false;
         }
 
-        private int bytesToCidrInt(final byte[] address)
-        {
-            if ((address == null) || (address.length != NUM_IPv4_OCTETS))
-            {
+        private int bytesToCidrInt(final byte[] address) {
+            if ((address == null) || (address.length != NUM_IPv4_OCTETS)) {
                 return 0;
             }
             int addressAsInt = 0;
@@ -145,27 +134,23 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
     }
 
     /**
-     * Used for comparison to a static IP address (which may be wildcarded to a broadcast). So, static IP addresses such
-     * as <code>10.5.5.32</code> and <code>10.5.5.*</code> are handled by this authorizer.
+     * Used for comparison to a static IP address (which may be wildcarded to a
+     * broadcast). So, static IP addresses such as <code>10.5.5.32</code> and
+     * <code>10.5.5.*</code> are handled by this authorizer.
      * 
      * @author dmichels
      */
-    static class RawInet4AddressAuthorizer implements IRawInetAddressAuthorizer
-    {
+    static class RawInet4AddressAuthorizer implements IRawInetAddressAuthorizer {
         private final byte[] checkAddress;
 
-        RawInet4AddressAuthorizer(final byte[] address)
-        {
+        RawInet4AddressAuthorizer(final byte[] address) {
             super();
             this.checkAddress = address;
         }
 
-        public boolean isAuthorized(final byte[] addrBytes)
-        {
-            for (int i = 0; i < addrBytes.length; i++)
-            {
-                if ((checkAddress[i] != ANY) && (addrBytes[i] != checkAddress[i]))
-                {
+        public boolean isAuthorized(final byte[] addrBytes) {
+            for (int i = 0; i < addrBytes.length; i++) {
+                if ((checkAddress[i] != ANY) && (addrBytes[i] != checkAddress[i])) {
                     return false;
                 }
             }
@@ -181,39 +166,26 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * @throws UnknownHostException
      */
     @Override
-    protected IRawInetAddressAuthorizer compileForIpVersion(String filter) throws UnknownHostException
-    {
+    protected IRawInetAddressAuthorizer compileForIpVersion(String filter) throws UnknownHostException {
         filter = filter.trim();
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Compiling IPv4 filter string: " + filter);
-        }
+        log.debug("FilterStringIPv4Compiling", filter);
 
         filter = replaceSymbols(filter);
 
         final String[] octets = filter.split('\\' + IPv4_OCTET_SEPARATOR);
-        if (octets.length != NUM_IPv4_OCTETS)
-        {
+        if (octets.length != NUM_IPv4_OCTETS) {
             throw new IllegalArgumentException(String.format(
-                "Invalid IPv4 filter. Must have 4 octects separated by: '%s'. Provided: %s Length: %s",
-                IPv4_OCTET_SEPARATOR, filter, octets.length));
+                    "Invalid IPv4 filter. Must have 4 octects separated by: '%s'. Provided: %s Length: %s",
+                    IPv4_OCTET_SEPARATOR, filter, octets.length));
         }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Checking for Range values on filter: " + filter);
-        }
+        log.debug("FilterRangeValuesChecking", filter);
 
-        if (filter.contains(CIDR_TOKEN))
-        {
+        if (filter.contains(CIDR_TOKEN)) {
             return compileCidrAuthorizer(filter);
-        }
-        else if (filter.contains(RANGE_TOKEN))
-        {
+        } else if (filter.contains(RANGE_TOKEN)) {
             return compileRangeAuthorizer(octets);
-        }
-        else
-        {
+        } else {
             // Both static and wild-carded addresses apply here
             final Inet4Address addr = (Inet4Address) InetAddress.getByName(filter);
             return new RawInet4AddressAuthorizer(addr.getAddress());
@@ -224,8 +196,7 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * 
      */
     @Override
-    protected String getAddressSeparator()
-    {
+    protected String getAddressSeparator() {
         return IPv4_OCTET_SEPARATOR;
     }
 
@@ -233,42 +204,39 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * 
      */
     @Override
-    protected String getBroadcastString()
-    {
+    protected String getBroadcastString() {
         return BROADCAST_OCTET;
     }
 
     /**
-     * Mechanism to pull a <code>short</code> from the provided textual octet. Use <code>short</code> values as we
-     * have to do comparisons and <code>byte</code>s are signed (and we'd have to add 254 prior to comparison, blah,
-     * blah, blah)
+     * Mechanism to pull a <code>short</code> from the provided textual octet.
+     * Use <code>short</code> values as we have to do comparisons and
+     * <code>byte</code>s are signed (and we'd have to add 254 prior to
+     * comparison, blah, blah, blah)
      * 
      * @param octect
      * @return
      */
-    protected short getOctetFromString(final String octect)
-    {
+    protected short getOctetFromString(final String octect) {
         final short octetVal = Short.parseShort(octect);
 
-        if ((octetVal > SHORT_MASK) || (octetVal < 0))
-        {
+        if ((octetVal > SHORT_MASK) || (octetVal < 0)) {
             throw new IllegalArgumentException("Invalid IPv4 octect: " + octetVal);
         }
         return octetVal;
     }
 
     /**
-     * Utility method to convert between the actual <code>byte[]</code> address representation and a
-     * <code>short[]</code> used to perform the address and range comparison.
+     * Utility method to convert between the actual <code>byte[]</code> address
+     * representation and a <code>short[]</code> used to perform the address and
+     * range comparison.
      * 
      * @param bytes
      * @return
      */
-    public static short[] convertAddressBytesToShort(final byte[] bytes)
-    {
+    public static short[] convertAddressBytesToShort(final byte[] bytes) {
         final short[] retVal = new short[bytes.length];
-        for (int i = 0; i < bytes.length; i++)
-        {
+        for (int i = 0; i < bytes.length; i++) {
             retVal[i] = (short) ((SHORT_MASK) & (bytes[i]));
         }
         return retVal;
@@ -276,17 +244,15 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
     }
 
     /**
-     * Utility method to convert between the <code>short[]</code> used for comparison and a <code>byte[]</code> for
-     * actual address representation.
+     * Utility method to convert between the <code>short[]</code> used for
+     * comparison and a <code>byte[]</code> for actual address representation.
      * 
      * @param shorts
      * @return
      */
-    public static byte[] convertShortToAddressBytes(final short[] shorts)
-    {
+    public static byte[] convertShortToAddressBytes(final short[] shorts) {
         final byte[] retVal = new byte[shorts.length];
-        for (int i = 0; i < shorts.length; i++)
-        {
+        for (int i = 0; i < shorts.length; i++) {
             retVal[i] = (byte) shorts[i];
         }
         return retVal;
@@ -297,33 +263,26 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * @return
      * @throws UnknownHostException
      */
-    private RawInet4AddressRangeAuthorizer compileRangeAuthorizer(final String[] octets) throws UnknownHostException
-    {
+    private RawInet4AddressRangeAuthorizer compileRangeAuthorizer(final String[] octets) throws UnknownHostException {
         final short[] startRange = new short[NUM_IPv4_OCTETS];
         final short[] endRange = new short[NUM_IPv4_OCTETS];
-        for (int i = 0; i < octets.length; i++)
-        {
-            if (octets[i].contains(RANGE_TOKEN))
-            {
+        for (int i = 0; i < octets.length; i++) {
+            if (octets[i].contains(RANGE_TOKEN)) {
                 final String[] range = octets[i].split(RANGE_TOKEN);
-                if (range.length != 2)
-                {
+                if (range.length != 2) {
                     throw new IllegalArgumentException("Illegal range pattern for filter address octet. Provided: "
-                        + octets[i]);
+                            + octets[i]);
                 }
 
                 final short upperBounds = getOctetFromString(range[0]);
                 final short lowerBounds = getOctetFromString(range[1]);
-                if (upperBounds < lowerBounds)
-                {
+                if (upperBounds < lowerBounds) {
                     throw new IllegalArgumentException("Byte Range must be specificed as '<higher bounds>"
-                        + RANGE_TOKEN + "<lower bounds>'. Provided: " + octets[i]);
+                            + RANGE_TOKEN + "<lower bounds>'. Provided: " + octets[i]);
                 }
                 startRange[i] = lowerBounds;
                 endRange[i] = upperBounds;
-            }
-            else
-            {
+            } else {
                 final short singleVal = getOctetFromString(octets[i]);
                 startRange[i] = singleVal;
                 endRange[i] = singleVal;
@@ -341,15 +300,12 @@ public class Inet4AddressAuthorizerCompiler extends AbstractInetAddressAuthorize
      * @return
      * @throws UnknownHostException
      */
-    private RawInet4AddressCidrAuthorizer compileCidrAuthorizer(final String filter) throws UnknownHostException
-    {
-        if (filter.contains(RANGE_TOKEN) || filter.contains(ANY_TOKEN))
-        {
+    private RawInet4AddressCidrAuthorizer compileCidrAuthorizer(final String filter) throws UnknownHostException {
+        if (filter.contains(RANGE_TOKEN) || filter.contains(ANY_TOKEN)) {
             throw new IllegalArgumentException("CIDR formatted filters cannot contain other tokens");
         }
         final String[] cidrNotation = filter.split(CIDR_TOKEN, 2);
-        if (cidrNotation.length != 2)
-        {
+        if (cidrNotation.length != 2) {
             throw new IllegalArgumentException("Expected format of CIDR string is '###.###.###.###/##'");
         }
         final InetAddress inetAddr = InetAddress.getByName(cidrNotation[0]);

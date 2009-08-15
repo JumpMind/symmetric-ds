@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -34,7 +34,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 
 public class JobManager implements IJobManager, BeanFactoryAware {
 
-    final Log logger = LogFactory.getLog(JobManager.class);
+    final ILog log = LogFactory.getLog(JobManager.class);
 
     private Map<String, Timer> jobs;
 
@@ -43,7 +43,7 @@ public class JobManager implements IJobManager, BeanFactoryAware {
     private IParameterService parameterService;
 
     private void startJob(String name) {
-        logger.info("Starting " + name);
+        log.info("JobStarting", name);
         beanFactory.getBean(name);
     }
 
@@ -66,7 +66,7 @@ public class JobManager implements IJobManager, BeanFactoryAware {
         if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_PULL_JOB))) {
             startJob(Constants.PULL_JOB_TIMER);
         }
-        
+
         if (Boolean.TRUE.toString().equalsIgnoreCase(parameterService.getString(ParameterConstants.START_ROUTE_JOB))) {
             startJob(Constants.ROUTE_JOB_TIMER);
         }
@@ -98,7 +98,7 @@ public class JobManager implements IJobManager, BeanFactoryAware {
                 try {
                     job.cancel();
                 } catch (RuntimeException e) {
-                    logger.error(e, e);
+                    log.error(e);
                 }
             }
         }

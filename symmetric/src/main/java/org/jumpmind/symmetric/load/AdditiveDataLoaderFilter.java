@@ -22,18 +22,20 @@ package org.jumpmind.symmetric.load;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * The AdditiveDataLoaderFilter uses column-level sync-ing to allow data loads which are either column-level additive or
- * override in nature. Additive columns use the incoming new and old values to compute the delta to be applied to the
- * node's current value. Override columns simply override (write over) whatever value the node currently has.
+ * The AdditiveDataLoaderFilter uses column-level sync-ing to allow data loads
+ * which are either column-level additive or override in nature. Additive
+ * columns use the incoming new and old values to compute the delta to be
+ * applied to the node's current value. Override columns simply override (write
+ * over) whatever value the node currently has.
  */
 public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
 
-    private static final Log logger = LogFactory.getLog(AdditiveDataLoaderFilter.class);
+    private static final ILog log = LogFactory.getLog(AdditiveDataLoaderFilter.class);
 
     private String tableName;
 
@@ -52,7 +54,8 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
             return true;
         } else {
 
-            // The correct behavior here would seem to be to use the "old" values to back out the node's overall
+            // The correct behavior here would seem to be to use the "old"
+            // values to back out the node's overall
             // contribution to the summary columns, much like a reverse update.
 
             throw new RuntimeException("delete not supported for AdditiveDataLoaderFilter, table: "
@@ -104,9 +107,7 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         s.append(buildSetClause(context, colData, values));
         s.append(buildWhereClause(context, keyData, values));
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(s.toString());
-        }
+        log.debug("Sql", s.toString());
         return (jdbcTemplate.update(s.toString(), values.toArray()) > 0);
     }
 

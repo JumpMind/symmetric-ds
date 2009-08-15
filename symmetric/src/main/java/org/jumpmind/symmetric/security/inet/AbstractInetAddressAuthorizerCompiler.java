@@ -24,35 +24,37 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
- * Base class that all {@link IInetAddressAuthorizerCompiler} implementations should extend.
+ * Base class that all {@link IInetAddressAuthorizerCompiler} implementations
+ * should extend.
  * 
  * @author dmichels2
  */
-public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddressAuthorizerCompiler
-{
+public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddressAuthorizerCompiler {
     /**
-     * Marker token to denote an all inclusive, or wildcarded, IP address piece. This token specifies that all address
-     * are valid for this piece of an IP address. Value: {@value}
+     * Marker token to denote an all inclusive, or wildcarded, IP address piece.
+     * This token specifies that all address are valid for this piece of an IP
+     * address. Value: {@value}
      */
     public static final String ANY_TOKEN = "*";
 
     /**
-     * Marker token to denote an inclusive range of values in an IP address piece. This token specifies that all address
-     * that fall within the range are valid for this piece of an IP address. Value: {@value}
+     * Marker token to denote an inclusive range of values in an IP address
+     * piece. This token specifies that all address that fall within the range
+     * are valid for this piece of an IP address. Value: {@value}
      */
     public static final String RANGE_TOKEN = "-";
 
     /**
-     * CIDR Marker token which separates an address and the number of significant bits used to evaluate authorization.
-     * Value: {@value}
+     * CIDR Marker token which separates an address and the number of
+     * significant bits used to evaluate authorization. Value: {@value}
      */
     public static final String CIDR_TOKEN = "/";
 
-    private static final Log logger = LogFactory.getLog(AbstractInetAddressAuthorizerCompiler.class);
+    private static final ILog log = LogFactory.getLog(AbstractInetAddressAuthorizerCompiler.class);
 
     /**
      * Filter string primary compilation entry point.
@@ -61,12 +63,10 @@ public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddr
      * @return
      * @throws UnknownHostException
      */
-    public List<IRawInetAddressAuthorizer> compile(final String[] filterStrings) throws UnknownHostException
-    {
+    public List<IRawInetAddressAuthorizer> compile(final String[] filterStrings) throws UnknownHostException {
         final List<IRawInetAddressAuthorizer> rawFilters = new ArrayList<IRawInetAddressAuthorizer>();
-        for (final String filter : filterStrings)
-        {
-            logger.debug("Compiling filter string: " + filter);
+        for (final String filter : filterStrings) {
+            log.debug("FilterStringCompiling", filter);
             rawFilters.add(compileForIpVersion(filter));
         }
 
@@ -77,34 +77,33 @@ public abstract class AbstractInetAddressAuthorizerCompiler implements IInetAddr
      * @param filter
      * @return
      */
-    protected String replaceSymbols(String filter)
-    {
-        if (filter.contains(ANY_TOKEN))
-        {
+    protected String replaceSymbols(String filter) {
+        if (filter.contains(ANY_TOKEN)) {
             final String[] octets = filter.split(getAddressSeparator());
-            for (final String octet : octets)
-            {
+            for (final String octet : octets) {
                 // verify no whitespace
-                if (octet.contains(ANY_TOKEN))
-                {
-                    if (octet.length() > 1)
-                    {
-                        throw new IllegalArgumentException(String.format(
-                            "Illegal wild card. '%s' can be the the only char in the address piece. Provided: '%s'",
-                            ANY_TOKEN, octet));
+                if (octet.contains(ANY_TOKEN)) {
+                    if (octet.length() > 1) {
+                        throw new IllegalArgumentException(
+                                String
+                                        .format(
+                                                "Illegal wild card. '%s' can be the the only char in the address piece. Provided: '%s'",
+                                                ANY_TOKEN, octet));
                     }
                 }
             }
             filter = filter.replaceAll('\\' + ANY_TOKEN, getBroadcastString());
-            logger.debug("Replaced wildcard filter to: " + filter);
+            log.debug("FilterReplaced", filter);
         }
         return filter;
     }
 
     /**
-     * Method to implement all of the IP version specific filter compilation logic.
+     * Method to implement all of the IP version specific filter compilation
+     * logic.
      * 
-     * @param filter IP filter definition
+     * @param filter
+     *            IP filter definition
      * @return
      */
     protected abstract IRawInetAddressAuthorizer compileForIpVersion(String filter) throws UnknownHostException;

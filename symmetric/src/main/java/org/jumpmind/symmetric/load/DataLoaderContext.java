@@ -25,21 +25,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 
 public class DataLoaderContext implements IDataLoaderContext {
 
-    static final Log logger = LogFactory.getLog(DataLoaderContext.class);
+    static final ILog log = LogFactory.getLog(DataLoaderContext.class);
 
     private String version;
 
     private String nodeId;
 
     private String tableName;
-    
+
     private String channelId;
 
     private long batchId;
@@ -174,7 +174,7 @@ public class DataLoaderContext implements IDataLoaderContext {
         try {
             this.binaryEncoding = BinaryEncoding.valueOf(encoding);
         } catch (Exception ex) {
-            logger.warn("Unsupported binary encoding value of " + encoding);
+            log.warn("EncodingUnsupported", encoding);
         }
     }
 

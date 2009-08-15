@@ -19,31 +19,30 @@
  */
 package org.jumpmind.symmetric.load;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  */
 public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
-    private static final Log logger = LogFactory
-            .getLog(DuplicateTableDataLoaderFilter.class);
+    private static final ILog log = LogFactory.getLog(DuplicateTableDataLoaderFilter.class);
 
     private IDbDialect dbDialect;
 
     private JdbcTemplate jdbcTemplate;
 
     private TableTemplate tableTemplate;
-    
+
     private String duplicateSchema;
-    
+
     private String duplicateCatalog;
 
     private String duplicateTableName;
 
     private String originalTableName;
-    
+
     public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
         if (context.getTableName().equals(originalTableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
@@ -52,8 +51,7 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
         return true;
     }
 
-    public boolean filterInsert(IDataLoaderContext context,
-            String[] columnValues) {
+    public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
         if (context.getTableName().equals(originalTableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
             tableTemplate.insert(context, columnValues);
@@ -61,8 +59,7 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
         return true;
     }
 
-    public boolean filterUpdate(IDataLoaderContext context,
-            String[] columnValues, String[] keyValues) {
+    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues) {
         if (context.getTableName().equals(originalTableName)) {
             TableTemplate tableTemplate = getTableTemplate(context);
             tableTemplate.update(context, columnValues, keyValues);
@@ -72,8 +69,8 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
 
     private TableTemplate getTableTemplate(IDataLoaderContext context) {
         if (tableTemplate == null) {
-            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect,
-                    duplicateTableName, null, false, duplicateSchema, duplicateCatalog);
+            tableTemplate = new TableTemplate(jdbcTemplate, dbDialect, duplicateTableName, null, false,
+                    duplicateSchema, duplicateCatalog);
             tableTemplate.setColumnNames(context.getColumnNames());
             tableTemplate.setKeyNames(context.getKeyNames());
         }
@@ -81,8 +78,8 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     }
 
     public boolean isAutoRegister() {
-        logger.info("Duplicating table " + originalTableName + " into " + (duplicateCatalog != null ? duplicateCatalog + "." : "") + (duplicateSchema != null ? duplicateSchema + "." : "") +
-                duplicateTableName);
+        log.info("TableDuplicating", originalTableName, (duplicateCatalog != null ? duplicateCatalog + "." : "")
+                + (duplicateSchema != null ? duplicateSchema + "." : "") + duplicateTableName);
         return true;
     }
 
@@ -109,7 +106,5 @@ public class DuplicateTableDataLoaderFilter implements IDataLoaderFilter {
     public void setDuplicateCatalog(String catalog) {
         this.duplicateCatalog = catalog;
     }
-    
-    
 
 }

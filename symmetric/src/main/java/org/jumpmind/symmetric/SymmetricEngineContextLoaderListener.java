@@ -23,8 +23,8 @@ package org.jumpmind.symmetric;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
@@ -32,10 +32,10 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * This is the standard way to bootstrap SymmetricDS in a web container. SymmetricDS
- * uses Spring's WebApplicationContext for access to symmetric from its
- * Servlets. This servlet context listener forces the contextConfigLocation for
- * Spring to be load symmetric.xml.
+ * This is the standard way to bootstrap SymmetricDS in a web container.
+ * SymmetricDS uses Spring's WebApplicationContext for access to symmetric from
+ * its Servlets. This servlet context listener forces the contextConfigLocation
+ * for Spring to be load symmetric.xml.
  * <p/>
  * Developers have the option to subclass off of this listener and override the
  * createConfigureAndStartEngine() method.
@@ -45,7 +45,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
     static final String SYMMETRIC_SPRING_LOCATION = "classpath:/symmetric.xml";
     static final String SYMMETRIC_EMPTY_SPRING_LOCATION = "classpath:/symmetric-empty.xml";
 
-    static final Log logger = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
+    static final ILog log = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
 
     SymmetricEngine engine = null;
 
@@ -63,7 +63,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
             ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(event.getServletContext());
             createConfigureAndStartEngine(ctx);
         } catch (Exception ex) {
-            logger.error("WebServerInitializeError", ex);
+            log.error("WebServerInitializeError", ex);
             if (ex instanceof RuntimeException) {
                 throw (RuntimeException) ex;
             } else {
@@ -103,7 +103,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
                         if (config.equals(SYMMETRIC_SPRING_LOCATION)) {
                             symmetricConfigured = true;
                         }
-                        newconfigLocation[i+1] = configLocation[i];
+                        newconfigLocation[i + 1] = configLocation[i];
                     }
 
                     if (!symmetricConfigured) {
@@ -112,7 +112,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
                 } else {
                     applicationContext.setParent(engine.getApplicationContext());
                     applicationContext.setConfigLocation(SYMMETRIC_EMPTY_SPRING_LOCATION);
-                    
+
                 }
 
             }

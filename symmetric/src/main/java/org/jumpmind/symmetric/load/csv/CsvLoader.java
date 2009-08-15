@@ -28,11 +28,12 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.SymmetricDSException;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.DataLoaderStatistics;
@@ -55,7 +56,7 @@ import com.csvreader.CsvReader;
 
 public class CsvLoader implements IDataLoader {
 
-    static final Log logger = LogFactory.getLog(CsvLoader.class);
+    static final ILog log = LogFactory.getLog(CsvLoader.class);
 
     protected JdbcTemplate jdbcTemplate;
 
@@ -168,8 +169,7 @@ public class CsvLoader implements IDataLoader {
                             rowsProcessed++;
                         }
                     } else {
-                        logger.warn("Unexpected token '" + tokens[0] + "' on line " + stats.getLineCount()
-                                + " of batch " + context.getBatchId());
+                        log.warn("LoaderTokenUnexpected", tokens[0], stats.getLineCount(), context.getBatchId());
                     }
                 }
                 if (rowsProcessed > rowsBeforeCommit && rowsBeforeCommit > 0) {
@@ -221,8 +221,8 @@ public class CsvLoader implements IDataLoader {
                     } else {
                         // Get the trigger based upon table name , source node
                         // group id , target node group id and channel id
-                        trigger = triggerService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
-                                targetNode.getNodeGroupId(), context.getChannelId());
+                        trigger = triggerService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(), targetNode
+                                .getNodeGroupId(), context.getChannelId());
                         if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
                             tableName = trigger.getTargetTableName();
                         }
@@ -284,10 +284,8 @@ public class CsvLoader implements IDataLoader {
                 // foreign key
                 if (enableFallbackUpdate) {
                     dbDialect.rollbackToSavepoint(savepoint);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
-                                + ArrayUtils.toString(tokens));
-                    }
+                    log.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
+                            + ArrayUtils.toString(tokens));
                     String keyValues[] = parseKeys(tokens, 1);
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
@@ -326,20 +324,19 @@ public class CsvLoader implements IDataLoader {
             rows = context.getTableTemplate().update(context, columnValues, keyValues);
             if (rows == 0) {
                 if (enableFallbackInsert) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Unable to update " + context.getTableName() + ", inserting instead: "
-                                + ArrayUtils.toString(tokens));
-                    }
+
+                    log.debug("LoaderUpdatingFailedInserting", context.getTableName(), ArrayUtils.toString(tokens));
+
                     stats.incrementFallbackInsertCount();
                     rows = context.getTableTemplate().insert(context, columnValues);
                 } else {
                     // TODO: log the PK information as an ERROR level.
                     stats.incrementDatabaseMillis(stats.endTimer());
-                    throw new RuntimeException("Unable to update " + context.getTableName() + ": "
-                            + ArrayUtils.toString(tokens));
+                    throw new SymmetricDSException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
+                            .toString(tokens));
                 }
             } else if (rows > 1) {
-                logger.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
+                log.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
                         + ArrayUtils.toString(tokens));
             }
             stats.incrementDatabaseMillis(stats.endTimer());
@@ -368,7 +365,7 @@ public class CsvLoader implements IDataLoader {
             stats.incrementDatabaseMillis(stats.endTimer());
             if (rows == 0) {
                 if (allowMissingDelete) {
-                    logger.warn("Delete of " + context.getTableName() + " affected no rows: "
+                    log.warn("Delete of " + context.getTableName() + " affected no rows: "
                             + ArrayUtils.toString(tokens));
                     stats.incrementMissingDeleteCount();
                 } else {
@@ -382,9 +379,7 @@ public class CsvLoader implements IDataLoader {
 
     protected void runSql(String sql) {
         stats.incrementStatementCount();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Running SQL: " + sql);
-        }
+        log.debug("ScriptRunning", sql);
         jdbcTemplate.execute(sql);
         if (context.getTableTemplate() != null) {
             context.getTableTemplate().resetMetaData(false);
@@ -393,9 +388,7 @@ public class CsvLoader implements IDataLoader {
 
     protected void runDdl(String xml) {
         stats.incrementStatementCount();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Running DDL: " + xml);
-        }
+        log.debug("DDLRunning", xml);
         dbDialect.createTables(xml);
         context.getTableTemplate().resetMetaData(false);
     }

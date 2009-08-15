@@ -8,17 +8,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 
 public class CsvUtils {
 
-    static final Log logger = LogFactory.getLog(CsvUtils.class);
-    
+    static final ILog log = LogFactory.getLog(CsvUtils.class);
+
     public static final String DELIMITER = ", ";
 
     public static CsvReader getCsvReader(Reader reader) {
@@ -27,7 +27,7 @@ public class CsvUtils {
         csvReader.setSafetySwitch(false);
         return csvReader;
     }
-    
+
     public static String[] tokenizeCsvData(String csvData) {
         String[] tokens = null;
         if (csvData != null) {
@@ -64,11 +64,9 @@ public class CsvUtils {
         }
 
         writer.write(buffer.toString());
-        if (logger.isDebugEnabled()) {
-            logger.debug("writing: " + buffer);
-        }
+        log.debug("BufferWriting", buffer);
     }
-    
+
     public static void writeSql(String sql, BufferedWriter writer) throws IOException {
         write(writer, CsvConstants.SQL, DELIMITER, sql);
         writer.newLine();
