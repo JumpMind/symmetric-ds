@@ -4,18 +4,6 @@ import java.util.Locale;
 
 public interface ILog {
 
-    public abstract String getMessage(String key);
-
-    public abstract String getMessage(String key, Object... args);
-
-    public abstract Locale getLocale();
-
-    public abstract void setLocale(Locale locale);
-
-    public abstract String getBundleName();
-
-    public abstract void setBundleName(String bundleName);
-
     public abstract void debug(String messageKey);
 
     public abstract void debug(String messageKey, Throwable t);
@@ -49,7 +37,7 @@ public interface ILog {
     public abstract void error(String messageKey, Throwable t, Object... args);
 
     public abstract void error(Throwable t);
-    
+
     public abstract void fatal(String messageKey);
 
     public abstract void fatal(String messageKey, Throwable t);

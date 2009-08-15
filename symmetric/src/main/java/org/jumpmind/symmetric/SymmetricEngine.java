@@ -39,6 +39,7 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -322,9 +323,7 @@ public class SymmetricEngine {
                 startDefaultServerJMXExport();
                 Node node = nodeService.findIdentity();
                 if (node != null) {
-                    log
-                            .info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node
-                                    .getExternalId());
+                    log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
                 } else {
                     log.info("UnregisteredNodeStarting", parameterService.getNodeGroupId(), parameterService
                             .getExternalId());
@@ -332,8 +331,9 @@ public class SymmetricEngine {
                 triggerService.syncTriggers();
                 heartbeat();
                 jobManager.startJobs();
-                log.info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
-                        .getName());
+                log
+                        .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
+                                .getName());
                 started = true;
             } finally {
                 starting = false;
@@ -417,7 +417,7 @@ public class SymmetricEngine {
                     throw ex;
                 }
             } else {
-                throw new RuntimeException(log.getMessage("SymmetricDSUpgradeNeeded"));
+                throw new RuntimeException(Message.get("SymmetricDSUpgradeNeeded"));
             }
         }
 
