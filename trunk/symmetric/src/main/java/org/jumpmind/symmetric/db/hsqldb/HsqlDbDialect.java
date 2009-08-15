@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.db.hsqldb;
 
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(HsqlDbDialect.class);
+    static final ILog log = LogFactory.getLog(HsqlDbDialect.class);
 
     public static String DUAL_TABLE = "DUAL";
 
@@ -121,7 +121,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 jdbcTemplate.update(dropSql);
             } catch (Exception e) {
-                logger.warn("TriggerDropError", triggerName, e.getMessage());
+                log.warn("TriggerDropError", triggerName, e.getMessage());
             }
         }
     }

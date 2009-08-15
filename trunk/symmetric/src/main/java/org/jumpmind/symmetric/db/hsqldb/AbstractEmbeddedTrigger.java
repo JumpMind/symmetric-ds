@@ -38,7 +38,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.util.AppUtils;
  */
 public abstract class AbstractEmbeddedTrigger {
 
-    protected static final Log logger = LogFactory.getLog(AbstractEmbeddedTrigger.class);
+    protected static final ILog log = LogFactory.getLog(AbstractEmbeddedTrigger.class);
     protected static final FastDateFormat dateFormatter = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.S");
     protected IDataService dataService;
     protected ITriggerService triggerService;
@@ -84,7 +84,7 @@ public abstract class AbstractEmbeddedTrigger {
         this.trigger = triggerService.getActiveTriggersForSourceNodeGroup(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
-            logger.warn("TriggerMissing", triggerType.name(), tableName, getTriggerHistId());
+            log.warn("TriggerMissing", triggerType.name(), tableName, getTriggerHistId());
             return false;
         }
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);

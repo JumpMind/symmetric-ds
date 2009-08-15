@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 public class DynamicPropertiesFiles extends ArrayList<String> {
 
     private static final long serialVersionUID = 1L;
-    private static Log logger = LogFactory.getLog(DynamicPropertiesFiles.class);
+    private static ILog log = LogFactory.getLog(DynamicPropertiesFiles.class);
 
     public DynamicPropertiesFiles() {
         File file = new File(System.getProperty("user.dir"), "symmetric.properties");
@@ -43,7 +43,7 @@ public class DynamicPropertiesFiles extends ArrayList<String> {
             try {
                 add(file.toURL().toExternalForm());
             } catch (MalformedURLException e) {
-                logger.error(e);
+                log.error(e);
             }
         }
         if (!StringUtils.isBlank(System.getProperty("symmetric.override.properties.file.1"))) {

@@ -37,7 +37,7 @@ import org.apache.ddlutils.platform.oracle.Oracle10Platform;
 import org.apache.ddlutils.platform.oracle.Oracle8Platform;
 import org.apache.ddlutils.platform.oracle.Oracle9Platform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.h2.H2Platform;
 import org.springframework.beans.factory.BeanFactory;
@@ -51,7 +51,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
-    private static final Log logger = LogFactory.getLog(DbDialectFactory.class);
+    private static final ILog log = LogFactory.getLog(DbDialectFactory.class);
 
     private String db2zSeriesProductVersion;
 
@@ -147,7 +147,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
                 });
                 success = true;
             } catch (CannotGetJdbcConnectionException ex) {
-                logger.error("DatabaseConnectionException", ex.getMessage());
+                log.error("DatabaseConnectionException", ex.getMessage());
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {

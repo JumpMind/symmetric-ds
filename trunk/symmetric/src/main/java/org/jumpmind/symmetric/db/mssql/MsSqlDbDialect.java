@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -54,7 +54,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(MsSqlDbDialect.class);
+    static final ILog log = LogFactory.getLog(MsSqlDbDialect.class);
 
     @Override
     protected void initForSpecificDialect() {
@@ -135,7 +135,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                         stmt = con.createStatement();
                         stmt.execute(sql);
                     } catch (Exception e) {
-                        logger.warn("TriggerDropError", triggerName);
+                        log.warn("TriggerDropError", triggerName);
                     } finally {
                         if (catalogName != null) {
                             con.setCatalog(previousCatalog);

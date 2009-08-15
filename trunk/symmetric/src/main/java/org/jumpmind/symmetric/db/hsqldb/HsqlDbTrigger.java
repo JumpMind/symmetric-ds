@@ -27,14 +27,14 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hsqldb.Token;
 import org.hsqldb.types.Binary;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 
 public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb.Trigger {
 
-    static final Log logger = LogFactory.getLog(HsqlDbTrigger.class);
+    static final ILog log = LogFactory.getLog(HsqlDbTrigger.class);
 
     String triggerName;
 
@@ -62,7 +62,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
                 }
             }
         } catch (RuntimeException ex) {
-            logger.error(ex);
+            log.error(ex);
             throw ex;
         } finally {
             lastTransactionIdUpdate = System.currentTimeMillis();
@@ -95,7 +95,7 @@ public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements org.hsqldb
             if (initialize(getDataEventType(type), tableName)) {
                 buildDataSelectSql();
                 buildTransactionIdSql();
-                logger.debug("TriggerInitializing", triggerName, triggerType);
+                log.debug("TriggerInitializing", triggerName, triggerType);
                 initialized = true;
             }
         }

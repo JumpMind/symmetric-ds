@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.db.db2;
 import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -38,7 +38,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
-    static final Log logger = LogFactory.getLog(Db2DbDialect.class);
+    static final ILog log = LogFactory.getLog(Db2DbDialect.class);
 
     @Override
     protected void initForSpecificDialect() {
@@ -46,11 +46,11 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
             enableSyncTriggers();
         } catch (Exception e) {
             try {
-                logger.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
+                log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
                         SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
                 new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
             } catch (Exception ex) {
-                logger.error("DB2DialectInitializingError", ex);
+                log.error("DB2DialectInitializingError", ex);
             }
         }
     }

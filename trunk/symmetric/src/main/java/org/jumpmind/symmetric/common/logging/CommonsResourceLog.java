@@ -5,7 +5,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.UnknownFormatConversionException;
 
-public class Log {
+public class CommonsResourceLog implements ILog {
 
     private org.apache.commons.logging.Log logger = null;
 
@@ -17,24 +17,30 @@ public class Log {
     private static String MESSAGE_KEY = "MessageKey: ";
     private static String DEFAULT_BUNDLE_NAME = "logMessages";
 
-    Log(org.apache.commons.logging.Log logger) {
+    CommonsResourceLog(org.apache.commons.logging.Log logger) {
         this(logger, DEFAULT_BUNDLE_NAME, Locale.getDefault());
     }
 
-    Log(org.apache.commons.logging.Log logger, String bundleName) {
+    CommonsResourceLog(org.apache.commons.logging.Log logger, String bundleName) {
         this(logger, bundleName, Locale.getDefault());
     }
 
-    Log(org.apache.commons.logging.Log logger, String bundleName, Locale locale) {
+    CommonsResourceLog(org.apache.commons.logging.Log logger, String bundleName, Locale locale) {
         this.logger = logger;
         this.bundleName = bundleName;
         setLocale(locale);
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String)
+     */
     public String getMessage(String key) {
         return getMessage(key, (Object) null);
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String, java.lang.Object)
+     */
     public String getMessage(String key, Object... args) {
         if (bundle != null) {
             try {
@@ -54,10 +60,16 @@ public class Log {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getLocale()
+     */
     public Locale getLocale() {
         return locale;
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#setLocale(java.util.Locale)
+     */
     public void setLocale(Locale locale) {
         this.locale = locale;
         try {
@@ -68,10 +80,16 @@ public class Log {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#getBundleName()
+     */
     public String getBundleName() {
         return bundleName;
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#setBundleName(java.lang.String)
+     */
     public void setBundleName(String bundleName) {
         this.bundleName = bundleName;
         this.bundle = ResourceBundle.getBundle(bundleName, locale);
@@ -79,24 +97,36 @@ public class Log {
 
     // Debug
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#debug(java.lang.String)
+     */
     public void debug(String messageKey) {
         if (logger.isDebugEnabled()) {
             logger.debug(getMessage(messageKey));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#debug(java.lang.String, java.lang.Throwable)
+     */
     public void debug(String messageKey, Throwable t) {
         if (logger.isDebugEnabled()) {
             logger.debug(getMessage(messageKey), t);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#debug(java.lang.String, java.lang.Object)
+     */
     public void debug(String messageKey, Object... args) {
         if (logger.isDebugEnabled()) {
             logger.debug(getMessage(messageKey, args));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#debug(java.lang.String, java.lang.Throwable, java.lang.Object)
+     */
     public void debug(String messageKey, Throwable t, Object... args) {
         if (logger.isDebugEnabled()) {
             logger.debug(getMessage(messageKey, args), t);
@@ -105,24 +135,36 @@ public class Log {
 
     // info
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#info(java.lang.String)
+     */
     public void info(String messageKey) {
         if (logger.isInfoEnabled()) {
             logger.info(getMessage(messageKey));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#info(java.lang.String, java.lang.Throwable)
+     */
     public void info(String messageKey, Throwable t) {
         if (logger.isInfoEnabled()) {
             logger.info(getMessage(messageKey), t);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#info(java.lang.String, java.lang.Object)
+     */
     public void info(String messageKey, Object... args) {
         if (logger.isInfoEnabled()) {
             logger.info(getMessage(messageKey, args));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#info(java.lang.String, java.lang.Throwable, java.lang.Object)
+     */
     public void info(String messageKey, Throwable t, Object... args) {
         if (logger.isInfoEnabled()) {
             logger.info(getMessage(messageKey, args), t);
@@ -131,24 +173,36 @@ public class Log {
 
     // warn
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#warn(java.lang.String)
+     */
     public void warn(String messageKey) {
         if (logger.isWarnEnabled()) {
             logger.warn(getMessage(messageKey));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#warn(java.lang.String, java.lang.Throwable)
+     */
     public void warn(String messageKey, Throwable t) {
         if (logger.isWarnEnabled()) {
             logger.warn(getMessage(messageKey), t);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#warn(java.lang.String, java.lang.Object)
+     */
     public void warn(String messageKey, Object... args) {
         if (logger.isWarnEnabled()) {
             logger.warn(getMessage(messageKey, args));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#warn(java.lang.String, java.lang.Throwable, java.lang.Object)
+     */
     public void warn(String messageKey, Throwable t, Object... args) {
         if (logger.isWarnEnabled()) {
             logger.warn(getMessage(messageKey, args), t);
@@ -157,24 +211,36 @@ public class Log {
 
     // error
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#error(java.lang.String)
+     */
     public void error(String messageKey) {
         if (logger.isErrorEnabled()) {
             logger.error(getMessage(messageKey));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#error(java.lang.String, java.lang.Throwable)
+     */
     public void error(String messageKey, Throwable t) {
         if (logger.isErrorEnabled()) {
             logger.error(getMessage(messageKey), t);
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#error(java.lang.String, java.lang.Object)
+     */
     public void error(String messageKey, Object... args) {
         if (logger.isErrorEnabled()) {
             logger.error(getMessage(messageKey, args));
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#error(java.lang.String, java.lang.Throwable, java.lang.Object)
+     */
     public void error(String messageKey, Throwable t, Object... args) {
         if (logger.isErrorEnabled()) {
             logger.error(getMessage(messageKey, args), t);
@@ -182,6 +248,9 @@ public class Log {
     }
     
 
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#error(java.lang.Throwable)
+     */
     public void error(Throwable t) {
         if (logger.isErrorEnabled()) {
             logger.error(t,t);

@@ -20,7 +20,7 @@
 
 package org.jumpmind.symmetric.db.firebird;
 
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -30,7 +30,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(FirebirdDbDialect.class);
+    static final ILog log = LogFactory.getLog(FirebirdDbDialect.class);
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
@@ -47,7 +47,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
             jdbcTemplate.queryForInt("select char_length(sym_escape('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
-                logger.error("FirebirdSymUdfMissing");
+                log.error("FirebirdSymUdfMissing");
             }
             throw new RuntimeException("FirebirdSymEscapeMissing", e);
         }

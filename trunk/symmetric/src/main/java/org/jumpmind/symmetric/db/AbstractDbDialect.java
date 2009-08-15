@@ -68,7 +68,7 @@ import org.apache.ddlutils.model.UniqueIndex;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.load.IColumnFilter;
@@ -99,7 +99,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss" };
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
 
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
@@ -219,7 +219,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
         } catch (Exception ex) {
-            logger.warn("TriggerMayExist", ex);
+            log.warn("TriggerMayExist", ex);
             return false;
         }
     }
@@ -230,7 +230,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             String funcName = tablePrefix + "_" + functions[i];
             if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, defaultSchema)) == 0) {
                 jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, defaultSchema));
-                logger.info("FunctionInstalled", funcName);
+                log.info("FunctionInstalled", funcName);
             }
         }
     }
@@ -648,7 +648,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
             try {
                 jdbcTemplate.update(sql);
             } catch (Exception e) {
-                logger.warn("TriggerDoesNotExist");
+                log.warn("TriggerDoesNotExist");
             }
         }
     }
@@ -670,7 +670,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String sourceCatalogName = trigger.getSourceCatalogName();
-                logger.info("TriggerCreating", hist.getTriggerNameForDmlType(dml),
+                log.info("TriggerCreating", hist.getTriggerNameForDmlType(dml),
                         (sourceCatalogName != null ? (sourceCatalogName + ".") : ""), trigger.getSourceTableName());
 
                 String previousCatalog = null;
@@ -685,10 +685,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                         Statement stmt = con.createStatement();
                         try {
-                            logger.debug("Sql",triggerSql);
+                            log.debug("Sql",triggerSql);
                             stmt.executeUpdate(triggerSql);
                         } catch (SQLException ex) {
-                            logger.error("TriggerCreateFailed", triggerSql);
+                            log.error("TriggerCreateFailed", triggerSql);
                             throw ex;
                         }
                         String postTriggerDml = createPostTriggerDDL(dml, trigger, hist, tablePrefix, table);
@@ -696,7 +696,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                             try {
                                 stmt.executeUpdate(postTriggerDml);
                             } catch (SQLException ex) {
-                                logger.error("PostTriggerCreateFailed", postTriggerDml);
+                                log.error("PostTriggerCreateFailed", postTriggerDml);
                                 throw ex;
                             }
                         }
@@ -796,10 +796,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             boolean createTables = prefixConfigDatabase(targetTables);
             if (createTables) {
-                logger.info("TablesCreating");
+                log.info("TablesCreating");
                 platform.createTables(targetTables, false, true);
             } else {
-                logger.info("TablesCreatingSkipped");
+                log.info("TablesCreatingSkipped");
             }
         } catch (RuntimeException ex) {
             throw ex;
@@ -1216,7 +1216,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
             triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
-            logger.warn("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
+            log.warn("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
         }
         return triggerName;
     }

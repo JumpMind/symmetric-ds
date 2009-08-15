@@ -21,8 +21,8 @@ package org.jumpmind.symmetric.integrate;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -33,9 +33,10 @@ import org.springframework.beans.factory.BeanNameAware;
  * An abstract convenience class meant to be implemented by classes that need to
  * publish text messages
  */
-abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
+abstract public class AbstractTextPublisherDataLoaderFilter implements IPublisherFilter, INodeGroupExtensionPoint,
+        BeanNameAware {
 
-    private static final Log logger = LogFactory.getLog(AbstractTextPublisherDataLoaderFilter.class);
+    private static final ILog log = LogFactory.getLog(AbstractTextPublisherDataLoaderFilter.class);
 
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
 
@@ -121,9 +122,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
         StringBuilder msg = getFromCache(ctx);
         if (msg.length() > 0) {
             msg.append(addTextFooter(ctx));
-            if (logger.isDebugEnabled()) {
-                logger.debug("publishing text message -> " + msg);
-            }
+            log.debug("TextMessagePublishing", msg);
             ctx.getContextCache().remove(MSG_CACHE);
             publisher.publish(ctx, msg.toString());
         }
@@ -141,10 +140,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
         messagesSinceLastLogOutput++;
         long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
         if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            if (logger.isInfoEnabled()) {
-                logger.info(beanName + " published " + messagesSinceLastLogOutput + " messages in the last "
-                        + timeInMsSinceLastLogOutput + "ms");
-            }
+            log.info("TextMessagePubished", beanName, messagesSinceLastLogOutput, timeInMsSinceLastLogOutput);
             lastTimeInMsOutputLogged = System.currentTimeMillis();
             messagesSinceLastLogOutput = 0;
         }
@@ -185,13 +181,13 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-    
+
     public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
     }
 
     public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
     }
-    
+
     public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
     }
 }
