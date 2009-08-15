@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -130,8 +130,6 @@ public abstract class AbstractDataRouter implements IDataRouter {
      * Override if needed.
      */
     public void completeBatch(IRouterContext context, OutgoingBatch batch) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Completing batch " + batch.getBatchId());
-        }
+        logger.debug("BatchCompleting", batch.getBatchId());
     }
 }
