@@ -24,8 +24,8 @@ package org.jumpmind.symmetric.db.db2;
 import java.net.URL;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -46,11 +46,11 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
             enableSyncTriggers();
         } catch (Exception e) {
             try {
-                logger.info("Creating environment variables " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
-                        + " and " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
+                logger.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
+                        SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
                 new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
             } catch (Exception ex) {
-                logger.error("Error while initializing DB2 dialect.", ex);
+                logger.error("DB2DialectInitializingError", ex);
             }
         }
     }
@@ -60,8 +60,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
-            String triggerName) {
+    protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
         return jdbcTemplate.queryForInt("select count(*) from syscat.triggers where trigname = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
@@ -85,8 +84,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     public void disableSyncTriggers(String nodeId) {
         jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "=1");
         if (nodeId != null) {
-            jdbcTemplate
-                    .update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
+            jdbcTemplate.update("set " + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "='" + nodeId + "'");
         }
     }
 
@@ -146,7 +144,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(this.defaultSchema)) {
-            this.defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class); 
+            this.defaultSchema = (String) jdbcTemplate.queryForObject("values CURRENT SCHEMA", String.class);
         }
         return this.defaultSchema;
     }
