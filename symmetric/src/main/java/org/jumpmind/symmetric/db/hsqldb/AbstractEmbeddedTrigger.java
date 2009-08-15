@@ -84,7 +84,7 @@ public abstract class AbstractEmbeddedTrigger {
         this.trigger = triggerService.getActiveTriggersForSourceNodeGroup(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
-            logger.warn(String.format("TriggerMissing", triggerType.name(), tableName, getTriggerHistId()));
+            logger.warn("TriggerMissing", triggerType.name(), tableName, getTriggerHistId());
             return false;
         }
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
