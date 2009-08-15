@@ -7,37 +7,37 @@ import org.junit.Test;
 
 public class LogTest {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private ILog log = LogFactory.getLog(this.getClass());
 
     @Test
     public void getBasicMessages() {
-        logger.setLocale(new Locale("en_US"));
+        log.setLocale(new Locale("en_US"));
         long l = 4l;
-        String s = logger.getMessage("BatchCompleting");
+        String s = log.getMessage("BatchCompleting");
         Assert.assertEquals("Completing batch null", s);
-        s = logger.getMessage("BatchCompleting", l);
+        s = log.getMessage("BatchCompleting", l);
         Assert.assertEquals("Completing batch 4", s);
 
     }
 
     @Test
     public void getSpanishMessages() {
-        logger.setLocale(new Locale("es"));
+        log.setLocale(new Locale("es"));
         long l = 4l;
-        String s = logger.getMessage("BatchCompleting");
+        String s = log.getMessage("BatchCompleting");
         Assert.assertEquals("Realizaci—n de la hornada null", s);
-        s = logger.getMessage("BatchCompleting", l);
+        s = log.getMessage("BatchCompleting", l);
         Assert.assertEquals("Realizaci—n de la hornada 4", s);
     }
 
     @Test
     public void getBadLanguageMessages() {
         Locale.setDefault(new Locale("en_US"));
-        logger.setLocale(new Locale("zz"));
+        log.setLocale(new Locale("zz"));
         long l = 4l;
-        String s = logger.getMessage("BatchCompleting");
+        String s = log.getMessage("BatchCompleting");
         Assert.assertEquals("Completing batch null", s);
-        s = logger.getMessage("BatchCompleting", l);
+        s = log.getMessage("BatchCompleting", l);
         Assert.assertEquals("Completing batch 4", s);
 
     }

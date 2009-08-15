@@ -20,7 +20,7 @@
 package org.jumpmind.symmetric.db.h2;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(H2DbDialect.class);
+    static final ILog log = LogFactory.getLog(H2DbDialect.class);
     private boolean storesUpperCaseNames = true;
 
     @Override
@@ -91,14 +91,14 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 int count = jdbcTemplate.update(dropSql);
                 if (count > 0) {
-                    logger.info("TriggerDropped", triggerName);
+                    log.info("TriggerDropped", triggerName);
                 }
                 count = jdbcTemplate.update(dropTable);
                 if (count > 0) {
-                    logger.info("TableDropped", triggerName);
+                    log.info("TableDropped", triggerName);
                 }
             } catch (Exception e) {
-                logger.warn("TriggerDropError", triggerName, e.getMessage());
+                log.warn("TriggerDropError", triggerName, e.getMessage());
             }
         }
     }

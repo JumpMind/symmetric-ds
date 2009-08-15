@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -37,7 +37,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(PostgreSqlDbDialect.class);
+    static final ILog log = LogFactory.getLog(PostgreSqlDbDialect.class);
 
     static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 
@@ -52,15 +52,15 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
     @Override
     protected void initForSpecificDialect() {
         if (getMajorVersion() >= 8 && getMinorVersion() >= 3) {
-            logger.info("TransactionIDSupportEnabling");
+            log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
             transactionIdExpression = TRANSACTION_ID_EXPRESSION;
         }
         try {
             enableSyncTriggers();
         } catch (Exception e) {
-            logger.error("PostgreSqlCustomVariableMissing");
-            throw new RuntimeException(logger.getMessage("PostgreSqlCustomVariableMissing"), e);
+            log.error("PostgreSqlCustomVariableMissing");
+            throw new RuntimeException(log.getMessage("PostgreSqlCustomVariableMissing"), e);
         }
 
     }
@@ -96,7 +96,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
                 jdbcTemplate.update(dropSql);
                 jdbcTemplate.update(dropFunction);
             } catch (Exception e) {
-                logger.warn("TriggerDoesNotExist");
+                log.warn("TriggerDoesNotExist");
             }
         }
     }

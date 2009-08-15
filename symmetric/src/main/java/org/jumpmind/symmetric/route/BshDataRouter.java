@@ -35,7 +35,7 @@ public class BshDataRouter extends AbstractDataRouter {
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
-            logger.error("Error in data router.  Routing to nobody.", e);
+            log.error("Error in data router.  Routing to nobody.", e);
             return Collections.emptySet();
         }
     }

@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final Log logger = LogFactory.getLog(MySqlDbDialect.class);
+    static final ILog log = LogFactory.getLog(MySqlDbDialect.class);
 
     static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
 
@@ -51,7 +51,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     protected void initForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());
         if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
-            logger.info("TransactionIDSupportEnabling");
+            log.info("TransactionIDSupportEnabling");
             supportsTransactionId = true;
         }
     }
@@ -71,7 +71,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             if (!funcName.equals("fn_transaction_id") || supportsTransactionId) {
                 if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
                     jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
-                    logger.info("FunctionInstalled", funcName);
+                    log.info("FunctionInstalled", funcName);
                 }
             }
         }
@@ -97,7 +97,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 jdbcTemplate.update(sql);
             } catch (Exception e) {
-                logger.warn("TriggerDoesNotExist");
+                log.warn("TriggerDoesNotExist");
             }
         }
     }

@@ -52,7 +52,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
             dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out, context);
             out.flush();
         } else {
-            logger.error(String.format("The trigger %s is not longer available for an initial load.", id));
+            log.error("TriggerUnavailable", id);
         }
     }
 

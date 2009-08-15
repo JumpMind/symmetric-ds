@@ -22,8 +22,8 @@ package org.jumpmind.symmetric.ext;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
@@ -67,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
-    final Log logger = LogFactory.getLog(getClass());
+    final ILog log = LogFactory.getLog(getClass());
 
     private IDataLoaderService dataLoaderService;
 
@@ -82,7 +82,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     private IAcknowledgeService acknowledgeService;
 
     private IRegistrationService registrationService;
-    
+
     private ITriggerService triggerService;
 
     private ITransportManager transportManager;
@@ -127,8 +127,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private void registerExtension(String beanName, IExtensionPoint ext) {
 
-        logger.info(String.format("Registering an extension point named '%s' of type '%s' with SymmetricDS", beanName,
-                ext.getClass().getSimpleName()));
+        log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
 
         if (ext instanceof ISyncUrlExtension) {
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
@@ -231,7 +230,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
-    
+
     public void setTriggerService(ITriggerService triggerService) {
         this.triggerService = triggerService;
     }
