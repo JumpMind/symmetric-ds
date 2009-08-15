@@ -22,11 +22,11 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
 
     static final Log logger = LogFactory.getLog(Db2zSeriesDbDialect.class);
 
-
     private String userName;
 
     /**
      * Returns the database user id
+     * 
      * @return String
      */
     public String getUserName() {
@@ -35,6 +35,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
 
     /**
      * Sets the database user id from properties file
+     * 
      * @param userName
      */
     public void setUserName(String userName) {
@@ -148,7 +149,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
                     } else {
                         String replaceSql = sql.replaceFirst("\\(\\w*,", "(").replaceFirst("\\(null,", "(");
                         System.out.println("======================================");
-                        System.out.println(replaceSql );
+                        System.out.println(replaceSql);
                         System.out.println("======================================");
                         if (supportsGetGeneratedKeys) {
                             ps = conn.prepareStatement(replaceSql, Statement.RETURN_GENERATED_KEYS);
