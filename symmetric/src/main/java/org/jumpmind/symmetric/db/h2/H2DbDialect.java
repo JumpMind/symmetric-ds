@@ -19,9 +19,9 @@
  */
 package org.jumpmind.symmetric.db.h2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -39,13 +39,14 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName, String triggerName) {
-        boolean exists = 
-            (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
-                        new Object[] { triggerName }) > 0) &&        
-            (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
-                    new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);    
-        
+    protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
+            String triggerName) {
+        boolean exists = (jdbcTemplate
+                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
+                        new Object[] { triggerName }) > 0)
+                && (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
+                        new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
+
         if (!exists) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
         }
@@ -85,19 +86,19 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
         final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
         logSql(dropTable, sqlBuffer);
-        
+
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 int count = jdbcTemplate.update(dropSql);
                 if (count > 0) {
-                    logger.info(String.format("Just dropped trigger %s", triggerName));
-                }                
+                    logger.info("TriggerDropped", triggerName);
+                }
                 count = jdbcTemplate.update(dropTable);
                 if (count > 0) {
-                    logger.info(String.format("Just dropped table %s_CONFIG", triggerName));
-                }                
+                    logger.info("TableDropped", triggerName);
+                }
             } catch (Exception e) {
-                logger.warn("Error removing " + triggerName + ": " + e.getMessage());
+                logger.warn("TriggerDropError", triggerName, e.getMessage());
             }
         }
     }
