@@ -60,7 +60,7 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
             enableSyncTriggers();
         } catch (Exception e) {
             logger.error("PostgreSqlCustomVariableMissing");
-            throw new RuntimeException("PostgreSqlCustomVariableMissing", e);
+            throw new RuntimeException(logger.getMessage("PostgreSqlCustomVariableMissing"), e);
         }
 
     }

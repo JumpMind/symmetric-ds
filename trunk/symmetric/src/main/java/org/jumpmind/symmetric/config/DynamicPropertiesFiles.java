@@ -24,8 +24,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * A list of properties files that were set via system properties so that if the
@@ -43,7 +43,7 @@ public class DynamicPropertiesFiles extends ArrayList<String> {
             try {
                 add(file.toURL().toExternalForm());
             } catch (MalformedURLException e) {
-                logger.error(e, e);
+                logger.error(e);
             }
         }
         if (!StringUtils.isBlank(System.getProperty("symmetric.override.properties.file.1"))) {

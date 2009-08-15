@@ -685,7 +685,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                         Statement stmt = con.createStatement();
                         try {
-                            logger.debug("Sql" + triggerSql);
+                            logger.debug("Sql",triggerSql);
                             stmt.executeUpdate(triggerSql);
                         } catch (SQLException ex) {
                             logger.error("TriggerCreateFailed", triggerSql);
