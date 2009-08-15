@@ -30,8 +30,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -85,7 +85,7 @@ public class SqlScript {
             try {
                 stmt.close();
             } catch (SQLException e) {
-                logger.error(e, e);
+                logger.error(e);
             }
         }
     }
@@ -106,7 +106,7 @@ public class SqlScript {
                 Statement st = null;
                 String fileName = script.getFile();
                 fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-                logger.info("Running " + fileName);
+                logger.info("ScriptRunning", fileName);
                 int lineCount = 0;
 
                 try {
@@ -124,9 +124,7 @@ public class SqlScript {
                             if (checkStatementEnds(line)) {
                                 sql.append(" ");
                                 sql.append(line.substring(0, line.lastIndexOf(delimiter)));
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("query->" + sql);
-                                }
+                                logger.debug("Sql", sql);
                                 try {
                                     st.execute(replaceTokens(sql.toString()));
                                     count++;
@@ -135,11 +133,11 @@ public class SqlScript {
                                     }
                                 } catch (SQLException e) {
                                     if (failOnError) {
-                                        logger.error(sql.toString() + " failed to execute.", e);
+                                        logger.error("SqlError", sql.toString(), e);
                                         throw e;
                                     } else {
                                         if (e.getErrorCode() != 942 && e.getErrorCode() != 2289) {
-                                            logger.warn(e.getMessage() + ": " + sql.toString());
+                                            logger.warn("Sql", e.getMessage() + ": " + sql.toString());
                                         } else if (sql.toString().toLowerCase().startsWith("drop")) {
                                             notFoundCount++;
                                         }
@@ -155,13 +153,12 @@ public class SqlScript {
 
                     connection.commit();
 
-                    logger.info("Ran " + count + " sql statements in " + fileName);
+                    logger.info("ScriptCompleted", count, fileName);
                     if (notFoundCount > 0) {
-                        logger.info("Could not drop a total of " + notFoundCount
-                                + " database object because they were not found");
+                        logger.info("ScriptDropError", notFoundCount);
                     }
                 } catch (Exception e) {
-                    logger.info("Error on line " + lineCount + " of " + fileName);
+                    logger.info("ScriptError", lineCount, fileName);
                     throw new RuntimeException(e);
                 } finally {
                     closeQuietly(st);
