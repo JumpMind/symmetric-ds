@@ -25,8 +25,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.PlatformFactory;
 import org.apache.ddlutils.platform.db2.Db2Platform;
@@ -39,6 +37,8 @@ import org.apache.ddlutils.platform.oracle.Oracle10Platform;
 import org.apache.ddlutils.platform.oracle.Oracle8Platform;
 import org.apache.ddlutils.platform.oracle.Oracle9Platform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.h2.H2Platform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -54,7 +54,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     private static final Log logger = LogFactory.getLog(DbDialectFactory.class);
 
     private String db2zSeriesProductVersion;
-    
+
     private JdbcTemplate jdbcTemplate;
 
     private BeanFactory beanFactory;
@@ -80,7 +80,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
         String currentDbProductVersion = getDatabaseProductVersion();
         initPlatforms();
-       
+
         Platform pf = PlatformFactory.createNewPlatformInstance(productString);
         if (pf == null) {
             pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
@@ -147,8 +147,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
                 });
                 success = true;
             } catch (CannotGetJdbcConnectionException ex) {
-                logger.error("Could not get a connection to the database: " + ex.getMessage()
-                        + ".  Waiting for 10 seconds, before trying to connect to the database again.");
+                logger.error("DatabaseConnectionException", ex.getMessage());
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
@@ -178,7 +177,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
             }
         });
     }
-    
+
     private String getDbProductName() {
         return (String) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
@@ -203,7 +202,6 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-
 
     public void setCustomPlatforms(Map<String, Class<Platform>> customPlatforms) {
         this.customPlatforms = customPlatforms;

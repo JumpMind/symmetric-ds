@@ -20,8 +20,8 @@
 
 package org.jumpmind.symmetric.db.firebird;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -33,7 +33,7 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     static final Log logger = LogFactory.getLog(FirebirdDbDialect.class);
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
-    
+
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     @Override
@@ -47,9 +47,9 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
             jdbcTemplate.queryForInt("select char_length(sym_escape('')) from rdb$database");
         } catch (UncategorizedSQLException e) {
             if (e.getSQLException().getErrorCode() == -804) {
-                logger.error("Please install the sym_udf.so/dll to your {firebird_home}/UDF folder.");
+                logger.error("FirebirdSymUdfMissing");
             }
-            throw new RuntimeException("Function SYM_ESCAPE is not installed", e);
+            throw new RuntimeException("FirebirdSymEscapeMissing", e);
         }
     }
 
@@ -60,15 +60,19 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers(String nodeId) {
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "',1) from rdb$database");
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+                + "',1) from rdb$database");
         if (nodeId != null) {
-            jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from rdb$database");
+            jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+                    + "','" + nodeId + "') from rdb$database");
         }
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "',null) from rdb$database");
-        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "',null) from rdb$database");
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE
+                + "',null) from rdb$database");
+        jdbcTemplate.queryForInt("select rdb$set_context('USER_SESSION','" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE
+                + "',null) from rdb$database");
     }
 
     public String getSyncTriggersExpression() {
@@ -90,17 +94,17 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
          */
         return tableName.replaceAll("\\_", "\\\\_");
     }
-    
+
     @Override
     public boolean supportsReturningKeys() {
         return true;
     }
-    
+
     @Override
     public boolean isBlobSyncSupported() {
         return true;
     }
-    
+
     @Override
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.HEX;
