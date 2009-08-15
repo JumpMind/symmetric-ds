@@ -35,13 +35,13 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -83,7 +83,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class SymmetricEngine {
 
-    protected static final Log logger = LogFactory.getLog(SymmetricEngine.class);
+    protected static final ILog log = LogFactory.getLog(SymmetricEngine.class);
 
     private ApplicationContext applicationContext;
 
@@ -100,7 +100,7 @@ public class SymmetricEngine {
     private IClusterService clusterService;
 
     private IPurgeService purgeService;
-    
+
     private ITriggerService triggerService;
 
     private IDataService dataService;
@@ -163,8 +163,7 @@ public class SymmetricEngine {
     }
 
     public void stop() {
-        logger.info("Closing SymmetricDS externalId=" + parameterService.getExternalId() + " version="
-                + Version.version() + " database=" + dbDialect.getName());
+        log.info("SymmetricDSClosing", parameterService.getExternalId(), Version.version(), dbDialect.getName());
         jobManager.stopJobs();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
@@ -173,7 +172,7 @@ public class SymmetricEngine {
             try {
                 ((BasicDataSource) ds).close();
             } catch (SQLException ex) {
-                logger.error(ex, ex);
+                log.error(ex);
             }
         }
         applicationContext = null;
@@ -274,7 +273,7 @@ public class SymmetricEngine {
             try {
                 getApplicationContext().getBean(Constants.DEFAULT_JMX_SERVER_EXPORTER);
             } catch (Exception ex) {
-                logger.warn("Unable to register JMX beans with the default MBeanServer. " + ex.getMessage());
+                log.warn("JMXBeansRegisterError ", ex.getMessage());
             }
         }
     }
@@ -323,17 +322,18 @@ public class SymmetricEngine {
                 startDefaultServerJMXExport();
                 Node node = nodeService.findIdentity();
                 if (node != null) {
-                    logger.info("Starting registered node [group=" + node.getNodeGroupId() + ", id=" + node.getNodeId()
-                            + ", externalId=" + node.getExternalId() + "]");
+                    log
+                            .info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node
+                                    .getExternalId());
                 } else {
-                    logger.info("Starting unregistered node [group=" + parameterService.getNodeGroupId()
-                            + ", externalId=" + parameterService.getExternalId() + "]");
+                    log.info("UnregisteredNodeStarting", parameterService.getNodeGroupId(), parameterService
+                            .getExternalId());
                 }
                 triggerService.syncTriggers();
                 heartbeat();
                 jobManager.startJobs();
-                logger.info("Started SymmetricDS externalId=" + parameterService.getExternalId() + " version="
-                        + Version.version() + " database=" + dbDialect.getName());
+                log.info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
+                        .getName());
                 started = true;
             } finally {
                 starting = false;
@@ -413,15 +413,11 @@ public class SymmetricEngine {
                     // kosher after the upgrade
                     configurationService.autoConfigDatabase(force);
                 } catch (RuntimeException ex) {
-                    logger
-                            .fatal(
-                                    "The upgrade failed. The system may be unstable.  Please resolve the problem manually.",
-                                    ex);
+                    log.fatal("SymmetricDSUpgradeFailed", ex);
                     throw ex;
                 }
             } else {
-                throw new RuntimeException("Upgrade of node is necessary.  "
-                        + "Please set auto.upgrade property to true for an automated upgrade.");
+                throw new RuntimeException(log.getMessage("SymmetricDSUpgradeNeeded"));
             }
         }
 
@@ -482,13 +478,13 @@ public class SymmetricEngine {
 
             if (fileUrl != null) {
                 try {
-                    logger.info("Building database schema from: " + xml);
+                    log.info("DatabaseSchemaBuilding", xml);
                     Database database = new DatabaseIO().read(new InputStreamReader(fileUrl.openStream()));
                     Platform platform = dbDialect.getPlatform();
                     platform.createTables(database, false, true);
                     loaded = true;
                 } catch (Exception e) {
-                    logger.error(e, e);
+                    log.error(e);
                 }
             }
         }
@@ -520,7 +516,7 @@ public class SymmetricEngine {
             }
 
             if (fileUrl != null) {
-                logger.info("Running the following SQL script: " + sqlScript);
+                log.info("ScriptRunning", sqlScript);
                 new SqlScript(fileUrl, dbDialect.getJdbcTemplate().getDataSource(), true).execute();
                 loaded = true;
             }

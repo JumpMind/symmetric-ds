@@ -15,7 +15,7 @@ public class CommonsResourceLog implements ILog {
 
     private ResourceBundle bundle = null;
     private static String MESSAGE_KEY = "MessageKey: ";
-    private static String DEFAULT_BUNDLE_NAME = "logMessages";
+    private static String DEFAULT_BUNDLE_NAME = "messages";
 
     CommonsResourceLog(org.apache.commons.logging.Log logger) {
         this(logger, DEFAULT_BUNDLE_NAME, Locale.getDefault());
@@ -254,6 +254,54 @@ public class CommonsResourceLog implements ILog {
     public void error(Throwable t) {
         if (logger.isErrorEnabled()) {
             logger.error(t,t);
+        }
+    }
+    
+    // fatal
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.String)
+     */
+    public void fatal(String messageKey) {
+        if (logger.isFatalEnabled()) {
+            logger.fatal(getMessage(messageKey));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.String, java.lang.Throwable)
+     */
+    public void fatal(String messageKey, Throwable t) {
+        if (logger.isFatalEnabled()) {
+            logger.fatal(getMessage(messageKey), t);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.String, java.lang.Object)
+     */
+    public void fatal(String messageKey, Object... args) {
+        if (logger.isFatalEnabled()) {
+            logger.fatal(getMessage(messageKey, args));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.String, java.lang.Throwable, java.lang.Object)
+     */
+    public void fatal(String messageKey, Throwable t, Object... args) {
+        if (logger.isFatalEnabled()) {
+            logger.fatal(getMessage(messageKey, args), t);
+        }
+    }
+    
+
+    /* (non-Javadoc)
+     * @see org.jumpmind.symmetric.common.logging.ILog#fatal(java.lang.Throwable)
+     */
+    public void fatal(Throwable t) {
+        if (logger.isFatalEnabled()) {
+            logger.fatal(t,t);
         }
     }
 

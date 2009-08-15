@@ -63,7 +63,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
             ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(event.getServletContext());
             createConfigureAndStartEngine(ctx);
         } catch (Exception ex) {
-            logger.error("Failed to initialize the web server context.", ex);
+            logger.error("WebServerInitializeError", ex);
             if (ex instanceof RuntimeException) {
                 throw (RuntimeException) ex;
             } else {
