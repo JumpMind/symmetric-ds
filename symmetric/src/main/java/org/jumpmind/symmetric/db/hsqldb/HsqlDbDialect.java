@@ -20,10 +20,10 @@
 
 package org.jumpmind.symmetric.db.hsqldb;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -108,7 +108,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
                 "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS where trigger_name = ?",
                 new Object[] { triggerName }) > 0;
     }
-    
+
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {
@@ -121,7 +121,7 @@ public class HsqlDbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 jdbcTemplate.update(dropSql);
             } catch (Exception e) {
-                logger.warn("Error removing " + triggerName + ": " + e.getMessage());
+                logger.warn("TriggerDropError", triggerName, e.getMessage());
             }
         }
     }

@@ -33,13 +33,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.Log;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Trigger;
@@ -81,11 +81,10 @@ public abstract class AbstractEmbeddedTrigger {
         this.nodeService = getNodeService(engine);
         this.dbDialect = getDbDialect(engine);
         this.triggerHistory = triggerService.getHistoryRecordFor(getTriggerHistId());
-        this.trigger = triggerService.getActiveTriggersForSourceNodeGroup(parameterService
-                                .getString(ParameterConstants.NODE_GROUP_ID), true).get(triggerHistory.getTriggerId());
+        this.trigger = triggerService.getActiveTriggersForSourceNodeGroup(
+                parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(triggerHistory.getTriggerId());
         if (trigger == null) {
-            logger.warn(String.format("Could not find an %s trigger in the cache for table %s and a hist id of %s.",
-                    triggerType.name(), tableName, getTriggerHistId()));
+            logger.warn(String.format("TriggerMissing", triggerType.name(), tableName, getTriggerHistId()));
             return false;
         }
         this.table = dbDialect.getMetaDataFor(null, trigger.getSourceSchemaName(), tableName, true);
