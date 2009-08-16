@@ -25,8 +25,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * Implementation of <b>HttpServletResponseWrapper</b> that works with the
@@ -44,12 +44,12 @@ import org.apache.commons.logging.LogFactory;
 
 public class CompressionServletResponseWrapper extends HttpServletResponseWrapper {
 
-    static final Log logger = LogFactory.getLog(CompressionServletResponseWrapper.class);
+    static final ILog log = LogFactory.getLog(CompressionServletResponseWrapper.class);
 
     int compressionLevel = Deflater.DEFAULT_COMPRESSION;
-    
+
     int compressionStrategy = Deflater.DEFAULT_STRATEGY;
-    
+
     /**
      * Calls the parent constructor which creates a ServletResponse adaptor
      * wrapping the given response object.
@@ -59,9 +59,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
         origResponse = response;
-        if (logger.isDebugEnabled()) {
-            logger.debug("CompressionServletResponseWrapper constructor gets called");
-        }
+        log.debug("CompressionServletStarting");
     }
 
     /**
@@ -101,9 +99,7 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Set content type
      */
     public void setContentType(String contentType) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("setContentType to " + contentType);
-        }
+        log.debug("CompressionServletSettingType", contentType);
         this.contentType = contentType;
         origResponse.setContentType(contentType);
     }
@@ -113,14 +109,12 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * with this Response.
      * 
      * @exception IOException
-     *                    if an input/output error occurs
+     *                if an input/output error occurs
      */
     public ServletOutputStream createOutputStream() throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("createOutputStream gets called");
-        }
-
-        CompressionResponseStream stream = new CompressionResponseStream(origResponse, compressionLevel, compressionStrategy);
+        log.debug("CompressionServletCreatingStream");
+        CompressionResponseStream stream = new CompressionResponseStream(origResponse, compressionLevel,
+                compressionStrategy);
         return stream;
 
     }
@@ -146,24 +140,21 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
      * Flush the buffer and commit this response.
      * 
      * @exception IOException
-     *                    if an input/output error occurs
+     *                if an input/output error occurs
      */
     public void flushBuffer() throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("flush buffer @ CompressionServletResponseWrapper");
-        }
+        log.debug("CompressionServletFlushingBuffer");
         ((CompressionResponseStream) stream).flush();
-
     }
 
     /**
      * Return the servlet output stream associated with this Response.
      * 
      * @exception IllegalStateException
-     *                    if <code>getWriter</code> has already been called
-     *                    for this response
+     *                if <code>getWriter</code> has already been called for this
+     *                response
      * @exception IOException
-     *                    if an input/output error occurs
+     *                if an input/output error occurs
      */
     public ServletOutputStream getOutputStream() throws IOException {
 
@@ -172,22 +163,18 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
 
         if (stream == null)
             stream = createOutputStream();
-        if (logger.isDebugEnabled()) {
-            logger.debug("stream is set to " + stream + " in getOutputStream");
-        }
-
+        log.debug("CompressionServletStreamSettingOutput", stream);
         return (stream);
-
     }
 
     /**
      * Return the writer associated with this Response.
      * 
      * @exception IllegalStateException
-     *                    if <code>getOutputStream</code> has already been
-     *                    called for this response
+     *                if <code>getOutputStream</code> has already been called
+     *                for this response
      * @exception IOException
-     *                    if an input/output error occurs
+     *                if an input/output error occurs
      */
     public PrintWriter getWriter() throws IOException {
 
@@ -198,14 +185,10 @@ public class CompressionServletResponseWrapper extends HttpServletResponseWrappe
             throw new IllegalStateException("getOutputStream() has already been called for this response");
 
         stream = createOutputStream();
-        if (logger.isDebugEnabled()) {
-            logger.debug("stream is set to " + stream + " in getWriter");
-        }
+        log.debug("CompressionServletStreamSettingWriter", stream);
         // String charset = getCharsetFromContentType(contentType);
         String charEnc = origResponse.getCharacterEncoding();
-        if (logger.isDebugEnabled()) {
-            logger.debug("character encoding is " + charEnc);
-        }
+        log.debug("CompressionServletCharacterEncoding", charEnc);
         // HttpServletResponse.getCharacterEncoding() shouldn't return null
         // according the spec, so feel free to remove that "if"
         if (charEnc != null) {

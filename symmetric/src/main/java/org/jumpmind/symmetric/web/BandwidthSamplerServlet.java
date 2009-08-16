@@ -6,8 +6,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -22,15 +22,15 @@ public class BandwidthSamplerServlet extends AbstractResourceServlet {
 
     private static final long serialVersionUID = 1L;
 
-    protected Log logger = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     IParameterService parameterService;
 
     protected long defaultTestSlowBandwidthDelay = 0;
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 
     @Override
@@ -42,13 +42,13 @@ public class BandwidthSamplerServlet extends AbstractResourceServlet {
         try {
             sampleSize = Long.parseLong(req.getParameter("sampleSize"));
         } catch (Exception ex) {
-            logger.warn("Invalid sampleSize provided: " + req.getParameter("sampleSize"));
+            log.warn("BandwidthSampleSizeParsingFailed", req.getParameter("sampleSize"));
         }
 
         ServletOutputStream os = resp.getOutputStream();
         for (int i = 0; i < sampleSize; i++) {
             os.write(1);
-            if (testSlowBandwidthDelay > 0) {                
+            if (testSlowBandwidthDelay > 0) {
                 AppUtils.sleep(testSlowBandwidthDelay);
             }
         }

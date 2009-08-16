@@ -28,9 +28,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * 
@@ -58,7 +58,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
  */
 public class CompressionFilter extends AbstractFilter {
 
-    private static final Log logger = LogFactory.getLog(CompressionFilter.class);
+    private static final ILog log = LogFactory.getLog(CompressionFilter.class);
 
     private org.jumpmind.symmetric.web.compression.CompressionFilter delegate;
 
@@ -87,7 +87,8 @@ public class CompressionFilter extends AbstractFilter {
         super.init(filterConfig);
         delegate = new org.jumpmind.symmetric.web.compression.CompressionFilter();
         delegate.setCompressionLevel(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL));
-        delegate.setCompressionStrategy(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
+        delegate
+                .setCompressionStrategy(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
         delegate.init(filterConfig);
     }
 
@@ -97,8 +98,8 @@ public class CompressionFilter extends AbstractFilter {
     }
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 
 }

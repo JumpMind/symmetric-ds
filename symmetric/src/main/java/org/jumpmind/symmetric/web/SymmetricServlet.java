@@ -38,8 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -68,13 +68,13 @@ public class SymmetricServlet extends AbstractServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Log logger = LogFactory.getLog(SymmetricServlet.class);
+    private static final ILog log = LogFactory.getLog(SymmetricServlet.class);
 
     private List<IServletExtension> servlets;
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 
     @SuppressWarnings("unchecked")
@@ -86,16 +86,11 @@ public class SymmetricServlet extends AbstractServlet {
         final Map<String, IServletExtension> servletBeans = new LinkedHashMap<String, IServletExtension>();
         servletBeans.putAll(ctx.getBeansOfType(IServletExtension.class));
         if (ctx.getParent() != null) {
-            servletBeans.putAll(ctx.getParent().getBeansOfType(
-                    IServletExtension.class));
-        }        
+            servletBeans.putAll(ctx.getParent().getBeansOfType(IServletExtension.class));
+        }
         // TODO order using initOrder
-        for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans
-                .entrySet()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.format("Initializing servlet %s",
-                        servletEntry.getKey()));
-            }
+        for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans.entrySet()) {
+            log.info("ServletInitializing", servletEntry.getKey());
             final IServletExtension extension = servletEntry.getValue();
             extension.getServlet().init(config);
             servlets.add(extension);
@@ -108,11 +103,9 @@ public class SymmetricServlet extends AbstractServlet {
         }
     }
 
-    protected Servlet findMatchingServlet(ServletRequest req,
-            ServletResponse resp) {
+    protected Servlet findMatchingServlet(ServletRequest req, ServletResponse resp) {
         Servlet retVal = null;
-        for (Iterator<IServletExtension> iterator = servlets.iterator(); retVal == null
-                && iterator.hasNext();) {
+        for (Iterator<IServletExtension> iterator = servlets.iterator(); retVal == null && iterator.hasNext();) {
             IServletExtension extension = iterator.next();
             if (!extension.isDisabled() && matches(extension, req)) {
                 retVal = extension.getServlet();
@@ -151,11 +144,9 @@ public class SymmetricServlet extends AbstractServlet {
             final String[] patternParts = StringUtils.split(pattern, "/");
             final String[] pathParts = StringUtils.split(path, "/");
             boolean matches = true;
-            for (int i = 0; i < patternParts.length && i < pathParts.length
-                    && matches; i++) {
+            for (int i = 0; i < patternParts.length && i < pathParts.length && matches; i++) {
                 final String patternPart = patternParts[i];
-                matches = "*".equals(patternPart)
-                        || patternPart.equals(pathParts[i]);
+                matches = "*".equals(patternPart) || patternPart.equals(pathParts[i]);
             }
             retVal = matches;
         }
@@ -181,8 +172,7 @@ public class SymmetricServlet extends AbstractServlet {
     }
 
     @Override
-    public void service(ServletRequest req, ServletResponse res)
-            throws ServletException, IOException {
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         Servlet servlet = findMatchingServlet(req, res);
         if (servlet != null) {
             try {
@@ -190,32 +180,27 @@ public class SymmetricServlet extends AbstractServlet {
             } catch (IOException e) {
                 logException(req, e, false);
             } catch (Exception e) {
-                logException(req, e, true);                 
+                logException(req, e, true);
                 if (!res.isCommitted()) {
                     if (res instanceof HttpServletResponse) {
-                        ((HttpServletResponse) res)
-                                .sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        ((HttpServletResponse) res).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
                 }
             }
         }
     }
-    
+
     protected void logException(ServletRequest req, Exception ex, boolean isError) {
         String nodeId = req.getParameter(WebConstants.NODE_ID);
         String externalId = req.getParameter(WebConstants.EXTERNAL_ID);
         String address = req.getRemoteAddr();
         String hostName = req.getRemoteHost();
-        String method = req instanceof HttpServletRequest ? ((HttpServletRequest)req).getMethod() : "";
-        if (getLogger().isErrorEnabled() && isError) {
-            getLogger().error(
-                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s)", method,
-                            externalId, nodeId, address, hostName), ex);
-        } else if (getLogger().isWarnEnabled()) {
-            getLogger().warn(
-                    String.format("Error while processing %s request for externalId: %s, node: %s at %s (%s).  The message is: %s", method,
-                            externalId, nodeId, address, hostName, ex.getMessage()));
+        String method = req instanceof HttpServletRequest ? ((HttpServletRequest) req).getMethod() : "";
+        if (getLog().isErrorEnabled() && isError) {
+            getLog().error("ServletProcessingFailedError", ex, method, externalId, nodeId, address, hostName);
+        } else if (getLog().isWarnEnabled()) {
+            getLog().warn("ServletProcessingFailedWarning", method, externalId, nodeId, address, hostName,
+                    ex.getMessage());
         }
     }
-
 }

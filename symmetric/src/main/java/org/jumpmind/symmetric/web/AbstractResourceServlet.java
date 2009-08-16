@@ -36,13 +36,12 @@ import org.springframework.beans.BeanUtils;
  * 
  * @param <T>
  */
-public abstract class AbstractResourceServlet extends AbstractServlet implements
-        IServletResource, IServletExtension {
+public abstract class AbstractResourceServlet extends AbstractServlet implements IServletResource, IServletExtension {
 
     private static final long serialVersionUID = 1L;
     private ServletResourceTemplate servletResourceTemplate = new ServletResourceTemplate();
     private int initOrder;
-    
+
     /**
      * Returns true if this should be container compatible
      * 
@@ -51,19 +50,19 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
     public boolean isContainerCompatible() {
         return false;
     }
-    
+
     public int getInitOrder() {
         return this.initOrder;
     }
-    
+
     public void setInitOrder(int initOrder) {
         this.initOrder = initOrder;
     }
-    
+
     public Servlet getServlet() {
         return this;
     }
-    
+
     public boolean isAutoRegister() {
         return true;
     }
@@ -87,7 +86,7 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
     public void setDisabled(boolean disabled) {
         servletResourceTemplate.setDisabled(disabled);
     }
-    
+
     public void setEnabled(boolean enabled) {
         servletResourceTemplate.setDisabled(!enabled);
     }
@@ -111,9 +110,7 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
         if (isContainerCompatible() && !this.isSpringManaged()) {
             final IServletResource springBean = getSpringBean();
             if (this != springBean) { // this != is deliberate!
-                if (getLogger().isInfoEnabled()) {
-                    getLogger().info(String.format("Initializing servlet %s", springBean.getClass().getSimpleName()));
-                }
+                getLog().info("ServletInitializing", springBean.getClass().getSimpleName());
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
                 BeanUtils.copyProperties(springBean, this, this.getClass());
@@ -154,7 +151,7 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
             }
         }
         return retVal;
-    }   
+    }
 
     public void init(ServletContext servletContext) {
         servletResourceTemplate.init(servletContext);

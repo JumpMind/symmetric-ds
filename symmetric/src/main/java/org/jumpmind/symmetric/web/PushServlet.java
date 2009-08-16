@@ -49,22 +49,15 @@ public class PushServlet extends AbstractTransportResourceServlet<PushResourceHa
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String nodeId = getParameter(req, WebConstants.NODE_ID);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Push request received from %s", nodeId));
-        }
-
+        log.debug("DataPushing", nodeId);
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = createOutputStream(resp);
 
         getTransportResourceHandler().push(inputStream, outputStream);
 
-        // Not sure if this is necessary, but it's been here and it hasn't hurt anything ...
+        // Not sure if this is necessary, but it's been here and it hasn't hurt
+        // anything ...
         outputStream.flush();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Done with Push request from %s", nodeId));
-        }
+        log.debug("DataPushingCompleted", nodeId);
     }
-
 }

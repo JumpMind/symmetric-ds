@@ -30,17 +30,17 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler;
 import org.jumpmind.symmetric.transport.handler.AuthenticationResourceHandler.AuthenticationStatus;
 
 /**
- * This better be the first filter that executes! 
+ * This better be the first filter that executes!
  */
 public class AuthenticationFilter extends AbstractTransportFilter<AuthenticationResourceHandler> {
 
-    private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
+    private static final ILog log = LogFactory.getLog(AuthenticationFilter.class);
 
     @Override
     public boolean isContainerCompatible() {
@@ -68,7 +68,7 @@ public class AuthenticationFilter extends AbstractTransportFilter<Authentication
     }
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 }

@@ -25,9 +25,6 @@ final public class ErrorConstants {
     private ErrorConstants() {
     }
 
-   
-    final public static String COULD_COMMINICATE_ACK = "Could not send acknowledgements.";
-
 
     final public static String METADATA_MISSING = "The table metadata was missing from the protocol.  Please turn on debug level logging to analyze the CSV data.";
 }

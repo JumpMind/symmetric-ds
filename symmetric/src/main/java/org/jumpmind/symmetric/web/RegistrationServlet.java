@@ -51,10 +51,9 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
         try {
             OutputStream outputStream = createOutputStream(resp);
             if (!getTransportResourceHandler().registerNode(node, outputStream)) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn(String.format("%s was not allowed to register.", node));
-                }
-                sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.", node));
+                log.warn("RegistrationNotAllowed", node);
+                sendError(resp, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.",
+                        node));
             }
         } catch (RegistrationRedirectException e) {
             resp.sendRedirect(HttpTransportManager.buildRegistrationUrl(e.getRedirectionUrl(), node));

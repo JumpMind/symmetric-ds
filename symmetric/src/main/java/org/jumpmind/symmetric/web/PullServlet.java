@@ -51,9 +51,7 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
 
         String nodeId = getParameter(req, WebConstants.NODE_ID);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Pull request received from %s", nodeId));
-        }
+        log.debug("ServletPulling", nodeId);
 
         if (StringUtils.isBlank(nodeId)) {
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
@@ -62,9 +60,8 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
         OutputStream outputStream = createOutputStream(resp);
         getTransportResourceHandler().pull(nodeId, outputStream);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Done with Pull request from %s", nodeId));
-        }
+        log.debug("ServletPulled", nodeId);
+
     }
 
 }

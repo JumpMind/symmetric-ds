@@ -36,23 +36,23 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    
-    final protected Log logger = LogFactory.getLog(getClass());
-    
+
+    final protected ILog log = LogFactory.getLog(getClass());
+
     protected OutputStream createOutputStream(HttpServletResponse resp) throws IOException {
         return resp.getOutputStream();
     }
-    
-    protected Log getLogger() {
-        return this.logger;
+
+    protected ILog getLog() {
+        return this.log;
     }
 
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
@@ -60,11 +60,11 @@ abstract public class AbstractServlet extends HttpServlet {
         String contentType = req.getHeader("Content-Type");
         boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
 
-        if (getLogger().isDebugEnabled()) {
+        if (getLog().isDebugEnabled()) {
             StringBuilder b = new StringBuilder();
             BufferedReader reader = null;
             if (useCompression) {
-                getLogger().debug("Received compressed stream");
+                getLog().debug("ServletCompressedStreamReceived");
                 reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(req.getInputStream())));
             } else {
                 reader = req.getReader();
@@ -79,7 +79,7 @@ abstract public class AbstractServlet extends HttpServlet {
                 }
             } while (line != null);
 
-            getLogger().debug("Received: \n" + b);
+            getLog().debug("ServletReceived", b);
             is = new ByteArrayInputStream(b.toString().getBytes());
         } else {
             is = req.getInputStream();
@@ -93,7 +93,7 @@ abstract public class AbstractServlet extends HttpServlet {
 
     protected ApplicationContext getDefaultApplicationContext() {
         return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-    } 
+    }
 
     /**
      * Because you can't send an error when the response is already committed,
@@ -114,7 +114,7 @@ abstract public class AbstractServlet extends HttpServlet {
      * @param resp
      * @param statusCode
      * @param message
-     *                a message to put in the body of the response
+     *            a message to put in the body of the response
      * @throws IOException
      */
     protected boolean sendError(HttpServletResponse resp, int statusCode, String message) throws IOException {
