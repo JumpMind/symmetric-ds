@@ -71,7 +71,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
         try {
             connection.rollback();
         } catch (SQLException e) {
-            logger.warn(e);
+            log.warn(e);
         }
     }
 

@@ -35,8 +35,6 @@ import org.jumpmind.symmetric.upgrade.IUpgradeTask;
 // TODO Upgrade for 2.0 or standalone program?
 public class UpgradeService extends AbstractService implements IUpgradeService {
 
-    private static final Log logger = LogFactory.getLog(UpgradeService.class);
-
     private INodeService nodeService;
 
     private Map<String, List<IUpgradeTask>> upgradeTaskMap;
@@ -64,14 +62,14 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
                 nodeService.updateNode(node);
             }
         } else {
-            logger.warn("Cannot upgrade an unregistered node");
+            log.warn("NodeUpgradeFailed");
         }
     }
 
     private void runUpgrade(String nodeId, int[] fromVersion) {
         String majorMinorVersion = fromVersion[0] + "." + fromVersion[1];
         List<IUpgradeTask> upgradeTaskList = upgradeTaskMap.get(majorMinorVersion);
-        logger.warn("Starting upgrade from version " + majorMinorVersion + " to " + Version.version());
+        log.warn("NodeUpgradeStarting", majorMinorVersion, Version.version());
         boolean isRegistrationServer = StringUtils.isEmpty(parameterService.getRegistrationUrl());
         if (upgradeTaskList != null) {
             for (IUpgradeTask upgradeTask : upgradeTaskList) {
@@ -81,7 +79,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
                 }
             }
         }
-        logger.warn("Completed upgrade");
+        log.warn("NodeUpgradeCompleted");
     }
 
     public void setUpgradeTaskMap(Map<String, List<IUpgradeTask>> upgradeTaskMap) {

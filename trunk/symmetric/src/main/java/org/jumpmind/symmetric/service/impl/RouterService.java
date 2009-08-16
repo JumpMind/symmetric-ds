@@ -141,8 +141,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (context != null) {
                         context.rollback();
                     }
-                    logger.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getId()),
-                            ex);
+                    log.error("RouterRoutingFailed", nodeChannel.getId(), ex);
                 } finally {
                     try {
                         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
@@ -151,9 +150,9 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                         context.commit();
                     } catch (SQLException e) {
-                        logger.error(e, e);
+                        log.error(e);
                     } finally {
-                        context.logStats(logger);
+                        context.logStats(log);
                         context.cleanup();
                     }
                 }
@@ -310,9 +309,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 context.commit();
             }
         } else {
-            logger.warn(String.format(
-                    "Could not find trigger for trigger id of %s.  Not processing data with the id of %s", data
-                            .getTriggerHistory().getTriggerId(), data.getDataId()));
+            log.warn("TriggerProcessingFailedMissing", data.getTriggerHistory().getTriggerId(), data.getDataId());
         }
 
     }
@@ -360,9 +357,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (!StringUtils.isBlank(trigger.getRouterName())) {
             router = routers.get(trigger.getRouterName());
             if (router == null) {
-                logger.warn(String.format(
-                        "Could not find configured router '%s' for trigger with the id of %s. Defaulting the router",
-                        trigger.getRouterName(), trigger.getTriggerId()));
+                log.warn("RouterMissing", trigger.getRouterName(), trigger.getTriggerId());
             }
         }
 

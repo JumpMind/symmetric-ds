@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SimpleRouterContext implements IRouterContext {
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    protected final ILog log = LogFactory.getLog(getClass());
     protected NodeChannel channel;
     protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;
@@ -24,7 +24,7 @@ public class SimpleRouterContext implements IRouterContext {
 
     public SimpleRouterContext() {
     }
-    
+
     protected void init(JdbcTemplate jdbcTemplate, NodeChannel channel, String nodeId) {
         this.channel = channel;
         this.jdbcTemplate = jdbcTemplate;
@@ -34,7 +34,7 @@ public class SimpleRouterContext implements IRouterContext {
     public String getNodeId() {
         return nodeId;
     }
-    
+
     public NodeChannel getChannel() {
         return this.channel;
     }
@@ -78,11 +78,11 @@ public class SimpleRouterContext implements IRouterContext {
         return val;
     }
 
-    public void logStats(Log logger) {
+    public void logStats(ILog log) {
         Set<String> keys = contextCache.keySet();
         for (String key : keys) {
             if (key.startsWith("Stat.")) {
-                logger.info(String.format("routing '%s' stat %s=%s", channel.getId(), key.substring(key.indexOf(".")+1), contextCache.get(key)));
+                log.info("RouterStats", channel.getId(), key.substring(key.indexOf(".") + 1), contextCache.get(key));
             }
         }
     }

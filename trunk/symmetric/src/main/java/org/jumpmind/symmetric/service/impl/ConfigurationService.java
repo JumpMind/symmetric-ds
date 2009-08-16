@@ -102,7 +102,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             return channel;
                         };
                     });
-                    
+
                     for (NodeChannel channel : channelCache) {
                         getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
                     }
@@ -134,26 +134,25 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            logger.info("Initializing SymmetricDS database.");
+            log.info("SymmetricDSDatabaseInitializing");
             dbDialect.initSupportDb();
             if (defaultChannels != null) {
                 reloadChannels();
                 List<NodeChannel> channels = getChannels();
                 for (Channel defaultChannel : defaultChannels) {
                     if (!defaultChannel.isInList(channels)) {
-                        logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
+                        log.info("ChannelAutoConfiguring", defaultChannel.getId());
                         saveChannel(defaultChannel);
                     } else {
-                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel
-                                .getId()));
+                        log.info("ChannelExists", defaultChannel.getId());
                     }
                 }
                 reloadChannels();
             }
             parameterService.rereadParameters();
-            logger.info("Done initializing SymmetricDS database.");
+            log.info("SymmetricDSDatabaseInitialized");
         } else {
-            logger.info("SymmetricDS is not configured to auto create the database.");
+            log.info("SymmetricDSDatabaseNotAutoConfig");
         }
     }
 

@@ -90,8 +90,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private List<IBatchListener> batchListeners;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately after the
-     * data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of
+     * commit/error status is sent separately after the data is processed.
      */
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
@@ -102,13 +102,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 wasWorkDone = true;
             }
         } catch (RegistrationRequiredException e) {
-            logger.warn("Registration was lost, attempting to re-register");
+            log.warn("RegistrationLost");
             loadData(transportManager.getRegisterTransport(local));
             nodeService.findIdentity(false);
             wasWorkDone = true;
         } catch (MalformedURLException e) {
-            logger.error("Could not connect to the " + remote + " node's transport because of a bad URL: "
-                    + e.getMessage());
+            log.error("URLConnectingFailure", e.getMessage());
         }
         return wasWorkDone;
     }
@@ -124,10 +123,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             try {
                 sendAck = transportManager.sendAcknowledgement(remote, list, local);
             } catch (IOException ex) {
-                logger.warn("Ack was not sent successfully on try number " + (i + 1) + ". " + ex.getMessage());
+                log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;
             } catch (RuntimeException ex) {
-                logger.warn("Ack was not sent successfully on try number " + (i + 1) + ". " + ex.getMessage());
+                log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;
             }
             if (!sendAck) {
@@ -167,8 +166,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
-     * Load database from input stream and return a list of batch statuses. This is used for a pull request that
-     * responds with data, and the acknowledgment is sent later.
+     * Load database from input stream and return a list of batch statuses. This
+     * is used for a pull request that responds with data, and the
+     * acknowledgment is sent later.
      */
     protected List<IncomingBatch> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
@@ -205,28 +205,28 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (UnknownHostException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " Unknown host name of " + ex.getMessage());
+            log.warn("TransportFailedConnectionUnavailable", ex.getMessage());
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_CONNECT_ERROR_COUNT).increment();
             throw ex;
         } catch (RegistrationNotOpenException ex) {
-            logger.warn(ErrorConstants.REGISTRATION_NOT_OPEN);
+            log.warn("RegistrationFailed");
         } catch (ConnectionRejectedException ex) {
-            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+            log.warn("TransportFailedConnectionBusy");
             statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_REJECTED_COUNT).increment();
             throw ex;
         } catch (AuthenticationException ex) {
-            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+            log.warn("AuthenticationFailed");
         } catch (Throwable e) {
             if (dataLoader != null && dataLoader.getContext().getBatchId() > 0) {
                 batch = new IncomingBatch(dataLoader.getContext());
             }
             if (dataLoader != null && batch != null) {
                 if (e instanceof IOException || e instanceof TransportException) {
-                    logger.warn("Failed to load batch " + batch.getNodeBatchId() + " because: " + e.getMessage());
+                    log.warn("BatchLoadingFailed", batch.getNodeBatchId(), e.getMessage());
                     batch.setSqlMessage(e.getMessage());
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
-                    logger.error("Failed to load batch " + batch.getNodeBatchId(), e);
+                    log.error("BatchLoadingFailed", batch.getNodeBatchId(), e.getMessage(), e);
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
@@ -242,9 +242,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 handleBatchError(batch);
             } else {
                 if (e instanceof IOException) {
-                    logger.error("Failed while reading batch because: " + e.getMessage());
+                    log.error("BatchReadingFailed", e.getMessage());
                 } else {
-                    logger.error("Failed while parsing batch.", e);
+                    log.error("BatchParsingFailed", e);
                 }
             }
         } finally {
@@ -365,13 +365,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 incomingBatchService.insertIncomingBatch(status);
             }
         } catch (Exception e) {
-            logger.error("Failed to record status of batch " + status.getNodeBatchId());
+            log.error("BatchStatusRecordFailed", status.getNodeBatchId());
         }
     }
 
     /**
-     * Load database from input stream and write acknowledgment to output stream. This is used for a "push" request with
-     * a response of an acknowledgment.
+     * Load database from input stream and write acknowledgment to output
+     * stream. This is used for a "push" request with a response of an
+     * acknowledgment.
      * 
      * @param in
      * @param out
@@ -449,8 +450,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 loadStatus = loadDelegate.getLoadStatus();
                 if (loadStatus == LoadStatus.CONTINUE) {
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
-                    // Chances are if SymmetricDS is configured to commit early in a batch we
-                    // want to give other threads a chance to do work and access the database.
+                    // Chances are if SymmetricDS is configured to commit early
+                    // in a batch we
+                    // want to give other threads a chance to do work and access
+                    // the database.
                     AppUtils.sleep(5);
                 }
             } while (LoadStatus.CONTINUE == loadStatus);

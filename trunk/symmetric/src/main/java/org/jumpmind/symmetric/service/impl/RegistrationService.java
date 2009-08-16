@@ -89,14 +89,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
             Node identity = nodeService.findIdentity();
             NodeSecurity security = identity == null ? null : nodeService.findNodeSecurity(identity.getNodeId());
             if (security == null || security.getInitialLoadTime() == null) {
-                logger.warn("Registration is not allowed until this node has an initial load");
+                log.warn("RegistrationNotAllowed");
                 return false;
             }
         }
 
         String redirectUrl = getRedirectionUrlFor(node.getExternalId());
         if (redirectUrl != null) {
-            logger.info(String.format("Redirecting %s to %s for registration.", node.getExternalId(), redirectUrl));
+            log.info("RegistrationRedirecting", node.getExternalId(), redirectUrl);
             throw new RegistrationRedirectException(redirectUrl);
         }
 
@@ -185,7 +185,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private void sleepBeforeRegistrationRetry() {
         try {
             long sleepTimeInMs = DateUtils.MILLIS_PER_SECOND * randomTimeSlot.getRandomValueSeededByDomainId();
-            logger.warn("Could not register.  Sleeping for " + sleepTimeInMs + "ms before attempting again.");
+            log.warn("NodeRegistertingFailed", sleepTimeInMs);
             Thread.sleep(sleepTimeInMs);
         } catch (InterruptedException e) {
         }
@@ -204,13 +204,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
         while (!registered && (maxNumberOfAttempts < 0 || maxNumberOfAttempts > 0)) {
             boolean errorOccurred = false;
             try {
-                logger.info("Attempting to register with " + parameterService.getRegistrationUrl());
+                log.info("NodeRegisterting", parameterService.getRegistrationUrl());
                 registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
                         this.parameterService, dbDialect)));
             } catch (ConnectException e) {
-                logger.warn("Connection failed while registering.");
+                log.warn("NodeRegistertingFailedConnection");
             } catch (Exception e) {
-                logger.error(e, e);
+                log.error(e);
             }
 
             maxNumberOfAttempts--;
@@ -220,13 +220,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 registered = isRegisteredWithServer();
             } else {
                 Node node = nodeService.findIdentity();
-                if (node != null) {
-                    logger.info(String.format("Successfully registered node [id=%s]", node.getNodeId()));
+                if (log != null) {
+                    log.info("NodeRegistered", node.getNodeId());
                 } else if (!errorOccurred) {
-                    logger
-                            .error("Node identity is missing after registration.  The registration server may be misconfigured or have an error.");
+                    log.error("NodeRegisteringFailedIdentityMissing");
                 } else {
-                    logger.error("Node registration is unavailable");
+                    log.error("NodeRegisteringFailedUnavailable");
                 }
             }
         }
@@ -253,7 +252,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
             }
         } else {
-            logger.warn("There was no row with a node id of " + nodeId + " to 'reopen' registration for.");
+            log.warn("NodeReregisteringFailed", nodeId);
         }
     }
 
@@ -279,8 +278,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         node.getExternalId(), me.getNodeId() });
                 jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
                         me.getNodeId() });
-                logger.info("Just opened registration for external id of " + node.getExternalId()
-                        + " and a node group of " + node.getNodeGroupId() + " and a node id of " + nodeId);
+                log.info("NodeRegistrationOpened", node.getExternalId(), node.getNodeGroupId(), nodeId);
             } else {
                 reOpenRegistration(nodeId);
             }

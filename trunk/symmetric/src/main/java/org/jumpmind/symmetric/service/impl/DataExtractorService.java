@@ -79,18 +79,16 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 public class DataExtractorService extends AbstractService implements IDataExtractorService, BeanFactoryAware {
 
-    protected static final Log logger = LogFactory.getLog(DataExtractorService.class);
-
     private IOutgoingBatchService outgoingBatchService;
-    
+
     private IRouterService routingService;
-    
+
     private IDataService dataService;
 
     private IConfigurationService configurationService;
 
     private IAcknowledgeService acknowledgeService;
-    
+
     private ITriggerService triggerService;
 
     private INodeService nodeService;
@@ -120,7 +118,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     public void extractConfigurationStandalone(Node node, BufferedWriter writer) throws IOException {
         try {
-            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);            
+            OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), Constants.CHANNEL_CONFIG);
             if (Version.isOlderThanVersion(node.getSymmetricVersion(),
                     UpgradeConstants.VERSION_FOR_NEW_REGISTRATION_PROTOCOL)) {
                 outgoingBatchService.insertOutgoingBatch(batch);
@@ -172,7 +170,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         if (triggers.size() == 0) {
-            logger.error(node + " attempted registration, but was sent an empty configuration.");
+            log.error("RegistrationEmpty", node);
         }
     }
 
@@ -246,8 +244,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
                     Table table = dbDialect.getMetaDataFor(trigger, true);
-                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
-                    Set<Node> oneNodeSet = new HashSet<Node>();                    
+                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId())
+                            : new NodeChannel(Constants.CHANNEL_RELOAD);
+                    Set<Node> oneNodeSet = new HashSet<Node>();
                     oneNodeSet.add(node);
                     PreparedStatement st = null;
                     ResultSet rs = null;
@@ -261,10 +260,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             dataExtractor.init(writer, ctxCopy);
                             dataExtractor.begin(batch, writer);
                         }
-                        SimpleRouterContext routingContext  = new SimpleRouterContext( node.getNodeId(), jdbcTemplate, channel);
+                        SimpleRouterContext routingContext = new SimpleRouterContext(node.getNodeId(), jdbcTemplate,
+                                channel);
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);  
+                                    .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);
                             DataMetaData dataMetaData = new DataMetaData(data, table, trigger, channel);
                             if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, ctxCopy);
@@ -341,7 +341,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      * Allow a handler callback to do the work so we can route the extracted
      * data to other types of handlers for processing.
      */
-    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler) throws IOException {
+    protected void databaseExtract(Node node, List<OutgoingBatch> batches, final IExtractListener handler)
+            throws IOException {
         OutgoingBatch currentBatch = null;
         try {
             boolean initialized = false;
@@ -356,7 +357,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 selectEventDataToExtract(handler, batch);
                 handler.endBatch(batch);
                 batch.setExtractMillis(System.currentTimeMillis() - ts);
-                batch.setSentCount(batch.getSentCount()+1);
+                batch.setSentCount(batch.getSentCount() + 1);
                 batch.setStatus(OutgoingBatch.Status.SE);
                 outgoingBatchService.updateOutgoingBatch(batch);
             }
@@ -373,8 +374,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 currentBatch.setStatus(OutgoingBatch.Status.ER);
                 outgoingBatchService.updateOutgoingBatch(currentBatch);
             } else {
-                logger.error("Could not log the outgoing batch status because the batch is null.",
-                        e);
+                log.error("BatchStatusLoggingFailed", e);
             }
             throw e;
         } finally {
@@ -389,7 +389,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor, transport);
         return extractBatchRange(handler, startBatchId, endBatchId);
     }
-    
+
     private boolean areNumeric(String... data) {
         if (data != null) {
             for (String string : data) {
@@ -403,11 +403,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return true;
     }
 
-    public boolean extractBatchRange(final IExtractListener handler,
-            String startBatchId, String endBatchId) throws IOException {
+    public boolean extractBatchRange(final IExtractListener handler, String startBatchId, String endBatchId)
+            throws IOException {
         if (areNumeric(startBatchId, endBatchId)) {
-            List<OutgoingBatch> batches = outgoingBatchService
-                    .getOutgoingBatchRange(startBatchId, endBatchId);
+            List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
 
             if (batches != null && batches.size() > 0) {
                 try {
@@ -539,7 +538,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
@@ -547,7 +546,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
-    
+
     public void setTriggerService(ITriggerService triggerService) {
         this.triggerService = triggerService;
     }

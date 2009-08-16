@@ -59,32 +59,28 @@ public class PullService extends AbstractService implements IPullService {
                     for (Node node : nodes) {
                         String nodeName = " for " + node;
                         try {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Pull requested" + nodeName);
-                            }
+                            log.debug("DataPulling", nodeName);
                             if (dataLoaderService.loadData(node, nodeService.findIdentity())) {
-                                logger.info("Pull data received" + nodeName);
+                                log.info("DataPulled", nodeName);
                                 dataPulled = true;
                             } else {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("Pull no data received" + nodeName);
-                                }
+                                log.debug("DataPullingFailed", nodeName);
+
                             }
                         } catch (ConnectException ex) {
-                            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT
-                                    + " url="
-                                    + (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node
+                            log.warn("TransportFailedConnectionUnavailable",
+                                    (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node
                                             .getSyncURL()));
                         } catch (ConnectionRejectedException ex) {
-                            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+                            log.warn("TransportFailedConnectionBusy");
                         } catch (AuthenticationException ex) {
-                            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+                            log.warn("AuthenticationFailed");
                         } catch (SocketException ex) {
-                            logger.warn(ex.getMessage());
+                            log.warn("Message", ex.getMessage());
                         } catch (TransportException ex) {
-                            logger.warn(ex.getMessage());
+                            log.warn("Message", ex.getMessage());
                         } catch (IOException e) {
-                            logger.error(e, e);
+                            log.error(e);
                         }
                     }
                 }
@@ -94,9 +90,9 @@ public class PullService extends AbstractService implements IPullService {
             }
 
         } else {
-            logger.info("Did not run the pull process because the cluster service has it locked");
+            log.info("DataPullingFailedLock");
         }
-        
+
         return dataPulled;
     }
 

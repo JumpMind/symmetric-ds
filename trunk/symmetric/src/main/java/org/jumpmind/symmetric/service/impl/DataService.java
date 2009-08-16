@@ -69,8 +69,6 @@ import com.csvreader.CsvWriter;
 
 public class DataService extends AbstractService implements IDataService {
 
-    static final Log logger = LogFactory.getLog(DataService.class);
-
     private ITriggerService triggerService;
 
     private INodeService nodeService;
@@ -305,8 +303,8 @@ public class DataService extends AbstractService implements IDataService {
         if (data != null) {
             insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo());
         } else {
-            logger.info("Not generating data/data events for table " + tableName
-                    + " because a trigger or trigger hist is not created yet");
+            log.info("TableGeneratingEventsFailure", tableName
+               );
         }
     }
 
@@ -408,14 +406,14 @@ public class DataService extends AbstractService implements IDataService {
                 List<Node> heartbeatNodesToPush = new ArrayList<Node>();
                 Node me = nodeService.findIdentity();
                 if (me != null) {
-                    logger.info("Updating time and version node info");
+                    log.info("NodeVersionUpdating");
                     me.setHeartbeatTime(new Date());
                     me.setTimezoneOffset(AppUtils.getTimezoneOffset());
                     me.setSymmetricVersion(Version.version());
                     me.setDatabaseType(dbDialect.getName());
                     me.setDatabaseVersion(dbDialect.getVersion());
                     if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
-                        logger.info("Updating my node configuration info according to the symmetric properties");
+                        log.info("NodeConfigurationUpdating");
                         me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
                         me.setExternalId(parameterService.getExternalId());
                         me.setNodeGroupId(parameterService.getNodeGroupId());
@@ -424,7 +422,7 @@ public class DataService extends AbstractService implements IDataService {
                         }
                     }
                     nodeService.updateNode(me);
-                    logger.info("Done updating my node info");
+                    log.info("NodeVerionUpdated");
                 }
 
                 if (!nodeService.isRegistrationServer() && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
@@ -445,7 +443,7 @@ public class DataService extends AbstractService implements IDataService {
 
             }
         } else {
-            logger.info("Did not run the heartbeat process because the cluster service has it locked ");
+            log.info("HeartbeatUpdatingFailure");
         }
     }
 

@@ -47,8 +47,6 @@ import org.jumpmind.symmetric.transport.TransportException;
 
 public class PushService extends AbstractService implements IPushService {
 
-    private static final Log logger = LogFactory.getLog(PushService.class);
-
     private IDataExtractorService extractor;
 
     private IAcknowledgeService ackService;
@@ -60,8 +58,10 @@ public class PushService extends AbstractService implements IPushService {
     private IDataService dataService;
 
     private IClusterService clusterService;
-    
-    private static enum PushStatus { PUSHED, ERROR, NOTHING_TO_PUSH };
+
+    private static enum PushStatus {
+        PUSHED, ERROR, NOTHING_TO_PUSH
+    };
 
     synchronized public boolean pushData() {
         boolean pushedData = false;
@@ -71,27 +71,24 @@ public class PushService extends AbstractService implements IPushService {
                 List<Node> nodes = nodeService.findNodesToPushTo();
                 if (nodes != null && nodes.size() > 0) {
                     for (Node node : nodes) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Push requested for " + node);
-                        }
+                        log.debug("DataPushing", node);
                         PushStatus status = pushToNode(node);
                         if (status == PushStatus.PUSHED) {
                             pushedData = true;
-                            logger.info("Pushed data to " + node);
+                            log.info("DataPushed", node);
                         } else if (status == PushStatus.ERROR) {
                             inError = true;
-                            logger.warn("There was an error while pushing data to the server");
+                            log.warn("DataPushingFailed");
                         }
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Push completed for " + node);
-                        }
+                        log.debug("DataPushingCompleted", node);
+
                     }
                 }
             } finally {
                 clusterService.unlock(LockActionConstants.PUSH);
             }
         } else {
-            logger.info("Did not run the push process because the cluster service has it locked");
+            log.info("DataPushingFailedLock");
         }
         return pushedData && !inError;
     }
@@ -110,53 +107,48 @@ public class PushService extends AbstractService implements IPushService {
             transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
 
             if (extractor.extract(remote, transport)) {
-                logger.info("Push data sent to " + remote);
+                log.info("DataSent", remote);
                 BufferedReader reader = transport.readResponse();
                 String ackString = reader.readLine();
                 String ackExtendedString = reader.readLine();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Reading ack: " + ackString);
-                    logger.debug("Reading extended ack: " + ackExtendedString);
-                }
+                log.debug("DataAckReading", ackString);
+                log.debug("DataAckExtendedReading", ackExtendedString);
 
                 if (StringUtils.isBlank(ackString)) {
-                    logger.error("Did not receive an acknowledgement for the batches sent.");
+                    log.error("DataAckReadingFailed");
                 }
 
                 List<BatchInfo> batches = transportManager.readAcknowledgement(ackString, ackExtendedString);
 
                 status = PushStatus.PUSHED;
-                
+
                 for (BatchInfo batchInfo : batches) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Saving ack: " + batchInfo.getBatchId() + ", "
-                                + (batchInfo.isOk() ? "OK" : "error"));
-                    }
+                    log.debug("DataAckSaving", batchInfo.getBatchId(), (batchInfo.isOk() ? "OK" : "error"));
                     if (!batchInfo.isOk()) {
                         status = PushStatus.ERROR;
                     }
-                    ackService.ack(batchInfo);                    
-                    
+                    ackService.ack(batchInfo);
+
                 }
             } else {
                 status = PushStatus.NOTHING_TO_PUSH;
             }
         } catch (ConnectException ex) {
-            logger.warn(ErrorConstants.COULD_NOT_CONNECT_TO_TRANSPORT + " url="
-                    + (remote.getSyncURL() == null ? parameterService.getRegistrationUrl() : remote.getSyncURL()));
+            log.warn("TransportFailedConnectionUnavailable", (remote.getSyncURL() == null ? parameterService
+                    .getRegistrationUrl() : remote.getSyncURL()));
         } catch (ConnectionRejectedException ex) {
-            logger.warn(ErrorConstants.TRANSPORT_REJECTED_CONNECTION);
+            log.warn("TransportFailedConnectionBusy");
         } catch (SocketException ex) {
-            logger.warn(ex.getMessage());
+            log.warn("Message", ex.getMessage());
         } catch (TransportException ex) {
-            logger.warn(ex.getMessage());
+            log.warn("Message", ex.getMessage());
         } catch (AuthenticationException ex) {
-            logger.warn(ErrorConstants.NOT_AUTHENTICATED);
+            log.warn("AuthenticationFailed");
         } catch (Exception e) {
             // just report the error because we want to push to other nodes
             // in our list
-            logger.error(e, e);
+            log.error(e);
         } finally {
             try {
                 transport.close();
