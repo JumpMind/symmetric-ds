@@ -25,27 +25,23 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 
 /**
  * @see IBandwidthService
  */
-public class BandwidthService implements IBandwidthService {
-
-    protected Log logger = LogFactory.getLog(getClass());
+public class BandwidthService extends AbstractService implements IBandwidthService {
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
         double downloadSpeed = -1d;
         try {
-            BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);            
+            BandwidthTestResults bw = getDownloadResultsFor(syncUrl, sampleSize, maxTestDuration);
             downloadSpeed = (int) bw.getKbps();
         } catch (SocketTimeoutException e) {
-            logger.warn(String.format("Socket timeout while attempting to contact %s", syncUrl));
+            log.warn("SocketTimeOut", syncUrl);
         } catch (Exception e) {
-            logger.error(e,e);
+            log.error(e);
         }
         return downloadSpeed;
 
@@ -59,18 +55,17 @@ public class BandwidthService implements IBandwidthService {
             BandwidthTestResults bw = new BandwidthTestResults();
             URL u = new URL(String.format("%s/bandwidth?sampleSize=%s", syncUrl, sampleSize));
             bw.start();
-            is = u.openStream();            
+            is = u.openStream();
             int r;
             while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
                 bw.transmitted(r);
             }
             is.close();
             bw.stop();
-            logger.info(String.format("%s was calculated to have a download bandwidth of %s kbps", syncUrl, bw.getKbps()));
+            log.info("BandwidthCalculated", syncUrl, bw.getKbps());
             return bw;
         } finally {
             IOUtils.closeQuietly(is);
         }
     }
-
 }

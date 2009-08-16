@@ -43,8 +43,6 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class ParameterService extends AbstractService implements IParameterService, BeanFactoryAware {
 
-    static final Log logger = LogFactory.getLog(ParameterService.class);
-
     private Map<String, String> parameters;
 
     private BeanFactory beanFactory;
@@ -54,13 +52,13 @@ public class ParameterService extends AbstractService implements IParameterServi
     private Date lastTimeParameterWereCached;
 
     private IParameterFilter parameterFilter;
-    
+
     private Properties systemProperties;
-    
+
     private boolean initialized = false;
-    
+
     public ParameterService() {
-        systemProperties = (Properties)System.getProperties().clone();
+        systemProperties = (Properties) System.getProperties().clone();
     }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -74,13 +72,13 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return defaultVal;
     }
-    
+
     public BigDecimal getDecimal(String key) {
         return getDecimal(key, BigDecimal.ZERO);
     }
-    
+
     public boolean is(String key) {
-        return is(key, false);   
+        return is(key, false);
     }
 
     public boolean is(String key, boolean defaultVal) {
@@ -99,7 +97,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     public int getInt(String key) {
         return getInt(key, 0);
     }
-    
+
     public int getInt(String key, int defaultVal) {
         String val = getString(key);
         if (val != null) {
@@ -107,7 +105,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return defaultVal;
     }
-    
+
     public long getLong(String key) {
         return getLong(key, 0);
     }
@@ -119,7 +117,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         }
         return defaultVal;
     }
-    
+
     public String getString(String key) {
         return getString(key, null);
     }
@@ -139,7 +137,8 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     /**
-     * Save a parameter that applies to {@link IParameterService#ALL} external ids and all node groups.
+     * Save a parameter that applies to {@link IParameterService#ALL} external
+     * ids and all node groups.
      */
     public void saveParameter(String key, Object paramValue) {
         this.saveParameter(IParameterService.ALL, IParameterService.ALL, key, paramValue);
@@ -189,7 +188,7 @@ public class ParameterService extends AbstractService implements IParameterServi
             return map;
         } catch (Exception ex) {
             if (initialized) {
-                logger.warn("Could not read the database parameters.  We will try again later.");
+                log.warn("DatabaseParametersReadingFailed");
             }
             return new HashMap<String, String>();
         }

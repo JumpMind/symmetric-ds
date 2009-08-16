@@ -45,8 +45,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class ClusterService extends AbstractService implements IClusterService {
 
-    protected static final Log logger = LogFactory.getLog(ClusterService.class);
-
     protected static final String COMMON_LOCK_ID = "common";
 
     public void initLockTable() {
@@ -59,7 +57,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         initLockTable(LockActionConstants.PURGE_STATISTICS, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.SYNCTRIGGERS, COMMON_LOCK_ID);
     }
-    
+
     public void initLockTableForNode(String action, final Node node) {
         initLockTable(action, node.getNodeId());
     }
@@ -67,15 +65,10 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable(final String action, final String lockId) {
         try {
             jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action });
-            if (logger.isDebugEnabled()) {
-                logger.debug("Inserted into the node_lock table for " + lockId + ".");
-            }
+            log.debug("LockInserted", lockId);
+
         } catch (final DataIntegrityViolationException ex) {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("Failed to insert to the node_lock table for " + lockId
-                                + ".  Must be intialized already.");
-            }
+            log.debug("LockInsertFailed", lockId);
         }
     }
 

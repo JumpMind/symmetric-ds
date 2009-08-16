@@ -58,7 +58,7 @@ public class NodeService extends AbstractService implements INodeService {
     private long securityCacheTime;
 
     private INodeIdGenerator nodeIdGenerator;
-    
+
     private INodePasswordFilter nodePasswordFilter;
 
     public String findSymmetricVersion() {
@@ -144,30 +144,25 @@ public class NodeService extends AbstractService implements INodeService {
                 if (security == null && createIfNotFound) {
                     insertNodeSecurity(nodeId);
                     security = findNodeSecurity(nodeId, false);
-                }
-                else if(security != null){
-                	security.setPassword(filterPasswordOnRenderIfNeeded(security.getPassword()));
+                } else if (security != null) {
+                    security.setPassword(filterPasswordOnRenderIfNeeded(security.getPassword()));
                 }
                 return security;
             } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("A 'null' node id was passed into findNodeSecurity");
-                }
+                log.debug("FindNodeSecurityNodeNull");
                 return null;
             }
         } catch (DataIntegrityViolationException ex) {
-            logger.error("Could not find a node security row for " + nodeId);
+            log.error("NodeSecurityMissing", nodeId);
             throw ex;
         }
     }
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
-		String password =
-			nodeIdGenerator.generatePassword(this, new Node(id,null, null));
-		password = filterPasswordOnSaveIfNeeded(password);
-		jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id,
-				password, findIdentity().getNodeId() });
+        String password = nodeIdGenerator.generatePassword(this, new Node(id, null, null));
+        password = filterPasswordOnSaveIfNeeded(password);
+        jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password, findIdentity().getNodeId() });
     }
 
     public boolean updateNode(Node node) {
@@ -345,7 +340,7 @@ public class NodeService extends AbstractService implements INodeService {
     public boolean isDataLoadStarted() {
         return getNodeStatus() == NodeStatus.DATA_LOAD_STARTED;
     }
-    
+
     public boolean isRegistrationServer() {
         return StringUtils.isBlank(parameterService.getRegistrationUrl());
     }
@@ -378,28 +373,28 @@ public class NodeService extends AbstractService implements INodeService {
             }
             return NodeStatus.DATA_LOAD_NOT_STARTED;
         } catch (CannotAcquireLockException ex) {
-            logger.error(String.format("Could not aquire lock on the table after %sms.  The status is unknown.", (System.currentTimeMillis()-ts)));
+            log.error("LockAcquiringFailed", (System.currentTimeMillis() - ts));
             return NodeStatus.STATUS_UNKNOWN;
         }
     }
 
-	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-		this.nodePasswordFilter = nodePasswordFilter;
-	}
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+        this.nodePasswordFilter = nodePasswordFilter;
+    }
 
-	private String filterPasswordOnSaveIfNeeded(String password){
-		String s = password;
-		if(nodePasswordFilter != null){
-			s = nodePasswordFilter.onNodeSecuritySave(password);
-		}
-		return s;
-	}
-	
-	private String filterPasswordOnRenderIfNeeded(String password){
-		String s = password;
-		if(nodePasswordFilter != null){
-			s = nodePasswordFilter.onNodeSecurityRender(password);
-		}
-		return s;
-	}
+    private String filterPasswordOnSaveIfNeeded(String password) {
+        String s = password;
+        if (nodePasswordFilter != null) {
+            s = nodePasswordFilter.onNodeSecuritySave(password);
+        }
+        return s;
+    }
+
+    private String filterPasswordOnRenderIfNeeded(String password) {
+        String s = password;
+        if (nodePasswordFilter != null) {
+            s = nodePasswordFilter.onNodeSecurityRender(password);
+        }
+        return s;
+    }
 }

@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class PullResourceHandler extends AbstractTransportResourceHandler {
-    private static final Log logger = LogFactory.getLog(PullResourceHandler.class);
 
     private INodeService nodeService;
 
@@ -61,9 +60,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
                 outgoingTransport.close();
             }
         } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn(String.format("Node %s does not exist.", nodeId));
-            }
+            log.warn("NodeMissing", nodeId);
         }
     }
 

@@ -22,16 +22,14 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.service.ISecurityService;
 
-public class SecurityService implements ISecurityService {
-
-    protected final Log logger = LogFactory.getLog(getClass());
+public class SecurityService extends AbstractService implements ISecurityService {
 
     private SecretKey secretKey;
-    
+
     public String encrypt(String plainText) {
         try {
             byte[] bytes = plainText.getBytes(SecurityConstants.CHARSET);
-            byte[] enc = getCipher(Cipher.ENCRYPT_MODE).doFinal(bytes);            
+            byte[] enc = getCipher(Cipher.ENCRYPT_MODE).doFinal(bytes);
             return new String(Base64.encodeBase64(enc), SecurityConstants.CHARSET);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -64,10 +62,10 @@ public class SecurityService implements ISecurityService {
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
         KeyStore ks = getKeyStore(password);
-        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(
-                SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
+        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY,
+                param);
         if (entry == null) {
-            logger.debug("Generating secret key");
+            log.debug("SecretKeyGenerating");
             String keyPassword = new RandomDataImpl().nextSecureHexString(16);
             KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
                     SecurityConstants.ITERATION_COUNT);
@@ -76,7 +74,7 @@ public class SecurityService implements ISecurityService {
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
-            logger.debug("Retrieving secret key");
+            log.debug("SecretKeyRetrieving");
         }
         return entry.getSecretKey();
     }

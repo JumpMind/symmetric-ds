@@ -34,27 +34,28 @@ public class BandwidthServiceUnitTest {
 
     @Test
     public void testDownloadKbps() throws Exception {
-        
+
         BandwidthService service = new BandwidthService();
-        service.logger = new NoOpLog();
+
         int port = 9768;
         BandwidthSamplerServlet servlet = new BandwidthSamplerServlet();
         Server server = startServer(port, "", servlet);
-        BandwidthTestResults bw1 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
+        BandwidthTestResults bw1 = service
+                .getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
         Assert.assertTrue(Double.toString(bw1.getKbps()), bw1.getKbps() > 0);
         Assert.assertTrue(Double.toString(bw1.getElapsed()), bw1.getElapsed() > 0);
-        
+
         servlet.setDefaultTestSlowBandwidthDelay(5);
-        BandwidthTestResults bw2 = service.getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
+        BandwidthTestResults bw2 = service
+                .getDownloadResultsFor(String.format("http://localhost:%s", port), 1000, 2000);
         Assert.assertTrue(bw2.getKbps() < bw1.getKbps());
         server.stop();
 
         Assert.assertEquals(-1d, service.getDownloadKbpsFor(String.format("http://localhost:%s", port), 1000, 2000), 0);
 
-        
     }
-    
-    protected Server startServer (int port, String home, BandwidthSamplerServlet servlet) throws Exception {
+
+    protected Server startServer(int port, String home, BandwidthSamplerServlet servlet) throws Exception {
         Server server = new Server();
         Connector connector = new SelectChannelConnector();
         connector.setPort(port);

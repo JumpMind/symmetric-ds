@@ -144,13 +144,10 @@ public class TriggerService extends AbstractService implements ITriggerService {
             } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
                 triggers.add(buildConfigTrigger(TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE),
                         false, nodeGroupLink.getSourceGroupId(), nodeGroupLink.getTargetGroupId()));
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Creating trigger hist entry for "
-                            + TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-                }
+                log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+
             } else {
-                logger.warn("Unexpected node group link while creating configuration triggers: source_node_group_id="
-                        + sourceNodeGroupId + ", action=" + nodeGroupLink.getDataEventAction());
+                log.warn("TriggerConfigurationCreatingFailed", sourceNodeGroupId, nodeGroupLink.getDataEventAction());
             }
         }
         return triggers;
@@ -361,17 +358,17 @@ public class TriggerService extends AbstractService implements ITriggerService {
     synchronized public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
         if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
             try {
-                logger.info("Synchronizing triggers");
+                log.info("TriggersSynchronizing");
                 // make sure channels are read from the database
                 configurationService.reloadChannels();
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
             } finally {
                 clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
-                logger.info("Done synchronizing triggers");
+                log.info("TriggersSynchronized");
             }
         } else {
-            logger.info("Did not run the syncTriggers process because the cluster service has it locked");
+            log.info("TriggersSynchronizingFailedLock");
         }
     }
 
@@ -381,7 +378,7 @@ public class TriggerService extends AbstractService implements ITriggerService {
         for (Trigger trigger : triggers) {
             TriggerHistory history = getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history != null) {
-                logger.info("About to remove triggers for inactivated table: " + history.getSourceTableName());
+                log.info("TriggersRemoving", history.getSourceTableName());
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
                         history.getNameForInsertTrigger(), trigger.getSourceTableName(), history);
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
@@ -404,24 +401,20 @@ public class TriggerService extends AbstractService implements ITriggerService {
                 triggerExists |= dbDialect.doesTriggerExist(history.getSourceCatalogName(), history
                         .getSourceSchemaName(), history.getSourceTableName(), history.getNameForDeleteTrigger());
                 if (triggerExists) {
-                    logger
-                            .warn(String
-                                    .format(
-                                            "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id=%s and trigger_hist_id=%s",
-                                            history.getTriggerId(), history.getTriggerHistoryId()));
+                    log.warn("TriggersRemovingFailed", history.getTriggerId(), history.getTriggerHistoryId());
                 } else {
                     inactivateTriggerHistory(history);
                 }
 
             } else {
-                logger.info("A trigger was inactivated that had not yet been built, taking no action");
+                log.info("TriggersRemovingSkipped");
             }
         }
     }
 
     private void updateOrCreateDatabaseTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        Collection<Trigger> triggers = getActiveTriggersForSourceNodeGroup(parameterService
-                                .getString(ParameterConstants.NODE_GROUP_ID), true).values();
+        Collection<Trigger> triggers = getActiveTriggersForSourceNodeGroup(
+                parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).values();
 
         for (Trigger trigger : triggers) {
 
@@ -484,8 +477,7 @@ public class TriggerService extends AbstractService implements ITriggerService {
                     }
 
                 } else {
-                    logger.error("The configured table does not exist in the datasource that is configured: "
-                            + schemaPlusTriggerName);
+                    log.error("TriggerTableMissing", schemaPlusTriggerName);
 
                     if (this.triggerCreationListeners != null) {
                         for (ITriggerCreationListener l : this.triggerCreationListeners) {
@@ -494,7 +486,7 @@ public class TriggerService extends AbstractService implements ITriggerService {
                     }
                 }
             } catch (Exception ex) {
-                logger.error("Failed to synchronize trigger for " + schemaPlusTriggerName, ex);
+                log.error("TriggerSynchronizingFailed" + schemaPlusTriggerName, ex);
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);
