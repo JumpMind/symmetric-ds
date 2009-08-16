@@ -43,7 +43,7 @@ public class AbstractTransportManagerUnitTest {
     
     protected AbstractTransportManager getMockTransportManager() {
         AbstractTransportManager tm = new AbstractTransportManager(null) {};
-        tm.logger = new NoOpLog();
+       
         tm.addExtensionSyncUrlHandler("me", new ISyncUrlExtension() {
             public String resolveUrl(URI url) {
                 return "test";

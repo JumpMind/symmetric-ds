@@ -486,7 +486,7 @@ public class TriggerService extends AbstractService implements ITriggerService {
                     }
                 }
             } catch (Exception ex) {
-                log.error("TriggerSynchronizingFailed" + schemaPlusTriggerName, ex);
+                log.error("TriggerSynchronizingFailed", schemaPlusTriggerName, ex);
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);

@@ -12,6 +12,10 @@ public class CommonsResourceLog implements ILog {
 
     // Debug
 
+    public boolean isDebugEnabled() {
+        return commonsLog.isDebugEnabled();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -61,6 +65,10 @@ public class CommonsResourceLog implements ILog {
 
     // info
 
+    public boolean isInfoEnabled() {
+        return commonsLog.isInfoEnabled();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -109,6 +117,10 @@ public class CommonsResourceLog implements ILog {
     }
 
     // warn
+
+    public boolean isWarnEnabled() {
+        return commonsLog.isWarnEnabled();
+    }
 
     /*
      * (non-Javadoc)
@@ -170,6 +182,10 @@ public class CommonsResourceLog implements ILog {
     }
 
     // error
+
+    public boolean isErrorEnabled() {
+        return commonsLog.isErrorEnabled();
+    }
 
     /*
      * (non-Javadoc)

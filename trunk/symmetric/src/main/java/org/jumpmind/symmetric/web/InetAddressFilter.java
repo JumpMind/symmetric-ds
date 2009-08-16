@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.transport.InetAddressResourceHandler;
 
 /**
@@ -45,7 +45,7 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
 
     public static final String INET_ADDRESS_ALLOW_MULICAST = "inetAddressAllowMultcast";
 
-    private static final Log logger = LogFactory.getLog(InetAddressFilter.class);
+    private static final ILog log = LogFactory.getLog(InetAddressFilter.class);
 
     private InetAddressResourceHandler authorizer;
 
@@ -79,13 +79,11 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
         final String sourceAddrString = httpRequest.getRemoteAddr();
         try {
             final InetAddress sourceAddr = InetAddress.getByName(sourceAddrString);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Authorizing address: " + sourceAddr.toString());
-            }
+            log.debug("AddressAuthorizing", sourceAddr.toString());
             if (authorizer.isAuthorized(sourceAddr)) {
                 chain.doFilter(req, resp);
             } else {
-                logger.info("Denied address: " + sourceAddr.toString());
+                log.info("AddressDenied", sourceAddr.toString());
                 sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             }
         } catch (final UnknownHostException uhe) {
@@ -100,7 +98,7 @@ public class InetAddressFilter extends AbstractTransportFilter<InetAddressResour
     }
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 }

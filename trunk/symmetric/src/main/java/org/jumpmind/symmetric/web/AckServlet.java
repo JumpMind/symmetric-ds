@@ -51,9 +51,7 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         AckResourceHandler ackService = getTransportResourceHandler();
-        if (logger.isDebugEnabled()) {
-            logger.debug("Reading ack: " + req.getParameterMap());
-        }
+        log.debug("DataAckReading", req.getParameterMap());
         // TODO: fix this; the servlets need to participate in the transport API
         List<BatchInfo> batches = AbstractTransportManager.readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
@@ -67,5 +65,5 @@ public class AckServlet extends AbstractTransportResourceServlet<AckResourceHand
             return batchId1.compareTo(batchId2);
         }
     }
-    
+
 }

@@ -34,8 +34,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -65,7 +65,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class SymmetricFilter implements Filter {
 
-    private static final Log logger = LogFactory.getLog(SymmetricFilter.class);
+    private static final ILog log = LogFactory.getLog(SymmetricFilter.class);
 
     private ServletContext servletContext;
 
@@ -89,16 +89,13 @@ public class SymmetricFilter implements Filter {
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
         for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("Initializing filter %s", filterEntry.getKey()));
-            }
+            log.debug(String.format("FilterInitializing", filterEntry.getKey()));
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
                 filter.init(filterConfig);
                 filters.add(filter);
             } else {
-                logger
-                        .warn("Found a Spring filter that does not implement IExtensionPoint.  NOT adding it as a SymmetricFilter.");
+                log.warn("FilterSkipping");
             }
         }
     }

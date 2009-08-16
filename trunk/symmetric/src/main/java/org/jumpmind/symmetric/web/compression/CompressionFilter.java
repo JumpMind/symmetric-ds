@@ -30,8 +30,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * Implementation of <code>javax.servlet.Filter</code> used to compress the
@@ -49,10 +49,10 @@ import org.apache.commons.logging.LogFactory;
 
 public class CompressionFilter implements Filter {
 
-    static final Log logger = LogFactory.getLog(CompressionFilter.class);
-    
+    static final ILog log = LogFactory.getLog(CompressionFilter.class);
+
     int compressionLevel = Deflater.DEFAULT_COMPRESSION;
-    
+
     int compressionStrategy = Deflater.DEFAULT_STRATEGY;
 
     /**
@@ -65,7 +65,7 @@ public class CompressionFilter implements Filter {
      * Place this filter into service.
      * 
      * @param filterConfig
-     *                The filter configuration object
+     *            The filter configuration object
      */
 
     public void init(FilterConfig filterConfig) {
@@ -83,11 +83,11 @@ public class CompressionFilter implements Filter {
     }
 
     /**
-     * The <code>doFilter</code> method of the Filter is called by the
-     * container each time a request/response pair is passed through the chain
-     * due to a client request for a resource at the end of the chain. The
-     * FilterChain passed into this method allows the Filter to pass on the
-     * request and response to the next entity in the chain.
+     * The <code>doFilter</code> method of the Filter is called by the container
+     * each time a request/response pair is passed through the chain due to a
+     * client request for a resource at the end of the chain. The FilterChain
+     * passed into this method allows the Filter to pass on the request and
+     * response to the next entity in the chain.
      * <p>
      * This method first examines the request to check whether the client
      * support compression. <br>
@@ -96,30 +96,24 @@ public class CompressionFilter implements Filter {
      * If the compression support is available, it creates a
      * CompressionServletResponseWrapper object which compresses the content and
      * modifies the header if the content length is big enough. It then invokes
-     * the next entity in the chain using the FilterChain object (<code>chain.doFilter()</code>),
-     * <br>
+     * the next entity in the chain using the FilterChain object (
+     * <code>chain.doFilter()</code>), <br>
      */
 
     @SuppressWarnings("unchecked")
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("@doFilter");
-        }
+        log.debug("CompressionFilterStarting");
 
         boolean supportCompression = false;
         if (request instanceof HttpServletRequest) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("requestURI = " + ((HttpServletRequest) request).getRequestURI());
-            }
+            log.debug("CompressionFilterURI", ((HttpServletRequest) request).getRequestURI());
 
             // Are we allowed to compress ?
             String s = (String) ((HttpServletRequest) request).getParameter("gzip");
             if ("false".equals(s)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("got parameter gzip=false --> don't compress, just chain filter");
-                }
+                log.debug("CompressionFilterNotCompressing");
                 chain.doFilter(request, response);
                 return;
             }
@@ -128,31 +122,23 @@ public class CompressionFilter implements Filter {
             while (e.hasMoreElements()) {
                 String name = (String) e.nextElement();
                 if (name.indexOf("gzip") != -1) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("supports compression");
-                    }
+                    log.debug("CompressionFilterSupportsCompression");
                     supportCompression = true;
                 } else {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("no support for compresion");
-                    }
+                    log.debug("CompressionFilterDoesNotSupportsCompression");
                 }
             }
         }
 
         if (!supportCompression) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("doFilter gets called wo compression");
-            }
+            log.debug("CompressionFilterCalledNotCompressing");
             chain.doFilter(request, response);
             return;
         } else {
             if (response instanceof HttpServletResponse) {
                 CompressionServletResponseWrapper wrappedResponse = new CompressionServletResponseWrapper(
                         (HttpServletResponse) response, compressionLevel, compressionStrategy);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("doFilter gets called with compression");
-                }
+                log.debug("CompressionFilterCalledCompressing");
                 try {
                     chain.doFilter(request, wrappedResponse);
                 } finally {
@@ -162,7 +148,7 @@ public class CompressionFilter implements Filter {
             }
         }
     }
-    
+
     public int getCompressionLevel() {
         return compressionLevel;
     }
@@ -184,7 +170,7 @@ public class CompressionFilter implements Filter {
      * Weblogic 6.1
      * 
      * @param filterConfig
-     *                The filter configuration object
+     *            The filter configuration object
      */
     public void setFilterConfig(FilterConfig filterConfig) {
         init(filterConfig);

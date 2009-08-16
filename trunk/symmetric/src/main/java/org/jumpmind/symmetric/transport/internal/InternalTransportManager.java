@@ -30,10 +30,10 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.BeanFactory;
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    static final Log logger = LogFactory.getLog(InternalTransportManager.class);
+    static final ILog log = LogFactory.getLog(InternalTransportManager.class);
 
     private INodeService nodeService;
 
@@ -139,7 +139,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
             return true;
         } catch (Exception ex) {
-            logger.error(ex, ex);
+            log.error(ex);
             return false;
         }
     }
@@ -158,7 +158,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     SymmetricEngine engine = getTargetEngine(url);
                     runnable.run(engine.getApplicationContext(), is, os);
                 } catch (Exception e) {
-                    logger.error(e, e);
+                    log.error(e);
                 } finally {
                     IOUtils.closeQuietly(is);
                     IOUtils.closeQuietly(os);

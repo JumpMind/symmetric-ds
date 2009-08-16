@@ -89,7 +89,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             Node identity = nodeService.findIdentity();
             NodeSecurity security = identity == null ? null : nodeService.findNodeSecurity(identity.getNodeId());
             if (security == null || security.getInitialLoadTime() == null) {
-                log.warn("RegistrationNotAllowed");
+                log.warn("RegistrationNotAllowedNoInitialLoad");
                 return false;
             }
         }

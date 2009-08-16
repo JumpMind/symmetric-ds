@@ -30,8 +30,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * 
@@ -62,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class ThrottleFilter extends AbstractFilter {
 
-    private final static Log logger = LogFactory.getLog(ThrottleFilter.class);
+    private final static ILog log = LogFactory.getLog(ThrottleFilter.class);
 
     private Long maxBps;
 
@@ -87,14 +87,9 @@ public class ThrottleFilter extends AbstractFilter {
         wrapper.setCheckPoint((Long) ObjectUtils.defaultIfNull(checkPoint, DEFAULT_CHECK_POINT));
         wrapper.setMaxBps((Long) ObjectUtils.defaultIfNull(maxBps, 0L));
         wrapper.setThreshold((Long) ObjectUtils.defaultIfNull(threshold, DEFAULT_THRESHOLD));
-        if (logger.isDebugEnabled()) {
-            logger.debug("Before hit servlet");
-        }
+        log.debug("ThrottleFilterStarting");
         chain.doFilter(request, wrapper);
-
-        if (logger.isDebugEnabled()) {
-            logger.info("after hit servlet");
-        }
+        log.info("ThrottleFilterCompleted");
     }
 
     public void setMaxBps(Long maxBps) {
@@ -122,8 +117,8 @@ public class ThrottleFilter extends AbstractFilter {
     }
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 
 }

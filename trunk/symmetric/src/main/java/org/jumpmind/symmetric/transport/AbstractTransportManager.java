@@ -32,9 +32,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
@@ -43,7 +43,7 @@ import org.jumpmind.symmetric.web.WebConstants;
 
 abstract public class AbstractTransportManager {
 
-    protected Log logger = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers;
 
@@ -58,8 +58,7 @@ abstract public class AbstractTransportManager {
             extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
         }
         if (extensionSyncUrlHandlers.containsKey(name)) {
-            logger.warn(String
-                    .format("Overriding an existing '%s' extension sync url handler with a second one.", name));
+            log.warn("TransportSyncURLOverriding", name);
         }
         extensionSyncUrlHandlers.put(name, handler);
     }
@@ -70,32 +69,27 @@ abstract public class AbstractTransportManager {
      */
     public String resolveURL(String url) {
         if (StringUtils.isBlank(url) || url.startsWith(Constants.PROTOCOL_NONE)) {
-            logger
-                    .debug("Using the registration URL to contact the remote node because the syncURL for the node is blank.");
+            log.debug("TransportSyncURLBlank");
             return parameterService.getRegistrationUrl();
         } else if (url.startsWith(Constants.PROTOCOL_EXT)) {
             try {
-                URI uri = new URI(url);                
+                URI uri = new URI(url);
                 ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
                 if (handler == null) {
-                    logger
-                            .error(String
-                                    .format(
-                                            "Could not find a registered extension sync url handler with the name of %s using the url %s",
-                                            uri.getHost(), url));
+                    log.error("TransportSyncURLMissing", uri.getHost(), url);
                     return url;
                 } else {
                     return handler.resolveUrl(uri);
                 }
             } catch (URISyntaxException e) {
-                logger.error(e, e);
+                log.error(e);
                 return url;
             }
         } else {
             return url;
         }
     }
-    
+
     protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
         for (IncomingBatch status : list) {

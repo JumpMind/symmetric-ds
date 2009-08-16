@@ -284,8 +284,7 @@ public class CsvLoader implements IDataLoader {
                 // foreign key
                 if (enableFallbackUpdate) {
                     dbDialect.rollbackToSavepoint(savepoint);
-                    log.debug("Unable to insert into " + context.getTableName() + ", updating instead: "
-                            + ArrayUtils.toString(tokens));
+                    log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
                     String keyValues[] = parseKeys(tokens, 1);
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
@@ -336,8 +335,7 @@ public class CsvLoader implements IDataLoader {
                             .toString(tokens));
                 }
             } else if (rows > 1) {
-                log.warn("Too many rows (" + rows + ") updated for " + context.getTableName() + ": "
-                        + ArrayUtils.toString(tokens));
+                log.warn("LoaderRowsUpdatingFailed", rows, context.getTableName(), ArrayUtils.toString(tokens));
             }
             stats.incrementDatabaseMillis(stats.endTimer());
         }
@@ -365,12 +363,11 @@ public class CsvLoader implements IDataLoader {
             stats.incrementDatabaseMillis(stats.endTimer());
             if (rows == 0) {
                 if (allowMissingDelete) {
-                    log.warn("Delete of " + context.getTableName() + " affected no rows: "
-                            + ArrayUtils.toString(tokens));
+                    log.warn("LoaderDeleteMissing", context.getTableName(), ArrayUtils.toString(tokens));
                     stats.incrementMissingDeleteCount();
                 } else {
-                    throw new RuntimeException("Delete of " + context.getTableName() + " affected no rows: "
-                            + ArrayUtils.toString(tokens));
+                    throw new SymmetricDSException("LoaderDeleteMissing", context.getTableName(), ArrayUtils
+                            .toString(tokens));
                 }
             }
         }

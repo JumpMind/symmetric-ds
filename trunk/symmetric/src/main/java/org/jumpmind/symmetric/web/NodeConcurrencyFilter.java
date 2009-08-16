@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 
@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.Reservation
  */
 public class NodeConcurrencyFilter extends AbstractFilter {
 
-    private final static Log logger = LogFactory.getLog(NodeConcurrencyFilter.class);
+    private final static ILog log = LogFactory.getLog(NodeConcurrencyFilter.class);
 
     private IConcurrentConnectionManager concurrentConnectionManager;
 
@@ -81,8 +81,8 @@ public class NodeConcurrencyFilter extends AbstractFilter {
     }
 
     @Override
-    protected Log getLogger() {
-        return logger;
+    protected ILog getLog() {
+        return log;
     }
 
     public void setConcurrentConnectionManager(IConcurrentConnectionManager concurrentConnectionManager) {

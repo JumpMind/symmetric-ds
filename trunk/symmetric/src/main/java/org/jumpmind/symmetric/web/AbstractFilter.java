@@ -24,28 +24,28 @@ import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
-import org.apache.commons.logging.Log;
+import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
 
 /**
- * All symmetric filters (other than {@link SymmetricFilter}) should extend
- * this class. It is managed by Spring.
+ * All symmetric filters (other than {@link SymmetricFilter}) should extend this
+ * class. It is managed by Spring.
  * 
  * @since 1.4.0
  */
 public abstract class AbstractFilter extends ServletResourceTemplate implements Filter, IExtensionPoint {
 
-    protected abstract Log getLogger();
+    protected abstract ILog getLog();
 
     public void init(FilterConfig filterConfig) throws ServletException {
         init(filterConfig.getServletContext());
         if (isContainerCompatible() && !this.isSpringManaged()) {
             final IServletResource springBean = getSpringBean();
             if (this != springBean) { // this != is deliberate!
-                if (getLogger().isInfoEnabled()) {
-                    getLogger().info(String.format("Initializing filter %s", springBean.getClass().getSimpleName()));
+                if (getLog().isInfoEnabled()) {
+                    getLog().info(String.format("Initializing filter %s", springBean.getClass().getSimpleName()));
                 }
                 BeanUtils.copyProperties(springBean, this, IServletResource.class);
                 BeanUtils.copyProperties(springBean, this, ITransportResource.class);
@@ -53,7 +53,7 @@ public abstract class AbstractFilter extends ServletResourceTemplate implements 
             }
         }
     }
-    
+
     public boolean isAutoRegister() {
         return true;
     }

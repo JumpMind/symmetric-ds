@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
@@ -45,7 +45,7 @@ import org.jumpmind.symmetric.transport.ISyncUrlExtension;
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
 
-    protected Log logger = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";
     public static String PARAM_SAMPLE_SIZE = "sampleSize";
@@ -98,7 +98,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
             try {
                 sampleSize = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                logger.error(String.format("Unable to parse sampleSize of %s", val));
+                log.error("BandwidthSampleSizeParsingFailed", val);
             }
         }
         return sampleSize;
@@ -111,7 +111,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
             try {
                 maxSampleDuration = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                logger.error(String.format("Unable to parse sampleSize of %s", val));
+                log.error("BandwidthSampleSizeParsingFailed",val);
             }
         }
         return maxSampleDuration;
@@ -124,7 +124,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
             try {
                 sampleTTL = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                logger.error(String.format("Unable to parse sampleTTL of %s", val));
+                log.error("BandwidthSampleTTLParsingFailed",val);
             }
         }
         return sampleTTL;

@@ -28,9 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.SymmetricDSException;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.security.inet.IInetAddressAuthorizer;
 import org.jumpmind.symmetric.security.inet.IInetAddressAuthorizerCompiler;
 import org.jumpmind.symmetric.security.inet.IRawInetAddressAuthorizer;
@@ -41,7 +42,7 @@ import org.jumpmind.symmetric.transport.handler.AbstractTransportResourceHandler
  * @author dmichels2
  */
 public class InetAddressResourceHandler extends AbstractTransportResourceHandler implements IInetAddressAuthorizer {
-    private static final Log logger = LogFactory.getLog(InetAddressResourceHandler.class);
+    private static final ILog log = LogFactory.getLog(InetAddressResourceHandler.class);
 
     public static final String FILTER_DELIMITER = ",";
 
@@ -68,7 +69,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
         String[] filtersTokens = null;
         if (StringUtils.isBlank(filterString)) {
             filters = Collections.emptyList();
-            logger.warn("No address filters were provided to be compiled");
+            log.warn("AddressFiltersMissing");
         } else {
             filtersTokens = filterString.split(FILTER_DELIMITER);
             filters = addressCompiler.compile(filtersTokens);
@@ -99,19 +100,17 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
     public boolean isAuthorized(final InetAddress checkAddress) {
         if (filters == null) {
             final String filterString = parameterService.getString(ParameterConstants.IP_FILTERS);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Extracted IP filter string from ParameterService as: " + filterString);
-            }
+            log.debug("AddressFilterStringExtracted", filterString);
             try {
                 setAddressFilters(filterString);
             } catch (final UnknownHostException e) {
-                throw new IllegalStateException("Could not initialize address filter string");
+                throw new SymmetricDSException("AddressFilterStringExtractingFailed");
             }
         }
         final boolean isMulticast = isMulticastAddress(checkAddress);
 
         if (isMulticast && !isMulicastAllowed) {
-            logger.info("Allow multicast is 'false'. Denying multicast address: " + checkAddress.toString());
+            log.info("AddressMultiCastDisallowed", checkAddress.toString());
 
             return false;
         }
@@ -122,9 +121,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
                 return true;
             }
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Denying Address: " + checkAddress.toString());
-        }
+        log.info("AddressDenied", checkAddress.toString());
         return false;
     }
 
@@ -137,7 +134,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
 
     /**
      * @param isMulicastAllowed
-     *                the isMulicastAllowed to set
+     *            the isMulicastAllowed to set
      */
     public void setMulicastAllowed(final boolean isMulicastAllowed) {
         this.isMulicastAllowed = isMulicastAllowed;
@@ -145,7 +142,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
 
     /**
      * @param addressCompiler
-     *                the addressCompiler to set
+     *            the addressCompiler to set
      */
     public void setAddressCompiler(final IInetAddressAuthorizerCompiler addressCompiler) {
         this.addressCompiler = addressCompiler;
@@ -153,7 +150,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
 
     /**
      * @param parameterService
-     *                the parameterService to set
+     *            the parameterService to set
      */
     public void setParameterService(final IParameterService parameterService) {
         this.parameterService = parameterService;
