@@ -52,8 +52,8 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
         jdbcTemplate.update("create table " + TABLE_NAME + " (id char(5) not null, ts timestamp(6), ts2 timestamp(9))");
         TriggerRouter trigger = new TriggerRouter();
         trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
-        trigger.getRouter().setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.getRouter().setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        trigger.getRouter().setSourceNodeGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().setTargetNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         trigger.getTrigger().setSourceTableName(TABLE_NAME);
         trigger.getTrigger().setSyncOnInsert(true);
         trigger.getTrigger().setSyncOnUpdate(true);

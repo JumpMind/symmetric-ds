@@ -46,41 +46,41 @@ public class TriggerRouter {
 
     private Router router;
 
-    private Date createdOn;
+    private Date createTime;
 
-    private Date lastModifiedTime;
+    private Date lastUpdateTime;
 
-    private String updatedBy;
+    private String lastUpdateBy;
 
     public TriggerRouter() {
         trigger = new Trigger();
         router = new Router();
-        createdOn = new Date();
-        lastModifiedTime = new Date();
+        createTime = new Date();
+        lastUpdateTime = new Date();
     }
 
-    public Date getCreatedOn() {
-        return createdOn;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public Date getLastModifiedTime() {
-        return lastModifiedTime;
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
     }
 
-    public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+    public void setCreateTime(Date createdOn) {
+        this.createTime = createdOn;
     }
 
-    public void setLastModifiedTime(Date lastModifiedOn) {
-        this.lastModifiedTime = lastModifiedOn;
+    public void setLastUpdateTime(Date lastModifiedOn) {
+        this.lastUpdateTime = lastModifiedOn;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+    public void setLastUpdateBy(String updatedBy) {
+        this.lastUpdateBy = updatedBy;
     }
 
     /**

@@ -27,6 +27,8 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -40,7 +42,6 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
     public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
-    public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into sym_trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_update_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
 
@@ -203,7 +204,15 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         IDbDialect dialect = getDbDialect();
         if (dialect instanceof OracleDbDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
-            getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
+            TriggerRouter trouter = new TriggerRouter();
+            Trigger trigger = trouter.getTrigger();
+            trigger.setSourceTableName("test_oracle_binary_types");
+            trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+            Router router = trouter.getRouter();
+            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            getTriggerRouterService().saveTriggerRouter(trouter);
+            
             ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
             Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()

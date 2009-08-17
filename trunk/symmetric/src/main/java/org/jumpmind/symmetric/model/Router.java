@@ -41,9 +41,9 @@ public class Router {
 
     private String targetTableName;
 
-    private String sourceGroupId;
+    private String sourceNodeGroupId;
 
-    private String targetGroupId;
+    private String targetNodeGroupId;
 
     private String targetSchemaName;
 
@@ -58,59 +58,59 @@ public class Router {
     
     private String initialLoadSelect = null;
 
-    private Date createdOn;
+    private Date createTime;
 
-    private Date lastModifiedTime;
+    private Date lastUpdateTime;
 
-    private String updatedBy;
+    private String lastUpdateBy;
 
     public Router() {
         routerId = maxRouterId++;
     }
 
-    public Date getCreatedOn() {
-        return createdOn;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public Date getLastModifiedTime() {
-        return lastModifiedTime;
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
     }
 
-    public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+    public void setCreateTime(Date createdOn) {
+        this.createTime = createdOn;
     }
 
-    public void setLastModifiedTime(Date lastModifiedOn) {
-        this.lastModifiedTime = lastModifiedOn;
+    public void setLastUpdateTime(Date lastModifiedOn) {
+        this.lastUpdateTime = lastModifiedOn;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+    public void setLastUpdateBy(String updatedBy) {
+        this.lastUpdateBy = updatedBy;
     }
 
     public boolean hasChangedSinceLastTriggerBuild(Date lastTriggerBuildTime) {
-        return lastTriggerBuildTime == null || getLastModifiedTime() == null
-                || lastTriggerBuildTime.before(getLastModifiedTime());
+        return lastTriggerBuildTime == null || getLastUpdateTime() == null
+                || lastTriggerBuildTime.before(getLastUpdateTime());
     }
 
-    public String getSourceGroupId() {
-        return sourceGroupId;
+    public String getSourceNodeGroupId() {
+        return sourceNodeGroupId;
     }
 
-    public void setSourceGroupId(String domainName) {
-        this.sourceGroupId = domainName;
+    public void setSourceNodeGroupId(String domainName) {
+        this.sourceNodeGroupId = domainName;
     }
 
-    public String getTargetGroupId() {
-        return targetGroupId;
+    public String getTargetNodeGroupId() {
+        return targetNodeGroupId;
     }
 
-    public void setTargetGroupId(String targetDomainName) {
-        this.targetGroupId = targetDomainName;
+    public void setTargetNodeGroupId(String targetDomainName) {
+        this.targetNodeGroupId = targetDomainName;
     }
 
     public int getRouterId() {

@@ -50,7 +50,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
         if (!StringUtils.isBlank(subSelect)) {
             SimpleJdbcTemplate simpleTemplate = new SimpleJdbcTemplate(jdbcTemplate);
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, dbDialect);
-            sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getTargetGroupId());
+            sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getTargetNodeGroupId());
             nodeIds = simpleTemplate.query(String.format("%s%s", sql, subSelect), new ParameterizedSingleColumnRowMapper<String>(), sqlParams);
         } else {
             nodeIds = toNodeIds(nodes);
