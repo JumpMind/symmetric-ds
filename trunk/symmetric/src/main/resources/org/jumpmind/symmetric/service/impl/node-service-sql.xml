@@ -95,7 +95,7 @@
     <entry key="selectNodePrefixSql">
       <value>
         select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,
-        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id from
+        c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.timezone_offset from
         $[sym.sync.table.prefix]_node c
       </value>
     </entry>    
