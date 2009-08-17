@@ -290,6 +290,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDatabaseVersion(rs.getString(8));
             node.setSymmetricVersion(rs.getString(9));
             node.setCreatedByNodeId(rs.getString(10));
+            node.setTimezoneOffset(rs.getString(11));
             return node;
         }
     }
