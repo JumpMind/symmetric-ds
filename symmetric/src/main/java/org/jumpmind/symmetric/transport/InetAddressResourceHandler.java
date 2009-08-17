@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.SymmetricDSException;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -104,7 +104,7 @@ public class InetAddressResourceHandler extends AbstractTransportResourceHandler
             try {
                 setAddressFilters(filterString);
             } catch (final UnknownHostException e) {
-                throw new SymmetricDSException("AddressFilterStringExtractingFailed");
+                throw new SymmetricException("AddressFilterStringExtractingFailed");
             }
         }
         final boolean isMulticast = isMulticastAddress(checkAddress);

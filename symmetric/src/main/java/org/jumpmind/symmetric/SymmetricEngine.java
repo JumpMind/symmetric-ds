@@ -416,7 +416,7 @@ public class SymmetricEngine {
                     throw ex;
                 }
             } else {
-                throw new SymmetricDSException("SymmetricDSUpgradeNeeded");
+                throw new SymmetricException("SymmetricDSUpgradeNeeded");
             }
         }
 

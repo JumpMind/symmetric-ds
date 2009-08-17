@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.SymmetricDSException;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -331,7 +331,7 @@ public class CsvLoader implements IDataLoader {
                 } else {
                     // TODO: log the PK information as an ERROR level.
                     stats.incrementDatabaseMillis(stats.endTimer());
-                    throw new SymmetricDSException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
+                    throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
                             .toString(tokens));
                 }
             } else if (rows > 1) {
@@ -366,7 +366,7 @@ public class CsvLoader implements IDataLoader {
                     log.warn("LoaderDeleteMissing", context.getTableName(), ArrayUtils.toString(tokens));
                     stats.incrementMissingDeleteCount();
                 } else {
-                    throw new SymmetricDSException("LoaderDeleteMissing", context.getTableName(), ArrayUtils
+                    throw new SymmetricException("LoaderDeleteMissing", context.getTableName(), ArrayUtils
                             .toString(tokens));
                 }
             }
