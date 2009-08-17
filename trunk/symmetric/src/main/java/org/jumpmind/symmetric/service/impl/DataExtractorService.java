@@ -143,7 +143,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggers = triggerRouterService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
+        List<TriggerRouter> triggers = triggerRouterService.getTriggerRoutersForRegistration(parameterService.getNodeGroupId(), node
                 .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {

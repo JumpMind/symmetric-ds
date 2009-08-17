@@ -206,7 +206,7 @@ public class DataService extends AbstractService implements IDataService {
         // an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
+        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggerRoutersForReload(sourceNode.getNodeGroupId(),
                 targetNode.getNodeGroupId());
         List<Trigger> triggers = new TriggerSelector(triggerRouters).select();
         

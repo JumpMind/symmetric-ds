@@ -41,21 +41,21 @@ public interface ITriggerRouterService {
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<TriggerRouter> getRegistrationTriggers(String sourceGroupId, String targetGroupId);
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String sourceGroupId, String targetGroupId);
     
-    public Map<String, List<TriggerRouter>> getTriggersByChannelFor(String configurationTypeId);
+    public Map<String, List<TriggerRouter>> getTriggerRouters(String configurationTypeId);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
     public TriggerHistory getLatestHistoryRecordFor(int triggerId);
 
-    public Map<Integer, List<TriggerRouter>> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId, boolean refreshCache);
+    public Map<Integer, List<TriggerRouter>> getActiveTriggerRouters(String sourceNodeGroupId, boolean refreshCache);
 
-    public List<TriggerRouter> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
+    public List<TriggerRouter> getActiveTriggerRouters(String sourceNodeGroupId);
 
-    public List<TriggerRouter> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
+    public List<TriggerRouter> getActiveTriggerRoutersForReload(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public List<TriggerRouter> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
+    public List<TriggerRouter> getInactiveTriggerRouters(String sourceNodeGroupId);
 
     public TriggerHistory getHistoryRecordFor(int auditId);
     
@@ -63,7 +63,7 @@ public interface ITriggerRouterService {
     
     public TriggerRouter getTriggerFor(String table, String sourceNodeGroupId);
 
-    public TriggerRouter getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
+    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
 
     public Trigger getTriggerById(int triggerId);
 
