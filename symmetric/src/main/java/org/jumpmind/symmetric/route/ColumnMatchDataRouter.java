@@ -25,19 +25,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
- * This data router is invoked when the router_name='column'. The
- * router_expression is always a name value pair of a column on the table that
- * is being synchronized to the value it should be matched with.
+ * This data router is invoked when the router_name='column'. The router_expression is always a name value pair of a
+ * column on the table that is being synchronized to the value it should be matched with.
  * <P>
- * The value can be a constant. In the data router the value of the new data is
- * always represented by a string so all comparisons are done in the format that
- * SymmetricDS transmits.
+ * The value can be a constant. In the data router the value of the new data is always represented by a string so all
+ * comparisons are done in the format that SymmetricDS transmits.
  * <P>
  * The value can also be one of the following expressions:
  * <ol>
@@ -46,109 +43,73 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * <li>:NODE_GROUP_ID</li>
  * <li>:REDIRECT_NODE</li>
  * </ol>
- * NODE_ID, EXTERNAL_ID, and NODE_GROUP_ID are instructions for the column
- * matcher to select nodes that have a NODE_ID, EXTERNAL_ID or NODE_GROUP_ID
- * that are equal to the value on the column.
+ * NODE_ID, EXTERNAL_ID, and NODE_GROUP_ID are instructions for the column matcher to select nodes that have a NODE_ID,
+ * EXTERNAL_ID or NODE_GROUP_ID that are equal to the value on the column.
  * <P>
- * REDIRECT_NODE is an instruction to match the specified column to a
- * registrant_external_id on registration_redirect and return the associated
- * registration_node_id in the list of node id to route to. For example, if the
- * 'price' table was being routed to to a region 1 node based on the store_id,
- * the store_id would be the external_id of a node in the registration_redirect
- * table and the router_expression for trigger entry for the 'price' table would
- * be 'store_id=:REDIRECT_NODE' and the router_name would be 'column'.
+ * REDIRECT_NODE is an instruction to match the specified column to a registrant_external_id on registration_redirect
+ * and return the associated registration_node_id in the list of node id to route to. For example, if the 'price' table
+ * was being routed to to a region 1 node based on the store_id, the store_id would be the external_id of a node in the
+ * registration_redirect table and the router_expression for trigger entry for the 'price' table would be
+ * 'store_id=:REDIRECT_NODE' and the router_name would be 'column'.
  * 
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
-    private static final String REDIRECT_NODE = ":REDIRECT_NODE";
-    private static final String NODE_GROUP_ID = ":NODE_GROUP_ID";
-    private static final String EXTERNAL_ID = ":EXTERNAL_ID";
-    private static final String NODE_ID = ":NODE_ID";
-    private static final String OLD_VALUE = ":OLD_";
-    private static final String NEW_VALUE = ":NEW_";
-    private static final String CUR_VALUE = ":CUR_";
-
     private IRegistrationService registrationService;
 
     // TODO Support other operators (like !=) and old data
-    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
-            boolean initialLoad) {
+    public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
         String expression = dataMetaData.getTrigger().getRouter().getRouterExpression();
         if (!StringUtils.isBlank(expression)) {
             Map<String, String> columnValues = getNewDataAsString(dataMetaData);
-
             String[] tokens = expression.split("=");
             String column = tokens[0];
             String value = tokens[1];
-
-            if (isNewCurOldMatch(column)) {
-                nodeIds = new HashSet<String>();
-                
-                Map<String, String> data = getData(dataMetaData,);
-                if (evaluate(value, values.get(column))) {
-                    nodeIds = toNodeIds(nodes);
-                }
-            } else if (value.equalsIgnoreCase(NODE_ID)) {
+            if (value.equalsIgnoreCase(":NODE_ID")) {
                 nodeIds = new HashSet<String>();
                 for (Node node : nodes) {
-                    if (evaluate(node.getNodeId(), columnValues.get(column))) {
+                    if (node.getNodeId().equals(columnValues.get(column))) {
                         nodeIds.add(node.getNodeId());
                     }
                 }
-            } else if (value.equalsIgnoreCase(EXTERNAL_ID)) {
+            } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
                 nodeIds = new HashSet<String>();
                 for (Node node : nodes) {
-                    if (evaluate(node.getExternalId(), columnValues.get(column))) {
+                    if (node.getExternalId().equals(columnValues.get(column))) {
                         nodeIds.add(node.getNodeId());
                     }
                 }
-            } else if (value.equalsIgnoreCase(NODE_GROUP_ID)) {
+            } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
                 nodeIds = new HashSet<String>();
                 for (Node node : nodes) {
-                    if (evaluate(node.getNodeGroupId(), columnValues.get(column))) {
+                    if (node.getNodeGroupId().equals(columnValues.get(column))) {
                         nodeIds.add(node.getNodeId());
                     }
                 }
-            } else if (value.equalsIgnoreCase(REDIRECT_NODE)) {
+            } else if (value.equalsIgnoreCase(":REDIRECT_NODE")) {
                 nodeIds = new HashSet<String>();
-                // TODO should we do any caching here? I am starting to lose
-                // track of where all we cache. Maybe we need
+                // TODO should we do any caching here? I am starting to lose track of where all we cache. Maybe we need
                 // a pattern or central service or manager for caching??
                 Map<String, String> redirectMap = registrationService.getRegistrationRedirectMap();
                 String nodeId = redirectMap.get(columnValues.get(column));
                 if (nodeId != null) {
                     nodeIds.add(nodeId);
                 }
-
-            } else if (value.equals(columnValues.get(column))) {
-                nodeIds = toNodeIds(nodes);
+            } else {
+                if (value.equals(columnValues.get(column))) {
+                    nodeIds = toNodeIds(nodes);
+                }
             }
+
         } else {
             nodeIds = toNodeIds(nodes);
         }
+
         return nodeIds;
-    }
 
-    private boolean isNewCurOldMatch(String column) {
-        return ((NEW_VALUE.equalsIgnoreCase(column.substring(0, NEW_VALUE.length())))
-                || (OLD_VALUE.equalsIgnoreCase(column.substring(0, OLD_VALUE.length()))) || (CUR_VALUE
-                .equalsIgnoreCase(column.substring(0, CUR_VALUE.length()))));
     }
-
+    
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
-    }
-
-
-    private boolean evaluate(String a, String b) {
-        if (a == null) {
-            if (b != null) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return a.equals(b);
     }
 }
