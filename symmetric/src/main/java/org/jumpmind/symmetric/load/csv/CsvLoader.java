@@ -221,7 +221,7 @@ public class CsvLoader implements IDataLoader {
                     } else {
                         // Get the trigger based upon table name , source node
                         // group id , target node group id and channel id
-                        trigger = triggerRouterService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
+                        trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId(),
                                 targetNode.getNodeGroupId(), context.getChannelId());
                         if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetTableName())) {
                             tableName = trigger.getRouter().getTargetTableName();
