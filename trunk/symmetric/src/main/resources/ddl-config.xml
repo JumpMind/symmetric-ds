@@ -148,11 +148,6 @@
         <column name="source_catalog_name" type="VARCHAR" size="50" />            
         <column name="source_schema_name" type="VARCHAR" size="50" />
         <column name="source_table_name" type="VARCHAR" size="50" required="true" />
-        <column name="target_catalog_name" type="VARCHAR" size="50" />        
-        <column name="target_schema_name" type="VARCHAR" size="50" />
-        <column name="target_table_name" type="VARCHAR" size="50" />        
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" />
-        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" />
         <column name="channel_id" type="VARCHAR" size="50" required="true" />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
@@ -165,14 +160,40 @@
         <column name="sync_on_update_condition" type="CLOB" />
         <column name="sync_on_insert_condition" type="CLOB" />
         <column name="sync_on_delete_condition" type="CLOB" />
+        <column name="tx_id_expression" type="VARCHAR" size="500" />
+        <column name="excluded_column_names" type="CLOB" />
+        <column name="create_time" type="TIMESTAMP" required="true" />
+        <column name="inactive_time" type="TIMESTAMP" />
+        <column name="last_update_by" type="VARCHAR" size="50" />
+        <column name="last_update_time" type="TIMESTAMP" required="true" />
+        <unique>
+            <unique-column name="source_table_name"/>
+            <unique-column name="source_schema_name"/>
+            <unique-column name="source_catalog_name"/>
+        </unique>
+    </table>
+    
+    <table name="trigger_router">
+        <column name="trigger_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="router_id" type="INTEGER" required="true" primaryKey="true" />            
+        <column name="initial_load_order" type="INTEGER" required="true" default="1" />
+        <column name="create_time" type="TIMESTAMP" required="true" />
+        <column name="last_update_by" type="VARCHAR" size="50" />
+        <column name="last_update_time" type="TIMESTAMP" required="true" />
+    </table>
+
+    <table name="router">
+        <column name="router_id" type="INTEGER" required="true" primaryKey="true"
+            autoIncrement="true" />
+        <column name="target_catalog_name" type="VARCHAR" size="50" />        
+        <column name="target_schema_name" type="VARCHAR" size="50" />
+        <column name="target_table_name" type="VARCHAR" size="50" />        
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" />
         <column name="router_name" type="VARCHAR" size="50" />
         <column name="router_expression" type="CLOB" />
         <column name="initial_load_select" type="CLOB" />
-        <column name="tx_id_expression" type="VARCHAR" size="500" />
-        <column name="excluded_column_names" type="CLOB" />
-        <column name="initial_load_order" type="INTEGER" required="true" default="1" />
         <column name="create_time" type="TIMESTAMP" required="true" />
-        <column name="inactive_time" type="TIMESTAMP" />
         <column name="last_update_by" type="VARCHAR" size="50" />
         <column name="last_update_time" type="TIMESTAMP" required="true" />
     </table>

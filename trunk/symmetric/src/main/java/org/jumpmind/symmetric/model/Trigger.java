@@ -39,6 +39,8 @@ public class Trigger {
 
     static final Log logger = LogFactory.getLog(Trigger.class);
 
+    private static int maxTriggerId;
+    
     private static final long serialVersionUID = 8947288471097851573L;
 
     private static final String DEFAULT_CONDITION = "1=1";
@@ -47,21 +49,11 @@ public class Trigger {
 
     private String sourceTableName;
 
-    private String targetTableName;
-
-    private String sourceGroupId;
-
-    private String channelId;
-
-    private String targetGroupId;
-
     private String sourceSchemaName;
 
     private String sourceCatalogName;
 
-    private String targetSchemaName;
-
-    private String targetCatalogName;
+    private String channelId;
 
     private boolean syncOnUpdate = true;
 
@@ -87,25 +79,11 @@ public class Trigger {
 
     private String excludedColumnNames = null;
 
-    private String routerName = null;
-    
-    /**
-     * Default to routing all data to all nodes.
-     */
-    private String routerExpression = null;
-    
-    private String initialLoadSelect = null;
-
     /**
      * This is a sql expression that creates a unique id which the sync process
      * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
-
-    /**
-     * This is the order in which the definitions will be processed.
-     */
-    private int initialLoadOrder;
 
     private Date inactiveTime;
 
@@ -116,24 +94,11 @@ public class Trigger {
     private String updatedBy;
 
     public Trigger() {
+        triggerId = maxTriggerId++;
     }
 
     public Trigger(String tableName) {
         this.sourceTableName = tableName;
-    }
-
-    public Trigger(String tableName, boolean syncOnUpdate, boolean syncOnInsert, boolean syncOnDelete,
-            String configurationId, String channelId, String syncOnUpdateCondition, String syncOnInsertCondition,
-            String syncOnDeleteCondition) {
-        this.sourceTableName = tableName;
-        this.syncOnUpdate = syncOnUpdate;
-        this.syncOnInsert = syncOnInsert;
-        this.syncOnDelete = syncOnDelete;
-        this.sourceGroupId = configurationId;
-        this.channelId = channelId;
-        this.syncOnUpdateCondition = syncOnUpdateCondition;
-        this.syncOnInsertCondition = syncOnInsertCondition;
-        this.syncOnDeleteCondition = syncOnDeleteCondition;
     }
 
     public Date getCreatedOn() {
@@ -230,14 +195,6 @@ public class Trigger {
         this.channelId = channelId;
     }
 
-    public String getSourceGroupId() {
-        return sourceGroupId;
-    }
-
-    public void setSourceGroupId(String domainName) {
-        this.sourceGroupId = domainName;
-    }
-
     public boolean isSyncOnDelete() {
         return syncOnDelete;
     }
@@ -302,14 +259,6 @@ public class Trigger {
         this.txIdExpression = batchIdExpression;
     }
 
-    public int getInitialLoadOrder() {
-        return initialLoadOrder;
-    }
-
-    public void setInitialLoadOrder(int order) {
-        this.initialLoadOrder = order;
-    }
-
     public String getSourceSchemaName() {
         return sourceSchemaName;
     }
@@ -324,14 +273,6 @@ public class Trigger {
 
     public void setExcludedColumnNames(String excludeColumnNames) {
         this.excludedColumnNames = excludeColumnNames;
-    }
-
-    public String getTargetGroupId() {
-        return targetGroupId;
-    }
-
-    public void setTargetGroupId(String targetDomainName) {
-        this.targetGroupId = targetDomainName;
     }
 
     public String getNameForDeleteTrigger() {
@@ -362,8 +303,11 @@ public class Trigger {
         return triggerId;
     }
 
-    public void setTriggerId(int triggerId) {
+    public void setTriggerId(int triggerId) {        
         this.triggerId = triggerId;
+        if (triggerId >= maxTriggerId) {
+            maxTriggerId = triggerId+1;
+        }
     }
 
     public Date getInactiveTime() {
@@ -372,22 +316,6 @@ public class Trigger {
 
     public void setInactiveTime(Date inactiveTime) {
         this.inactiveTime = inactiveTime;
-    }
-
-    public String getTargetSchemaName() {
-        return targetSchemaName;
-    }
-
-    public void setTargetSchemaName(String targetSchemaName) {
-        this.targetSchemaName = targetSchemaName;
-    }
-
-    public String getTargetTableName() {
-        return targetTableName;
-    }
-
-    public void setTargetTableName(String targetTableName) {
-        this.targetTableName = targetTableName;
     }
 
     public boolean isSyncOnIncomingBatch() {
@@ -414,58 +342,14 @@ public class Trigger {
         this.syncColumnLevel = syncColumnLevel;
     }
 
-    public String getTargetCatalogName() {
-        return targetCatalogName;
-    }
-
-    public void setTargetCatalogName(String targetCatalogName) {
-        this.targetCatalogName = targetCatalogName;
-    }
-
-    public void setRouterName(String routerName) {
-        this.routerName = routerName;
-    }
-    
-    public String getRouterName() {
-        return routerName;
-    }
-    
-    public void setInitialLoadSelect(String intialLoadSelect) {
-        this.initialLoadSelect = intialLoadSelect;
-    }
-    
-    public String getInitialLoadSelect() {
-        return initialLoadSelect;
-    }    
-    
-    public String getRouterExpression() {
-        return routerExpression;
-    }
-
-    public void setRouterExpression(String routingExpression) {
-        this.routerExpression = routingExpression;
-    }
-
     public long getHashedValue() {
         long hashedValue = triggerId;
         if (null != sourceTableName) {
             hashedValue += sourceTableName.hashCode();
         }
 
-        if (null != targetTableName) {
-            hashedValue += targetTableName.hashCode();
-        }
-
-        if (null != sourceGroupId) {
-            hashedValue += sourceGroupId.hashCode();
-        }
-
         if (null != channelId) {
             hashedValue += channelId.hashCode();
-        }
-
-        if (null != targetGroupId) {
-            hashedValue += targetGroupId.hashCode();
         }
 
         if (null != sourceSchemaName) {
@@ -474,14 +358,6 @@ public class Trigger {
 
         if (null != sourceCatalogName) {
             hashedValue += sourceCatalogName.hashCode();
-        }
-
-        if (null != targetCatalogName) {
-            hashedValue += targetCatalogName.hashCode();
-        }
-
-        if (null != targetSchemaName) {
-            hashedValue += targetSchemaName.hashCode();
         }
 
         hashedValue += syncOnUpdate ? 1 : 0;
@@ -518,10 +394,6 @@ public class Trigger {
             hashedValue += excludedColumnNames.hashCode();
         }
 
-        if (null != routerExpression) {
-            hashedValue += routerExpression.hashCode();
-        }
-
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
         }
@@ -530,9 +402,13 @@ public class Trigger {
     }
 
     public boolean isSame(Trigger trigger) {
-        return trigger.sourceTableName.equalsIgnoreCase(sourceTableName)
-                && trigger.sourceGroupId.equalsIgnoreCase(sourceGroupId)
-                && trigger.targetGroupId.equalsIgnoreCase(targetGroupId);
+        return isSame(sourceCatalogName, trigger.sourceCatalogName)
+                && isSame(sourceSchemaName, trigger.sourceSchemaName)
+                && trigger.sourceTableName.equalsIgnoreCase(sourceTableName);
+    }
+
+    protected boolean isSame(String one, String two) {
+        return (one == null && two == null) || (one != null && two != null && one.equals(two));
     }
 
     @Override

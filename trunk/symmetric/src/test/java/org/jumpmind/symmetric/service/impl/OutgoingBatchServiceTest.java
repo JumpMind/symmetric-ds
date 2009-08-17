@@ -63,7 +63,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     public void setUp() {
         batchService = (IOutgoingBatchService) find(Constants.OUTGOING_BATCH_SERVICE);
         dataService = (IDataService) find(Constants.DATA_SERVICE);
-        Set<Long> histKeys = getTriggerService().getHistoryRecords().keySet();
+        Set<Long> histKeys = getTriggerRouterService().getHistoryRecords().keySet();
         assertFalse(histKeys.isEmpty());
         triggerHistId = histKeys.iterator().next().intValue();
     }
@@ -74,8 +74,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         channel.setEnabled(false);
         getConfigurationService().saveChannel(channel);
 
-        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
-                TestConstants.TEST_PREFIX + "outgoing_batch");
+        cleanSlate("sym_data_event", "sym_data",
+                "sym_outgoing_batch");
         int size = 50; // magic number
         int count = 3; // must be <= size
         assertTrue(count <= size);
@@ -104,8 +104,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     protected int getBatchSize(final long batchId) {
         return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
-                PreparedStatement s = conn.prepareStatement("select count(*) " + "from " + TestConstants.TEST_PREFIX
-                        + "data_event where batch_id = ?");
+                PreparedStatement s = conn.prepareStatement("select count(*) from sym_data_event where batch_id = ?");
                 s.setLong(1, batchId);
                 ResultSet rs = s.executeQuery();
                 rs.next();

@@ -27,6 +27,12 @@
     <entry key="$[sym.sync.table.prefix]_trigger">
       <value>1=1</value>
     </entry> 
+    <entry key="$[sym.sync.table.prefix]_router">
+      <value>1=1</value>
+    </entry> 
+    <entry key="$[sym.sync.table.prefix]_trigger_router">
+      <value>1=1</value>
+    </entry>         
     <entry key="$[sym.sync.table.prefix]_node">
       <value>
         node_id = '$(nodeId)' or node_id = (select node_id from $[sym.sync.table.prefix]_node_identity) 
@@ -54,36 +60,47 @@
     </entry>
   </util:map>
 
-  <util:map id="triggerServiceSql">
+  <util:map id="triggerRouterServiceSql">
     <entry key="inactivateTriggerHistorySql">
       <value>
         update $[sym.sync.table.prefix]_trigger_hist set inactive_time = current_timestamp where
         trigger_hist_id=?
       </value>
     </entry>
+    <entry key="selectTriggerRouterPrefixSql">
+      <value>select 
+          t.trigger_id,t.channel_id,t.source_table_name,t.inactive_time,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
+          t.sync_column_level,t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,t.source_schema_name,t.source_catalog_name,
+          t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,t.tx_id_expression,t.create_time as t_create_time,
+          t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by, 
+          r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.initial_load_select,r.router_expression,
+          r.router_name,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by,
+          tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order 
+        from sym_trigger_router tr 
+          inner join sym_trigger t on tr.trigger_id=t.trigger_id 
+          inner join sym_router r on tr.router_id=r.router_id 
+      </value>
+    </entry>
     <entry key="selectGroupTriggersSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger where source_node_group_id = ? order by
-        channel_id
+          where r.source_node_group_id = ? order by t.channel_id
       </value>
     </entry>
     <entry key="activeTriggersForSourceNodeGroupSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger where source_node_group_id = ? and inactive_time
-        is null
+          where r.source_node_group_id = ? and t.inactive_time is null
       </value>
     </entry>
     <entry key="activeTriggersForReloadSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger where source_node_group_id = ? and
-        target_node_group_id = ? and channel_id != ? and inactive_time is null order by
-        initial_load_order
+        where r.source_node_group_id = ? and
+        r.target_node_group_id = ? and t.channel_id != ? and t.inactive_time is null order by
+        tr.initial_load_order
       </value>
     </entry>
     <entry key="inactiveTriggersForSourceNodeGroupSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger t where t.source_node_group_id =
-        ? and t.inactive_time is not null
+        where r.source_node_group_id = ? and t.inactive_time is not null
       </value>
     </entry>
     <entry key="allTriggerHistSql">
@@ -119,37 +136,68 @@
     <entry key="insertTriggerSql">
       <value>
         insert into $[sym.sync.table.prefix]_trigger
-        (source_catalog_name,source_schema_name,source_table_name,target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,router_name,router_expression,tx_id_expression,excluded_column_names,initial_load_select,initial_load_order,create_time,inactive_time,last_update_by,last_update_time)
-        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        (source_catalog_name,source_schema_name,source_table_name,channel_id,sync_on_update,sync_on_insert,sync_on_delete,
+         sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,
+         sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,excluded_column_names,
+         create_time,inactive_time,last_update_by,last_update_time,trigger_id)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="updateTriggerSql">
       <value>
         update $[sym.sync.table.prefix]_trigger
          set source_catalog_name=?,source_schema_name=?,source_table_name=?,
-         target_catalog_name=?,target_schema_name=?,target_table_name=?,source_node_group_id=?,
-         target_node_group_id=?,channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,
+         channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,
          sync_on_incoming_batch=?,name_for_update_trigger=?,name_for_insert_trigger=?,
          name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,
-         sync_on_delete_condition=?,router_name=?,router_expression=?,tx_id_expression=?,excluded_column_names=?,
-         initial_load_select=?,initial_load_order=?,create_time=?,inactive_time=?,last_update_by=?,last_update_time=?
+         sync_on_delete_condition=?,tx_id_expression=?,excluded_column_names=?,
+         inactive_time=?,last_update_by=?,last_update_time=?
         where trigger_id=?
       </value>
-    </entry>            
+    </entry>   
+    <entry key="insertRouterSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_router
+        (target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,
+        router_name,router_expression,initial_load_select,create_time,last_update_by,last_update_time,router_id)
+        values(?,?,?,?,?,?,?,?,?,?,?,?)
+      </value>
+    </entry>
+    <entry key="updateRouterSql">
+      <value>
+        update $[sym.sync.table.prefix]_router
+         set target_catalog_name=?,target_schema_name=?,target_table_name=?,source_node_group_id=?,
+         target_node_group_id=?,router_name=?,router_expression=?,
+         initial_load_select=?,last_update_by=?,last_update_time=?
+        where router_id=?
+      </value>
+    </entry>              
+    <entry key="insertTriggerRouterSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_trigger_router
+        (initial_load_order,create_time,last_update_by,last_update_time,trigger_id,router_id)
+        values(?,?,?,?,?,?)
+      </value>
+    </entry>
+    <entry key="updateTriggerRouterSql">
+      <value>
+        update $[sym.sync.table.prefix]_trigger_router
+         set initial_load_order=?,last_update_by=?,last_update_time=?
+        where trigger_id=? and router_id=?
+      </value>
+    </entry>     
     <entry key="selectTriggerSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger where source_table_name = ? and
-        source_node_group_id = ?
+        where t.source_table_name = ? and r.source_node_group_id = ?
       </value>
     </entry>
     <entry key="selectTriggerTargetSql">
       <value>
-        select * from $[sym.sync.table.prefix]_trigger where source_table_name = ? and
-        target_node_group_id = ? and channel_id = ? and source_node_group_id = ?
+        where t.source_table_name = ? and r.target_node_group_id = ? and t.channel_id = ? and r.source_node_group_id = ?
       </value>
     </entry>
     <entry key="selectTriggerByIdSql">
-      <value>select * from $[sym.sync.table.prefix]_trigger where trigger_id = ?</value>
+      <value>where t.trigger_id = ?</value>
     </entry>
   </util:map>
 

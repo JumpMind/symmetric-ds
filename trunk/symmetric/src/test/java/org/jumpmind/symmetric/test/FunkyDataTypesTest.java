@@ -21,7 +21,7 @@ package org.jumpmind.symmetric.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterMatcher;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,15 +50,15 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
             logger.info("The table did not exist.");
         }
         jdbcTemplate.update("create table " + TABLE_NAME + " (id char(5) not null, ts timestamp(6), ts2 timestamp(9))");
-        Trigger trigger = new Trigger();
-        trigger.setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
-        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
-        trigger.setSourceTableName(TABLE_NAME);
-        trigger.setSyncOnInsert(true);
-        trigger.setSyncOnUpdate(true);
-        trigger.setSyncOnDelete(true);
-        getTriggerService().saveTrigger(trigger);        
+        TriggerRouter trigger = new TriggerRouter();
+        trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
+        trigger.getRouter().setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+        trigger.getTrigger().setSourceTableName(TABLE_NAME);
+        trigger.getTrigger().setSyncOnInsert(true);
+        trigger.getTrigger().setSyncOnUpdate(true);
+        trigger.getTrigger().setSyncOnDelete(true);
+        getTriggerRouterService().saveTriggerRouter(trigger);        
         getSymmetricEngine().syncTriggers();
         final String VERIFICATION_SQL = "select count(*) from sym_data where table_name=? and data_id=(select max(data_id) from sym_data)";
         Assert.assertEquals("There should not be any data captured at this point.", 0, jdbcTemplate.queryForInt(

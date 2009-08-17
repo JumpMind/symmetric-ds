@@ -19,7 +19,7 @@
  */
 package org.jumpmind.symmetric.test;
 
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterMatcher;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -65,21 +65,21 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         jdbcTemplate.update("use other");
         jdbcTemplate.update("create table other_table (id char(5) not null, name varchar(40), primary key(id))");
         jdbcTemplate.update("use " + db);
-        Trigger trigger = new Trigger();
-        trigger.setChannelId("other");
-        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        TriggerRouter triggerRouter = new TriggerRouter();
+        triggerRouter.getTrigger().setChannelId("other");
+        triggerRouter.getRouter().setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        triggerRouter.getRouter().setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         if (catalog) {
-            trigger.setSourceCatalogName("other");
+            triggerRouter.getTrigger().setSourceCatalogName("other");
         }
         if (schema) {
-            trigger.setSourceSchemaName("other");
+            triggerRouter.getTrigger().setSourceSchemaName("other");
         }
-        trigger.setSourceTableName("other_table");
-        trigger.setSyncOnInsert(true);
-        trigger.setSyncOnUpdate(true);
-        trigger.setSyncOnDelete(true);
-        getTriggerService().saveTrigger(trigger);
+        triggerRouter.getTrigger().setSourceTableName("other_table");
+        triggerRouter.getTrigger().setSyncOnInsert(true);
+        triggerRouter.getTrigger().setSyncOnUpdate(true);
+        triggerRouter.getTrigger().setSyncOnDelete(true);
+        getTriggerRouterService().saveTriggerRouter(triggerRouter);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.other_table values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", jdbcTemplate
@@ -99,17 +99,17 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         jdbcTemplate.update("use other");
         jdbcTemplate.update("create table other_table (id char(5) not null, name varchar(40), primary key(id))");
         jdbcTemplate.update("use " + db);
-        Trigger trigger = new Trigger();
-        trigger.setChannelId("other");
-        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setSourceCatalogName("other");
-        trigger.setSourceSchemaName("dbo");
-        trigger.setSourceTableName("other_table");
-        trigger.setSyncOnInsert(true);
-        trigger.setSyncOnUpdate(true);
-        trigger.setSyncOnDelete(true);
-        getTriggerService().saveTrigger(trigger);
+        TriggerRouter trigger = new TriggerRouter();
+        trigger.getTrigger().setChannelId("other");
+        trigger.getRouter().setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getTrigger().setSourceCatalogName("other");
+        trigger.getTrigger().setSourceSchemaName("dbo");
+        trigger.getTrigger().setSourceTableName("other_table");
+        trigger.getTrigger().setSyncOnInsert(true);
+        trigger.getTrigger().setSyncOnUpdate(true);
+        trigger.getTrigger().setSyncOnDelete(true);
+        getTriggerRouterService().saveTriggerRouter(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.dbo.other_table values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate
@@ -129,16 +129,16 @@ public class CrossCatalogSyncTest extends AbstractDatabaseTest {
         } catch (Exception e) { }
         jdbcTemplate.update("create schema other");
         jdbcTemplate.update("create table other.other_table2 (id char(5) not null, name varchar(40), primary key(id))");
-        Trigger trigger = new Trigger();
-        trigger.setChannelId("other");
-        trigger.setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
-        trigger.setSourceSchemaName("other");
-        trigger.setSourceTableName("other_table2");
-        trigger.setSyncOnInsert(true);
-        trigger.setSyncOnUpdate(true);
-        trigger.setSyncOnDelete(true);
-        getTriggerService().saveTrigger(trigger);
+        TriggerRouter trigger = new TriggerRouter();
+        trigger.getTrigger().setChannelId("other");
+        trigger.getRouter().setSourceGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getRouter().setTargetGroupId(TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        trigger.getTrigger().setSourceSchemaName("other");
+        trigger.getTrigger().setSourceTableName("other_table2");
+        trigger.getTrigger().setSyncOnInsert(true);
+        trigger.getTrigger().setSyncOnUpdate(true);
+        trigger.getTrigger().setSyncOnDelete(true);
+        getTriggerRouterService().saveTriggerRouter(trigger);
         getSymmetricEngine().syncTriggers();
         jdbcTemplate.update("insert into other.other_table2 values('00000','first row')");
         Assert.assertEquals("The data event from the other database's other_table was not captured.", 1, jdbcTemplate

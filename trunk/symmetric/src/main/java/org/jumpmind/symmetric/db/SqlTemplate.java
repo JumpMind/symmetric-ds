@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class SqlTemplate {
 
@@ -96,16 +97,16 @@ public class SqlTemplate {
 
     private String newColumnPrefix = "";
 
-    public String createInitalLoadSql(Node node, IDbDialect dialect, Trigger trig, Table metaData) {
+    public String createInitalLoadSql(Node node, IDbDialect dialect, TriggerRouter trig, Table metaData) {
         String sql = sqlTemplates.get(INITIAL_LOAD_SQL_TEMPLATE);
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns).columnString;
         sql = replace("columns", columnsText, sql);
-        sql = replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
-        sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = replace("whereClause", StringUtils.isBlank(trig.getRouter().getInitialLoadSelect()) ? "1=1" : trig.getRouter().getInitialLoadSelect(), sql);
+        sql = replace("tableName", trig.getTrigger().getSourceTableName(), sql);
+        sql = replace("schemaName", trig.getTrigger().getSourceSchemaName() != null ? trig.getTrigger().getSourceSchemaName() + "." : "", sql);
         sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 
@@ -169,7 +170,6 @@ public class SqlTemplate {
      */
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
-
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
@@ -181,7 +181,6 @@ public class SqlTemplate {
 
     public String createPostTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
-
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
         return replaceTemplateVariables(dialect, dml, trigger, history, tablePrefix, metaData, defaultCatalog,
                 defaultSchema, ddl);
@@ -217,7 +216,6 @@ public class SqlTemplate {
                 trigger, history).toUpperCase(), ddl);
         ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
-        ddl = replace("targetGroupId", trigger.getTargetGroupId(), ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
         ddl = replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog, defaultSchema, trigger);

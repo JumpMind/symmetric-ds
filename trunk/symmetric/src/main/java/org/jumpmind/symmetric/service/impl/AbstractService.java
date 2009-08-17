@@ -38,7 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 abstract class AbstractService implements IService {
 
-    protected final ILog log = LogFactory.getLog(getClass());
+    protected ILog log = LogFactory.getLog(getClass());
 
     protected IParameterService parameterService;
 

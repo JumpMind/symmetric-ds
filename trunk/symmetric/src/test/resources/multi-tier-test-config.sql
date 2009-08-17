@@ -39,10 +39,17 @@ values('inbound', 1, 100000, 1, 'a channel dedicated to moving data out from the
 --
 -- Triggers
 --
-insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, sync_on_incoming_batch, last_update_by, last_update_time, create_time)
-values('sync_home_to_workstation', 'home', 'region', 'outbound', 1, 1, 1, 100, 0, 'test', current_timestamp, current_timestamp);
 
-insert into sym_trigger 
-(source_table_name, source_node_group_id, target_node_group_id, channel_id, sync_on_insert, sync_on_update, sync_on_delete, initial_load_order, sync_on_incoming_batch, last_update_by, last_update_time, create_time)
-values('sync_home_to_workstation', 'region', 'workstation', 'outbound', 1, 1, 1, 100, 1, 'test', current_timestamp, current_timestamp);
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(     100000,            'home',             'region', current_timestamp, current_timestamp);
+
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(     200000,          'region',        'workstation', current_timestamp, current_timestamp);  
+
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, sync_on_incoming_batch,  last_update_time,      create_time)
+                         values(      200000,     'sync_home_to_workstation',    'outbound',                      1, current_timestamp,current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(    100000,    100000,                100, current_timestamp, current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(    200000,    200000,                100, current_timestamp, current_timestamp);   
+                  

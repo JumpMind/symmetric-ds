@@ -59,7 +59,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     // TODO Support other operators (like !=) and old data
     public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
-        String expression = dataMetaData.getTrigger().getRouterExpression();
+        String expression = dataMetaData.getTrigger().getRouter().getRouterExpression();
         if (!StringUtils.isBlank(expression)) {
             Map<String, String> columnValues = getNewDataAsString(dataMetaData);
             String[] tokens = expression.split("=");

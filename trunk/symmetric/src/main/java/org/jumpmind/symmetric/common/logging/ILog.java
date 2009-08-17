@@ -1,6 +1,5 @@
 package org.jumpmind.symmetric.common.logging;
 
-import java.util.Locale;
 
 public interface ILog {
 

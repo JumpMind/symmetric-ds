@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.jumpmind.symmetric.ext.ICacheContext;
-import org.jumpmind.symmetric.integrate.IPublisher;
-import org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter;
 import org.jumpmind.symmetric.load.DataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.TableTemplate;

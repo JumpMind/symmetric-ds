@@ -35,12 +35,11 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -51,12 +50,13 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
@@ -69,7 +69,7 @@ import com.csvreader.CsvWriter;
 
 public class DataService extends AbstractService implements IDataService {
 
-    private ITriggerService triggerService;
+    private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
 
@@ -81,16 +81,17 @@ public class DataService extends AbstractService implements IDataService {
 
     private List<IReloadListener> listeners;
 
-    public void insertReloadEvent(final Node targetNode, final Trigger trigger) {
+    public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger) {
         insertReloadEvent(targetNode, trigger, null);
     }
 
-    public void insertReloadEvent(final Node targetNode, final Trigger trigger, final String overrideInitialLoadSelect) {
-        TriggerHistory history = lookupTriggerHistory(trigger);
-        // initial_load_select for table can be overridden by populating the
-        // row_data
-        Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD, overrideInitialLoadSelect, null,
-                history, Constants.CHANNEL_RELOAD, null, null);
+    public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger,
+            final String overrideInitialLoadSelect) {
+        TriggerHistory history = lookupTriggerHistory(trigger.getTrigger());
+        // initial_load_select for table can be overridden by populating the row_data
+        Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD,
+                overrideInitialLoadSelect != null ? overrideInitialLoadSelect : trigger.getRouter()
+                        .getInitialLoadSelect(), null, history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
     }
 
@@ -100,7 +101,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
-        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
 
         if (history == null) {
             throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
@@ -115,7 +116,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
-        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -128,7 +129,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
-        TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtils.escapeCsvData(xml), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -205,8 +206,10 @@ public class DataService extends AbstractService implements IDataService {
         // an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
 
-        List<Trigger> triggers = triggerService.getActiveTriggersForReload(sourceNode.getNodeGroupId(), targetNode
-                .getNodeGroupId());
+        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggersForReload(sourceNode.getNodeGroupId(),
+                targetNode.getNodeGroupId());
+        List<Trigger> triggers = new TriggerSelector(triggerRouters).select();
+        
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
             for (Trigger trigger : triggers) {
@@ -222,7 +225,7 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
 
-        for (Trigger trigger : triggers) {
+        for (TriggerRouter trigger : triggerRouters) {
             insertReloadEvent(targetNode, trigger);
         }
 
@@ -253,12 +256,12 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Trigger trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
 
-        insertSqlEvent(targetNode, trigger, sql);
+        insertSqlEvent(targetNode, trigger.getTrigger(), sql);
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
@@ -273,16 +276,16 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        Trigger trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            String xml = dbDialect.getCreateTableXML(trigger);
-            insertCreateEvent(targetNode, trigger, xml);
+            String xml = dbDialect.getCreateTableXML(trigger.getTrigger());
+            insertCreateEvent(targetNode, trigger.getTrigger(), xml);
         } else if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
-            insertPurgeEvent(targetNode, trigger);
+            insertPurgeEvent(targetNode, trigger.getTrigger());
         }
 
         insertReloadEvent(targetNode, trigger, overrideInitialLoadSelect);
@@ -291,8 +294,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Because we can't add a trigger on the _node table, we are artificially
-     * generating heartbeat events.
+     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
      * 
      * @param node
      */
@@ -314,9 +316,9 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        Trigger trigger = triggerService.getTriggerFor(tableName, parameterService.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
-            data = createData(trigger, whereClause);
+            data = createData(trigger.getTrigger(), whereClause);
         }
         return data;
     }
@@ -332,11 +334,11 @@ public class DataService extends AbstractService implements IDataService {
                 pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger, whereClause),
                         String.class);
             }
-            TriggerHistory history = triggerService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
             if (history == null) {
-                history = triggerService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
+                history = triggerRouterService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
                 if (history == null) {
-                    history = triggerService
+                    history = triggerRouterService
                             .getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
                 }
             }
@@ -462,8 +464,8 @@ public class DataService extends AbstractService implements IDataService {
         listeners.remove(listener);
     }
 
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {
@@ -492,7 +494,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setOldData(results.getString(6));
         data.setCreateTime(results.getDate(7));
         int histId = results.getInt(8);
-        data.setTriggerHistory(triggerService.getHistoryRecordFor(histId));
+        data.setTriggerHistory(triggerRouterService.getHistoryRecordFor(histId));
         data.setChannelId(results.getString(9));
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));

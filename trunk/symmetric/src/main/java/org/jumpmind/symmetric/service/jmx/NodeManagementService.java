@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
@@ -70,7 +70,7 @@ public class NodeManagementService {
     
     private IConfigurationService configurationService;
     
-    private ITriggerService triggerService;
+    private ITriggerRouterService triggerRouterService;
 
     private IRegistrationService registrationService;
 
@@ -104,7 +104,7 @@ public class NodeManagementService {
 
     @ManagedOperation(description = "Synchronize the triggers")
     public void syncTriggers() {
-        triggerService.syncTriggers();
+        triggerRouterService.syncTriggers();
     }
 
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
@@ -398,7 +398,7 @@ public class NodeManagementService {
         this.configurationService = configurationService;
     }
     
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 }

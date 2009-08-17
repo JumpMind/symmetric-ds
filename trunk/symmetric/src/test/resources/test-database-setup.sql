@@ -40,17 +40,27 @@ insert into sym_node_security values ('00003', 'notsecret', 0, {ts '2007-01-01 0
 insert into sym_node_security values ('00000', 'notsecret', 0, {ts '2007-01-01 01:01:01'}, 0, null, '00000');
 insert into sym_node_identity values ('00000');
 
-insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_update_by,last_update_time,name_for_insert_trigger,create_time)
-values('test_triggers_table','test-root-group','test-root-group','testchannel', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp, 'insert_test_tbl_trg',current_timestamp);
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(     1000,   'test-root-group',    'test-root-group', current_timestamp, current_timestamp);
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(     2000,         'symmetric',    'test-root-group', current_timestamp, current_timestamp);
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
+                  values(     3000,   'test-root-group',    'test-node-group2', current_timestamp, current_timestamp);     
+                  
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,                   name_for_insert_trigger,  last_update_time,      create_time)
+                         values(      1000,            'test_triggers_table', 'testchannel',                     'insert_test_tbl_trg', current_timestamp,current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(      1000,      1000,                  1, current_timestamp, current_timestamp);
+                                                                          
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
+                         values(      2000,                 'sym_node_group', 'testchannel', current_timestamp,current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(      2000,      2000,                  1, current_timestamp, current_timestamp);   
 
-insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_update_by,last_update_time,create_time)
-values('sym_node_group','symmetric','test-root-group','config', 1, 1, 1, null, null, null, null, 1, 'chenson', current_timestamp, current_timestamp);
-
-insert into sym_trigger 
-(source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,sync_on_incoming_batch,sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,initial_load_order,last_update_by,last_update_time,name_for_insert_trigger,create_time)
-values('test_sync_incoming_batch','test-root-group','test-node-group2','testchannel', 1, 1, 1, 1, null, null, null, null, 1, 'erilong', current_timestamp,null,current_timestamp);
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
+                         values(      3000,       'test_sync_incoming_batch', 'testchannel', current_timestamp,current_timestamp);
+insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
+                         values(      3000,      3000,                  1, current_timestamp, current_timestamp);   
 
 -- AdditiveDataLoaderFilter test data
 insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);

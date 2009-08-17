@@ -78,8 +78,8 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
     }
 
     private void cleanSlate() {
-        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
-                TestConstants.TEST_PREFIX + "outgoing_batch");
+        cleanSlate("sym_data_event", "sym_data",
+                "sym_outgoing_batch");
     }
 
     @Test

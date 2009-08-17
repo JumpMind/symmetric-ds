@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
@@ -100,7 +101,7 @@ public interface IDbDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
-    public String createInitalLoadSqlFor(Node node, Trigger trigger);
+    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger);
 
     public String createPurgeSqlFor(Node node, Trigger trigger, TriggerHistory history);
 
@@ -169,7 +170,7 @@ public interface IDbDialect {
 
     public String getCreateTableXML(Trigger trig);
 
-    public String getCreateTableSQL(Trigger trig);
+    public String getCreateTableSQL(TriggerRouter trig);
 
     public boolean isBlobSyncSupported();
 
@@ -198,11 +199,11 @@ public interface IDbDialect {
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
 
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceIde,
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
             final PreparedStatementCallback psCallback);
 
     public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql,
-            final SequenceIdentifier sequenceIde, final PreparedStatementCallback psCallback);
+            final SequenceIdentifier sequenceId, final PreparedStatementCallback psCallback);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData);
 

@@ -31,7 +31,7 @@ import javax.sql.DataSource;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -39,7 +39,7 @@ import org.springframework.jdbc.support.JdbcUtils;
 public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
-    private Map<Trigger, Set<Node>> availableNodes = new HashMap<Trigger, Set<Node>>();
+    private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
     private Connection connection;
     private boolean needsCommitted = false;
@@ -55,7 +55,7 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
         return batchesByNodes;
     }
 
-    public Map<Trigger, Set<Node>> getAvailableNodes() {
+    public Map<TriggerRouter, Set<Node>> getAvailableNodes() {
         return availableNodes;
     }
 

@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ISecurityService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -402,7 +402,7 @@ public class SymmetricLauncher {
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
             }
-            ITriggerService triggerService = AppUtils.find(Constants.TRIGGER_SERVICE, engine);
+            ITriggerRouterService triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, engine);
             StringBuilder sqlBuffer = new StringBuilder();
             triggerService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);

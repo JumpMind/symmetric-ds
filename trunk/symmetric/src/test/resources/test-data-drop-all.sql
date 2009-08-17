@@ -5,6 +5,8 @@ drop table sym_data_event;
 drop table sym_data;
 drop table sym_trigger_hist;
 drop table sym_trigger;
+drop table sym_router;
+drop table sym_trigger_router;
 drop table sym_node_security;
 drop table sym_node_identity;
 drop table sym_lock;

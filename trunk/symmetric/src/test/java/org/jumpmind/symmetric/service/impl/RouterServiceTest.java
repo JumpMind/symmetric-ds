@@ -8,7 +8,7 @@ import junit.framework.Assert;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Ignore;
@@ -37,11 +37,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testMultiChannelRoutingToEveryone() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        getTriggerService().saveTrigger(trigger1);
-        Trigger trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
-        getTriggerService().saveTrigger(trigger2);
-        getTriggerService().syncTriggers();
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
+        getTriggerRouterService().saveTriggerRouter(trigger2);
+        getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         NodeChannel otherChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID_OTHER);
         Assert.assertEquals(50, testChannel.getMaxBatchSize());
@@ -90,11 +90,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testColumnMatchTransactionalOnlyRoutingToNode1() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setRouterName("column");
-        trigger1.setRouterExpression("ROUTING_VARCHAR=:NODE_ID");
-        getTriggerService().saveTrigger(trigger1);
-        getTriggerService().syncTriggers();
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterName("column");
+        trigger1.getRouter().setRouterExpression("ROUTING_VARCHAR=:NODE_ID");
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         testChannel.setBatchAlgorithm("transactional");
@@ -129,11 +129,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testSubSelectNonTransactionalRoutingToNode1() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setRouterName("subselect");
-        trigger1.setRouterExpression("c.node_id=:ROUTING_VARCHAR");
-        getTriggerService().saveTrigger(trigger1);
-        getTriggerService().syncTriggers();
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterName("subselect");
+        trigger1.getRouter().setRouterExpression("c.node_id=:ROUTING_VARCHAR");
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        getTriggerRouterService().syncTriggers();
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
@@ -168,11 +168,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testSyncIncomingBatch() throws Exception {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setSyncOnIncomingBatch(true);
-        trigger1.setRouterExpression(null);
-        trigger1.setRouterName(null);
-        getTriggerService().saveTrigger(trigger1);
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getTrigger().setSyncOnIncomingBatch(true);
+        trigger1.getRouter().setRouterExpression(null);
+        trigger1.getRouter().setRouterName(null);
+        getTriggerRouterService().saveTriggerRouter(trigger1);
 
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
@@ -180,7 +180,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setBatchAlgorithm("default");
         getConfigurationService().saveChannel(testChannel);
 
-        getTriggerService().syncTriggers();
+        getTriggerRouterService().syncTriggers();
 
         insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1);
 
@@ -204,12 +204,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testLargeNumberOfEventsToManyNodes() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setRouterName("column");
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterName("column");
         // set up a constant to force the data to be routed through the column data matcher, but to everyone
-        trigger1.setRouterExpression("ROUTING_VARCHAR=00001");
-        getTriggerService().saveTrigger(trigger1);
-        getTriggerService().syncTriggers();
+        trigger1.getRouter().setRouterExpression("ROUTING_VARCHAR=00001");
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        getTriggerRouterService().syncTriggers();
 
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
@@ -241,12 +241,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testBshTransactionalRoutingOnUpdate() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setRouterName("bsh");
-        trigger1.setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterName("bsh");
+        trigger1.getRouter().setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         
-        getTriggerService().saveTrigger(trigger1);
-        getTriggerService().syncTriggers();
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        getTriggerRouterService().syncTriggers();
         
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
@@ -285,12 +285,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     public void testBshTransactionalRoutingInsert() {
         resetBatches();
 
-        Trigger trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.setRouterName("bsh");
-        trigger1.setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterName("bsh");
+        trigger1.getRouter().setRouterExpression("targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         
-        getTriggerService().saveTrigger(trigger1);
-        getTriggerService().syncTriggers();
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+        getTriggerRouterService().syncTriggers();
         
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
@@ -319,16 +319,17 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
     }        
 
-    protected Trigger getTestRoutingTableTrigger(String tableName) {
-        Trigger trigger = getTriggerService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
+    protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
+        TriggerRouter trigger = getTriggerRouterService().getTriggerFor(tableName, TestConstants.TEST_ROOT_NODE_GROUP);
         if (trigger == null) {
-            trigger = new Trigger(tableName);
-            trigger.setSourceGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
-            trigger.setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
+            trigger = new TriggerRouter();
+            trigger.getTrigger().setSourceTableName(tableName);
+            trigger.getRouter().setSourceGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            trigger.getRouter().setTargetGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
             if (tableName.equals(TEST_TABLE_2)) {
-                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
+                trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID_OTHER);
             } else {
-                trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+                trigger.getTrigger().setChannelId(TestConstants.TEST_CHANNEL_ID);
             }
         }
         return trigger;

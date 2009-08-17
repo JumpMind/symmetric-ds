@@ -1,8 +1,8 @@
 package org.jumpmind.symmetric.model;
 
-import org.junit.Test;
-
 import junit.framework.Assert;
+
+import org.junit.Test;
 
 public class NodeUnitTest {
 

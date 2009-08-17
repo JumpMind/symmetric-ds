@@ -39,7 +39,6 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -60,7 +59,7 @@ import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
@@ -101,8 +100,8 @@ public class SymmetricEngine {
     private IClusterService clusterService;
 
     private IPurgeService purgeService;
-
-    private ITriggerService triggerService;
+    
+    private ITriggerRouterService triggerService;
 
     private IDataService dataService;
 
@@ -237,7 +236,7 @@ public class SymmetricEngine {
         clusterService = AppUtils.find(Constants.CLUSTER_SERVICE, this);
         purgeService = AppUtils.find(Constants.PURGE_SERVICE, this);
         dataService = AppUtils.find(Constants.DATA_SERVICE, this);
-        triggerService = AppUtils.find(Constants.TRIGGER_SERVICE, this);
+        triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
         dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
     }
@@ -365,7 +364,7 @@ public class SymmetricEngine {
     /**
      * Call this to resync triggers
      * 
-     * @see ITriggerService#syncTriggers()
+     * @see ITriggerRouterService#syncTriggers()
      */
     public void syncTriggers() {
         triggerService.syncTriggers();

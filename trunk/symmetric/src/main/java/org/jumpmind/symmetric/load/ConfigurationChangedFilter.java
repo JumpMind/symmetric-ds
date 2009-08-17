@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 /**
  * An out of the box filter that checks to see if the SymmetricDS configuration
@@ -45,8 +45,8 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
     private IParameterService parameterService;
 
     private IConfigurationService configurationService;
-
-    private ITriggerService triggerService;
+    
+    private ITriggerRouterService triggerRouterService;
 
     private String tablePrefix;
 
@@ -110,7 +110,7 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         if (loader.getContext().getContextCache().get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION)) {
             log.info("ConfigurationChanged");
-            triggerService.syncTriggers();
+            triggerRouterService.syncTriggers();
         }
     }
 
@@ -122,8 +122,8 @@ public class ConfigurationChangedFilter implements IDataLoaderFilter, IBatchList
         this.tablePrefix = tablePrefix;
     }
 
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 
     public void earlyCommit(IDataLoader loader, IncomingBatch batch) {

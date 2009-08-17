@@ -76,6 +76,7 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -254,13 +255,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
-    public String createInitalLoadSqlFor(Node node, Trigger trigger) {
+    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger) {
         return sqlTemplate.createInitalLoadSql(
                 node,
                 this,
                 trigger,
-                getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
-                        .getSourceTableName(), true)).trim();
+                getMetaDataFor(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(), trigger
+                        .getTrigger().getSourceTableName(), true)).trim();
     }
 
     public String createPurgeSqlFor(Node node, Trigger trigger, TriggerHistory hist) {
@@ -722,9 +723,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return null;
     }
 
-    public String createPostTriggerDDL(DataEventType dml, Trigger config, TriggerHistory hist, String tablePrefix,
+    public String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist, String tablePrefix,
             Table table) {
-        return sqlTemplate.createPostTriggerDDL(this, dml, config, hist, tablePrefix, table, getDefaultCatalog(),
+        return sqlTemplate.createPostTriggerDDL(this, dml, trigger, hist, tablePrefix, table, getDefaultCatalog(),
                 getDefaultSchema());
     }
 
@@ -734,8 +735,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return platform.getCreateTablesSql(db, true, true);
     }
 
-    public String getCreateTableSQL(Trigger trig) {
-        Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
+    public String getCreateTableSQL(TriggerRouter trig) {
+        Table table = getMetaDataFor(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger().getSourceTableName(), true);
         String sql = null;
         try {
             StringWriter buffer = new StringWriter();

@@ -54,7 +54,7 @@ final public class Constants {
 
     public static final String PARAMETER_SERVICE = "parameterService";
     
-    public static final String TRIGGER_SERVICE = "triggerService";
+    public static final String TRIGGER_ROUTER_SERVICE = "triggerRouterService";
 
     public static final String DATALOADER = "dataLoader";
 

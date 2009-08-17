@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.test;
 
 public class TestConstants {
-    public final static String TEST_PREFIX = "sym_";
     public final static String TEST_CLIENT_EXTERNAL_ID = "00001";
     public final static String TEST_ROOT_EXTERNAL_ID = "00000";
     public static final String TEST_ROOT_NODE_GROUP = "test-root-group";

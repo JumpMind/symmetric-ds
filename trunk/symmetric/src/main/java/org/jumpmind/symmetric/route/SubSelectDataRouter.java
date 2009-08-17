@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -44,13 +44,13 @@ public class SubSelectDataRouter extends AbstractDataRouter {
     private IDbDialect dbDialect;
     
     public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
-        Trigger trigger = dataMetaData.getTrigger();
-        String subSelect = trigger.getRouterExpression();
+        TriggerRouter trigger = dataMetaData.getTrigger();
+        String subSelect = trigger.getRouter().getRouterExpression();
         Collection<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect)) {
             SimpleJdbcTemplate simpleTemplate = new SimpleJdbcTemplate(jdbcTemplate);
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, dbDialect);
-            sqlParams.put("NODE_GROUP_ID", trigger.getTargetGroupId());
+            sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getTargetGroupId());
             nodeIds = simpleTemplate.query(String.format("%s%s", sql, subSelect), new ParameterizedSingleColumnRowMapper<String>(), sqlParams);
         } else {
             nodeIds = toNodeIds(nodes);

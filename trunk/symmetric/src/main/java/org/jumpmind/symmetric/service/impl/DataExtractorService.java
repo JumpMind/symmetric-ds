@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
@@ -53,8 +51,8 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -64,7 +62,7 @@ import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
@@ -88,8 +86,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IConfigurationService configurationService;
 
     private IAcknowledgeService acknowledgeService;
-
-    private ITriggerService triggerService;
+    
+    private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
 
@@ -145,26 +143,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<Trigger> triggers = triggerService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
+        List<TriggerRouter> triggers = triggerRouterService.getRegistrationTriggers(parameterService.getNodeGroupId(), node
                 .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggers.size() - 1; i >= 0; i--) {
-                Trigger trigger = triggers.get(i);
-                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger, null));
-                addPurgeCriteriaToConfigurationTables(trigger.getSourceTableName(), sql);
+                TriggerRouter trigger = triggers.get(i);
+                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger.getTrigger(), null));
+                addPurgeCriteriaToConfigurationTables(trigger.getTrigger().getSourceTableName(), sql);
                 CsvUtils.writeSql(sql.toString(), writer);
             }
         }
 
         for (int i = 0; i < triggers.size(); i++) {
-            Trigger trigger = triggers.get(i);
-            TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger, false), trigger);
+            TriggerRouter trigger = triggers.get(i);
+            TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger.getTrigger(), false), trigger.getTrigger());
             hist.setTriggerHistoryId(Integer.MAX_VALUE - i);
-            if (!trigger.getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
+            if (!trigger.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, trigger, hist, writer, null, ctx);
             } else {
-                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getSourceTableName(),
-                        null, hist, trigger.getChannelId(), null, null);
+                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getTrigger().getSourceTableName(),
+                        null, hist, trigger.getTrigger().getChannelId(), null, null);
                 ctx.getDataExtractor().write(writer, data, ctx);
             }
         }
@@ -204,21 +202,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return (IDataExtractor) beanFactory.getBean(beanName);
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, Trigger trigger, BufferedWriter writer) {
-        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getChannelId());
+    public OutgoingBatch extractInitialLoadFor(Node node, TriggerRouter trigger, BufferedWriter writer) {
+        OutgoingBatch batch = new OutgoingBatch(node.getNodeId(), trigger.getTrigger().getChannelId());
         outgoingBatchService.insertOutgoingBatch(batch);
         writeInitialLoad(node, trigger, writer, batch, null);
         return batch;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, final Trigger trigger, BufferedWriter writer,
+    public void extractInitialLoadWithinBatchFor(Node node, final TriggerRouter trigger, BufferedWriter writer,
             DataExtractorContext ctx) {
         writeInitialLoad(node, trigger, writer, null, ctx);
     }
 
-    protected void writeInitialLoad(Node node, Trigger trigger, BufferedWriter writer, final OutgoingBatch batch,
+    protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, final OutgoingBatch batch,
             final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, triggerService.getLatestHistoryRecordFor(trigger.getTriggerId()), writer,
+        writeInitialLoad(node, trigger, triggerRouterService.getLatestHistoryRecordFor(trigger.getTrigger().getTriggerId()), writer,
                 batch, ctx);
     }
 
@@ -233,7 +231,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            batch.
      * @param ctx
      */
-    protected void writeInitialLoad(final Node node, final Trigger trigger, final TriggerHistory hist,
+    protected void writeInitialLoad(final Node node, final TriggerRouter trigger, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
         final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
 
@@ -243,10 +241,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    Table table = dbDialect.getMetaDataFor(trigger, true);
-                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId())
-                            : new NodeChannel(Constants.CHANNEL_RELOAD);
-                    Set<Node> oneNodeSet = new HashSet<Node>();
+                    Table table = dbDialect.getMetaDataFor(trigger.getTrigger(), true);
+                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
+                    Set<Node> oneNodeSet = new HashSet<Node>();                    
                     oneNodeSet.add(node);
                     PreparedStatement st = null;
                     ResultSet rs = null;
@@ -546,8 +543,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
-
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 }
