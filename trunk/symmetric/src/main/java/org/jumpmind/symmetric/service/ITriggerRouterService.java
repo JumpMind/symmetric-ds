@@ -45,10 +45,6 @@ public interface ITriggerRouterService {
     
     public Map<String, List<TriggerRouter>> getTriggerRouters(String configurationTypeId);
 
-    public void inactivateTriggerHistory(TriggerHistory history);
-
-    public TriggerHistory getLatestHistoryRecordFor(int triggerId);
-
     public Map<Integer, List<TriggerRouter>> getActiveTriggerRouters(String sourceNodeGroupId, boolean refreshCache);
 
     public List<TriggerRouter> getActiveTriggerRouters(String sourceNodeGroupId);
@@ -57,14 +53,18 @@ public interface ITriggerRouterService {
 
     public List<TriggerRouter> getInactiveTriggerRouters(String sourceNodeGroupId);
 
-    public TriggerHistory getHistoryRecordFor(int auditId);
-    
-    public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName);
-    
-    public TriggerRouter getTriggerFor(String table, String sourceNodeGroupId);
+    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId);
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
 
+    public void inactivateTriggerHistory(TriggerHistory history);
+
+    public TriggerHistory getNewestTriggerHistoryForTrigger(int triggerId);
+
+    public TriggerHistory getTriggerHistory(int historyId);
+    
+    public TriggerHistory findTriggerHistory(String sourceTableName);
+    
     public Trigger getTriggerById(int triggerId);
 
     public void insert(TriggerHistory newAuditRecord);
