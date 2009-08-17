@@ -27,8 +27,8 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
@@ -63,24 +63,24 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         node = new Node();
         node.setNodeId(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
-        triggerHistory = getTriggerService().getHistoryRecords().values().iterator().next();
+        triggerHistory = getTriggerRouterService().getHistoryRecords().values().iterator().next();
     }
 
     @Test
     public void testInitialLoadExtract() throws Exception {
-        getTriggerService().syncTriggers();
+        getTriggerRouterService().syncTriggers();
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();
         BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();
-        template.update("delete from " + TriggerServiceTest.TEST_TRIGGERS_TABLE);
-        Trigger trigger = getTriggerService().getTriggerFor(TriggerServiceTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
+        TriggerRouter trigger = getTriggerRouterService().getTriggerFor(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
         assertTrue(loadResults.startsWith("nodeid, 00000"), "Unexpected line at the start of the feed.");
         
-        TriggerServiceTest.insert(TriggerServiceTest.INSERT1_VALUES, template, getDbDialect());
-        TriggerServiceTest.insert(TriggerServiceTest.INSERT2_VALUES, template, getDbDialect());
+        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT1_VALUES, template, getDbDialect());
+        TriggerRouterServiceTest.insert(TriggerRouterServiceTest.INSERT2_VALUES, template, getDbDialect());
         
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         loadResults = mockTransport.toString();
@@ -91,8 +91,8 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testExtract() throws Exception {
-        cleanSlate(TestConstants.TEST_PREFIX + "data_event", TestConstants.TEST_PREFIX + "data",
-                TestConstants.TEST_PREFIX + "outgoing_batch");
+        cleanSlate("sym_data_event", "sym_data",
+                "sym_outgoing_batch");
         createDataEvent(triggerHistory, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT, node.getNodeId());
 
         MockOutgoingTransport mockTransport = new MockOutgoingTransport();

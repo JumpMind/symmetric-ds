@@ -23,31 +23,24 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Types;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class TriggerServiceTest extends AbstractDatabaseTest {
-
-    static final Log logger = LogFactory.getLog(TriggerServiceTest.class);
+public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
     public static final String TEST_TRIGGERS_TABLE = "test_triggers_table";
 
     public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
-    public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into "
-            + TestConstants.TEST_PREFIX
-            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_update_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
+    public final static String INSERT_ORACLE_BINARY_TYPE_TRIGGER = "insert into sym_trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_update_by,last_update_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
 
@@ -73,28 +66,27 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
     public final static String UNEXPECTED_INSERT3_CSV_ENDSWITH = "\"inactive\",\"inactive\",\"0\",,,\"1\",\"1\"";
 
     public final static String TEST_TRIGGER_WHERE_CLAUSE = "where source_table_name='" + TEST_TRIGGERS_TABLE
-            + "' and source_node_group_id='" + TestConstants.TEST_ROOT_NODE_GROUP + "' and target_node_group_id='"
-            + TestConstants.TEST_ROOT_NODE_GROUP + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
+            + "' and channel_id='" + TestConstants.TEST_CHANNEL_ID + "'";
 
     public static final String insertSyncIncomingBatchSql = "insert into test_sync_incoming_batch (id, data) values (?, ?)";
 
-    public TriggerServiceTest() throws Exception {
+    public TriggerRouterServiceTest() throws Exception {
         super();
     }
 
-    public TriggerServiceTest(String dbName) {
+    public TriggerRouterServiceTest(String dbName) {
         super(dbName);
     }
 
     @Test
     public void testSchemaSync() throws Exception {
-        ITriggerService service = getTriggerService();
+        ITriggerRouterService service = getTriggerRouterService();
 
         // baseline
         service.syncTriggers();
 
         // get the current number of hist rows
-        int count = getTriggerHistTableRowCount(getSymmetricEngine());
+        int count = getTriggerHistTableRowCount();
 
         Thread.sleep(1000);
 
@@ -102,22 +94,19 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         count = count
                 + getJdbcTemplate()
                         .update(
-                                "update "
-                                        + TestConstants.TEST_PREFIX
-                                        + "trigger set last_update_time=current_timestamp where inactive_time is null and source_node_group_id='"
-                                        + TestConstants.TEST_ROOT_NODE_GROUP
-                                        + "' and (sync_on_update = 1 or sync_on_insert = 1 or sync_on_delete = 1)");
+                                String
+                                        .format(
+                                                "update sym_trigger set last_update_time=current_timestamp where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id='%s'))",
+                                                TestConstants.TEST_ROOT_NODE_GROUP));
 
         service.syncTriggers();
 
-        // check to see that we recorded the rebuilds
-        assertEquals(getTriggerHistTableRowCount(getSymmetricEngine()), count, "Wrong trigger_hist row count. engine="
-                + getDbDialect().getPlatform().getName());
+        Assert.assertEquals("Wrong trigger_hist row count. engine=" + getDbDialect().getPlatform().getName(), count,
+                getTriggerHistTableRowCount());
     }
 
-    private int getTriggerHistTableRowCount(SymmetricEngine engine) {
-        return getJdbcTemplate().queryForInt(
-                "select count(*) from " + TestConstants.TEST_PREFIX + "trigger_hist where trigger_id < 100");
+    private int getTriggerHistTableRowCount() {
+        return getJdbcTemplate().queryForInt("select count(*) from sym_trigger_hist");
     }
 
     @Test
@@ -136,7 +125,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testInitialLoadSql() throws Exception {
-        ITriggerService service = getTriggerService();
+        ITriggerRouterService service = getTriggerRouterService();
         service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
         String sql = getDbDialect().createInitalLoadSqlFor(new Node("1", null, "1.0"),
                 service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
@@ -151,22 +140,23 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testExcludedColumnsFunctionality() throws Exception {
-        ITriggerService service = getTriggerService();
-        
+        ITriggerRouterService service = getTriggerRouterService();
+
         // need to wait for a second to make sure enough time has passed so the
         // update of the config table will have a greater timestamp than the audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        assertEquals(1, jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
-                + "trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=current_timestamp "
-                + TEST_TRIGGER_WHERE_CLAUSE));
+        assertEquals(
+                1,
+                jdbcTemplate
+                        .update("update sym_trigger set excluded_column_names='BOOLEAN_VALUE', last_update_time=current_timestamp "
+                                + TEST_TRIGGER_WHERE_CLAUSE));
 
         service.syncTriggers();
 
-
-        Trigger trigger = service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        assertEquals(jdbcTemplate.queryForInt("select count(*) from " + TestConstants.TEST_PREFIX
-                + "trigger_hist where trigger_id=" + trigger.getTriggerId() + " and inactive_time is null"), 1,
+        TriggerRouter trigger = service.getTriggerFor(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        assertEquals(jdbcTemplate.queryForInt("select count(*) from sym_trigger_hist where trigger_id="
+                + trigger.getTrigger().getTriggerId() + " and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
         assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
@@ -197,8 +187,8 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
     @Test
     public void inactivateTriggersTest() throws Exception {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        jdbcTemplate.update("update " + TestConstants.TEST_PREFIX
-                + "trigger set inactive_time=current_timestamp where source_table_name='" + TEST_TRIGGERS_TABLE + "'");
+        jdbcTemplate.update("update sym_trigger set inactive_time=current_timestamp where source_table_name='"
+                + TEST_TRIGGERS_TABLE + "'");
         getSymmetricEngine().syncTriggers();
 
         Assert.assertEquals(1, insert(INSERT3_VALUES, jdbcTemplate, getDbDialect()));
@@ -214,7 +204,7 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
         if (dialect instanceof OracleDbDialect) {
             getJdbcTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_TRIGGER);
-            ITriggerService triggerService = getTriggerService();
+            ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
             Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
                     .size());
@@ -256,10 +246,8 @@ public class TriggerServiceTest extends AbstractDatabaseTest {
 
     private String getNextDataRow() {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        return (String) jdbcTemplate
-                .queryForObject("select row_data from " + TestConstants.TEST_PREFIX
-                        + "data where data_id = (select max(data_id) from " + TestConstants.TEST_PREFIX + "data)",
-                        String.class);
+        return (String) jdbcTemplate.queryForObject(
+                "select row_data from sym_data where data_id = (select max(data_id) from sym_data)", String.class);
 
     }
 

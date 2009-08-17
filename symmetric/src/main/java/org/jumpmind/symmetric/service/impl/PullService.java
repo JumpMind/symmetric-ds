@@ -25,7 +25,6 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.List;
 
-import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataLoaderService;

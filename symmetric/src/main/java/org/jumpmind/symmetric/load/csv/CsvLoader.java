@@ -44,10 +44,10 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -64,7 +64,7 @@ public class CsvLoader implements IDataLoader {
 
     protected IParameterService parameterService;
 
-    protected ITriggerService triggerService;
+    protected ITriggerRouterService triggerRouterService;
 
     protected INodeService nodeService;
 
@@ -215,22 +215,22 @@ public class CsvLoader implements IDataLoader {
                 // Get the Target Node
                 Node targetNode = nodeService.findIdentity();
                 if (sourceNode != null) {
-                    Trigger trigger = null;
+                    TriggerRouter trigger = null;
                     if (targetNode == null) {
-                        trigger = triggerService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+                        trigger = triggerRouterService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
                     } else {
                         // Get the trigger based upon table name , source node
                         // group id , target node group id and channel id
-                        trigger = triggerService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(), targetNode
-                                .getNodeGroupId(), context.getChannelId());
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
-                            tableName = trigger.getTargetTableName();
+                        trigger = triggerRouterService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
+                                targetNode.getNodeGroupId(), context.getChannelId());
+                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetTableName())) {
+                            tableName = trigger.getRouter().getTargetTableName();
                         }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
-                            schema = trigger.getTargetSchemaName();
+                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetSchemaName())) {
+                            schema = trigger.getRouter().getTargetSchemaName();
                         }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
-                            catalog = trigger.getTargetCatalogName();
+                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetCatalogName())) {
+                            catalog = trigger.getRouter().getTargetCatalogName();
                         }
                     }
                 }
@@ -421,7 +421,7 @@ public class CsvLoader implements IDataLoader {
         dataLoader.setJdbcTemplate(jdbcTemplate);
         dataLoader.setDbDialect(dbDialect);
         dataLoader.setParameterService(parameterService);
-        dataLoader.setTriggerService(triggerService);
+        dataLoader.setTriggerRouterService(triggerRouterService);
         dataLoader.setNodeService(nodeService);
         return dataLoader;
     }
@@ -452,8 +452,8 @@ public class CsvLoader implements IDataLoader {
         this.parameterService = parameterService;
     }
 
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {

@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
@@ -58,7 +59,7 @@ public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
      * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitalLoadSqlFor(Node node, Trigger trigger) {
+    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger) {
         String sql = super.createInitalLoadSqlFor(node, trigger);
         sql = sql.replace("''", "'");
         return sql;

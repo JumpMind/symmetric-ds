@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
     default-lazy-init="true">
 
-    <import resource="classpath:/org/jumpmind/symmetric/services/impl/*-service-sql.xml" />
+    <import resource="classpath*:/org/jumpmind/symmetric/service/impl/*-service-sql.xml" />
 
     <bean id="dbDialect" class="org.jumpmind.symmetric.db.DbDialectFactory" scope="singleton">
         <property name="jdbcTemplate" ref="jdbcTemplate" />
@@ -75,8 +75,8 @@
         </property>        
     </bean>
 
-    <bean id="triggerService" class="org.jumpmind.symmetric.service.impl.TriggerService" scope="singleton" parent="abstractService">
-        <property name="sql" ref="triggerServiceSql" />
+    <bean id="triggerRouterService" class="org.jumpmind.symmetric.service.impl.TriggerRouterService" scope="singleton" parent="abstractService">
+        <property name="sql" ref="triggerRouterServiceSql" />
         <property name="clusterService" ref="clusterService" />
         <property name="configurationService" ref="configurationService"/>
         <property name="rootConfigChannelInitialLoadSelect" ref="rootConfigChannelInitialLoadSelect" />
@@ -90,6 +90,8 @@
                 <value>$[sym.sync.table.prefix]_channel</value>
                 <value>$[sym.sync.table.prefix]_node_channel_ctl</value>
                 <value>$[sym.sync.table.prefix]_trigger</value>
+                <value>$[sym.sync.table.prefix]_router</value>
+                <value>$[sym.sync.table.prefix]_trigger_router</value>
                 <value>$[sym.sync.table.prefix]_node_identity</value>
             </list>
         </property>
@@ -101,7 +103,7 @@
         <property name="batchAlgorithms" ref="batchAlgorithms"/>
         <property name="dataService" ref="dataService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="configurationService" ref="configurationService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="clusterService" ref="clusterService" />
@@ -119,7 +121,7 @@
         <property name="routingService" ref="routingService"/>
         <property name="dataService" ref="dataService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="configurationService" ref="configurationService" />
         <property name="context" ref="extractorContext" />
@@ -127,7 +129,7 @@
 
     <bean id="dataService" class="org.jumpmind.symmetric.service.impl.DataService" scope="singleton" parent="abstractService">
         <property name="sql" ref="dataServiceSql" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="clusterService" ref="clusterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
@@ -161,7 +163,7 @@
     <bean id="dataLoader" class="org.jumpmind.symmetric.load.csv.CsvLoader" scope="prototype">
         <property name="dbDialect" ref="dbDialect" />
         <property name="jdbcTemplate" ref="dataLoaderTemplate" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
     </bean>
@@ -218,7 +220,7 @@
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
                         <property name="dataExtractorService" ref="dataExtractorService" />
-                        <property name="triggerService" ref="triggerService" />
+                        <property name="triggerRouterService" ref="triggerRouterService" />
                         <property name="nodeService" ref="nodeService" />
                     </bean>
                 </entry>

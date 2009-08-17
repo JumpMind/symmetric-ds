@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public interface IDataExtractorService {
@@ -40,9 +40,9 @@ public interface IDataExtractorService {
 
     public void extractConfigurationStandalone(Node node, BufferedWriter out) throws IOException;
 
-    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, BufferedWriter writer);
+    public OutgoingBatch extractInitialLoadFor(Node node, TriggerRouter config, BufferedWriter writer);
 
-    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger, BufferedWriter writer,
+    public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, BufferedWriter writer,
             DataExtractorContext ctx);
 
     /**

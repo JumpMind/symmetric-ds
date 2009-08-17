@@ -48,7 +48,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
@@ -115,9 +115,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     protected void checkForFailedTriggers() {
-        ITriggerService service = AppUtils.find(Constants.TRIGGER_SERVICE, getClientEngine());
+        ITriggerRouterService service = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, getClientEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
-        service = AppUtils.find(Constants.TRIGGER_SERVICE, getRootEngine());
+        service = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, getRootEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());
     }
     
@@ -383,15 +383,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getRootEngine().purge();
         getClientEngine().purge();
         Assert.assertTrue("Expected most data rows to have been purged.", rootJdbcTemplate
-                .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "data") < 5);
+                .queryForInt("select count(*) from sym_data") < 5);
         Assert.assertTrue("Expected most data rows to have been purged.", clientJdbcTemplate
-                .queryForInt("select count(*) from " + TestConstants.TEST_PREFIX + "data") < 5);
+                .queryForInt("select count(*) from sym_data") < 5);
     }
 
     @Test
     public void testHeartbeat() throws Exception {
-        final String checkHeartbeatSql = "select heartbeat_time from " + TestConstants.TEST_PREFIX
-                + "node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
+        final String checkHeartbeatSql = "select heartbeat_time from sym_node where external_id='" + TestConstants.TEST_CLIENT_EXTERNAL_ID + "'";
         long ts = System.currentTimeMillis();
         Thread.sleep(1000);
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());

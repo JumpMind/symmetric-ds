@@ -25,13 +25,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 
 /**
- * Provides an API to configure {@link Trigger}s
+ * Provides an API to configure {@link TriggerRouter}s
  */
-public interface ITriggerService {
+public interface ITriggerRouterService {
 
     /**
      * Return a list of triggers used when extraction configuration data during 
@@ -39,29 +41,29 @@ public interface ITriggerService {
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<Trigger> getRegistrationTriggers(String sourceGroupId, String targetGroupId);
+    public List<TriggerRouter> getRegistrationTriggers(String sourceGroupId, String targetGroupId);
     
-    public Map<String, List<Trigger>> getTriggersByChannelFor(String configurationTypeId);
+    public Map<String, List<TriggerRouter>> getTriggersByChannelFor(String configurationTypeId);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 
     public TriggerHistory getLatestHistoryRecordFor(int triggerId);
 
-    public Map<Integer, Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId, boolean refreshCache);
+    public Map<Integer, List<TriggerRouter>> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId, boolean refreshCache);
 
-    public List<Trigger> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
+    public List<TriggerRouter> getActiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 
-    public List<Trigger> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
+    public List<TriggerRouter> getActiveTriggersForReload(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public List<Trigger> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
+    public List<TriggerRouter> getInactiveTriggersForSourceNodeGroup(String sourceNodeGroupId);
 
     public TriggerHistory getHistoryRecordFor(int auditId);
     
     public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName);
     
-    public Trigger getTriggerFor(String table, String sourceNodeGroupId);
+    public TriggerRouter getTriggerFor(String table, String sourceNodeGroupId);
 
-    public Trigger getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
+    public TriggerRouter getTriggerForTarget(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
 
     public Trigger getTriggerById(int triggerId);
 
@@ -69,6 +71,10 @@ public interface ITriggerService {
 
     public Map<Long, TriggerHistory> getHistoryRecords();
 
+    public void saveTriggerRouter(TriggerRouter trigger);
+    
+    public void saveRouter(Router router);
+    
     public void saveTrigger(Trigger trigger);
     
     public void syncTriggers();

@@ -12,6 +12,7 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,7 @@ public interface IDataService {
     public void insertReloadEvent(Node targetNode);
 
     @Transactional
-    public void insertReloadEvent(final Node targetNode, final Trigger trigger);
+    public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
     
     @Transactional
     public void insertResendConfigEvent(final Node targetNode);    

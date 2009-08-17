@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.IRouterContext;
@@ -55,15 +55,15 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * This service is responsible for routing data to specific nodes and managing
- * the batching of data to be delivered to each node.
+ * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
+ * each node.
  * 
  * @since 2.0
  */
@@ -75,7 +75,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     private IConfigurationService configurationService;
 
-    private ITriggerService triggerService;
+    private ITriggerRouterService triggerRouterService;
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -116,10 +116,9 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we
-     * decide to multi-thread the routing it is a simple matter of inserting a
-     * thread pool here and waiting for all channels to be processed. The other
-     * reason is to reduce the number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
+     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
+     * to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -210,7 +209,7 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
-    protected Set<Node> findAvailableNodes(Trigger trigger, RouterContext context) {
+    protected Set<Node> findAvailableNodes(TriggerRouter trigger, RouterContext context) {
         Set<Node> nodes = context.getAvailableNodes().get(trigger);
         if (nodes == null) {
             nodes = new HashSet<Node>();
@@ -232,10 +231,8 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * Pre-read data and fill up a queue so we can peek ahead to see if we have
-     * crossed a database transaction boundary. Then route each {@link Data}
-     * while continuing to keep the queue filled until the result set is
-     * entirely read.
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
+     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
      * 
      * @param conn
      *            The connection to use for selecting the data.
@@ -284,30 +281,35 @@ public class RouterService extends AbstractService implements IRouterService {
             throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         context.setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
-        Trigger trigger = getTriggerForData(data);
-        Table table = dbDialect.getMetaDataFor(trigger, true);
-        DataMetaData dataMetaData = new DataMetaData(data, table, trigger, context.getChannel());
-        if (trigger != null) {
-            context.resetForNextData();
-            if (!context.getChannel().isIgnored()) {
-                IDataRouter dataRouter = getDataRouter(trigger);
-                context.addUsedDataRouter(dataRouter);
-                long ts = System.currentTimeMillis();
-                Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(trigger,
-                        context), false);
-                context.incrementStat(System.currentTimeMillis() - ts, "dataRouter");
-                insertDataEvents(context, dataMetaData, nodeIds);
+        List<TriggerRouter> triggerRouters = getTriggerForData(data);
+        if (triggerRouters != null && triggerRouters.size() > 0) {
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
+                DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context.getChannel());
+
+                context.resetForNextData();
+                if (!context.getChannel().isIgnored()) {
+                    IDataRouter dataRouter = getDataRouter(triggerRouter);
+                    context.addUsedDataRouter(dataRouter);
+                    long ts = System.currentTimeMillis();
+                    Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
+                            triggerRouter, context), false);
+                    context.incrementStat(System.currentTimeMillis() - ts, "dataRouter");
+                    insertDataEvents(context, dataMetaData, nodeIds);
+
+                }
+
+                if (!context.isRouted()) {
+                    // mark as not routed anywhere
+                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1);
+                }
+
+                if (context.isNeedsCommitted()) {
+                    context.commit();
+                }
 
             }
 
-            if (!context.isRouted()) {
-                // mark as not routed anywhere
-                dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1);
-            }
-
-            if (context.isNeedsCommitted()) {
-                context.commit();
-            }
         } else {
             log.warn("TriggerProcessingFailedMissing", data.getTriggerHistory().getTriggerId(), data.getDataId());
         }
@@ -352,12 +354,12 @@ public class RouterService extends AbstractService implements IRouterService {
         context.setNeedsCommitted(true);
     }
 
-    protected IDataRouter getDataRouter(Trigger trigger) {
+    protected IDataRouter getDataRouter(TriggerRouter trigger) {
         IDataRouter router = null;
-        if (!StringUtils.isBlank(trigger.getRouterName())) {
-            router = routers.get(trigger.getRouterName());
+        if (!StringUtils.isBlank(trigger.getRouter().getRouterName())) {
+            router = routers.get(trigger.getRouter().getRouterName());
             if (router == null) {
-                log.warn("RouterMissing", trigger.getRouterName(), trigger.getTriggerId());
+                log.warn("RouterMissing", trigger.getRouter().getRouterName(), trigger.getTrigger().getTriggerId());
             }
         }
 
@@ -377,18 +379,10 @@ public class RouterService extends AbstractService implements IRouterService {
         return data;
     }
 
-    protected Trigger getTriggerForData(Data data) {
-        Trigger trigger = triggerService.getActiveTriggersForSourceNodeGroup(
+    protected List<TriggerRouter> getTriggerForData(Data data) {
+        return triggerRouterService.getActiveTriggersForSourceNodeGroup(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
                 (data.getTriggerHistory().getTriggerId()));
-        if (trigger == null) {
-            trigger = triggerService.getTriggerById(data.getTriggerHistory().getTriggerId());
-            if (trigger == null) {
-                throw new IllegalStateException(String.format("Could not find trigger with the id of %s", data
-                        .getTriggerHistory().getTriggerId()));
-            }
-        }
-        return trigger;
     }
 
     public void addDataRouter(String name, IDataRouter dataRouter) {
@@ -427,7 +421,7 @@ public class RouterService extends AbstractService implements IRouterService {
         this.batchAlgorithms = batchAlgorithms;
     }
 
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 }

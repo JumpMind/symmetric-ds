@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 import org.jumpmind.symmetric.transport.ITransportManager;
@@ -82,8 +82,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     private IAcknowledgeService acknowledgeService;
 
     private IRegistrationService registrationService;
-
-    private ITriggerService triggerService;
+    
+    private ITriggerRouterService triggerRouterService;
 
     private ITransportManager transportManager;
 
@@ -143,7 +143,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         }
 
         if (ext instanceof ITriggerCreationListener) {
-            triggerService.addTriggerCreationListeners((ITriggerCreationListener) ext);
+            triggerRouterService.addTriggerCreationListeners((ITriggerCreationListener) ext);
         }
 
         if (ext instanceof IBatchListener) {
@@ -230,8 +230,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     public void setRoutingService(IRouterService routingService) {
         this.routingService = routingService;
     }
-
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 }

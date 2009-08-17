@@ -19,7 +19,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import org.apache.commons.logging.impl.NoOpLog;
+import org.jumpmind.symmetric.common.logging.NoOpLog;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.symmetric.web.BandwidthSamplerServlet;
 import org.junit.Assert;
@@ -36,7 +36,7 @@ public class BandwidthServiceUnitTest {
     public void testDownloadKbps() throws Exception {
 
         BandwidthService service = new BandwidthService();
-
+        service.log = new NoOpLog();
         int port = 9768;
         BandwidthSamplerServlet servlet = new BandwidthSamplerServlet();
         Server server = startServer(port, "", servlet);

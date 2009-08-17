@@ -10,7 +10,7 @@
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="registrationService" ref="registrationService" />
         <property name="transportManager" ref="transportManager" />
@@ -20,7 +20,7 @@
     <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
-        <property name="triggerService" ref="triggerService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="tablePrefix" value="$[sym.sync.table.prefix]" />
     </bean>
 

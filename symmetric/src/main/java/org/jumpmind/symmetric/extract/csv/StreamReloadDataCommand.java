@@ -27,29 +27,34 @@ import java.io.IOException;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.ITriggerService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     private IDataExtractorService dataExtractorService;
 
-    private ITriggerService triggerService;
+    private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
         int id = data.getTriggerHistory().getTriggerId();
-        Trigger trigger = triggerService.getTriggerById(id);
+        Trigger trigger = triggerRouterService.getTriggerById(id);
         if (trigger != null) {
+            TriggerRouter triggerRouter = new TriggerRouter();
+            triggerRouter.setTrigger(trigger);
+            triggerRouter.setRouter(new Router());
             // The initial_load_select can be overridden
-            if (data.getRowData() != null) {                
-                trigger.setInitialLoadSelect(data.getRowData());
+            if (data.getRowData() != null) {      
+                triggerRouter.getRouter().setInitialLoadSelect(data.getRowData());
             }
             Node node = nodeService.findNode(context.getBatch().getNodeId());
-            dataExtractorService.extractInitialLoadWithinBatchFor(node, trigger, out, context);
+            dataExtractorService.extractInitialLoadWithinBatchFor(node, triggerRouter, out, context);
             out.flush();
         } else {
             log.error("TriggerUnavailable", id);
@@ -60,8 +65,8 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
         this.dataExtractorService = dataExtractorService;
     }
 
-    public void setTriggerService(ITriggerService triggerService) {
-        this.triggerService = triggerService;
+    public void setTriggerRouterService(ITriggerRouterService triggerService) {
+        this.triggerRouterService = triggerService;
     }
 
     public void setNodeService(INodeService nodeService) {

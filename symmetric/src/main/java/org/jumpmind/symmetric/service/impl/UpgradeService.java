@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;

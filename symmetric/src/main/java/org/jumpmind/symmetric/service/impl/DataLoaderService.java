@@ -37,7 +37,6 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;

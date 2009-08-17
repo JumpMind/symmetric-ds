@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -42,26 +43,31 @@ public class MockDataService implements IDataService {
     }
 
     public Data createData(String tableName) {
-        return null;
-    }
 
-    public Date findCreateTimeOfEvent(long dataId) {
         return null;
     }
 
     public Data createData(String tableName, String whereClause) {
+
         return null;
     }
 
-    public Map<String, String> getRowDataAsMap(Data data) {
+    public Date findCreateTimeOfEvent(long dataId) {
+
         return null;
     }
 
     public DataRef getDataRef() {
+
         return null;
     }
 
-    public void saveDataRef(DataRef dataRef) {
+    public Map<String, String> getRowDataAsMap(Data data) {
+
+        return null;
+    }
+
+    public void heartbeat() {
 
     }
 
@@ -70,6 +76,7 @@ public class MockDataService implements IDataService {
     }
 
     public long insertData(Data data) {
+
         return 0;
     }
 
@@ -82,10 +89,6 @@ public class MockDataService implements IDataService {
     }
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes) {
-
-    }
-
-    public void insertDataEvent(Data data, String channelId, String transactionId, List<Node> nodes) {
 
     }
 
@@ -105,7 +108,11 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertReloadEvent(Node targetNode, Trigger trigger) {
+    public void insertReloadEvent(Node targetNode, TriggerRouter trigger) {
+
+    }
+
+    public void insertResendConfigEvent(Node targetNode) {
 
     }
 
@@ -115,6 +122,11 @@ public class MockDataService implements IDataService {
 
     public void insertSqlEvent(Node targetNode, String sql) {
 
+    }
+
+    public Data readData(ResultSet results) throws SQLException {
+
+        return null;
     }
 
     public String reloadNode(String nodeId) {
@@ -127,8 +139,22 @@ public class MockDataService implements IDataService {
         return null;
     }
 
+    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
+
+        return null;
+    }
+
     public void removeReloadListener(IReloadListener listener) {
 
+    }
+
+    public void saveDataRef(DataRef dataRef) {
+
+    }
+
+    public String sendSQL(String nodeId, String tableName, String sql) {
+
+        return null;
     }
 
     public void setReloadListeners(List<IReloadListener> listeners) {
@@ -137,30 +163,6 @@ public class MockDataService implements IDataService {
 
     public void setRowDataFromMap(Data data, Map<String, String> map) {
 
-    }
-
-    public String[] tokenizeCsvData(String csvData) {
-
-        return null;
-    }
-
-    public String reloadTable(String nodeId, String tableName, String overrideInitialLoadSelect) {
-        return null;
-    }
-
-    public String sendSQL(String nodeId, String tableName, String sql) {
-        return null;
-    }
-
-    public void insertResendConfigEvent(Node targetNode) {
-    }
-
-    public Data readData(ResultSet results) throws SQLException {
-        return null;
-    }
-
-    public void heartbeat() {
-        
     }
 
 }

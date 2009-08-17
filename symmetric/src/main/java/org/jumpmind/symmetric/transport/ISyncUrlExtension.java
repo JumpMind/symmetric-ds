@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.transport;
 import java.net.URI;
 
 import org.jumpmind.symmetric.ext.IExtensionPoint;
+import org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector;
 
 /**
  * This {@link IExtensionPoint} is used to select an appropriate URL based on

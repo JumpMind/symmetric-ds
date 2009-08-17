@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IExtractListener;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -60,11 +60,11 @@ public class MockDataExtractorService implements IDataExtractorService {
         return false;
     }
 
-    public OutgoingBatch extractInitialLoadFor(Node node, Trigger config, BufferedWriter writer) {
+    public OutgoingBatch extractInitialLoadFor(Node node, TriggerRouter config, BufferedWriter writer) {
         return null;
     }
 
-    public void extractInitialLoadWithinBatchFor(Node node, Trigger trigger, BufferedWriter writer,
+    public void extractInitialLoadWithinBatchFor(Node node, TriggerRouter trigger, BufferedWriter writer,
             DataExtractorContext ctx) {
     }
 
