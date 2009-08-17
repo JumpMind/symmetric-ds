@@ -216,7 +216,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, final OutgoingBatch batch,
             final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, triggerRouterService.getLatestHistoryRecordFor(trigger.getTrigger().getTriggerId()), writer,
+        writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger().getTriggerId()), writer,
                 batch, ctx);
     }
 

@@ -101,7 +101,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
-        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
 
         if (history == null) {
             throw new RuntimeException("Cannot find history for trigger " + trigger.getTriggerId() + ", "
@@ -116,7 +116,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
-        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -129,7 +129,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
-        TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtils.escapeCsvData(xml), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, Constants.CHANNEL_RELOAD, targetNode.getNodeId());
@@ -256,7 +256,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
@@ -276,7 +276,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
@@ -316,7 +316,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.getTriggerFor(tableName, parameterService.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
             data = createData(trigger.getTrigger(), whereClause);
         }
@@ -334,12 +334,12 @@ public class DataService extends AbstractService implements IDataService {
                 pkData = (String) jdbcTemplate.queryForObject(dbDialect.createCsvPrimaryKeySql(trigger, whereClause),
                         String.class);
             }
-            TriggerHistory history = triggerRouterService.getLatestHistoryRecordFor(trigger.getTriggerId());
+            TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
             if (history == null) {
-                history = triggerRouterService.getTriggerHistoryForSourceTable(trigger.getSourceTableName());
+                history = triggerRouterService.findTriggerHistory(trigger.getSourceTableName());
                 if (history == null) {
                     history = triggerRouterService
-                            .getTriggerHistoryForSourceTable(trigger.getSourceTableName().toUpperCase());
+                            .findTriggerHistory(trigger.getSourceTableName().toUpperCase());
                 }
             }
             if (history != null) {
@@ -494,7 +494,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setOldData(results.getString(6));
         data.setCreateTime(results.getDate(7));
         int histId = results.getInt(8);
-        data.setTriggerHistory(triggerRouterService.getHistoryRecordFor(histId));
+        data.setTriggerHistory(triggerRouterService.getTriggerHistory(histId));
         data.setChannelId(results.getString(9));
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));

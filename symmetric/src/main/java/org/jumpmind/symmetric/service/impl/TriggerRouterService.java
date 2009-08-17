@@ -91,7 +91,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return retMap;
     }
 
-    public TriggerHistory getTriggerHistoryForSourceTable(String sourceTableName) {
+    public TriggerHistory findTriggerHistory(String sourceTableName) {
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
         jdbcTemplate.query(String.format("%s%s", getSql("allTriggerHistSql"),
                 getSql("triggerHistBySourceTableWhereSql")), new Object[] { sourceTableName },
@@ -103,7 +103,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    public TriggerHistory getHistoryRecordFor(int histId) {
+    public TriggerHistory getTriggerHistory(int histId) {
         TriggerHistory history = historyMap.get(histId);
         if (history == null && histId >= 0) {
             try {
@@ -116,7 +116,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return history;
     }
 
-    public TriggerHistory getLatestHistoryRecordFor(int triggerId) {
+    public TriggerHistory getNewestTriggerHistoryForTrigger(int triggerId) {
         try {
             return (TriggerHistory) jdbcTemplate.queryForObject(getSql("latestTriggerHistSql"),
                     new Object[] { triggerId }, new TriggerHistoryMapper());
@@ -194,7 +194,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     @SuppressWarnings("unchecked")
-    public TriggerRouter getTriggerFor(String table, String sourceNodeGroupId) {
+    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix() + getSql("selectTriggerSql"),
                 new Object[] { table, sourceNodeGroupId }, new TriggerRouterMapper());
         if (configs.size() > 0) {
@@ -414,7 +414,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> triggers = new TriggerSelector(getInactiveTriggerRouters(parameterService
                 .getString(ParameterConstants.NODE_GROUP_ID))).select();
         for (Trigger trigger : triggers) {
-            TriggerHistory history = getLatestHistoryRecordFor(trigger.getTriggerId());
+            TriggerHistory history = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
             if (history != null) {
                 log.info("TriggersRemoving", history.getSourceTableName());
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
@@ -478,7 +478,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getSourceTableName(), false);
 
                 if (table != null) {
-                    TriggerHistory latestHistoryBeforeRebuild = getLatestHistoryRecordFor(trigger.getTriggerId());
+                    TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
 
                     boolean forceRebuildOfTriggers = false;
                     if (latestHistoryBeforeRebuild == null) {
@@ -594,7 +594,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
             insert(newTriggerHist);
-            hist = getLatestHistoryRecordFor(trigger.getTriggerId());
+            hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         }
 
         if (!triggerExists && triggerIsActive) {
