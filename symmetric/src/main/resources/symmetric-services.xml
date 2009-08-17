@@ -89,6 +89,7 @@
                 <value>$[sym.sync.table.prefix]_parameter</value>
                 <value>$[sym.sync.table.prefix]_channel</value>
                 <value>$[sym.sync.table.prefix]_node_channel_ctl</value>
+                <value>$[sym.sync.table.prefix]_node_group_channel_window</value>
                 <value>$[sym.sync.table.prefix]_trigger</value>
                 <value>$[sym.sync.table.prefix]_router</value>
                 <value>$[sym.sync.table.prefix]_trigger_router</value>
