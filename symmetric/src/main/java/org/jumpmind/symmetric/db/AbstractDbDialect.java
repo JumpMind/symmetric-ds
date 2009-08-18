@@ -823,7 +823,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     protected URL getSupportDatabaseDdlXml() {
-        return AbstractDbDialect.class.getResource("/ddl-config.xml");
+        return AbstractDbDialect.class.getResource("/symmetric-schema.xml");
     }
 
     protected void fixForeignKeys(Table table, String tablePrefix, boolean clone) throws CloneNotSupportedException {
