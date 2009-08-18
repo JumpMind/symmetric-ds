@@ -41,26 +41,26 @@ insert into sym_node_security values ('00000', 'notsecret', 0, {ts '2007-01-01 0
 insert into sym_node_identity values ('00000');
 
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
-                  values(     1000,   'test-root-group',    'test-root-group', current_timestamp, current_timestamp);
+                  values(   '1000',   'test-root-group',    'test-root-group', current_timestamp, current_timestamp);
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
-                  values(     2000,         'symmetric',    'test-root-group', current_timestamp, current_timestamp);
+                  values(   '2000',         'symmetric',    'test-root-group', current_timestamp, current_timestamp);
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,       create_time,  last_update_time) 
-                  values(     3000,   'test-root-group',    'test-node-group2', current_timestamp, current_timestamp);     
+                  values(   '3000',   'test-root-group',    'test-node-group2', current_timestamp, current_timestamp);     
                   
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,                   name_for_insert_trigger,  last_update_time,      create_time)
-                         values(      1000,            'test_triggers_table', 'testchannel',                     'insert_test_tbl_trg', current_timestamp,current_timestamp);
+                         values(    '1000',            'test_triggers_table', 'testchannel',                     'insert_test_tbl_trg', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
-                         values(      1000,      1000,                  1, current_timestamp, current_timestamp);
+                         values(    '1000',    '1000',                  1, current_timestamp, current_timestamp);
                                                                           
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(      2000,                 'sym_node_group', 'testchannel', current_timestamp,current_timestamp);
+                         values(    '2000',                 'sym_node_group', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
-                         values(      2000,      2000,                  1, current_timestamp, current_timestamp);   
+                         values(    '2000',    '2000',                  1, current_timestamp, current_timestamp);   
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,  last_update_time,      create_time)
-                         values(      3000,       'test_sync_incoming_batch', 'testchannel', current_timestamp,current_timestamp);
+                         values(    '3000',       'test_sync_incoming_batch', 'testchannel', current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
-                         values(      3000,      3000,                  1, current_timestamp, current_timestamp);   
+                         values(    '3000',    '3000',                  1, current_timestamp, current_timestamp);   
 
 -- AdditiveDataLoaderFilter test data
 insert into TEST_ADD_DL_TABLE_1 values('k3','k4',1,2.0,3,4.0,5,'6',7);

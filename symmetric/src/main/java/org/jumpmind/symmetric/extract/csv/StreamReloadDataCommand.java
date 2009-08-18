@@ -43,7 +43,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
     private INodeService nodeService;
 
     public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        int id = data.getTriggerHistory().getTriggerId();
+        String id = data.getTriggerHistory().getTriggerId();
         Trigger trigger = triggerRouterService.getTriggerById(id);
         if (trigger != null) {
             TriggerRouter triggerRouter = new TriggerRouter();

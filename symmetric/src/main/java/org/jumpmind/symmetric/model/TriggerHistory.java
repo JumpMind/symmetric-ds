@@ -37,7 +37,7 @@ public class TriggerHistory extends AbstractCsvData {
 
     private int triggerHistoryId;
 
-    private int triggerId;
+    private String triggerId;
 
     private String sourceTableName;
 
@@ -250,11 +250,11 @@ public class TriggerHistory extends AbstractCsvData {
         this.sourceSchemaName = schemaName;
     }
 
-    public int getTriggerId() {
+    public String getTriggerId() {
         return triggerId;
     }
 
-    public void setTriggerId(int triggerId) {
+    public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
     }
 

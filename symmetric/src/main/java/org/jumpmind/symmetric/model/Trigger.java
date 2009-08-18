@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
@@ -40,12 +41,12 @@ public class Trigger {
     static final Log logger = LogFactory.getLog(Trigger.class);
 
     private static int maxTriggerId;
-    
+
     private static final long serialVersionUID = 8947288471097851573L;
 
     private static final String DEFAULT_CONDITION = "1=1";
 
-    private int triggerId;
+    private String triggerId;
 
     private String sourceTableName;
 
@@ -94,7 +95,7 @@ public class Trigger {
     private String lastUpdateBy;
 
     public Trigger() {
-        triggerId = maxTriggerId++;
+        triggerId = Integer.toString(maxTriggerId++);
     }
 
     public Trigger(String tableName) {
@@ -299,14 +300,17 @@ public class Trigger {
         this.nameForUpdateTrigger = nameForUpdateTrigger;
     }
 
-    public int getTriggerId() {
+    public String getTriggerId() {
         return triggerId;
     }
 
-    public void setTriggerId(int triggerId) {        
+    public void setTriggerId(String triggerId) {
         this.triggerId = triggerId;
-        if (triggerId >= maxTriggerId) {
-            maxTriggerId = triggerId+1;
+        if (StringUtils.isNumeric(triggerId)) {
+            int id = Integer.parseInt(triggerId);
+            if (id >= maxTriggerId) {
+                maxTriggerId = id + 1;
+            }
         }
     }
 
@@ -343,7 +347,7 @@ public class Trigger {
     }
 
     public long getHashedValue() {
-        long hashedValue = triggerId;
+        long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
             hashedValue += sourceTableName.hashCode();
         }
@@ -423,7 +427,7 @@ public class Trigger {
 
     @Override
     public int hashCode() {
-        return triggerId;
+        return triggerId != null ? triggerId.hashCode() : super.hashCode();
     }
 
 }

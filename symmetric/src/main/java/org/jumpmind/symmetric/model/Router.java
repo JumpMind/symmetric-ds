@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,8 +37,8 @@ public class Router {
     private static final long serialVersionUID = 8947288471097851573L;
 
     private static int maxRouterId;
-    
-    private int routerId;
+
+    private String routerId;
 
     private String targetTableName;
 
@@ -50,12 +51,12 @@ public class Router {
     private String targetCatalogName;
 
     private String routerName = null;
-    
+
     /**
      * Default to routing all data to all nodes.
      */
     private String routerExpression = null;
-    
+
     private String initialLoadSelect = null;
 
     private Date createTime;
@@ -65,7 +66,7 @@ public class Router {
     private String lastUpdateBy;
 
     public Router() {
-        routerId = maxRouterId++;
+        routerId = Integer.toString(maxRouterId++);
     }
 
     public Date getCreateTime() {
@@ -113,14 +114,17 @@ public class Router {
         this.targetNodeGroupId = targetDomainName;
     }
 
-    public int getRouterId() {
+    public String getRouterId() {
         return routerId;
     }
 
-    public void setRouterId(int routerId) {
+    public void setRouterId(String routerId) {
         this.routerId = routerId;
-        if (routerId >= maxRouterId) {
-            maxRouterId = routerId + 1;
+        if (StringUtils.isNumeric(routerId)) {
+            int id = Integer.parseInt(routerId);
+            if (id >= maxRouterId) {
+                maxRouterId = id + 1;
+            }
         }
     }
 
@@ -151,19 +155,19 @@ public class Router {
     public void setRouterName(String routerName) {
         this.routerName = routerName;
     }
-    
+
     public String getRouterName() {
         return routerName;
     }
-    
+
     public void setInitialLoadSelect(String intialLoadSelect) {
         this.initialLoadSelect = intialLoadSelect;
     }
-    
+
     public String getInitialLoadSelect() {
         return initialLoadSelect;
-    }    
-    
+    }
+
     public String getRouterExpression() {
         return routerExpression;
     }
@@ -184,7 +188,7 @@ public class Router {
 
     @Override
     public int hashCode() {
-        return routerId;
+        return routerId != null ? routerId.hashCode() : super.hashCode();
     }
 
 }
