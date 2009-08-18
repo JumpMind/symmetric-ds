@@ -387,7 +387,9 @@ public class CsvLoader implements IDataLoader {
         stats.incrementStatementCount();
         log.debug("DDLRunning", xml);
         dbDialect.createTables(xml);
-        context.getTableTemplate().resetMetaData(false);
+        if (context.getTableTemplate() != null) {
+            context.getTableTemplate().resetMetaData(false);
+        }
     }
 
     protected String[] parseKeys(String[] tokens, int startIndex) {
