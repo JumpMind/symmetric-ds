@@ -32,6 +32,10 @@ public class Message {
     private static ResourceBundle bundle = null;
     private static String MESSAGE_KEY = "MessageKey: ";
 
+    static {
+        setLocale(Locale.getDefault());
+    }
+
     /*
      * (non-Javadoc)
      * 
