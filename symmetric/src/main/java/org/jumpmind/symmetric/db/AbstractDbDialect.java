@@ -758,7 +758,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         DatabaseIO xmlWriter = new DatabaseIO();
         xmlWriter.write(db, buffer);
         // TODO: remove when these bugs are fixed in DdlUtils
-        return buffer.toString().replaceAll("&apos;", "").replaceAll("default=\"empty_blob\\(\\) *\"", "");
+        String xml = buffer.toString().replaceAll("&apos;", "");
+        xml = xml.replaceAll("default=\"empty_blob\\(\\) *\"", "");
+        xml = xml.replaceAll("unique name=\"PRIMARY\"", "unique name=\"PRIMARYINDEX\"");
+        return xml;
     }
 
     public void createTables(String xml) {
