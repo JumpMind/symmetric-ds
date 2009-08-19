@@ -27,7 +27,7 @@ public class Message {
 
     private static Locale locale = null;
 
-    private static String bundleName = "messages";
+    private static String bundleName = "symmetric-messages";
 
     private static ResourceBundle bundle = null;
     private static String MESSAGE_KEY = "MessageKey: ";
@@ -37,8 +37,6 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String)
      */
@@ -47,8 +45,6 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.jumpmind.symmetric.common.logging.ILog#getMessage(java.lang.String,
      * java.lang.Object)
@@ -70,7 +66,7 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
+
      * 
      * @see org.jumpmind.symmetric.common.logging.ILog#getLocale()
      */
@@ -79,8 +75,6 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.jumpmind.symmetric.common.logging.ILog#setLocale(java.util.Locale)
      */
@@ -94,8 +88,6 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
-     * 
      * @see org.jumpmind.symmetric.common.logging.ILog#getBundleName()
      */
     public static String getBundleName() {
@@ -103,8 +95,6 @@ public class Message {
     }
 
     /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.jumpmind.symmetric.common.logging.ILog#setBundleName(java.lang.String
      * )
