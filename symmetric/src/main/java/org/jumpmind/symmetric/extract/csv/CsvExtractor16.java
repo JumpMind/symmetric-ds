@@ -69,7 +69,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
             CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
         }
-        // TODO Eric - Since we are always capturing old data (still not sure if that is a good idea) should we always stream it?
+
         if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
             out.newLine();
