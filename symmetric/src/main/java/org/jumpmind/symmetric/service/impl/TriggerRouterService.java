@@ -658,7 +658,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trig.getTrigger().setSyncOnUpdate(rs.getBoolean("sync_on_update"));
             trig.getTrigger().setSyncOnDelete(rs.getBoolean("sync_on_delete"));
             trig.getTrigger().setSyncOnIncomingBatch(rs.getBoolean("sync_on_incoming_batch"));
-            trig.getTrigger().setSyncColumnLevel(rs.getBoolean("sync_column_level"));
             trig.getTrigger().setNameForDeleteTrigger(rs.getString("name_for_delete_trigger"));
             trig.getTrigger().setNameForInsertTrigger(rs.getString("name_for_insert_trigger"));
             trig.getTrigger().setNameForUpdateTrigger(rs.getString("name_for_update_trigger"));

@@ -114,7 +114,6 @@
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0" />
-        <column name="sync_column_level" type="BOOLEANINT" size="1" required="true" default="0" />
         <column name="name_for_update_trigger" type="VARCHAR" size="50" />
         <column name="name_for_insert_trigger" type="VARCHAR" size="50" />
         <column name="name_for_delete_trigger" type="VARCHAR" size="50" />
