@@ -64,8 +64,6 @@ public class Trigger {
 
     private boolean syncOnIncomingBatch = false;
 
-    private boolean syncColumnLevel = false;
-
     private String nameForInsertTrigger;
 
     private String nameForUpdateTrigger;
@@ -338,14 +336,6 @@ public class Trigger {
         this.sourceCatalogName = sourceCatalogName;
     }
 
-    public boolean isSyncColumnLevel() {
-        return syncColumnLevel;
-    }
-
-    public void setSyncColumnLevel(boolean syncColumnLevel) {
-        this.syncColumnLevel = syncColumnLevel;
-    }
-
     public long getHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
@@ -368,7 +358,6 @@ public class Trigger {
         hashedValue += syncOnInsert ? 1 : 0;
         hashedValue += syncOnDelete ? 1 : 0;
         hashedValue += syncOnIncomingBatch ? 1 : 0;
-        hashedValue += syncColumnLevel ? 1 : 0;
 
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();

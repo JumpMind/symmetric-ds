@@ -42,13 +42,6 @@ public interface IDataLoaderContext extends ICacheContext {
     public String[] getColumnNames();
 
     /**
-     * Old data is only sent when the sync_column_level feature is enabled in the trigger configuration. There is some
-     * overhead to sending old data, so the flag is used to enable it when it is needed.
-     * <p/>
-     * <code>
-     * update sym_trigger set sync_column_level = 1, last_update_time = current_timestamp where trigger_id = ?
-     * </code>
-     * 
      * @return an array of the previous values of the row that is being data sync'd.
      */
     public String[] getOldData();

@@ -79,13 +79,13 @@ insert into sym_trigger        (trigger_id,                source_table_name,   
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '11000',    '1000',                  1, current_timestamp, current_timestamp);
 
-insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, sync_column_level,  last_update_time,      create_time)
-                         values(  '12000',         'test_sync_column_level', 'testchannel',                 1, current_timestamp,current_timestamp);
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, last_update_time,      create_time)
+                         values(  '12000',         'test_sync_column_level', 'testchannel',  current_timestamp,current_timestamp);
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(  '12000',    '1000',                  1, current_timestamp, current_timestamp);
 
-insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, sync_column_level,  last_update_time,      create_time)
-                         values(  '13000',            'TEST_TARGET_TABLE_A', 'testchannel',                 1, current_timestamp,current_timestamp);
+insert into sym_trigger        (trigger_id,                source_table_name,    channel_id, last_update_time,      create_time)
+                         values(  '13000',            'TEST_TARGET_TABLE_A', 'testchannel',  current_timestamp,current_timestamp);
 insert into sym_router  (router_id,source_node_group_id, target_node_group_id,     target_table_name,       create_time,  last_update_time) 
                   values( '13000',   'test-root-group',    'test-node-group', 'TEST_TARGET_TABLE_B', current_timestamp, current_timestamp);  
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)

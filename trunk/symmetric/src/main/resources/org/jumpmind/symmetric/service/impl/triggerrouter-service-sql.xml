@@ -70,7 +70,7 @@
     <entry key="selectTriggerRouterPrefixSql">
       <value>select 
           t.trigger_id,t.channel_id,t.source_table_name,t.inactive_time,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
-          t.sync_column_level,t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,t.source_schema_name,t.source_catalog_name,
+          t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,t.source_schema_name,t.source_catalog_name,
           t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,t.tx_id_expression,t.create_time as t_create_time,
           t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by, 
           r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.initial_load_select,r.router_expression,
