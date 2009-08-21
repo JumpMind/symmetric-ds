@@ -54,7 +54,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         for (int i = 0; i < columns.length; i++) {
-            String name = columns[i];
+            String name = columns[i].toUpperCase();
             map.put(name, rowData[i]);
         }
         return map;
@@ -110,7 +110,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(), dataMetaData.getTable(),
                     columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
-                data.put(prefix != null ? prefix + columnNames[i] : columnNames[i], objects[i]);
+                data.put(prefix != null ? (prefix + columnNames[i]).toUpperCase() : columnNames[i].toUpperCase(), objects[i]);
             }
             return data;
         } else {
