@@ -25,7 +25,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -39,21 +38,12 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     static final ILog log = LogFactory.getLog(MySqlDbDialect.class);
 
-    static final String TRANSACTION_ID_FUNCTION_NAME = "fn_transaction_id";
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
 
-    private boolean supportsTransactionId = false;
-
     @Override
     protected void initForSpecificDialect() {
-        int[] versions = Version.parseVersion(getProductVersion());
-        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
-            log.info("TransactionIDSupportEnabling");
-            supportsTransactionId = true;
-        }
     }
 
     @Override
@@ -68,11 +58,9 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         String[] functions = sqlTemplate.getFunctionsToInstall();
         for (String funcKey : functions) {
             String funcName = tablePrefix + "_" + funcKey;
-            if (!funcName.equals("fn_transaction_id") || supportsTransactionId) {
-                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
-                    jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
-                    log.info("FunctionInstalled", funcName);
-                }
+            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
+                jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
+                log.info("FunctionInstalled", funcName);
             }
         }
     }
@@ -118,22 +106,18 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
-    @Override
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        if (supportsTransactionId) {
-            if (trigger.getSourceCatalogName() != null) {
-                defaultCatalog = defaultCatalog + ".";
-            } else {
-                defaultCatalog = "";
-            }
-            return defaultCatalog + TRANSACTION_ID_FUNCTION_NAME + "()";
-        }
-        return "null";
+    private final String getTransactionFunctionName() {
+        return tablePrefix + "_" + "transaction_id";
     }
 
     @Override
-    public boolean supportsTransactionId() {
-        return supportsTransactionId;
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
+        if (trigger.getSourceCatalogName() != null) {
+            defaultCatalog = defaultCatalog + ".";
+        } else {
+            defaultCatalog = "";
+        }
+        return defaultCatalog + getTransactionFunctionName() + "()";
     }
 
     @Override
