@@ -152,12 +152,14 @@
                                 create trigger $(triggerName) after delete on $(schemaName)$(tableName)
                                 for each row begin
                                   if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
-                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, create_time)
+                                    insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'D',
                                       $(triggerHistoryId),
                                       concat($(oldKeys)
+                                       ),
+                                       concat($(oldColumns)
                                        ),
                                       '$(channelName)', $(txIdExpression), @sync_node_disabled,
                                       CURRENT_TIMESTAMP
