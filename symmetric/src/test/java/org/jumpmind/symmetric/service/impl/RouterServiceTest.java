@@ -294,45 +294,48 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         resetBatches();
     }
-
+    
     @Test
-    public void testBshTransactionalRoutingInsert() {
+    public void testBshRoutingDeletesToNode3() {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getRouter().setRouterName("bsh");
         trigger1.getRouter().setRouterExpression(
                 "targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
-
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
-
         NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
-        testChannel.setMaxBatchToSend(1000);
-        testChannel.setMaxBatchSize(5);
-        testChannel.setBatchAlgorithm("transactional");
+        testChannel.setMaxBatchToSend(100);
+        final int MAX_BATCH_SIZE = 100;
+        testChannel.setMaxBatchSize(MAX_BATCH_SIZE);
+        testChannel.setBatchAlgorithm("nontransactional");
         getConfigurationService().saveChannel(testChannel);
 
-        insert(TEST_TABLE_1, 5, true);
+        TransactionCallback callback = new TransactionCallback() {
+            public Object doInTransaction(TransactionStatus status) {
+                SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
+                return t.update(String.format("delete from %s", TEST_TABLE_1));
+            }
+        };
+        int count = (Integer) getTransactionTemplate().execute(callback);
         getRoutingService().routeData();
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(1, batches.size());
-        Assert.assertEquals(5, (int) batches.get(0).getDataEventCount());
+        Assert.assertEquals(count/MAX_BATCH_SIZE + (count%MAX_BATCH_SIZE > 0 ? 1 : 0), batches.size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
-        filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
         Assert.assertEquals(0, batches.size());
 
-        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        // Batch was targeted only at node 1
+        // Batch was targeted only at node 3
         Assert.assertEquals(0, batches.size());
 
         resetBatches();
-    }
+    }    
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
         TriggerRouter trigger = getTriggerRouterService().findTriggerRouter(tableName,
