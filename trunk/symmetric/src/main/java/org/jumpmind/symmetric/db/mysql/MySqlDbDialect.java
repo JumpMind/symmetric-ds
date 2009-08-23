@@ -25,6 +25,7 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -36,14 +37,24 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
+    private static final String TRANSACTION_ID = "transaction_id";
+
     static final ILog log = LogFactory.getLog(MySqlDbDialect.class);
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
+    
+    private String functionTemplateKeySuffix = null;
 
     @Override
     protected void initForSpecificDialect() {
+        int[] versions = Version.parseVersion(getProductVersion());
+        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+            this.functionTemplateKeySuffix = "_pre_5_1_23";
+        } else {
+            this.functionTemplateKeySuffix = "_post_5_1_23";
+        }
     }
 
     @Override
@@ -56,11 +67,14 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected void createRequiredFunctions() {
         String[] functions = sqlTemplate.getFunctionsToInstall();
-        for (String funcKey : functions) {
-            String funcName = tablePrefix + "_" + funcKey;
-            if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcKey, defaultSchema)) == 0) {
-                jdbcTemplate.update(sqlTemplate.getFunctionSql(funcKey, funcName, defaultSchema));
-                log.info("FunctionInstalled", funcName);
+        for (int i = 0; i < functions.length; i++) {
+            if (functions[i].endsWith(this.functionTemplateKeySuffix)) {
+                String funcName = tablePrefix + "_"
+                        + functions[i].substring(0, functions[i].length() - this.functionTemplateKeySuffix.length());
+                if (jdbcTemplate.queryForInt(sqlTemplate.getFunctionInstalledSql(funcName, defaultSchema)) == 0) {
+                    jdbcTemplate.update(sqlTemplate.getFunctionSql(functions[i], funcName, defaultSchema));
+                    log.info("FunctionInstalled", funcName);
+                }
             }
         }
     }
@@ -107,7 +121,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private final String getTransactionFunctionName() {
-        return tablePrefix + "_" + "transaction_id";
+        return tablePrefix + "_" + TRANSACTION_ID;
     }
 
     @Override

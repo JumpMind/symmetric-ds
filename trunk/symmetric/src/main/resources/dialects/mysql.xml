@@ -30,7 +30,7 @@
                 </property>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="transaction_id">
+                        <entry key="transaction_id_post_5_1_23">
                             <value>
                                 <![CDATA[ 
                                 create function $(functionName)()
@@ -50,6 +50,27 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="transaction_id_pre_5_1_23">
+                            <value>
+                                <![CDATA[ 
+                                create function $(functionName)()
+                                  returns varchar(50) NOT DETERMINISTIC READS SQL DATA
+                                  begin
+                                     declare comm_name varchar(50);
+                                     declare comm_value varchar(50);
+                                     declare comm_cur cursor for show status like 'Com_commit';
+                                     if @@autocommit = 0 then
+                                          open comm_cur;
+                                          fetch comm_cur into comm_name, comm_value;
+                                          close comm_cur;
+                                          return concat(concat(connection_id(), '.'), comm_value);
+                                     else
+                                          return null;
+                                     end if;
+                                  end
+                                ]]>
+                            </value>
+                        </entry>                        
                     </map>
                 </property>                
                 <property name="stringColumnTemplate" ref="mysqlStringTemplate" />
