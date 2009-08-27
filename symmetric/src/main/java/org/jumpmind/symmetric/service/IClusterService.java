@@ -39,5 +39,9 @@ public interface IClusterService {
     public void unlock(String action, Node node);
 
     public void clearAllLocks();
+    
+    public String getServerId();
+    
+    public void setServerId(String serverId);
 
 }

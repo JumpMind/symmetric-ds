@@ -45,6 +45,8 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected static final String COMMON_LOCK_ID = "common";
 
+    protected String serverId = AppUtils.getServerId();
+
     public void initLockTable() {
         initLockTable(LockActionConstants.ROUTE, COMMON_LOCK_ID);
         initLockTable(LockActionConstants.PULL, COMMON_LOCK_ID);
@@ -98,20 +100,24 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled(action)) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
                     .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
-            return jdbcTemplate.update(getSql("aquireLockSql"), new Object[] { getLockingServerId(), id, action,
-                    timeout }) == 1;
+            return jdbcTemplate.update(getSql("aquireLockSql"),
+                    new Object[] { serverId, id, action, timeout, serverId }) == 1;
         } else {
             return true;
         }
     }
 
-    private String getLockingServerId() {
-        return AppUtils.getServerId();
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
+    }
+
+    public String getServerId() {
+        return serverId;
     }
 
     private void unlock(final String action, final String id) {
         if (isClusteringEnabled(action)) {
-            jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, getLockingServerId() });
+            jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
         }
     }
 

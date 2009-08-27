@@ -39,9 +39,13 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testLock() throws Exception {
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
+        final String serverId = service.getServerId();
         assertTrue(service.lock(LockActionConstants.PURGE_INCOMING), "Could not lock for PURGE");
         assertEquals(countActivePurgeLocks(), 1, "Could not find the lock in the database.");
+        service.setServerId("anotherServer");
         assertFalse(service.lock(LockActionConstants.PURGE_INCOMING), "Should not have been able to lock for PURGE");
+        service.setServerId(serverId);
+        assertTrue(service.lock(LockActionConstants.PURGE_INCOMING), "Could not lock for PURGE.  Should have been able to break the lock because the server id is the same.");
         service.unlock(LockActionConstants.PURGE_INCOMING);
         assertEquals(countActivePurgeLocks(), 0, "Could not find the lock in the database.");
     }
@@ -57,14 +61,18 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
         nodeTwo.setNodeId(ID_TWO);
 
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
+        final String serverId = service.getServerId();
         service.initLockTable("OTHER", ID_ONE);
         service.initLockTable("OTHER", ID_TWO);
         assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
+        service.setServerId("anotherServer");
         assertFalse(service.lock("OTHER", nodeOne), "Should not have been able to lock for OTHER "
                 + ID_ONE);
         assertTrue(service.lock("OTHER", nodeTwo), "Could not lock for OTHER " + ID_TWO);
+        service.setServerId(serverId);
         service.unlock("OTHER", nodeOne);
         assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
+
     }
 
     private int countActivePurgeLocks() {
