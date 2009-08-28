@@ -23,10 +23,10 @@
                 </property>               
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="fn_sym_triggers_disabled">
+                        <entry key="triggers_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE or REPLACE FUNCTION $(defaultSchema)fn_sym_triggers_disabled() RETURNS INTEGER AS $$
+                                CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS INTEGER AS $$
                                 DECLARE
                                   triggerDisabled INTEGER;
                                 BEGIN
@@ -39,10 +39,10 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_sym_node_disabled">
+                        <entry key="node_disabled">
                             <value>
                                 <![CDATA[ 
-                                CREATE or REPLACE FUNCTION $(defaultSchema)fn_sym_node_disabled() RETURNS VARCHAR AS $$
+                                CREATE or REPLACE FUNCTION $(defaultSchema)$(functionName)() RETURNS VARCHAR AS $$
                                 DECLARE
                                   nodeId VARCHAR(50);
                                 BEGIN
@@ -99,18 +99,15 @@
                                 begin
                                   if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, row_data, create_time)
+                                    (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'I',
                                       $(triggerHistoryId),
                                       $(columns),
+                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
-                                    (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
-                                    from $(defaultSchema)$(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;
@@ -133,7 +130,7 @@
                                 begin
                                   if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
+                                    (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'U',
@@ -141,12 +138,9 @@
                                       $(oldKeys),
                                       $(columns),
                                       $(oldColumns),
+                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
-                                    (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
-                                    from $(defaultSchema)$(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;
@@ -169,18 +163,16 @@
                                 begin
                                   if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (table_name, event_type, trigger_hist_id, pk_data, create_time)
+                                    (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       '$(targetTableName)',
                                       'D',
                                       $(triggerHistoryId),
-                                      $(oldKeys),
+                                      $(oldKeys),                                      
+                                      $(oldColumns),
+                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id) 
-                                    (select node_id, currval('$(defaultSchema)$(prefixName)_data_data_id_seq'), '$(channelName)', $(txIdExpression)
-                                    from $(defaultSchema)$(prefixName)_node c
-                                    where c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and fn_sym_node_disabled() != c.node_id $(nodeSelectWhere));
                                   end if;
                                   return null;
                                 end;
