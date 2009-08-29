@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -84,7 +85,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         loadResults = mockTransport.toString();
-        assertEquals(countLines(loadResults), 15, "Unexpected number of lines in the csv result: " + loadResults);
+        assertEquals(countLines(loadResults), 17, "Unexpected number of lines in the csv result: " + loadResults);
         
         
     }
@@ -100,7 +101,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         dataExtractorService.extract(node, mockTransport);
         String loadResults = mockTransport.toString();
 
-        assertEquals(countLines(loadResults), 9, "Unexpected number of lines in the transport result: "
+        assertEquals(countLines(loadResults), 11, "Unexpected number of lines in the transport result: "
                 + loadResults);
     }
 
@@ -110,6 +111,6 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
 
     private void createDataEvent(TriggerHistory hist, String channelId, DataEventType type, String nodeId) {
         Data data = new Data(hist.getSourceTableName(), type, "r.o.w., dat-a", "p-k d.a.t.a", hist, TestConstants.TEST_CHANNEL_ID, null, null);
-        dataService.insertDataEvent(data, channelId, nodeId);
+        dataService.insertDataEvent(data, nodeId, DataEvent.UNKNOWN_ROUTER_ID);
     }
 }

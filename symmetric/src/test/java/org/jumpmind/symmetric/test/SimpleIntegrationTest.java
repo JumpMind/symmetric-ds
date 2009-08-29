@@ -559,16 +559,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     
     @Test
     public void testTargetTableNameSync() throws Exception {
-        IParameterService clientParameterService = (IParameterService) getClientEngine().getApplicationContext()
-        .getBean(Constants.PARAMETER_SERVICE);
-        boolean oldLookupTargetSchemaValue = clientParameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA);
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, true);
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
         rootJdbcTemplate.update("insert into TEST_TARGET_TABLE_A values('1','2')");
         getClientEngine().pull();
         Assert.assertEquals(1, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_b"));
         Assert.assertEquals(0, clientJdbcTemplate.queryForInt("select count(*) from test_target_table_a"));
-        clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA, oldLookupTargetSchemaValue);
     }
     
     @Test

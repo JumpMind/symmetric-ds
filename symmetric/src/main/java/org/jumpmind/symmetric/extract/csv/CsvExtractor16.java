@@ -33,10 +33,10 @@ import org.jumpmind.symmetric.util.CsvUtils;
 public class CsvExtractor16 extends CsvExtractor14 {
 
     @Override
-    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
+    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         IStreamDataCommand cmd = dictionary.get(data.getEventType().getCode());
         if (cmd.isTriggerHistoryRequired()) {
-            preprocessTable(data, writer, context);
+            preprocessTable(data, routerId, writer, context);
         }
         cmd.execute(writer, data, context);
     }
@@ -44,12 +44,11 @@ public class CsvExtractor16 extends CsvExtractor14 {
     /**
      * Writes the table metadata out to a stream only if it hasn't already been
      * written out before
-     * 
-     * @param tableName
      * @param out
+     * @param tableName
      */
     @Override
-    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException {
         if (data.getTriggerHistory() == null) {
             throw new RuntimeException("Missing trigger_hist for table " + data.getTableName()
                     + ": try running syncTriggers() or restarting SymmetricDS");

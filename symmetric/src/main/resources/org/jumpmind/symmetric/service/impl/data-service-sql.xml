@@ -16,7 +16,7 @@
     </entry>
     <entry key="insertIntoDataEventSql">
       <value>
-        insert into $[sym.sync.table.prefix]_data_event (data_id, batch_id, create_time) values(?, ?, current_timestamp)
+        insert into $[sym.sync.table.prefix]_data_event (data_id, batch_id, router_id, create_time) values(?, ?, ?, current_timestamp)
       </value>
     </entry>  
     <entry key="findDataEventCreateTimeSql">

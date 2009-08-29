@@ -65,7 +65,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private IConfigurationService configurationService;
 
-    private Map<String, List<TriggerRouter>> triggerCache;
+  private Map<String,TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
     private List<ITriggerCreationListener> triggerCreationListeners;
 
@@ -231,22 +231,34 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public Map<String, List<TriggerRouter>> getActiveTriggerRouters(String sourceNodeGroupId,
             boolean refreshCache) {
-        if (triggerCache == null || refreshCache) {
+        return getActiveTriggerRoutersCache(sourceNodeGroupId, refreshCache).triggerRoutersByTriggerId;
+    }
+    
+    protected TriggerRoutersCache getActiveTriggerRoutersCache(String sourceNodeGroupId, boolean refreshCache) {
+        if (!triggerRouterCacheByNodeGroupId.containsKey(sourceNodeGroupId) || refreshCache) {
             synchronized (this) {
-                triggerCache = new HashMap<String, List<TriggerRouter>>();
-                List<TriggerRouter> triggers = getActiveTriggerRouters(sourceNodeGroupId);
-                for (TriggerRouter trigger : triggers) {
-                    String triggerId = trigger.getTrigger().getTriggerId();
-                    List<TriggerRouter> list = triggerCache.get(triggerId);
+                List<TriggerRouter> triggerRouters = getActiveTriggerRouters(sourceNodeGroupId);
+                Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>(triggerRouters.size());
+                Map<String, Router> routers = new HashMap<String, Router>(triggerRouters.size());
+                for (TriggerRouter triggerRouter : triggerRouters) {
+                    String triggerId = triggerRouter.getTrigger().getTriggerId();
+                    List<TriggerRouter> list = triggerRoutersByTriggerId.get(triggerId);
                     if (list == null) {
                         list = new ArrayList<TriggerRouter>();
-                        triggerCache.put(triggerId, list);
+                        triggerRoutersByTriggerId.put(triggerId, list);
                     }
-                    list.add(trigger);
+                    list.add(triggerRouter);
+                    routers.put(triggerRouter.getRouter().getRouterId(), triggerRouter.getRouter());
                 }
+                
+                triggerRouterCacheByNodeGroupId.put(sourceNodeGroupId, new TriggerRoutersCache(triggerRoutersByTriggerId, routers));
             }
         }
-        return triggerCache;
+        return triggerRouterCacheByNodeGroupId.get(sourceNodeGroupId);
+    }
+    
+    public Router getActiveRouterById(String sourceNodeGroupId, String routerId, boolean refreshCache) {
+        return getActiveTriggerRoutersCache(sourceNodeGroupId, refreshCache).routersByRouterId.get(routerId);
     }
 
     @SuppressWarnings("unchecked")
@@ -743,5 +755,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public Map<Trigger, Exception> getFailedTriggers() {
         return this.failureListener.getFailures();
+    }
+    
+    class TriggerRoutersCache {
+        
+        public TriggerRoutersCache(Map<String, List<TriggerRouter>> triggerRoutersByTriggerId,
+                Map<String, Router> routersByRouterId) {
+            this.triggerRoutersByTriggerId = triggerRoutersByTriggerId;
+            this.routersByRouterId = routersByRouterId;
+        }
+        
+        Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>();
+        Map<String, Router> routersByRouterId = new HashMap<String, Router>();
     }
 }

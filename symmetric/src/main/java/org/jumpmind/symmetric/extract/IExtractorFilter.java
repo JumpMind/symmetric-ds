@@ -32,6 +32,6 @@ public interface IExtractorFilter extends IExtensionPoint {
     /**
      * @return true if the row should be extracted
      */
-    public boolean filterData(Data data, DataExtractorContext ctx);
+    public boolean filterData(Data data, String routerId, DataExtractorContext ctx);
 
 }

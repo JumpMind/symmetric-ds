@@ -23,7 +23,6 @@ import java.net.URI;
 
 import junit.framework.Assert;
 
-import org.apache.commons.logging.impl.NoOpLog;
 import org.junit.Test;
 
 public class AbstractTransportManagerUnitTest {

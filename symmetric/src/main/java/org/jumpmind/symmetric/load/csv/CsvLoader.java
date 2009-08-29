@@ -43,8 +43,6 @@ import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.load.TableTemplate;
-import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -185,8 +183,12 @@ public class CsvLoader implements IDataLoader {
 
     protected boolean isMetaTokenParsed(String[] tokens) {
         boolean isMetaTokenParsed = true;
-        if (tokens[0].equals(CsvConstants.TABLE)) {
-            setTable(tokens[1]);
+        if (tokens[0].equals(CsvConstants.SCHEMA)) {
+            context.setSchemaName(StringUtils.isBlank(tokens[1]) ? null : tokens[1]);
+        } else if (tokens[0].equals(CsvConstants.CATALOG)) {
+            context.setCatalogName(StringUtils.isBlank(tokens[1]) ? null : tokens[1]);
+        } else if (tokens[0].equals(CsvConstants.TABLE)) {
+            resetTable(tokens[1]);
         } else if (tokens[0].equals(CsvConstants.KEYS)) {
             context.setKeyNames((String[]) ArrayUtils.subarray(tokens, 1, tokens.length));
         } else if (tokens[0].equals(CsvConstants.COLUMNS)) {
@@ -201,44 +203,13 @@ public class CsvLoader implements IDataLoader {
         return isMetaTokenParsed;
     }
 
-    protected void setTable(String tableName) {
+    protected void resetTable(String tableName) {
         cleanupAfterDataLoad();
         context.setTableName(tableName);
-
         if (context.getTableTemplate() == null) {
-            String schema = null;
-            String catalog = null;
-
-            // TODO send this in csv or send the trigger id in the csv
-            if (parameterService.is(ParameterConstants.DATA_LOADER_LOOKUP_TARGET_SCHEMA)) {
-                Node sourceNode = nodeService.findNode(context.getNodeId());
-                // Get the Target Node
-                Node targetNode = nodeService.findIdentity();
-                if (sourceNode != null) {
-                    TriggerRouter trigger = null;
-                    if (targetNode == null) {
-                        trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
-                    } else {
-                        // Get the trigger based upon table name , source node
-                        // group id , target node group id and channel id
-                        trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId(),
-                                targetNode.getNodeGroupId(), context.getChannelId());
-                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetTableName())) {
-                            tableName = trigger.getRouter().getTargetTableName();
-                        }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetSchemaName())) {
-                            schema = trigger.getRouter().getTargetSchemaName();
-                        }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getRouter().getTargetCatalogName())) {
-                            catalog = trigger.getRouter().getTargetCatalogName();
-                        }
-                    }
-                }
-            }
-
             context.setTableTemplate(new TableTemplate(jdbcTemplate, dbDialect, tableName,
                     this.columnFilters != null ? this.columnFilters.get(tableName) : null, parameterService
-                            .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE), schema, catalog));
+                            .is(ParameterConstants.DATA_LOADER_NO_KEYS_IN_UPDATE), context.getSchemaName(), context.getCatalogName()));
         }
         prepareTableForDataLoad();
     }

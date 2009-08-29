@@ -148,9 +148,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
             Data data = new Data("table1", DataEventType.INSERT, "some data", "some data", history,
                     TestConstants.TEST_CHANNEL_ID, null, null);
             id[i] = dataService.insertData(data);
-            DataEvent dataEvent = new DataEvent(id[i], batch.getBatchId());
-            dataEvent.setBatchId(Long.valueOf(batch.getBatchId()));
-            dataService.insertDataEvent(dataEvent);
+            dataService.insertDataEvent(getJdbcTemplate(), id[i], batch.getBatchId(), DataEvent.UNKNOWN_ROUTER_ID);
         }
         return id;
     }

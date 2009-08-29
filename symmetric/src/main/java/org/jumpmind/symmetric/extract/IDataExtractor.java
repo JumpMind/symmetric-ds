@@ -32,10 +32,10 @@ public interface IDataExtractor {
 
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException;
 
-    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException;
+    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException;
 
     public void commit(OutgoingBatch batch, BufferedWriter writer) throws IOException;
 
-    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException;
+    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException;
 
 }
