@@ -147,9 +147,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
-                TriggerRouter trigger = triggerRouters.get(i);
-                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger.getTrigger(), null));
-                addPurgeCriteriaToConfigurationTables(trigger.getTrigger().getSourceTableName(), sql);
+                TriggerRouter triggerRouter = triggerRouters.get(i);
+                StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, triggerRouter));
+                addPurgeCriteriaToConfigurationTables(triggerRouter.getTrigger().getSourceTableName(), sql);
                 CsvUtils.writeSql(sql.toString(), writer);
             }
         }
