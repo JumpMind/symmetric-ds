@@ -58,7 +58,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public Table findTable(String catalogName, String schemaName, String tblName) throws Exception {
+    protected Table findTable(String catalogName, String schemaName, String tblName)  {
         catalogName = StringUtils.isBlank(catalogName) ? StringUtils.isBlank(schemaName) ? getDefaultCatalog()
                 : schemaName : catalogName;
         return super.findTable(catalogName, schemaName, tblName);

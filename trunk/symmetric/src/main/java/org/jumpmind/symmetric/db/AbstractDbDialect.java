@@ -264,8 +264,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                         .getTrigger().getSourceTableName(), true)).trim();
     }
 
-    public String createPurgeSqlFor(Node node, Trigger trigger, TriggerHistory hist) {
-        return sqlTemplate.createPurgeSql(node, this, trigger, hist);
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
+        return sqlTemplate.createPurgeSql(node, this, triggerRouter);
     }
 
     public String createCsvDataSql(Trigger trigger, String whereClause) {
@@ -335,7 +335,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sqlKeywords;
     }
 
-    public Table findTable(String catalogName, String schemaName, final String tblName) throws Exception {
+    /**
+     * Returns a new {@link Table} object.
+     */
+    protected Table findTable(String catalogName, String schemaName, final String tblName) {
         // If we don't provide a default schema or catalog, then on some
         // databases multiple results will be found in the metadata from
         // multiple schemas/catalogs
@@ -748,11 +751,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sql;
     }
 
-    public String getCreateTableXML(Trigger trig) {
-        Table table = getMetaDataFor(null, trig.getSourceSchemaName(), trig.getSourceTableName(), true);
+    public String getCreateTableXML(TriggerRouter triggerRouter) {
+        Table table = findTable(null, triggerRouter.getTrigger().getSourceSchemaName(), triggerRouter.getTrigger()
+                .getSourceTableName());
+        table.setName(triggerRouter.getTargetTable());
         Database db = new Database();
-        db.setName(trig.getSourceSchemaName() != null ? trig.getSourceSchemaName()
-                : getDefaultSchema() != null ? getDefaultSchema() : getDefaultCatalog());
+        db.setName(triggerRouter.getTargetSchema(getDefaultSchema()));
+        if (db.getName() == null) {
+            db.setName(getDefaultCatalog());
+        }
         db.addTable(table);
         StringWriter buffer = new StringWriter();
         DatabaseIO xmlWriter = new DatabaseIO();

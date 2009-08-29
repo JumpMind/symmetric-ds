@@ -103,7 +103,7 @@ public interface IDbDialect {
 
     public String createInitalLoadSqlFor(Node node, TriggerRouter trigger);
 
-    public String createPurgeSqlFor(Node node, Trigger trigger, TriggerHistory history);
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter);
 
     public String createCsvDataSql(Trigger trig, String whereClause);
 
@@ -168,7 +168,7 @@ public interface IDbDialect {
 
     public String getCreateSymmetricDDL();
 
-    public String getCreateTableXML(Trigger trig);
+    public String getCreateTableXML(TriggerRouter triggerRouter);
 
     public String getCreateTableSQL(TriggerRouter trig);
 

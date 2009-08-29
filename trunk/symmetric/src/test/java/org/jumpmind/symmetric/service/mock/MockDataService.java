@@ -70,7 +70,7 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertCreateEvent(Node targetNode, Trigger trigger, String xml) {
+    public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml) {
 
     }
 
@@ -95,7 +95,7 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertPurgeEvent(Node targetNode, Trigger trigger) {
+    public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter) {
 
     }
 

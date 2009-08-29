@@ -39,7 +39,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.config.TriggerSelector;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
@@ -84,8 +83,6 @@ public class DataService extends AbstractService implements IDataService {
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
     }
-    
-    
 
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter,
             final String overrideInitialLoadSelect) {
@@ -112,9 +109,9 @@ public class DataService extends AbstractService implements IDataService {
         return history;
     }
 
-    public void insertPurgeEvent(final Node targetNode, final Trigger trigger) {
-        String sql = dbDialect.createPurgeSqlFor(targetNode, trigger, lookupTriggerHistory(trigger));
-        insertSqlEvent(targetNode, trigger, sql);
+    public void insertPurgeEvent(final Node targetNode, final TriggerRouter triggerRouter) {
+        String sql = dbDialect.createPurgeSqlFor(targetNode, triggerRouter);
+        insertSqlEvent(targetNode, triggerRouter.getTrigger(), sql);
     }
 
     public void insertSqlEvent(final Node targetNode, final Trigger trigger, String sql) {
@@ -130,10 +127,11 @@ public class DataService extends AbstractService implements IDataService {
         insertDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
     }
 
-    public void insertCreateEvent(final Node targetNode, final Trigger trigger, String xml) {
-        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
-        Data data = new Data(trigger.getSourceTableName(), DataEventType.CREATE, CsvUtils.escapeCsvData(xml), null,
-                history, Constants.CHANNEL_RELOAD, null, null);
+    public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter, String xml) {
+        TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(triggerRouter.getTrigger()
+                .getTriggerId());
+        Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE, CsvUtils
+                .escapeCsvData(xml), null, history, Constants.CHANNEL_RELOAD, null, null);
         insertDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
     }
 
@@ -159,8 +157,8 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
-        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId, routerId }, new int[] { Types.INTEGER,
-                Types.INTEGER, Types.VARCHAR });
+        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId, routerId }, new int[] {
+                Types.INTEGER, Types.INTEGER, Types.VARCHAR });
     }
 
     public void insertDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
@@ -208,22 +206,21 @@ public class DataService extends AbstractService implements IDataService {
         // an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggerRoutersForReload(sourceNode.getNodeGroupId(),
-                targetNode.getNodeGroupId());
-        List<Trigger> triggers = new TriggerSelector(triggerRouters).select();
-        
+        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggerRoutersForReload(sourceNode
+                .getNodeGroupId(), targetNode.getNodeGroupId());
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            for (Trigger trigger : triggers) {
-                String xml = dbDialect.getCreateTableXML(trigger);
-                insertCreateEvent(targetNode, trigger, xml);
+            for (TriggerRouter triggerRouter : triggerRouters) {
+                String xml = dbDialect.getCreateTableXML(triggerRouter);
+                insertCreateEvent(targetNode, triggerRouter, xml);
             }
         }
 
         if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
-            for (ListIterator<Trigger> iterator = triggers.listIterator(triggers.size()); iterator.hasPrevious();) {
-                Trigger trigger = iterator.previous();
-                insertPurgeEvent(targetNode, trigger);
+            for (ListIterator<TriggerRouter> iterator = triggerRouters.listIterator(triggerRouters.size()); iterator
+                    .hasPrevious();) {
+                TriggerRouter triggerRouter = iterator.previous();
+                insertPurgeEvent(targetNode, triggerRouter);
             }
         }
 
@@ -255,15 +252,18 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
+            // TODO message bundle
             return "Unknown node " + nodeId;
         }
 
         TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
+            // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
 
         insertSqlEvent(targetNode, trigger.getTrigger(), sql);
+        // TODO message bundle
         return "Successfully create SQL event for node " + targetNode.getNodeId();
     }
 
@@ -275,23 +275,26 @@ public class DataService extends AbstractService implements IDataService {
         Node sourceNode = nodeService.findIdentity();
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
+            // TODO message bundle
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
-        if (trigger == null) {
+        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
+        if (triggerRouter == null) {
+            // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
         }
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
-            String xml = dbDialect.getCreateTableXML(trigger.getTrigger());
-            insertCreateEvent(targetNode, trigger.getTrigger(), xml);
+            String xml = dbDialect.getCreateTableXML(triggerRouter);
+            insertCreateEvent(targetNode, triggerRouter, xml);
         } else if (parameterService.is(ParameterConstants.AUTO_DELETE_BEFORE_RELOAD)) {
-            insertPurgeEvent(targetNode, trigger.getTrigger());
+            insertPurgeEvent(targetNode, triggerRouter);
         }
 
-        insertReloadEvent(targetNode, trigger, overrideInitialLoadSelect);
+        insertReloadEvent(targetNode, triggerRouter, overrideInitialLoadSelect);
 
+        // TODO message bundle
         return "Successfully created event to reload table " + tableName + " for node " + targetNode.getNodeId();
     }
 
@@ -305,10 +308,10 @@ public class DataService extends AbstractService implements IDataService {
         Trigger trigger = new Trigger(tableName);
         Data data = createData(trigger, String.format(" t.node_id = '%s'", node.getNodeId()));
         if (data != null) {
-            insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo(), DataEvent.UNKNOWN_ROUTER_ID);
+            insertDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo(),
+                    DataEvent.UNKNOWN_ROUTER_ID);
         } else {
-            log.info("TableGeneratingEventsFailure", tableName
-               );
+            log.info("TableGeneratingEventsFailure", tableName);
         }
     }
 
@@ -340,8 +343,7 @@ public class DataService extends AbstractService implements IDataService {
             if (history == null) {
                 history = triggerRouterService.findTriggerHistory(trigger.getSourceTableName());
                 if (history == null) {
-                    history = triggerRouterService
-                            .findTriggerHistory(trigger.getSourceTableName().toUpperCase());
+                    history = triggerRouterService.findTriggerHistory(trigger.getSourceTableName().toUpperCase());
                 }
             }
             if (history != null) {
