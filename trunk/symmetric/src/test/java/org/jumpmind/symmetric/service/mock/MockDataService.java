@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -80,19 +79,15 @@ public class MockDataService implements IDataService {
         return 0;
     }
 
-    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId) {
+    public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
 
     }
 
-    public void insertDataEvent(DataEvent dataEvent) {
+    public void insertDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
 
     }
 
-    public void insertDataEvent(Data data, String channelId, List<Node> nodes) {
-
-    }
-
-    public void insertDataEvent(Data data, String channelId, String nodeId) {
+    public void insertDataEvent(Data data, String nodeId, String routerId) {
 
     }
 

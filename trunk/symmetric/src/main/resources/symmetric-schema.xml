@@ -18,7 +18,7 @@
     </table>
 
     <table name="channel">
-        <column name="channel_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="processing_order" type="INTEGER" required="true" default="1" />
         <column name="max_batch_size" type="INTEGER" required="true" default="1000" />
         <column name="max_batch_to_send" type="INTEGER" required="true" default="60" />
@@ -41,7 +41,7 @@
 
     <table name="node_group_channel_window">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="channel_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="start_time" type="TIME" required="true" primaryKey="true" />
         <column name="end_time" type="TIME" required="true" primaryKey="true" />
         <column name="enabled" type="BOOLEANINT" size="1" required="true" default="0" />
@@ -78,7 +78,7 @@
 
     <table name="node_channel_ctl">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="channel_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="last_extract_time" type="TIMESTAMP" />
         <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0" />
@@ -90,7 +90,7 @@
     </table>
 
     <table name="router">
-        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="target_catalog_name" type="VARCHAR" size="50" />
         <column name="target_schema_name" type="VARCHAR" size="50" />
         <column name="target_table_name" type="VARCHAR" size="50" />
@@ -105,11 +105,11 @@
     </table>
 
     <table name="trigger">
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="source_catalog_name" type="VARCHAR" size="50" />
         <column name="source_schema_name" type="VARCHAR" size="50" />
         <column name="source_table_name" type="VARCHAR" size="50" required="true" />
-        <column name="channel_id" type="VARCHAR" size="50" required="true" />
+        <column name="channel_id" type="VARCHAR" size="20" required="true" />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1" />
@@ -134,8 +134,8 @@
     </table>
 
     <table name="trigger_router">
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
+        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
         <column name="initial_load_order" type="INTEGER" required="true" default="1" />
         <column name="create_time" type="TIMESTAMP" required="true" />
         <column name="last_update_by" type="VARCHAR" size="50" />
@@ -144,7 +144,7 @@
 
     <table name="trigger_hist">
         <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true" />
-        <column name="trigger_id" type="VARCHAR" size="50" required="true" />
+        <column name="trigger_id" type="VARCHAR" size="20" required="true" />
         <column name="source_table_name" type="VARCHAR" default="" size="50" required="true" />
         <column name="source_catalog_name" type="VARCHAR" size="50" />
         <column name="source_schema_name" type="VARCHAR" size="50" />
@@ -168,10 +168,11 @@
         <column name="pk_data" type="LONGVARCHAR" />
         <column name="old_data" type="LONGVARCHAR" />
         <column name="trigger_hist_id" type="INTEGER" required="true" />
-        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="channel_id" type="VARCHAR" size="20" />
         <column name="transaction_id" type="VARCHAR" size="1000" />
         <column name="source_node_id" type="VARCHAR" size="50" />
         <column name="create_time" type="TIMESTAMP" />
+        <!-- Can we change the purge service a bit and get rid of this? -->
         <index name="idx_data_create_time">
             <index-column name="create_time" />
         </index>
@@ -180,6 +181,7 @@
     <table name="data_event">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1" />
+        <column name="router_id" type="VARCHAR" size="20" primaryKey="true" />
         <column name="create_time" type="TIMESTAMP" />
         <index name="idx_de_batchid">
             <index-column name="batch_id" />
@@ -194,7 +196,7 @@
     <table name="outgoing_batch">
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true" />
         <column name="node_id" type="VARCHAR" size="50" />
-        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="channel_id" type="VARCHAR" size="20" />
         <column name="status" type="CHAR" size="2" />
         <column name="byte_count" type="INTEGER" />
         <column name="sent_count" type="INTEGER" />
@@ -216,7 +218,7 @@
     <table name="incoming_batch">
         <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" />
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="channel_id" type="VARCHAR" size="20" />
         <column name="status" type="CHAR" size="2" />
         <column name="network_millis" type="INTEGER" />
         <column name="filter_millis" type="INTEGER" />

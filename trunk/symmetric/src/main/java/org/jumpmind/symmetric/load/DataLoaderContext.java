@@ -39,6 +39,10 @@ public class DataLoaderContext implements IDataLoaderContext {
     private String nodeId;
 
     private String tableName;
+    
+    private String schemaName;
+    
+    private String catalogName;
 
     private String channelId;
 
@@ -102,6 +106,22 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
+    }
+    
+    public void setCatalogName(String catalogName) {
+        this.catalogName = catalogName;
+    }
+    
+    public String getCatalogName() {
+        return catalogName;
+    }
+    
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+    
+    public String getSchemaName() {
+        return schemaName;
     }
 
     public String getTableName() {

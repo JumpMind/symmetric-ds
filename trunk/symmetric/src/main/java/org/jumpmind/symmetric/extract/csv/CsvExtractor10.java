@@ -59,22 +59,21 @@ public class CsvExtractor10 implements IDataExtractor {
         writer.newLine();
     }
 
-    public void write(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
-        preprocessTable(data, writer, context);
+    public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
+        preprocessTable(data, routerId, writer, context);
         dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
     }
 
     /**
      * Writes the table metadata out to a stream only if it hasn't already been
      * written out before
-     * 
-     * @param tableName
      * @param out
+     * @param tableName
      */
-    public void preprocessTable(Data data, BufferedWriter out, DataExtractorContext context) throws IOException {
+    public void preprocessTable(Data data, String routerId, BufferedWriter out, DataExtractorContext context) throws IOException {
 
-        String auditKey = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
-        if (!context.getHistoryRecordsWritten().contains(auditKey)) {
+        String historyId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
+        if (!context.getHistoryRecordsWritten().contains(historyId)) {
             CsvUtils.write(out, "table, ", data.getTableName());
             out.newLine();
             CsvUtils.write(out, "keys, ", data.getTriggerHistory().getPkColumnNames());
@@ -88,7 +87,7 @@ public class CsvExtractor10 implements IDataExtractor {
             }
             CsvUtils.write(out, "columns, ", columns);
             out.newLine();
-            context.getHistoryRecordsWritten().add(auditKey);
+            context.getHistoryRecordsWritten().add(historyId);
         } else if (!context.isLastTable(data.getTableName())) {
             CsvUtils.write(out, "table, ", data.getTableName());
             out.newLine();

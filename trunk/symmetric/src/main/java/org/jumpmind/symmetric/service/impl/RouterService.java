@@ -295,13 +295,13 @@ public class RouterService extends AbstractService implements IRouterService {
                     Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
                             triggerRouter, context), false);
                     context.incrementStat(System.currentTimeMillis() - ts, "dataRouter");
-                    insertDataEvents(context, dataMetaData, nodeIds);
+                    insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
 
                 }
 
                 if (!context.isRouted()) {
                     // mark as not routed anywhere
-                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1);
+                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1, triggerRouter.getRouter().getRouterId());
                 }
 
                 if (context.isNeedsCommitted()) {
@@ -316,7 +316,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds) {
+    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds, TriggerRouter triggerRouter) {
         if (nodeIds != null && nodeIds.size() > 0) {
             long ts = System.currentTimeMillis();
             for (String nodeId : nodeIds) {
@@ -331,7 +331,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.incrementDataEventCount();
                     context.setRouted(true);
                     dataService.insertDataEvent(context.getJdbcTemplate(), dataMetaData.getData().getDataId(), batch
-                            .getBatchId());
+                            .getBatchId(), triggerRouter.getRouter().getRouterId());
                     if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(batch,
                             dataMetaData, context)) {
                         completeBatch(batch, context);

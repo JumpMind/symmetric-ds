@@ -47,6 +47,8 @@ public interface ITriggerRouterService {
 
     public Map<String, List<TriggerRouter>> getActiveTriggerRouters(String sourceNodeGroupId, boolean refreshCache);
 
+    public Router getActiveRouterById(String sourceNodeGroupId, String routerId, boolean refreshCache);
+    
     public List<TriggerRouter> getActiveTriggerRouters(String sourceNodeGroupId);
 
     public List<TriggerRouter> getActiveTriggerRoutersForReload(String sourceNodeGroupId, String targetNodeGroupId);

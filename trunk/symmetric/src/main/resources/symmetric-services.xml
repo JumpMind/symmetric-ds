@@ -206,6 +206,7 @@
     <bean id="dataExtractor" class="org.jumpmind.symmetric.extract.csv.CsvExtractor">
         <property name="dbDialect" ref="dbDialect" />
         <property name="parameterService" ref="parameterService" />
+        <property name="triggerRouterService" ref="triggerRouterService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionary">
             <map>

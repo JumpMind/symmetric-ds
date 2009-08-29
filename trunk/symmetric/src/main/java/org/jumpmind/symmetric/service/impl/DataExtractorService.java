@@ -143,31 +143,31 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggers = triggerRouterService.getTriggerRoutersForRegistration(parameterService.getNodeGroupId(), node
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(parameterService.getNodeGroupId(), node
                 .getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
-            for (int i = triggers.size() - 1; i >= 0; i--) {
-                TriggerRouter trigger = triggers.get(i);
+            for (int i = triggerRouters.size() - 1; i >= 0; i--) {
+                TriggerRouter trigger = triggerRouters.get(i);
                 StringBuilder sql = new StringBuilder(dbDialect.createPurgeSqlFor(node, trigger.getTrigger(), null));
                 addPurgeCriteriaToConfigurationTables(trigger.getTrigger().getSourceTableName(), sql);
                 CsvUtils.writeSql(sql.toString(), writer);
             }
         }
 
-        for (int i = 0; i < triggers.size(); i++) {
-            TriggerRouter trigger = triggers.get(i);
-            TriggerHistory hist = new TriggerHistory(dbDialect.getMetaDataFor(trigger.getTrigger(), false), trigger.getTrigger());
-            hist.setTriggerHistoryId(Integer.MAX_VALUE - i);
-            if (!trigger.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
-                writeInitialLoad(node, trigger, hist, writer, null, ctx);
+        for (int i = 0; i < triggerRouters.size(); i++) {
+            TriggerRouter triggerRouter = triggerRouters.get(i);
+            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getMetaDataFor(triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
+            triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+            if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
+                writeInitialLoad(node, triggerRouter, triggerHistory, writer, null, ctx);
             } else {
-                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, trigger.getTrigger().getSourceTableName(),
-                        null, hist, trigger.getTrigger().getChannelId(), null, null);
-                ctx.getDataExtractor().write(writer, data, ctx);
+                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger().getSourceTableName(),
+                        null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
+                ctx.getDataExtractor().write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
             }
         }
 
-        if (triggers.size() == 0) {
+        if (triggerRouters.size() == 0) {
             log.error("RegistrationEmpty", node);
         }
     }
@@ -223,7 +223,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     /**
      * 
      * @param node
-     * @param trigger
+     * @param triggerRouter
      * @param hist
      * @param transport
      * @param batch
@@ -231,9 +231,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            batch.
      * @param ctx
      */
-    protected void writeInitialLoad(final Node node, final TriggerRouter trigger, final TriggerHistory hist,
+    protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
-        final String sql = dbDialect.createInitalLoadSqlFor(node, trigger);
+        final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter);
 
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
@@ -241,7 +241,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    Table table = dbDialect.getMetaDataFor(trigger.getTrigger(), true);
+                    Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
                     NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
                     Set<Node> oneNodeSet = new HashSet<Node>();                    
                     oneNodeSet.add(node);
@@ -262,9 +262,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         while (rs.next()) {
                             Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
                                     .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);
-                            DataMetaData dataMetaData = new DataMetaData(data, table, trigger, channel);
+                            DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
                             if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
-                                dataExtractor.write(writer, data, ctxCopy);
+                                dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
                             }
                         }
                         if (batch != null) {
@@ -434,7 +434,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     while (rs.next()) {
                         try {
-                            handler.dataExtracted(dataService.readData(rs));
+                            handler.dataExtracted(dataService.readData(rs), rs.getString(12));
                         } catch (RuntimeException e) {
                             throw e;
                         } catch (Exception e) {
@@ -481,16 +481,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.dataExtractor = dataExtractor;
         }
 
-        public void dataExtracted(Data data) throws IOException {
+        public void dataExtracted(Data data, String routerId) throws IOException {
             if (extractorFilters != null) {
                 for (IExtractorFilter filter : extractorFilters) {
-                    if (!filter.filterData(data, context)) {
+                    if (!filter.filterData(data, routerId, context)) {
                         // short circuit the extract if instructed
                         return;
                     }
                 }
             }
-            dataExtractor.write(writer, data, context);
+            dataExtractor.write(writer, data, routerId, context);
         }
 
         public void done() throws IOException {

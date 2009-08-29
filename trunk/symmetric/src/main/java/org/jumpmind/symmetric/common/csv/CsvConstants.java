@@ -32,6 +32,10 @@ final public class CsvConstants {
 
     public static final String NODEID = "nodeid";
 
+    public static final String SCHEMA = "schema";
+    
+    public static final String CATALOG = "catalog";
+    
     public static final String TABLE = "table";
 
     public static final String KEYS = "keys";

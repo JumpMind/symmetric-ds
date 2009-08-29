@@ -39,7 +39,7 @@ public interface IExtractListener {
      */
     public void endBatch(OutgoingBatch batch) throws IOException;
 
-    public void dataExtracted(Data data) throws IOException;
+    public void dataExtracted(Data data, String routerId) throws IOException;
 
     public void done() throws IOException;
 }

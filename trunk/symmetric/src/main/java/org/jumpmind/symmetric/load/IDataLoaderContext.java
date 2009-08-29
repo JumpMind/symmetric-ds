@@ -31,6 +31,10 @@ public interface IDataLoaderContext extends ICacheContext {
 
     public String getNodeId();
 
+    public String getSchemaName();
+
+    public String getCatalogName();
+
     public String getTableName();
 
     public String getChannelId();
