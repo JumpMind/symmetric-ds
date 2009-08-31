@@ -37,7 +37,7 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
 public interface IDbDialect {
 
-    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
             String tablePrefix, Table table);
 
     /**

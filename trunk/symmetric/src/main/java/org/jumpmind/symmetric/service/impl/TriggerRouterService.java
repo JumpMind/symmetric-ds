@@ -546,7 +546,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 }
             } catch (Exception ex) {
-                log.error("TriggerSynchronizingFailed", schemaPlusTriggerName, ex);
+                log.error("TriggerSynchronizingFailed", ex, schemaPlusTriggerName);
                 if (this.triggerCreationListeners != null) {
                     for (ITriggerCreationListener l : this.triggerCreationListeners) {
                         l.triggerFailed(trigger, ex);
@@ -610,7 +610,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (!triggerExists && triggerIsActive) {
-            dbDialect.initTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
+            dbDialect.createTrigger(sqlBuffer, dmlType, trigger, hist, tablePrefix, table);
         }
 
         return hist;

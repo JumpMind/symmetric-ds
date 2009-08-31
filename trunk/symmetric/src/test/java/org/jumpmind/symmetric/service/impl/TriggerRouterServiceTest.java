@@ -156,8 +156,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         service.syncTriggers();
 
         TriggerRouter trigger = service.findTriggerRouter(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
-        assertEquals(jdbcTemplate.queryForInt("select count(*) from sym_trigger_hist where trigger_id="
-                + trigger.getTrigger().getTriggerId() + " and inactive_time is null"), 1,
+        assertEquals(jdbcTemplate.queryForInt("select count(*) from sym_trigger_hist where trigger_id='"
+                + trigger.getTrigger().getTriggerId() + "' and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);
 
         assertEquals(1, insert(INSERT2_VALUES, jdbcTemplate, getDbDialect()));
