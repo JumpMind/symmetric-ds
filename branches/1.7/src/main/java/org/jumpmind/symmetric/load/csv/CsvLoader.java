@@ -30,6 +30,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -215,23 +216,25 @@ public class CsvLoader implements IDataLoader {
                 Node targetNode = nodeService.findIdentity();
                 if (sourceNode != null) {
                     Trigger trigger = null;
-                    if (targetNode == null) {
+                    if (targetNode == null || context.getChannelId().equals(Constants.CHANNEL_RELOAD)) {
                         trigger = configurationService.getTriggerFor(tableName, sourceNode.getNodeGroupId());
                     } else {
                         // Get the trigger based upon table name , source node
                         // group id , target node group id and channel id
                         trigger = configurationService.getTriggerForTarget(tableName, sourceNode.getNodeGroupId(),
                                 targetNode.getNodeGroupId(), context.getChannelId());
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
-                            tableName = trigger.getTargetTableName();
-                        }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
-                            schema = trigger.getTargetSchemaName();
-                        }
-                        if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
-                            catalog = trigger.getTargetCatalogName();
-                        }
                     }
+                    
+                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetTableName())) {
+                        tableName = trigger.getTargetTableName();
+                    }
+                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetSchemaName())) {
+                        schema = trigger.getTargetSchemaName();
+                    }
+                    if (trigger != null && !StringUtils.isBlank(trigger.getTargetCatalogName())) {
+                        catalog = trigger.getTargetCatalogName();
+                    }
+
                 }
             }
 
