@@ -126,11 +126,6 @@
         <column name="inactive_time" type="TIMESTAMP" />
         <column name="last_update_by" type="VARCHAR" size="50" />
         <column name="last_update_time" type="TIMESTAMP" required="true" />
-        <unique>
-            <unique-column name="source_table_name" />
-            <unique-column name="source_schema_name" />
-            <unique-column name="source_catalog_name" />
-        </unique>
     </table>
 
     <table name="trigger_router">

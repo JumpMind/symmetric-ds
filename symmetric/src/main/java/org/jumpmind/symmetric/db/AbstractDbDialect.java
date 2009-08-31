@@ -671,7 +671,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Create the configured trigger. The catalog will be changed to the source
      * schema if the source schema is configured.
      */
-    public void initTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
+    public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
             final TriggerHistory hist, final String tablePrefix, final Table table) {
         jdbcTemplate.execute(new ConnectionCallback() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {

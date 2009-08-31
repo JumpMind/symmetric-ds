@@ -59,10 +59,10 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    public void initTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger, TriggerHistory hist,
             String tablePrefix, Table table) {
         try {
-            super.initTrigger(sqlBuffer, dml, trigger, hist, tablePrefix, table);
+            super.createTrigger(sqlBuffer, dml, trigger, hist, tablePrefix, table);
         } catch (BadSqlGrammarException ex) {
             if (ex.getSQLException().getErrorCode() == 4095) {
                 try {

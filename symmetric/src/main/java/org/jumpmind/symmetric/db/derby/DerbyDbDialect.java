@@ -55,27 +55,27 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public void disableSyncTriggers(String nodeId) {
-        jdbcTemplate.queryForInt("values fn_sym_sync_triggers_set_disabled(1)");
+        jdbcTemplate.queryForInt(String.format("values %s_sync_triggers_set_disabled(1)", tablePrefix));
         if (nodeId != null) {
-            jdbcTemplate.queryForObject("values fn_sym_sync_node_set_disabled('" + nodeId + "')",
+            jdbcTemplate.queryForObject(String.format("values %s_sync_node_set_disabled('%s')", tablePrefix, nodeId),
                     String.class);
         }
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.queryForInt("values fn_sym_sync_triggers_set_disabled(0)");
-        jdbcTemplate.queryForInt("values fn_sym_sync_node_set_disabled(null)");
+        jdbcTemplate.queryForInt(String.format("values %s_sync_triggers_set_disabled(0)", tablePrefix));
+        jdbcTemplate.queryForInt(String.format("values %s_sync_node_set_disabled(null)", tablePrefix));
     }
 
     public String getSyncTriggersExpression() {
-        return "fn_sym_sync_triggers_disabled() = 0";
+        return String.format("%s_sync_triggers_disabled() = 0", tablePrefix);
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "fn_sym_transaction_id()";
+        return String.format("%s_transaction_id()", tablePrefix);
     }
-    
+
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "values IDENTITY_VAL_LOCAL()";

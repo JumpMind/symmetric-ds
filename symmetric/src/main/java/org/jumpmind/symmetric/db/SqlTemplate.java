@@ -257,7 +257,7 @@ public class SqlTemplate {
         ddl = replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
-        ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(newTriggerValue, columns), ddl);
+        ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue : newTriggerValue, columns), ddl);
 
         ddl = replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"), ddl);
         ddl = replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"), ddl);
