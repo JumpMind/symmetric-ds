@@ -92,6 +92,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 abstract public class AbstractDbDialect implements IDbDialect {
 
+    final ILog logger = LogFactory.getLog(getClass());
+    
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss",

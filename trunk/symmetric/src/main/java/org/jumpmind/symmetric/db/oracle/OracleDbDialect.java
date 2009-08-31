@@ -25,8 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -38,9 +36,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.BadSqlGrammarException;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
-
-    static final ILog log = LogFactory.getLog(OracleDbDialect.class);
-
+    
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
 
     @SuppressWarnings("unchecked")

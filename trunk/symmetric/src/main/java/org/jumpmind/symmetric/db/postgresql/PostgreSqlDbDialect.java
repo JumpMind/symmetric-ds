@@ -26,8 +26,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -37,8 +35,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect {
-
-    static final ILog log = LogFactory.getLog(PostgreSqlDbDialect.class);
 
     static final String TRANSACTION_ID_EXPRESSION = "txid_current()";
 

@@ -32,8 +32,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -53,9 +51,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
  * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
  */
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
-
-    static final ILog log = LogFactory.getLog(MsSqlDbDialect.class);
-
+    
     @Override
     protected void initForSpecificDialect() {
     }
