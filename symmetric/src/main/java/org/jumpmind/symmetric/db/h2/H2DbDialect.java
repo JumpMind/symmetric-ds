@@ -20,8 +20,6 @@
 package org.jumpmind.symmetric.db.h2;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -32,7 +30,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 
 public class H2DbDialect extends AbstractDbDialect implements IDbDialect {
 
-    static final ILog log = LogFactory.getLog(H2DbDialect.class);
     private boolean storesUpperCaseNames = true;
 
     @Override

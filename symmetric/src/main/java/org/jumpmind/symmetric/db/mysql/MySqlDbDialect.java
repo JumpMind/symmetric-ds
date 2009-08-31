@@ -27,8 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -38,8 +36,6 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
 
     private static final String TRANSACTION_ID = "transaction_id";
-
-    static final ILog log = LogFactory.getLog(MySqlDbDialect.class);
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
 

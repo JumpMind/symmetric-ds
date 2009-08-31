@@ -21,16 +21,12 @@
 package org.jumpmind.symmetric.db.derby;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
-
-    static final Log logger = LogFactory.getLog(DerbyDbDialect.class);
 
     @Override
     protected void initForSpecificDialect() {

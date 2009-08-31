@@ -20,8 +20,6 @@
 
 package org.jumpmind.symmetric.db.firebird;
 
-import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -29,8 +27,6 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.springframework.jdbc.UncategorizedSQLException;
 
 public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
-
-    static final ILog log = LogFactory.getLog(FirebirdDbDialect.class);
 
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
