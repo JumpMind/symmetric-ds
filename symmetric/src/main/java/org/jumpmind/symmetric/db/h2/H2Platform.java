@@ -51,7 +51,6 @@ public class H2Platform extends PlatformImplBase implements Platform {
         info.setIdentityOverrideAllowed(false);
         info.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         info.setNullAsDefaultValueRequired(false);
-        info.setAlterTableForDropUsed(true);
         info.addNativeTypeMapping(Types.ARRAY, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.DISTINCT, "BINARY", Types.BINARY);
         info.addNativeTypeMapping(Types.NULL, "BINARY", Types.BINARY);
