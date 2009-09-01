@@ -56,6 +56,8 @@ public class SqlTemplate {
 
     private String triggerPrefix;
 
+    private String emptyColumnTemplate;
+    
     private String stringColumnTemplate;
 
     private String numberColumnTemplate;
@@ -481,20 +483,18 @@ public class SqlTemplate {
                 throw new NotImplementedException(column.getName() + " is of type " + column.getType());
             }
 
+            if (dml == DataEventType.DELETE && isBlobClob && dbDialect instanceof MsSqlDbDialect) {
+                templateToUse = emptyColumnTemplate;
+            }
+            
             if (templateToUse != null) {
                 templateToUse = templateToUse.trim();
             } else {
                 throw new NotImplementedException();
             }
 
-          
-            if (dml != DataEventType.DELETE && !isBlobClob && dbDialect instanceof MsSqlDbDialect) {
-                columnsText = columnsText + "\n          "
+            columnsText = columnsText + "\n          "
                     + replace("columnName", String.format("%s%s", columnPrefix, column.getName()), templateToUse);
-            } else {
-                // leave old data blank if blob or clob on mssql
-                columnsText = columnsText + "\n          '',";
-            }
 
         }
 
@@ -678,6 +678,10 @@ public class SqlTemplate {
 
     public void setOldColumnPrefix(String oldColumnPrefix) {
         this.oldColumnPrefix = oldColumnPrefix;
+    }
+    
+    public void setEmptyColumnTemplate(String emptyColumnTemplate) {
+        this.emptyColumnTemplate = emptyColumnTemplate;
     }
 
     public void setNewColumnPrefix(String newColumnPrefix) {

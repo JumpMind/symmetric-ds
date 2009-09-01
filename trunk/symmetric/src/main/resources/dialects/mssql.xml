@@ -76,6 +76,11 @@
                         <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(cast($(origTableAlias)."$(columnName)" as varchar(max)),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
+                <property name="emptyColumnTemplate">
+                    <value>
+                        <![CDATA[ ','+]]>
+                    </value>
+                </property>                
                 <property name="blobColumnTemplate">
                     <value>
                         <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end +','+]]>
