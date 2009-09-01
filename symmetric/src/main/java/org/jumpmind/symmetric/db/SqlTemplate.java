@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
@@ -102,7 +103,7 @@ public class SqlTemplate {
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns).columnString;
+                "", columns, dialect, DataEventType.INSERT).columnString;
         sql = replace("columns", columnsText, sql);
         sql = replace("whereClause", StringUtils.isBlank(trig.getRouter().getInitialLoadSelect()) ? "1=1" : trig.getRouter().getInitialLoadSelect(), sql);
         sql = replace("tableName", trig.getTrigger().getSourceTableName(), sql);
@@ -128,7 +129,7 @@ public class SqlTemplate {
 
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns).columnString;
+                "", columns, dialect, DataEventType.INSERT).columnString;
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -145,7 +146,7 @@ public class SqlTemplate {
 
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
-                "", columns).columnString;
+                "", columns, dialect, DataEventType.INSERT).columnString;
         sql = replace("columns", columnsText, sql);
 
         sql = replace("tableName", trig.getSourceTableName(), sql);
@@ -239,11 +240,11 @@ public class SqlTemplate {
         ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
-        ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns);
+        ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml);
         ddl = replace("columns", columnString.columnString, ddl);
         ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
-        ddl = replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString, ddl);
+        ddl = replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
@@ -254,7 +255,7 @@ public class SqlTemplate {
                         + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        ddl = replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns).columnString, ddl);
+        ddl = replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
         ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
         ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
         ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue : newTriggerValue, columns), ddl);
@@ -414,7 +415,7 @@ public class SqlTemplate {
         return b.toString();
     }
 
-    private ColumnString buildColumnString(String origTableAlias, String tableAlias, String columnPrefix, Column[] columns) {
+    private ColumnString buildColumnString(String origTableAlias, String tableAlias, String columnPrefix, Column[] columns, IDbDialect dbDialect, DataEventType dml) {
         String columnsText = "";
         boolean isBlobClob = false;
         for (Column column : columns) {
@@ -486,8 +487,14 @@ public class SqlTemplate {
                 throw new NotImplementedException();
             }
 
-            columnsText = columnsText + "\n          "
+          
+            if (dml != DataEventType.DELETE && !isBlobClob && dbDialect instanceof MsSqlDbDialect) {
+                columnsText = columnsText + "\n          "
                     + replace("columnName", String.format("%s%s", columnPrefix, column.getName()), templateToUse);
+            } else {
+                // leave old data blank if blob or clob on mssql
+                columnsText = columnsText + "\n          '',";
+            }
 
         }
 
