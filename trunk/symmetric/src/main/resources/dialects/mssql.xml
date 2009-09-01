@@ -188,7 +188,7 @@
                                   end
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
-                                      select $(oldKeys), $(oldColumns), $(oldKeyNames), from deleted where $(syncOnDeleteCondition)
+                                      select $(oldKeys), $(oldColumns), $(oldKeyNames) from deleted where $(syncOnDeleteCondition)
                                       open DataCursor
                                        fetch next from DataCursor into @OldPk, @OldDataRow, $(oldKeyVariables)
                                        while @@FETCH_STATUS = 0 begin 
