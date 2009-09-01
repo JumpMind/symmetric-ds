@@ -55,12 +55,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         insert(TEST_TABLE_1, 50, true);
         getRoutingService().routeData();
 
-        final int EXPECTED_BATCHES = 16;
+        final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 16 : 17;
 
         List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel, otherChannel);
         Assert.assertEquals(EXPECTED_BATCHES, batches.size());
-        Assert.assertEquals(1, countBatchesForChannel(batches, testChannel));
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 2, countBatchesForChannel(batches, testChannel));
         Assert.assertEquals(15, countBatchesForChannel(batches, otherChannel));
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
@@ -85,9 +85,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel, otherChannel);
-        Assert.assertEquals(3, batches.size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 3 : 17, batches.size());
         Assert.assertEquals(2, countBatchesForChannel(batches, testChannel));
-        Assert.assertEquals(1, countBatchesForChannel(batches, otherChannel));
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 15, countBatchesForChannel(batches, otherChannel));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         insert(TEST_TABLE_1, 50, false);
         getRoutingService().routeData();
 
-        final int EXPECTED_BATCHES = 51;
+        final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 100;
 
         List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
@@ -279,8 +279,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(1, batches.size());
-        Assert.assertEquals(count, (int) batches.get(0).getDataEventCount());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.get(0).getDataEventCount());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         filterForChannels(batches, testChannel);
@@ -289,8 +289,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(1, batches.size());
-        Assert.assertEquals(count, (int) batches.get(0).getDataEventCount());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.get(0).getDataEventCount());
 
         resetBatches();
     }
