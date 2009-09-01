@@ -78,7 +78,7 @@
                 </property>
                 <property name="emptyColumnTemplate">
                     <value>
-                        <![CDATA[ ','+]]>
+                        <![CDATA[ ''+','+]]>
                     </value>
                 </property>                
                 <property name="blobColumnTemplate">
