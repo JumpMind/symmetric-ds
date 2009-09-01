@@ -2,7 +2,7 @@ package org.jumpmind.symmetric.model;
 
 public class DataEvent {
 
-    public static final String UNKNOWN_ROUTER_ID = "";
+    public static final String UNKNOWN_ROUTER_ID = "?";
     
     private long dataId;
    
