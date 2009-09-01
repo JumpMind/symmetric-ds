@@ -30,10 +30,10 @@
                 </property>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="fn_sym_base64_encode">
+                        <entry key="base64_encode">
                             <value>
                                 <![CDATA[ 
-                                create function dbo.fn_sym_base64_encode (@data varbinary(max)) returns varchar(max)
+                                create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)
                                   with schemabinding, returns null on null input
                                   begin
                                     return ( select [text()] = @data for xml path('') )
@@ -41,10 +41,10 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_sym_triggers_disabled">
+                        <entry key="triggers_disabled">
                             <value>
                                 <![CDATA[
-                                create function dbo.fn_sym_triggers_disabled() returns smallint
+                                create function dbo.$(functionName)() returns smallint
                                 begin
                                   declare @disabled varchar(1);
                                   set @disabled = coalesce(replace(substring(cast(context_info() as varchar), 1, 1), 0x0, ''), '');
@@ -55,10 +55,10 @@
                                 ]]>
                             </value>
                         </entry>
-                        <entry key="fn_sym_node_disabled">
+                        <entry key="node_disabled">
                             <value>
                                 <![CDATA[
-                                create function dbo.fn_sym_node_disabled() returns varchar(50)
+                                create function dbo.$(functionName)() returns varchar(50)
                                 begin
                                   declare @node varchar(50);
                                   set @node = coalesce(replace(substring(cast(context_info() as varchar), 2, 50), 0x0, ''), '');
@@ -78,7 +78,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(dbo.fn_sym_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end +','+]]>
+                        <![CDATA[ case when $(origTableAlias)."$(columnName)" is null then '' else '"' + replace(replace(dbo.$[sym.sync.table.prefix]_base64_encode($(origTableAlias)."$(columnName)"),'\','\\'),'"','\"') + '"' end +','+]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
@@ -123,13 +123,8 @@
                                        open DataCursor
                                        fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin
-                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, create_time) 
-                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, current_timestamp)                                   
-                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
-                                             select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
-                                             from $(defaultCatalog)$(defaultSchema)$(prefixName)_node c, inserted
-                                             where $(varNewPrimaryKeyJoin)
-                                             and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and ($(defaultCatalog)dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
+                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, create_time) 
+                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)                                   
                                            fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -163,13 +158,8 @@
                                        open DataCursor
                                        fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin                                   
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, create_time) 
-                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, current_timestamp)
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
-                                         select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
-                                         from $(defaultCatalog)$(defaultSchema)$(prefixName)_node c, inserted, deleted
-                                         where $(varOldPrimaryKeyJoin) and $(varNewPrimaryKeyJoin)
-                                         and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and ($(defaultCatalog)dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time) 
+                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)
                                          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -186,24 +176,20 @@
                                 begin
                                   declare @TransactionId varchar(1000)
                                   declare @OldPk varchar(2000)
+                                  declare @OldDataRow varchar(max)
                                   $(declareOldKeyVariables)
                                   if (@@TRANCOUNT > 0) begin
                                     execute sp_getbindtoken @TransactionId output;
                                   end
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
-                                      select $(oldKeys), $(oldKeyNames) from deleted where $(syncOnDeleteCondition)
+                                      select $(oldKeys), $(oldColumns), $(oldKeyNames), from deleted where $(syncOnDeleteCondition)
                                       open DataCursor
-                                       fetch next from DataCursor into @OldPk, $(oldKeyVariables)
+                                       fetch next from DataCursor into @OldPk, @OldDataRow, $(oldKeyVariables)
                                        while @@FETCH_STATUS = 0 begin 
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, create_time) 
-                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, current_timestamp)
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data_event (node_id, data_id, channel_id, transaction_id)
-                                         select c.node_id, @@IDENTITY, '$(channelName)', $(txIdExpression)
-                                         from $(defaultCatalog)$(defaultSchema)$(prefixName)_node c, deleted
-                                         where $(varOldPrimaryKeyJoin)
-                                         and (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and ($(defaultCatalog)dbo.fn_sym_node_disabled() != c.node_id)) $(nodeSelectWhere)
-                                         fetch next from DataCursor into @OldPk, $(oldKeyVariables)
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time) 
+                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)
+                                         fetch next from DataCursor into @OldPk,@OldDataRow, $(oldKeyVariables)
                                        end
                                        close DataCursor
                                        deallocate DataCursor
