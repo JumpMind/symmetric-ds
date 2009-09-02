@@ -52,6 +52,11 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
             this.functionTemplateKeySuffix = "_post_5_1_23";
         }
     }
+    
+    @Override
+    public boolean supportsTransactionId() {
+        return true;
+    }
 
     @Override
     protected Table findTable(String catalogName, String schemaName, String tblName)  {
