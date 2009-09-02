@@ -166,8 +166,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 PreparedStatement ps = null;
                 ResultSet rs = null;
                 try {
-                    ps = c.prepareStatement(getSql("selectDistinctDataIdFromDataEventSql"),
-                            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+                    ps = c.prepareStatement(getSql("selectDistinctDataIdFromDataEventSql"));
                     ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
                     ps.setLong(1, ref.getRefDataId());
                     rs = ps.executeQuery();
