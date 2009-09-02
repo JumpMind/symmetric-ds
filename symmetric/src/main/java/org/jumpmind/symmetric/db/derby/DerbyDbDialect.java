@@ -38,6 +38,11 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         return jdbcTemplate.queryForInt("select count(*) from sys.systriggers where triggername = ?",
                 new Object[] { triggerName.toUpperCase() }) > 0;
     }
+    
+    @Override
+    public boolean supportsTransactionId() {
+        return true;
+    }
 
     @Override
     public boolean isBlobSyncSupported() {
