@@ -7,7 +7,7 @@
     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd"
   default-lazy-init="true">
 
-  <util:map id="routingServiceSql">  
+  <util:map id="routerServiceSql">  
     <entry key="selectDataToBatchSql">
       <value>
         select d.data_id, d.table_name, d.event_type, d.row_data, d.pk_data, d.old_data,
