@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
+import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -59,6 +60,7 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
@@ -161,39 +163,26 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void findAndSaveNextDataId(final DataRef ref) {
-        jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
-                PreparedStatement ps = null;
-                ResultSet rs = null;
-                try {
-                    ps = c.prepareStatement(getSql("selectDistinctDataIdFromDataEventSql"));
-                    ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-                    ps.setLong(1, ref.getRefDataId());
-                    rs = ps.executeQuery();
-                    long lastDataId = -1;
-                    while (rs.next()) {
-                        long dataId = rs.getLong(1);
-                        if (lastDataId == -1 || lastDataId + 1 == dataId) {
+        long lastDataId = (Long)jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] {ref.getRefDataId()}, new int[] {Types.INTEGER},  new ResultSetExtractor() {
+            public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+                long lastDataId = -1;
+                while (rs.next()) {
+                    long dataId = rs.getLong(1);
+                    if (lastDataId == -1 || lastDataId + 1 == dataId) {
+                        lastDataId = dataId;
+                    } else {
+                        if (isDataGapExpired(dataId, ref)) {
                             lastDataId = dataId;
                         } else {
-                            if (isDataGapExpired(dataId, ref)) {
-                                lastDataId = dataId;
-                            } else {
-                                // detected a gap!
-                                break;
-                            }
+                            // detected a gap!
+                            break;
                         }
                     }
-
-                    dataService.saveDataRef(new DataRef(lastDataId, new Date()));
-
-                } finally {
-                    JdbcUtils.closeResultSet(rs);
-                    JdbcUtils.closeStatement(ps);
                 }
-                return null;
+                return lastDataId;
             }
         });
+        dataService.saveDataRef(new DataRef(lastDataId, new Date()));       
     }
 
     protected boolean isDataGapExpired(long dataId, DataRef ref) {
