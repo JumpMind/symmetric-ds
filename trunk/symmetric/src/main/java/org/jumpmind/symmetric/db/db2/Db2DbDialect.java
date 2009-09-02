@@ -95,7 +95,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "nullif('','')";
+        return "null";
     }
 
     @Override
@@ -117,7 +117,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public boolean supportsTransactionId() {
-        return true;
+        return false;
     }
     
     @Override
