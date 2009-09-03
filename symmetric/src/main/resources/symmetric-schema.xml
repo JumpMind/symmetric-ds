@@ -30,7 +30,7 @@
 
     <table name="node_group">
         <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
-        <column name="description" type="VARCHAR" size="2000" />
+        <column name="description" type="VARCHAR" size="1000" />
     </table>
 
     <table name="node_group_link">
