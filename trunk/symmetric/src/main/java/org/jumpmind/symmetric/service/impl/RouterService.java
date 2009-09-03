@@ -168,7 +168,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 long lastDataId = -1;
                 while (rs.next()) {
                     long dataId = rs.getLong(1);
-                    if (lastDataId == -1 || lastDataId + 1 == dataId) {
+                    if (lastDataId == -1 || lastDataId + 1 == dataId || lastDataId == dataId) {
                         lastDataId = dataId;
                     } else {
                         if (isDataGapExpired(dataId, ref)) {

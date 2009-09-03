@@ -17,7 +17,7 @@
     </entry>
     <entry key="selectDistinctDataIdFromDataEventSql">
       <value>
-        select distinct(data_id) from $[sym.sync.table.prefix]_data_event where data_id > ? order by data_id asc
+        select data_id from $[sym.sync.table.prefix]_data_event where data_id > ? order by data_id asc
       </value>
     </entry>    
   </util:map>
