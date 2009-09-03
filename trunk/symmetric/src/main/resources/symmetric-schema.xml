@@ -176,7 +176,7 @@
     <table name="data_event">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1" />
-        <column name="router_id" type="VARCHAR" size="20" primaryKey="true" />
+        <column name="router_id" type="VARCHAR" size="20" required="true"  primaryKey="true" />
         <column name="create_time" type="TIMESTAMP" />
         <index name="idx_de_batchid">
             <index-column name="batch_id" />
