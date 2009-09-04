@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
     <packaging>jar</packaging>
-    <version>1.7.4-SNAPSHOT</version>
+    <version>1.7.4</version>
     <name>SymmetricDS Library</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -15,9 +15,9 @@
         centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/branches/1.7</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.7</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.7</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/tags/symmetric-1.7.4</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.4</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.4</url>
     </scm>
     <issueManagement>
         <system>JIRA</system>
