@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
@@ -101,7 +102,7 @@
             <timezone>-5</timezone>
         </developer>
         <developer>
-        	<id>knaas</id>
+            <id>knaas</id>
             <name>Keith Naas</name>
             <email>knaas@users.sourceforge.net</email>
             <roles>
@@ -240,116 +241,134 @@
 
     <build>
         <finalName>symmetric-ds</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.jumpmind.symmetric.SymmetricLauncher
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>org.jumpmind.symmetric.SymmetricLauncher
                             </mainClass>
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <configuration>
-                    <wtpVersion>${wtp.version}</wtpVersion>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>true</downloadJavadocs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                    <optimize>true</optimize>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <forkMode>always</forkMode>
-                    <argLine>-Xms512m -Xmx1024m</argLine>
-                    <systemProperties>
-                        <property>
-                            <name>test.root</name>
-                            <value>${test.root}</value>
-                        </property>
-                        <property>
-                            <name>test.client</name>
-                            <value>${test.client}</value>
-                        </property>
-                    </systemProperties>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>
-                            ${user.home}\.symmetricds\lib\ojdbc6.jar
+                        <addClasspath>true</addClasspath>
+                    </manifest>
+                </archive>
+            </configuration>
+        </plugin>
+        <plugin>
+            <artifactId>maven-eclipse-plugin</artifactId>
+            <configuration>
+                <wtpVersion>${wtp.version}</wtpVersion>
+                <downloadSources>true</downloadSources>
+                <downloadJavadocs>true</downloadJavadocs>
+            </configuration>
+        </plugin>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+                <source>1.5</source>
+                <target>1.5</target>
+                <optimize>true</optimize>
+            </configuration>
+        </plugin>
+        <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+                <forkMode>always</forkMode>
+                <argLine>-Xms512m -Xmx1024m</argLine>
+                <systemProperties>
+                    <property>
+                        <name>test.root</name>
+                        <value>${test.root}</value>
+                    </property>
+                    <property>
+                        <name>test.client</name>
+                        <value>${test.client}</value>
+                    </property>
+                </systemProperties>
+                <additionalClasspathElements>
+                    <additionalClasspathElement>
+                        ${user.home}\.symmetricds\lib\ojdbc6.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}\.symmetricds\lib\ojdbc5.jar
+                    <additionalClasspathElement>
+                        ${user.home}\.symmetricds\lib\ojdbc5.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}\.symmetricds\lib\ojdbc14.jar
+                    <additionalClasspathElement>
+                        ${user.home}\.symmetricds\lib\ojdbc14.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}\.symmetricds\lib\db2jcc.jar
+                    <additionalClasspathElement>
+                        ${user.home}\.symmetricds\lib\db2jcc.jar
                         </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${user.home}\.symmetricds\lib\jaybird-full-2.1.6.jar
+                    <additionalClasspathElement>
+                        ${user.home}\.symmetricds\lib\jaybird-full-2.1.6.jar
                         </additionalClasspathElement>
-                    </additionalClasspathElements>
-                    <includes>
-                        <include>**/*TestSuite.java</include>
-                        <include>**/*UnitTest.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.1</version>
-                <executions>
-                    <execution>
-                        <id>bin</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attached</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/assembly-bin.xml
+                </additionalClasspathElements>
+                <includes>
+                    <include>**/*TestSuite.java</include>
+                    <include>**/*UnitTest.java</include>
+                </includes>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>attach-sources</id>
+                    <phase>verify</phase>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.1</version>
+            <executions>
+                <execution>
+                    <id>bin</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>attached</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>${basedir}/src/main/assembly/assembly-bin.xml
                                 </descriptor>
-                            </descriptors>
-                            <finalName>symmetric-ds-${pom.version}</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <siteDirectory>${basedir}/src/site</siteDirectory>
-                    <templateFile>src/site/site.vm</templateFile>
-                </configuration>
-            </plugin>
-        </plugins>
+                        </descriptors>
+                        <finalName>symmetric-ds-${pom.version}</finalName>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <configuration>
+                <siteDirectory>${basedir}/src/site</siteDirectory>
+                <templateFile>src/site/site.vm</templateFile>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.db.torque</groupId>
+            <artifactId>torque-maven-plugin</artifactId>
+            <configuration>
+                 <outputFormat>html</outputFormat>
+                 <targetDatabase>symmetric</targetDatabase>
+                 <outputDirectory>${project.build.directory}/generated-docs/torque</outputDirectory>
+                 <schemaDir>${basedir}/src/main/resources</schemaDir>
+            </configuration>
+            <executions>
+                <execution>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>documentation</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
     </build>
     <reporting>
         <plugins>
