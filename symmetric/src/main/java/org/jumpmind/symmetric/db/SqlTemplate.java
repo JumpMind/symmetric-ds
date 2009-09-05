@@ -168,9 +168,6 @@ public class SqlTemplate {
         }
     }
 
-    /**
-     * TODO Document all the 'templated' values available for building triggers.
-     */
     public String createTriggerDDL(IDbDialect dialect, DataEventType dml, Trigger trigger, TriggerHistory history,
             String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema) {
         String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");

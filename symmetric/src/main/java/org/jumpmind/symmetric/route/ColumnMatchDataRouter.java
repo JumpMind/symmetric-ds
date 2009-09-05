@@ -56,12 +56,11 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
     private IRegistrationService registrationService;
 
-    // TODO Support other operators (like !=) and old data
     public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Collection<String> nodeIds = null;
         String expression = dataMetaData.getTrigger().getRouter().getRouterExpression();
         if (!StringUtils.isBlank(expression)) {
-            Map<String, String> columnValues = getNewDataAsString(dataMetaData);
+            Map<String, String> columnValues = getDataMap(dataMetaData);
             String[] tokens = expression.split("=");
             String column = tokens[0];
             String value = tokens[1];

@@ -231,7 +231,7 @@ public class RouterService extends AbstractService implements IRouterService {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            // TODO add a flag to sym_channel to indicate whether we need to
+            // TODO: add a flag to sym_channel to indicate whether we need to
             // read the row_data and or old_data for
             // routing. We will get better performance if we don't read the
             // data.
