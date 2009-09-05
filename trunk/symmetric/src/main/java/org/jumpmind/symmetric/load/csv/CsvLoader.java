@@ -255,16 +255,18 @@ public class CsvLoader implements IDataLoader {
                 // foreign key
                 if (enableFallbackUpdate) {
                     dbDialect.rollbackToSavepoint(savepoint);
-                    log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
+                    if (log.isDebugEnabled()) {
+                        log.debug("LoaderInsertingFailedUpdating", context.getTableName(), ArrayUtils.toString(tokens));
+                    }
                     String keyValues[] = parseKeys(tokens, 1);
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
-                        throw new RuntimeException("Unable to update " + context.getTableName() + ": "
-                                + ArrayUtils.toString(tokens), e);
+                        throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
+                                .toString(tokens));
                     }
                 } else {
-                    // TODO: log the PK information as an ERROR level.
+                    log.error("LoaderInsertingFailed", context.getTableName(), ArrayUtils.toString(tokens));
                     throw e;
                 }
             } finally {
@@ -300,7 +302,6 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementFallbackInsertCount();
                     rows = context.getTableTemplate().insert(context, columnValues);
                 } else {
-                    // TODO: log the PK information as an ERROR level.
                     stats.incrementDatabaseMillis(stats.endTimer());
                     throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
                             .toString(tokens));

@@ -4,9 +4,6 @@ import org.jumpmind.symmetric.common.Message;
 
 public class SymmetricException extends RuntimeException {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -3111453874504638368L;
 
     public SymmetricException() {

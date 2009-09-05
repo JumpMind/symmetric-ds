@@ -199,7 +199,6 @@ public class SqlTemplate {
         return targetTableName;
     }
 
-    // TODO Clean up to get rid of unused template variables
     public String replaceTemplateVariables(IDbDialect dialect, DataEventType dml, Trigger trigger,
             TriggerHistory history, String tablePrefix, Table metaData, String defaultCatalog, String defaultSchema,
             String ddl) {
@@ -217,7 +216,6 @@ public class SqlTemplate {
 
         ddl = replace("triggerName", dialect.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength(),
                 trigger, history).toUpperCase(), ddl);
-        ddl = replace("engineName", dialect.getEngineName(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
         ddl = replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);

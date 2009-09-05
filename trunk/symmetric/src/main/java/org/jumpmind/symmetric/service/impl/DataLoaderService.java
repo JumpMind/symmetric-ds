@@ -89,8 +89,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private List<IBatchListener> batchListeners;
 
     /**
-     * Connect to the remote node and pull data. The acknowledgment of
-     * commit/error status is sent separately after the data is processed.
+     * Connect to the remote node and pull data. The acknowledgment of commit/error status is sent separately after the
+     * data is processed.
      */
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
@@ -165,9 +165,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
-     * Load database from input stream and return a list of batch statuses. This
-     * is used for a pull request that responds with data, and the
-     * acknowledgment is sent later.
+     * Load database from input stream and return a list of batch statuses. This is used for a pull request that
+     * responds with data, and the acknowledgment is sent later.
      */
     protected List<IncomingBatch> loadDataAndReturnBatches(IIncomingTransport transport) throws IOException {
 
@@ -369,9 +368,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     /**
-     * Load database from input stream and write acknowledgment to output
-     * stream. This is used for a "push" request with a response of an
-     * acknowledgment.
+     * Load database from input stream and write acknowledgment to output stream. This is used for a "push" request with
+     * a response of an acknowledgment.
      * 
      * @param in
      * @param out
@@ -449,10 +447,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 loadStatus = loadDelegate.getLoadStatus();
                 if (loadStatus == LoadStatus.CONTINUE) {
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED).increment();
-                    // Chances are if SymmetricDS is configured to commit early
-                    // in a batch we
-                    // want to give other threads a chance to do work and access
-                    // the database.
+                    // Chances are if SymmetricDS is configured to commit early in a batch we want to give other threads
+                    // a chance to do work and access the database.
                     AppUtils.sleep(5);
                 }
             } while (LoadStatus.CONTINUE == loadStatus);
