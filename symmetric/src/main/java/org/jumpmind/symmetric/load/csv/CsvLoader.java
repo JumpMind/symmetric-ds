@@ -262,7 +262,7 @@ public class CsvLoader implements IDataLoader {
                     stats.incrementFallbackUpdateCount();
                     rows = context.getTableTemplate().update(context, columnValues, keyValues);
                     if (rows == 0) {
-                        throw new SymmetricException("LoaderUpdatingFailed", context.getTableName(), ArrayUtils
+                        throw new SymmetricException("LoaderUpdatingFailed", e, context.getTableName(), ArrayUtils
                                 .toString(tokens));
                     }
                 } else {
