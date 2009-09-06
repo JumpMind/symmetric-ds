@@ -36,6 +36,12 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * The value can be a constant. In the data router the value of the new data is always represented by a string so all
  * comparisons are done in the format that SymmetricDS transmits.
  * <P>
+ * The column name used for the match is the upper case column name if the current value is being compared.  The upper case column name
+ * prefixed by OLD_ can be used if the comparison is being done of the old data.
+ * <P>
+ * For example, if the column on a table is named STATUS you can specify that you want to router when STATUS=OK by specifying such for the router_expression.  If you wanted to route when
+ * only the old value for STATUS=OK you would specify OLD_STATUS=OK.
+ * <P>
  * The value can also be one of the following expressions:
  * <ol>
  * <li>:NODE_ID</li>

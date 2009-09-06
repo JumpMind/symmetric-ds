@@ -57,6 +57,12 @@ public class Router {
      */
     private String routerExpression = null;
 
+    private boolean syncOnUpdate = true;
+
+    private boolean syncOnInsert = true;
+
+    private boolean syncOnDelete = true;
+    
     private String initialLoadSelect = null;
 
     private Date createTime;
@@ -176,6 +182,30 @@ public class Router {
         this.routerExpression = routingExpression;
     }
 
+    public void setSyncOnDelete(boolean syncOnDelete) {
+        this.syncOnDelete = syncOnDelete;
+    }
+    
+    public boolean isSyncOnDelete() {
+        return syncOnDelete;
+    }
+    
+    public void setSyncOnInsert(boolean syncOnInsert) {
+        this.syncOnInsert = syncOnInsert;
+    }
+    
+    public boolean isSyncOnInsert() {
+        return syncOnInsert;
+    }
+    
+    public void setSyncOnUpdate(boolean syncOnUpdate) {
+        this.syncOnUpdate = syncOnUpdate;
+    }
+    
+    public boolean isSyncOnUpdate() {
+        return syncOnUpdate;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Router) {
