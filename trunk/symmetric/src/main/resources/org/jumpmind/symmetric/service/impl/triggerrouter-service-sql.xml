@@ -69,7 +69,7 @@
     </entry>
     <entry key="selectTriggerRouterPrefixSql">
       <value>select 
-          t.trigger_id,t.channel_id,t.source_table_name,t.inactive_time,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
+          t.trigger_id,t.channel_id,t.source_table_name,t.inactive_time,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
           t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,t.source_schema_name,t.source_catalog_name,
           t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,t.tx_id_expression,t.create_time as t_create_time,
           t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by, 
@@ -159,15 +159,15 @@
       <value>
         insert into $[sym.sync.table.prefix]_router
         (target_catalog_name,target_schema_name,target_table_name,source_node_group_id,target_node_group_id,
-        router_name,router_expression,initial_load_select,create_time,last_update_by,last_update_time,router_id)
-        values(?,?,?,?,?,?,?,?,?,?,?,?)
+        router_name,router_expression,sync_on_update,sync_on_insert,sync_on_delete,initial_load_select,create_time,last_update_by,last_update_time,router_id)
+        values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="updateRouterSql">
       <value>
         update $[sym.sync.table.prefix]_router
          set target_catalog_name=?,target_schema_name=?,target_table_name=?,source_node_group_id=?,
-         target_node_group_id=?,router_name=?,router_expression=?,
+         target_node_group_id=?,router_name=?,router_expression=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,
          initial_load_select=?,last_update_by=?,last_update_time=?
         where router_id=?
       </value>

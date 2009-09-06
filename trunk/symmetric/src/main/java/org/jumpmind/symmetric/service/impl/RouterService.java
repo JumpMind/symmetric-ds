@@ -276,7 +276,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context.getChannel());
 
                 context.resetForNextData();
-                if (!context.getChannel().isIgnored()) {
+                if (!context.getChannel().isIgnored() && triggerRouter.isRouted(data.getEventType())) {
                     IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();

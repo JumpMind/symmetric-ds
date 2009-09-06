@@ -114,37 +114,53 @@ public class TriggerRouter {
     public Trigger getTrigger() {
         return trigger;
     }
-    
+
+    public boolean isRouted(DataEventType event) {
+        switch (event) {
+        case INSERT:
+            return router.isSyncOnInsert();
+        case DELETE:
+            return router.isSyncOnDelete();
+        case UPDATE:
+            return router.isSyncOnUpdate();
+        default:
+            return true;
+        }
+    }
+
     public String getTargetSchema(String defaultSchema) {
         if (router != null && !StringUtils.isBlank(router.getTargetSchemaName())) {
             return router.getTargetSchemaName();
-        } if (trigger != null && !StringUtils.isBlank(trigger.getSourceSchemaName())) {
+        }
+        if (trigger != null && !StringUtils.isBlank(trigger.getSourceSchemaName())) {
             return trigger.getSourceSchemaName();
         } else {
             return defaultSchema;
-        }            
+        }
     }
-    
+
     public String getTargetCatalog(String defaultCatalog) {
         if (router != null && !StringUtils.isBlank(router.getTargetCatalogName())) {
             return router.getTargetCatalogName();
-        } if (trigger != null && !StringUtils.isBlank(trigger.getSourceCatalogName())) {
+        }
+        if (trigger != null && !StringUtils.isBlank(trigger.getSourceCatalogName())) {
             return trigger.getSourceCatalogName();
         } else {
             return defaultCatalog;
-        }            
+        }
     }
-    
+
     public String getTargetTable() {
         if (router != null && !StringUtils.isBlank(router.getTargetTableName())) {
             return router.getTargetTableName();
-        } if (trigger != null && !StringUtils.isBlank(trigger.getSourceTableName())) {
+        }
+        if (trigger != null && !StringUtils.isBlank(trigger.getSourceTableName())) {
             return trigger.getSourceTableName();
         } else {
             return null;
-        }            
+        }
     }
-    
+
     public String getQualifiedTargetTableName() {
         String catalog = getTargetCatalog(null);
         String schema = getTargetSchema(null);
