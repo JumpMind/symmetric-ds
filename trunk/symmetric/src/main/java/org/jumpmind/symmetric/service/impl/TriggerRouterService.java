@@ -364,8 +364,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
                 router.getInitialLoadSelect(), router.getLastUpdateBy(), router.getLastUpdateTime(),
                 router.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
-                Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,  Types.SMALLINT, Types.SMALLINT,
+                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
             router.setCreateTime(router.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertRouterSql"), new Object[] { router.getTargetCatalogName(),
                     router.getTargetSchemaName(), router.getTargetTableName(), router.getSourceNodeGroupId(),
