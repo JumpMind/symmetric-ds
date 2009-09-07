@@ -14,7 +14,13 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * In Progress ... TODO javadoc and unit test
+ * This data router is invoked when the router_name is 'bsh'. The router_expression is always a bean shell expression.  See
+ * <a href='http://www.beanshell.org'>the bean shell site</a> for information about the capabilities of the bean shell scripting
+ * language.
+ * <P/>
+ * Bound to the interpreter are the names of both the current and old column values.  They can be used in the expression.  They should 
+ * always be referenced using upper case.  Also bound to the interpreter is a {@link Collection} of targetNodes.  The script is expected
+ * to add the the list of target nodes a list of the node_ids that should be routed to.
  */
 public class BshDataRouter extends AbstractDataRouter {
 
