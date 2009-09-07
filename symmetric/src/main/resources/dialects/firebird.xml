@@ -76,20 +76,18 @@
                                   begin
                                     select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (data_id, table_name, event_type, trigger_hist_id, row_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       :id,
                                       '$(targetTableName)',
                                       'I',
                                       $(triggerHistoryId),
-                                      $(columns),                                
+                                      $(columns),       
+                                      '$(channelName)',          
+                                      $(txIdExpression),
+                                      rdb$get_context('USER_SESSION', 'sync_node_disabled'),                         
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event
-                                    (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, :id, '$(channelName)', $(txIdExpression)
-                                    from $(prefixName)_node c
-                                    where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
                                 end
                                 ]]>
@@ -105,7 +103,7 @@
                                   begin
                                     select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       :id,
                                       '$(targetTableName)',
@@ -113,14 +111,12 @@
                                       $(triggerHistoryId),
                                       $(oldKeys),
                                       $(columns),
-                                      $(oldColumns),
+                                      $(oldColumns),       
+                                      '$(channelName)',          
+                                      $(txIdExpression),
+                                      rdb$get_context('USER_SESSION', 'sync_node_disabled'),  
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event
-                                    (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, :id, '$(channelName)', $(txIdExpression)
-                                    from $(prefixName)_node c
-                                    where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
                                 end
                                 ]]>
@@ -136,20 +132,19 @@
                                   begin
                                     select gen_id($(defaultSchema)gen_$(prefixName)_data_data_id, 1) from rdb$database into :id;
                                     insert into $(defaultSchema)$(prefixName)_data
-                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, create_time)
+                                    (data_id, table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time)
                                     values(
                                       :id,
                                       '$(targetTableName)',
                                       'D',
                                       $(triggerHistoryId),
-                                      $(oldKeys),
+                                      $(oldKeys),                                      
+                                      $(oldColumns),       
+                                      '$(channelName)',          
+                                      $(txIdExpression),
+                                      rdb$get_context('USER_SESSION', 'sync_node_disabled'),  
                                       CURRENT_TIMESTAMP
                                     );
-                                    insert into $(defaultSchema)$(prefixName)_data_event
-                                    (node_id, data_id, channel_id, transaction_id)
-                                    select node_id, :id, '$(channelName)', $(txIdExpression)
-                                    from $(prefixName)_node c
-                                    where (c.node_group_id='$(targetGroupId)' and c.sync_enabled=1 and (rdb$get_context('USER_SESSION', 'sync_node_disabled') is null or rdb$get_context('USER_SESSION', 'sync_node_disabled') != c.node_id)) $(nodeSelectWhere);
                                   end
                                 end
                                 ]]>
