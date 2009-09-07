@@ -64,8 +64,8 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.JdbcUtils;
 
 /**
- * This service is responsible for routing data to specific nodes and managing the batching of data to be delivered to
- * each node.
+ * This service is responsible for routing data to specific nodes and managing
+ * the batching of data to be delivered to each node.
  * 
  * @since 2.0
  */
@@ -118,9 +118,10 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * We route data channel by channel for two reasons. One is that if/when we decide to multi-thread the routing it is
-     * a simple matter of inserting a thread pool here and waiting for all channels to be processed. The other reason is
-     * to reduce the number of connections we are required to have.
+     * We route data channel by channel for two reasons. One is that if/when we
+     * decide to multi-thread the routing it is a simple matter of inserting a
+     * thread pool here and waiting for all channels to be processed. The other
+     * reason is to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getChannels();
@@ -142,7 +143,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (context != null) {
                         context.rollback();
                     }
-                    log.error("RouterRoutingFailed", nodeChannel.getId(), ex);
+                    log.error("RouterRoutingFailed", ex, nodeChannel.getId());
                 } finally {
                     try {
                         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
@@ -163,7 +164,8 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void findAndSaveNextDataId(final DataRef ref) {
-        long lastDataId = (Long)jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] {ref.getRefDataId()}, new int[] {Types.INTEGER},  new ResultSetExtractor() {
+        long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] { ref
+                .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor() {
             public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
                 long lastDataId = -1;
                 while (rs.next()) {
@@ -182,7 +184,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 return lastDataId;
             }
         });
-        dataService.saveDataRef(new DataRef(lastDataId, new Date()));       
+        dataService.saveDataRef(new DataRef(lastDataId, new Date()));
     }
 
     protected boolean isDataGapExpired(long dataId, DataRef ref) {
@@ -219,8 +221,10 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     /**
-     * Pre-read data and fill up a queue so we can peek ahead to see if we have crossed a database transaction boundary.
-     * Then route each {@link Data} while continuing to keep the queue filled until the result set is entirely read.
+     * Pre-read data and fill up a queue so we can peek ahead to see if we have
+     * crossed a database transaction boundary. Then route each {@link Data}
+     * while continuing to keep the queue filled until the result set is
+     * entirely read.
      * 
      * @param conn
      *            The connection to use for selecting the data.
@@ -231,10 +235,9 @@ public class RouterService extends AbstractService implements IRouterService {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            // TODO: add a flag to sym_channel to indicate whether we need to
-            // read the row_data and or old_data for
-            // routing. We will get better performance if we don't read the
-            // data.
+            // TODO add a flag to sym_channel to indicate whether we need to
+            // read the row_data and or old_data for routing. We will get better
+            // performance if we don't read the data.
             ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
@@ -244,18 +247,25 @@ public class RouterService extends AbstractService implements IRouterService {
             int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
             LinkedList<Data> dataQueue = new LinkedList<Data>();
-            for (int i = 0; i < peekAheadLength && rs.next(); i++) {
+            boolean hasNext = rs.next();
+            for (int i = 0; i < peekAheadLength && hasNext; i++) {
                 long ts = System.currentTimeMillis();
                 readData(rs, dataQueue, transactionIdDataId);
                 context.incrementStat(System.currentTimeMillis() - ts, "readData");
+                if (hasNext) {
+                    hasNext = rs.next();
+                }
             }
 
             while (dataQueue.size() > 0) {
                 routeData(dataQueue.poll(), transactionIdDataId, context);
-                if (rs.next()) {
+                if (hasNext) {
                     long ts = System.currentTimeMillis();
                     readData(rs, dataQueue, transactionIdDataId);
                     context.incrementStat(System.currentTimeMillis() - ts, "readData");
+                    if (hasNext) {
+                        hasNext = rs.next();
+                    }
                 }
             }
 
@@ -289,7 +299,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
                 if (!context.isRouted()) {
                     // mark as not routed anywhere
-                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1, triggerRouter.getRouter().getRouterId());
+                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1, triggerRouter
+                            .getRouter().getRouterId());
                 }
 
                 if (context.isNeedsCommitted()) {
@@ -304,7 +315,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds, TriggerRouter triggerRouter) {
+    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds,
+            TriggerRouter triggerRouter) {
         if (nodeIds != null && nodeIds.size() > 0) {
             long ts = System.currentTimeMillis();
             for (String nodeId : nodeIds) {
