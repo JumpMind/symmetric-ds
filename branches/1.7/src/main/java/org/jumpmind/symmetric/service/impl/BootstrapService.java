@@ -113,7 +113,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                         logger.info(String.format("Auto configuring %s channel", defaultChannel.getId()));
                         configurationService.saveChannel(defaultChannel);
                     } else {
-                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel.getId()));
+                        logger.info(String.format("No need to create channel %s.  It already exists", defaultChannel
+                                .getId()));
                     }
                 }
                 configurationService.flushChannels();
@@ -170,7 +171,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
             try {
                 logger.info("Synchronizing triggers");
                 // make sure channels are read from the database
-                configurationService.flushChannels(); 
+                configurationService.flushChannels();
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateSymmetricTriggers(sqlBuffer, gen_always);
             } finally {
@@ -273,7 +274,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                             || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
-                    } else if(gen_always) {
+                    } else if (gen_always) {
                         reason = TriggerReBuildReason.FORCED;
                         forceRebuildOfTriggers = true;
                     }
@@ -328,8 +329,7 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     /**
-     * Simply check and make sure that this node is all configured properly for
-     * operation.
+     * Simply check and make sure that this node is all configured properly for operation.
      */
     public void validateConfiguration() {
         Node node = nodeService.findIdentity();
@@ -389,8 +389,8 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
     }
 
     /**
-     * Give the end user the option to provide a script that will load a
-     * registration server with an initial SymmetricDS setup.
+     * Give the end user the option to provide a script that will load a registration server with an initial SymmetricDS
+     * setup.
      * 
      * Look first on the file system, then in the classpath for the SQL file.
      * 
@@ -410,6 +410,9 @@ public class BootstrapService extends AbstractService implements IBootstrapServi
                 }
             } else {
                 fileUrl = getClass().getResource(sqlScript);
+                if (fileUrl == null) {
+                    fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
+                }
             }
 
             if (fileUrl != null) {
