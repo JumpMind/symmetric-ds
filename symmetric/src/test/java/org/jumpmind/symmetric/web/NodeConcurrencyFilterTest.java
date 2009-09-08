@@ -20,6 +20,8 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -29,7 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.ConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.junit.Assert;
@@ -192,4 +196,105 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         }
 
     }
+
+    @Test()
+    public void testGetSuspendIgnoreChannels() throws Exception {
+        // IParameterService parameterService = getParameterService();
+        // parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS,
+        // 3);
+
+        String nodeId = "00000";
+
+        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
+
+        Map<String, String> result = filter.getSuspendIgnoreChannels(nodeId);
+        Assert.assertEquals(0, result.size());
+
+        ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);
+
+        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
+
+        NodeChannel nc = ncs.get(1);
+        String channelId = ncs.get(1).getId();
+
+        nc.setSuspended(true);
+        configurationService.saveNodeChannelControl(nc);
+
+        result = filter.getSuspendIgnoreChannels(nodeId);
+
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(channelId.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+
+        nc = ncs.get(0);
+        nc.setSuspended(true);
+
+        configurationService.saveNodeChannelControl(nc);
+
+        String channelIds = ncs.get(0).getId() + "," + ncs.get(1).getId();
+        result = filter.getSuspendIgnoreChannels(nodeId);
+
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+
+        nc.setIgnored(true);
+        configurationService.saveNodeChannelControl(nc);
+        result = filter.getSuspendIgnoreChannels(nodeId);
+
+        Assert.assertEquals(2, result.size());
+        Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+        Assert.assertTrue(nc.getId().equals(result.get(WebConstants.IGNORED_CHANNELS)));
+
+    }
+
+    @Test()
+    public void testBuildSuspendIgnoreResponseHeaders() throws Exception {
+
+        ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);
+
+        String nodeId = "00000";
+
+        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
+        MockHttpServletResponse resp = new MockHttpServletResponse();
+
+        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
+
+        ncs.get(0).setSuspended(false);
+        ncs.get(0).setIgnored(false);
+
+        ncs.get(1).setSuspended(false);
+        ncs.get(1).setIgnored(false);
+
+        ncs.get(2).setSuspended(false);
+        ncs.get(2).setIgnored(false);
+
+        filter.buildSuspendIgnoreResponseHeaders(nodeId, resp);
+
+        String suspended = (String) (resp.getHeader(WebConstants.SUSPENDED_CHANNELS));
+        String ignored = (String) (resp.getHeader(WebConstants.IGNORED_CHANNELS));
+
+        Assert.assertNull(suspended);
+        Assert.assertNull(ignored);
+
+        // Next, set some with "suspend" and some with "ignore"
+
+        ncs = configurationService.getNodeChannels(nodeId);
+
+        ncs.get(0).setSuspended(true);
+        ncs.get(1).setIgnored(true);
+        ncs.get(2).setSuspended(true);
+
+        configurationService.saveNodeChannelControl(ncs.get(0));
+        configurationService.saveNodeChannelControl(ncs.get(1));
+        configurationService.saveNodeChannelControl(ncs.get(2));
+
+        filter.buildSuspendIgnoreResponseHeaders(nodeId, resp);
+
+        suspended = (String) (resp.getHeader(WebConstants.SUSPENDED_CHANNELS));
+        ignored = (String) (resp.getHeader(WebConstants.IGNORED_CHANNELS));
+
+        Assert.assertEquals(suspended, ncs.get(0).getId() + "," + ncs.get(2).getId());
+        Assert.assertEquals(ignored, ncs.get(1).getId());
+
+    }
+
 }

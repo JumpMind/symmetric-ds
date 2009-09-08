@@ -70,9 +70,9 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testDisabledChannel() {
-        NodeChannel channel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
-        channel.setEnabled(false);
-        getConfigurationService().saveChannel(channel);
+        NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        nodeChannel.setEnabled(false);
+        getConfigurationService().saveChannel(nodeChannel.getChannel());
 
         cleanSlate("sym_data_event", "sym_data",
                 "sym_outgoing_batch");
@@ -89,8 +89,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         assertNotNull(list);
         assertEquals(list.size(), 0);
 
-        channel.setEnabled(true);
-        getConfigurationService().saveChannel(channel);
+        nodeChannel.setEnabled(true);
+        getConfigurationService().saveChannel(nodeChannel);
     }
 
     protected void createDataEvent(String tableName, int triggerHistoryId, String channelId, DataEventType type,

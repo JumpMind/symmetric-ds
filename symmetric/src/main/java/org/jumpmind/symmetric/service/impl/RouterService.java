@@ -124,7 +124,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * reason is to reduce the number of connections we are required to have.
      */
     protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
-        final List<NodeChannel> channels = configurationService.getChannels();
+        final List<NodeChannel> channels = configurationService.getNodeChannels();
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspended()) {
                 routeDataForChannel(ref, nodeChannel, sourceNode);
@@ -324,7 +324,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
                     OutgoingBatch batch = context.getBatchesByNodes().get(nodeId);
                     if (batch == null) {
-                        batch = new OutgoingBatch(nodeId, dataMetaData.getChannel().getId());
+                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getId());
                         outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
                         context.getBatchesByNodes().put(nodeId, batch);
                     }

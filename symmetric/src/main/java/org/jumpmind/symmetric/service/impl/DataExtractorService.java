@@ -242,7 +242,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
                     Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
-                    NodeChannel channel = batch != null ? configurationService.getChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
+                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
                     Set<Node> oneNodeSet = new HashSet<Node>();                    
                     oneNodeSet.add(node);
                     PreparedStatement st = null;

@@ -26,6 +26,7 @@ import java.util.List;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 
 /**
@@ -39,18 +40,28 @@ public interface IConfigurationService {
 
     public void saveChannel(Channel channel);
 
+    public void saveChannel(NodeChannel channel);
+
+    public void saveNodeChannel(NodeChannel channel);
+
+    public void saveNodeChannelControl(NodeChannel channel);
+
     public void deleteChannel(Channel channel);
+
+    public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId, String channelId);
 
     public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
-    public List<NodeChannel> getChannels();
-    
-    public List<NodeChannel> getChannels(String nodeId);
-    
-    public NodeChannel getChannel(String channelId);
-    
+    public List<NodeChannel> getNodeChannels();
+
+    public List<NodeChannel> getNodeChannels(String nodeId);
+
+    public NodeChannel getNodeChannel(String channelId);
+
+    public NodeChannel getNodeChannel(String channelId, String nodeId);
+
     public void reloadChannels();
-       
+
     public void autoConfigDatabase(boolean force);
-    
+
 }

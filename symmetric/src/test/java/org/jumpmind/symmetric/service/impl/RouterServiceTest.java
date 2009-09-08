@@ -43,8 +43,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_TABLE_2);
         getTriggerRouterService().saveTriggerRouter(trigger2);
         getTriggerRouterService().syncTriggers();
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
-        NodeChannel otherChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID_OTHER);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel otherChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID_OTHER);
         Assert.assertEquals(50, testChannel.getMaxBatchSize());
         Assert.assertEquals(1, otherChannel.getMaxBatchSize());
         // should be 1 batch for table 1 on the testchannel w/ max batch size of
@@ -99,7 +99,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         trigger1.getRouter().setRouterExpression("ROUTING_VARCHAR=:NODE_ID");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         testChannel.setBatchAlgorithm("transactional");
         getConfigurationService().saveChannel(testChannel);
@@ -138,7 +138,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         trigger1.getRouter().setRouterExpression("c.node_id=:ROUTING_VARCHAR");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
         testChannel.setBatchAlgorithm("nontransactional");
@@ -179,7 +179,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         trigger1.getRouter().setRouterName(null);
         getTriggerRouterService().saveTriggerRouter(trigger1);
 
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(50);
         testChannel.setBatchAlgorithm("default");
@@ -217,7 +217,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
 
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         testChannel.setMaxBatchSize(10000);
         testChannel.setBatchAlgorithm("default");
@@ -255,7 +255,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
 
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
         testChannel.setBatchAlgorithm("transactional");
@@ -305,7 +305,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                 "targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
-        NodeChannel testChannel = getConfigurationService().getChannel(TestConstants.TEST_CHANNEL_ID);
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         final int MAX_BATCH_SIZE = 100;
         testChannel.setMaxBatchSize(MAX_BATCH_SIZE);
