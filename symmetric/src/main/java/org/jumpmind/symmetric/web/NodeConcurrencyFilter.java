@@ -74,11 +74,11 @@ public class NodeConcurrencyFilter extends AbstractFilter {
             if (!concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
                 sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             } else {
-              //  buildSuspendIgnoreResponseHeaders(nodeId, resp);
+                buildSuspendIgnoreResponseHeaders(nodeId, resp);
             }
         } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.HARD)) {
             try {
-                //buildSuspendIgnoreResponseHeaders(nodeId, resp);
+                buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 chain.doFilter(req, resp);
             } finally {
                 concurrentConnectionManager.releaseConnection(nodeId, poolId);
@@ -98,10 +98,10 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
         for (NodeChannel nc : ncs) {
             if (nc.isSuspended()) {
-                suspendChannelsBuffer.append(',').append(nc.getId());
+                suspendChannelsBuffer.append(nc.getId()).append(',');
             }
             if (nc.isIgnored()) {
-                ignoreChannelsBuffer.append(',').append(nc.getId());
+                ignoreChannelsBuffer.append(nc.getId()).append(',');
             }
         }
 
@@ -109,11 +109,11 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         String ignoreChannels = StringUtils.trimToNull(ignoreChannelsBuffer.toString());
 
         if (suspendChannels != null) {
-            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, suspendChannels.substring(1));
+            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, StringUtils.strip(suspendChannels, ","));
         }
 
         if (ignoreChannels != null) {
-            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, ignoreChannels.substring(1));
+            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, StringUtils.strip(ignoreChannels, ","));
         }
 
     }

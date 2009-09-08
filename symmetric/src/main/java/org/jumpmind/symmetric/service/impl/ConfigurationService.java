@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
@@ -32,13 +34,16 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.jdbc.core.RowMapper;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
     private static final long MAX_CHANNEL_CACHE_TIME = 60000;
 
-    private static List<NodeChannel> channelCache;
+    private INodeService nodeService;
+
+    private static Map<String, List<NodeChannel>> channelCache;
 
     private static long channelCacheTime;
 
@@ -82,66 +87,48 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     public List<NodeChannel> getChannels() {
-        if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
-            synchronized (this) {
-                if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
-                    channelCache = jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] {}, new RowMapper() {
-                        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-                            NodeChannel channel = new NodeChannel();
-                            channel.setId(rs.getString(1));
-                            channel.setNodeId(rs.getString(2));
-                            channel.setIgnored(isSet(rs.getObject(3)));
-                            channel.setSuspended(isSet(rs.getObject(4)));
-                            channel.setProcessingOrder(rs.getInt(5));
-                            channel.setMaxBatchSize(rs.getInt(6));
-                            channel.setEnabled(rs.getBoolean(7));
-                            channel.setMaxBatchToSend(rs.getInt(8));
-                            channel.setBatchAlgorithm(rs.getString(9));
-                            return channel;
-                        };
-                    });
-
-                    for (NodeChannel channel : channelCache) {
-                        getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
-                    }
-                    channelCacheTime = System.currentTimeMillis();
-                }
-            }
+        List<NodeChannel> nodeChannels = getChannels(nodeService.findIdentityNodeId());
+        for (NodeChannel channel : nodeChannels) {
+            getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
         }
-        return channelCache;
+        return nodeChannels;
     }
-    
-    @SuppressWarnings("unchecked")
-    public List<NodeChannel> getChannels(String nodeId) {
-        if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
-            synchronized (this) {
-                if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
-                    channelCache = jdbcTemplate.query(getSql("selectNodeChannelsSql"), new Object[] { nodeId }, new RowMapper() {
-                        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
-                            NodeChannel channel = new NodeChannel();
-                            channel.setId(rs.getString(1));
-                            channel.setNodeId(rs.getString(2));
-                            channel.setIgnored(isSet(rs.getObject(3)));
-                            channel.setSuspended(isSet(rs.getObject(4)));
-                            channel.setProcessingOrder(rs.getInt(5));
-                            channel.setMaxBatchSize(rs.getInt(6));
-                            channel.setEnabled(rs.getBoolean(7));
-                            channel.setMaxBatchToSend(rs.getInt(8));
-                            channel.setBatchAlgorithm(rs.getString(9));
-                            return channel;
-                        };
-                    });
 
-                    for (NodeChannel channel : channelCache) {
-                        getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
+    @SuppressWarnings("unchecked")
+    public List<NodeChannel> getChannels(final String nodeId) {
+
+        if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null
+                || channelCache.get(nodeId) == null) {
+            synchronized (this) {
+                if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null
+                        || channelCache.get(nodeId) == null) {
+                    if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
+                        channelCache = new HashMap<String, List<NodeChannel>>();
+                        channelCacheTime = System.currentTimeMillis();
                     }
-                    channelCacheTime = System.currentTimeMillis();
+                    channelCache.put(nodeId, jdbcTemplate.query(getSql("selectChannelsSql"), new Object[] { nodeId },
+                            new RowMapper() {
+                                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                                    NodeChannel channel = new NodeChannel();
+                                    channel.setId(rs.getString(1));
+                                    // note that 2 is intentionally missing
+                                    // here.
+                                    channel.setNodeId(nodeId);
+                                    channel.setIgnored(isSet(rs.getObject(3)));
+                                    channel.setSuspended(isSet(rs.getObject(4)));
+                                    channel.setProcessingOrder(rs.getInt(5));
+                                    channel.setMaxBatchSize(rs.getInt(6));
+                                    channel.setEnabled(rs.getBoolean(7));
+                                    channel.setMaxBatchToSend(rs.getInt(8));
+                                    channel.setBatchAlgorithm(rs.getString(9));
+                                    return channel;
+                                };
+                            }));
                 }
             }
         }
-        return channelCache;
+        return channelCache.get(nodeId);
     }
 
     public void reloadChannels() {
@@ -217,6 +204,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void setDefaultChannels(List<Channel> defaultChannels) {
         this.defaultChannels = defaultChannels;
+    }
+
+    public void setNodeService(INodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
 }
