@@ -69,7 +69,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    public String findMyNodeId() {
+    public String findIdentityNodeId() {
         try {
             return (String) jdbcTemplate.queryForObject(getSql("findMyNodeIdSql"), String.class);
         } catch (EmptyResultDataAccessException ex) {

@@ -50,7 +50,7 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
 
     public void upgrade() {
         String symmetricVersion = nodeService.findSymmetricVersion();
-        String nodeId = nodeService.findMyNodeId();
+        String nodeId = nodeService.findIdentityNodeId();
         if (symmetricVersion != null && nodeId != null) {
             int[] fromVersion = Version.parseVersion(symmetricVersion);
             if (Version.isOlderVersion(symmetricVersion)) {

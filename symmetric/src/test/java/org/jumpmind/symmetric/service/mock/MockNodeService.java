@@ -49,7 +49,7 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
-    public String findMyNodeId() {
+    public String findIdentityNodeId() {
         return null;
     }
     
