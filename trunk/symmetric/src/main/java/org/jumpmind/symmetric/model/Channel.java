@@ -39,7 +39,7 @@ public class Channel {
     private int maxBatchToSend;
 
     private boolean enabled;
-    
+
     private String batchAlgorithm = "default";
 
     public Channel() {
@@ -96,14 +96,16 @@ public class Channel {
     public void setMaxBatchToSend(int maxBatchToSend) {
         this.maxBatchToSend = maxBatchToSend;
     }
-    
+
     /**
-     * Check to see if this channel id matches one of the channels in the collection
+     * Check to see if this channel id matches one of the channels in the
+     * collection
+     * 
      * @return true if a match is found
      */
-    public boolean isInList(Collection<? extends Channel> channels) {
+    public boolean isInList(Collection<? extends NodeChannel> channels) {
         if (channels != null) {
-            for (Channel channel : channels) {
+            for (NodeChannel channel : channels) {
                 if (channel.getId().equals(id)) {
                     return true;
                 }
@@ -111,11 +113,11 @@ public class Channel {
         }
         return false;
     }
-    
+
     public void setBatchAlgorithm(String batchAlgorithm) {
         this.batchAlgorithm = batchAlgorithm;
     }
-    
+
     public String getBatchAlgorithm() {
         return batchAlgorithm;
     }

@@ -79,9 +79,9 @@
     <table name="node_channel_ctl">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" />
-        <column name="last_extract_time" type="TIMESTAMP" />
         <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0" />
         <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="last_extract_time" type="TIMESTAMP" />
     </table>
 
     <table name="registration_redirect">

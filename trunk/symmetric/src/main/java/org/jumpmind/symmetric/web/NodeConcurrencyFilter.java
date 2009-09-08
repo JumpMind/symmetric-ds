@@ -22,7 +22,9 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -88,13 +90,28 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         }
     }
 
-    private void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {
+    protected void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {
         HttpServletResponse httpResponse = (HttpServletResponse) resp;
+
+        Map<String, String> channels = getSuspendIgnoreChannels(nodeId);
+
+        if (channels.get(WebConstants.SUSPENDED_CHANNELS) != null) {
+            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, channels.get(WebConstants.SUSPENDED_CHANNELS));
+        }
+
+        if (channels.get(WebConstants.IGNORED_CHANNELS) != null) {
+            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, channels.get(WebConstants.IGNORED_CHANNELS));
+        }
+    }
+
+    protected Map<String, String> getSuspendIgnoreChannels(final String nodeId) {
+
+        Map<String, String> channels = new HashMap<String, String>();
 
         StringBuffer suspendChannelsBuffer = new StringBuffer();
         StringBuffer ignoreChannelsBuffer = new StringBuffer();
 
-        List<NodeChannel> ncs = configurationService.getChannels(nodeId);
+        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
 
         for (NodeChannel nc : ncs) {
             if (nc.isSuspended()) {
@@ -109,13 +126,14 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         String ignoreChannels = StringUtils.trimToNull(ignoreChannelsBuffer.toString());
 
         if (suspendChannels != null) {
-            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, StringUtils.strip(suspendChannels, ","));
+            channels.put(WebConstants.SUSPENDED_CHANNELS, StringUtils.strip(suspendChannels, ","));
         }
 
         if (ignoreChannels != null) {
-            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, StringUtils.strip(ignoreChannels, ","));
+            channels.put(WebConstants.IGNORED_CHANNELS, StringUtils.strip(ignoreChannels, ","));
         }
 
+        return channels;
     }
 
     @Override

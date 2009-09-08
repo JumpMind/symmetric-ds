@@ -20,75 +20,111 @@
 
 package org.jumpmind.symmetric.model;
 
-import java.util.List;
+import java.util.Date;
 
-public class NodeChannel extends Channel {
+public class NodeChannel {
 
     private static final long serialVersionUID = -2493052366767513160L;
-
-    String nodeId;
-
-    private boolean ignored = false;
-
-    private boolean suspended = false;
-
-    private List<NodeGroupChannelWindow> nodeGroupChannelWindows;
+    private Channel channel;
+    private NodeChannelControl nodeChannelControl;
 
     public NodeChannel() {
+        channel = new Channel();
+        nodeChannelControl = new NodeChannelControl();
     }
 
     public NodeChannel(String channelId) {
-        this.setId(channelId);
+        channel = new Channel();
+        nodeChannelControl = new NodeChannelControl();
+        channel.setId(channelId);
     }
 
-    public boolean isIgnored() {
-        return ignored;
+    public String getId() {
+        return channel.getId();
     }
 
-    public void setIgnored(boolean ignore) {
-        this.ignored = ignore;
+    public int getMaxBatchSize() {
+        return channel.getMaxBatchSize();
+    }
+
+    public void setMaxBatchSize(int maxBatchSize) {
+        channel.setMaxBatchSize(maxBatchSize);
+    }
+
+    public int getMaxBatchToSend() {
+        return channel.getMaxBatchToSend();
+    }
+
+    public void setMaxBatchToSend(int maxBatchToSend) {
+        channel.setMaxBatchToSend(maxBatchToSend);
+    }
+
+    public int getProcessingOrder() {
+        return channel.getProcessingOrder();
+    }
+
+    public String getBatchAlgorithm() {
+        return channel.getBatchAlgorithm();
+    }
+
+    public void setBatchAlgorithm(String batchAlgorithm) {
+        channel.setBatchAlgorithm(batchAlgorithm);
+    }
+
+    public void setEnabled(boolean enabled) {
+        channel.setEnabled(enabled);
+    }
+
+    public boolean isEnabled() {
+        return channel.isEnabled();
     }
 
     public boolean isSuspended() {
-        return suspended;
+        return nodeChannelControl.isSuspended();
     }
 
-    public void setSuspended(boolean suspend) {
-        this.suspended = suspend;
+    public boolean isIgnored() {
+        return nodeChannelControl.isIgnored();
     }
 
     public String getNodeId() {
-        return nodeId;
+        return nodeChannelControl.getNodeId();
     }
 
     public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
+        nodeChannelControl.setNodeId(nodeId);
     }
 
-    public void setNodeGroupChannelWindows(List<NodeGroupChannelWindow> nodeGroupChannelWindows) {
-        this.nodeGroupChannelWindows = nodeGroupChannelWindows;
+    public void setLastExtractedTime(Date lastExtractedTime) {
+        nodeChannelControl.setLastExtractedTime(lastExtractedTime);
     }
 
-    public List<NodeGroupChannelWindow> getNodeGroupChannelWindows() {
-        return nodeGroupChannelWindows;
+    public Date getLastExtractedTime() {
+        return nodeChannelControl.getLastExtractedTime();
     }
 
-    /**
-     * If {@link NodeGroupChannelWindow}s are defined for this channel, then check to 
-     * see if the time (according to the offset passed in) is within on of the configured windows.
-     */
-    public boolean inTimeWindow(String timezoneOffset) {
-        if (nodeGroupChannelWindows != null && nodeGroupChannelWindows.size() > 0) {
-            for (NodeGroupChannelWindow window : nodeGroupChannelWindows) {
-                if (window.inTimeWindow(timezoneOffset)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return true;
-        }
+    public void setIgnored(boolean ignored) {
+        nodeChannelControl.setIgnored(ignored);
+    }
 
+    public void setProcessingOrder(int priority) {
+        channel.setProcessingOrder(priority);
+    }
+
+    public void setId(String id) {
+        channel.setId(id);
+    }
+
+    public void setSuspended(boolean suspended) {
+        nodeChannelControl.setSuspended(suspended);
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public NodeChannelControl getNodeChannelControl() {
+        return nodeChannelControl;
     }
 
 }

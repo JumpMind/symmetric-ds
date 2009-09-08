@@ -29,7 +29,8 @@
     <entry key="selectChannelsSql">
       <value>
         select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,
-        c.max_batch_size, c.enabled, c.max_batch_to_send, c.batch_algorithm from $[sym.sync.table.prefix]_channel c left outer join
+        c.max_batch_size, c.enabled, c.max_batch_to_send, c.batch_algorithm, nc.last_extract_time
+        from $[sym.sync.table.prefix]_channel c left outer join
         $[sym.sync.table.prefix]_node_channel_ctl nc on c.channel_id = nc.channel_id and nc.node_id = ?
         order by c.processing_order asc, c.channel_id
       </value>
@@ -56,6 +57,18 @@
         from $[sym.sync.table.prefix]_node_group_channel_window where node_group_id=? and channel_id=?
       </value>
     </entry>
+    <entry key="insertNodeChannelControlSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_channel_ctl (node_id, channel_id,
+        suspend_enabled, ignore_enabled,last_extract_time) values (?, ?, ?, ?, ?)
+      </value>
+    </entry>
+    <entry key="updateNodeChannelControlSql">
+      <value>
+        update $[sym.sync.table.prefix]_node_channel_ctl set 
+        suspend_enabled=?, ignore_enabled=?, last_extract_time=? where node_id=? and channel_id=?
+      </value>
+    </entry>
+   
   </util:map>
-
 </beans>
