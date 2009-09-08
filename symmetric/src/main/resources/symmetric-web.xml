@@ -87,6 +87,7 @@
     <bean id="nodeConcurrencyFilter"
         class="org.jumpmind.symmetric.web.NodeConcurrencyFilter">
         <property name="concurrentConnectionManager" ref="concurrentConnectionManager"/>
+        <property name="configurationService" ref="configurationService" />
         <property name="uriPatterns">
             <list>
                 <value>$[sym.web.base.servlet.path]/pull/*</value>

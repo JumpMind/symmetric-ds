@@ -45,6 +45,8 @@ public interface IConfigurationService {
 
     public List<NodeChannel> getChannels();
     
+    public List<NodeChannel> getChannels(String nodeId);
+    
     public NodeChannel getChannel(String channelId);
     
     public void reloadChannels();
