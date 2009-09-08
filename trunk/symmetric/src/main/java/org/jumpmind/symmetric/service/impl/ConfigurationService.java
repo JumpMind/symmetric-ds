@@ -112,6 +112,37 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
         return channelCache;
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<NodeChannel> getChannels(String nodeId) {
+        if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
+            synchronized (this) {
+                if (System.currentTimeMillis() - channelCacheTime >= MAX_CHANNEL_CACHE_TIME || channelCache == null) {
+                    channelCache = jdbcTemplate.query(getSql("selectNodeChannelsSql"), new Object[] { nodeId }, new RowMapper() {
+                        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                            NodeChannel channel = new NodeChannel();
+                            channel.setId(rs.getString(1));
+                            channel.setNodeId(rs.getString(2));
+                            channel.setIgnored(isSet(rs.getObject(3)));
+                            channel.setSuspended(isSet(rs.getObject(4)));
+                            channel.setProcessingOrder(rs.getInt(5));
+                            channel.setMaxBatchSize(rs.getInt(6));
+                            channel.setEnabled(rs.getBoolean(7));
+                            channel.setMaxBatchToSend(rs.getInt(8));
+                            channel.setBatchAlgorithm(rs.getString(9));
+                            return channel;
+                        };
+                    });
+
+                    for (NodeChannel channel : channelCache) {
+                        getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId());
+                    }
+                    channelCacheTime = System.currentTimeMillis();
+                }
+            }
+        }
+        return channelCache;
+    }
 
     public void reloadChannels() {
         channelCache = null;

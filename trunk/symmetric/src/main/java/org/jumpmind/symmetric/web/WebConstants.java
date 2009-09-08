@@ -66,4 +66,8 @@ public class WebConstants {
 
     public static final String SECURITY_TOKEN = "securityToken";
 
+    public static final String SUSPENDED_CHANNELS = "Suspended-Channels";
+
+    public static final String IGNORED_CHANNELS = "Ignored-Channels";
+
 }

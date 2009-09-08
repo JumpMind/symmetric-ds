@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -33,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
 
@@ -44,6 +47,8 @@ public class NodeConcurrencyFilter extends AbstractFilter {
     private final static ILog log = LogFactory.getLog(NodeConcurrencyFilter.class);
 
     private IConcurrentConnectionManager concurrentConnectionManager;
+
+    private IConfigurationService configurationService;
 
     private String reservationUriPattern;
 
@@ -68,9 +73,12 @@ public class NodeConcurrencyFilter extends AbstractFilter {
             resp.setContentLength(0);
             if (!concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.SOFT)) {
                 sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            } else {
+              //  buildSuspendIgnoreResponseHeaders(nodeId, resp);
             }
         } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.HARD)) {
             try {
+                //buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 chain.doFilter(req, resp);
             } finally {
                 concurrentConnectionManager.releaseConnection(nodeId, poolId);
@@ -78,6 +86,36 @@ public class NodeConcurrencyFilter extends AbstractFilter {
         } else {
             sendError(resp, HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
+    }
+
+    private void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {
+        HttpServletResponse httpResponse = (HttpServletResponse) resp;
+
+        StringBuffer suspendChannelsBuffer = new StringBuffer();
+        StringBuffer ignoreChannelsBuffer = new StringBuffer();
+
+        List<NodeChannel> ncs = configurationService.getChannels(nodeId);
+
+        for (NodeChannel nc : ncs) {
+            if (nc.isSuspended()) {
+                suspendChannelsBuffer.append(',').append(nc.getId());
+            }
+            if (nc.isIgnored()) {
+                ignoreChannelsBuffer.append(',').append(nc.getId());
+            }
+        }
+
+        String suspendChannels = StringUtils.trimToNull(suspendChannelsBuffer.toString());
+        String ignoreChannels = StringUtils.trimToNull(ignoreChannelsBuffer.toString());
+
+        if (suspendChannels != null) {
+            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, suspendChannels.substring(1));
+        }
+
+        if (ignoreChannels != null) {
+            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, ignoreChannels.substring(1));
+        }
+
     }
 
     @Override
@@ -91,5 +129,13 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     public void setReservationUriPattern(String reservationUriPattern) {
         this.reservationUriPattern = reservationUriPattern;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
+
+    public IConfigurationService getConfigurationService() {
+        return configurationService;
     }
 }
