@@ -75,8 +75,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public void saveChannel(NodeChannel nodeChannel) {
-        saveChannel(nodeChannel.getChannel(), true);
+    public void saveChannel(NodeChannel nodeChannel, boolean reloadChannels) {
+        saveChannel(nodeChannel.getChannel(), reloadChannels);
     }
 
     public void saveNodeChannel(NodeChannel nodeChannel, boolean reloadChannels) {

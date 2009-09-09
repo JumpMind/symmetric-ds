@@ -90,7 +90,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         assertEquals(list.size(), 0);
 
         nodeChannel.setEnabled(true);
-        getConfigurationService().saveChannel(nodeChannel);
+        getConfigurationService().saveChannel(nodeChannel, true);
     }
 
     protected void createDataEvent(String tableName, int triggerHistoryId, String channelId, DataEventType type,
