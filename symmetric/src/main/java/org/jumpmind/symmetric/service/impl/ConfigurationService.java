@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -63,7 +62,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { nodeGroupId }, new NodeGroupLinkMapper());
     }
 
-    public void saveChannel(Channel channel) {
+    public void saveChannel(Channel channel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
                 channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
                 channel.getBatchAlgorithm(), channel.getId() })) {
@@ -71,19 +70,21 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() });
         }
-        reloadChannels();
+        if (reloadChannels) {
+            reloadChannels();
+        }
     }
 
     public void saveChannel(NodeChannel nodeChannel) {
-        saveChannel(nodeChannel.getChannel());
+        saveChannel(nodeChannel.getChannel(), true);
     }
 
     public void saveNodeChannel(NodeChannel nodeChannel) {
-        saveChannel(nodeChannel.getChannel());
-        saveNodeChannelControl(nodeChannel);
+        saveChannel(nodeChannel.getChannel(), true);
+        saveNodeChannelControl(nodeChannel, false);
     }
 
-    public void saveNodeChannelControl(NodeChannel nodeChannel) {
+    public void saveNodeChannelControl(NodeChannel nodeChannel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateNodeChannelControlSql"), new Object[] {
                 nodeChannel.isSuspended() ? 1 : 0, nodeChannel.isIgnored() ? 1 : 0, nodeChannel.getLastExtractedTime(),
                 nodeChannel.getNodeId(), nodeChannel.getId() })) {
@@ -91,7 +92,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     nodeChannel.getId(), nodeChannel.isSuspended() ? 1 : 0, nodeChannel.isIgnored() ? 1 : 0,
                     nodeChannel.getLastExtractedTime() });
         }
-        reloadChannels();
+        if (reloadChannels) {
+            reloadChannels();
+        }
     }
 
     public void deleteChannel(Channel channel) {
@@ -183,7 +186,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 for (Channel defaultChannel : defaultChannels) {
                     if (!defaultChannel.isInList(channels)) {
                         log.info("ChannelAutoConfiguring", defaultChannel.getId());
-                        saveChannel(defaultChannel);
+                        saveChannel(defaultChannel, true);
                     } else {
                         log.info("ChannelExists", defaultChannel.getId());
                     }

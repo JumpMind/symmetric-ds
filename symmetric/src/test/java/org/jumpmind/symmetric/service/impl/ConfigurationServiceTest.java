@@ -83,7 +83,7 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
 
         // Test "ignored"
         nc.setIgnored(true);
-        configurationService.saveNodeChannelControl(nc);
+        configurationService.saveNodeChannelControl(nc, false);
         NodeChannel compareTo = configurationService.getNodeChannel(updatedChannelId, nodeId);
         Assert.assertTrue(compareTo.isIgnored());
         Assert.assertFalse(compareTo.isSuspended());
@@ -91,7 +91,7 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
 
         // Test "suspended"
         compareTo.setSuspended(true);
-        configurationService.saveNodeChannelControl(compareTo);
+        configurationService.saveNodeChannelControl(compareTo, false);
         compareTo = configurationService.getNodeChannel(updatedChannelId, nodeId);
         Assert.assertTrue(compareTo.isIgnored());
         Assert.assertTrue(compareTo.isSuspended());
@@ -103,7 +103,7 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
 
         Date date = new Date();
         nc1.setLastExtractedTime(date);
-        configurationService.saveNodeChannelControl(nc1);
+        configurationService.saveNodeChannelControl(nc1, false);
 
         compareTo = configurationService.getNodeChannel(updatedChannelId1, nodeId);
         Assert.assertFalse(compareTo.isIgnored());

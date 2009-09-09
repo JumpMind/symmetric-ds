@@ -38,13 +38,13 @@ public interface IConfigurationService {
 
     public List<NodeGroupLink> getGroupLinksFor(String sourceGroupId);
 
-    public void saveChannel(Channel channel);
+    public void saveChannel(Channel channel, boolean reloadChannels);
 
     public void saveChannel(NodeChannel channel);
 
     public void saveNodeChannel(NodeChannel channel);
 
-    public void saveNodeChannelControl(NodeChannel channel);
+    public void saveNodeChannelControl(NodeChannel channel, boolean reloadChannels);
 
     public void deleteChannel(Channel channel);
 

@@ -72,7 +72,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     public void testDisabledChannel() {
         NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         nodeChannel.setEnabled(false);
-        getConfigurationService().saveChannel(nodeChannel.getChannel());
+        getConfigurationService().saveChannel(nodeChannel.getChannel(), true);
 
         cleanSlate("sym_data_event", "sym_data",
                 "sym_outgoing_batch");
