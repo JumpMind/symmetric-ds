@@ -42,7 +42,7 @@ public interface IConfigurationService {
 
     public void saveChannel(NodeChannel channel);
 
-    public void saveNodeChannel(NodeChannel channel);
+    public void saveNodeChannel(NodeChannel channel, boolean reloadChannels);
 
     public void saveNodeChannelControl(NodeChannel channel, boolean reloadChannels);
 
