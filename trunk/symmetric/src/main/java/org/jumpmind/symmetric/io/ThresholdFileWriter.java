@@ -21,9 +21,10 @@ package org.jumpmind.symmetric.io;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -90,7 +91,7 @@ public class ThresholdFileWriter extends Writer {
             if (file == null) {
                 file = AppUtils.createTempFile(tempFileCategory == null ? "threshold.file.writer" : tempFileCategory);
             }
-            fileWriter = new BufferedWriter(new FileWriter(file));
+            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             fileWriter.write(buffer.toString());
             fileWriter.write(cbuf, off, len);
             fileWriter.flush();
