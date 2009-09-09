@@ -218,7 +218,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         String channelId = ncs.get(1).getId();
 
         nc.setSuspended(true);
-        configurationService.saveNodeChannelControl(nc);
+        configurationService.saveNodeChannelControl(nc, false);
 
         result = filter.getSuspendIgnoreChannels(nodeId);
 
@@ -228,7 +228,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         nc = ncs.get(0);
         nc.setSuspended(true);
 
-        configurationService.saveNodeChannelControl(nc);
+        configurationService.saveNodeChannelControl(nc, false);
 
         String channelIds = ncs.get(0).getId() + "," + ncs.get(1).getId();
         result = filter.getSuspendIgnoreChannels(nodeId);
@@ -237,7 +237,7 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
 
         nc.setIgnored(true);
-        configurationService.saveNodeChannelControl(nc);
+        configurationService.saveNodeChannelControl(nc, false);
         result = filter.getSuspendIgnoreChannels(nodeId);
 
         Assert.assertEquals(2, result.size());
@@ -283,9 +283,9 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         ncs.get(1).setIgnored(true);
         ncs.get(2).setSuspended(true);
 
-        configurationService.saveNodeChannelControl(ncs.get(0));
-        configurationService.saveNodeChannelControl(ncs.get(1));
-        configurationService.saveNodeChannelControl(ncs.get(2));
+        configurationService.saveNodeChannelControl(ncs.get(0), false);
+        configurationService.saveNodeChannelControl(ncs.get(1), false);
+        configurationService.saveNodeChannelControl(ncs.get(2), false);
 
         filter.buildSuspendIgnoreResponseHeaders(nodeId, resp);
 
