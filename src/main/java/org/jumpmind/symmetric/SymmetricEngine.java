@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
@@ -111,11 +113,11 @@ public class SymmetricEngine {
     public SymmetricEngine(ApplicationContext parentContext, String... overridePropertiesResources) {
         String one = null;
         String two = null;
-        if (overridePropertiesResources.length > 0 && overridePropertiesResources[0] != null) {
-            one = overridePropertiesResources[0].trim();
+        if (ArrayUtils.getLength(overridePropertiesResources) > 0) {
+            one = StringUtils.trim(overridePropertiesResources[0]);
         }
-        if (overridePropertiesResources.length > 1 && overridePropertiesResources[1] != null) {
-            two = overridePropertiesResources[1].trim();
+        if (ArrayUtils.getLength(overridePropertiesResources) > 1) {
+            two = StringUtils.trim(overridePropertiesResources[1]);
         }
         init(parentContext, one, two);
     }
