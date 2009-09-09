@@ -102,7 +102,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
         testChannel.setBatchAlgorithm("transactional");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
 
         // should be 51 batches for table 1
         insert(TEST_TABLE_1, 500, true);
@@ -142,7 +142,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
         testChannel.setBatchAlgorithm("nontransactional");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
 
         // should be 100 batches for table 1, even though we committed the
         // changes as part of a transaction
@@ -183,7 +183,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(50);
         testChannel.setBatchAlgorithm("default");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
 
         getTriggerRouterService().syncTriggers();
 
@@ -221,7 +221,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setMaxBatchToSend(100);
         testChannel.setMaxBatchSize(10000);
         testChannel.setBatchAlgorithm("default");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
         final int ROWS_TO_INSERT = 100000;
         final int NODES_TO_INSERT = 1000;
         logger.info(String.format("About to insert %s nodes", NODES_TO_INSERT));
@@ -259,7 +259,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setMaxBatchToSend(1000);
         testChannel.setMaxBatchSize(5);
         testChannel.setBatchAlgorithm("transactional");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
 
         long ts = System.currentTimeMillis();
         TransactionCallback callback = new TransactionCallback() {
@@ -310,7 +310,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         final int MAX_BATCH_SIZE = 100;
         testChannel.setMaxBatchSize(MAX_BATCH_SIZE);
         testChannel.setBatchAlgorithm("nontransactional");
-        getConfigurationService().saveChannel(testChannel);
+        getConfigurationService().saveChannel(testChannel, true);
 
         TransactionCallback callback = new TransactionCallback() {
             public Object doInTransaction(TransactionStatus status) {
