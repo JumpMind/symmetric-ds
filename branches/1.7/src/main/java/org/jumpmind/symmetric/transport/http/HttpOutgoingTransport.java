@@ -96,12 +96,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link AuthenticationException}
      */
     private void requestReservation() throws IOException {
-        HttpURLConnection c = (HttpURLConnection) url.openConnection();
-        c.setUseCaches(false);
-        c.setConnectTimeout(httpTimeout);
-        c.setReadTimeout(httpTimeout);
-        c.setRequestMethod("HEAD");
-        analyzeResponseCode(c.getResponseCode());
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setUseCaches(false);
+        connection.setConnectTimeout(httpTimeout);
+        connection.setReadTimeout(httpTimeout);
+        connection.setRequestMethod("HEAD");
+        analyzeResponseCode(connection.getResponseCode());
     }
 
     public BufferedWriter open() throws IOException {
