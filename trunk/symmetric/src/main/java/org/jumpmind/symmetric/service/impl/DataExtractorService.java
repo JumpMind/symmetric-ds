@@ -291,12 +291,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routingService.routeData();
         }
 
+        // possibly here we should do "are there any outgoing batches to send even?"
+        // to avoid an un-needed reservation & to consolidate the logic
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
         if (batches != null && batches.size() > 0) {
-
+         
             // reserve here....
             
+            // 
+            
             // based on results, filter all  AND my local getNodeChannel()!
+            // if locals aren't ready to send, filter 'em out
             
            // batches.get(0).setStatus(status)
             FileOutgoingTransport fileTransport = null;
@@ -315,6 +320,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 databaseExtract(node, batches, handler);
                 
                 networkTransfer(fileTransport, targetTransport);
+                
+                // sent channels need timestamps updated...
                 
          //       batch.setStatus(OutgoingBatch.Status.SE);  for IGNORED
            //     outgoingBatchService.updateOutgoingBatch(batch);
