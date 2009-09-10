@@ -293,6 +293,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
         if (batches != null && batches.size() > 0) {
+
+            // reserve here....
+            
+            // based on results, filter all  AND my local getNodeChannel()!
+            
+           // batches.get(0).setStatus(status)
             FileOutgoingTransport fileTransport = null;
 
             try {
@@ -304,9 +310,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
                         fileTransport != null ? fileTransport : targetTransport);
 
-                databaseExtract(node, batches, handler);
+                //verify skipping....
 
+                databaseExtract(node, batches, handler);
+                
                 networkTransfer(fileTransport, targetTransport);
+                
+         //       batch.setStatus(OutgoingBatch.Status.SE);  for IGNORED
+           //     outgoingBatchService.updateOutgoingBatch(batch);
+                
+                //outgoingbatchservice - update status 
             } finally {
                 if (fileTransport != null) {
                     fileTransport.close();
