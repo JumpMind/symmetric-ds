@@ -382,10 +382,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
         getRootEngine().purge();
         getClientEngine().purge();
-        Assert.assertTrue("Expected most data rows to have been purged.", rootJdbcTemplate
-                .queryForInt("select count(*) from sym_data") < 5);
-        Assert.assertTrue("Expected most data rows to have been purged.", clientJdbcTemplate
-                .queryForInt("select count(*) from sym_data") < 5);
+        int notPurged = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
+        Assert.assertTrue("Expected most data rows to have been purged at the root.  There were still " + notPurged + " rows.",  notPurged < 5);
+        notPurged = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
+        Assert.assertTrue("Expected most data rows to have been purged at the client.  There were still " + notPurged + " rows.",  notPurged < 5);
     }
 
     @Test
