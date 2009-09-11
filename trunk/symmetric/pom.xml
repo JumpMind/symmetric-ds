@@ -288,19 +288,19 @@
                 </systemProperties>
                 <additionalClasspathElements>
                     <additionalClasspathElement>
-                        ${user.home}\.symmetricds\lib\ojdbc6.jar
+                        ${user.home}/.symmetricds/lib/ojdbc6.jar
                         </additionalClasspathElement>
                     <additionalClasspathElement>
-                        ${user.home}\.symmetricds\lib\ojdbc5.jar
+                        ${user.home}/.symmetricds/lib/ojdbc5.jar
                         </additionalClasspathElement>
                     <additionalClasspathElement>
-                        ${user.home}\.symmetricds\lib\ojdbc14.jar
+                        ${user.home}/.symmetricds/lib/ojdbc14.jar
                         </additionalClasspathElement>
                     <additionalClasspathElement>
-                        ${user.home}\.symmetricds\lib\db2jcc.jar
+                        ${user.home}/.symmetricds/lib/db2jcc.jar
                         </additionalClasspathElement>
                     <additionalClasspathElement>
-                        ${user.home}\.symmetricds\lib\jaybird-full-2.1.6.jar
+                        ${user.home}/.symmetricds/lib/jaybird-full-2.1.6.jar
                         </additionalClasspathElement>
                 </additionalClasspathElements>
                 <includes>
