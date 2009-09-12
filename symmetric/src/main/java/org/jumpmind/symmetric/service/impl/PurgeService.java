@@ -79,7 +79,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         try {
             if (clusterService.lock(LockActionConstants.PURGE_OUTGOING)) {
                 try {
-                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(retentionCutoff));
+                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(retentionCutoff.getTime()));
                     purgeDataRows(retentionCutoff);
                     purgeOutgoingBatch(retentionCutoff);
                 } finally {
