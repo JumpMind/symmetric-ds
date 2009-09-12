@@ -386,7 +386,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
         int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // set purge in the future just in case the database time is different than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -1000);
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
 
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
