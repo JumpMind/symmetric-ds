@@ -377,15 +377,22 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 30000)
     public void testPurge() throws Exception {
-        // do an extra pull to make sure we have events cleared out
+        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, 0);
+        // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
-        Thread.sleep(1000);
+        getClientEngine().push();
+        Thread.sleep(2000);
+             
+        int beforePurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");     
         getRootEngine().purge();
+        int afterPurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
+        Assert.assertTrue("Expected data rows to have been purged at the root.  There were " +beforePurge + " row before anf " + afterPurge + " rows after.",  (beforePurge - afterPurge) > 0);
+        
+        beforePurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");  
         getClientEngine().purge();
-        int notPurged = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
-        Assert.assertTrue("Expected most data rows to have been purged at the root.  There were still " + notPurged + " rows.",  notPurged < 5);
-        notPurged = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
-        Assert.assertTrue("Expected most data rows to have been purged at the client.  There were still " + notPurged + " rows.",  notPurged < 5);
+        afterPurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
+        Assert.assertTrue("Expected data rows to have been purged at the client.  There were " +beforePurge + " row before anf " + afterPurge + " rows after.",  (beforePurge - afterPurge) > 0);
     }
 
     @Test
