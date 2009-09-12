@@ -384,7 +384,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void testPurge() throws Exception {
         logTestRunning();
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, 0);
+        int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        // set purge in the future just in case the database time is different than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -1000);
+        
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
         getClientEngine().push();
@@ -401,6 +404,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         afterPurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
         Assert.assertTrue("Expected data rows to have been purged at the client.  There were " + beforePurge
                 + " row before anf " + afterPurge + " rows after.", (beforePurge - afterPurge) > 0);
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
     }
 
     @Test
