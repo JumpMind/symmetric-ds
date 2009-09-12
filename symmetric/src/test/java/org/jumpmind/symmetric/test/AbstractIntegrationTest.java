@@ -49,11 +49,19 @@ public class AbstractIntegrationTest {
     public AbstractIntegrationTest() throws Exception {
         if (!standalone) {
             String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator()
-            .next();
+                    .next();
             logger.info("Running test in standalone mode with databases " + databases[0] + " and " + databases[1]);
+            this.root = databases[1];
+            this.client = databases[0];
             standalone = true;
-            TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, databases[0], databases[1]);
+            TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT,
+                    databases[0], databases[1]);
         }
+    }
+
+    protected void logTestRunning() {
+        logger.info("Running " + new Exception().getStackTrace()[1].getMethodName() + ". "
+                + printRootAndClientDatabases());
     }
 
     protected SymmetricEngine getRootEngine() {
@@ -75,12 +83,12 @@ public class AbstractIntegrationTest {
     protected String printRootAndClientDatabases() {
         return " The root database is " + root + " and the client database is " + client + ".";
     }
-    
+
     @SuppressWarnings("unchecked")
     protected <T> T findOnClient(String name) {
         return (T) AppUtils.find(name, getClientEngine());
     }
-    
+
     @SuppressWarnings("unchecked")
     protected <T> T findOnRoot(String name) {
         return (T) AppUtils.find(name, getRootEngine());
