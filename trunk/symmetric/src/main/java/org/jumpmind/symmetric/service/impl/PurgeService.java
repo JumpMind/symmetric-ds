@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         try {
             if (clusterService.lock(LockActionConstants.PURGE_OUTGOING)) {
                 try {
-                    log.info("DataPurgeOutgoingRunning");
+                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(retentionCutoff));
                     purgeDataRows(retentionCutoff);
                     purgeOutgoingBatch(retentionCutoff);
                 } finally {
