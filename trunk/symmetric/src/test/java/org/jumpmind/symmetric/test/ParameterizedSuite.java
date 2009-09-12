@@ -75,7 +75,7 @@ public class ParameterizedSuite extends CompositeRunner {
             super(testClass.getJavaClass());
             fParameters = parameters;
             fConstructor = getOnlyConstructor();
-            filterParameters();
+            filterParameters();          
         }
 
         protected void filterParameters() {
