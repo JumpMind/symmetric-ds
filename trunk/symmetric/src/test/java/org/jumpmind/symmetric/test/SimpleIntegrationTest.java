@@ -387,7 +387,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
         // set purge in the future just in case the database time is different than the current time
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -1000);
-        
+
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
         getClientEngine().push();
@@ -396,14 +396,26 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int beforePurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
         getRootEngine().purge();
         int afterPurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
+        Timestamp maxCreateTime = (Timestamp) rootJdbcTemplate.queryForObject("select max(create_time) from sym_data",
+                Timestamp.class);
+        Timestamp minCreateTime = (Timestamp) rootJdbcTemplate.queryForObject("select min(create_time) from sym_data",
+                Timestamp.class);
         Assert.assertTrue("Expected data rows to have been purged at the root.  There were " + beforePurge
-                + " row before anf " + afterPurge + " rows after.", (beforePurge - afterPurge) > 0);
+                + " row before anf " + afterPurge + " rows after. The max create_time in sym_data was " + maxCreateTime
+                + " and the min create_time in sym_data was " + minCreateTime
+                + " and the current time of the server is " + new Date(), (beforePurge - afterPurge) > 0);
 
         beforePurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
         getClientEngine().purge();
         afterPurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
+        maxCreateTime = (Timestamp) clientJdbcTemplate.queryForObject("select max(create_time) from sym_data",
+                Timestamp.class);
+        minCreateTime = (Timestamp) clientJdbcTemplate.queryForObject("select min(create_time) from sym_data",
+                Timestamp.class);
         Assert.assertTrue("Expected data rows to have been purged at the client.  There were " + beforePurge
-                + " row before anf " + afterPurge + " rows after.", (beforePurge - afterPurge) > 0);
+                + " row before anf " + afterPurge + " rows after. . The max create_time in sym_data was "
+                + maxCreateTime + " and the min create_time in sym_data was " + minCreateTime
+                + " and the current time of the server is " + new Date(), (beforePurge - afterPurge) > 0);
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
     }
 
