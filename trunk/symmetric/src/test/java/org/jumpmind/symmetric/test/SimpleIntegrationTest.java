@@ -383,16 +383,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 30000)
     public void testPurge() throws Exception {
         logTestRunning();
-        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
-        int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-        // set purge in the future just in case the database time is different than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
 
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
         getClientEngine().push();
+        
         Thread.sleep(2000);
 
+        IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getRootEngine());
+        int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        // set purge in the future just in case the database time is different than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
+        
         int beforePurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
         getRootEngine().purge();
         int afterPurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
@@ -404,7 +406,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 + " row before anf " + afterPurge + " rows after. The max create_time in sym_data was " + maxCreateTime
                 + " and the min create_time in sym_data was " + minCreateTime
                 + " and the current time of the server is " + new Date(), (beforePurge - afterPurge) > 0);
+        
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
 
+        parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
+        purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        // set purge in the future just in case the database time is different than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
+        
         beforePurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
         getClientEngine().purge();
         afterPurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
@@ -416,6 +425,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 + " row before anf " + afterPurge + " rows after. . The max create_time in sym_data was "
                 + maxCreateTime + " and the min create_time in sym_data was " + minCreateTime
                 + " and the current time of the server is " + new Date(), (beforePurge - afterPurge) > 0);
+
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
     }
 
