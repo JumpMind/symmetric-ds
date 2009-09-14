@@ -22,9 +22,8 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -59,13 +58,6 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected Table findTable(String catalogName, String schemaName, String tblName)  {
-        catalogName = StringUtils.isBlank(catalogName) ? StringUtils.isBlank(schemaName) ? getDefaultCatalog()
-                : schemaName : catalogName;
-        return super.findTable(catalogName, schemaName, tblName);
-    }
-
-    @Override
     protected void createRequiredFunctions() {
         String[] functions = sqlTemplate.getFunctionsToInstall();
         for (int i = 0; i < functions.length; i++) {
@@ -77,6 +69,17 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
                     log.info("FunctionInstalled", funcName);
                 }
             }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected String findPlatformTableName(String catalogName, String schemaName, String tblName) {
+        List<String> tableNames = jdbcTemplate.queryForList("select distinct(table_name) from information_schema.tables where table_name like '%" + tblName + "%'", String.class);
+        if (tableNames.size() > 0 ) {
+            return tableNames.get(0);
+        } else {
+            return tblName;
         }
     }
 
