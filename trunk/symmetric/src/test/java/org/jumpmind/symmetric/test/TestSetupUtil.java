@@ -39,6 +39,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -109,9 +110,8 @@ public class TestSetupUtil {
     }
 
     /**
-     * Unit tests were failing after opening and closing several data connection
-     * pools against the same database in memory. After shutting down the
-     * connection pool, it seems to help by shutting down the entire database.
+     * Unit tests were failing after opening and closing several data connection pools against the same database in
+     * memory. After shutting down the connection pool, it seems to help by shutting down the entire database.
      */
     protected static void closeDerbyAndReloadDriver() throws SQLException {
         try {
@@ -128,6 +128,9 @@ public class TestSetupUtil {
 
     public static void setup(String testPrefix, String sqlScriptSuffix, String clientDb, String rootDb)
             throws Exception {
+
+        removeEmbededdedDatabases();
+
         if (rootDb != null) {
             rootServer = new SymmetricWebServer("file:"
                     + writeTempPropertiesFileFor(testPrefix, rootDb, DatabaseRole.ROOT).getAbsolutePath());
@@ -143,6 +146,27 @@ public class TestSetupUtil {
             clientEngine = new SymmetricEngine("file:"
                     + writeTempPropertiesFileFor(testPrefix, clientDb, DatabaseRole.CLIENT).getAbsolutePath(), null);
             dropAndCreateDatabaseTables(clientDb, clientEngine);
+        }
+    }
+
+    public static void removeEmbededdedDatabases() {
+        File derby = new File("target/derby");
+        if (derby.exists()) {
+            try {
+                logger.info("Removing derby database files.");
+                FileUtils.deleteDirectory(derby);
+            } catch (IOException e) {
+                logger.error(e, e);
+            }
+        }
+        File h2 = new File("target/h2");
+        if (h2.exists()) {
+            try {
+                logger.info("Removing h2 database files");
+                FileUtils.deleteDirectory(h2);
+            } catch (IOException e) {
+                logger.error(e, e);
+            }
         }
     }
 
