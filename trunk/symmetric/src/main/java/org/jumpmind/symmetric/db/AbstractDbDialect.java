@@ -93,7 +93,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 abstract public class AbstractDbDialect implements IDbDialect {
 
     final ILog logger = LogFactory.getLog(getClass());
-    
+
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
     public static final String[] TIMESTAMP_PATTERNS = { "yyyy-MM-dd HH:mm:ss.S", "yyyy-MM-dd HH:mm:ss",
@@ -262,8 +262,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 node,
                 this,
                 trigger,
-                getMetaDataFor(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(), trigger
-                        .getTrigger().getSourceTableName(), true)).trim();
+                getMetaDataFor(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(),
+                        trigger.getTrigger().getSourceTableName(), true)).trim();
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {
@@ -340,7 +340,35 @@ abstract public class AbstractDbDialect implements IDbDialect {
     /**
      * Returns a new {@link Table} object.
      */
-    protected Table findTable(String catalogName, String schemaName, final String tblName) {
+    protected Table findTable(String catalogName, String schemaName, String tblName) {
+        if (parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
+            Table table = findTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils.upperCase(schemaName),
+                    StringUtils.upperCase(tblName));
+            if (table == null) {
+                table = findTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils.lowerCase(schemaName),
+                        StringUtils.lowerCase(tblName));
+                if (table == null) {
+                    table = findTableCaseSensitive(catalogName, schemaName, StringUtils.upperCase(tblName));
+                    if (table == null) {
+                        table = findTableCaseSensitive(catalogName, schemaName, StringUtils.lowerCase(tblName));
+                        if (table == null) {
+                            table = findTableCaseSensitive(catalogName, schemaName, findPlatformTableName(catalogName,
+                                    schemaName, tblName));
+                        }
+                    }
+                }
+            }
+            return table;
+        } else {
+            return findTableCaseSensitive(catalogName, schemaName, tblName);
+        }
+    }
+
+    protected String findPlatformTableName(String catalogName, String schemaName, String tblName) {
+        return tblName;
+    }
+
+    protected Table findTableCaseSensitive(String catalogName, String schemaName, final String tblName) {
         // If we don't provide a default schema or catalog, then on some
         // databases multiple results will be found in the metadata from
         // multiple schemas/catalogs
@@ -691,7 +719,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                         Statement stmt = con.createStatement();
                         try {
-                            log.debug("Sql",triggerSql);
+                            log.debug("Sql", triggerSql);
                             stmt.executeUpdate(triggerSql);
                         } catch (SQLException ex) {
                             log.error("TriggerCreateFailed", triggerSql);
@@ -741,7 +769,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateTableSQL(TriggerRouter trig) {
-        Table table = getMetaDataFor(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger().getSourceTableName(), true);
+        Table table = getMetaDataFor(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger()
+                .getSourceTableName(), true);
         String sql = null;
         try {
             StringWriter buffer = new StringWriter();

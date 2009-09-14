@@ -95,6 +95,8 @@ final public class ParameterConstants {
     public final static String DBPOOL_USER = "db.user";
     public final static String DBPOOL_PASSWORD = "db.password";
     public final static String DBPOOL_INITIAL_SIZE = "db.pool.initial.size";
+    
+    public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
