@@ -120,12 +120,7 @@ public class SqlTemplate {
     }
 
     public String createPurgeSql(Node node, IDbDialect dialect, Trigger trig, TriggerHistory hist) {
-        // TODO: during reload, purge table using initial_load_select clause
-        String sql = "delete from " + getDefaultTargetTableName(trig, hist);
-        // + " where " + trig.getInitialLoadSelect();
-        // sql = replace("groupId", node.getNodeGroupId(), sql);
-        // sql = replace("externalId", node.getExternalId(), sql);
-        return sql;
+        return "delete from " + trig.getQualifiedTargetTableName();
     }
 
     public String createCsvDataSql(IDbDialect dialect, Trigger trig, Table metaData, String whereClause) {
