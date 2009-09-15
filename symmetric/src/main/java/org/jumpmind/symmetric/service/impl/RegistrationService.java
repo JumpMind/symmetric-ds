@@ -220,7 +220,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 registered = isRegisteredWithServer();
             } else {
                 Node node = nodeService.findIdentity();
-                if (log != null && node != null) {
+                if (node != null) {
                     log.info("NodeRegistered", node.getNodeId());
                 } else if (!errorOccurred) {
                     log.error("NodeRegisteringFailedIdentityMissing");
