@@ -36,6 +36,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
 
     private DataLoaderContext ctx1;
     private AdditiveDataLoaderFilter filter;
+    private AdditiveDataLoaderFilter filter2;
 
     private DataLoaderContext ctx2;
 
@@ -55,14 +56,16 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         ctx1 = new DataLoaderContext();
         ctx1.setNodeId("54321");
         ctx1.setTableName(TABLE_TEST_1);
-        ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false, null, null));
+        ctx1.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_1, null, false, null,
+                null));
         ctx1.setColumnNames(new String[] { "PK1", "PK2", "ADD1", "ADD2", "ADD3", "OVR1", "OVR2", "OVR3", "NADA1" });
         ctx1.setKeyNames(new String[] { "PK1", "PK2" });
 
         ctx2 = new DataLoaderContext();
         ctx2.setNodeId("54321");
         ctx2.setTableName(TABLE_TEST_2);
-        ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false, null, null));
+        ctx2.setTableTemplate(new TableTemplate(getJdbcTemplate(), getDbDialect(), TABLE_TEST_2, null, false, null,
+                null));
         ctx2.setKeyNames(new String[] { "PK1" });
         ctx2.setColumnNames(new String[] { "PK1", "ADD1" });
 
@@ -71,9 +74,12 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         filter.setJdbcTemplate(getJdbcTemplate());
         filter.setAdditiveColumnNames(new String[] { "ADD1", "ADD2", "ADD3" });
         filter.setOverrideColumnNames(new String[] { "OVR1", "OVR2", "OVR3" });
+
+        filter2 = new AdditiveDataLoaderFilter();
+        filter2.setTableName(TABLE_TEST_1);
+        filter2.setJdbcTemplate(getJdbcTemplate());
     }
 
-    
     @Test
     public void testNonFilteredTable() {
         ctx2.setOldData(new String[] { "k1", "0" });
@@ -82,15 +88,13 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         Assert.assertTrue(filter.filterDelete(ctx2, new String[] { "k1" }));
     }
 
-    
     @Test
     public void testInsertNonExistent() {
         ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
-        Assert.assertTrue(filter.filterInsert(ctx1, new String[] { "k1", "k2", "1", "0.0", "2", "3.5", "4", "0.0",
-                "5" }));
+        Assert.assertTrue(filter.filterInsert(ctx1,
+                new String[] { "k1", "k2", "1", "0.0", "2", "3.5", "4", "0.0", "5" }));
     }
 
-    
     @Test
     public void testDelete() {
         ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
@@ -102,22 +106,29 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         }
     }
 
-    
     @Test
     public void testUpdateNonExistent() {
         ctx1.setOldData(new String[] { "k1", "k2", "0", "0.0", "0", "0.0", "0", "0.0", "5" });
-        boolean result = filter.filterUpdate(ctx1, new String[] { "k1", "k2", "1.0", "0.0", "2", "3.5", "4", "0.0",
-                "5" }, new String[] { "k1", "k2" });
+        boolean result = filter.filterUpdate(ctx1,
+                new String[] { "k1", "k2", "1.0", "0.0", "2", "3.5", "4", "0.0", "5" }, new String[] { "k1", "k2" });
 
-        Assert.assertFalse(result);
+        Assert.assertTrue(result);
     }
 
-    
+    @Test
+    public void testUpdateNoSet() {
+        ctx1.setOldData(new String[] {});
+        boolean result = filter2.filterUpdate(ctx1, new String[] {}, new String[] {});
+
+        Assert.assertTrue(result);
+    }
+
     @Test
     public void testInsertExists() {
-        //ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0", "0.0", "0", "0.0", "5" });
-        boolean result = filter.filterInsert(ctx1,
-                new String[] { "k3", "k4", "1", "0.0", "2", "3.5", "4", "0.0", "5" });
+        // ctx1.setOldData(new String[] { "k3", "k4", "0.0", "0.0", "0", "0.0",
+        // "0", "0.0", "5" });
+        boolean result = filter
+                .filterInsert(ctx1, new String[] { "k3", "k4", "1", "0.0", "2", "3.5", "4", "0.0", "5" });
 
         Assert.assertFalse(result);
 
