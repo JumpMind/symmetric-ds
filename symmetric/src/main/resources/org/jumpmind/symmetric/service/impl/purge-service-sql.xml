@@ -16,29 +16,29 @@
     </entry>
     <entry key="deleteOutgoingBatchSql">
       <value>
-        delete from $[sym.sync.table.prefix]_outgoing_batch where status = 'OK' and batch_id between ?
-        and ? and batch_id not in (select batch_id from $[sym.sync.table.prefix]_data_event where batch_id between ?
-        and ?)
+        delete from $[sym.sync.table.prefix]_outgoing_batch where status = 'OK' and batch_id between :MIN
+        and :MAX and batch_id not in (select batch_id from $[sym.sync.table.prefix]_data_event where batch_id between :MIN
+        and :MAX)
       </value>
     </entry>
     <entry key="deleteDataEventSql">
       <value>
         delete from $[sym.sync.table.prefix]_data_event where batch_id not in (select batch_id from
-        $[sym.sync.table.prefix]_outgoing_batch where batch_id between ? and ? and status != 'OK') 
-        and batch_id between ? and ?
+        $[sym.sync.table.prefix]_outgoing_batch where batch_id between :MIN and :MAX and status != 'OK') 
+        and batch_id between :MIN and :MAX
       </value>
     </entry>
     <entry key="selectDataRangeSql">
       <value>
-        select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data where create_time &lt; ?
+        select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data
       </value>
     </entry>
     <entry key="deleteDataSql">
       <value>
         delete from $[sym.sync.table.prefix]_data where 
-          data_id between ? and ? and data_id not in 
-            (select data_id from $[sym.sync.table.prefix]_data_event where data_id between ? and ? and batch_id in 
-            (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where status != 'OK'))
+          data_id between :MIN and :MAX and data_id not in 
+            (select data_id from $[sym.sync.table.prefix]_data_event where data_id between :MIN and :MAX and batch_id in 
+            (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where status != 'OK' and create_time &lt; :TIME))
       </value>
     </entry>
     <entry key="selectIncomingBatchRangeSql">

@@ -22,9 +22,13 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -100,15 +104,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfBatchIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        purgeByMinMax(minMax, getSql("deleteDataEventSql"), true, maxNumOfDataEventsToPurgeInTx);
-        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), true, maxNumOfBatchIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteDataEventSql"), time.getTime(), maxNumOfDataEventsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), time.getTime(), maxNumOfBatchIdsToPurgeInTx);
     }
 
     private void purgeDataRows(final Calendar time) {
         log.info("DataPurgeRowsRange");
-        long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[] { time.getTime() });
+        long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        purgeByMinMax(minMax, getSql("deleteDataSql"), true, maxNumOfDataIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteDataSql"), time.getTime(), maxNumOfDataIdsToPurgeInTx);
     }
 
     private long[] queryForMinMax(String sql, Object[] params) {
@@ -120,7 +124,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return minMax;
     }
 
-    private void purgeByMinMax(long[] minMax, String deleteSql, boolean useRangeTwice, int maxNumtoPurgeinTx) {
+    private void purgeByMinMax(long[] minMax, String deleteSql, Date retentionTime, int maxNumtoPurgeinTx) {
         long minId = minMax[0];
         long purgeUpToId = minMax[1];
         long ts = System.currentTimeMillis();
@@ -133,15 +137,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
             if (maxId > purgeUpToId) {
                 maxId = purgeUpToId;
             }
+            
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("MIN", minId);
+            params.put("MAX", maxId);
+            params.put("TIME", new Timestamp(retentionTime.getTime()));
 
-            Object[] param = null;
-            if (useRangeTwice) {
-                param = new Object[] { minId, maxId, minId, maxId };
-            } else {
-                param = new Object[] { minId, maxId };
-            }
-
-            totalCount += jdbcTemplate.update(deleteSql, param);
+            totalCount += getSimpleTemplate().update(deleteSql, params);
 
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                 log.info("DataPurgeTableRunning", totalCount, tableName);

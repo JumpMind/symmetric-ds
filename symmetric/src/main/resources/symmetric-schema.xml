@@ -170,10 +170,6 @@
         <column name="transaction_id" type="VARCHAR" size="1000" />
         <column name="source_node_id" type="VARCHAR" size="50" />
         <column name="create_time" type="TIMESTAMP" />
-        <!-- Can we change the purge service a bit and get rid of this? -->
-        <index name="idx_data_create_time">
-            <index-column name="create_time" />
-        </index>
     </table>
 
     <table name="data_event">
