@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.model.Column;
@@ -440,6 +441,20 @@ public class Trigger {
     public void setTargetCatalogName(String targetCatalogName) {
         this.targetCatalogName = targetCatalogName;
     }    
+    
+    public String getQualifiedTargetTableName() {
+        String tableName = getSourceTableName();
+        if (!StringUtils.isBlank(targetTableName)) {
+            tableName = targetTableName;
+        }
+        if (!StringUtils.isBlank(targetSchemaName)) {
+            tableName = targetSchemaName + "." + tableName;
+        }
+        if (!StringUtils.isBlank(targetCatalogName)) {
+            tableName = targetCatalogName + "." + tableName;
+        }
+        return tableName;
+    }
 
     public long getHashedValue() {
         long hashedValue = triggerId;
