@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.ext;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -95,8 +96,8 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         if (!tableName.equalsIgnoreCase(context.getTableName())) {
             return true;
         } else {
-            update(context, columnValues, keyValues);
-            return false;
+            boolean result = !update(context, columnValues, keyValues);
+            return result;
         }
     }
 
@@ -111,9 +112,17 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         StringBuilder s = new StringBuilder();
         s.append("update " + context.getTableName());
         List<Object> values = new ArrayList<Object>();
-        s.append(buildSetClause(context, colData, values));
-        s.append(buildWhereClause(context, keyData, values));
+        String setClause = buildSetClause(context, colData, values);
 
+        // Nothing to update or set? If so, return true since we don't need the
+        // caller to do any work.
+
+        if (StringUtils.trimToNull(setClause) == null) {
+            return false;
+        }
+
+        s.append(" set ").append(setClause);
+        s.append(buildWhereClause(context, keyData, values));
         if (logger.isDebugEnabled()) {
             logger.debug(s.toString());
         }
@@ -131,7 +140,6 @@ public class AdditiveDataLoaderFilter implements INodeGroupDataLoaderFilter {
         StringBuilder s = new StringBuilder();
 
         if (overrideColumnNames != null || additiveColumnNames != null) {
-            s.append(" set ");
 
             // Track the moment when we add our first name=value pair to the set
             // list.
