@@ -38,6 +38,7 @@ import org.apache.ddlutils.alteration.RemoveColumnChange;
 import org.apache.ddlutils.alteration.TableChange;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
+import org.apache.ddlutils.model.Index;
 import org.apache.ddlutils.model.ModelException;
 import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.model.TypeMap;
@@ -70,6 +71,13 @@ public class H2Builder extends SqlBuilder {
         return "CALL IDENTITY()";
     }
 
+    @Override
+    public void writeExternalIndexDropStmt(Table table, Index index) throws IOException {
+        print("DROP INDEX IF EXISTS ");
+        printIdentifier(getIndexName(index));
+        printEndOfStatement();
+    }   
+    
     @Override
     @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
