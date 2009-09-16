@@ -125,7 +125,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private final String getTransactionFunctionName() {
-        return tablePrefix + "_" + TRANSACTION_ID;
+        return getDefaultCatalog() + "." + tablePrefix + "_" + TRANSACTION_ID;
     }
 
     @Override
