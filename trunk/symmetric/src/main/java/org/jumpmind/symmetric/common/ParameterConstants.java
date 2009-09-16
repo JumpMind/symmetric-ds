@@ -46,6 +46,7 @@ final public class ParameterConstants {
     public final static String SCHEMA_VERSION = "schema.version";
 
     public static final String STATISTIC_THRESHOLD_ALERTS_ENABLED = "statistic.threshold.alerts.enabled";
+    public final static String STATISTIC_RETENTION_MINUTES = "statistic.retention.minutes";
 
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";

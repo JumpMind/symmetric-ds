@@ -51,13 +51,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
             retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
             purgeOutgoing(retentionCutoff);
             purgeIncoming(retentionCutoff);
+            
+            retentionCutoff = Calendar.getInstance();
+            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.STATISTIC_RETENTION_MINUTES));
             purgeStatistic(retentionCutoff);
         } else {
             log.warn("DataPurgeSkippingNoInitialLoad");
         }
     }
 
-    // TODO have a different retention time for stats
     private void purgeStatistic(Calendar retentionCutoff) {
         try {
             if (clusterService.lock(LockActionConstants.PURGE_STATISTICS)) {
