@@ -19,11 +19,13 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -102,7 +104,7 @@ public class ThresholdFileWriter extends Writer {
 
     public Reader getReader() throws IOException {
         if (fileWriter != null) {
-            return new FileReader(file);
+            return new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
         } else {
             return new StringReader(buffer.toString());
         }
