@@ -356,7 +356,7 @@
             <configuration>
                  <outputFormat>html</outputFormat>
                  <targetDatabase>symmetric</targetDatabase>
-                 <outputDirectory>${project.build.directory}/generated-docs/torque</outputDirectory>
+                 <outputDir>${project.build.directory}/site/schema</outputDir>
                  <schemaDir>${basedir}/src/main/resources</schemaDir>
             </configuration>
             <executions>
