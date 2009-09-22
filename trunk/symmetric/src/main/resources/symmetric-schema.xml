@@ -84,60 +84,60 @@
         <column name="last_extract_time" type="TIMESTAMP"  description="Record the last time data was extract for a node and a channel." />
     </table>
 
-    <table name="registration_redirect" description="" >
-        <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="" />
-        <column name="registration_node_id" type="VARCHAR" size="50" required="true"  description="" />
+    <table name="registration_redirect" description="Provides a way for a centralized registration server to redirect registering nodes to their prospective parent node in a multi-tiered deployment." >
+        <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Maps the external id of a registration request to a different parent node." />
+        <column name="registration_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node that a registration request should be redirected to." />
     </table>
 
-    <table name="router">
-        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="" />
-        <column name="target_catalog_name" type="VARCHAR" size="50"  description="" />
-        <column name="target_schema_name" type="VARCHAR" size="50"  description="" />
-        <column name="target_table_name" type="VARCHAR" size="50"  description="" />
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true"  description="" />
-        <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="" />
-        <column name="router_name" type="VARCHAR" size="50"  description="" />
-        <column name="router_expression" type="CLOB"  description="" />
-        <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="initial_load_select" type="CLOB"  description="" />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="" />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="" />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="" />
+    <table name="router" description="Configure a type of router from one node group to another.  Note that routers are mapped to triggers through trigger_routers.">
+        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="Unique description of a specific router" />
+        <column name="target_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
+        <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name of the schema a target table is in. On use this if the target table is not in the default schema." />
+        <column name="target_table_name" type="VARCHAR" size="50"  description="Optional name for a target table.  Only use this if the target table name is different than the source." />
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true"  description="Routers with this node_group_id will install triggers that are mapped to this router." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="The node_group_id for nodes to route data to.  Note that routing can be further narrowed down by the configured router_name and router_expression." />
+        <column name="router_name" type="VARCHAR" size="50"  description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', and 'subselect.'  Custom routers can be configured as extension points." />
+        <column name="router_expression" type="CLOB"  description="An expression that is specific to the type of router that is configured in router_name.  See the documentation for each router for more details." />
+        <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
+        <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
+        <column name="initial_load_select" type="CLOB"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>
 
-    <table name="trigger">
-        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="" />
-        <column name="source_catalog_name" type="VARCHAR" size="50"  description="" />
-        <column name="source_schema_name" type="VARCHAR" size="50"  description="" />
-        <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="" />
-        <column name="channel_id" type="VARCHAR" size="20" required="true"  description="" />
-        <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="" />
-        <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0"  description="" />
-        <column name="name_for_update_trigger" type="VARCHAR" size="50"  description="" />
-        <column name="name_for_insert_trigger" type="VARCHAR" size="50"  description="" />
-        <column name="name_for_delete_trigger" type="VARCHAR" size="50"  description="" />
-        <column name="sync_on_update_condition" type="CLOB"  description="" />
-        <column name="sync_on_insert_condition" type="CLOB"  description="" />
-        <column name="sync_on_delete_condition" type="CLOB"  description="" />
-        <column name="tx_id_expression" type="VARCHAR" size="500"  description="" />
-        <column name="excluded_column_names" type="CLOB"  description="" />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="" />
-        <column name="inactive_time" type="TIMESTAMP"  description="" />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="" />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="" />
+    <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">
+        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="source_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog the configured table is in." />
+        <column name="source_schema_name" type="VARCHAR" size="50"  description="Optional name for the schema a configured table is in." />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
+        <column name="channel_id" type="VARCHAR" size="20" required="true"  description="The channel_id of the channel that data changes will flow through." />
+        <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an update trigger." />
+        <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an insert trigger." />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Whether or not to install an delete trigger." />
+        <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0"  description="Whether or not an incoming batch that loads data into this table should cause the triggers to capture data_events. Be careful turning this on, because an update loop is possible." />
+        <column name="name_for_update_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the update trigger." />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the insert trigger." />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the delete trigger." />
+        <column name="sync_on_update_condition" type="CLOB"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
+        <column name="sync_on_insert_condition" type="CLOB"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
+        <column name="sync_on_delete_condition" type="CLOB"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
+        <column name="tx_id_expression" type="VARCHAR" size="500"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
+        <column name="excluded_column_names" type="CLOB"  description="Specify a comma-delimited list of columns that should not be synchronized from this table." />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="inactive_time" type="TIMESTAMP"  description="Timestamp when this entry was inactivated, which stops capturing of data changes." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>
 
-    <table name="trigger_router">
-        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="" />
-        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="" />
-        <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="" />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="" />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="" />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="" />
+    <table name="trigger_router" description="Map a trigger to a router.">
+        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The id of a router." />
+        <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. " />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
+        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
+        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>
 
     <table name="trigger_hist">
@@ -154,7 +154,7 @@
         <column name="column_names" type="LONGVARCHAR" required="true"  description="" />
         <column name="pk_column_names" type="LONGVARCHAR" required="true"  description="" />
         <column name="last_trigger_build_reason" size="1" type="CHAR" required="true"  description="" />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="" />
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="inactive_time" type="TIMESTAMP"  description="" />
     </table>
 
@@ -169,14 +169,14 @@
         <column name="channel_id" type="VARCHAR" size="20"  description="" />
         <column name="transaction_id" type="VARCHAR" size="1000"  description="" />
         <column name="source_node_id" type="VARCHAR" size="50"  description="" />
-        <column name="create_time" type="TIMESTAMP"  description="" />
+        <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
     <table name="data_event">
         <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="" />
         <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1"  description="" />
         <column name="router_id" type="VARCHAR" size="20" required="true"  primaryKey="true"  description="" />
-        <column name="create_time" type="TIMESTAMP"  description="" />
+        <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_de_batchid">
             <index-column name="batch_id"/>
         </index>
@@ -205,8 +205,8 @@
         <column name="sql_message" type="VARCHAR" size="1000"  description="" />
         <column name="failed_data_id" type="INTEGER"  description="" />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="" />
-        <column name="last_update_time" type="TIMESTAMP"  description="" />
-        <column name="create_time" type="TIMESTAMP"  description="" />
+        <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
+        <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
     <table name="incoming_batch">
@@ -228,8 +228,8 @@
         <column name="sql_code" type="INTEGER"  description="" />
         <column name="sql_message" type="VARCHAR" size="1000"  description="" />
         <column name="last_update_hostname" type="VARCHAR" size="50"  description="" />
-        <column name="last_update_time" type="TIMESTAMP"  description="" />
-        <column name="create_time" type="TIMESTAMP"  description="" />
+        <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
+        <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
     <table name="statistic">
