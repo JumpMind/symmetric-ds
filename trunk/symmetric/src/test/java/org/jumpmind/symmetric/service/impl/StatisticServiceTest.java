@@ -92,8 +92,7 @@ public class StatisticServiceTest extends AbstractDatabaseTest {
     public void testSaveAlertBoundaries() throws Exception {
         List<Statistic> stats = new ArrayList<Statistic>();
         Statistic stat = new Statistic("test", "test");
-        System.err.print(Long.toString(Long.MAX_VALUE).length());
-        stat.add(new BigDecimal(Long.MAX_VALUE));
+        stat.add(new BigDecimal("123456789012345678"));
         stats.add(stat);
         statisticService.save(stats, new Date());
     }
