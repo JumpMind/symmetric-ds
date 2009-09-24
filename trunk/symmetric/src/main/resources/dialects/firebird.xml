@@ -22,15 +22,15 @@
                 </property>               
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="SYM_ESCAPE">
+                        <entry key="ESCAPE">
                             <value>
-                                declare external function sym_escape cstring(32660)
+                                declare external function $(functionName) cstring(32660)
                                 returns cstring(32660) free_it entry_point 'sym_escape' module_name 'sym_udf'
                             </value>
                         </entry>
-                        <entry key="SYM_HEX">
+                        <entry key="HEX">
                             <value>
-                                declare external function sym_hex blob
+                                declare external function $(functionName) blob
                                 returns cstring(32660) free_it entry_point 'sym_hex' module_name 'sym_udf'
                             </value>
                         </entry>
@@ -38,17 +38,17 @@
                 </property>                                   
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || sym_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $[sym.sync.table.prefix]_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || sym_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $[sym.sync.table.prefix]_escape(substring($(tableAlias).$(columnName) from 1)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[sym_hex($(tableAlias).$(columnName))||','||]]>
+                        <![CDATA[$[sym.sync.table.prefix]_hex($(tableAlias).$(columnName))||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
