@@ -25,6 +25,7 @@ will not be overwritten any more once the file exists
 body { font-family: Verdana; font-size: 10pt; color:black; }
 /* for all links */
 .link { }
+h2 { text-transform: uppercase; }
 
 /* for the whole summary table */
 .summarytable { margin:0px; padding:0px; border-collapse:collapse; width:100%; }
@@ -47,7 +48,7 @@ body { font-family: Verdana; font-size: 10pt; color:black; }
 .summarybackground { background-color:white; }
 /* for the different cells in the regular rows of the summary table */
 /* e.g. use display:none for not displaying a certain column */
-.summarytablename { }
+.summarytablename { text-transform: uppercase; }
 .summaryjavaname { visibility:collapse; display:none; }
 .summarydescription { }
 
@@ -81,7 +82,7 @@ body { font-family: Verdana; font-size: 10pt; color:black; }
 .detailbackground { background-color:white; }
 /* for the different cells in the regular rows of the detail tables */
 /* e.g use display:none for not displaying a certain column */
-.detailname { }
+.detailname { text-transform: uppercase; }
 .detailtype { text-align:center; } 
 .detailsize { text-align:center; }
 .detaildefault { text-align:center; }
@@ -94,7 +95,7 @@ body { font-family: Verdana; font-size: 10pt; color:black; }
 /* for the links to the referenced tables for foreign key column names */
 .detailforeignkeylink { color:#44AA44; }
 /* for the name cell of primary keys */
-.primarykey { background-color:#FFCCCC; }
+.primarykey { }
 /* for the name cell of foreign keys */
 .foreignkey { }
 /* for the name cell of not null columns */
