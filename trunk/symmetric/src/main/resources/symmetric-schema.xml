@@ -236,7 +236,7 @@
         <column name="node_id" type="VARCHAR" size="50"  description="" />
         <column name="host_name" type="VARCHAR" size="50"  description="" />
         <column name="statistic_name" type="VARCHAR" size="50"  description="" />
-        <column name="statistic_total" type="DECIMAL" size="20"  description="" />
+        <column name="statistic_total" type="DECIMAL" size="18"  description="" />
         <column name="statistic_count" type="BIGINT"  description="" />
         <column name="capture_start_time" type="TIMESTAMP"  description="" />
         <column name="capture_end_time" type="TIMESTAMP"  description="" />
@@ -252,12 +252,12 @@
     <!-- This table configures thresholds at which JMX notifications will be fired -->
     <table name="statistic_alert" description="">
         <column name="statistic_name" type="VARCHAR" size="50" required="true" primaryKey="true"  description="" />
-        <column name="threshold_total_max" type="DECIMAL" size="20"  description="" />
-        <column name="threshold_avg_max" type="DECIMAL" size="20"  description="" />
+        <column name="threshold_total_max" type="DECIMAL" size="18"  description="" />
+        <column name="threshold_avg_max" type="DECIMAL" size="18"  description="" />
         <column name="threshold_count_max" type="BIGINT"  description="" />
-        <column name="threshold_total_min" type="DECIMAL" size="20"  description="" />
+        <column name="threshold_total_min" type="DECIMAL" size="18"  description="" />
         <column name="threshold_count_min" type="BIGINT"  description="" />
-        <column name="threshold_avg_min" type="DECIMAL" size="20"  description="" />
+        <column name="threshold_avg_min" type="DECIMAL" size="18"  description="" />
     </table>
 
 </database>
