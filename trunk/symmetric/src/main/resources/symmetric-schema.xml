@@ -158,81 +158,81 @@
         <column name="inactive_time" type="TIMESTAMP"  description="" />
     </table>
 
-    <table name="data">
-        <column name="data_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="" />
-        <column name="table_name" type="VARCHAR" size="50" required="true"  description="" />
-        <column name="event_type" type="CHAR" size="1" required="true"  description="" />
-        <column name="row_data" type="LONGVARCHAR"  description="" />
-        <column name="pk_data" type="LONGVARCHAR"  description="" />
-        <column name="old_data" type="LONGVARCHAR"  description="" />
-        <column name="trigger_hist_id" type="INTEGER" required="true"  description="" />
-        <column name="channel_id" type="VARCHAR" size="20"  description="" />
-        <column name="transaction_id" type="VARCHAR" size="1000"  description="" />
-        <column name="source_node_id" type="VARCHAR" size="50"  description="" />
+    <table name="data" description="The captured data change that occurred to a row in the database. Entries in data are created by database triggers.">
+        <column name="data_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a data." />
+        <column name="table_name" type="VARCHAR" size="50" required="true"  description="The name of the table in which a change occurred that this entry records." />
+        <column name="event_type" type="CHAR" size="1" required="true"  description="The type of event captured by this entry. For triggers, this is the change that occurred, which is 'I' for insert, 'U' for update, or 'D' for delete. Other events include: 'R' for reloading the entire table (or subset of the table) to the node; 'S' for running dynamic SQL at the node, which is used for adhoc administration." />
+        <column name="row_data" type="LONGVARCHAR"  description="The captured data change from the synchronized table. The column values are stored in comma-separated values (CSV) format." />
+        <column name="pk_data" type="LONGVARCHAR"  description="The primary key values of the captured data change from the synchronized table. This data is captured for updates and deletes. The primary key values are stored in comma-separated values (CSV) format." />
+        <column name="old_data" type="LONGVARCHAR"  description="The captured data values prior to the update.  The column values are stored in CSV format." />
+        <column name="trigger_hist_id" type="INTEGER" required="true"  description="The foreign key to the trigger_hist entry that contains the primary key and column names for the table being synchronized." />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this data belongs to, such as 'prices'" />
+        <column name="transaction_id" type="VARCHAR" size="1000"  description="An optional transaction identifier that links multiple data changes together as the same transaction." />
+        <column name="source_node_id" type="VARCHAR" size="50"  description="If this data was capture" />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
-    <table name="data_event">
-        <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="" />
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1"  description="" />
-        <column name="router_id" type="VARCHAR" size="20" required="true"  primaryKey="true"  description="" />
+    <table name="data_event" description="Represents routing of a data row to one or more nodes. Entries in data_event are created by database triggers. ">
+        <column name="data_id" type="INTEGER" required="true" primaryKey="true"  description="Id of the data to be routed." />
+        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" default="-1"  description="The node_id of the node that is to receive the data." />
+        <column name="router_id" type="VARCHAR" size="20" required="true"  primaryKey="true"  description="The router_id of the router that routed this data_event." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_de_batchid">
             <index-column name="batch_id"/>
         </index>
     </table>
 
-    <table name="data_ref">
-        <column name="ref_data_id" type="INTEGER" required="true" primaryKey="true"  description="" />
-        <column name="ref_time" type="TIMESTAMP"  description="" />
+    <table name="data_ref" description="Table that tracks the last known data_id that has been processed.  This table is used so that joins to find unprocessed data can be better optimized.">
+        <column name="ref_data_id" type="INTEGER" required="true" primaryKey="true"  description="The data_id that can be used to limit the search of the data table to rows that are greater than this data_id value." />
+        <column name="ref_time" type="TIMESTAMP"  description="The time when the ref_data_id was recorded. It is used as the base time to calculate timeouts for gaps in the data_ids." />
     </table>
 
-    <table name="outgoing_batch">
-        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="" />
-        <column name="node_id" type="VARCHAR" size="50"  description="" />
-        <column name="channel_id" type="VARCHAR" size="20"  description="" />
-        <column name="status" type="CHAR" size="2"  description="" />
-        <column name="byte_count" type="INTEGER"  description="" />
-        <column name="sent_count" type="INTEGER"  description="" />
-        <column name="data_event_count" type="INTEGER"  description="" />
-        <column name="router_millis" type="INTEGER"  description="" />
-        <column name="network_millis" type="INTEGER"  description="" />
-        <column name="filter_millis" type="INTEGER"  description="" />
-        <column name="load_millis" type="INTEGER"  description="" />
-        <column name="extract_millis" type="INTEGER"  description="" />
-        <column name="sql_state" type="VARCHAR" size="10"  description="" />
-        <column name="sql_code" type="INTEGER"  description="" />
-        <column name="sql_message" type="VARCHAR" size="1000"  description="" />
-        <column name="failed_data_id" type="INTEGER"  description="" />
-        <column name="last_update_hostname" type="VARCHAR" size="50"  description="" />
+    <table name="outgoing_batch" description="Used for tracking the sending a collection of data to a node in the system. A new outgoing_batch is created and given a status of 'NE'. After sending the outgoing_batch to its target node, the status becomes 'SE'. The node responds with either a success status of 'OK' or an error status of 'ER'. An error while sending to the node also results in an error status of 'ER' regardless of whether the node sends that acknowledgement. ">
+        <column name="batch_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="A unique id for the batch." />
+        <column name="node_id" type="VARCHAR" size="50"  description="The node that this batch is targeted at." />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel that this batch is part of." />
+        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be newly created (NE), sent to a Node (SE), acknowledged as successful (OK), and error (ER)." />
+        <column name="byte_count" type="INTEGER"  description="The number of bytes that were sent as part of this batch." />
+        <column name="sent_count" type="INTEGER"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
+        <column name="data_event_count" type="INTEGER"  description="The number of data_events that are part of this batch." />
+        <column name="router_millis" type="INTEGER"  description="The number of milliseconds spent creating this batch." />
+        <column name="network_millis" type="INTEGER"  description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="INTEGER"  description="The number of milliseconds spent in filters processing data." />
+        <column name="load_millis" type="INTEGER"  description="The number of milliseconds spent loading the data into the target database." />
+        <column name="extract_millis" type="INTEGER"  description="The number of milliseconds spent extracting the data out of the source database." />
+        <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
+        <column name="sql_code" type="INTEGER"  description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
+        <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
+        <column name="failed_data_id" type="INTEGER"  description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
-    <table name="incoming_batch">
-        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true"  description="" />
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="" />
-        <column name="channel_id" type="VARCHAR" size="20"  description="" />
-        <column name="status" type="CHAR" size="2"  description="" />
-        <column name="network_millis" type="INTEGER"  description="" />
-        <column name="filter_millis" type="INTEGER"  description="" />
-        <column name="database_millis" type="INTEGER"  description="" />
-        <column name="failed_row_number" type="INTEGER"  description="" />
-        <column name="byte_count" type="INTEGER"  description="" />
-        <column name="statement_count" type="INTEGER"  description="" />
-        <column name="fallback_insert_count" type="INTEGER"  description="" />
-        <column name="fallback_update_count" type="INTEGER"  description="" />
-        <column name="missing_delete_count" type="INTEGER"  description="" />
-        <column name="skip_count" type="INTEGER"  description="" />
-        <column name="sql_state" type="VARCHAR" size="10"  description="" />
-        <column name="sql_code" type="INTEGER"  description="" />
-        <column name="sql_message" type="VARCHAR" size="1000"  description="" />
-        <column name="last_update_hostname" type="VARCHAR" size="50"  description="" />
+    <table name="incoming_batch" description="The incoming_batch is used for tracking the status of loading an outgoing_batch from another node. Data is loaded and commited at the batch level. The status of the incoming_batch is either successful (OK) or error (ER). ">
+        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true"  description="The id of the outgoing_batch that is being loaded." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The node_id of the source of the batch being loaded." />
+        <column name="channel_id" type="VARCHAR" size="20"  description="The channel_id of the batch being loaded." />
+        <column name="status" type="CHAR" size="2"  description="The current status of the Batch can be successfully loaded (OK) or error (ER)." />
+        <column name="network_millis" type="INTEGER"  description="The number of milliseconds spent transfering this batch across the network." />
+        <column name="filter_millis" type="INTEGER"  description="The number of milliseconds spent in filters processing data." />
+        <column name="database_millis" type="INTEGER"  description="The number of milliseconds spent loading the data into the target database." />
+        <column name="failed_row_number" type="INTEGER"  description="For a status of error (ER), this is the data_id that was being processed when the batch failed." />
+        <column name="byte_count" type="INTEGER"  description="The number of bytes that were sent as part of this batch." />
+        <column name="statement_count" type="INTEGER"  description="The number of statements run to load this batch." />
+        <column name="fallback_insert_count" type="INTEGER"  description="The number of times an update was turned into an insert because the data was not already in the target database." />
+        <column name="fallback_update_count" type="INTEGER"  description="The number of times an insert was turned into an update because a data row already existed in the target database." />
+        <column name="missing_delete_count" type="INTEGER"  description="THe number of times a delete did not effect the database because the row was already deleted." />
+        <column name="skip_count" type="INTEGER"  description="The number of times a batch was sent and skipped because it had already been loaded according to incoming_batch" />
+        <column name="sql_state" type="VARCHAR" size="10"  description="For a status of error (ER), this is the XOPEN or SQL 99 SQL State." />
+        <column name="sql_code" type="INTEGER"  description="For a status of error (ER), this is the error code from the database that is specific to the vendor. " />
+        <column name="sql_message" type="VARCHAR" size="1000"  description="For a status of error (ER), this is the error message that describes the error." />
+        <column name="last_update_hostname" type="VARCHAR" size="50"  description="The host name of the process that last did work on this batch." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
-    <table name="statistic">
+    <table name="statistic" description="">
         <column name="node_id" type="VARCHAR" size="50"  description="" />
         <column name="host_name" type="VARCHAR" size="50"  description="" />
         <column name="statistic_name" type="VARCHAR" size="50"  description="" />
@@ -250,7 +250,7 @@
     </table>
 
     <!-- This table configures thresholds at which JMX notifications will be fired-->
-    <table name="statistic_alert">
+    <table name="statistic_alert" description="">
         <column name="statistic_name" type="VARCHAR" size="50" required="true" primaryKey="true"  description="" />
         <column name="threshold_total_max" type="DECIMAL" size="20"  description="" />
         <column name="threshold_avg_max" type="DECIMAL" size="20"  description="" />
