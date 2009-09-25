@@ -232,7 +232,7 @@
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>
 
-    <table name="statistic" description="">
+    <table name="statistic" description="Record statistics for the attached SymmetricDS process.">
         <column name="node_id" type="VARCHAR" size="50"  description="" />
         <column name="host_name" type="VARCHAR" size="50"  description="" />
         <column name="statistic_name" type="VARCHAR" size="50"  description="" />
