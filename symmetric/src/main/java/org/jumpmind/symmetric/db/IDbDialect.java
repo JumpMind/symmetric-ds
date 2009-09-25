@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.Node;
@@ -215,6 +216,13 @@ public interface IDbDialect {
      * @return
      */
     public String getTablePrefix();
+    
+    /**
+     * Get the max number of data objects to load before processing.  This parameter typically comes
+     * from the {@link ParameterConstants#ROUTING_PEEK_AHEAD_WINDOW} parameter, unless the dialect chooses
+     * to override how it is retrieved.
+     */
+    public int getRouterDataPeekAheadCount();
 
     /**
      * Give access to the templating mechanism that is used for trigger

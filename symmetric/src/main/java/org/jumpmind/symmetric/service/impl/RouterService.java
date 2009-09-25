@@ -155,7 +155,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         log.error(e);
                     } finally {
                         context.logStats(log);
-                        context.cleanup();
+                        context.cleanup();    
                     }
                 }
                 return null;
@@ -244,7 +244,7 @@ public class RouterService extends AbstractService implements IRouterService {
             ps.setString(1, context.getChannel().getId());
             ps.setLong(2, ref.getRefDataId());
             rs = ps.executeQuery();
-            int peekAheadLength = parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
+            int peekAheadLength = dbDialect.getRouterDataPeekAheadCount();
             Map<String, Long> transactionIdDataId = new HashMap<String, Long>();
             LinkedList<Data> dataQueue = new LinkedList<Data>();
             boolean hasNext = rs.next();
@@ -255,6 +255,14 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (hasNext) {
                     hasNext = rs.next();
                 }
+            }
+            
+            // Go ahead and close the resource if we don't need it anymore.
+            if (!hasNext) {
+                JdbcUtils.closeResultSet(rs);                
+                JdbcUtils.closeStatement(ps);
+                rs = null;
+                ps = null;
             }
 
             while (dataQueue.size() > 0) {

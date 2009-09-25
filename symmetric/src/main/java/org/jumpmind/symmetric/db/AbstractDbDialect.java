@@ -1274,6 +1274,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     public String preProcessTriggerSqlClause(String sqlClause) {
         return sqlClause;
     }
+    
+    public int getRouterDataPeekAheadCount() {
+        return parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_WINDOW);
+    }
 
     /**
      * Returns the current schema name

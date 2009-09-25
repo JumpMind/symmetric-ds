@@ -144,5 +144,12 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean supportsOpenCursorsAcrossCommit() {
         return false;
     }
+    
+    /**
+     * TODO - come up with a better way to deal with the fact that we use
+     */
+    public int getRouterDataPeekAheadCount() {
+        return Integer.MAX_VALUE;
+    }
 
 }
