@@ -198,55 +198,6 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
     }
 
     @Test()
-    public void testGetSuspendIgnoreChannels() throws Exception {
-        // IParameterService parameterService = getParameterService();
-        // parameterService.saveParameter(ParameterConstants.CONCURRENT_WORKERS,
-        // 3);
-
-        String nodeId = "00000";
-
-        NodeConcurrencyFilter filter = (NodeConcurrencyFilter) find(Constants.NODE_CONCURRENCY_FILTER);
-
-        Map<String, String> result = filter.getSuspendIgnoreChannels(nodeId);
-        Assert.assertEquals(0, result.size());
-
-        ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);
-
-        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
-
-        NodeChannel nc = ncs.get(1);
-        String channelId = ncs.get(1).getId();
-
-        nc.setSuspended(true);
-        configurationService.saveNodeChannelControl(nc, false);
-
-        result = filter.getSuspendIgnoreChannels(nodeId);
-
-        Assert.assertEquals(1, result.size());
-        Assert.assertTrue(channelId.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
-
-        nc = ncs.get(0);
-        nc.setSuspended(true);
-
-        configurationService.saveNodeChannelControl(nc, false);
-
-        String channelIds = ncs.get(0).getId() + "," + ncs.get(1).getId();
-        result = filter.getSuspendIgnoreChannels(nodeId);
-
-        Assert.assertEquals(1, result.size());
-        Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
-
-        nc.setIgnored(true);
-        configurationService.saveNodeChannelControl(nc, false);
-        result = filter.getSuspendIgnoreChannels(nodeId);
-
-        Assert.assertEquals(2, result.size());
-        Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
-        Assert.assertTrue(nc.getId().equals(result.get(WebConstants.IGNORED_CHANNELS)));
-
-    }
-
-    @Test()
     public void testBuildSuspendIgnoreResponseHeaders() throws Exception {
 
         ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);

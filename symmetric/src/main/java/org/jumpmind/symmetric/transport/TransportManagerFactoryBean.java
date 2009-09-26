@@ -27,6 +27,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
@@ -38,6 +39,8 @@ public class TransportManagerFactoryBean implements FactoryBean {
     private INodeService nodeService;
 
     private IParameterService parameterService;
+
+    private IConfigurationService configurationService;
 
     public Object getObject() throws Exception {
         String transport = parameterService.getString(ParameterConstants.TRANSPORT_TYPE);
@@ -57,7 +60,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
                     return false;
                 }
             });
-            return new HttpTransportManager(nodeService, parameterService);
+            return new HttpTransportManager(nodeService, parameterService, configurationService);
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(nodeService, parameterService);
         } else {
@@ -79,6 +82,14 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
+    }
+
+    public IConfigurationService getConfigurationService() {
+        return configurationService;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
 }
