@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -143,7 +142,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("MIN", minId);
             params.put("MAX", maxId);
-            params.put("TIME", new Timestamp(retentionTime.getTime()));
+            params.put("TIME", retentionTime);
 
             totalCount += getSimpleTemplate().update(deleteSql, params);
 
