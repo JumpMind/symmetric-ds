@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
@@ -35,6 +37,7 @@ import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.jdbc.core.RowMapper;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
@@ -226,6 +229,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs.getString(3)));
             return node_groupTarget;
         }
+    }
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(final String nodeId) {
+
+        Map<String, Set<String>> channels = new HashMap<String, Set<String>>();
+
+        Set<String> suspendChannels = new TreeSet<String>();
+        channels.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
+
+        Set<String> ignoreChannels = new TreeSet<String>();
+        channels.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
+
+        List<NodeChannel> ncs = getNodeChannels(nodeId);
+
+        for (NodeChannel nc : ncs) {
+            if (nc.isSuspended()) {
+                suspendChannels.add(nc.getId());
+            }
+            if (nc.isIgnored()) {
+                ignoreChannels.add(nc.getId());
+            }
+        }
+
+        return channels;
     }
 
     public void setDefaultChannels(List<Channel> defaultChannels) {

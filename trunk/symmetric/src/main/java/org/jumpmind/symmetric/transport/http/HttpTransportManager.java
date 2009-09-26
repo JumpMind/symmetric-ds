@@ -29,6 +29,8 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +41,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
@@ -57,10 +60,13 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected static final Log logger = LogFactory.getLog(HttpTransportManager.class);
 
     private INodeService nodeService;
+    private IConfigurationService configurationService;
 
-    public HttpTransportManager(INodeService nodeService, IParameterService paramService) {
+    public HttpTransportManager(INodeService nodeService, IParameterService paramService,
+            IConfigurationService configurationService) {
         super(paramService);
         this.nodeService = nodeService;
+        this.configurationService = configurationService;
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
@@ -71,7 +77,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return true;
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {        
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {
         writeMessage(out, getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
     }
 
@@ -100,7 +106,18 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildURL("pull", remote, local))));
+        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local)));
+        Map<String, Set<String>> suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote
+                .getNodeId());
+        if (suspendIgnoreChannels.get(WebConstants.SUSPENDED_CHANNELS).size() > 0) {
+            conn.addRequestProperty(WebConstants.SUSPENDED_CHANNELS, StringUtils.join(suspendIgnoreChannels
+                    .get(WebConstants.SUSPENDED_CHANNELS), ','));
+        }
+        if (suspendIgnoreChannels.get(WebConstants.IGNORED_CHANNELS).size() > 0) {
+            conn.addRequestProperty(WebConstants.IGNORED_CHANNELS, StringUtils.join(suspendIgnoreChannels
+                    .get(WebConstants.IGNORED_CHANNELS), ','));
+        }
+        return new HttpIncomingTransport(conn);
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException {
@@ -111,9 +128,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(parameterService.getRegistrationUrl(), node))));
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(parameterService
+                .getRegistrationUrl(), node))));
     }
-    
+
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
         StringBuilder builder = new StringBuilder(baseUrl);
         builder.append("/registration?");
@@ -179,5 +197,4 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(nodeId);
         return sb.toString();
     }
-
 }

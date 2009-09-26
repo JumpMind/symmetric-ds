@@ -22,6 +22,8 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -63,5 +65,7 @@ public interface IConfigurationService {
     public void reloadChannels();
 
     public void autoConfigDatabase(boolean force);
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(String nodeId);
 
 }

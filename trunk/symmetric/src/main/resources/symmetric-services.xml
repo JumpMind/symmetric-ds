@@ -33,6 +33,7 @@
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean" scope="singleton">
         <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
+        <property name="configurationService" ref="configurationService" />
     </bean>
 
     <bean id="parameterService" class="org.jumpmind.symmetric.service.impl.ParameterService" scope="singleton">
