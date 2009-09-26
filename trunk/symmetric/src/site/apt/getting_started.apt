@@ -5,7 +5,7 @@
  Date
  ------ 
 
-Getting Started
+Users Guide 1.x
  
  To get a demo of SymmetricDS running, try the
  {{{guide/html/ch02-getting-started.html}Getting Started}} tutorial.
@@ -22,3 +22,6 @@ Getting Started
  
  Please be aware that the User Guide is not yet complete, but is useful already.
   
+Users Guide 2.x
+
+ The 2.x User Guide is a work in progress.  It can be found {{{http://docs.codehaus.org/display/SYMMETRICDS/Users+Guide+2.x}here}}.
