@@ -391,6 +391,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <destDir>apidocs-2</destDir>
+                </configuration>                
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
