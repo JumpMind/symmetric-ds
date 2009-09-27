@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -346,23 +347,29 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // TODO: make sure event did not fire
     }
 
-    @Test(timeout = 30000)
+    @Test//(timeout = 30000)
     public void ignoreNodeChannel() {
         logTestRunning();
-        INodeService nodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
-        IConfigurationService configService = (IConfigurationService) getRootEngine().getApplicationContext().getBean(
+        INodeService rootNodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
+        IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getApplicationContext().getBean(
                 "configurationService");
-        nodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
+        rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-        configService.reloadChannels();
+        rootConfigService.reloadChannels();
+        
+        NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+        Assert.assertNotNull(channel);
+        Assert.assertTrue(channel.isIgnored());
+        Assert.assertFalse(channel.isSuspended());
+        
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
                 "New Yorl", "NY", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });
         getClientEngine().pull();
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from test_customer where customer_id=201"), 0,
                 "The customer was sync'd to the client.");
-        nodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
+        rootNodeService.ignoreNodeChannelForExternalId(false, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
-        configService.reloadChannels();
+        rootConfigService.reloadChannels();
     }
 
     // @Test(timeout = 30000)
@@ -530,6 +537,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
 
         List rowList = clientJdbcTemplate.queryForList(selectKeyWordSql.replaceAll("\"", cquote), new Object[] { 1 });
+        Assert.assertTrue(rowList.size() > 0);
         Map columnMap = (Map) rowList.get(0);
         assertEquals(columnMap.get("key word"), "y", "Wrong key word value in table");
         assertEquals(columnMap.get("case"), "b", "Wrong case value in table");

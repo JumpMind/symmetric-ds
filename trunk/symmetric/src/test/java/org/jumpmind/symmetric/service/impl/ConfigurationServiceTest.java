@@ -23,11 +23,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -117,6 +120,58 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
         Assert.assertTrue(compareTo.isSuspended());
         Assert.assertNull(compareTo.getLastExtractedTime());
     }
+    
+    @Test()
+    public void testGetSuspendIgnoreChannels() throws Exception {
+        String nodeId = "00000";
+
+        Map<String, Set<String>> result = configurationService.getSuspendIgnoreChannelLists(nodeId);
+        Assert.assertEquals(2, result.size());
+        Assert.assertEquals(result.get(WebConstants.SUSPENDED_CHANNELS).size(), 0);
+        Assert.assertEquals(result.get(WebConstants.IGNORED_CHANNELS).size(), 0);
+        
+
+        ConfigurationService configurationService = (ConfigurationService) find(Constants.CONFIG_SERVICE);
+
+        List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
+
+        NodeChannel nc = ncs.get(1);
+
+        nc.setSuspended(true);
+        configurationService.saveNodeChannelControl(nc, false);
+
+        result = configurationService.getSuspendIgnoreChannelLists(nodeId);        
+
+        Assert.assertEquals(2, result.size());
+        // Assert.assertTrue(channelId.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+        Assert.assertTrue(result.get(WebConstants.SUSPENDED_CHANNELS).contains(nc.getId()));
+
+        nc = ncs.get(0);
+        nc.setSuspended(true);
+
+        configurationService.saveNodeChannelControl(nc, false);
+
+        // String channelIds = ncs.get(0).getId() + "," + ncs.get(1).getId();
+        result = configurationService.getSuspendIgnoreChannelLists(nodeId);
+
+        Assert.assertEquals(2, result.size());
+        Assert.assertTrue(result.get(WebConstants.SUSPENDED_CHANNELS).contains(ncs.get(0).getId()));
+        Assert.assertTrue(result.get(WebConstants.SUSPENDED_CHANNELS).contains(ncs.get(1).getId()));
+        // Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+
+        nc.setIgnored(true);
+        configurationService.saveNodeChannelControl(nc, false);
+        result = configurationService.getSuspendIgnoreChannelLists(nodeId);
+
+        Assert.assertEquals(2, result.size());
+        Assert.assertTrue(result.get(WebConstants.SUSPENDED_CHANNELS).contains(ncs.get(0).getId()));
+        Assert.assertTrue(result.get(WebConstants.SUSPENDED_CHANNELS).contains(ncs.get(1).getId()));
+        // Assert.assertTrue(channelIds.equals(result.get(WebConstants.SUSPENDED_CHANNELS)));
+        Assert.assertTrue(result.get(WebConstants.IGNORED_CHANNELS).contains(nc.getId()));
+        // Assert.assertTrue(nc.getId().equals(result.get(WebConstants.IGNORED_CHANNELS)));
+
+    }
+
 
     @After
     public void reset() {

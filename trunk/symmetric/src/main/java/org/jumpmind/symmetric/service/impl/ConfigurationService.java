@@ -125,7 +125,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getNodeChannels(final String nodeId) {
 
-        if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
+        if ( System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
                 || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
             synchronized (this) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
@@ -137,7 +137,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     }
                     nodeChannelCache.put(nodeId, jdbcTemplate.query(getSql("selectChannelsSql"),
                             new Object[] { nodeId }, new RowMapper() {
-                                public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                                public Object mapRow(java.sql.ResultSet rs, int arg1) throws SQLException {
                                     NodeChannel nodeChannel = new NodeChannel();
                                     nodeChannel.setId(rs.getString(1));
                                     // note that 2 is intentionally missing
