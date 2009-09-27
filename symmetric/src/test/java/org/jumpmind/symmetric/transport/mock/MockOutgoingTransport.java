@@ -23,8 +23,14 @@ package org.jumpmind.symmetric.transport.mock;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class MockOutgoingTransport implements IOutgoingTransport {
 
@@ -54,6 +60,19 @@ public class MockOutgoingTransport implements IOutgoingTransport {
             throw new RuntimeException(e);
         }
         return writer.getBuffer().toString();
+    }
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService)
+            throws IOException {
+        Map<String, Set<String>> suspendIgnoreChannelsList = new HashMap<String, Set<String>>();
+
+        Set<String> suspendChannels = new TreeSet<String>();
+        suspendIgnoreChannelsList.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
+
+        Set<String> ignoreChannels = new TreeSet<String>();
+
+        suspendIgnoreChannelsList.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
+        return suspendIgnoreChannelsList;
     }
 
 }

@@ -28,7 +28,7 @@ public class OutgoingBatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Status {
-        NE, SE, ER, OK;
+        NE, SE, ER, OK, IG;
     }
 
     private long batchId;

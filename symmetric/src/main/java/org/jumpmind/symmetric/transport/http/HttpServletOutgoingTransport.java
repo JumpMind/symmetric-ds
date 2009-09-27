@@ -23,9 +23,12 @@ package org.jumpmind.symmetric.transport.http;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class HttpServletOutgoingTransport implements IOutgoingTransport {
@@ -48,6 +51,10 @@ public class HttpServletOutgoingTransport implements IOutgoingTransport {
 
     public boolean isOpen() {
         return response != null;
+    }
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+        throw new UnsupportedOperationException();
     }
 
 }

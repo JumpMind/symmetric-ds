@@ -66,6 +66,16 @@ public interface IConfigurationService {
 
     public void autoConfigDatabase(boolean force);
 
+    /**
+     * Returns two sets of channel names, one for suspended channels and one for
+     * ignored.
+     * 
+     * @param nodeId
+     * @return A Map with two entries, the sets of which will always be defined
+     *         but may be empty.
+     */
     public Map<String, Set<String>> getSuspendIgnoreChannelLists(String nodeId);
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists();
 
 }

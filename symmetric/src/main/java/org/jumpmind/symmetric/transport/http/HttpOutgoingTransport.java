@@ -27,6 +27,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,10 +40,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
@@ -52,7 +60,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private int httpTimeout;
 
     private boolean useCompression;
-    
+
     private IParameterService parameterService;
 
     public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, IParameterService parameterService) {
@@ -95,17 +103,18 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
      */
-    private void requestReservation() throws IOException {
+    private HttpURLConnection requestReservation() throws IOException {
         connection = (HttpURLConnection) url.openConnection();
         connection.setUseCaches(false);
         connection.setConnectTimeout(httpTimeout);
         connection.setReadTimeout(httpTimeout);
         connection.setRequestMethod("HEAD");
         analyzeResponseCode(connection.getResponseCode());
+        return connection;
     }
 
     public BufferedWriter open() throws IOException {
-        requestReservation();
+
         connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
         connection.setDoOutput(true);
@@ -122,7 +131,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             out = new GZIPOutputStream(out) {
                 {
                     this.def.setLevel(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL));
-                    this.def.setStrategy(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
+                    this.def.setStrategy(parameterService
+                            .getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
                 }
             };
         }
@@ -152,6 +162,42 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public boolean isOpen() {
         return connection != null;
+    }
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService)
+            throws IOException {
+
+        HttpURLConnection connection = requestReservation();
+
+        // Connection contains remote suspend/ignore channels list if
+        // reservation was successful.
+
+        Map<String, Set<String>> suspendIgnoreChannelsList = new HashMap<String, Set<String>>();
+
+        Set<String> suspendChannels = new TreeSet<String>();
+        suspendIgnoreChannelsList.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
+
+        Set<String> ignoreChannels = new TreeSet<String>();
+        suspendIgnoreChannelsList.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
+
+        String suspends = connection.getHeaderField(WebConstants.SUSPENDED_CHANNELS);
+        String ignores = connection.getHeaderField(WebConstants.IGNORED_CHANNELS);
+
+        if (suspends != null) {
+            suspendChannels.addAll(Arrays.asList(suspends.split(",")));
+        }
+
+        if (ignores != null) {
+            ignoreChannels.addAll(Arrays.asList(ignores.split(",")));
+        }
+
+        // Have remote, so add in locals now.
+
+        Map<String, Set<String>> localChannels = configurationService.getSuspendIgnoreChannelLists();
+        suspendChannels.addAll(localChannels.get(WebConstants.SUSPENDED_CHANNELS));
+        ignoreChannels.addAll(localChannels.get(WebConstants.IGNORED_CHANNELS));
+
+        return suspendIgnoreChannelsList;
     }
 
 }

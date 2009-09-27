@@ -255,6 +255,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return channels;
     }
 
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists() {
+        return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());
+
+    }
+
     public void setDefaultChannels(List<Channel> defaultChannels) {
         this.defaultChannels = defaultChannels;
     }
