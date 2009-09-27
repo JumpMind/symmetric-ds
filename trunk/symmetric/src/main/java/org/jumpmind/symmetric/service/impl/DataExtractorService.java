@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -68,6 +69,7 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.CsvUtils;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -86,7 +88,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IConfigurationService configurationService;
 
     private IAcknowledgeService acknowledgeService;
-    
+
     private ITriggerRouterService triggerRouterService;
 
     private INodeService nodeService;
@@ -143,8 +145,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(parameterService.getNodeGroupId(), node
-                .getNodeGroupId());
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(parameterService
+                .getNodeGroupId(), node.getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
                 TriggerRouter triggerRouter = triggerRouters.get(i);
@@ -156,13 +158,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getMetaDataFor(triggerRouter.getTrigger(), false), triggerRouter.getTrigger());
+            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getMetaDataFor(triggerRouter.getTrigger(),
+                    false), triggerRouter.getTrigger());
             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, triggerRouter, triggerHistory, writer, null, ctx);
             } else {
-                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger().getSourceTableName(),
-                        null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null, null);
+                Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger()
+                        .getSourceTableName(), null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
+                        null);
                 ctx.getDataExtractor().write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
             }
         }
@@ -216,8 +220,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void writeInitialLoad(Node node, TriggerRouter trigger, BufferedWriter writer, final OutgoingBatch batch,
             final DataExtractorContext ctx) {
-        writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger().getTriggerId()), writer,
-                batch, ctx);
+        writeInitialLoad(node, trigger, triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTrigger()
+                .getTriggerId()), writer, batch, ctx);
     }
 
     /**
@@ -242,8 +246,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
                     Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
-                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId()) : new NodeChannel(Constants.CHANNEL_RELOAD);
-                    Set<Node> oneNodeSet = new HashSet<Node>();                    
+                    NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId())
+                            : new NodeChannel(Constants.CHANNEL_RELOAD);
+                    Set<Node> oneNodeSet = new HashSet<Node>();
                     oneNodeSet.add(node);
                     PreparedStatement st = null;
                     ResultSet rs = null;
@@ -291,19 +296,36 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routingService.routeData();
         }
 
-        // possibly here we should do "are there any outgoing batches to send even?"
-        // to avoid an un-needed reservation & to consolidate the logic
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
         if (batches != null && batches.size() > 0) {
-         
-            // reserve here....
-            
-            // 
-            
-            // based on results, filter all  AND my local getNodeChannel()!
-            // if locals aren't ready to send, filter 'em out
-            
-           // batches.get(0).setStatus(status)
+
+            Map<String, Set<String>> suspendIgnoreChannels = targetTransport
+                    .getSuspendIgnoreChannelLists(this.configurationService);
+
+            Set<String> suspendedChannels = suspendIgnoreChannels.get(WebConstants.SUSPENDED_CHANNELS);
+            Set<String> ignoredChannels = suspendIgnoreChannels.get(WebConstants.IGNORED_CHANNELS);
+
+            // We now have either our local suspend/ignore list, or the combined
+            // remote send/ignore list and our local list (along with a
+            // reservation, if we go this far...)
+
+            // Now, we need to skip the suspended channels and ignore the
+            // ignored ones by setting the status to ignored and updating them.
+
+            List<OutgoingBatch> ignoredBatches = new ArrayList<OutgoingBatch>();
+
+            // Search for suspended or ignores, removing both but keeping track
+            // of ignores for further updates.
+            for (OutgoingBatch batch : batches) {
+                if (ignoredChannels.contains(batch.getChannelId())) {
+                    ignoredBatches.add(batch);
+                    batches.remove(batch);
+                }
+                if (suspendedChannels.contains(batch.getChannelId())) {
+                    batches.remove(batch);
+                }
+            }
+
             FileOutgoingTransport fileTransport = null;
 
             try {
@@ -315,18 +337,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
                         fileTransport != null ? fileTransport : targetTransport);
 
-                //verify skipping....
-
                 databaseExtract(node, batches, handler);
-                
+
                 networkTransfer(fileTransport, targetTransport);
-                
-                // sent channels need timestamps updated...
-                
-         //       batch.setStatus(OutgoingBatch.Status.SE);  for IGNORED
-           //     outgoingBatchService.updateOutgoingBatch(batch);
-                
-                //outgoingbatchservice - update status 
+
+                // Finally, update the ignored outgoing batches such that they
+                // will be skipped in the future.
+                for (OutgoingBatch batch : ignoredBatches) {
+                    batch.setStatus(OutgoingBatch.Status.IG);
+                    outgoingBatchService.updateOutgoingBatch(batch);
+                }
             } finally {
                 if (fileTransport != null) {
                     fileTransport.close();
@@ -563,7 +583,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public void setDataService(IDataService dataService) {
         this.dataService = dataService;
     }
-    
+
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
     }

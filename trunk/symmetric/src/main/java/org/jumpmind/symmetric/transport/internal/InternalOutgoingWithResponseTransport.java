@@ -25,8 +25,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
@@ -62,4 +65,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
         return writer;
     }
 
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+        return configurationService.getSuspendIgnoreChannelLists();
+    }
 }

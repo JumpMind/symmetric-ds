@@ -25,9 +25,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class InternalOutgoingTransport implements IOutgoingTransport {
@@ -55,6 +58,10 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
 
     public BufferedWriter open() throws IOException {
         return writer;
+    }
+
+    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService) {
+       return configurationService.getSuspendIgnoreChannelLists();       
     }
 
 }
