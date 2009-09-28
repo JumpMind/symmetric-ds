@@ -28,6 +28,7 @@ import java.io.OutputStream;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.ITransportResourceHandler;
 import org.jumpmind.symmetric.transport.internal.InternalOutgoingTransport;
@@ -49,8 +50,12 @@ public abstract class AbstractTransportResourceHandler implements ITransportReso
 
     final protected ILog log = LogFactory.getLog(getClass());
 
+    protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, ChannelMap map) throws IOException {
+        return new InternalOutgoingTransport(outputStream, map);
+    }
+
     protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream) throws IOException {
-        return new InternalOutgoingTransport(outputStream);
+        return new InternalOutgoingTransport(outputStream, new ChannelMap());
     }
 
 }

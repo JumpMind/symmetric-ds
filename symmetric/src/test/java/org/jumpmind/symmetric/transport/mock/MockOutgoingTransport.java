@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
@@ -62,17 +63,8 @@ public class MockOutgoingTransport implements IOutgoingTransport {
         return writer.getBuffer().toString();
     }
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService)
-            throws IOException {
-        Map<String, Set<String>> suspendIgnoreChannelsList = new HashMap<String, Set<String>>();
-
-        Set<String> suspendChannels = new TreeSet<String>();
-        suspendIgnoreChannelsList.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
-
-        Set<String> ignoreChannels = new TreeSet<String>();
-
-        suspendIgnoreChannelsList.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
-        return suspendIgnoreChannelsList;
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) throws IOException {
+        return new ChannelMap();
     }
 
 }

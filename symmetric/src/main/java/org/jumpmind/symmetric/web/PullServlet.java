@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.transport.handler.PullResourceHandler;
 
 public class PullServlet extends AbstractTransportResourceServlet<PullResourceHandler> {
@@ -49,6 +50,8 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
+        // request has the "other" nodes info
+
         String nodeId = getParameter(req, WebConstants.NODE_ID);
 
         log.debug("ServletPulling", nodeId);
@@ -57,8 +60,15 @@ public class PullServlet extends AbstractTransportResourceServlet<PullResourceHa
             sendError(resp, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
             return;
         }
+
+        ChannelMap map = new ChannelMap();
+        map.addSuspendChannels(req.getHeader(WebConstants.SUSPENDED_CHANNELS));
+        map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
+
         OutputStream outputStream = createOutputStream(resp);
-        getTransportResourceHandler().pull(nodeId, outputStream);
+        // pull out headers and pass to pull() method
+
+        getTransportResourceHandler().pull(nodeId, outputStream, map);
 
         log.debug("ServletPulled", nodeId);
 

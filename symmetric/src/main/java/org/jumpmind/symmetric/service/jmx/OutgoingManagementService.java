@@ -69,7 +69,7 @@ public class OutgoingManagementService {
     @ManagedOperationParameters( { @ManagedOperationParameter(name = "batchId", description = "The batch ID to display") })
     public String showBatch(String batchId) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        IOutgoingTransport transport = new InternalOutgoingTransport(out);
+        IOutgoingTransport transport = new InternalOutgoingTransport(out,null);
         dataExtractorService.extractBatchRange(transport, batchId, batchId);
         transport.close();
         out.close();

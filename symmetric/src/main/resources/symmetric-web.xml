@@ -6,6 +6,7 @@
     <bean id="pullResourceHandler"
         class="org.jumpmind.symmetric.transport.handler.PullResourceHandler">
         <property name="nodeService" ref="nodeService" />
+        <property name="configurationService" ref="configurationService" />
         <property name="registrationService" ref="registrationService" />
         <property name="dataExtractorService" ref="dataExtractorService" />
         <property name="dataService" ref="dataService" />

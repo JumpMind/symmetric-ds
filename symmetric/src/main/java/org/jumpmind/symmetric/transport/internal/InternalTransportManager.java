@@ -35,10 +35,12 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
@@ -60,15 +62,20 @@ public class InternalTransportManager extends AbstractTransportManager implement
     static final ILog log = LogFactory.getLog(InternalTransportManager.class);
 
     private INodeService nodeService;
+    private IConfigurationService configurationService;
 
-    public InternalTransportManager(INodeService nodeService, IParameterService config) {
+    public InternalTransportManager(INodeService nodeService, IParameterService config,
+            IConfigurationService configurationService) {
         super(config);
         this.nodeService = nodeService;
+        this.configurationService = configurationService;
     }
 
     public IIncomingTransport getPullTransport(final Node remote, final Node local) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
+
+        final ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote.getNodeId());
 
         runAtClient(remote.getSyncURL(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
@@ -81,7 +88,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 }
                 IDataExtractorService extractor = (IDataExtractorService) factory
                         .getBean(Constants.DATAEXTRACTOR_SERVICE);
-                IOutgoingTransport transport = new InternalOutgoingTransport(respOs);
+                IOutgoingTransport transport = new InternalOutgoingTransport(respOs, suspendIgnoreChannels);
                 extractor.extract(local, transport);
                 transport.close();
             }

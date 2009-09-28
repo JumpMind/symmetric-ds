@@ -31,6 +31,7 @@ import java.util.TreeSet;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -125,7 +126,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getNodeChannels(final String nodeId) {
 
-        if ( System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
+        if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
                 || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
             synchronized (this) {
                 if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
@@ -231,31 +232,22 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists(final String nodeId) {
-
-        Map<String, Set<String>> channels = new HashMap<String, Set<String>>();
-
-        Set<String> suspendChannels = new TreeSet<String>();
-        channels.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
-
-        Set<String> ignoreChannels = new TreeSet<String>();
-        channels.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
-
+    public ChannelMap getSuspendIgnoreChannelLists(final String nodeId) {
+        ChannelMap map = new ChannelMap();
         List<NodeChannel> ncs = getNodeChannels(nodeId);
 
         for (NodeChannel nc : ncs) {
             if (nc.isSuspended()) {
-                suspendChannels.add(nc.getId());
+                map.addSuspendChannels(nc.getId());
             }
             if (nc.isIgnored()) {
-                ignoreChannels.add(nc.getId());
+                map.addIgnoreChannels(nc.getId());
             }
         }
-
-        return channels;
+        return map;
     }
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists() {
+    public ChannelMap getSuspendIgnoreChannelLists() {
         return getSuspendIgnoreChannelLists(nodeService.findIdentityNodeId());
 
     }
