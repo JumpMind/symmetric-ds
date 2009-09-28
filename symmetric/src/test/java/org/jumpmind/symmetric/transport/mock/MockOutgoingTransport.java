@@ -23,15 +23,10 @@ package org.jumpmind.symmetric.transport.mock;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.web.WebConstants;
 
 public class MockOutgoingTransport implements IOutgoingTransport {
 

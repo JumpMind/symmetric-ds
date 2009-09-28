@@ -347,7 +347,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // TODO: make sure event did not fire
     }
 
-    @Test//(timeout = 30000)
+    @Test(timeout = 30000)
     public void ignoreNodeChannel() {
         logTestRunning();
         INodeService rootNodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");

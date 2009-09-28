@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
-import org.jumpmind.symmetric.web.WebConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
