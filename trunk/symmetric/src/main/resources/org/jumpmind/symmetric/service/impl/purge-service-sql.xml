@@ -35,10 +35,10 @@
     </entry>
     <entry key="deleteDataSql">
       <value>
-        delete from $[sym.sync.table.prefix]_data where 
-          data_id between :MIN and :MAX and data_id not in 
-            (select data_id from $[sym.sync.table.prefix]_data_event where data_id between :MIN and :MAX and batch_id in 
-            (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where status != 'OK' and create_time &lt; :TIME))
+        delete from $[sym.sync.table.prefix]_data d where 
+          d.data_id between :MIN and :MAX and d.data_id not in 
+            (select e.data_id from $[sym.sync.table.prefix]_data_event e where e.data_id between :MIN and :MAX and e.batch_id in 
+            (select o.batch_id from $[sym.sync.table.prefix]_outgoing_batch o where o.status != 'OK' and o.create_time &lt; :TIME))
       </value>
     </entry>
     <entry key="selectIncomingBatchRangeSql">
