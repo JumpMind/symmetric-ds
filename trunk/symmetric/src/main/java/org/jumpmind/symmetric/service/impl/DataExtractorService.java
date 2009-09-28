@@ -32,7 +32,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
@@ -70,7 +69,6 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.CsvUtils;
-import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
