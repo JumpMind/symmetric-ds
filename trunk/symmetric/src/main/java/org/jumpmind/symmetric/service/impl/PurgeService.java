@@ -142,7 +142,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("MIN", minId);
             params.put("MAX", maxId);
-            params.put("TIME", retentionTime);
+            params.put("CUTOFF_TIME", retentionTime);
 
             totalCount += getSimpleTemplate().update(deleteSql, params);
 
