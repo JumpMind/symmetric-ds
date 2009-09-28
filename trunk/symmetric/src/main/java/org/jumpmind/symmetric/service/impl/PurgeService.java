@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -37,6 +38,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 public class PurgeService extends AbstractService implements IPurgeService {
 
@@ -133,18 +135,24 @@ public class PurgeService extends AbstractService implements IPurgeService {
         String tableName = deleteSql.trim().split("\\s")[2];
         log.info("DataPurgeTableStarting", tableName);
 
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("CUTOFF_TIME", retentionTime);
+
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource(params);
+        parameterSource.registerSqlType("CUTOFF_TIME", Types.TIMESTAMP);
+        parameterSource.registerSqlType("MIN", Types.INTEGER);
+        parameterSource.registerSqlType("MAX", Types.INTEGER);
+        
         while (minId <= purgeUpToId) {
             long maxId = minId + maxNumtoPurgeinTx;
             if (maxId > purgeUpToId) {
                 maxId = purgeUpToId;
             }
             
-            Map<String, Object> params = new HashMap<String, Object>();
             params.put("MIN", minId);
             params.put("MAX", maxId);
-            params.put("CUTOFF_TIME", retentionTime);
-
-            totalCount += getSimpleTemplate().update(deleteSql, params);
+            
+            totalCount += getSimpleTemplate().update(deleteSql, parameterSource);
 
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
                 log.info("DataPurgeTableRunning", totalCount, tableName);
