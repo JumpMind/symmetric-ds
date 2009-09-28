@@ -34,6 +34,7 @@ import java.util.ListIterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.alteration.AddColumnChange;
+import org.apache.ddlutils.alteration.ColumnChange;
 import org.apache.ddlutils.alteration.RemoveColumnChange;
 import org.apache.ddlutils.alteration.TableChange;
 import org.apache.ddlutils.model.Column;
@@ -100,31 +101,48 @@ public class H2Builder extends SqlBuilder {
 
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 addColumnChanges.add(change);
                 changeIt.remove();
             }
         }
+        
         for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
-
             processChange(currentModel, desiredModel, addColumnChange);
             changeIt.remove();
         }
 
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
-
             if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
-
                 processChange(currentModel, desiredModel, removeColumnChange);
                 changeIt.remove();
-            }
+            } 
         }
+
+        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = (TableChange) changeIt.next();
+            if (change instanceof ColumnChange) {                
+                processAlterColumn(currentModel, (ColumnChange)change);
+                changeIt.remove();
+            }            
+        }
+
     }
 
+    
+    protected void processAlterColumn(Database currentModel, ColumnChange columnChange) throws IOException {
+        columnChange.apply(currentModel,  getPlatform().isDelimitedIdentifierModeOn());
+        print("ALTER TABLE ");
+        printlnIdentifier(getTableName(columnChange.getChangedTable()));
+        printIndent();
+        print("ALTER COLUMN ");
+        writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
+        printEndOfStatement();       
+    }
+    
     /**
      * Processes the addition of a column to a table.
      * 
