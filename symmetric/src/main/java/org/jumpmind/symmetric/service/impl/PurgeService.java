@@ -25,9 +25,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.hsqldb.Types;
@@ -135,13 +133,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
         String tableName = deleteSql.trim().split("\\s")[2];
         log.info("DataPurgeTableStarting", tableName);
 
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("CUTOFF_TIME", retentionTime);
-
-        MapSqlParameterSource parameterSource = new MapSqlParameterSource(params);
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.registerSqlType("CUTOFF_TIME", Types.TIMESTAMP);
         parameterSource.registerSqlType("MIN", Types.INTEGER);
         parameterSource.registerSqlType("MAX", Types.INTEGER);
+        parameterSource.addValue("CUTOFF_TIME", retentionTime);
         
         while (minId <= purgeUpToId) {
             long maxId = minId + maxNumtoPurgeinTx;
@@ -149,8 +145,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 maxId = purgeUpToId;
             }
             
-            params.put("MIN", minId);
-            params.put("MAX", maxId);
+            parameterSource.addValue("MIN", minId);
+            parameterSource.addValue("MAX", maxId);
             
             totalCount += getSimpleTemplate().update(deleteSql, parameterSource);
 
