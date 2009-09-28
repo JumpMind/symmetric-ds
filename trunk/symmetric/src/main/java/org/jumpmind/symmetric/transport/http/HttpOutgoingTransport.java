@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
@@ -163,38 +164,26 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         return connection != null;
     }
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService)
-            throws IOException {
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) throws IOException {
 
         HttpURLConnection connection = requestReservation();
 
         // Connection contains remote suspend/ignore channels list if
         // reservation was successful.
 
-        Map<String, Set<String>> suspendIgnoreChannelsList = new HashMap<String, Set<String>>();
-
-        Set<String> suspendChannels = new TreeSet<String>();
-        suspendIgnoreChannelsList.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
-
-        Set<String> ignoreChannels = new TreeSet<String>();
-        suspendIgnoreChannelsList.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
+        ChannelMap suspendIgnoreChannelsList = new ChannelMap();
 
         String suspends = connection.getHeaderField(WebConstants.SUSPENDED_CHANNELS);
         String ignores = connection.getHeaderField(WebConstants.IGNORED_CHANNELS);
 
-        if (suspends != null) {
-            suspendChannels.addAll(Arrays.asList(suspends.split(",")));
-        }
-
-        if (ignores != null) {
-            ignoreChannels.addAll(Arrays.asList(ignores.split(",")));
-        }
+        suspendIgnoreChannelsList.addSuspendChannels(suspends);
+        suspendIgnoreChannelsList.addIgnoreChannels(ignores);
 
         // Have remote, so add in locals now.
 
-        Map<String, Set<String>> localChannels = configurationService.getSuspendIgnoreChannelLists();
-        suspendChannels.addAll(localChannels.get(WebConstants.SUSPENDED_CHANNELS));
-        ignoreChannels.addAll(localChannels.get(WebConstants.IGNORED_CHANNELS));
+        ChannelMap localChannels = configurationService.getSuspendIgnoreChannelLists();
+        suspendIgnoreChannelsList.addSuspendChannels(localChannels.getSuspendChannels());
+        suspendIgnoreChannelsList.addIgnoreChannels(localChannels.getIgnoreChannels());
 
         return suspendIgnoreChannelsList;
     }

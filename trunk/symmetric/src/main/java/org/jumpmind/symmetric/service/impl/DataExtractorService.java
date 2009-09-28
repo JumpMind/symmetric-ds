@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IDataExtractor;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataMetaData;
@@ -299,11 +300,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
         if (batches != null && batches.size() > 0) {
 
-            Map<String, Set<String>> suspendIgnoreChannels = targetTransport
-                    .getSuspendIgnoreChannelLists(this.configurationService);
+            ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(this.configurationService);
 
-            Set<String> suspendedChannels = suspendIgnoreChannels.get(WebConstants.SUSPENDED_CHANNELS);
-            Set<String> ignoredChannels = suspendIgnoreChannels.get(WebConstants.IGNORED_CHANNELS);
+            Set<String> suspendedChannels = suspendIgnoreChannels.getSuspendChannels();
+            Set<String> ignoredChannels = suspendIgnoreChannels.getIgnoreChannels();
 
             // We now have either our local suspend/ignore list, or the combined
             // remote send/ignore list and our local list (along with a
@@ -312,6 +312,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             // Now, we need to skip the suspended channels and ignore the
             // ignored ones by setting the status to ignored and updating them.
 
+            List<OutgoingBatch> suspendBatches = new ArrayList<OutgoingBatch>();
             List<OutgoingBatch> ignoredBatches = new ArrayList<OutgoingBatch>();
 
             // Search for suspended or ignores, removing both but keeping track
@@ -319,12 +320,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             for (OutgoingBatch batch : batches) {
                 if (ignoredChannels.contains(batch.getChannelId())) {
                     ignoredBatches.add(batch);
-                    batches.remove(batch);
-                }
-                if (suspendedChannels.contains(batch.getChannelId())) {
-                    batches.remove(batch);
+                } else if (suspendedChannels.contains(batch.getChannelId())) {
+                    suspendBatches.add(batch);
                 }
             }
+            batches.removeAll(ignoredBatches);
 
             FileOutgoingTransport fileTransport = null;
 

@@ -38,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -107,16 +108,9 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
         HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local)));
-        Map<String, Set<String>> suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote
-                .getNodeId());
-        if (suspendIgnoreChannels.get(WebConstants.SUSPENDED_CHANNELS).size() > 0) {
-            conn.addRequestProperty(WebConstants.SUSPENDED_CHANNELS, StringUtils.join(suspendIgnoreChannels
-                    .get(WebConstants.SUSPENDED_CHANNELS), ','));
-        }
-        if (suspendIgnoreChannels.get(WebConstants.IGNORED_CHANNELS).size() > 0) {
-            conn.addRequestProperty(WebConstants.IGNORED_CHANNELS, StringUtils.join(suspendIgnoreChannels
-                    .get(WebConstants.IGNORED_CHANNELS), ','));
-        }
+        ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote.getNodeId());
+        conn.addRequestProperty(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
+        conn.addRequestProperty(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
         return new HttpIncomingTransport(conn);
     }
 

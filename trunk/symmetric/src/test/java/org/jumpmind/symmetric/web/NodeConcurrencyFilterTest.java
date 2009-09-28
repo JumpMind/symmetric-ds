@@ -222,8 +222,8 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         String suspended = (String) (resp.getHeader(WebConstants.SUSPENDED_CHANNELS));
         String ignored = (String) (resp.getHeader(WebConstants.IGNORED_CHANNELS));
 
-        Assert.assertNull(suspended);
-        Assert.assertNull(ignored);
+        Assert.assertEquals("",suspended);
+        Assert.assertEquals("",ignored);
 
         // Next, set some with "suspend" and some with "ignore"
 

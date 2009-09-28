@@ -26,7 +26,9 @@ package org.jumpmind.symmetric.transport.handler;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -37,15 +39,21 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     private INodeService nodeService;
 
+    private IConfigurationService configurationService;
+
     private IDataService dataService;
 
     private IDataExtractorService dataExtractorService;
 
     private IRegistrationService registrationService;
 
-    public void pull(String nodeId, OutputStream outputStream) throws IOException {
+    public void pull(String nodeId, OutputStream outputStream, ChannelMap map) throws IOException {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+        ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists();
+        map.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
+        map.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
+
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
                 registrationService.registerNode(nodeService.findNode(nodeId), outputStream, false);
@@ -53,7 +61,7 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
                 if (nodeSecurity.isInitialLoadEnabled()) {
                     dataService.insertReloadEvent(nodeService.findNode(nodeId));
                 }
-                IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream);
+                IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, map);
                 dataExtractorService.extract(nodeService.findNode(nodeId), outgoingTransport);
                 outgoingTransport.close();
             }
@@ -68,6 +76,14 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    public IConfigurationService getConfigurationService() {
+        return configurationService;
+    }
+
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
     public void setRegistrationService(IRegistrationService registrationService) {

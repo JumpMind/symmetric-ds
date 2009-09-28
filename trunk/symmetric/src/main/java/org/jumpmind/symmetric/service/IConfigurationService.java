@@ -22,10 +22,9 @@
 package org.jumpmind.symmetric.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.DataEventAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -74,8 +73,8 @@ public interface IConfigurationService {
      * @return A Map with two entries, the sets of which will always be defined
      *         but may be empty.
      */
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists(String nodeId);
+    public ChannelMap getSuspendIgnoreChannelLists(String nodeId);
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists();
+    public ChannelMap getSuspendIgnoreChannelLists();
 
 }

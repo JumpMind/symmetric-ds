@@ -22,16 +22,12 @@ package org.jumpmind.symmetric.transport.file;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.io.ThresholdFileWriter;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
-import org.jumpmind.symmetric.web.WebConstants;
 
 /**
  * An outgoing transport that writes to the file system
@@ -70,16 +66,7 @@ public class FileOutgoingTransport implements IOutgoingTransport {
         }
     }
 
-    public Map<String, Set<String>> getSuspendIgnoreChannelLists(IConfigurationService configurationService)
-            throws IOException {
-        Map<String, Set<String>> suspendIgnoreChannelsList = new HashMap<String, Set<String>>();
-
-        Set<String> suspendChannels = new TreeSet<String>();
-        suspendIgnoreChannelsList.put(WebConstants.SUSPENDED_CHANNELS, suspendChannels);
-
-        Set<String> ignoreChannels = new TreeSet<String>();
-
-        suspendIgnoreChannelsList.put(WebConstants.IGNORED_CHANNELS, ignoreChannels);
-        return suspendIgnoreChannelsList;
+    public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService) throws IOException {
+        return new ChannelMap();
     }
 }

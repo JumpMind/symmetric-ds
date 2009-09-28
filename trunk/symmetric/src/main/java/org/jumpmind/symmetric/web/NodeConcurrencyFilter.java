@@ -22,9 +22,6 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -35,6 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
@@ -90,16 +89,9 @@ public class NodeConcurrencyFilter extends AbstractFilter {
 
     protected void buildSuspendIgnoreResponseHeaders(final String nodeId, final ServletResponse resp) {
         HttpServletResponse httpResponse = (HttpServletResponse) resp;
-
-        Map<String, Set<String>> suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(nodeId);
-        if (suspendIgnoreChannels.get(WebConstants.SUSPENDED_CHANNELS).size() > 0) {
-            httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, StringUtils.join(suspendIgnoreChannels
-                    .get(WebConstants.SUSPENDED_CHANNELS), ','));
-        }
-        if (suspendIgnoreChannels.get(WebConstants.IGNORED_CHANNELS).size() > 0) {
-            httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, StringUtils.join(suspendIgnoreChannels
-                    .get(WebConstants.IGNORED_CHANNELS), ','));
-        }
+        ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(nodeId);
+        httpResponse.setHeader(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
+        httpResponse.setHeader(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
     }
 
     @Override
