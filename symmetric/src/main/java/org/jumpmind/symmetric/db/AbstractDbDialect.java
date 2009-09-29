@@ -55,6 +55,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Column;
@@ -101,6 +102,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public static final String[] TIME_PATTERNS = { "HH:mm:ss.S", "HH:mm:ss", "yyyy-MM-dd HH:mm:ss.S",
             "yyyy-MM-dd HH:mm:ss" };
+    
+    public static final FastDateFormat JDBC_TIMESTAMP_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd hh:mm:ss.SSS");
 
     protected final ILog log = LogFactory.getLog(getClass());
 
@@ -157,6 +160,13 @@ abstract public class AbstractDbDialect implements IDbDialect {
         _defaultSizes.put(new Integer(8), "15,0");
         _defaultSizes.put(new Integer(3), "15,15");
         _defaultSizes.put(new Integer(2), "15,15");
+    }
+    
+    public String toFormattedTimestamp(java.util.Date time) {
+        StringBuilder ts = new StringBuilder("{ts '");
+        ts.append(JDBC_TIMESTAMP_FORMATTER.format(time));
+        ts.append("'}");
+        return ts.toString();
     }
 
     public IColumnFilter getDatabaseColumnFilter() {
