@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -94,7 +95,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
                         + "/batch/" + batch.getBatchId()));
             }
 
-            for (OutgoingBatch batch : findOutgoingBatchErrors()) {
+            for (OutgoingBatch batch : findOutgoingBatchErrors().getBatches()) {
                 String title = "Outgoing Batch " + batch.getNodeBatchId();
                 StringBuilder value = new StringBuilder("Node ");
                 value.append(batch.getNodeId());
@@ -157,7 +158,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         return getIncomingBatchService().findIncomingBatchErrors(MAX_ERRORS);
     }
 
-    private List<OutgoingBatch> findOutgoingBatchErrors() {
+    private OutgoingBatches findOutgoingBatchErrors() {
 
         return getOutgoingBatchService().getOutgoingBatchErrors(MAX_ERRORS);
     }

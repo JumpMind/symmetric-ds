@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
@@ -295,8 +296,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routingService.routeData();
         }
 
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
-        if (batches != null && batches.size() > 0) {
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
+        if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
             ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(this.configurationService);
 
@@ -315,14 +316,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             // Search for suspended or ignores, removing both but keeping track
             // of ignores for further updates.
-            for (OutgoingBatch batch : batches) {
+            for (OutgoingBatch batch : batches.getBatches()) {
                 if (ignoredChannels.contains(batch.getChannelId())) {
                     ignoredBatches.add(batch);
                 } else if (suspendedChannels.contains(batch.getChannelId())) {
                     suspendBatches.add(batch);
                 }
             }
-            batches.removeAll(ignoredBatches);
+            batches.getBatches().removeAll(ignoredBatches);
 
             FileOutgoingTransport fileTransport = null;
 
@@ -335,7 +336,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ExtractStreamHandler handler = new ExtractStreamHandler(dataExtractor,
                         fileTransport != null ? fileTransport : targetTransport);
 
-                databaseExtract(node, batches, handler);
+                databaseExtract(node, batches.getBatches(), handler);
 
                 networkTransfer(fileTransport, targetTransport);
 
@@ -441,12 +442,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     public boolean extractBatchRange(final IExtractListener handler, String startBatchId, String endBatchId)
             throws IOException {
         if (areNumeric(startBatchId, endBatchId)) {
-            List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
+            OutgoingBatches batches = outgoingBatchService.getOutgoingBatchRange(startBatchId, endBatchId);
 
-            if (batches != null && batches.size() > 0) {
+            if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
                 try {
                     handler.init();
-                    for (final OutgoingBatch batch : batches) {
+                    for (final OutgoingBatch batch : batches.getBatches()) {
                         handler.startBatch(batch);
                         selectEventDataToExtract(handler, batch);
                         handler.endBatch(batch);

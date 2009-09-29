@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -44,15 +45,15 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
 
     }
 
-    public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
+    public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         return null;
     }
 
-    public List<OutgoingBatch> getOutgoingBatchErrors(int maxRows) {
+    public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         return null;
     }
 
-    public List<OutgoingBatch> getOutgoingBatches(String nodeId) {
+    public OutgoingBatches getOutgoingBatches(String nodeId) {
         return null;
     }
 

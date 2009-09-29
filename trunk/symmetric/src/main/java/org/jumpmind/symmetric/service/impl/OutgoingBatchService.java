@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -61,14 +62,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Transactional
     public void markAllAsSentForNode(String nodeId) {
-        List<OutgoingBatch> batches = null;
+        OutgoingBatches batches = null;
         do {
             batches = getOutgoingBatches(nodeId);
-            for (OutgoingBatch outgoingBatch : batches) {
+            for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 updateOutgoingBatch(outgoingBatch);
             }
-        } while (batches.size() > 0);
+        } while (batches.getBatches().size() > 0);
     }
 
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
@@ -130,7 +131,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * order.
      */
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatches(String targetNodeId) {
+    public OutgoingBatches getOutgoingBatches(String targetNodeId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
                 new Object[] { targetNodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
                         OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
@@ -156,7 +157,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         });
 
-        return filterOutgoingBatchesForChannels(targetNodeId, list, channels);
+        OutgoingBatches batches = new OutgoingBatches();
+        batches.setBatches(filterOutgoingBatchesForChannels(targetNodeId, list, channels));
+        return batches;
     }
 
     /**
@@ -208,15 +211,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatchRange(String startBatchId, String endBatchId) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] {
-                startBatchId, endBatchId }, new OutgoingBatchMapper());
+    public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
+        OutgoingBatches batches = new OutgoingBatches();
+        batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] { startBatchId,
+                endBatchId }, new OutgoingBatchMapper()));
+        return batches;
     }
 
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatchErrors(int maxRows) {
-        return (List<OutgoingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
-                getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper());
+    public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
+        OutgoingBatches batches = new OutgoingBatches();
+        batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(getSql("selectOutgoingBatchErrorsSql"),
+                maxRows), new OutgoingBatchMapper()));
+        return batches;
     }
 
     @SuppressWarnings("unchecked")
