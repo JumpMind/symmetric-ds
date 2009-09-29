@@ -214,7 +214,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @SuppressWarnings("unchecked")
-    public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
+    public List<OutgoingBatch> getOutgoingBatchErrors(int maxRows) {
         return (List<OutgoingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
                 getSql("selectOutgoingBatchErrorsSql"), maxRows), new OutgoingBatchMapper());
     }

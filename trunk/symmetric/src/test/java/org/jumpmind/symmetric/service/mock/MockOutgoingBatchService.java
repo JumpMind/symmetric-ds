@@ -48,7 +48,7 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
         return null;
     }
 
-    public List<OutgoingBatch> getOutgoingBatcheErrors(int maxRows) {
+    public List<OutgoingBatch> getOutgoingBatchErrors(int maxRows) {
         return null;
     }
 
