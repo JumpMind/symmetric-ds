@@ -20,6 +20,7 @@
 
 package org.jumpmind.symmetric.db;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.apache.ddlutils.Platform;
@@ -244,4 +245,6 @@ public interface IDbDialect {
     public String getInitialLoadTableAlias();
 
     public String preProcessTriggerSqlClause(String sqlClause);
+    
+    public String toFormattedTimestamp(Date time);
 }
