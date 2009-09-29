@@ -19,27 +19,59 @@ public class H2PlatformUnitTest {
 
     private static final String H2 = "H2";
 
+
     @Test
-    public void testColumnSizeChange() throws Exception {
+    public void testColumnSizeChangeToVarchar() throws Exception {
         Platform pf = getPlatform();
         Database db = new Database();
         Table table = new Table();
-        table.setName("TEST_TABLE");
+        table.setName("TEST_TABLE_VARCHAR");
         Column column1 = new Column();
         column1.setName("COLUMN_1");
         column1.setType("VARCHAR");
         column1.setSize("20");
         table.addColumn(column1);
         db.addTable(table);
-        pf.createTables(db, true, true);
+        pf.createTables(db, false, false);
         
         SimpleJdbcTemplate jdbcTemplate = new SimpleJdbcTemplate(pf.getDataSource());
-        Assert.assertEquals(0, jdbcTemplate.queryForInt("select count(*) from TEST_TABLE"));
-        Assert.assertEquals(20, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE' and COLUMN_NAME='COLUMN_1'"));
+        Assert.assertEquals(0, jdbcTemplate.queryForInt("select count(*) from TEST_TABLE_VARCHAR"));
+        Assert.assertEquals(20, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE_VARCHAR' and COLUMN_NAME='COLUMN_1'"));
+        
+        Database readDb = pf.readModelFromDatabase(null);
+        Table[] tables = readDb.getTables();
+        for (Table t : tables) {
+            if (t.getName().equals("TEST_TABLE_VARCHAR")) {
+                Assert.assertEquals(20, t.getColumn(0).getSizeAsInt());
+            }
+        }
         
         column1.setSize("50");
-        pf.alterTables(db, true);
-        Assert.assertEquals(50, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE' and COLUMN_NAME='COLUMN_1'"));
+        pf.alterTables(null, null, null, db, false);
+        Assert.assertEquals(50, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE_VARCHAR' and COLUMN_NAME='COLUMN_1'"));
+    }
+    
+    @Test
+    public void testColumnSizeChangeToNumeric() throws Exception {
+        Platform pf = getPlatform();
+        Database db = new Database();
+        Table table = new Table();
+        table.setName("TEST_TABLE_NUMERIC");
+        Column column1 = new Column();
+        column1.setName("COLUMN_1");
+        column1.setType("NUMERIC");
+        column1.setSize("15");        
+        table.addColumn(column1);
+        db.addTable(table);
+        pf.createTables(db, false, false);
+        
+        SimpleJdbcTemplate jdbcTemplate = new SimpleJdbcTemplate(pf.getDataSource());
+        Assert.assertEquals(0, jdbcTemplate.queryForInt("select count(*) from TEST_TABLE_NUMERIC"));
+        Assert.assertEquals(15, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE_NUMERIC' and COLUMN_NAME='COLUMN_1'"));
+        
+        column1.setSize("200");
+        pf.alterTables(null, null, null, db, false);
+        Assert.assertEquals(200, jdbcTemplate.queryForInt("select NUMERIC_PRECISION from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='TEST_TABLE_NUMERIC' and COLUMN_NAME='COLUMN_1'"));
     }
     
     protected Platform getPlatform() throws Exception {
