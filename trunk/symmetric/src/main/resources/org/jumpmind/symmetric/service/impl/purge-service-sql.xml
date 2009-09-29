@@ -37,8 +37,8 @@
       <value>
         delete from $[sym.sync.table.prefix]_data where 
           data_id between :MIN and :MAX and data_id not in 
-            (select e.data_id from $[sym.sync.table.prefix]_data_event e where e.data_id between :MIN and :MAX and e.batch_id in 
-            (select o.batch_id from $[sym.sync.table.prefix]_outgoing_batch o where o.status != 'OK' and o.create_time &lt; :CUTOFF_TIME))
+            (select e.data_id from $[sym.sync.table.prefix]_data_event e inner join $[sym.sync.table.prefix]_outgoing_batch o on e.batch_id=o.batch_id 
+          where e.data_id between :MIN and :MAX and o.status != 'OK' and o.create_time &lt; :CUTOFF_TIME)
       </value>
     </entry>
     <entry key="selectIncomingBatchRangeSql">
