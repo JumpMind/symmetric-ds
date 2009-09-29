@@ -22,12 +22,14 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -133,7 +135,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("DataPurgeTableStarting", tableName);
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-        parameterSource.addValue("CUTOFF_TIME", dbDialect.toFormattedTimestamp(retentionTime));
+        parameterSource.registerSqlType("CUTOFF_TIME", Types.TIMESTAMP);
+        parameterSource.registerSqlType("MIN", Types.INTEGER);
+        parameterSource.registerSqlType("MAX", Types.INTEGER);
+        parameterSource.addValue("CUTOFF_TIME", new Timestamp(retentionTime.getTime()));
         
         while (minId <= purgeUpToId) {
             long maxId = minId + maxNumtoPurgeinTx;
