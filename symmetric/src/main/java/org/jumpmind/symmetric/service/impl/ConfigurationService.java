@@ -149,6 +149,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     nodeChannel.setMaxBatchToSend(rs.getInt(8));
                                     nodeChannel.setBatchAlgorithm(rs.getString(9));
                                     nodeChannel.setLastExtractedTime(rs.getTimestamp(10));
+                                    nodeChannel.setExtractPeriodMillis(rs.getLong(11));
+
                                     return nodeChannel;
                                 };
                             }));

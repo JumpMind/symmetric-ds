@@ -21,6 +21,8 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.List;
+
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,8 +31,8 @@ public interface IOutgoingBatchService {
 
     public void markAllAsSentForNode(String nodeId);
 
-    public OutgoingBatch findOutgoingBatch(long batchId); 
-    
+    public OutgoingBatch findOutgoingBatch(long batchId);
+
     public OutgoingBatches getOutgoingBatches(String nodeId);
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
@@ -42,6 +44,8 @@ public interface IOutgoingBatchService {
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId);
 
     public void updateOutgoingBatch(OutgoingBatch batch);
+
+    public void updateOutgoingBatches(List<OutgoingBatch> batches);
 
     public void updateOutgoingBatch(JdbcTemplate jdbcTemplate, OutgoingBatch batch);
 

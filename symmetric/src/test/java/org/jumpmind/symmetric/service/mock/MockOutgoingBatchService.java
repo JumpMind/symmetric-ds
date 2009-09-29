@@ -88,4 +88,8 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
     public void updateOutgoingBatch(OutgoingBatch batch) {
 
     }
+    
+    public void updateOutgoingBatches(List<OutgoingBatch> batch) {
+
+    }
 }
