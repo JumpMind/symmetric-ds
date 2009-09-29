@@ -35,6 +35,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.alteration.AddColumnChange;
 import org.apache.ddlutils.alteration.ColumnChange;
+import org.apache.ddlutils.alteration.ColumnDataTypeChange;
+import org.apache.ddlutils.alteration.ColumnRequiredChange;
+import org.apache.ddlutils.alteration.ColumnSizeChange;
 import org.apache.ddlutils.alteration.RemoveColumnChange;
 import org.apache.ddlutils.alteration.TableChange;
 import org.apache.ddlutils.model.Column;
@@ -47,8 +50,10 @@ import org.apache.ddlutils.platform.CreationParameters;
 import org.apache.ddlutils.platform.SqlBuilder;
 
 /**
- * The SQL Builder for the H2 database.
- * From patch <a href="https://issues.apache.org/jira/browse/DDLUTILS-185">https://issues.apache.org/jira/browse/DDLUTILS-185</a>
+ * The SQL Builder for the H2 database. From patch <a
+ * href="https://issues.apache.org/jira/browse/DDLUTILS-185"
+ * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
+ * 
  * @author knaas@users.sourceforge.net
  * @version $Revision: 518485 $
  */
@@ -77,8 +82,8 @@ public class H2Builder extends SqlBuilder {
         print("DROP INDEX IF EXISTS ");
         printIdentifier(getIndexName(index));
         printEndOfStatement();
-    }   
-    
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
@@ -106,7 +111,7 @@ public class H2Builder extends SqlBuilder {
                 changeIt.remove();
             }
         }
-        
+
         for (ListIterator changeIt = addColumnChanges.listIterator(addColumnChanges.size()); changeIt.hasPrevious();) {
             AddColumnChange addColumnChange = (AddColumnChange) changeIt.previous();
             processChange(currentModel, desiredModel, addColumnChange);
@@ -119,30 +124,59 @@ public class H2Builder extends SqlBuilder {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
                 processChange(currentModel, desiredModel, removeColumnChange);
                 changeIt.remove();
-            } 
+            }
         }
 
         for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = (TableChange) changeIt.next();
-            if (change instanceof ColumnChange) {                
-                processAlterColumn(currentModel, (ColumnChange)change);
+            if (change instanceof ColumnChange) {
+                boolean needsAlter = true;
+                if (change instanceof ColumnDataTypeChange) {
+                    ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
+                    if (dataTypeChange.getChangedColumn().getTypeCode() == Types.DECIMAL
+                            && dataTypeChange.getNewTypeCode() == Types.NUMERIC) {
+                        needsAlter = false;
+                    }
+                    if (dataTypeChange.getChangedColumn().getTypeCode() == Types.SMALLINT
+                            && dataTypeChange.getNewTypeCode() == Types.TINYINT) {
+                        needsAlter = false;
+                    }
+                    if (dataTypeChange.getChangedColumn().getTypeCode() == Types.VARCHAR
+                            && dataTypeChange.getNewTypeCode() == Types.LONGVARCHAR) {
+                        needsAlter = false;
+                    }
+                }
+                if (change instanceof ColumnRequiredChange) {
+                    needsAlter = false;
+                }
+                if (change instanceof ColumnSizeChange) {
+                    ColumnSizeChange sizeChange = (ColumnSizeChange) change;
+                    if (sizeChange.getNewScale() == 0 && sizeChange.getNewSize() == 0) {
+                        needsAlter = false;
+                    } else if (sizeChange.getNewSize() == sizeChange.getChangedColumn().getSizeAsInt()
+                            && sizeChange.getNewScale() == sizeChange.getChangedColumn().getScale()) {
+                        needsAlter = false;
+                    }
+                }
+                if (needsAlter) {
+                    processAlterColumn(currentModel, (ColumnChange) change);
+                }
                 changeIt.remove();
-            }            
+            }
         }
 
     }
 
-    
     protected void processAlterColumn(Database currentModel, ColumnChange columnChange) throws IOException {
-        columnChange.apply(currentModel,  getPlatform().isDelimitedIdentifierModeOn());
+        columnChange.apply(currentModel, getPlatform().isDelimitedIdentifierModeOn());
         print("ALTER TABLE ");
         printlnIdentifier(getTableName(columnChange.getChangedTable()));
         printIndent();
         print("ALTER COLUMN ");
         writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
-        printEndOfStatement();       
+        printEndOfStatement();
     }
-    
+
     /**
      * Processes the addition of a column to a table.
      * 

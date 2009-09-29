@@ -19,7 +19,10 @@ package org.jumpmind.symmetric.db.h2;
  * under the License.
  */
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ddlutils.Platform;
@@ -30,6 +33,9 @@ import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.model.TypeMap;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.JdbcModelReader;
+import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * Reads a database model from a H2 database. From patch <a
@@ -37,6 +43,9 @@ import org.apache.ddlutils.platform.JdbcModelReader;
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
 public class H2ModelReader extends JdbcModelReader {
+    
+    final ILog logger = LogFactory.getLog(getClass());
+    
     /**
      * Creates a new model reader for H2 databases.
      * 
@@ -48,15 +57,56 @@ public class H2ModelReader extends JdbcModelReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
-
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Map readColumns(ResultSet resultSet, List columnDescriptors) throws SQLException {
+        //if (logger.isDebugEnabled()) 
+        {
+        int count = resultSet.getMetaData().getColumnCount();
+        for (int i = 1 ; i <= count; i++) {
+            logger.info(resultSet.getMetaData().getColumnName(i) + "=" + resultSet.getString(i));
+        }        
+        }
+        return super.readColumns(resultSet, columnDescriptors);
+    }
+    
     @Override
     @SuppressWarnings("unchecked")
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
         Column column = super.readColumn(metaData, values);
+        if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
+            column.setSize(values.get("CHARACTER_MAXIMUM_LENGTH").toString());
+        }
+        if (values.get("COLUMN_DEFAULT") != null) {
+            column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
+        }   
+        if (values.get("NUMERIC_SCALE") != null) {
+            column.setScale((Integer)values.get("NUMERIC_SCALE"));
+        }         
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
         return column;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List initColumnsForColumn() {
+        List result = new ArrayList();
+        result.add(new MetaDataColumnDescriptor("COLUMN_DEF", 12));
+        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));        
+        result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
+        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", 12));
+        result.add(new MetaDataColumnDescriptor("DATA_TYPE", 4, new Integer(1111)));
+        result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", 4, new Integer(10)));
+        result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", 4, new Integer(0)));
+        result.add(new MetaDataColumnDescriptor("NUMERIC_SCALE", 4, new Integer(0)));
+        result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", 12));
+        result.add(new MetaDataColumnDescriptor("CHARACTER_MAXIMUM_LENGTH", 12));
+        result.add(new MetaDataColumnDescriptor("IS_NULLABLE", 12, "YES"));
+        result.add(new MetaDataColumnDescriptor("REMARKS", 12));
+        return result;
     }
 
     @Override
