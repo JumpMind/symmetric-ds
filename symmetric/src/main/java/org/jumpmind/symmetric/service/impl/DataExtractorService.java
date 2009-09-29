@@ -310,7 +310,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             // ignored ones by ultimately setting the status to ignored and
             // updating them.
 
-            List<OutgoingBatch> suspendBatches = batches.filterBatchesForChannels(suspendIgnoreChannels
+            batches.filterBatchesForChannels(suspendIgnoreChannels
                     .getSuspendChannels());
 
             List<OutgoingBatch> ignoredBatches = batches.filterBatchesForChannels(suspendIgnoreChannels
@@ -335,8 +335,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 // will be skipped in the future.
                 for (OutgoingBatch batch : ignoredBatches) {
                     batch.setStatus(OutgoingBatch.Status.IG);
-
                 }
+                
                 outgoingBatchService.updateOutgoingBatches(ignoredBatches);
 
                 // Next, we update the node channel controls to the current
