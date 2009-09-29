@@ -127,4 +127,12 @@ public class NodeChannel {
         return nodeChannelControl;
     }
 
+    public long getExtractPeriodMillis() {
+        return channel.getExtractPeriodMillis();
+    }
+
+    public void setExtractPeriodMillis(long extractPeriodMillis) {
+        channel.setExtractPeriodMillis(extractPeriodMillis);
+    }
+
 }

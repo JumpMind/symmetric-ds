@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -34,8 +35,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.derby.iapi.services.io.ArrayUtil;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -74,6 +77,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public void updateOutgoingBatch(OutgoingBatch outgoingBatch) {
         updateOutgoingBatch(jdbcTemplate, outgoingBatch);
+    }
+
+    public void updateOutgoingBatches(List<OutgoingBatch> outgoingBatches) {
+        for (OutgoingBatch batch : outgoingBatches) {
+            updateOutgoingBatch(jdbcTemplate, batch);
+        }
     }
 
     public void updateOutgoingBatch(JdbcTemplate template, OutgoingBatch outgoingBatch) {
@@ -143,6 +152,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
 
         List<NodeChannel> channels = configurationService.getNodeChannels();
+
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
                 boolean isError1 = errorChannels.contains(b1.getId());
@@ -157,57 +167,29 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         });
 
-        OutgoingBatches batches = new OutgoingBatches();
-        batches.setBatches(filterOutgoingBatchesForChannels(targetNodeId, list, channels));
+        OutgoingBatches batches = new OutgoingBatches(list);
+
+        for (NodeChannel nodeChannel : channels) {
+            long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
+            Date lastExtractedTime = nodeChannel.getLastExtractedTime();
+
+            if ((extractPeriodMillis < 1)
+                    || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
+                batches.addActiveChannel(nodeChannel);
+            }
+        }
+
+        batches.filterBatchesForInactiveChannels();
+
+        List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
+
+        for (NodeChannel channel : channels) {
+            keepers.addAll(batches
+                    .getBatchesForChannelWindows(nodeService.findNode(targetNodeId), channel, configurationService
+                            .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId())));
+        }
+        batches.setBatches(keepers);
         return batches;
-    }
-
-    /**
-     * Filter out the maximum number of batches to send.
-     */
-    protected List<OutgoingBatch> filterOutgoingBatchesForChannels(String targetNodeId, List<OutgoingBatch> batches,
-            List<NodeChannel> channels) {
-        if (batches != null && batches.size() > 0) {
-            Node node = nodeService.findNode(targetNodeId);
-            List<OutgoingBatch> filtered = new ArrayList<OutgoingBatch>(batches.size());
-            for (NodeChannel channel : channels) {
-                List<NodeGroupChannelWindow> windows = configurationService.getNodeGroupChannelWindows(parameterService
-                        .getNodeGroupId(), channel.getId());
-
-                if (channel.isEnabled() && inTimeWindow(windows, node.getTimezoneOffset())) {
-                    int max = channel.getMaxBatchToSend();
-                    int count = 0;
-                    for (OutgoingBatch outgoingBatch : batches) {
-                        if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
-                            filtered.add(outgoingBatch);
-                            count++;
-                        }
-                    }
-                }
-            }
-            return filtered;
-        } else {
-            return batches;
-        }
-    }
-
-    /**
-     * If {@link NodeGroupChannelWindow}s are defined for this channel, then
-     * check to see if the time (according to the offset passed in) is within on
-     * of the configured windows.
-     */
-    public boolean inTimeWindow(List<NodeGroupChannelWindow> windows, String timezoneOffset) {
-        if (windows != null && windows.size() > 0) {
-            for (NodeGroupChannelWindow window : windows) {
-                if (window.inTimeWindow(timezoneOffset)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return true;
-        }
-
     }
 
     @SuppressWarnings("unchecked")

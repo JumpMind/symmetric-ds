@@ -29,7 +29,7 @@
     <entry key="selectChannelsSql">
       <value>
         select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,
-        c.max_batch_size, c.enabled, c.max_batch_to_send, c.batch_algorithm, nc.last_extract_time
+        c.max_batch_size, c.enabled, c.max_batch_to_send, c.batch_algorithm, nc.last_extract_time, c.extract_period_millis
         from $[sym.sync.table.prefix]_channel c left outer join
         $[sym.sync.table.prefix]_node_channel_ctl nc on c.channel_id = nc.channel_id and nc.node_id = ?
         order by c.processing_order asc, c.channel_id

@@ -42,6 +42,8 @@ public class Channel {
 
     private String batchAlgorithm = "default";
 
+    private long extractPeriodMillis = 0;
+
     public Channel() {
     }
 
@@ -50,11 +52,13 @@ public class Channel {
         this.processingOrder = processingOrder;
     }
 
-    public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled) {
+    public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
+            long extractPeriodMillis) {
         this(id, processingOrder);
         this.maxBatchSize = maxBatchSize;
         this.maxBatchToSend = maxBatchToSend;
         this.enabled = enabled;
+        this.extractPeriodMillis = extractPeriodMillis;
     }
 
     public String getId() {
@@ -121,4 +125,13 @@ public class Channel {
     public String getBatchAlgorithm() {
         return batchAlgorithm;
     }
+
+    public long getExtractPeriodMillis() {
+        return extractPeriodMillis;
+    }
+
+    public void setExtractPeriodMillis(long extractPeriodMillis) {
+        this.extractPeriodMillis = extractPeriodMillis;
+    }
+
 }

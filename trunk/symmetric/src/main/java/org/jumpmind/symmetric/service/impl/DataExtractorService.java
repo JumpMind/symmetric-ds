@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -299,31 +300,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
         if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
-            ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(this.configurationService);
-
-            Set<String> suspendedChannels = suspendIgnoreChannels.getSuspendChannels();
-            Set<String> ignoredChannels = suspendIgnoreChannels.getIgnoreChannels();
+            ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(configurationService);
 
             // We now have either our local suspend/ignore list, or the combined
             // remote send/ignore list and our local list (along with a
             // reservation, if we go this far...)
 
             // Now, we need to skip the suspended channels and ignore the
-            // ignored ones by setting the status to ignored and updating them.
+            // ignored ones by ultimately setting the status to ignored and
+            // updating them.
 
-            List<OutgoingBatch> suspendBatches = new ArrayList<OutgoingBatch>();
-            List<OutgoingBatch> ignoredBatches = new ArrayList<OutgoingBatch>();
+            List<OutgoingBatch> suspendBatches = batches.filterBatchesForChannels(suspendIgnoreChannels
+                    .getSuspendChannels());
 
-            // Search for suspended or ignores, removing both but keeping track
-            // of ignores for further updates.
-            for (OutgoingBatch batch : batches.getBatches()) {
-                if (ignoredChannels.contains(batch.getChannelId())) {
-                    ignoredBatches.add(batch);
-                } else if (suspendedChannels.contains(batch.getChannelId())) {
-                    suspendBatches.add(batch);
-                }
-            }
-            batches.getBatches().removeAll(ignoredBatches);
+            List<OutgoingBatch> ignoredBatches = batches.filterBatchesForChannels(suspendIgnoreChannels
+                    .getIgnoreChannels());
 
             FileOutgoingTransport fileTransport = null;
 
@@ -344,8 +335,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 // will be skipped in the future.
                 for (OutgoingBatch batch : ignoredBatches) {
                     batch.setStatus(OutgoingBatch.Status.IG);
-                    outgoingBatchService.updateOutgoingBatch(batch);
+
                 }
+                outgoingBatchService.updateOutgoingBatches(ignoredBatches);
+
+                // Next, we update the node channel controls to the current
+                // timestamp
+                Calendar now = Calendar.getInstance();
+
+                for (NodeChannel nodeChannel : batches.getActiveChannels()) {
+                    nodeChannel.setLastExtractedTime(now.getTime());
+                    configurationService.saveNodeChannelControl(nodeChannel, false);
+                }
+
             } finally {
                 if (fileTransport != null) {
                     fileTransport.close();
