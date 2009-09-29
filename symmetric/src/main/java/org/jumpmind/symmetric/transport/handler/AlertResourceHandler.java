@@ -159,7 +159,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
 
     private List<OutgoingBatch> findOutgoingBatchErrors() {
 
-        return getOutgoingBatchService().getOutgoingBatcheErrors(MAX_ERRORS);
+        return getOutgoingBatchService().getOutgoingBatchErrors(MAX_ERRORS);
     }
 
     private IIncomingBatchService getIncomingBatchService() {
