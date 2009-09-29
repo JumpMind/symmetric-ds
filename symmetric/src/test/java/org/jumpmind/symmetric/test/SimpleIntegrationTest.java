@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
-import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -299,8 +299,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
 
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
 
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "11" }).size(), 0,
                 "The order record was sync'd when it should not have been.");
@@ -329,8 +329,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update("update ONE_COLUMN_TABLE set MY_ONE_COLUMN=1 where MY_ONE_COLUMN=1");
         getClientEngine().pull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
-        List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(batches.size(), 0, "There should be no outgoing batches, yet I found some.");
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
         turnOnNoKeysInUpdateParameter(oldValue);
     }
 
@@ -351,17 +351,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void ignoreNodeChannel() {
         logTestRunning();
         INodeService rootNodeService = (INodeService) getRootEngine().getApplicationContext().getBean("nodeService");
-        IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getApplicationContext().getBean(
-                "configurationService");
+        IConfigurationService rootConfigService = (IConfigurationService) getRootEngine().getApplicationContext()
+                .getBean("configurationService");
         rootNodeService.ignoreNodeChannelForExternalId(true, TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_NODE_GROUP, TestConstants.TEST_ROOT_EXTERNAL_ID);
         rootConfigService.reloadChannels();
-        
-        NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_ROOT_EXTERNAL_ID);
+
+        NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_ROOT_EXTERNAL_ID);
         Assert.assertNotNull(channel);
         Assert.assertTrue(channel.isIgnored());
         Assert.assertFalse(channel.isSuspended());
-        
+
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
                 "New Yorl", "NY", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });
         getClientEngine().pull();
@@ -394,14 +395,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // do an extra push & pull to make sure we have events cleared out
         getClientEngine().pull();
         getClientEngine().push();
-        
+
         Thread.sleep(2000);
 
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getRootEngine());
         int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-        // set purge in the future just in case the database time is different than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
-        
+        // set purge in the future just in case the database time is different
+        // than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+
         int beforePurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
         getRootEngine().purge();
         int afterPurge = rootJdbcTemplate.queryForInt("select count(*) from sym_data");
@@ -413,14 +415,15 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 + " row before anf " + afterPurge + " rows after. The max create_time in sym_data was " + maxCreateTime
                 + " and the min create_time in sym_data was " + minCreateTime
                 + " and the current time of the server is " + new Date(), (beforePurge - afterPurge) > 0);
-        
+
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues);
 
         parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
         purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
-        // set purge in the future just in case the database time is different than the current time
-        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60*24);
-        
+        // set purge in the future just in case the database time is different
+        // than the current time
+        parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, -60 * 24);
+
         beforePurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");
         getClientEngine().purge();
         afterPurge = clientJdbcTemplate.queryForInt("select count(*) from sym_data");

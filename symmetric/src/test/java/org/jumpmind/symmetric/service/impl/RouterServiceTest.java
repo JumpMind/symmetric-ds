@@ -1,13 +1,13 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.util.Iterator;
-import java.util.List;
 
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
@@ -57,20 +57,21 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 16 : 17;
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel, otherChannel);
-        Assert.assertEquals(EXPECTED_BATCHES, batches.size());
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 2, countBatchesForChannel(batches, testChannel));
+        Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 2,
+                countBatchesForChannel(batches, testChannel));
         Assert.assertEquals(15, countBatchesForChannel(batches, otherChannel));
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         filterForChannels(batches, testChannel, otherChannel);
         // Node 2 has sync disabled
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel, otherChannel);
-        Assert.assertEquals(EXPECTED_BATCHES, batches.size());
+        Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
 
         resetBatches();
 
@@ -85,9 +86,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel, otherChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 3 : 17, batches.size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 3 : 17, batches.getBatches().size());
         Assert.assertEquals(2, countBatchesForChannel(batches, testChannel));
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 15, countBatchesForChannel(batches, otherChannel));
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 15, countBatchesForChannel(batches,
+                otherChannel));
     }
 
     @Test
@@ -111,20 +113,20 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         final int EXPECTED_BATCHES = getDbDialect().supportsTransactionId() ? 51 : 100;
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(EXPECTED_BATCHES, batches.size());
+        Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 1
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         resetBatches();
     }
@@ -151,20 +153,20 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         final int EXPECTED_BATCHES = 100;
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(EXPECTED_BATCHES, batches.size());
+        Assert.assertEquals(EXPECTED_BATCHES, batches.getBatches().size());
         Assert.assertEquals(EXPECTED_BATCHES, countBatchesForChannel(batches, testChannel));
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 1
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         resetBatches();
     }
@@ -191,14 +193,14 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         getRoutingService().routeData();
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
         Assert.assertEquals("Should have been 0.  We did the insert as if the data had come from node 1.", 0, batches
-                .size());
+                .getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(1, batches.size());
+        Assert.assertEquals(1, batches.getBatches().size());
 
         resetBatches();
 
@@ -277,24 +279,26 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         logger.info("Just routed " + count + " rows in " + TEST_TABLE_1 + " in " + (System.currentTimeMillis() - ts)
                 + "ms");
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.size());
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.get(0).getDataEventCount());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.getBatches().size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.getBatches().get(0)
+                .getDataEventCount());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         filterForChannels(batches, testChannel);
         // Node 2 has sync disabled
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.size());
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.get(0).getDataEventCount());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.getBatches().size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.getBatches().get(0)
+                .getDataEventCount());
 
         resetBatches();
     }
-    
+
     @Test
     public void testBshRoutingDeletesToNode3() {
         resetBatches();
@@ -321,21 +325,21 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         int count = (Integer) getTransactionTemplate().execute(callback);
         getRoutingService().routeData();
 
-        List<OutgoingBatch> batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
+        OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(count/MAX_BATCH_SIZE + (count%MAX_BATCH_SIZE > 0 ? 1 : 0), batches.size());
+        Assert.assertEquals(count / MAX_BATCH_SIZE + (count % MAX_BATCH_SIZE > 0 ? 1 : 0), batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2);
         // Node 2 has sync disabled
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
         // Batch was targeted only at node 3
-        Assert.assertEquals(0, batches.size());
+        Assert.assertEquals(0, batches.getBatches().size());
 
         resetBatches();
-    }    
+    }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
         TriggerRouter trigger = getTriggerRouterService().findTriggerRouter(tableName,
@@ -354,8 +358,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         return trigger;
     }
 
-    protected void filterForChannels(List<OutgoingBatch> batches, NodeChannel... channels) {
-        for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
+    protected void filterForChannels(OutgoingBatches batches, NodeChannel... channels) {
+        for (Iterator<OutgoingBatch> iterator = batches.getBatches().iterator(); iterator.hasNext();) {
             OutgoingBatch outgoingBatch = iterator.next();
             boolean foundChannel = false;
             for (NodeChannel nodeChannel : channels) {
@@ -376,9 +380,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getOutgoingBatchService().markAllAsSentForNode(NODE_GROUP_NODE_3);
     }
 
-    protected int countBatchesForChannel(List<OutgoingBatch> batches, NodeChannel channel) {
+    protected int countBatchesForChannel(OutgoingBatches batches, NodeChannel channel) {
         int count = 0;
-        for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
+        for (Iterator<OutgoingBatch> iterator = batches.getBatches().iterator(); iterator.hasNext();) {
             OutgoingBatch outgoingBatch = iterator.next();
             count += outgoingBatch.getChannelId().equals(channel.getId()) ? 1 : 0;
         }

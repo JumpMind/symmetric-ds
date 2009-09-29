@@ -25,14 +25,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -74,8 +73,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         nodeChannel.setEnabled(false);
         getConfigurationService().saveChannel(nodeChannel.getChannel(), true);
 
-        cleanSlate("sym_data_event", "sym_data",
-                "sym_outgoing_batch");
+        cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch");
         int size = 50; // magic number
         int count = 3; // must be <= size
         assertTrue(count <= size);
@@ -85,9 +83,10 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
-        List<OutgoingBatch> list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         assertNotNull(list);
-        assertEquals(list.size(), 0);
+        assertNotNull(list.getBatches());
+        assertEquals(list.getBatches().size(), 0);
 
         nodeChannel.setEnabled(true);
         getConfigurationService().saveChannel(nodeChannel, true);
