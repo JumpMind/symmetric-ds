@@ -36,6 +36,8 @@ import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
@@ -156,6 +158,28 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             }));
                 }
             }
+        } else {
+
+            // need to read last extracted time from database regardless of
+            // whether we used the cache or not.
+            // locate the nodes in the cache, and update it.
+
+            List<NodeChannel> nodeChannels = nodeChannelCache.get(nodeId);
+            final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
+
+            for (NodeChannel nc : nodeChannels) {
+                nodeChannelsMap.put(nc.getId(), nc);
+            }
+
+            jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"), new Object[] { nodeId },
+                    new ResultSetExtractor() {
+                        public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+                            if (rs.next()) {
+                                nodeChannelsMap.get(rs.getString(1)).setLastExtractedTime(rs.getTimestamp(2));
+                            }
+                            return null;
+                        };
+                    });
         }
         return nodeChannelCache.get(nodeId);
     }
