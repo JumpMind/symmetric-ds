@@ -35,7 +35,13 @@
         order by c.processing_order asc, c.channel_id
       </value>
     </entry>
-   
+    <entry key="selectNodeChannelControlLastExtractTimeSql">
+      <value>
+        select channel_id, last_extract_time
+        from $[sym.sync.table.prefix]_node_channel_ctl where node_id = ?
+        order by channel_id
+      </value>
+    </entry>
     <entry key="insertChannelSql">
       <value>
         insert into $[sym.sync.table.prefix]_channel (channel_id, processing_order, max_batch_size,
