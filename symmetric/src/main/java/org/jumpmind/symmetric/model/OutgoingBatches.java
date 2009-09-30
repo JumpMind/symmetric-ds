@@ -47,10 +47,6 @@ public class OutgoingBatches {
         activeChannelIds.add(nodeChannel.getId());
     }
 
-    public Set<String> getActiveChannelId() {
-        return activeChannelIds;
-    }
-
     public void setActiveChannels(Set<NodeChannel> activeChannels) {
         this.activeChannels = activeChannels;
         activeChannelIds = new HashSet<String>();
