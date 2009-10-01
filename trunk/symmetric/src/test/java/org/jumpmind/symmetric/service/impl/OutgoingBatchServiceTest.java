@@ -25,7 +25,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
+
+import junit.framework.Assert;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
@@ -90,6 +94,48 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
         nodeChannel.setEnabled(true);
         getConfigurationService().saveChannel(nodeChannel, true);
+    }
+
+    // Tests to make sure the cache, even when cached, goes ahead and pulls the
+    // last_extracted_time from the database.
+
+    @Test
+    public void testChannelCachingLastExtracted() {
+        NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        Calendar currentTime = Calendar.getInstance();
+        Calendar hourAgo = (Calendar) currentTime.clone();
+        hourAgo.add(Calendar.HOUR_OF_DAY, -1);
+        Calendar halfHourAgo = (Calendar) currentTime.clone();
+        halfHourAgo.add(Calendar.MINUTE, -30);
+        nodeChannel.setLastExtractedTime(hourAgo.getTime());
+
+        getConfigurationService().saveNodeChannel(nodeChannel, true);
+        nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        Assert.assertEquals(hourAgo.getTime(), nodeChannel.getLastExtractedTime());
+
+        int updateCount = updateNodeChannelLastExtractTimeManually(halfHourAgo.getTime(), nodeChannel.getNodeId(),
+                TestConstants.TEST_CHANNEL_ID);
+
+        Assert.assertEquals(1, updateCount);
+
+        nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        Assert.assertEquals(halfHourAgo.getTime(), nodeChannel.getLastExtractedTime());
+
+    }
+
+    private int updateNodeChannelLastExtractTimeManually(final Date newTime, final String nodeId, final String channelId) {
+        return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
+            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                PreparedStatement s = conn
+                        .prepareStatement("update sym_node_channel_ctl set last_extract_time=? where node_id= ? and channel_id= ?");
+                s.setTimestamp(1, new java.sql.Timestamp(newTime.getTime()));
+                s.setString(2, nodeId);
+                s.setString(3, channelId);
+                int result = s.executeUpdate();
+
+                return result;
+            }
+        });
     }
 
     protected void createDataEvent(String tableName, int triggerHistoryId, String channelId, DataEventType type,
