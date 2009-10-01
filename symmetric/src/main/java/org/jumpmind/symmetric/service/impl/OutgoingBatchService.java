@@ -35,13 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.derby.iapi.services.io.ArrayUtil;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
-import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
