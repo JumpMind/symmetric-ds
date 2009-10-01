@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
@@ -29,6 +30,8 @@ import javax.management.ObjectName;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -92,8 +95,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
     public SymmetricWebServer() {
     }
 
-    public SymmetricWebServer(String[] propertiesUrls) {
-        this.propertiesFiles = propertiesUrls;
+    public SymmetricWebServer(String[] propertiesUrls) {       
+        this.setPropertiesFiles(propertiesUrls);
     }
 
     public SymmetricWebServer(String propertiesUrl) {
@@ -310,7 +313,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public void setPropertiesFiles(String[] propertiesFiles) {
-        this.propertiesFiles = propertiesFiles;
+        this.propertiesFiles = (String[])ArrayUtils.clone(propertiesFiles);
     }
 
     /**
