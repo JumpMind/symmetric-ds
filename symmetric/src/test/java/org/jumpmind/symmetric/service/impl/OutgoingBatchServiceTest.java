@@ -120,7 +120,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(1, updateCount);
         
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS Z");
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel.getLastExtractedTime()));
         
         getConfigurationService().reloadChannels();
