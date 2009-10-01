@@ -20,7 +20,6 @@
 package org.jumpmind.symmetric;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
@@ -31,7 +30,6 @@ import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;

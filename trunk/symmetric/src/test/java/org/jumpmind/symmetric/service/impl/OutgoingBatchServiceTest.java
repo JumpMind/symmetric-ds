@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
@@ -119,7 +120,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(1, updateCount);
 
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
-        Assert.assertEquals(halfHourAgo.getTime(), nodeChannel.getLastExtractedTime());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel.getLastExtractedTime()));
 
     }
 
