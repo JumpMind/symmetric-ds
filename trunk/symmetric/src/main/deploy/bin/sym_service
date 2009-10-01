@@ -27,6 +27,8 @@ java -Xms256m -Xmx256m \
    -Dsym.keystore.file="$SYM_HOME/security/keystore" \
    -Djavax.net.ssl.trustStore="$SYM_HOME/security/cacerts" \
    -Dlog4j.configuration=file:"$SYM_HOME/conf/log4j.xml" \
+   -Dsun.net.client.defaultReadTimeout=1800000 \
+   -Dsun.net.client.defaultConnectTimeout=1800000 \ 
    org.jumpmind.symmetric.SymmetricLauncher \
    --properties "$SYM_HOME/conf/symmetric.properties" \
    --port 8080 \
