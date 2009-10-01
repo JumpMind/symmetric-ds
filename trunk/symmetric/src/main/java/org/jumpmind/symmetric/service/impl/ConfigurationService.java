@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     @SuppressWarnings("unchecked")
     public List<NodeChannel> getNodeChannels(final String nodeId) {
-
+        boolean loaded = false;
         if (System.currentTimeMillis() - nodeChannelCacheTime >= MAX_NODE_CHANNEL_CACHE_TIME
                 || nodeChannelCache == null || nodeChannelCache.get(nodeId) == null) {
             synchronized (this) {
@@ -156,9 +157,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                                     return nodeChannel;
                                 };
                             }));
+                    loaded = true;
                 }
             }
-        } else {
+        } 
+
+        if (!loaded) {
 
             // need to read last extracted time from database regardless of
             // whether we used the cache or not.
@@ -175,12 +179,15 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     new ResultSetExtractor() {
                         public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
                             if (rs.next()) {
-                                nodeChannelsMap.get(rs.getString(1)).setLastExtractedTime(rs.getTimestamp(2));
+                                String channelId = rs.getString(1);
+                                Date extractTime = rs.getTimestamp(2);
+                                nodeChannelsMap.get(channelId).setLastExtractedTime(extractTime);
                             }
                             return null;
                         };
                     });
         }
+        
         return nodeChannelCache.get(nodeId);
     }
 
