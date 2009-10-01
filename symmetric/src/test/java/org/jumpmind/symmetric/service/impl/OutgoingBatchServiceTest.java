@@ -102,6 +102,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testChannelCachingLastExtracted() {
+        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        
         NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         Calendar currentTime = Calendar.getInstance();
         Calendar hourAgo = (Calendar) currentTime.clone();
@@ -112,7 +114,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
         getConfigurationService().saveNodeChannel(nodeChannel, true);
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        Assert.assertEquals(hourAgo.getTime(), nodeChannel.getLastExtractedTime());
+        Assert.assertEquals(formatter.format(hourAgo.getTime()), formatter.format(nodeChannel.getLastExtractedTime()));
 
         int updateCount = updateNodeChannelLastExtractTimeManually(halfHourAgo.getTime(), nodeChannel.getNodeId(),
                 TestConstants.TEST_CHANNEL_ID);
@@ -120,7 +122,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(1, updateCount);
         
         nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
         Assert.assertEquals(formatter.format(halfHourAgo.getTime()), formatter.format(nodeChannel.getLastExtractedTime()));
         
         getConfigurationService().reloadChannels();
