@@ -247,4 +247,6 @@ public interface IDbDialect {
     public String preProcessTriggerSqlClause(String sqlClause);
     
     public String toFormattedTimestamp(Date time);
+    
+    public void truncateTable(String tableName);
 }

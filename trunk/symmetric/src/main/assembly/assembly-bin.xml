@@ -27,9 +27,9 @@
     <fileSet>
       <directory>target/site/guide</directory>
       <outputDirectory>/doc</outputDirectory>
-    </fileSet>    
+    </fileSet>
+       -->    
   </fileSets>
-   -->
   <dependencySets>
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
