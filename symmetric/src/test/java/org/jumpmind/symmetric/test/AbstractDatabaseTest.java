@@ -76,11 +76,11 @@ public class AbstractDatabaseTest {
     protected IConfigurationService getConfigurationService() {
         return AppUtils.find(Constants.CONFIG_SERVICE, getSymmetricEngine());
     }
-    
+
     protected IRegistrationService getRegistrationService() {
         return AppUtils.find(Constants.REGISTRATION_SERVICE, getSymmetricEngine());
     }
-    
+
     protected INodeService getNodeService() {
         return AppUtils.find(Constants.NODE_SERVICE, getSymmetricEngine());
     }
@@ -88,7 +88,7 @@ public class AbstractDatabaseTest {
     protected IRouterService getRoutingService() {
         return AppUtils.find(Constants.ROUTING_SERVICE, getSymmetricEngine());
     }
-    
+
     protected ITriggerRouterService getTriggerRouterService() {
         return AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, getSymmetricEngine());
     }
@@ -127,8 +127,10 @@ public class AbstractDatabaseTest {
     }
 
     protected void cleanSlate(final String... tableName) {
-        for (String table : tableName) {
-            getJdbcTemplate().update("delete from " + table);
+        if (tableName != null) {
+            for (String table : tableName) {
+                getJdbcTemplate().update("truncate table " + table);
+            }
         }
     }
 
