@@ -45,13 +45,14 @@
     <entry key="insertChannelSql">
       <value>
         insert into $[sym.sync.table.prefix]_channel (channel_id, processing_order, max_batch_size,
-        max_batch_to_send, enabled, batch_algorithm, description) values (?, ?, ?, ?, ?, ?, null)
+        max_batch_to_send, enabled, batch_algorithm, description, extract_period_millis)
+        values (?, ?, ?, ?, ?, ?, null,? )
       </value>
     </entry>
     <entry key="updateChannelSql">
       <value>
         update $[sym.sync.table.prefix]_channel set processing_order=?, max_batch_size=?,
-        max_batch_to_send=?, enabled=?, batch_algorithm=? where channel_id=?
+        max_batch_to_send=?, enabled=?, batch_algorithm=?, extract_period_millis=? where channel_id=?
       </value>
     </entry>
     <entry key="deleteChannelSql">
