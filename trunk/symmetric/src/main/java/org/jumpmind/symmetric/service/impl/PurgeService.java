@@ -26,7 +26,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.hsqldb.Types;
@@ -41,6 +43,12 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 public class PurgeService extends AbstractService implements IPurgeService {
 
+    private static final String PARAM_MAX = "MAX";
+
+    private static final String PARAM_MIN = "MIN";
+
+    private static final String PARAM_CUTOFF_TIME = "CUTOFF_TIME";
+
     private IClusterService clusterService;
 
     private INodeService nodeService;
@@ -51,9 +59,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
             retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
             purgeOutgoing(retentionCutoff);
             purgeIncoming(retentionCutoff);
-            
+
             retentionCutoff = Calendar.getInstance();
-            retentionCutoff.add(Calendar.MINUTE, -parameterService.getInt(ParameterConstants.STATISTIC_RETENTION_MINUTES));
+            retentionCutoff.add(Calendar.MINUTE, -parameterService
+                    .getInt(ParameterConstants.STATISTIC_RETENTION_MINUTES));
             purgeStatistic(retentionCutoff);
         } else {
             log.warn("DataPurgeSkippingNoInitialLoad");
@@ -85,7 +94,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         try {
             if (clusterService.lock(LockActionConstants.PURGE_OUTGOING)) {
                 try {
-                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(retentionCutoff.getTime()));
+                    log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(
+                            retentionCutoff.getTime()));
                     purgeDataRows(retentionCutoff);
                     purgeOutgoingBatch(retentionCutoff);
                 } finally {
@@ -108,6 +118,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         purgeByMinMax(minMax, getSql("deleteDataEventSql"), time.getTime(), maxNumOfDataEventsToPurgeInTx);
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), time.getTime(), maxNumOfBatchIdsToPurgeInTx);
+        purgeUnroutedDataEvents(time.getTime());
+    }
+
+    private void purgeUnroutedDataEvents(Date time) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(PARAM_CUTOFF_TIME, new Timestamp(time.getTime()));
+        int unroutedDataEventCount = getSimpleTemplate().update(getSql("deleteUnroutedDataEventSql"), params);
+        log.info("DataPurgeTableCompleted", unroutedDataEventCount, "unrouted data_event");
     }
 
     private void purgeDataRows(final Calendar time) {
@@ -135,20 +153,20 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("DataPurgeTableStarting", tableName);
 
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
-        parameterSource.registerSqlType("CUTOFF_TIME", Types.TIMESTAMP);
-        parameterSource.registerSqlType("MIN", Types.INTEGER);
-        parameterSource.registerSqlType("MAX", Types.INTEGER);
-        parameterSource.addValue("CUTOFF_TIME", new Timestamp(retentionTime.getTime()));
-        
+        parameterSource.registerSqlType(PARAM_CUTOFF_TIME, Types.TIMESTAMP);
+        parameterSource.registerSqlType(PARAM_MIN, Types.INTEGER);
+        parameterSource.registerSqlType(PARAM_MAX, Types.INTEGER);
+        parameterSource.addValue(PARAM_CUTOFF_TIME, new Timestamp(retentionTime.getTime()));
+
         while (minId <= purgeUpToId) {
             long maxId = minId + maxNumtoPurgeinTx;
             if (maxId > purgeUpToId) {
                 maxId = purgeUpToId;
             }
-            
-            parameterSource.addValue("MIN", minId);
-            parameterSource.addValue("MAX", maxId);
-            
+
+            parameterSource.addValue(PARAM_MIN, minId);
+            parameterSource.addValue(PARAM_MAX, maxId);
+
             totalCount += getSimpleTemplate().update(deleteSql, parameterSource);
 
             if (totalCount > 0 && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {

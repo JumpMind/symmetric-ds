@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -80,6 +81,11 @@ public class AbstractDatabaseTest {
     protected IRegistrationService getRegistrationService() {
         return AppUtils.find(Constants.REGISTRATION_SERVICE, getSymmetricEngine());
     }
+    
+    protected IDataService getDataService() {
+        return AppUtils.find(Constants.DATA_SERVICE, getSymmetricEngine());
+    }
+
 
     protected INodeService getNodeService() {
         return AppUtils.find(Constants.NODE_SERVICE, getSymmetricEngine());
@@ -176,6 +182,10 @@ public class AbstractDatabaseTest {
 
     protected void assertNotSame(Object actual, Object expected, String message) {
         Assert.assertNotSame(message, expected, actual);
+    }
+    
+    protected void assertNumberOfRows(int rows, String tableName) {
+        Assert.assertEquals(tableName + " had an unexpected number of rows", rows, getJdbcTemplate().queryForInt("select count(*) from " + tableName));
     }
 
 }

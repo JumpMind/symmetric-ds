@@ -37,6 +37,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
 import org.hsqldb.Types;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventAction;
@@ -302,12 +303,11 @@ public class RouterService extends AbstractService implements IRouterService {
                             triggerRouter, context), false);
                     context.incrementStat(System.currentTimeMillis() - ts, "data.router.ms");
                     insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
-
                 }
 
                 if (!context.isRouted()) {
                     // mark as not routed anywhere
-                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), -1, triggerRouter
+                    dataService.insertDataEvent(context.getJdbcTemplate(), data.getDataId(), Constants.UNROUTED_BATCH_ID, triggerRouter
                             .getRouter().getRouterId());
                 }
 

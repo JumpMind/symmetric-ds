@@ -25,9 +25,15 @@
       <value>
         delete from $[sym.sync.table.prefix]_data_event where batch_id not in (select batch_id from
         $[sym.sync.table.prefix]_outgoing_batch where batch_id between :MIN and :MAX and status != 'OK') 
-        and batch_id between :MIN and :MAX
+        and batch_id between :MIN and :MAX 
       </value>
     </entry>
+    <entry key="deleteUnroutedDataEventSql">
+      <value>
+        delete from $[sym.sync.table.prefix]_data_event where 
+          batch_id=-1 and create_time  &lt; :CUTOFF_TIME
+      </value>
+    </entry>    
     <entry key="selectDataRangeSql">
       <value>
         select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data
@@ -36,9 +42,9 @@
     <entry key="deleteDataSql">
       <value>
         delete from $[sym.sync.table.prefix]_data where 
-          data_id between :MIN and :MAX and data_id not in 
-            (select e.data_id from $[sym.sync.table.prefix]_data_event e inner join $[sym.sync.table.prefix]_outgoing_batch o on e.batch_id=o.batch_id 
-          where e.data_id between :MIN and :MAX and o.status != 'OK' and o.create_time &lt; :CUTOFF_TIME)
+          data_id between :MIN and :MAX and data_id in 
+            (select e.data_id from $[sym.sync.table.prefix]_data_event e left join $[sym.sync.table.prefix]_outgoing_batch o on e.batch_id=o.batch_id 
+          where e.data_id between :MIN and :MAX and ((o.status = 'OK' and o.create_time &lt; :CUTOFF_TIME) or (e.batch_id=-1 and e.create_time  &lt; :CUTOFF_TIME)))
       </value>
     </entry>
     <entry key="selectIncomingBatchRangeSql">

@@ -82,12 +82,16 @@ public class MockDataService implements IDataService {
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
 
     }
+    
+    public void insertDataEvent(long dataId, long batchId, String routerId) {
+        
+    }
 
-    public void insertDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
+    public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
 
     }
 
-    public void insertDataEvent(Data data, String nodeId, String routerId) {
+    public void insertDataAndDataEvent(Data data, String nodeId, String routerId) {
 
     }
 
