@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeChannel;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataService;
@@ -102,6 +103,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testChannelCachingLastExtracted() {
+        cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch", "sym_node_channel_ctl");
+
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
         NodeChannel nodeChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
@@ -139,28 +142,30 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
 
     @Test
     public void testChannelRemovalOfBatchesNotTimeYet() {
+
         final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
-        long channelOtherExtractPeriod = 60 * 60 * 1000;
-        long channelTestExtractPeriod = 30 * 60 * 1000;
+        long channelOtherExtractPeriod = 59 * 60 * 1000;
+        long channelTestExtractPeriod = 29 * 60 * 1000;
 
-        Calendar currentTime = Calendar.getInstance();
-        Calendar hourAgo = (Calendar) currentTime.clone();
+        Calendar startOfTestTime = Calendar.getInstance();
+        Calendar hourAgo = (Calendar) startOfTestTime.clone();
         hourAgo.add(Calendar.HOUR_OF_DAY, -1);
-        Calendar halfHourAgo = (Calendar) currentTime.clone();
+        Calendar halfHourAgo = (Calendar) startOfTestTime.clone();
         halfHourAgo.add(Calendar.MINUTE, -30);
 
-        cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch");
-        
+        cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch", "sym_node_channel_ctl");
+
         NodeChannel nodeChannelTest = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         nodeChannelTest.setExtractPeriodMillis(channelTestExtractPeriod);
+
         getConfigurationService().saveChannel(nodeChannelTest, false);
 
         NodeChannel nodeChannelOther = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID_OTHER,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         nodeChannelOther.setExtractPeriodMillis(channelOtherExtractPeriod);
-        getConfigurationService().saveChannel(nodeChannelOther, true);
+        getConfigurationService().saveChannel(nodeChannelOther, false);
 
         nodeChannelTest = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
@@ -186,11 +191,57 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
 
+        // reload, config, testchannel and other
+
         OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
 
-    //    Assert.assertEquals(4, list.getActiveChannels().size(), 4);
-     //   Assert.assertEquals(10, list.getBatches().size());
+        Assert.assertEquals(4, list.getActiveChannels().size(), 4);
+        Assert.assertEquals(10, list.getBatches().size());
 
+        Assert.assertEquals(5, list.getBatchesForChannel(TestConstants.TEST_CHANNEL_ID).size());
+        Assert.assertEquals(5, list.getBatchesForChannel(TestConstants.TEST_CHANNEL_ID_OTHER).size());
+
+        nodeChannelTest.setLastExtractedTime(halfHourAgo.getTime());
+        getConfigurationService().saveNodeChannel(nodeChannelTest, false);
+
+        nodeChannelOther.setLastExtractedTime(halfHourAgo.getTime());
+        getConfigurationService().saveNodeChannel(nodeChannelOther, false);
+
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        Assert.assertEquals(4, list.getActiveChannels().size(), 4);
+        Assert.assertEquals(5, list.getBatches().size());
+
+        for (OutgoingBatch batch : list.getBatches()) {
+            Assert.assertEquals(TestConstants.TEST_CHANNEL_ID, batch.getChannelId());
+        }
+
+        nodeChannelOther.setLastExtractedTime(hourAgo.getTime());
+        getConfigurationService().saveNodeChannel(nodeChannelOther, false);
+
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        Assert.assertEquals(4, list.getActiveChannels().size(), 4);
+        Assert.assertEquals(10, list.getBatches().size());
+
+        nodeChannelTest.setLastExtractedTime(halfHourAgo.getTime());
+        getConfigurationService().saveNodeChannel(nodeChannelTest, false);
+
+        nodeChannelOther.setLastExtractedTime(halfHourAgo.getTime());
+        getConfigurationService().saveNodeChannel(nodeChannelOther, false);
+
+        nodeChannelTest.setExtractPeriodMillis(0);
+        getConfigurationService().saveChannel(nodeChannelTest, false);
+
+        nodeChannelOther.setExtractPeriodMillis(0);
+        getConfigurationService().saveChannel(nodeChannelOther, false);
+
+        list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+        // would be 5, but we reset the extract period to 0, meaning every time
+
+        Assert.assertEquals(4, list.getActiveChannels().size(), 4);
+        Assert.assertEquals(10, list.getBatches().size());
     }
 
     private int updateNodeChannelLastExtractTimeManually(final Date newTime, final String nodeId, final String channelId) {

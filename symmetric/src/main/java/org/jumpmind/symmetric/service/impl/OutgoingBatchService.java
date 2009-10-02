@@ -147,7 +147,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
 
-        List<NodeChannel> channels = configurationService.getNodeChannels();
+        List<NodeChannel> channels = configurationService.getNodeChannels(targetNodeId);
 
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
