@@ -164,7 +164,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
-        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId, routerId }, new int[] {
+        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId, StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId  }, new int[] {
                 Types.INTEGER, Types.INTEGER, Types.VARCHAR });
     }
 
