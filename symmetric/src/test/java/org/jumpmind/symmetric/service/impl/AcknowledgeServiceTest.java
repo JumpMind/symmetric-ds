@@ -26,7 +26,6 @@ import java.util.Date;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -148,7 +147,7 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
             Data data = new Data("table1", DataEventType.INSERT, "some data", "some data", history,
                     TestConstants.TEST_CHANNEL_ID, null, null);
             id[i] = dataService.insertData(data);
-            dataService.insertDataEvent(getJdbcTemplate(), id[i], batch.getBatchId(), DataEvent.UNKNOWN_ROUTER_ID);
+            dataService.insertDataEvent(getJdbcTemplate(), id[i], batch.getBatchId(), Constants.UNKNOWN_ROUTER_ID);
         }
         return id;
     }

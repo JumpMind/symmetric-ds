@@ -21,11 +21,21 @@
 
 package org.jumpmind.symmetric.common;
 
+import org.jumpmind.symmetric.model.DataEvent;
+
 final public class Constants {
 
     private Constants() {
     }
+
+    /**
+     * Use this value for the router_id in {@link DataEvent} if the router is unknown.
+     */
+    public static final String UNKNOWN_ROUTER_ID = "?";
     
+    /**
+     * Use this value if data is not to be routed anywhere.
+     */
     public static final int UNROUTED_BATCH_ID = -1;
     
     public static final String ENCODING = "UTF-8";

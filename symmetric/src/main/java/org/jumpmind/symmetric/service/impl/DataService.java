@@ -97,7 +97,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertResendConfigEvent(final Node targetNode) {
         Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null, Constants.CHANNEL_CONFIG, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
@@ -119,13 +119,13 @@ public class DataService extends AbstractService implements IDataService {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public void insertSqlEvent(final Node targetNode, String sql) {
         Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, null,
                 Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter, String xml) {
@@ -133,7 +133,7 @@ public class DataService extends AbstractService implements IDataService {
                 .getTriggerId());
         Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE, CsvUtils
                 .escapeCsvData(xml), null, history, Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public long insertData(final Data data) {
@@ -251,7 +251,7 @@ public class DataService extends AbstractService implements IDataService {
     private void insertNodeSecurityUpdate(Node node) {
         Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'");
         if (data != null) {
-            insertDataAndDataEvent(data, node.getNodeId(), DataEvent.UNKNOWN_ROUTER_ID);
+            insertDataAndDataEvent(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
     }
 
@@ -317,7 +317,7 @@ public class DataService extends AbstractService implements IDataService {
         Data data = createData(trigger, String.format(" t.node_id = '%s'", node.getNodeId()));
         if (data != null) {
             insertDataAndDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo(),
-                    DataEvent.UNKNOWN_ROUTER_ID);
+                    Constants.UNKNOWN_ROUTER_ID);
         } else {
             log.info("TableGeneratingEventsFailure", tableName);
         }
