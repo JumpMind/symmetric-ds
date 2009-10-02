@@ -90,7 +90,7 @@
     </table>
 
     <table name="router" description="Configure a type of router from one node group to another.  Note that routers are mapped to triggers through trigger_routers.">
-        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="Unique description of a specific router" />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique description of a specific router" />
         <column name="target_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog a target table is in. Only use this if the target table is not in the default catalog." />
         <column name="target_schema_name" type="VARCHAR" size="50"  description="Optional name of the schema a target table is in. On use this if the target table is not in the default schema." />
         <column name="target_table_name" type="VARCHAR" size="50"  description="Optional name for a target table.  Only use this if the target table name is different than the source." />
@@ -108,7 +108,7 @@
     </table>
 
     <table name="trigger" description="Configures database triggers that capture changes in the database. Configuration of which triggers are generated for which tables is stored here.  Triggers are created in a node's database if the source_node_group_id of a router is mapped to a row in this table.">
-        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a trigger." />
         <column name="source_catalog_name" type="VARCHAR" size="50"  description="Optional name for the catalog the configured table is in." />
         <column name="source_schema_name" type="VARCHAR" size="50"  description="Optional name for the schema a configured table is in." />
         <column name="source_table_name" type="VARCHAR" size="50" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
@@ -132,8 +132,8 @@
     </table>
 
     <table name="trigger_router" description="Map a trigger to a router.">
-        <column name="trigger_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The id of a trigger." />
-        <column name="router_id" type="VARCHAR" size="20" required="true" primaryKey="true"  description="The id of a router." />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
+        <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. " />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
@@ -142,7 +142,7 @@
 
     <table name="trigger_hist" description="A history of a table's definition and the trigger used to capture data from the table. When a database trigger captures a data change, it references a trigger_hist entry so it is possible to know which columns the data represents. trigger_hist entries are made during the sync trigger process, which runs at each startup, each night in the syncTriggersJob, or any time the syncTriggers() JMX method is manually invoked. A new entry is made when a table definition or a trigger definition is changed, which causes a database trigger to be created or rebuilt.">
         <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a trigger_hist entry" />
-        <column name="trigger_id" type="VARCHAR" size="20" required="true"  description="Unique identifier for a trigger" />
+        <column name="trigger_id" type="VARCHAR" size="50" required="true"  description="Unique identifier for a trigger" />
         <column name="source_table_name" type="VARCHAR" default="" size="50" required="true"  description="The name of the source table that will have a trigger installed to watch for data changes." />
         <column name="source_catalog_name" type="VARCHAR" size="50"  description="The catalog name where the source table resides." />
         <column name="source_schema_name" type="VARCHAR" size="50"  description="The schema name where the source table resides." />
