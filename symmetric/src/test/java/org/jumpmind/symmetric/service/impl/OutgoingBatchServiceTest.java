@@ -143,8 +143,6 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     @Test
     public void testChannelRemovalOfBatchesNotTimeYet() {
 
-        final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
         long channelOtherExtractPeriod = 59 * 60 * 1000;
         long channelTestExtractPeriod = 29 * 60 * 1000;
 
@@ -264,7 +262,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         TriggerHistory history = new TriggerHistory();
         history.setTriggerHistoryId(triggerHistoryId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, channelId, null, null);
-        dataService.insertDataEvent(data, nodeId, channelId);
+        dataService.insertDataAndDataEvent(data, nodeId, "");
     }
 
     protected int getBatchSize(final long batchId) {
