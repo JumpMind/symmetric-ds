@@ -69,10 +69,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveChannel(Channel channel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
                 channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
-                channel.getBatchAlgorithm(), channel.getId() })) {
+                channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() , channel.getId()})) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
-                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() });
+                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() , channel.getExtractPeriodMillis()});
         }
         if (reloadChannels) {
             reloadChannels();
