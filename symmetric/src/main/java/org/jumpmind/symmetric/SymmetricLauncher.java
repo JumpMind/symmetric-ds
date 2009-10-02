@@ -41,12 +41,12 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.logging.impl.SimpleLog;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.SecurityConstants;
-import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SqlScript;
@@ -68,8 +68,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * If you run this program without any arguments 'help' will print out.
  */
 public class SymmetricLauncher {
-
-    private static final ILog log = LogFactory.getLog(SymmetricLauncher.class);
 
     private static final String OPTION_DUMP_BATCH = "dump-batch";
 
@@ -114,6 +112,8 @@ public class SymmetricLauncher {
     private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
 
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
+    
+    private static final String OPTION_VERBOSE_CONSOLE = "verbose";
 
     protected static SymmetricWebServer webServer;
 
@@ -122,23 +122,28 @@ public class SymmetricLauncher {
     protected static boolean join = true;
 
     public static void main(String... args) throws Exception {
-        log.debug("Arguments", ArrayUtils.toString(args));
+        System.out.println("Check in the logs directory for program output.");
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
             CommandLine line = parser.parse(options, args);
-
-            if (line.getOptions() != null) {
-                for (Option option : line.getOptions()) {
-                    log.debug("Option", option.getLongOpt(), ArrayUtils.toString(option.getValues()));
-                }
-            }
 
             int port = 31415;
             int securePort = 31417;
             int maxIdleTime = 900000;
             String propertiesFile = null;
 
+            if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
+                System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
+                System.setProperty("org.apache.commons.logging.simplelog.defaultlog","info");
+            }
+            
+            if (line.getOptions() != null) {
+                for (Option option : line.getOptions()) {
+                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(), ArrayUtils.toString(option.getValues()));
+                }
+            }
+            
             if (line.hasOption(OPTION_PORT_SERVER)) {
                 port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
             }
@@ -344,6 +349,7 @@ public class SymmetricLauncher {
                 "Run the sync triggers process even if the triggers already exist.");
         options.addOption("e", OPTION_ENCRYPT_TEXT, true,
                 "Encrypts the given text for use with db.user and db.password properties");
+        options.addOption("v", OPTION_VERBOSE_CONSOLE, false, "Log output to the console instead of the log file");
 
         return options;
     }

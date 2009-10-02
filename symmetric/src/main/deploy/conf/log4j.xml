@@ -4,7 +4,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
     <appender name="ROLLING" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="logs/symmetric.log" />
+        <param name="File" value="../logs/symmetric.log" />
         <param name="MaxFileSize" value="10000KB" />
         <param name="MaxBackupIndex" value="3" />
         <param name="Append" value="true" />
