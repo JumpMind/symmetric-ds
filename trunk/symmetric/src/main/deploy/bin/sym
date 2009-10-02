@@ -13,6 +13,7 @@ then
    PRGDIR="."
 fi
 LIBDIR=$PRGDIR/../lib
+CONFDIR=$PRGDIR/../conf
 RUNJAVA=java
 
 if [ -x "$JAVA_HOME/bin/java" ]
@@ -35,4 +36,4 @@ done
 
 #echo $CLASSPATH
 
-exec "$RUNJAVA" -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dsun.net.client.defaultReadTimeout=1800000 -Dsun.net.client.defaultConnectTimeout=1800000 -Dlog4j.configuration=file:log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"
+exec "$RUNJAVA" -Dsym.keystore.file="$PRGDIR/../security/keystore" -Djavax.net.ssl.trustStore="$PRGDIR/../security/cacerts" -Dsun.net.client.defaultReadTimeout=1800000 -Dsun.net.client.defaultConnectTimeout=1800000 -Dlog4j.configuration=file:$CONFDIR/log4j.xml -cp $CLASSPATH org.jumpmind.symmetric.SymmetricLauncher "$@"

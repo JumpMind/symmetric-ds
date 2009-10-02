@@ -31,14 +31,14 @@ public class BshDataRouter extends AbstractDataRouter {
         try {
             long ts = System.currentTimeMillis();
             Interpreter interpreter = getInterpreter(context);
-            context.incrementStat(System.currentTimeMillis() - ts, "bsh.init");
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.init.ms");
             HashSet<String> targetNodes = new HashSet<String>();
             ts = System.currentTimeMillis();
             bind(interpreter, dataMetaData, nodes, targetNodes);
-            context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind");
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
             Object returnValue = interpreter.eval(dataMetaData.getTrigger().getRouter().getRouterExpression());
-            context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval");
+            context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
             log.error("Error in data router.  Routing to nobody.", e);
