@@ -127,4 +127,10 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
         }
         return defaultSchema;
     }
+    
+    @Override
+    public void truncateTable(String tableName) {
+        getJdbcTemplate().update("delete from " + tableName);
+    }
+    
 }
