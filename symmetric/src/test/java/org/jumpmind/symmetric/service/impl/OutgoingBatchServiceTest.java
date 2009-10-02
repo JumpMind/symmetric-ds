@@ -150,6 +150,8 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Calendar halfHourAgo = (Calendar) currentTime.clone();
         halfHourAgo.add(Calendar.MINUTE, -30);
 
+        cleanSlate("sym_data_event", "sym_data", "sym_outgoing_batch");
+        
         NodeChannel nodeChannelTest = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         nodeChannelTest.setExtractPeriodMillis(channelTestExtractPeriod);
@@ -180,9 +182,14 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         }
 
         for (int i = 0; i < 5; i++) {
-            createDataEvent("Bar", triggerHistId, TestConstants.TEST_CHANNEL_ID_OTHER, DataEventType.INSERT,
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID_OTHER, DataEventType.INSERT,
                     TestConstants.TEST_CLIENT_EXTERNAL_ID);
         }
+
+        OutgoingBatches list = batchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+
+    //    Assert.assertEquals(4, list.getActiveChannels().size(), 4);
+     //   Assert.assertEquals(10, list.getBatches().size());
 
     }
 
@@ -206,7 +213,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         TriggerHistory history = new TriggerHistory();
         history.setTriggerHistoryId(triggerHistoryId);
         Data data = new Data(tableName, type, "r.o.w., dat-a", "p-k d.a.t.a", history, channelId, null, null);
-        dataService.insertDataEvent(data, channelId, nodeId);
+        dataService.insertDataEvent(data, nodeId, channelId);
     }
 
     protected int getBatchSize(final long batchId) {
