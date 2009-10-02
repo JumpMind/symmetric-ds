@@ -169,7 +169,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
             Date lastExtractedTime = nodeChannel.getLastExtractedTime();
 
-            if ((extractPeriodMillis < 1)
+            if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
                     || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
                 batches.addActiveChannel(nodeChannel);
             }
