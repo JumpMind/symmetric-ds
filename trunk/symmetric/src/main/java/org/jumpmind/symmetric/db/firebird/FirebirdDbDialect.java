@@ -150,4 +150,9 @@ public class FirebirdDbDialect extends AbstractDbDialect implements IDbDialect {
         return true;
     }
 
+    @Override
+    public void truncateTable(String tableName) {
+        getJdbcTemplate().update("delete from " + tableName);
+    }
+    
 }
