@@ -169,6 +169,21 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(channelTestExtractPeriod, nodeChannelTest.getExtractPeriodMillis());
         Assert.assertEquals(channelOtherExtractPeriod, nodeChannelOther.getExtractPeriodMillis());
 
+        // test channel is every 30 minutes, "other" is every 60.
+        // go through series of setting the last extract on both channels to
+        // validate the correct amounts come back each time. 5 data events
+        // each....
+
+        for (int i = 0; i < 5; i++) {
+            createDataEvent("Foo", triggerHistId, TestConstants.TEST_CHANNEL_ID, DataEventType.INSERT,
+                    TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        }
+
+        for (int i = 0; i < 5; i++) {
+            createDataEvent("Bar", triggerHistId, TestConstants.TEST_CHANNEL_ID_OTHER, DataEventType.INSERT,
+                    TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        }
+
     }
 
     private int updateNodeChannelLastExtractTimeManually(final Date newTime, final String nodeId, final String channelId) {
