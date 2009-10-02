@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.sql.Types;
+import java.util.Calendar;
 import java.util.List;
 
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -90,13 +91,15 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         int origCount = getTriggerHistTableRowCount();
 
         Thread.sleep(1000);
+        
+        Calendar lastUpdateTime = Calendar.getInstance();
 
         // force the triggers to rebuild
         int expectedCount = origCount
                 + getJdbcTemplate()
                         .update(
-                                "update sym_trigger set last_update_time=current_timestamp where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
-                                new Object[] { TestConstants.TEST_ROOT_NODE_GROUP });
+                                "update sym_trigger set last_update_time=? where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
+                                new Object[] { lastUpdateTime.getTime(), TestConstants.TEST_ROOT_NODE_GROUP });
 
         service.syncTriggers();
 
