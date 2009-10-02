@@ -152,7 +152,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setDataId(1);
         getDataService().insertData(data);
-        getDataService().insertDataEvent(data.getDataId(), Constants.UNROUTED_BATCH_ID, "");
+        getDataService().insertDataEvent(data.getDataId(), Constants.UNROUTED_BATCH_ID, Constants.UNKNOWN_ROUTER_ID);
     }
 
     private void assertCounts(int count) {

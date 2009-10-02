@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -102,7 +101,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.begin(batch, writer);
 
             Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), hist, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
@@ -138,10 +137,10 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.begin(batch, writer);
 
             Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
 
             data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
@@ -177,13 +176,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
 
             TriggerHistory history = makeTableSynchistoryId(TD1.table, TD1.keyColumns, TD1.columns);
             Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
 
             history = makeTableSynchistoryId(TD3.table, TD3.keyColumns, TD3.columns);
             data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.UPDATE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             data = new Data(TD3.dataId, TD3.key, TD3.rowData, DataEventType.DELETE, TD3.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
@@ -223,13 +222,13 @@ public class DataExtractorTest extends AbstractDatabaseTest {
             dataExtractor.begin(batch, writer);
 
             Data data = new Data(TD1.dataId, TD1.key, TD1.rowData, DataEventType.INSERT, TD1.table, new Date(), history, TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
 
             data = new Data(TD4.dataId, TD4.key, TD4.rowData, DataEventType.UPDATE, TD4.table, new Date(), history2,TestConstants.TEST_CHANNEL_ID, null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
 
             data = new Data(TD2.dataId, TD2.key, TD2.rowData, DataEventType.UPDATE, TD2.table, new Date(), history,TestConstants.TEST_CHANNEL_ID,  null, null);
-            dataExtractor.write(writer, data, DataEvent.UNKNOWN_ROUTER_ID, context);
+            dataExtractor.write(writer, data, Constants.UNKNOWN_ROUTER_ID, context);
             dataExtractor.commit(batch, writer);
 
             ExpectMaster5000 em = new ExpectMaster5000();
