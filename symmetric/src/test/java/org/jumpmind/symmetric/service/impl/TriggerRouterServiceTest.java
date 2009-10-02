@@ -87,22 +87,20 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         service.syncTriggers();
 
         // get the current number of hist rows
-        int count = getTriggerHistTableRowCount();
+        int origCount = getTriggerHistTableRowCount();
 
         Thread.sleep(1000);
 
         // force the triggers to rebuild
-        count = count
+        int expectedCount = origCount
                 + getJdbcTemplate()
                         .update(
-                                String
-                                        .format(
-                                                "update sym_trigger set last_update_time=current_timestamp where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id='%s'))",
-                                                TestConstants.TEST_ROOT_NODE_GROUP));
+                                "update sym_trigger set last_update_time=current_timestamp where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
+                                new Object[] { TestConstants.TEST_ROOT_NODE_GROUP });
 
         service.syncTriggers();
 
-        Assert.assertEquals("Wrong trigger_hist row count. engine=" + getDbDialect().getPlatform().getName(), count,
+        Assert.assertEquals("Wrong trigger_hist row count. The original count was " + origCount + ".", expectedCount,
                 getTriggerHistTableRowCount());
     }
 
@@ -144,7 +142,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         ITriggerRouterService service = getTriggerRouterService();
 
         // need to wait for a second to make sure enough time has passed so the
-        // update of the config table will have a greater timestamp than the audit table.
+        // update of the config table will have a greater timestamp than the
+        // audit table.
         Thread.sleep(1000);
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         assertEquals(
@@ -212,7 +211,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
             router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
             getTriggerRouterService().saveTriggerRouter(trouter);
-            
+
             ITriggerRouterService triggerService = getTriggerRouterService();
             triggerService.syncTriggers();
             Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
