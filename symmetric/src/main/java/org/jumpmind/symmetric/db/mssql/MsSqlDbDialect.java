@@ -131,7 +131,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
                         stmt = con.createStatement();
                         stmt.execute(sql);
                     } catch (Exception e) {
-                        log.warn("TriggerDropError", triggerName);
+                        log.warn("TriggerDropError", triggerName, e.getMessage());
                     } finally {
                         if (catalogName != null) {
                             con.setCatalog(previousCatalog);
