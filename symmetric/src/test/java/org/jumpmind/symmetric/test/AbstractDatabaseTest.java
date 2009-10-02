@@ -126,10 +126,10 @@ public class AbstractDatabaseTest {
         }
     }
 
-    protected void cleanSlate(final String... tableName) {
-        if (tableName != null) {
-            for (String table : tableName) {
-                getJdbcTemplate().update("truncate table " + table);
+    protected void cleanSlate(final String... tableNames) {
+        if (tableNames != null) {
+            for (String tableName : tableNames) {
+                getDbDialect().truncateTable(tableName);
             }
         }
     }

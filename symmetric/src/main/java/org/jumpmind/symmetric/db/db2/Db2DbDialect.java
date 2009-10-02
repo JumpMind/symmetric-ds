@@ -50,7 +50,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
             }
         }
     }
-    
+
     private URL getSqlScriptUrl() {
         return getClass().getResource("/dialects/db2.sql");
     }
@@ -119,7 +119,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     public boolean supportsTransactionId() {
         return false;
     }
-    
+
     @Override
     public boolean storesUpperCaseNamesInCatalog() {
         return true;
@@ -155,4 +155,8 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
         return "";
     }
 
+    @Override
+    public void truncateTable(String tableName) {
+        getJdbcTemplate().update("delete from " + tableName);
+    }
 }
