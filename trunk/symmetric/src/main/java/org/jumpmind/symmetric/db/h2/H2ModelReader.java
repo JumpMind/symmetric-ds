@@ -43,9 +43,9 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
 public class H2ModelReader extends JdbcModelReader {
-    
+
     final ILog logger = LogFactory.getLog(getClass());
-    
+
     /**
      * Creates a new model reader for H2 databases.
      * 
@@ -57,20 +57,19 @@ public class H2ModelReader extends JdbcModelReader {
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected Map readColumns(ResultSet resultSet, List columnDescriptors) throws SQLException {
-        //if (logger.isDebugEnabled()) 
-        {
-        int count = resultSet.getMetaData().getColumnCount();
-        for (int i = 1 ; i <= count; i++) {
-            logger.info(resultSet.getMetaData().getColumnName(i) + "=" + resultSet.getString(i));
-        }        
+        if (logger.isDebugEnabled()) {
+            int count = resultSet.getMetaData().getColumnCount();
+            for (int i = 1; i <= count; i++) {
+                logger.debug(resultSet.getMetaData().getColumnName(i) + "=" + resultSet.getString(i));
+            }
         }
         return super.readColumns(resultSet, columnDescriptors);
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map values) throws SQLException {
@@ -80,22 +79,22 @@ public class H2ModelReader extends JdbcModelReader {
         }
         if (values.get("COLUMN_DEFAULT") != null) {
             column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
-        }   
+        }
         if (values.get("NUMERIC_SCALE") != null) {
-            column.setScale((Integer)values.get("NUMERIC_SCALE"));
-        }         
+            column.setScale((Integer) values.get("NUMERIC_SCALE"));
+        }
         if (TypeMap.isTextType(column.getTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
         return column;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     protected List initColumnsForColumn() {
         List result = new ArrayList();
         result.add(new MetaDataColumnDescriptor("COLUMN_DEF", 12));
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));        
+        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
         result.add(new MetaDataColumnDescriptor("TABLE_NAME", 12));
         result.add(new MetaDataColumnDescriptor("COLUMN_NAME", 12));
         result.add(new MetaDataColumnDescriptor("DATA_TYPE", 4, new Integer(1111)));
