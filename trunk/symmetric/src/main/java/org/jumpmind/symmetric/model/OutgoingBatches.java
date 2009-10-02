@@ -125,15 +125,16 @@ public class OutgoingBatches {
             List<NodeGroupChannelWindow> windows) {
         List<OutgoingBatch> keeping = new ArrayList<OutgoingBatch>();
 
-        if (batches != null && batches.size() > 0) {
-
-            if (channel.isEnabled() && inTimeWindow(windows, targetNode.getTimezoneOffset())) {
-                int max = channel.getMaxBatchToSend();
-                int count = 0;
-                for (OutgoingBatch outgoingBatch : batches) {
-                    if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
-                        keeping.add(outgoingBatch);
-                        count++;
+        if (windows != null) {
+            if (batches != null && batches.size() > 0) {
+                if (channel.isEnabled() && inTimeWindow(windows, targetNode.getTimezoneOffset())) {
+                    int max = channel.getMaxBatchToSend();
+                    int count = 0;
+                    for (OutgoingBatch outgoingBatch : batches) {
+                        if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
+                            keeping.add(outgoingBatch);
+                            count++;
+                        }
                     }
                 }
             }
