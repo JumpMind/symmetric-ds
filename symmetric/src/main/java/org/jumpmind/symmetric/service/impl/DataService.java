@@ -164,8 +164,9 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
-        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId, StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId  }, new int[] {
-                Types.INTEGER, Types.INTEGER, Types.VARCHAR });
+        template.update(getSql("insertIntoDataEventSql"), new Object[] { dataId, batchId,
+                StringUtils.isBlank(routerId) ? Constants.UNKNOWN_ROUTER_ID : routerId }, new int[] { Types.INTEGER,
+                Types.INTEGER, Types.VARCHAR });
     }
 
     public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
@@ -306,8 +307,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Because we can't add a trigger on the _node table, we are artificially
-     * generating heartbeat events.
+     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
      * 
      * @param node
      */
@@ -435,23 +435,24 @@ public class DataService extends AbstractService implements IDataService {
                             me.setSyncURL(parameterService.getMyUrl());
                         }
                     }
+                    
                     nodeService.updateNode(me);
                     log.info("NodeVerionUpdated");
-                }
 
-                if (!nodeService.isRegistrationServer() && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
-                        && me != null) {
-                    heartbeatNodesToPush.add(me);
-                    heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
-                    for (Node node : heartbeatNodesToPush) {
-                        // don't send new heart beat events if we haven't sent
-                        // the last ones ...
-                        if (!outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, node
-                                .getNodeId())) {
+                    // don't send new heart beat events if we haven't sent
+                    // the last ones ...
+                    if (!nodeService.isRegistrationServer()
+                            && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
+                            && !outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, me
+                                    .getNodeId())) {
+                        heartbeatNodesToPush.add(me);
+                        heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
+                        for (Node node : heartbeatNodesToPush) {
                             insertHeartbeatEvent(node);
                         }
                     }
                 }
+
             } finally {
                 clusterService.unlock(LockActionConstants.HEARTBEAT);
 
