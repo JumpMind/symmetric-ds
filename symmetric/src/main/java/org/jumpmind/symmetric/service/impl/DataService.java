@@ -37,6 +37,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -190,12 +191,12 @@ public class DataService extends AbstractService implements IDataService {
     public String reloadNode(String nodeId) {
         Node targetNode = nodeService.findNode(nodeId);
         if (targetNode == null) {
-            return "Unknown node " + nodeId;
+            return Message.get("NodeUnknown", nodeId);
         }
         if (nodeService.setInitialLoadEnabled(nodeId, true)) {
-            return "Successfully opened initial load for node " + nodeId;
+            return Message.get("NodeInitialLoadOpened", nodeId);
         } else {
-            return "Could not open initial load for " + nodeId;
+            return Message.get("NodeInitialLoadFailed", nodeId);
         }
     }
 
@@ -307,7 +308,8 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Because we can't add a trigger on the _node table, we are artificially generating heartbeat events.
+     * Because we can't add a trigger on the _node table, we are artificially
+     * generating heartbeat events.
      * 
      * @param node
      */
@@ -435,7 +437,7 @@ public class DataService extends AbstractService implements IDataService {
                             me.setSyncURL(parameterService.getMyUrl());
                         }
                     }
-                    
+
                     nodeService.updateNode(me);
                     log.info("NodeVerionUpdated");
 
