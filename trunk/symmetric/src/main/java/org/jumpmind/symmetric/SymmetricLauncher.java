@@ -46,6 +46,7 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.SecurityConstants;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -112,8 +113,10 @@ public class SymmetricLauncher {
     private static final String OPTION_SKIP_DB_VALIDATION = "skip-db-validate";
 
     private static final String OPTION_ENCRYPT_TEXT = "encrypt";
-    
+
     private static final String OPTION_VERBOSE_CONSOLE = "verbose";
+
+    private static final String MESSAGE_BUNDLE = "Launcher.Option.";
 
     protected static SymmetricWebServer webServer;
 
@@ -122,7 +125,7 @@ public class SymmetricLauncher {
     protected static boolean join = true;
 
     public static void main(String... args) throws Exception {
-        System.out.println("Check in the logs directory for program output.");
+        System.out.println(Message.get("LauncherLogLocation"));
         CommandLineParser parser = new PosixParser();
         Options options = buildOptions();
         try {
@@ -135,15 +138,16 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
                 System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
-                System.setProperty("org.apache.commons.logging.simplelog.defaultlog","info");
+                System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "info");
             }
-            
+
             if (line.getOptions() != null) {
                 for (Option option : line.getOptions()) {
-                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(), ArrayUtils.toString(option.getValues()));
+                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
+                            ArrayUtils.toString(option.getValues()));
                 }
             }
-            
+
             if (line.hasOption(OPTION_PORT_SERVER)) {
                 port = new Integer(line.getOptionValue(OPTION_PORT_SERVER));
             }
@@ -164,8 +168,7 @@ public class SymmetricLauncher {
                 propertiesFile = "file:" + line.getOptionValue(OPTION_PROPERTIES_FILE);
                 System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, propertiesFile);
                 if (!new File(line.getOptionValue(OPTION_PROPERTIES_FILE)).exists()) {
-                    throw new ParseException("Could not find the properties file specified: "
-                            + line.getOptionValue(OPTION_PROPERTIES_FILE));
+                    throw new SymmetricException("FilePropertiesNotFound", line.getOptionValue(OPTION_PROPERTIES_FILE));
                 }
 
             }
@@ -184,7 +187,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
                 openRegistration(new SymmetricEngine(), arg);
-                System.out.println("Opened Registration for " + arg);
+                System.out.println(Message.get("RegistrationOpened", arg));
                 return;
             }
 
@@ -262,7 +265,7 @@ public class SymmetricLauncher {
             exception = ex;
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
-            System.err.println("  An exception occurred.  Please see the following for details: ");
+            System.err.println(Message.get("ExceptionGeneral"));
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
 
@@ -288,70 +291,36 @@ public class SymmetricLauncher {
 
     private static Options buildOptions() {
         Options options = new Options();
-        options.addOption("S", OPTION_START_SERVER, false,
-                "Start an embedded instance of SymmetricDS that accepts HTTP.");
-        options.addOption("C", OPTION_START_CLIENT, false, "Start an embedded, client-only, instance of SymmetricDS.");
-        options.addOption("T", OPTION_START_SECURE_SERVER, false,
-                "Start an embedded instance of SymmetricDS that accepts HTTPS.");
-        options.addOption("U", OPTION_START_MIXED_SERVER, false,
-                "Start an embedded instance of SymmetricDS that accepts HTTP/HTTPS.");
-        options.addOption("P", OPTION_PORT_SERVER, true,
-                "Optionally pass in the HTTP port number to use for the server instance.");
-        options.addOption("Q", OPTION_SECURE_PORT_SERVER, true,
-                "Optionally pass in the HTTPS port number to use for the server instance.");
-        options.addOption("I", OPTION_MAX_IDLE_TIME, true,
-                "Max idle time in milliseconds when a connection is forced to close [900000].");
+        addOption(options, "S", OPTION_START_SERVER, false);
+        addOption(options, "C", OPTION_START_CLIENT, false);
+        addOption(options, "T", OPTION_START_SECURE_SERVER, false);
+        addOption(options, "U", OPTION_START_MIXED_SERVER, false);
+        addOption(options, "P", OPTION_PORT_SERVER, true);
+        addOption(options, "Q", OPTION_SECURE_PORT_SERVER, true);
+        addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
 
-        options
-                .addOption("c", OPTION_DDL_GEN, true,
-                        "Output the DDL to create the symmetric tables.  Takes an argument of the name of the file to write the ddl to.");
-        options
-                .addOption(
-                        "p",
-                        OPTION_PROPERTIES_FILE,
-                        true,
-                        "Takes an argument with the path to the properties file that will drive symmetric.  If this is not provided, symmetric will use defaults, then override with the first symmetric.properties in your classpath, then override with symmetric.properties values in your user.home directory.");
-        options.addOption("X", OPTION_PURGE, false,
-                "Will simply run the purge process against the currently configured database.");
-        options
-                .addOption("g", OPTION_PROPERTIES_GEN, true,
-                        "Takes an argument with the path to a file which all the default overrideable properties will be written.");
-        options
-                .addOption("r", OPTION_RUN_DDL_XML, true,
-                        "Takes an argument of a DdlUtils xml file and applies it to the database configured in your symmetric properties file.");
-        options
-                .addOption("s", OPTION_RUN_SQL, true,
-                        "Takes an argument of a .sql file and runs it against the database configured in your symmetric properties file.");
+        addOption(options, "c", OPTION_DDL_GEN, true);
+        addOption(options, "p", OPTION_PROPERTIES_FILE, true);
+        addOption(options, "X", OPTION_PURGE, false);
+        addOption(options, "g", OPTION_PROPERTIES_GEN, true);
+        addOption(options, "r", OPTION_RUN_DDL_XML, true);
+        addOption(options, "s", OPTION_RUN_SQL, true);
 
-        options.addOption("a", OPTION_AUTO_CREATE, false,
-                "Attempts to create the symmetric tables in the configured database.");
-        options
-                .addOption("R", OPTION_OPEN_REGISTRATION, true,
-                        "Open registration for the passed in node group and external id.  Takes an argument of {groupId},{externalId}.");
-        options.addOption("l", OPTION_RELOAD_NODE, true,
-                "Send an initial load of data to reload the passed in node id.");
-        options.addOption("d", OPTION_DUMP_BATCH, true,
-                "Print the contents of a batch out to the console.  Takes the batch id as an argument.");
-        options.addOption("b", OPTION_LOAD_BATCH, true, "Load the CSV contents of the specfied file.");
-        options
-                .addOption(
-                        "i",
-                        OPTION_SKIP_DB_VALIDATION,
-                        false,
-                        "Don't test to see if the database connection is valid before starting the server.  Note that if the connection is invalid, then the server will continually try to connect if this is set.");
-        options
-                .addOption(
-                        "t",
-                        OPTION_TRIGGER_GEN,
-                        true,
-                        "Run the sync triggers process and write the output the specified file.  If triggers should not be applied automatically then set the auto.sync.triggers property to false");
-        options.addOption("o", OPTION_TRIGGER_GEN_ALWAYS, false,
-                "Run the sync triggers process even if the triggers already exist.");
-        options.addOption("e", OPTION_ENCRYPT_TEXT, true,
-                "Encrypts the given text for use with db.user and db.password properties");
-        options.addOption("v", OPTION_VERBOSE_CONSOLE, false, "Log output to the console instead of the log file");
+        addOption(options, "a", OPTION_AUTO_CREATE, false);
+        addOption(options, "R", OPTION_OPEN_REGISTRATION, true);
+        addOption(options, "l", OPTION_RELOAD_NODE, true);
+        addOption(options, "d", OPTION_DUMP_BATCH, true);
+        addOption(options, "b", OPTION_LOAD_BATCH, true);
+        addOption(options, "t", OPTION_TRIGGER_GEN, true);
+        addOption(options, "o", OPTION_TRIGGER_GEN_ALWAYS, false);
+        addOption(options, "e", OPTION_ENCRYPT_TEXT, true);
+        addOption(options, "v", OPTION_VERBOSE_CONSOLE, false);
 
         return options;
+    }
+
+    private static void addOption(Options options, String opt, String longOpt, boolean hasArg) {
+        options.addOption(opt, longOpt, true, Message.get(MESSAGE_BUNDLE + longOpt));
     }
 
     private static void dumpBatch(SymmetricEngine engine, String batchId) throws Exception {
@@ -373,7 +342,7 @@ public class SymmetricLauncher {
             in.close();
 
         } else {
-            throw new FileNotFoundException("Could not find " + fileName);
+            throw new SymmetricException("Launcher.Exception.FileNotFound", fileName);
         }
     }
 
@@ -387,8 +356,7 @@ public class SymmetricLauncher {
         argument = argument.replace('\"', ' ');
         int index = argument.trim().indexOf(",");
         if (index < 0) {
-            throw new IllegalArgumentException("Check the argument you passed in.  --" + OPTION_OPEN_REGISTRATION
-                    + " takes an argument of {groupId},{externalId}");
+            throw new SymmetricException("LauncherMissingFilenameTriggerSQL", OPTION_OPEN_REGISTRATION);
         }
         String nodeGroupId = argument.substring(0, index).trim();
         String externalId = argument.substring(index + 1).trim();
@@ -413,7 +381,7 @@ public class SymmetricLauncher {
             triggerService.syncTriggers(sqlBuffer, gen_always);
             FileUtils.writeStringToFile(file, sqlBuffer.toString(), null);
         } else {
-            throw new IllegalStateException("Please provide a file name to write the trigger SQL to");
+            throw new SymmetricException("MissingFilenameTriggerSQL");
         }
     }
 
@@ -457,7 +425,7 @@ public class SymmetricLauncher {
             Database db = new DatabaseIO().read(new File(fileName));
             pf.createTables(db, false, true);
         } else {
-            throw new FileNotFoundException("Could not find " + fileName);
+            throw new SymmetricException("FileNotFound", fileName);
         }
     }
 
@@ -469,7 +437,7 @@ public class SymmetricLauncher {
             SqlScript script = new SqlScript(file.toURL(), dialect.getPlatform().getDataSource());
             script.execute();
         } else {
-            throw new FileNotFoundException("Could not find " + fileName);
+            throw new SymmetricException("FileNotFound", fileName);
         }
     }
 
