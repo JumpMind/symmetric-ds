@@ -421,6 +421,94 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 300000)
+    public void testSuspendIgnorePullRemoteLocalComboBatches() throws ParseException {
+
+        // test suspend / ignore with remote database specifying the suspends
+        // and ignores
+
+        logTestRunning();
+        // Should not sync when status = null
+        Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "442", 100, "C", date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        getClientEngine().pull();
+        IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "442" }).size(), 1,
+                "The order record wasn't sync'd when it should have.");
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
+
+        IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
+        IConfigurationService clientConfigurationService = findOnClient(Constants.CONFIG_SERVICE);
+
+        // suspend on remote
+
+        NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        // ignore on local
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "443", 100, "C", date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        getClientEngine().pull();
+
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "443" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+        // ignore on remote
+
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        c.setSuspended(false);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        // suspend on local
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(false);
+        c.setSuspended(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "444", 100, "C", date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        getClientEngine().pull();
+
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be 0 outgoing batch.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "444" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+        // Cleanup!
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        getClientEngine().pull();
+
+    }
+
+    @Test(timeout = 300000)
     public void testSuspendIgnorePullLocalBatches() throws ParseException {
 
         // test suspend / ignore with local database specifying suspends and
