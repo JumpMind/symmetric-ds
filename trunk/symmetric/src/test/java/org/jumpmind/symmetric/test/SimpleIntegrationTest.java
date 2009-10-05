@@ -239,6 +239,124 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 300000)
+    public void testSuspendIgnorePushRemoteBatches() throws ParseException {
+
+        // test suspend / ignore with remote database specifying the suspends
+        // and ignores
+        logTestRunning();
+        turnOnNoKeysInUpdateParameter(true);
+        Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "101", 100, null, date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "101", 1, "STK", "110000065", 3, 3.33 });
+
+        getClientEngine().push();
+
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "101" }).size(), 1,
+                "The order record wasn't sync'd when it should have.");
+
+        IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
+        IOutgoingBatchService clientOutgoingBatchService = findOnClient(Constants.OUTGOING_BATCH_SERVICE);
+
+        NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "102", 100, null, date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "102", 1, "STK", "110000065", 3, 3.33 });
+        getClientEngine().push();
+
+        OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+
+        assertEquals(batches.getBatches().size(), 1, "There should be one outgoing batches.");
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "102" }).size(), 0,
+                "The order record wasn't sync'd when it should have.");
+
+        rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+        getClientEngine().push();
+
+        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches.");
+
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "102" }).size(), 0,
+                "The order record wasn't sync'd when it should have.");
+
+        // Cleanup!
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        rootConfigurationService.saveNodeChannel(c, true);
+        getClientEngine().push();
+    }
+
+    @Test(timeout = 300000)
+    public void testSuspendIgnorePushLocalBatches() throws ParseException {
+
+        // test suspend / ignore with local database specifying the suspends
+        // and ignores
+        logTestRunning();
+        Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "105", 100, null, date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "105", 1, "STK", "110000065", 3, 3.33 });
+
+        getClientEngine().push();
+
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "105" }).size(), 1,
+                "The order record wasn't sync'd when it should have.");
+
+        IConfigurationService clientConfigurationService = findOnClient(Constants.CONFIG_SERVICE);
+        IOutgoingBatchService clientOutgoingBatchService = findOnClient(Constants.OUTGOING_BATCH_SERVICE);
+
+        NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "106", 100, null, date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "106", 1, "STK", "110000065", 3, 3.33 });
+        getClientEngine().push();
+
+        OutgoingBatches batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches since suspended locally.");
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "106" }).size(), 0,
+                "The order record wasn't sync'd when it should have.");
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+        getClientEngine().push();
+
+        batches = clientOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_ROOT_NODE);
+
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches.");
+
+        assertEquals(rootJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "106" }).size(), 0,
+                "The order record wasn't sync'd when it should have.");
+
+        // Cleanup!
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        clientConfigurationService.saveNodeChannel(c, true);
+        getClientEngine().push();
+    }
+
+    @Test(timeout = 300000)
     public void testSuspendIgnorePullRemoteBatches() throws ParseException {
 
         // test suspend / ignore with remote database specifying the suspends
@@ -252,9 +370,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
         OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
-        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "42" }).size(), 1,
                 "The order record wasn't sync'd when it should have.");
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
 
         // Suspend the channel...
 
