@@ -174,12 +174,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         suspendIgnoreChannelsList.addSuspendChannels(suspends);
         suspendIgnoreChannelsList.addIgnoreChannels(ignores);
 
-        // Have remote, so add in locals now.
-
-        ChannelMap localChannels = configurationService.getSuspendIgnoreChannelLists();
-        suspendIgnoreChannelsList.addSuspendChannels(localChannels.getSuspendChannels());
-        suspendIgnoreChannelsList.addIgnoreChannels(localChannels.getIgnoreChannels());
-
         return suspendIgnoreChannelsList;
     }
 

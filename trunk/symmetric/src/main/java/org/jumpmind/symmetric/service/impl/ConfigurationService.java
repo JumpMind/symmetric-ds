@@ -47,9 +47,9 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     private static final long MAX_NODE_CHANNEL_CACHE_TIME = 60000;
 
-    private static Map<String, List<NodeChannel>> nodeChannelCache;
+    private Map<String, List<NodeChannel>> nodeChannelCache;
 
-    private static long nodeChannelCacheTime;
+    private long nodeChannelCacheTime;
 
     private List<Channel> defaultChannels;
 
@@ -69,10 +69,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveChannel(Channel channel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
                 channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
-                channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() , channel.getId()})) {
+                channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(), channel.getId() })) {
             jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
-                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm() , channel.getExtractPeriodMillis()});
+                    channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() });
         }
         if (reloadChannels) {
             reloadChannels();
@@ -84,7 +84,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void saveNodeChannel(NodeChannel nodeChannel, boolean reloadChannels) {
-        saveChannel(nodeChannel.getChannel(), reloadChannels);
+        saveChannel(nodeChannel.getChannel(), false);
         saveNodeChannelControl(nodeChannel, reloadChannels);
     }
 
@@ -160,7 +160,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     loaded = true;
                 }
             }
-        } 
+        }
 
         if (!loaded) {
 
@@ -187,7 +187,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                         };
                     });
         }
-        
+
         return nodeChannelCache.get(nodeId);
     }
 

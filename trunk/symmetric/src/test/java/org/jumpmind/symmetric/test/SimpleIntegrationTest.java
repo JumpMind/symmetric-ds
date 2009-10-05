@@ -239,7 +239,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test(timeout = 300000)
-    public void testSuspendIgnoreBatches() throws ParseException {
+    public void testSuspendIgnorePullRemoteBatches() throws ParseException {
+
+        // test suspend / ignore with remote database specifying the suspends
+        // and ignores
+
         logTestRunning();
         // Should not sync when status = null
         Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
@@ -254,7 +258,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         // Suspend the channel...
 
-      /*  IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
+        IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
         c.setSuspended(true);
@@ -263,13 +267,104 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
         rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "43", 100, "C", date }, new int[] { Types.VARCHAR,
                 Types.INTEGER, Types.CHAR, Types.DATE });
-        getClientEngine().pull();
 
-        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" }).size(), 0,
                 "The order record was sync'd when it shouldn't have.");
-*/
+
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        // ignore
+
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, but there was one.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+        // Cleanup!
+        c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        rootConfigurationService.saveNodeChannel(c, true);
+
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, but there was one.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "43" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+    }
+
+    @Test(timeout = 300000)
+    public void testSuspendIgnorePullLocalBatches() throws ParseException {
+
+        // test suspend / ignore with local database specifying suspends and
+        // ignores
+
+        logTestRunning();
+        // Should not sync when status = null
+        Date date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "44", 100, "C", date }, new int[] { Types.VARCHAR,
+                Types.INTEGER, Types.CHAR, Types.DATE });
+        getClientEngine().pull();
+        IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "44" }).size(), 1,
+                "The order record wasn't sync'd when it should have.");
+
+        // Suspend the channel...
+
+        IConfigurationService clientConfigurationService = findOnClient(Constants.CONFIG_SERVICE);
+        NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
+        rootJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "45", 100, "C", date }, new int[] { Types.VARCHAR,
+                Types.INTEGER, Types.CHAR, Types.DATE });
+
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 1, "There should be 1 outgoing batch.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setIgnored(true);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        // ignore
+
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, but there was one.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
+        // Cleanup!
+
+        c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
+                TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        c.setSuspended(false);
+        c.setIgnored(false);
+        clientConfigurationService.saveNodeChannel(c, true);
+
+        getClientEngine().pull();
+        batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, but there was one.");
+        assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "45" }).size(), 0,
+                "The order record was sync'd when it shouldn't have.");
+
     }
 
     @Test(timeout = 30000)

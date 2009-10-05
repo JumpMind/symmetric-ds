@@ -106,7 +106,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
         HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local)));
-        ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote.getNodeId());
+        ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
         conn.addRequestProperty(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
         conn.addRequestProperty(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
         return new HttpIncomingTransport(conn);

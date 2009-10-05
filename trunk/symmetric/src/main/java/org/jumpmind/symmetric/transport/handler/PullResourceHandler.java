@@ -50,9 +50,10 @@ public class PullResourceHandler extends AbstractTransportResourceHandler {
     public void pull(String nodeId, OutputStream outputStream, ChannelMap map) throws IOException {
         INodeService nodeService = getNodeService();
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-        ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists();
-        map.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
-        map.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
+         ;
+        ChannelMap remoteSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists(nodeId);
+        map.addSuspendChannels(remoteSuspendIgnoreChannelsList.getSuspendChannels());
+        map.addIgnoreChannels(remoteSuspendIgnoreChannelsList.getIgnoreChannels());
 
         if (nodeSecurity != null) {
             if (nodeSecurity.isRegistrationEnabled()) {
