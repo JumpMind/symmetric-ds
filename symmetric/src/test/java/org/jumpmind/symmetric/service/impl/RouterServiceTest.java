@@ -23,9 +23,9 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     final static String TEST_TABLE_1 = "TEST_ROUTING_DATA_1";
     final static String TEST_TABLE_2 = "TEST_ROUTING_DATA_2";
 
-    final static String NODE_GROUP_NODE_1 = "00001";
-    final static String NODE_GROUP_NODE_2 = "00002";
-    final static String NODE_GROUP_NODE_3 = "00003";
+    final static Node NODE_GROUP_NODE_1 = new Node("00001",TestConstants.TEST_CLIENT_NODE_GROUP);
+    final static Node NODE_GROUP_NODE_2 = new Node("00002",TestConstants.TEST_CLIENT_NODE_GROUP);
+    final static Node NODE_GROUP_NODE_3 = new Node("00003",TestConstants.TEST_CLIENT_NODE_GROUP);
 
     public RouterServiceTest(String dbName) {
         super(dbName);
@@ -189,7 +189,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         getTriggerRouterService().syncTriggers();
 
-        insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1);
+        insert(TEST_TABLE_1, 10, true, NODE_GROUP_NODE_1.getNodeId());
 
         getRoutingService().routeData();
 
@@ -268,7 +268,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             public Object doInTransaction(TransactionStatus status) {
 
                 SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
-                return t.update(String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1), NODE_GROUP_NODE_3);
+                return t.update(String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1), NODE_GROUP_NODE_3.getNodeId());
             }
         };
         int count = (Integer) getTransactionTemplate().execute(callback);
@@ -403,7 +403,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
                     }
                     for (int i = 0; i < count; i++) {
                         t.update(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
-                                NODE_GROUP_NODE_1);
+                                NODE_GROUP_NODE_1.getNodeId());
                     }
                 } finally {
                     if (node2disable != null) {

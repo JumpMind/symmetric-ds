@@ -73,6 +73,11 @@ public class Node {
 
     public Node() {
     }
+    
+    public Node(String nodeId, String nodeGroupId) {
+        this.nodeId = nodeId;
+        this.nodeGroupId = nodeGroupId;
+    }    
 
     public Node(IParameterService runtimeConfig, IDbDialect dbDialect) {
         setNodeGroupId(runtimeConfig.getNodeGroupId());

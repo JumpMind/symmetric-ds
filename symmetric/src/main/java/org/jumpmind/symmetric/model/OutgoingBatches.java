@@ -20,6 +20,11 @@
 package org.jumpmind.symmetric.model;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -178,6 +183,45 @@ public class OutgoingBatches {
 
         batches.removeAll(filtered);
         return filtered;
+    }
+
+    public void sortChannels(List<NodeChannel> channels) {
+
+        final HashMap<String, Date> errorChannels = new HashMap<String, Date>();
+        for (OutgoingBatch batch : batches) {
+            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
+                errorChannels.put(batch.getChannelId(), batch.getLastUpdatedTime());
+            }
+        }
+
+        Collections.sort(channels, new Comparator<NodeChannel>() {
+            public int compare(NodeChannel b1, NodeChannel b2) {
+                boolean isError1 = errorChannels.containsKey(b1.getId());
+                boolean isError2 = errorChannels.containsKey(b2.getId());
+                if (!isError1 && !isError2) {
+                    return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
+                } else if (isError1 && isError2) {
+                    return errorChannels.get(b1.getId()).compareTo(errorChannels.get(b2.getId()));
+                } else if (!isError1 && isError2) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        for (NodeChannel nodeChannel : channels) {
+            long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
+            Date lastExtractedTime = nodeChannel.getLastExtractedTime();
+
+            if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
+                    || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
+                addActiveChannel(nodeChannel);
+            }
+        }
+
+        filterBatchesForInactiveChannels();
+
     }
 
 }

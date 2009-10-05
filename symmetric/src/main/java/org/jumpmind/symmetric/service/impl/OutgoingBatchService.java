@@ -27,16 +27,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -60,10 +57,10 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IConfigurationService configurationService;
 
     @Transactional
-    public void markAllAsSentForNode(String nodeId) {
+    public void markAllAsSentForNode(Node node) {
         OutgoingBatches batches = null;
         do {
-            batches = getOutgoingBatches(nodeId);
+            batches = getOutgoingBatches(node);
             for (OutgoingBatch outgoingBatch : batches.getBatches()) {
                 outgoingBatch.setStatus(Status.OK);
                 updateOutgoingBatch(outgoingBatch);
@@ -136,52 +133,22 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * order.
      */
     @SuppressWarnings("unchecked")
-    public OutgoingBatches getOutgoingBatches(String targetNodeId) {
+    public OutgoingBatches getOutgoingBatches(Node node) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
-                new Object[] { targetNodeId, OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
+                new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
                         OutgoingBatch.Status.ER.toString() }, new OutgoingBatchMapper());
-        final HashSet<String> errorChannels = new HashSet<String>();
-        for (OutgoingBatch batch : list) {
-            if (batch.getStatus().equals(OutgoingBatch.Status.ER)) {
-                errorChannels.add(batch.getChannelId());
-            }
-        }
 
-        List<NodeChannel> channels = configurationService.getNodeChannels(targetNodeId);
-
-        Collections.sort(channels, new Comparator<NodeChannel>() {
-            public int compare(NodeChannel b1, NodeChannel b2) {
-                boolean isError1 = errorChannels.contains(b1.getId());
-                boolean isError2 = errorChannels.contains(b2.getId());
-                if (isError1 == isError2) {
-                    return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
-                } else if (!isError1 && isError2) {
-                    return -1;
-                } else {
-                    return 1;
-                }
-            }
-        });
 
         OutgoingBatches batches = new OutgoingBatches(list);
 
-        for (NodeChannel nodeChannel : channels) {
-            long extractPeriodMillis = nodeChannel.getExtractPeriodMillis();
-            Date lastExtractedTime = nodeChannel.getLastExtractedTime();
-
-            if ((extractPeriodMillis < 1) || (lastExtractedTime == null)
-                    || (Calendar.getInstance().getTimeInMillis() - lastExtractedTime.getTime() >= extractPeriodMillis)) {
-                batches.addActiveChannel(nodeChannel);
-            }
-        }
-
-        batches.filterBatchesForInactiveChannels();
+        List<NodeChannel> channels = configurationService.getNodeChannels(node.getNodeId());
+        batches.sortChannels(channels);
 
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
 
         for (NodeChannel channel : channels) {
             keepers.addAll(batches
-                    .getBatchesForChannelWindows(nodeService.findNode(targetNodeId), channel, configurationService
+                    .getBatchesForChannelWindows(node, channel, configurationService
                             .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId())));
         }
         batches.setBatches(keepers);

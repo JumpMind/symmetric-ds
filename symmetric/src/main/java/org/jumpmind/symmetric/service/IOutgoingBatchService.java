@@ -23,17 +23,18 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public interface IOutgoingBatchService {
 
-    public void markAllAsSentForNode(String nodeId);
+    public void markAllAsSentForNode(Node node);
 
     public OutgoingBatch findOutgoingBatch(long batchId);
 
-    public OutgoingBatches getOutgoingBatches(String nodeId);
+    public OutgoingBatches getOutgoingBatches(Node node);
 
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId);
 
