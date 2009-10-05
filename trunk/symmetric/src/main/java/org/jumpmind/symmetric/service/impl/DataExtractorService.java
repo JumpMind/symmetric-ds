@@ -297,7 +297,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routingService.routeData();
         }
 
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node.getNodeId());
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
         if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
 
             ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(configurationService);

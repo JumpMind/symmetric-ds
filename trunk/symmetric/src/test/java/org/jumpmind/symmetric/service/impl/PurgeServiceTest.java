@@ -82,7 +82,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         data.setDataId(1);
         getDataService().insertDataAndDataEvent(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
                 router.getRouter().getRouterId());
-        getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
 
     @Test

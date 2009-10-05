@@ -247,7 +247,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 Types.INTEGER, Types.CHAR, Types.DATE });
         getClientEngine().pull();
         IOutgoingBatchService rootOutgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
-        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "42" }).size(), 1,
                 "The order record wasn't sync'd when it should have.");
@@ -333,7 +333,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
 
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
 
         assertEquals(clientJdbcTemplate.queryForList(selectOrderHeaderSql, new Object[] { "11" }).size(), 0,
@@ -363,7 +363,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootJdbcTemplate.update("update ONE_COLUMN_TABLE set MY_ONE_COLUMN=1 where MY_ONE_COLUMN=1");
         getClientEngine().pull();
         IOutgoingBatchService outgoingBatchService = findOnRoot(Constants.OUTGOING_BATCH_SERVICE);
-        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_EXTERNAL_ID);
+        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
         assertEquals(batches.getBatches().size(), 0, "There should be no outgoing batches, yet I found some.");
         turnOnNoKeysInUpdateParameter(oldValue);
     }

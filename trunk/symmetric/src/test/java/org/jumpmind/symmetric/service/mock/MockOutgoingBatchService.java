@@ -21,6 +21,7 @@ package org.jumpmind.symmetric.service.mock;
 
 import java.util.List;
 
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -30,7 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class MockOutgoingBatchService implements IOutgoingBatchService {
 
-    public void markAllAsSentForNode(String nodeId) {
+    public void markAllAsSentForNode(Node node) {
     }
 
     public boolean isUnsentDataOnChannelForNode(String channelId, String nodeId) {
@@ -53,7 +54,7 @@ public class MockOutgoingBatchService implements IOutgoingBatchService {
         return null;
     }
 
-    public OutgoingBatches getOutgoingBatches(String nodeId) {
+    public OutgoingBatches getOutgoingBatches(Node node) {
         return null;
     }
 
