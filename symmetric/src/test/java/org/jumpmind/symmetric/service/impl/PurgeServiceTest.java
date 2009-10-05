@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.model.OutgoingBatch.Status;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
@@ -83,6 +84,33 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         getDataService().insertDataAndDataEvent(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
                 router.getRouter().getRouterId());
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
+    }
+    
+    @Test
+    public void testThatPurgeDeletesSuccessfullyIgnoredData() throws Exception {
+        int oldPurgeRetentionPeriod = getParameterService().getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, 10);
+        setupIgnoredData();
+        makeDataOld();
+        assertCounts(1);
+        getSymmetricEngine().purge();
+        assertCounts(0);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, oldPurgeRetentionPeriod);
+    } 
+    
+    private void setupIgnoredData() {
+        cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
+        assertCounts(0);
+        TriggerRouter router = getTriggerRouterService().getActiveTriggerRouters(TestConstants.TEST_ROOT_NODE_GROUP,
+                false).values().iterator().next().get(0);
+        Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
+                getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        data.setDataId(1);
+        getDataService().insertDataAndDataEvent(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
+                router.getRouter().getRouterId());
+        getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
+        getJdbcTemplate().update("update sym_outgoing_batch set status=?", new Object[] { Status.IG.name() });
     }
 
     @Test
