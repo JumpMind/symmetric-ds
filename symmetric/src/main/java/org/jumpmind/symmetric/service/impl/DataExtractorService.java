@@ -299,8 +299,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(node);
         if (batches != null && batches.getBatches() != null && batches.getBatches().size() > 0) {
+            ;
 
-            ChannelMap suspendIgnoreChannels = targetTransport.getSuspendIgnoreChannelLists(configurationService);
+            ChannelMap suspendIgnoreChannelsList = targetTransport.getSuspendIgnoreChannelLists(configurationService);
 
             // We now have either our local suspend/ignore list, or the combined
             // remote send/ignore list and our local list (along with a
@@ -310,11 +311,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             // ignored ones by ultimately setting the status to ignored and
             // updating them.
 
-            batches.filterBatchesForChannels(suspendIgnoreChannels
-                    .getSuspendChannels());
-
-            List<OutgoingBatch> ignoredBatches = batches.filterBatchesForChannels(suspendIgnoreChannels
+            List<OutgoingBatch> ignoredBatches = batches.filterBatchesForChannels(suspendIgnoreChannelsList
                     .getIgnoreChannels());
+
+            batches.filterBatchesForChannels(suspendIgnoreChannelsList.getSuspendChannels());
 
             FileOutgoingTransport fileTransport = null;
 
@@ -336,7 +336,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 for (OutgoingBatch batch : ignoredBatches) {
                     batch.setStatus(OutgoingBatch.Status.IG);
                 }
-                
+
                 outgoingBatchService.updateOutgoingBatches(ignoredBatches);
 
                 // Next, we update the node channel controls to the current
