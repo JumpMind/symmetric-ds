@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
@@ -41,6 +42,7 @@ import org.jumpmind.symmetric.common.Message;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -79,7 +81,9 @@ public class DataService extends AbstractService implements IDataService {
 
     private IOutgoingBatchService outgoingBatchService;
 
-    private List<IReloadListener> listeners;
+    private List<IReloadListener> reloadListeners;
+
+    private List<IHeartbeatListener> heartbeatListeners;
 
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
@@ -202,8 +206,8 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertReloadEvent(Node targetNode) {
         Node sourceNode = nodeService.findIdentity();
-        if (listeners != null) {
-            for (IReloadListener listener : listeners) {
+        if (reloadListeners != null) {
+            for (IReloadListener listener : reloadListeners) {
                 listener.beforeReload(targetNode);
             }
         }
@@ -237,8 +241,8 @@ public class DataService extends AbstractService implements IDataService {
             insertReloadEvent(targetNode, trigger);
         }
 
-        if (listeners != null) {
-            for (IReloadListener listener : listeners) {
+        if (reloadListeners != null) {
+            for (IReloadListener listener : reloadListeners) {
                 listener.afterReload(targetNode);
             }
         }
@@ -416,10 +420,12 @@ public class DataService extends AbstractService implements IDataService {
         data.setRowData(out.toString());
     }
 
+    /**
+     * @see IDataService#heartbeat()
+     */
     public void heartbeat() {
         if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
             try {
-                List<Node> heartbeatNodesToPush = new ArrayList<Node>();
                 Node me = nodeService.findIdentity();
                 if (me != null) {
                     log.info("NodeVersionUpdating");
@@ -439,20 +445,15 @@ public class DataService extends AbstractService implements IDataService {
                     }
 
                     nodeService.updateNode(me);
-                    log.info("NodeVerionUpdated");
+                    log.info("NodeVersionUpdated");
 
-                    // don't send new heart beat events if we haven't sent
-                    // the last ones ...
-                    if (!nodeService.isRegistrationServer()
-                            && parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
-                            && !outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, me
-                                    .getNodeId())) {
-                        heartbeatNodesToPush.add(me);
-                        heartbeatNodesToPush.addAll(nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId()));
-                        for (Node node : heartbeatNodesToPush) {
-                            insertHeartbeatEvent(node);
+                    Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
+                    if (heartbeatListeners != null) {
+                        for (IHeartbeatListener l : heartbeatListeners) {
+                            l.heartbeat(me, children);
                         }
                     }
+
                 }
 
             } finally {
@@ -465,19 +466,43 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void setReloadListeners(List<IReloadListener> listeners) {
-        this.listeners = listeners;
+        this.reloadListeners = listeners;
     }
 
     public void addReloadListener(IReloadListener listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<IReloadListener>();
+        if (reloadListeners == null) {
+            reloadListeners = new ArrayList<IReloadListener>();
         }
-        listeners.add(listener);
+        reloadListeners.add(listener);
     }
 
-    public void removeReloadListener(IReloadListener listener) {
-        listeners.remove(listener);
+    public boolean removeReloadListener(IReloadListener listener) {
+        if (reloadListeners != null) {
+            return reloadListeners.remove(listener);
+        } else {
+            return false;
+        }
     }
+    
+    public void setHeartbeatListeners(List<IHeartbeatListener> listeners) {
+        this.heartbeatListeners = listeners;
+    }
+
+    public void addHeartbeatListener(IHeartbeatListener listener) {
+        if (heartbeatListeners == null) {
+            heartbeatListeners = new ArrayList<IHeartbeatListener>();
+        }
+        heartbeatListeners.add(listener);
+    }
+
+    public boolean removeHeartbeatListener(IHeartbeatListener listener) {
+        if (heartbeatListeners != null) {
+            return heartbeatListeners.remove(listener);
+        } else {
+            return false;
+        }
+    }
+    
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;

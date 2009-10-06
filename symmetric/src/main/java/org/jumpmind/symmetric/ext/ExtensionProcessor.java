@@ -149,6 +149,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof IBatchListener) {
             dataLoaderService.addBatchListener((IBatchListener) ext);
         }
+        
+        if (ext instanceof IHeartbeatListener) {
+            dataService.addHeartbeatListener((IHeartbeatListener)ext);
+        }
 
         if (ext instanceof IDataLoaderFilter) {
             dataLoaderService.addDataLoaderFilter((IDataLoaderFilter) ext);

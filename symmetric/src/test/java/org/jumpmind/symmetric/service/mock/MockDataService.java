@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataRef;
@@ -39,6 +40,9 @@ public class MockDataService implements IDataService {
 
     public void addReloadListener(IReloadListener listener) {
 
+    }
+    
+    public void addHeartbeatListener(IHeartbeatListener listener) {
     }
 
     public Data createData(String tableName) {
@@ -82,9 +86,9 @@ public class MockDataService implements IDataService {
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId) {
 
     }
-    
+
     public void insertDataEvent(long dataId, long batchId, String routerId) {
-        
+
     }
 
     public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
@@ -143,8 +147,8 @@ public class MockDataService implements IDataService {
         return null;
     }
 
-    public void removeReloadListener(IReloadListener listener) {
-
+    public boolean removeReloadListener(IReloadListener listener) {
+        return false;
     }
 
     public void saveDataRef(DataRef dataRef) {
