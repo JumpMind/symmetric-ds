@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataRef;
@@ -34,10 +35,13 @@ public interface IDataService {
 
     @Transactional
     public void insertReloadEvent(final Node targetNode, final TriggerRouter trigger);
-    
+
     @Transactional
-    public void insertResendConfigEvent(final Node targetNode);    
-    
+    public void insertResendConfigEvent(final Node targetNode);
+
+    /**
+     * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
+     */
     @Transactional
     public void heartbeat();
 
@@ -46,25 +50,25 @@ public interface IDataService {
     public long insertData(final Data data);
 
     public void insertDataEvent(long dataId, long batchId, String routerId);
-    
+
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
 
     public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId);
-    
+
     public void insertDataAndDataEvent(Data data, String nodeId, String routerId);
 
     public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter);
 
     public void insertSqlEvent(Node targetNode, Trigger trigger, String sql);
-    
+
     public void insertSqlEvent(final Node targetNode, String sql);
 
     public void insertCreateEvent(Node targetNode, TriggerRouter triggerRouter, String xml);
-    
+
     public void saveDataRef(DataRef dataRef);
-    
+
     public DataRef getDataRef();
-    
+
     public Date findCreateTimeOfEvent(long dataId);
 
     public Data createData(String tableName);
@@ -76,11 +80,13 @@ public interface IDataService {
     public void setRowDataFromMap(Data data, Map<String, String> map);
 
     public void addReloadListener(IReloadListener listener);
+    
+    public void addHeartbeatListener(IHeartbeatListener listener);
 
     public void setReloadListeners(List<IReloadListener> listeners);
 
-    public void removeReloadListener(IReloadListener listener);
-    
+    public boolean removeReloadListener(IReloadListener listener);
+
     public Data readData(ResultSet results) throws SQLException;
 
 }

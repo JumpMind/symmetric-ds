@@ -14,7 +14,7 @@
         <property name="acknowledgeService" ref="acknowledgeService" />
         <property name="registrationService" ref="registrationService" />
         <property name="transportManager" ref="transportManager" />
-        <property name="routingService" ref="routingService"/>
+        <property name="routingService" ref="routingService" />
     </bean>
 
     <bean id="configChangedDataFilter" class="org.jumpmind.symmetric.load.ConfigurationChangedFilter">
@@ -25,8 +25,15 @@
     </bean>
 
     <bean id="httpBandwidthUrlSelector" class="org.jumpmind.symmetric.transport.http.HttpBandwidthUrlSelector">
-        <property name="nodeService" ref="nodeService"/>
-        <property name="bandwidthService" ref="bandwidthService"/>
+        <property name="nodeService" ref="nodeService" />
+        <property name="bandwidthService" ref="bandwidthService" />
     </bean>
-    
+
+    <bean id="sendHeartbeat" class="org.jumpmind.symmetric.job.PushHeartbeatListener">
+        <property name="dataService" ref="dataService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="outgoingBatchService" ref="outgoingBatchService" />
+        <property name="enabled" value="$[sym.heartbeat.sync.on.push]"/>
+    </bean>
+
 </beans>
