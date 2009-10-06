@@ -70,6 +70,10 @@ public class Node {
     private Date heartbeatTime = new Date();
 
     private String createdByNodeId;
+    
+    private int batchToSendCount;
+    
+    private int batchInErrorCount;
 
     public Node() {
     }
@@ -204,6 +208,22 @@ public class Node {
         this.createdByNodeId = createdByNodeId;
     }
 
+    public void setBatchInErrorCount(int batchesInErrorCount) {
+        this.batchInErrorCount = batchesInErrorCount;
+    }
+    
+    public int getBatchInErrorCount() {
+        return batchInErrorCount;
+    }
+    
+    public void setBatchToSendCount(int batchesToSendCount) {
+        this.batchToSendCount = batchesToSendCount;
+    }
+    
+    public int getBatchToSendCount() {
+        return batchToSendCount;
+    }
+    
     public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {
         if (symmetricVersion != null) {
             if (symmetricVersion.equals("development")) {

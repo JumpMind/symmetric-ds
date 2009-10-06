@@ -12,27 +12,27 @@ insert into sym_node_group_link values ('test-root-group','test-node-group', 'W'
 insert into sym_node_group_link values ('test-group-for-root-to-pull','test-root-group', 'W');
 insert into sym_node_group_link values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link values ('symmetric','test-root-group', 'P');
-insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','H2', '1.1', current_timestamp, null, '00000');
-insert into sym_node values ('1', 'test-node-group', '1', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','H2', '5.0', current_timestamp, null, '00000');
-insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'H2', '5.0', current_timestamp, null, '00000');
-insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
-insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, '00000');
-insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
-insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
-insert into sym_node values ('pull1', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'H2', '5.0', current_timestamp, null, '00000');
-insert into sym_node values ('pull2', 'test-group-for-root-to-pull', 'test', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
-insert into sym_node values ('pull3', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, '00000');
+insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','H2', '1.1', current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('1', 'test-node-group', '1', 1, 'internal://root', '1', '1.4.0-SNAPSHOT','H2', '5.0', current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'H2', '5.0', current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('pull1', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/sync', '1', '1.4.0-SNAPSHOT', 'H2', '5.0', current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('pull2', 'test-group-for-root-to-pull', 'test', 1, null, null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, 0, 0, '00000');
+insert into sym_node values ('pull3', 'test-group-for-root-to-pull', 'test', 1, 'http://localhost:8080/', '0', '1.4.0-SNAPSHOT', 'H2', '4', current_timestamp, null, 0, 0, '00000');
 
 
-insert into sym_node values ('55555', 'test-node-group2', '00011', 1, 'http://snoopdog.com', null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, '00000');
+insert into sym_node values ('55555', 'test-node-group2', '00011', 1, 'http://snoopdog.com', null, '1.4.0-SNAPSHOT', null, null, current_timestamp, null, 0, 0, '00000');
 
 -- For testFindNodesThatOriginatedHere
-insert into sym_node values ('44001', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '00011');
-insert into sym_node values ('44002', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '00012');
-insert into sym_node values ('44003', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '00011');
-insert into sym_node values ('44004', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '44002');
-insert into sym_node values ('44005', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '44001');
-insert into sym_node values ('44006', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, '44003');
+insert into sym_node values ('44001', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '00011');
+insert into sym_node values ('44002', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '00012');
+insert into sym_node values ('44003', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '00011');
+insert into sym_node values ('44004', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '44002');
+insert into sym_node values ('44005', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '44001');
+insert into sym_node values ('44006', 'unit-test-only', '44001', 1, null, null, null, null, null, current_timestamp, null, 0, 0, '44003');
 
 insert into sym_node_security values ('00001', 'secret', 0, {ts '2007-01-01 01:01:01'}, 0, {ts '2007-01-01 01:01:01'}, '00000');
 insert into sym_node_security values ('00002', 'supersecret', 1, null, 0, null, '00000');

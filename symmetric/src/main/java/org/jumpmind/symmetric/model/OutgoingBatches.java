@@ -81,6 +81,20 @@ public class OutgoingBatches {
         batches.removeAll(filtered);
         return filtered;
     }
+    
+    public int countBatches(boolean includeOnlyErrors) {
+        int count = 0;
+        if (batches != null) {
+            for (OutgoingBatch batch : batches) {
+                if (includeOnlyErrors && batch.getStatus() == OutgoingBatch.Status.ER) {
+                    count++;
+                } else {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 
     public List<OutgoingBatch> filterBatchesForChannel(String channelId) {
         List<OutgoingBatch> filtered = getBatchesForChannel(channelId);
