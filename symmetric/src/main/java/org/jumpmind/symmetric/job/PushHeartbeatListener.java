@@ -31,7 +31,7 @@ public class PushHeartbeatListener implements IHeartbeatListener {
         }
     }
     
-    public long getTimeBetweenHeartbeats() {
+    public long getTimeBetweenHeartbeatsInSeconds() {
         return this.timeBetweenHeartbeats;
     }
     
