@@ -43,7 +43,7 @@ public interface IDataService {
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
      */
     @Transactional
-    public void heartbeat();
+    public void heartbeat(boolean force);
 
     public void insertHeartbeatEvent(Node node);
 

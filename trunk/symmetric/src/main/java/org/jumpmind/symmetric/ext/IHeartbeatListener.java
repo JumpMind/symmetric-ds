@@ -11,7 +11,8 @@ import org.jumpmind.symmetric.model.Node;
  * a parameter.
  */
 public interface IHeartbeatListener extends IExtensionPoint {
-
+    
     public void heartbeat(Node me, Set<Node> children);
-
+    public long getTimeBetweenHeartbeats();
+    
 }

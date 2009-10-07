@@ -11,10 +11,11 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 public class PushHeartbeatListener implements IHeartbeatListener {
 
-    boolean enabled;
-    IDataService dataService;
-    INodeService nodeService;
-    IOutgoingBatchService outgoingBatchService;
+    private boolean enabled;
+    private IDataService dataService;
+    private INodeService nodeService;
+    private IOutgoingBatchService outgoingBatchService;
+    private long timeBetweenHeartbeats;
 
     public void heartbeat(Node me, Set<Node> children) {
         if (enabled) {
@@ -28,6 +29,14 @@ public class PushHeartbeatListener implements IHeartbeatListener {
                 }
             }
         }
+    }
+    
+    public long getTimeBetweenHeartbeats() {
+        return this.timeBetweenHeartbeats;
+    }
+    
+    public void setTimeBetweenHeartbeats(long timeBetweenHeartbeats) {
+        this.timeBetweenHeartbeats = timeBetweenHeartbeats;
     }
 
     public boolean isAutoRegister() {

@@ -783,7 +783,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Thread.sleep(1000);
         IParameterService parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, getClientEngine());
         parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, true);
-        getClientEngine().heartbeat();
+        getClientEngine().heartbeat(true);
         parameterService.saveParameter(ParameterConstants.START_HEARTBEAT_JOB, false);
         Date time = (Date) clientJdbcTemplate.queryForObject(checkHeartbeatSql, Timestamp.class);
         Assert.assertTrue("The heartbeat time was not updated locally.", time != null && time.getTime() > ts);
