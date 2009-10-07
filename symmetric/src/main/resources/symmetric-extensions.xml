@@ -34,6 +34,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="enabled" value="$[sym.heartbeat.sync.on.push]"/>
+        <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.ms]" />
     </bean>
 
 </beans>

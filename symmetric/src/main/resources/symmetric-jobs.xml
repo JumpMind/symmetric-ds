@@ -162,8 +162,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="scheduledTimerTasks">
             <list>
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
-                    <property name="delay" value="$[sym.heartbeat.period.time.ms]" />
-                    <property name="period" value="$[sym.heartbeat.period.time.ms]" />
+                    <property name="delay" value="1000" />
+                    <property name="period" value="1000" />
                     <property name="timerTask">
                         <bean class="org.jumpmind.symmetric.job.HeartbeatJob">
                             <property name="dataService" ref="dataService" />

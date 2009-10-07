@@ -70,7 +70,7 @@ public class MockDataService implements IDataService {
         return null;
     }
 
-    public void heartbeat() {
+    public void heartbeat(boolean force) {
 
     }
 

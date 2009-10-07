@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.service.impl.AcknowledgeServiceTest;
 import org.jumpmind.symmetric.service.impl.ClusterServiceTest;
 import org.jumpmind.symmetric.service.impl.DataExtractorServiceTest;
 import org.jumpmind.symmetric.service.impl.DataLoaderServiceTest;
+import org.jumpmind.symmetric.service.impl.DataServiceTest;
 import org.jumpmind.symmetric.service.impl.NodeServiceTest;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchServiceTest;
 import org.jumpmind.symmetric.service.impl.ParameterServiceTest;
@@ -45,12 +46,13 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(ParameterizedSuite.class)
-@SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataExtractorTest.class, ParameterFilterTest.class,
-        RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class, NodeConcurrencyFilterTest.class,
-        AcknowledgeServiceTest.class, ClusterServiceTest.class, DataExtractorServiceTest.class,
-        DataLoaderServiceTest.class, NodeServiceTest.class, OutgoingBatchServiceTest.class, ParameterServiceTest.class,
-        PurgeServiceTest.class, RegistrationServiceTest.class, StatisticServiceTest.class,
-        XmlPublisherFilterTest.class,  AdditiveDataLoaderFilterTest.class, CleanupTest.class })
+@SuiteClasses( { TriggerRouterServiceTest.class, DataLoaderTest.class, DataExtractorTest.class,
+        ParameterFilterTest.class, RouterServiceTest.class, CrossCatalogSyncTest.class, FunkyDataTypesTest.class,
+        NodeConcurrencyFilterTest.class, AcknowledgeServiceTest.class, ClusterServiceTest.class,
+        DataExtractorServiceTest.class, DataLoaderServiceTest.class, NodeServiceTest.class,
+        OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
+        RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
+        AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
 public class DatabaseTestSuite extends AbstractDatabaseTest {
 
     public static final String DEFAULT_TEST_PREFIX = "test";

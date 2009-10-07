@@ -29,7 +29,7 @@ public class HeartbeatJob extends AbstractJob {
     @Override
     public void doJob() throws Exception {
         printDatabaseStats();
-        dataService.heartbeat();
+        dataService.heartbeat(false);
     }
 
     public void setDataService(IDataService dataService) {

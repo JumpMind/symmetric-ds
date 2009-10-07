@@ -317,7 +317,7 @@ public class SymmetricEngine {
                             .getExternalId());
                 }
                 triggerService.syncTriggers();
-                heartbeat();
+                heartbeat(false);
                 jobManager.startJobs();
                 log
                         .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
@@ -518,8 +518,8 @@ public class SymmetricEngine {
      * 
      * @see IconfigurationService#heartbeat()
      */
-    public void heartbeat() {
-        dataService.heartbeat();
+    public void heartbeat(boolean force) {
+        dataService.heartbeat(force);
     }
 
     /**

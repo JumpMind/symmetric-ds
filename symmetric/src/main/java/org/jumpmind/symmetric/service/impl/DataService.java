@@ -86,6 +86,8 @@ public class DataService extends AbstractService implements IDataService {
 
     private List<IHeartbeatListener> heartbeatListeners;
 
+    protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
+
     public void insertReloadEvent(final Node targetNode, final TriggerRouter triggerRouter) {
         insertReloadEvent(targetNode, triggerRouter, null);
     }
@@ -422,10 +424,46 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
+     * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat.
+     * 
+     * @param force
+     *            if true, then return the entire list of
+     *            {@link IHeartbeatListener}s
+     */
+    protected List<IHeartbeatListener> getHeartbeatListeners(boolean force) {
+        if (force) {
+            return this.heartbeatListeners;
+        } else {
+            List<IHeartbeatListener> listeners = new ArrayList<IHeartbeatListener>();
+            if (listeners != null) {
+                long ts = System.currentTimeMillis();
+                for (IHeartbeatListener iHeartbeatListener : this.heartbeatListeners) {
+                    Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
+                    if (lastHeartbeatTimestamp == null
+                            || lastHeartbeatTimestamp <= ts - iHeartbeatListener.getTimeBetweenHeartbeats()) {
+                        listeners.add(iHeartbeatListener);
+                    }
+                }
+            }
+            return listeners;
+        }
+    }
+
+    protected void updateLastHeartbeatTime(List<IHeartbeatListener> listeners) {
+        if (listeners != null) {
+            Long ts = System.currentTimeMillis();
+            for (IHeartbeatListener iHeartbeatListener : listeners) {
+                lastHeartbeatTimestamps.put(iHeartbeatListener, ts);
+            }
+        }
+    }
+
+    /**
      * @see IDataService#heartbeat()
      */
-    public void heartbeat() {
-        if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
+    public void heartbeat(boolean force) {
+        List<IHeartbeatListener> listeners = getHeartbeatListeners(force);
+        if (listeners.size() > 0 && clusterService.lock(LockActionConstants.HEARTBEAT)) {
             try {
                 Node me = nodeService.findIdentity();
                 if (me != null) {
@@ -452,17 +490,15 @@ public class DataService extends AbstractService implements IDataService {
                     log.info("NodeVersionUpdated");
 
                     Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
-                    if (heartbeatListeners != null) {
-                        for (IHeartbeatListener l : heartbeatListeners) {
-                            l.heartbeat(me, children);
-                        }
+                    for (IHeartbeatListener l : listeners) {
+                        l.heartbeat(me, children);
                     }
 
                 }
 
             } finally {
+                updateLastHeartbeatTime(listeners);
                 clusterService.unlock(LockActionConstants.HEARTBEAT);
-
             }
         } else {
             log.info("HeartbeatUpdatingFailure");
@@ -487,7 +523,7 @@ public class DataService extends AbstractService implements IDataService {
             return false;
         }
     }
-    
+
     public void setHeartbeatListeners(List<IHeartbeatListener> listeners) {
         this.heartbeatListeners = listeners;
     }
@@ -506,7 +542,6 @@ public class DataService extends AbstractService implements IDataService {
             return false;
         }
     }
-    
 
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
