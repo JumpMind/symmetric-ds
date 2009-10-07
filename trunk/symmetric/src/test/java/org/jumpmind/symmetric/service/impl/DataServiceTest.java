@@ -26,7 +26,7 @@ public class DataServiceTest extends AbstractDatabaseTest {
         DataService ds = new DataService();
         MockHeartbeatListener one = new MockHeartbeatListener();
         MockHeartbeatListener two = new MockHeartbeatListener();
-        one.timeBetweenHeartbeats = 10000;
+        one.timeBetweenHeartbeats = 10;
         two.timeBetweenHeartbeats = 0;
         ds.addHeartbeatListener(one);
         ds.addHeartbeatListener(two);
@@ -38,8 +38,8 @@ public class DataServiceTest extends AbstractDatabaseTest {
         listeners = ds.getHeartbeatListeners(false);
         Assert.assertEquals(1, listeners.size());
         Assert.assertEquals(two, listeners.get(0));
-        one.timeBetweenHeartbeats = 100;
-        AppUtils.sleep(100);
+        one.timeBetweenHeartbeats = 1;
+        AppUtils.sleep(1000);
         listeners = ds.getHeartbeatListeners(false);
         Assert.assertEquals(2, listeners.size());
     }
@@ -48,7 +48,7 @@ public class DataServiceTest extends AbstractDatabaseTest {
         protected boolean heartbeated = false;
         protected long timeBetweenHeartbeats;
 
-        public long getTimeBetweenHeartbeats() {
+        public long getTimeBetweenHeartbeatsInSeconds() {
             return timeBetweenHeartbeats;
         }
 

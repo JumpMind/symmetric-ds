@@ -424,7 +424,8 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     /**
-     * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat.
+     * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat
+     * according to {@link IHeartbeatListener#getTimeBetweenHeartbeatsInSeconds()}
      * 
      * @param force
      *            if true, then return the entire list of
@@ -440,7 +441,7 @@ public class DataService extends AbstractService implements IDataService {
                 for (IHeartbeatListener iHeartbeatListener : this.heartbeatListeners) {
                     Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
                     if (lastHeartbeatTimestamp == null
-                            || lastHeartbeatTimestamp <= ts - iHeartbeatListener.getTimeBetweenHeartbeats()) {
+                            || lastHeartbeatTimestamp <= ts - (iHeartbeatListener.getTimeBetweenHeartbeatsInSeconds()*1000)) {
                         listeners.add(iHeartbeatListener);
                     }
                 }
