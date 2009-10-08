@@ -41,7 +41,7 @@ public class DynamicPropertiesFiles extends ArrayList<String> {
         File file = new File(System.getProperty("user.dir"), "symmetric.properties");
         if (file.exists() && file.isFile()) {
             try {
-                add(file.toURL().toExternalForm());
+                add(file.toURI().toURL().toExternalForm());
             } catch (MalformedURLException e) {
                 log.error(e);
             }
