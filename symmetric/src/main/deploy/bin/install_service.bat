@@ -1,6 +1,7 @@
 @echo off
 rem ---------------------------------------------------------------------------
 rem Install Symmetric as a Windows Service
+rem http://forge.ow2.org/projects/javaservice/
 rem ---------------------------------------------------------------------------
 
 set APPDIR=%~dp0\..
