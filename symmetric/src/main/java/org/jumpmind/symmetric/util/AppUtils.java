@@ -21,17 +21,22 @@ package org.jumpmind.symmetric.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.transport.AuthenticationException;
 
 public class AppUtils {
 
@@ -135,5 +140,23 @@ public class AppUtils {
         } catch (InterruptedException e) {
             log.warn("Message", e.getMessage());
         }
+    }
+
+    /**
+     * Check to see if the {@link Exception} was caused by an offline scenario.
+     * 
+     * @param ex
+     *            The exception to check. Nested exception will also be checked.
+     * @return true if this exception was caused by the {@link Node} being
+     *         offline.
+     */
+    public boolean isOffline(Exception ex) {
+        boolean offline = false;
+        if (ex != null) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            offline = cause instanceof SocketException || cause instanceof ConnectException
+                    || cause instanceof AuthenticationException;
+        }
+        return offline;
     }
 }
