@@ -5,6 +5,10 @@ import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.Timer;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -21,13 +25,14 @@ import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
-public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFilter,
-        IBatchListener, IAcknowledgeEventListener {
+public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFilter, IBatchListener,
+        IAcknowledgeEventListener {
 
     private final ILog logger = LogFactory.getLog(getClass());
 
     private boolean enabled = true;
     private TrayIcon trayIcon = null;
+    private Timer trayTimer = null;
     private IParameterService parameterService;
 
     private Image AT_REST;
@@ -36,6 +41,7 @@ public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFi
 
     private Image currentImage;
 
+    private Image nextImage;
 
     protected void init() {
         if (SystemTray.isSupported()) {
@@ -48,6 +54,24 @@ public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFi
                 trayIcon = new TrayIcon(AT_REST, parameterService.getString(ParameterConstants.ENGINE_NAME));
                 tray.add(trayIcon);
                 setTrayIcon(AT_REST);
+
+                trayTimer = new Timer(500, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (nextImage != null) {
+                            if (currentImage == null
+                                    || (!nextImage.equals(currentImage) && !(currentImage.equals(ERROR) && nextImage
+                                            .equals(AT_REST)))) {
+                                currentImage = nextImage;
+                                trayIcon.setImage(nextImage);
+                                nextImage = null;
+                            }
+                        }
+                    }
+                });
+                trayTimer.setRepeats(true);
+                trayTimer.start();
+
             } catch (AWTException e) {
                 logger.error(e);
             }
@@ -55,11 +79,7 @@ public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFi
     }
 
     protected void setTrayIcon(Image image) {
-        if (currentImage == null
-                || (!image.equals(currentImage) && !(currentImage.equals(ERROR) && image.equals(AT_REST)))) {
-            currentImage = image;
-            trayIcon.setImage(image);
-        }
+        this.nextImage = image;
     }
 
     @Override
