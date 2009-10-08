@@ -5,20 +5,27 @@ import java.awt.Image;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-import java.util.Set;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.ext.IHeartbeatListener;
-import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.extract.DataExtractorContext;
+import org.jumpmind.symmetric.extract.IExtractorFilter;
+import org.jumpmind.symmetric.load.IBatchListener;
+import org.jumpmind.symmetric.load.IDataLoader;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
+import org.jumpmind.symmetric.load.IDataLoaderFilter;
+import org.jumpmind.symmetric.model.BatchInfo;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
-public class SystemTrayStatusListener implements IHeartbeatListener {
+public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFilter,
+        IBatchListener, IAcknowledgeEventListener {
 
     private final ILog logger = LogFactory.getLog(getClass());
 
-    private long timeBetweenHeartbeatsInSeconds = 5;
     private boolean enabled = true;
     private TrayIcon trayIcon = null;
     private IParameterService parameterService;
@@ -27,10 +34,8 @@ public class SystemTrayStatusListener implements IHeartbeatListener {
     private Image WORKING;
     private Image ERROR;
 
-    @Override
-    public long getTimeBetweenHeartbeatsInSeconds() {
-        return this.timeBetweenHeartbeatsInSeconds;
-    }
+    private Image currentImage;
+
 
     protected void init() {
         if (SystemTray.isSupported()) {
@@ -42,33 +47,77 @@ public class SystemTrayStatusListener implements IHeartbeatListener {
 
                 trayIcon = new TrayIcon(AT_REST, parameterService.getString(ParameterConstants.ENGINE_NAME));
                 tray.add(trayIcon);
+                setTrayIcon(AT_REST);
             } catch (AWTException e) {
                 logger.error(e);
             }
+        }
+    }
+
+    protected void setTrayIcon(Image image) {
+        if (currentImage == null
+                || (!image.equals(currentImage) && !(currentImage.equals(ERROR) && image.equals(AT_REST)))) {
+            currentImage = image;
+            trayIcon.setImage(image);
+        }
+    }
+
+    @Override
+    public void onAcknowledgeEvent(BatchInfo batchInfo) {
+        if (batchInfo.isOk()) {
+            setTrayIcon(AT_REST);
+        } else {
+            setTrayIcon(ERROR);
         }
 
     }
 
     @Override
-    public void heartbeat(Node me, Set<Node> children) {
-        if (trayIcon != null) {
-            if (me.getBatchInErrorCount() > 0) {
-                trayIcon.setImage(ERROR);
-            } else if (me.getBatchToSendCount() > 0) {
-                trayIcon.setImage(WORKING);
-            } else {
-                trayIcon.setImage(AT_REST);
-            }
-        }
+    public boolean filterData(Data data, String routerId, DataExtractorContext ctx) {
+        setTrayIcon(WORKING);
+        return true;
+    }
+
+    @Override
+    public boolean filterDelete(IDataLoaderContext context, String[] keyValues) {
+        setTrayIcon(WORKING);
+        return true;
+    }
+
+    @Override
+    public boolean filterInsert(IDataLoaderContext context, String[] columnValues) {
+        setTrayIcon(WORKING);
+        return true;
+    }
+
+    @Override
+    public boolean filterUpdate(IDataLoaderContext context, String[] columnValues, String[] keyValues) {
+        setTrayIcon(WORKING);
+        return true;
+    }
+
+    @Override
+    public void batchCommitted(IDataLoader loader, IncomingBatch batch) {
+        setTrayIcon(AT_REST);
+    }
+
+    @Override
+    public void batchComplete(IDataLoader loader, IncomingBatch batch) {
+        setTrayIcon(AT_REST);
+    }
+
+    @Override
+    public void batchRolledback(IDataLoader loader, IncomingBatch batch) {
+        setTrayIcon(ERROR);
+    }
+
+    @Override
+    public void earlyCommit(IDataLoader loader, IncomingBatch batch) {
     }
 
     @Override
     public boolean isAutoRegister() {
         return enabled;
-    }
-
-    public void setTimeBetweenHeartbeatsInSeconds(long timeBetweenHeartbeatsInSeconds) {
-        this.timeBetweenHeartbeatsInSeconds = timeBetweenHeartbeatsInSeconds;
     }
 
     public void setEnabled(boolean enabled) {
