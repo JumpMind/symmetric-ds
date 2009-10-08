@@ -105,7 +105,7 @@ public class RouterService extends AbstractService implements IRouterService {
      * 
      * @return true if data was routed
      */
-    public void routeData() {
+    synchronized public void routeData() {
         if (clusterService.lock(LockActionConstants.ROUTE)) {
             try {
                 Node sourceNode = nodeService.findIdentity();
