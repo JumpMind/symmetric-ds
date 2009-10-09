@@ -1,3 +1,22 @@
+/*
+ * SymmetricDS is an open source database synchronization solution.
+ *   
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 package org.jumpmind.symmetric.ext.tray;
 
 import java.awt.AWTException;
@@ -15,6 +34,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
+import org.jumpmind.symmetric.io.IOfflineListener;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderContext;
@@ -22,11 +42,12 @@ import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.IncomingBatch;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFilter, IBatchListener,
-        IAcknowledgeEventListener {
+        IAcknowledgeEventListener, IOfflineListener {
 
     private final ILog logger = LogFactory.getLog(getClass());
 
@@ -90,6 +111,20 @@ public class SystemTrayStatusListener implements IExtractorFilter, IDataLoaderFi
             setTrayIcon(ERROR);
         }
 
+    }
+
+    @Override
+    public void busy(Node remoteNode) {
+    }
+
+    @Override
+    public void notAuthenticated(Node remoteNode) {
+        setTrayIcon(ERROR);
+    }
+
+    @Override
+    public void offline(Node remoteNode) {
+        setTrayIcon(ERROR);
     }
 
     @Override
