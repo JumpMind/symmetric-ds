@@ -20,6 +20,7 @@
 package org.jumpmind.symmetric.ext;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -28,6 +29,7 @@ import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
+import org.jumpmind.symmetric.io.IOfflineListener;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
@@ -41,6 +43,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.IRouterService;
@@ -80,6 +83,8 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     private INodeService nodeService;
 
     private IAcknowledgeService acknowledgeService;
+    
+    private List<IOfflineDetectorService> offlineDetectorServices;
 
     private IRegistrationService registrationService;
     
@@ -197,6 +202,12 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
         if (ext instanceof IBatchAlgorithm) {
             routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm) ext);
         }
+        
+        if (ext instanceof IOfflineListener) {
+            for(IOfflineDetectorService service : offlineDetectorServices) {
+                service.addOfflineListener((IOfflineListener)ext);
+            }
+        }
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {
@@ -237,5 +248,9 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     
     public void setTriggerRouterService(ITriggerRouterService triggerService) {
         this.triggerRouterService = triggerService;
+    }
+    
+    public void setOfflineDetectorServices(List<IOfflineDetectorService> offlineDetectorServices) {
+        this.offlineDetectorServices = offlineDetectorServices;
     }
 }

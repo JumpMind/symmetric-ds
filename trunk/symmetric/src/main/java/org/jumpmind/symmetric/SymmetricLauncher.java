@@ -434,7 +434,7 @@ public class SymmetricLauncher {
         IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
         File file = new File(fileName);
         if (file.exists() && file.isFile()) {
-            SqlScript script = new SqlScript(file.toURL(), dialect.getPlatform().getDataSource());
+            SqlScript script = new SqlScript(file.toURI().toURL(), dialect.getPlatform().getDataSource());
             script.execute();
         } else {
             throw new SymmetricException("FileNotFound", fileName);

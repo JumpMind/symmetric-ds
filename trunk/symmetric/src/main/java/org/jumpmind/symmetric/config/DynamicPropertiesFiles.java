@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 
 /**
  * A list of properties files that were set via system properties so that if the
- * system property changes down the road the initially configured files remain
+ * system property changes down the road, the initially configured files remain
  * captured during a properties refresh.
  */
 public class DynamicPropertiesFiles extends ArrayList<String> {
