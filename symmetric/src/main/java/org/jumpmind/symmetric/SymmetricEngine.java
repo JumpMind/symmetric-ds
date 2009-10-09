@@ -454,7 +454,7 @@ public class SymmetricEngine {
             URL fileUrl = null;
             if (file.isFile()) {
                 try {
-                    fileUrl = file.toURL();
+                    fileUrl = file.toURI().toURL();
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
@@ -493,7 +493,7 @@ public class SymmetricEngine {
             URL fileUrl = null;
             if (file.isFile()) {
                 try {
-                    fileUrl = file.toURL();
+                    fileUrl = file.toURI().toURL();
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }

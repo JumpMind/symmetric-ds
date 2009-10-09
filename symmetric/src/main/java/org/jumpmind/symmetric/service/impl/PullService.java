@@ -36,7 +36,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.TransportException;
 
-public class PullService extends AbstractService implements IPullService {
+public class PullService extends AbstractOfflineDetectorService implements IPullService {
 
     private INodeService nodeService;
 
@@ -70,16 +70,22 @@ public class PullService extends AbstractService implements IPullService {
                             log.warn("TransportFailedConnectionUnavailable",
                                     (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node
                                             .getSyncURL()));
+                            fireOffline(ex, node);
                         } catch (ConnectionRejectedException ex) {
                             log.warn("TransportFailedConnectionBusy");
+                            fireOffline(ex, node);
                         } catch (AuthenticationException ex) {
                             log.warn("AuthenticationFailed");
+                            fireOffline(ex, node);
                         } catch (SocketException ex) {
                             log.warn("Message", ex.getMessage());
+                            fireOffline(ex, node);
                         } catch (TransportException ex) {
                             log.warn("Message", ex.getMessage());
-                        } catch (IOException e) {
-                            log.error(e);
+                            fireOffline(ex, node);
+                        } catch (IOException ex) {
+                            log.error(ex);
+                            fireOffline(ex, node);
                         }
                     }
                 }

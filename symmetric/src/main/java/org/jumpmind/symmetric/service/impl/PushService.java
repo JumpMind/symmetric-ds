@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportException;
 
-public class PushService extends AbstractService implements IPushService {
+public class PushService extends AbstractOfflineDetectorService implements IPushService {
 
     private IDataExtractorService extractor;
 
@@ -131,21 +131,27 @@ public class PushService extends AbstractService implements IPushService {
             } else {
                 status = PushStatus.NOTHING_TO_PUSH;
             }
-        } catch (ConnectException ex) {
+        } catch (ConnectException ex) {            
             log.warn("TransportFailedConnectionUnavailable", (remote.getSyncURL() == null ? parameterService
                     .getRegistrationUrl() : remote.getSyncURL()));
+            fireOffline(ex, remote);
         } catch (ConnectionRejectedException ex) {
             log.warn("TransportFailedConnectionBusy");
+            fireOffline(ex, remote);
         } catch (SocketException ex) {
             log.warn("Message", ex.getMessage());
+            fireOffline(ex, remote);
         } catch (TransportException ex) {
             log.warn("Message", ex.getMessage());
+            fireOffline(ex, remote);
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
-        } catch (Exception e) {
+            fireOffline(ex, remote);
+        } catch (Exception ex) {
             // just report the error because we want to push to other nodes
             // in our list
-            log.error(e);
+            log.error(ex);
+            fireOffline(ex, remote);
         } finally {
             try {
                 transport.close();
