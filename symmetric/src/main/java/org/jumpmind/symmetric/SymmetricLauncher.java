@@ -65,8 +65,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS.
- * If you run this program without any arguments 'help' will print out.
+ * Run SymmetricDS utilities and/or launch an embedded version of SymmetricDS. If you run this program without any
+ * arguments 'help' will print out.
  */
 public class SymmetricLauncher {
 
@@ -174,17 +174,20 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_DDL_GEN)) {
+                testConnection(line);
                 generateDDL(new SymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
                 return;
             }
 
             if (line.hasOption(OPTION_PURGE)) {
+                testConnection(line);
                 ((IPurgeService) new SymmetricEngine().getApplicationContext().getBean(Constants.PURGE_SERVICE))
                         .purge();
                 return;
             }
 
             if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
+                testConnection(line);
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
                 openRegistration(new SymmetricEngine(), arg);
                 System.out.println(Message.get("RegistrationOpened", arg));
@@ -192,6 +195,7 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_RELOAD_NODE)) {
+                testConnection(line);
                 String arg = line.getOptionValue(OPTION_RELOAD_NODE);
                 String message = reloadNode(new SymmetricEngine(), arg);
                 System.out.println(message);
@@ -199,12 +203,14 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_DUMP_BATCH)) {
+                testConnection(line);
                 String arg = line.getOptionValue(OPTION_DUMP_BATCH);
                 dumpBatch(new SymmetricEngine(), arg);
                 return;
             }
 
             if (line.hasOption(OPTION_TRIGGER_GEN)) {
+                testConnection(line);
                 String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
                 boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
                 syncTrigger(new SymmetricEngine(), arg, gen_always);
@@ -212,25 +218,30 @@ public class SymmetricLauncher {
             }
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
+                testConnection(line);
                 autoCreateDatabase(new SymmetricEngine());
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
+                testConnection(line);
                 runDdlXml(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_DDL_XML));
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_SQL)) {
+                testConnection(line);
                 runSql(new SymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
                 return;
             }
 
             if (line.hasOption(OPTION_LOAD_BATCH)) {
+                testConnection(line);
                 loadBatch(new SymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
             }
 
             if (line.hasOption(OPTION_ENCRYPT_TEXT)) {
+                testConnection(line);
                 encryptText(new SymmetricEngine(), line.getOptionValue(OPTION_ENCRYPT_TEXT));
                 return;
             }
@@ -242,9 +253,6 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_START_SERVER) || line.hasOption(OPTION_START_SECURE_SERVER)
                     || line.hasOption(OPTION_START_MIXED_SERVER)) {
-                if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
-                    testConnection();
-                }
                 if (line.hasOption(OPTION_START_SERVER)) {
                     webServer = new SymmetricWebServer(maxIdleTime, propertiesFile, join).start(port);
                 } else if (line.hasOption(OPTION_START_SECURE_SERVER)) {
@@ -280,13 +288,15 @@ public class SymmetricLauncher {
         new HelpFormatter().printHelp("sym", options);
     }
 
-    private static void testConnection() throws Exception {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
-                "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
-        BasicDataSource ds = (BasicDataSource) ctx.getBean(Constants.DATA_SOURCE);
-        Connection c = ds.getConnection();
-        c.close();
-        ds.close();
+    private static void testConnection(CommandLine line) throws Exception {
+        if (!line.hasOption(OPTION_SKIP_DB_VALIDATION)) {
+            ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] {
+                    "classpath:/symmetric-properties.xml", "classpath:/symmetric-database.xml" });
+            BasicDataSource ds = (BasicDataSource) ctx.getBean(Constants.DATA_SOURCE);
+            Connection c = ds.getConnection();
+            c.close();
+            ds.close();
+        }
     }
 
     private static Options buildOptions() {
