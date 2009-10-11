@@ -238,6 +238,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_LOAD_BATCH)) {
                 testConnection(line);
                 loadBatch(new SymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
+                return;
             }
 
             if (line.hasOption(OPTION_ENCRYPT_TEXT)) {

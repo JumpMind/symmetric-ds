@@ -50,6 +50,9 @@ import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import bsh.EvalError;
+import bsh.Interpreter;
+
 import com.csvreader.CsvReader;
 
 public class CsvLoader implements IDataLoader {
@@ -161,6 +164,11 @@ public class CsvLoader implements IDataLoader {
                             runSql(tokens[1]);
                             rowsProcessed++;
                         }
+                    } else if (tokens[0].equals(CsvConstants.BSH)) {
+                        if (!context.isSkipping()) {
+                            runBsh(tokens[1]);
+                            rowsProcessed++;
+                        }                        
                     } else if (tokens[0].equals(CsvConstants.CREATE)) {
                         if (!context.isSkipping()) {
                             runDdl(tokens[1]);
@@ -178,6 +186,15 @@ public class CsvLoader implements IDataLoader {
             return true;
         } finally {
             cleanupAfterDataLoad();
+        }
+    }
+    
+    protected void runBsh(String script) {
+        try {
+            Interpreter interpreter =  new Interpreter();
+            interpreter.eval(script);
+        } catch (EvalError e) {
+            throw new RuntimeException(e);
         }
     }
 

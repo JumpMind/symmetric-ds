@@ -214,13 +214,13 @@
         <property name="dictionary">
             <map>
                 <entry key="I">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"/>
                 </entry>
                 <entry key="U">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"/>
                 </entry>
                 <entry key="D">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"/>
                 </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
@@ -230,10 +230,10 @@
                     </bean>
                 </entry>
                 <entry key="S">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"/>
                 </entry>
                 <entry key="C">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"/>
                 </entry>
                 <entry key="X">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamConfigDataCommand">
@@ -270,13 +270,13 @@
         <constructor-arg>
             <map>
                 <entry key="I">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"/>
                 </entry>
                 <entry key="U">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"/>
                 </entry>
                 <entry key="D">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"/>
                 </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
@@ -286,11 +286,14 @@
                     </bean>
                 </entry>
                 <entry key="S">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"/>
                 </entry>
                 <entry key="C">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamCreateDataCommand"/>
                 </entry>
+                <entry key="B">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamBshDataCommand"/>
+                </entry>                
             </map>
         </constructor-arg>
     </bean>
@@ -301,13 +304,13 @@
         <property name="dictionary">
             <map>
                 <entry key="I">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamInsertDataCommand"/>
                 </entry>
                 <entry key="U">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamUpdateDataCommand"/>
                 </entry>
                 <entry key="D">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamDeleteDataCommand"/>
                 </entry>
                 <entry key="R">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamReloadDataCommand">
@@ -317,7 +320,7 @@
                     </bean>
                 </entry>
                 <entry key="S">
-                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"></bean>
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"/>
                 </entry>
             </map>
         </property>

@@ -71,5 +71,10 @@ public class CsvUtils {
         write(writer, CsvConstants.SQL, DELIMITER, sql);
         writer.newLine();
     }
+    
+    public static void writeBsh(String script, BufferedWriter writer) throws IOException {
+        write(writer, CsvConstants.BSH, DELIMITER, script);
+        writer.newLine();
+    }
 
 }
