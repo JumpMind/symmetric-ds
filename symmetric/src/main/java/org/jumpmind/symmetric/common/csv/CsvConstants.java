@@ -55,6 +55,8 @@ final public class CsvConstants {
     public static final String COMMIT = "commit";
 
     public static final String SQL = "sql";
+    
+    public static final String BSH = "bsh";
 
     public static final String CREATE = "create";
 

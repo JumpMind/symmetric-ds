@@ -45,9 +45,8 @@ public enum DataEventType implements ICoded {
     RELOAD("R"),
 
     /**
-     * An event that indicates that the data payload has a sql statement that
-     * needs to be executed. This is more of a remote control feature (that
-     * would have been very handy in past lives).
+     * An event that indicates that the data payload has a sql statement that needs to be executed. This is more of a
+     * remote control feature (that would have been very handy in past lives).
      */
     SQL("S"),
 
@@ -57,10 +56,15 @@ public enum DataEventType implements ICoded {
     CREATE("C"),
 
     /**
-     * An event that indicates that all SymmetricDS configuration table data
-     * should be streamed to the client.
+     * An event that indicates that all SymmetricDS configuration table data should be streamed to the client.
      */
-    CONFIG("X");
+    CONFIG("X"),
+
+    /**
+     * An event the indicates that the data payload is going to be a Java bean shell script that is to be run at the
+     * client.
+     */
+    BSH("B");
 
     private String code;
 
@@ -89,6 +93,8 @@ public enum DataEventType implements ICoded {
             return CONFIG;
         } else if (s.equals(RELOAD.getCode())) {
             return RELOAD;
+        } else if (s.equals(BSH.getCode())) {
+            return BSH;
         } else {
             throw new IllegalStateException(String.format("Invalid data event type of %s", s));
         }
