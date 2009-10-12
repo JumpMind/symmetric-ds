@@ -241,6 +241,9 @@
                         <property name="nodeService" ref="nodeService" />
                     </bean>
                 </entry>
+                <entry key="B">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamBshDataCommand"/>
+                </entry>                
             </map>
         </property>
     </bean>
@@ -322,6 +325,9 @@
                 <entry key="S">
                     <bean class="org.jumpmind.symmetric.extract.csv.StreamSQLDataCommand"/>
                 </entry>
+                <entry key="B">
+                    <bean class="org.jumpmind.symmetric.extract.csv.StreamBshDataCommand"/>
+                </entry>                
             </map>
         </property>
     </bean>

@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -63,6 +64,8 @@ import org.springframework.jdbc.core.RowMapper;
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final Log logger = LogFactory.getLog(SimpleIntegrationTest.class);
+    
+    public static boolean testFlag = false;
 
     static final String insertOrderHeaderSql = "insert into test_order_header (order_id, customer_id, status, deliver_date) values(?,?,?,?)";
 
@@ -820,6 +823,35 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from Test_Mixed_Case where Mixed_Case_Id = 1"), 1,
                 "Table name in mixed case was not synced");
     }
+    
+    @Test(timeout = 30000)
+    public void testSyncShellCommand() throws Exception {
+        logTestRunning();
+        IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE, getRootEngine());
+        IOutgoingBatchService rootOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getRootEngine());
+        testFlag = false;
+        String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
+        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData);
+        getClientEngine().pull();
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        Assert.assertEquals(0, batches.countBatches(true));
+        Assert.assertTrue(testFlag);
+    }
+    
+    @Test(timeout = 30000)
+    public void testSyncShellCommandError() throws Exception {
+        logTestRunning();
+        IDataService rootDataService = AppUtils.find(Constants.DATA_SERVICE, getRootEngine());
+        IOutgoingBatchService rootOutgoingBatchService = AppUtils.find(Constants.OUTGOING_BATCH_SERVICE, getRootEngine());
+        testFlag = false;
+        String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.nonExistentFlag=true;";
+        rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData);
+        getClientEngine().pull();
+        OutgoingBatches batches = rootOutgoingBatchService.getOutgoingBatches(TestConstants.TEST_CLIENT_NODE);
+        Assert.assertEquals(1, batches.countBatches(true));
+        Assert.assertFalse(testFlag);
+        rootOutgoingBatchService.markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
+    }
 
     /**
      * TODO test on MSSQL
@@ -837,7 +869,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals(clientJdbcTemplate.queryForInt("select TWO_COLUMN from NO_PRIMARY_KEY_TABLE where ONE_COLUMN=1"),
                 3, "Table was not updated");
         rootJdbcTemplate.update("delete from NO_PRIMARY_KEY_TABLE");
-        getClientEngine().pull();
+        getClientEngine().pull();      
         assertEquals(clientJdbcTemplate.queryForInt("select count(*) from NO_PRIMARY_KEY_TABLE"), 0,
                 "Table was not deleted from");
     }

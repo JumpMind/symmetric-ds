@@ -41,7 +41,11 @@ public class MockDataService implements IDataService {
     public void addReloadListener(IReloadListener listener) {
 
     }
-    
+
+    public void sendScript(String nodeId, String script) {
+
+    }
+
     public void addHeartbeatListener(IHeartbeatListener listener) {
     }
 
