@@ -215,8 +215,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
         } catch (Throwable e) {
-            if (dataLoader != null && dataLoader.getContext().getBatchId() > 0) {
+            if (dataLoader != null && dataLoader.getContext().getBatchId() > 0 && batch == null) {
                 batch = new IncomingBatch(dataLoader.getContext());
+                list.add(batch);
             }
             if (dataLoader != null && batch != null) {
                 if (e instanceof IOException || e instanceof TransportException) {

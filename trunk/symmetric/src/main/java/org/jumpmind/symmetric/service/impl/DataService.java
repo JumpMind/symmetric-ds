@@ -263,6 +263,13 @@ public class DataService extends AbstractService implements IDataService {
             insertDataAndDataEvent(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
     }
+    
+    public void sendScript(String nodeId, String script) {
+        Node targetNode = nodeService.findNode(nodeId);
+        Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
+                null, Constants.CHANNEL_RELOAD, null, null);
+        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+    }
 
     public String sendSQL(String nodeId, String tableName, String sql) {
         Node sourceNode = nodeService.findIdentity();

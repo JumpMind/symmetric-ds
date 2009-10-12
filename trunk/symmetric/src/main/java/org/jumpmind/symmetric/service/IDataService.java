@@ -38,6 +38,9 @@ public interface IDataService {
 
     @Transactional
     public void insertResendConfigEvent(final Node targetNode);
+    
+    @Transactional
+    public void sendScript(String nodeId, String script);
 
     /**
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
