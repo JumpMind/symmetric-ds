@@ -31,7 +31,6 @@ import java.nio.charset.Charset;
 import java.sql.Connection;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -125,8 +124,8 @@ public class SymmetricLauncher {
     protected static boolean join = true;
 
     public static void main(String... args) throws Exception {
-        System.out.println(Message.get("LauncherLogLocation"));
-        CommandLineParser parser = new PosixParser();
+      
+        PosixParser parser = new PosixParser();
         Options options = buildOptions();
         try {
             CommandLine line = parser.parse(options, args);
@@ -139,6 +138,12 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
                 System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
                 System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "info");
+                System.setProperty("org.apache.commons.logging.simplelog.log.org", "error");                
+                System.setProperty("org.apache.commons.logging.simplelog.log.org.jumpmind", "info");
+                System.setProperty("org.apache.commons.logging.simplelog.log.org.jumpmind.symmetric.config.PropertiesFactoryBean", "error");
+                
+            } else {
+                System.out.println(Message.get("LauncherLogLocation"));
             }
 
             if (line.getOptions() != null) {
@@ -331,7 +336,7 @@ public class SymmetricLauncher {
     }
 
     private static void addOption(Options options, String opt, String longOpt, boolean hasArg) {
-        options.addOption(opt, longOpt, true, Message.get(MESSAGE_BUNDLE + longOpt));
+        options.addOption(opt, longOpt, hasArg, Message.get(MESSAGE_BUNDLE + longOpt));
     }
 
     private static void dumpBatch(SymmetricEngine engine, String batchId) throws Exception {
