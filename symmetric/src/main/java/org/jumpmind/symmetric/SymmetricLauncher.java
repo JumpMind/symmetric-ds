@@ -146,12 +146,13 @@ public class SymmetricLauncher {
                 
             } else {
                 System.out.println(Message.get("LauncherLogLocation"));
-            }
-
-            if (line.getOptions() != null) {
-                for (Option option : line.getOptions()) {
-                    LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
-                            ArrayUtils.toString(option.getValues()));
+                
+                // Log options to the log file only.  No need to log them to the console
+                if (line.getOptions() != null) {
+                    for (Option option : line.getOptions()) {
+                        LogFactory.getLog(SymmetricLauncher.class).info("Option", option.getLongOpt(),
+                                ArrayUtils.toString(option.getValues()));
+                    }
                 }
             }
 
