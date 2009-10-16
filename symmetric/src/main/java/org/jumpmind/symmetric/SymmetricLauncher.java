@@ -137,6 +137,8 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
                 System.setProperty("org.apache.commons.logging.Log", SimpleLog.class.getName());
+                System.setProperty("org.apache.commons.logging.simplelog.showlogname", "false");
+                
                 System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "info");
                 System.setProperty("org.apache.commons.logging.simplelog.log.org", "error");                
                 System.setProperty("org.apache.commons.logging.simplelog.log.org.jumpmind", "info");
