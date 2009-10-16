@@ -132,7 +132,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private void registerExtension(String beanName, IExtensionPoint ext) {
 
-        log.info("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
+        log.debug("ExtensionRegistering", beanName, ext.getClass().getSimpleName());
 
         if (ext instanceof ISyncUrlExtension) {
             transportManager.addExtensionSyncUrlHandler(beanName, (ISyncUrlExtension) ext);
