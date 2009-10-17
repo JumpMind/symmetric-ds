@@ -252,7 +252,7 @@
     </table>
 
     <!-- This table configures thresholds at which JMX notifications will be fired -->
-    <table name="statistic_alert" description="">
+    <table name="statistic_alert" description="Controls the statistic thresholds at which JMX notifications will be fired.">
         <column name="statistic_name" type="VARCHAR" size="50" required="true" primaryKey="true"  description="" />
         <column name="threshold_total_max" type="DECIMAL" size="18"  description="" />
         <column name="threshold_avg_max" type="DECIMAL" size="18"  description="" />
