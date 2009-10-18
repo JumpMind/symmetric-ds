@@ -105,7 +105,7 @@
                                       'I',
                                       $(triggerHistoryId),
                                       $(columns),
-                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
+                                      '$(channelName)', $(txIdExpression), $(defaultSchema)$(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
@@ -138,7 +138,7 @@
                                       $(oldKeys),
                                       $(columns),
                                       $(oldColumns),
-                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
+                                      '$(channelName)', $(txIdExpression), $(defaultSchema)$(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
@@ -170,7 +170,7 @@
                                       $(triggerHistoryId),
                                       $(oldKeys),                                      
                                       $(oldColumns),
-                                      '$(channelName)', $(txIdExpression), $(prefixName)_node_disabled(),
+                                      '$(channelName)', $(txIdExpression), $(defaultSchema)$(prefixName)_node_disabled(),
                                       CURRENT_TIMESTAMP
                                     );
                                   end if;
