@@ -54,8 +54,6 @@ public class SqlTemplate {
 
     private String functionInstalledSql;
 
-    private String triggerPrefix;
-
     private String emptyColumnTemplate;
     
     private String stringColumnTemplate;
@@ -211,7 +209,7 @@ public class SqlTemplate {
         ddl = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
 
-        ddl = replace("triggerName", dialect.getTriggerName(dml, triggerPrefix, dialect.getMaxTriggerNameLength(),
+        ddl = replace("triggerName", dialect.getTriggerName(dml, dialect.getMaxTriggerNameLength(),
                 trigger, history).toUpperCase(), ddl);
         ddl = replace("prefixName", tablePrefix, ddl);
         ddl = replace("channelName", trigger.getChannelId(), ddl);
@@ -649,10 +647,6 @@ public class SqlTemplate {
 
     public void setOldTriggerValue(String oldTriggerValue) {
         this.oldTriggerValue = oldTriggerValue;
-    }
-
-    public void setTriggerPrefix(String triggerPrefix) {
-        this.triggerPrefix = triggerPrefix;
     }
 
     public String getBlobColumnTemplate() {

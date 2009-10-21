@@ -42,7 +42,6 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
             jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
             jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
             Runtime.getRuntime().addShutdownHook(new Thread() {
-
                 @Override
                 public void run() {
                     jdbcTemplate.update("SHUTDOWN");
