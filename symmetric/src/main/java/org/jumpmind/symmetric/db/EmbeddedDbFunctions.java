@@ -22,10 +22,6 @@ package org.jumpmind.symmetric.db;
 
 import org.apache.commons.codec.binary.Base64;
 
-/**
- *
- * @author Keith Naas
- */
 public class EmbeddedDbFunctions {
 
     public static String encodeBase64(byte[] binaryData) {

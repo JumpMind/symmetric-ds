@@ -45,7 +45,8 @@ public class AbstractDatabaseTest {
 
     protected Log logger = LogFactory.getLog(getClass());
 
-    protected String database;
+    private String database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
+    
     static boolean standalone = false;
 
     public AbstractDatabaseTest(String dbName) {
@@ -54,12 +55,19 @@ public class AbstractDatabaseTest {
 
     public AbstractDatabaseTest() throws Exception {
         if (!standalone) {
-            database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
             logger.info("Running test in standalone mode against " + database);
             standalone = true;
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT,
                     null, database);
         }
+    }
+    
+    public String getDatabase() {
+        return database;
+    }
+
+    protected String printDatabase() {
+        return " The database we are testing against is " + database + ".";
     }
 
     protected SymmetricEngine getSymmetricEngine() {

@@ -66,6 +66,7 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
     private MockTransportManager transportManager;
 
     public AbstractDataLoaderTest() throws Exception {
+        super();
     }
 
     public AbstractDataLoaderTest(String dbType) {
@@ -92,10 +93,6 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
             dataLoaderService.setTransportManager(transportManager);
         }
         return dataLoaderService;
-    }
-
-    protected String printDatabase() {
-        return " The database we are testing against is " + database + ".";
     }
 
     public void testSimple(String dmlType, String[] values, String[] expectedValues) throws Exception {

@@ -1,7 +1,7 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *
- * Copyright (C) Keith Naas <knaas@users.sourceforge.net>
+ * Copyright (C) Chris Henson <chenson42@users.sourceforge.net>
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,9 @@
  * License along with this library; if not, see
  * <http://www.gnu.org/licenses/>.
  */
-package org.jumpmind.symmetric.db.h2;
+package org.jumpmind.symmetric.db.hsqldb;
 
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
@@ -26,27 +27,64 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 
-public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
+public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDialect {
+
+    public static String DUAL_TABLE = "DUAL";
+
+    private boolean hsqldbInitialized = false;
+    
+    private boolean enforceStrictSize = true;
+
+    @Override
+    protected void initForSpecificDialect() {
+        if (!hsqldbInitialized) {
+            jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
+            jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
+            jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                @Override
+                public void run() {
+                    jdbcTemplate.update("SHUTDOWN");
+                }
+            });
+            hsqldbInitialized = true;
+        }
+
+        createDummyDualTable();
+
+    }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schemaName, String tableName,
             String triggerName) {
-        boolean exists = (jdbcTemplate
-                .queryForInt("select count(*) from INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_NAME = ?",
-                        new Object[] { triggerName }) > 0)
-                && (jdbcTemplate.queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?",
+        boolean exists = (jdbcTemplate.queryForInt(
+                "select count(*) from INFORMATION_SCHEMA.SYSTEM_TRIGGERS WHERE TRIGGER_NAME = ?",
+                new Object[] { triggerName }) > 0)
+                || (jdbcTemplate.queryForInt(
+                        "select count(*) from INFORMATION_SCHEMA.SYSTEM_TABLES WHERE TABLE_NAME = ?",
                         new Object[] { String.format("%s_CONFIG", triggerName) }) > 0);
-
-        if (!exists) {
-            removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName, null);
-        }
         return exists;
+    }
+
+    /**
+     * This is for use in the java triggers so we can create a virtual table w/
+     * old and new columns values to bump SQL expressions up against.
+     */
+    private void createDummyDualTable() {
+        Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
+        if (table == null) {
+            jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
+            jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");
+            jdbcTemplate.update("SET TABLE " + DUAL_TABLE + " READONLY TRUE");
+        }
+
     }
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, TriggerHistory oldHistory) {
-        final String dropSql = String.format("DROP TRIGGER IF EXISTS %s", triggerName);
+        final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
 
         final String dropTable = String.format("DROP TABLE IF EXISTS %s_CONFIG", triggerName);
@@ -58,7 +96,11 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
                 if (count > 0) {
                     log.info("TriggerDropped", triggerName);
                 }
-                count = jdbcTemplate.update(dropTable);
+            } catch (Exception e) {
+                log.warn("TriggerDropError", triggerName, e.getMessage());
+            }
+            try {
+                int count = jdbcTemplate.update(dropTable);
                 if (count > 0) {
                     log.info("TableDropped", triggerName);
                 }
@@ -79,17 +121,17 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
     }
 
     public void disableSyncTriggers(String nodeId) {
-        jdbcTemplate.update("set @sync_prevented=1");
-        jdbcTemplate.update("set @node_value=?", new Object[] { nodeId });
+        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented','1')");
+        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value','"+nodeId+"')");
     }
 
     public void enableSyncTriggers() {
-        jdbcTemplate.update("set @sync_prevented=null");
-        jdbcTemplate.update("set @node_value=null");
+        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('sync_prevented',null)");
+        jdbcTemplate.execute("CALL " + tablePrefix + "_set_session('node_value',null)");
     }
 
     public String getSyncTriggersExpression() {
-        return " @sync_prevented is null ";
+        return " " + tablePrefix + "_get_session(''sync_prevented'') is null ";
     }
 
     /**
@@ -97,7 +139,8 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
      */
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "TRANSACTION_ID()";
+        // TODO Get I use a temporary table and a randomly generated GUID?
+        return "null";
     }
 
     @Override
@@ -111,11 +154,11 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
     }
 
     public boolean isCharSpacePadded() {
-        return false;
+        return enforceStrictSize;
     }
 
     public boolean isCharSpaceTrimmed() {
-        return true;
+        return false;
     }
 
     public boolean isEmptyStringNulled() {
@@ -128,17 +171,18 @@ public class H2DbDialect extends AbstractEmbeddedDbDialect implements IDbDialect
     }
 
     @Override
-    public boolean supportsGetGeneratedKeys() {
-        return false;
-    }
-
-    @Override
     public boolean supportsTransactionId() {
-        return true;
+        return false;
     }
 
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
+
+    @Override
+    public void truncateTable(String tableName) {
+        getJdbcTemplate().update("delete from " + tableName);
+    }
+
 }

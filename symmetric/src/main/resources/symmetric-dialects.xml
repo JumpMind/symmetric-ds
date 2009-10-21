@@ -7,14 +7,15 @@
     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
     default-lazy-init="true">
 
-    <import resource="classpath:/dialects/mssql.xml" />
-    <import resource="classpath:/dialects/oracle.xml" />
-    <import resource="classpath:/dialects/mysql.xml" />
-    <import resource="classpath:/dialects/postgresql.xml" />
-    <import resource="classpath:/dialects/derby.xml" />
-	<import resource="classpath:/dialects/h2.xml" />
-    <import resource="classpath:/dialects/db2.xml" />
-    <import resource="classpath:/dialects/db2-zseries.xml" />
-    <import resource="classpath:/dialects/firebird.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/mssql.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/oracle.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/mysql.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/postgresql.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/derby.xml" />
+	<import resource="classpath:/org/jumpmind/symmetric/db/h2.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/hsqldb.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/db2.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/db2-zseries.xml" />
+    <import resource="classpath:/org/jumpmind/symmetric/db/firebird.xml" />
 
 </beans>

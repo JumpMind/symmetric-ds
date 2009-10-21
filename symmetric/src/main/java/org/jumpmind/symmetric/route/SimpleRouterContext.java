@@ -82,7 +82,7 @@ public class SimpleRouterContext implements IRouterContext {
         Set<String> keys = contextCache.keySet();
         for (String key : keys) {
             if (key.startsWith("Stat.")) {
-                log.info("RouterStats", channel.getId(), key.substring(key.indexOf(".") + 1), contextCache.get(key));
+                log.debug("RouterStats", channel.getId(), key.substring(key.indexOf(".") + 1), contextCache.get(key));
             }
         }
     }
