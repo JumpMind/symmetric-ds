@@ -112,7 +112,7 @@ public class SqlScript {
                 try {
                     connection.setAutoCommit(false);
                     st = connection.createStatement();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(script.openStream()));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(script.openStream(), "UTF-8"));
                     String line;
                     StringBuilder sql = new StringBuilder();
                     int count = 0;
