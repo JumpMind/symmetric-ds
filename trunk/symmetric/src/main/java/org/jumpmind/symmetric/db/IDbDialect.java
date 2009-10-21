@@ -232,7 +232,7 @@ public interface IDbDialect {
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
             String targetString);
 
-    public String getTriggerName(DataEventType dml, String triggerPrefix, int maxTriggerNameLength, Trigger trigger,
+    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
             TriggerHistory hist);
 
     public boolean supportsOpenCursorsAcrossCommit();
