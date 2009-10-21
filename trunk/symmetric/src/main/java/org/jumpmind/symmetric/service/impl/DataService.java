@@ -387,7 +387,7 @@ public class DataService extends AbstractService implements IDataService {
         if (refs.size() > 0) {
             return refs.get(0);
         } else {
-            return new DataRef(0, new Date());
+            return new DataRef(-1, new Date());
         }
     }
 

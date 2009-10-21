@@ -1243,7 +1243,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (triggerPrefix == null) {
             triggerPrefix = "";
         } else {
-            triggerPrefix = triggerPrefix + "_";
+            triggerPrefix = triggerPrefix + "_" + parameterService.getNodeGroupId().replaceAll("[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "") + "_";
         }
         switch (dml) {
         case INSERT:

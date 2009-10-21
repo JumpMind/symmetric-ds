@@ -68,7 +68,7 @@ public class DatabaseTestSuite extends AbstractDatabaseTest {
 
     @Test
     public void setup() throws Exception {
-        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
+        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, getDatabase());
     }
 
 }

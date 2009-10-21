@@ -119,7 +119,6 @@ public class TestSetupUtil {
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 50000) {
                 DriverManager.registerDriver(new EmbeddedDriver());
-                logger.info(ex.getMessage());
             }
         } catch (Exception ex) {
             // derby not in use ...
@@ -168,6 +167,15 @@ public class TestSetupUtil {
                 logger.error(e, e);
             }
         }
+        File hsqldb = new File("target/hsqldb");
+        if (hsqldb.exists()) {
+            try {
+                logger.info("Removing hsqldb database files");
+                FileUtils.deleteDirectory(hsqldb);
+            } catch (IOException e) {
+                logger.error(e, e);
+            }
+        }
     }
 
     public static SymmetricEngine getRootEngine() {
@@ -196,6 +204,7 @@ public class TestSetupUtil {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
+            dialect.initSupportDb();
             Platform platform = dialect.getPlatform();
             Database testDb = getTestDatabase();
             platform.dropTables(testDb, true);
