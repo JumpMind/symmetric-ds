@@ -18,8 +18,6 @@
 			value="$[sym.db.jdbc.streaming.results.fetch.size]" />				
 		<property name="sqlTemplate">
 			<bean class="org.jumpmind.symmetric.db.SqlTemplate">
-				<property name="triggerPrefix"
-					value="$[sym.sync.table.prefix]" />
 				<property name="functionInstalledSql">
 					<value>
 						<![CDATA[select count(*) from sysibm.sysfunctions where name = '$(functionName)']]>
