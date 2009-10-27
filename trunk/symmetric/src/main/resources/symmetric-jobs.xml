@@ -39,8 +39,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <property name="scheduledTimerTasks">
             <list>
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
-                    <property name="delay" ref="delayBeforeStartTimeSlotBatch" />
-                    <property name="timerTask" ref="batchTimerTask" />
+                    <property name="delay" ref="delayBeforeStartTimeSlotRouting" />
+                    <property name="timerTask" ref="routingTimerTask" />
                 </bean>
             </list>
         </property>

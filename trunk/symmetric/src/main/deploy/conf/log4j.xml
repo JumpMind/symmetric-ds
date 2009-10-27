@@ -24,8 +24,12 @@
     </category>
 
     <category name="org.jumpmind">
-        <priority value="DEBUG" />
+        <priority value="INFO" />
     </category>
+    
+    <category name="org.jumpmind.symmetric.job.HeartbeatJob">
+        <priority value="INFO" />
+    </category>    
 
     <!-- Disable the not found override properties file warnings to avoid confusion -->
     <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">

@@ -140,7 +140,7 @@ final public class Constants {
 
     public static final String PULL_JOB_TIMER = "pullJobTimer";
     
-    public static final String ROUTE_JOB_TIMER = "routeJobTimer";
+    public static final String ROUTE_JOB_TIMER = "routingJobTimer";
 
     public static final String PURGE_JOB_TIMER = "purgeJobTimer";
 

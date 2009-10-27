@@ -105,6 +105,7 @@ final public class ParameterConstants {
     public final static String CLUSTER_LOCK_DURING_PURGE = "cluster.lock.during.purge";
     public final static String CLUSTER_LOCK_DURING_PULL = "cluster.lock.during.pull";
     public final static String CLUSTER_LOCK_DURING_PUSH = "cluster.lock.during.push";
+    public final static String CLUSTER_LOCK_DURING_ROUTE = "cluster.lock.during.route";
     public final static String CLUSTER_LOCK_DURING_HEARTBEAT = "cluster.lock.during.heartbeat";
     public final static String CLUSTER_LOCK_DURING_SYNC_TRIGGERS = "cluster.lock.during.sync.triggers";
 
