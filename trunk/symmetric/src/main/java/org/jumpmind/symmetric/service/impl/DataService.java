@@ -263,11 +263,11 @@ public class DataService extends AbstractService implements IDataService {
             insertDataAndDataEvent(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
     }
-    
+
     public void sendScript(String nodeId, String script) {
         Node targetNode = nodeService.findNode(nodeId);
-        Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null,
-                null, Constants.CHANNEL_RELOAD, null, null);
+        Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null, null,
+                Constants.CHANNEL_RELOAD, null, null);
         insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
@@ -432,7 +432,8 @@ public class DataService extends AbstractService implements IDataService {
 
     /**
      * Get a list of {@link IHeartbeatListener}s that are ready for a heartbeat
-     * according to {@link IHeartbeatListener#getTimeBetweenHeartbeatsInSeconds()}
+     * according to
+     * {@link IHeartbeatListener#getTimeBetweenHeartbeatsInSeconds()}
      * 
      * @param force
      *            if true, then return the entire list of
@@ -448,7 +449,8 @@ public class DataService extends AbstractService implements IDataService {
                 for (IHeartbeatListener iHeartbeatListener : this.heartbeatListeners) {
                     Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
                     if (lastHeartbeatTimestamp == null
-                            || lastHeartbeatTimestamp <= ts - (iHeartbeatListener.getTimeBetweenHeartbeatsInSeconds()*1000)) {
+                            || lastHeartbeatTimestamp <= ts
+                                    - (iHeartbeatListener.getTimeBetweenHeartbeatsInSeconds() * 1000)) {
                         listeners.add(iHeartbeatListener);
                     }
                 }
@@ -471,45 +473,48 @@ public class DataService extends AbstractService implements IDataService {
      */
     public void heartbeat(boolean force) {
         List<IHeartbeatListener> listeners = getHeartbeatListeners(force);
-        if (listeners.size() > 0 && clusterService.lock(LockActionConstants.HEARTBEAT)) {
-            try {
-                Node me = nodeService.findIdentity();
-                if (me != null) {
-                    log.info("NodeVersionUpdating");
-                    me.setHeartbeatTime(new Date());
-                    me.setTimezoneOffset(AppUtils.getTimezoneOffset());
-                    me.setSymmetricVersion(Version.version());
-                    me.setDatabaseType(dbDialect.getName());
-                    me.setDatabaseVersion(dbDialect.getVersion());
-                    OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(me);
-                    me.setBatchToSendCount(batches.countBatches(false));
-                    me.setBatchInErrorCount(batches.countBatches(true));
-                    if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
-                        log.info("NodeConfigurationUpdating");
-                        me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
-                        me.setExternalId(parameterService.getExternalId());
-                        me.setNodeGroupId(parameterService.getNodeGroupId());
-                        if (!StringUtils.isBlank(parameterService.getMyUrl())) {
-                            me.setSyncURL(parameterService.getMyUrl());
+        if (listeners.size() > 0) {
+            if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
+                try {
+                    Node me = nodeService.findIdentity();
+                    if (me != null) {
+                        log.info("NodeVersionUpdating");
+                        me.setHeartbeatTime(new Date());
+                        me.setTimezoneOffset(AppUtils.getTimezoneOffset());
+                        me.setSymmetricVersion(Version.version());
+                        me.setDatabaseType(dbDialect.getName());
+                        me.setDatabaseVersion(dbDialect.getVersion());
+                        OutgoingBatches batches = outgoingBatchService.getOutgoingBatches(me);
+                        me.setBatchToSendCount(batches.countBatches(false));
+                        me.setBatchInErrorCount(batches.countBatches(true));
+                        if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
+                            log.info("NodeConfigurationUpdating");
+                            me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                            me.setExternalId(parameterService.getExternalId());
+                            me.setNodeGroupId(parameterService.getNodeGroupId());
+                            if (!StringUtils.isBlank(parameterService.getMyUrl())) {
+                                me.setSyncURL(parameterService.getMyUrl());
+                            }
                         }
+
+                        nodeService.updateNode(me);
+                        log.info("NodeVersionUpdated");
+
+                        Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
+                        for (IHeartbeatListener l : listeners) {
+                            l.heartbeat(me, children);
+                        }
+
                     }
 
-                    nodeService.updateNode(me);
-                    log.info("NodeVersionUpdated");
-
-                    Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
-                    for (IHeartbeatListener l : listeners) {
-                        l.heartbeat(me, children);
-                    }
-
+                } finally {
+                    updateLastHeartbeatTime(listeners);
+                    clusterService.unlock(LockActionConstants.HEARTBEAT);
                 }
 
-            } finally {
-                updateLastHeartbeatTime(listeners);
-                clusterService.unlock(LockActionConstants.HEARTBEAT);
+            } else {
+                log.info("HeartbeatUpdatingFailure");
             }
-        } else {
-            log.info("HeartbeatUpdatingFailure");
         }
     }
 
