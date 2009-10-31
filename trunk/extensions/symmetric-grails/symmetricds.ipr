@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project relativePaths="false" version="4">
+  <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/symmetricds.iml" filepath="$PROJECT_DIR$/symmetricds.iml" />
+    </modules>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="libraryTable">
+    <library name="Grails 1.2-M3">
+      <CLASSES>
+        <root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.instrument-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.integration-tests-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/junit-3.8.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/hibernate-core-3.3.1.GA.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-dbcp-1.2.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jasper-runtime-5.5.15.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.context.support-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.expression-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-el-1.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-beanutils-1.8.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/slf4j-log4j12-1.5.6.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jstl-1.1.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/svnkit-1.2.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/dom4j-1.6.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/log4j-1.2.15.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jasper-compiler-5.5.15.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/sitemesh-2.4.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.orm-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/xpp3_min-1.1.3.4.O.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/gant_groovy1.6-1.6.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.binding-2.0.8.RELEASE.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ivy-2.0.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jsp-api-2.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jasper-compiler-jdt-5.5.15.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-collections-3.2.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/serializer-2.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-fileupload-1.2.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/aopalliance-1.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.aop-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/groovy-all-1.6.4.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.web-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/oro-2.0.8.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-io-1.4.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/cglib-nodep-2.1_3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/aspectjrt-1.6.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/hibernate-annotations-3.4.0.GA.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/radeox-1.0-b2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jsp-api-2.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ant-nodeps-1.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ognl-2.6.9.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/servlet-api-2.5.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jul-to-slf4j-1.5.6.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/hsqldb-1.8.0.10.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.beans-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jsr107cache-1.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-validator-1.3.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-pool-1.5.3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ejb3-persistence-1.0.2.GA.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-cli-1.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.jms-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/oscache-2.4.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.web.servlet-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/aspectjweaver-1.6.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-codec-1.3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/backport-util-concurrent-3.0.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.webflow-2.0.8.RELEASE.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/javassist-3.4.GA.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/slf4j-api-1.5.6.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ant-trax-1.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.transaction-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/GParallelizer-0.8.3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/hibernate-ehcache-3.3.1.GA.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ant-launcher-1.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ehcache-1.6.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ant-1.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jcl-over-slf4j-1.5.6.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.js-2.0.8.RELEASE.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.jdbc-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/antlr-2.7.6.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.context-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.oxm-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/standard-1.1.2.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ant-junit-1.7.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.core-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/commons-lang-2.4.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.aspects-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.asm-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jline-0.9.91.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/hibernate-commons-annotations-3.3.0.ga.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/org.springframework.test-3.0.0.RC1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/ognl-2.7.3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/lib/jta-1.1.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-docs-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-scripts-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-spring-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-crud-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-gorm-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-web-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-test-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-core-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-webflow-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-bootstrap-1.2-M3.jar!/" />
+
+<root url="jar:///opt/sdk/build/grails-1.2-M3/dist/grails-resources-1.2-M3.jar!/" />
+
+
+      </CLASSES>
+    </library>
+  </component>
+</project>
