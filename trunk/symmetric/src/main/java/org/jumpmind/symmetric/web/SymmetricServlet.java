@@ -95,6 +95,10 @@ public class SymmetricServlet extends AbstractServlet {
             extension.getServlet().init(config);
             servlets.add(extension);
         }
+
+        if (servlets.size() == 0) {
+            log.error("ServletNoneFound");
+        }
     }
 
     public void destroy() {
@@ -186,6 +190,11 @@ public class SymmetricServlet extends AbstractServlet {
                         ((HttpServletResponse) res).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     }
                 }
+            }
+        } else {
+            if (req instanceof HttpServletRequest) {
+                HttpServletRequest httpRequest = (HttpServletRequest) req;
+                log.error("ServletNotFoundToHandleRequest", normalizeRequestUri(httpRequest));
             }
         }
     }
