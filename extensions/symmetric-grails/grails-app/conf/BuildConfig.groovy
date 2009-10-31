@@ -3,7 +3,7 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir	= "target/test-reports"
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'  
     repositories {
         grailsHome()
 
@@ -19,7 +19,7 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         // runtime 'com.mysql:mysql-connector-java:5.1.5'
-        runtime 'org.jumpmind.symmetric:symmetric:2.0.0-SNAPSHOT'
+        runtime 'org.jumpmind.symmetric:symmetric:2.0.0-SNAPSHOT'       
     }
 
 }

@@ -1,6 +1,7 @@
 <plugin name='symmetricds' version='0.1' grailsVersion='1.2-M3 &gt; *'>
-  <author>Your name</author>
-  <title>Plugin summary/headline</title>
+  <author>Chris Henson</author>
+  <authorEmail>chenson42@sourceforge.users.net</authorEmail>
+  <title>Plugin for SymmetricDS data synchronization software</title>
   <description>\
 Brief description of the plugin.
 </description>
@@ -15,21 +16,21 @@ Brief description of the plugin.
     <resolvers>
       <resolver type='mavenLocal' />
     </resolvers>
+    <dependency group='javassist' name='javassist' version='3.4.GA' conf='runtime' transitive='true' />
     <dependency group='org.hibernate' name='hibernate-commons-annotations' version='3.3.0.ga' conf='compile' transitive='true'>
       <excludes group='*' name='hibernate' />
     </dependency>
-    <dependency group='javassist' name='javassist' version='3.4.GA' conf='runtime' transitive='true' />
     <dependency group='org.hibernate' name='hibernate-annotations' version='3.4.0.GA' conf='compile' transitive='true' />
     <dependency group='org.jumpmind.symmetric' name='symmetric' version='2.0.0-SNAPSHOT' conf='runtime' transitive='true' />
     <dependency group='dom4j' name='dom4j' version='1.6.1' conf='runtime' transitive='true'>
       <excludes group='*' name='xml-apis' />
     </dependency>
-    <dependency group='antlr' name='antlr' version='2.7.6' conf='runtime' transitive='true' />
     <dependency group='org.hibernate' name='hibernate-core' version='3.3.1.GA' conf='compile' transitive='true'>
       <excludes group='*' name='ehcache' />
       <excludes group='*' name='xml-apis' />
       <excludes group='*' name='commons-logging' />
     </dependency>
+    <dependency group='antlr' name='antlr' version='2.7.6' conf='runtime' transitive='true' />
     <dependency group='org.hibernate' name='hibernate-ehcache' version='3.3.1.GA' conf='runtime' transitive='true'>
       <excludes group='*' name='ehcache' />
     </dependency>
