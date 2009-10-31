@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
+    <info organisation="org.example" module="symmetricds"/>
+    <configurations defaultconfmapping="build->default">
+        <conf name="build"/>
+    </configurations>
+    <dependencies>
+        <dependency org="org.grails" name="grails-bootstrap" rev="1.2-M3" conf="build"/>
+    </dependencies>
+</ivy-module>
