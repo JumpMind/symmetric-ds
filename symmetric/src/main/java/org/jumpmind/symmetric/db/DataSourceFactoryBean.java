@@ -30,7 +30,7 @@ import org.springframework.beans.factory.FactoryBean;
  * Factory that will create either a jndiDataSource or a basicDataSource based
  * on whether a JNDI name is provided.
  */
-public class DataSourceFactoryBean implements FactoryBean, BeanFactoryAware {
+public class DataSourceFactoryBean implements FactoryBean<DataSource>, BeanFactoryAware {
 
     private String jndiName;
 
@@ -38,11 +38,11 @@ public class DataSourceFactoryBean implements FactoryBean, BeanFactoryAware {
 
     private BeanFactory beanFactory;
 
-    public Object getObject() throws Exception {
+    public DataSource getObject() throws Exception {
         if (jndiName == null || jndiName.trim().length() == 0) {
-            return beanFactory.getBean(beanName);
+            return (DataSource)beanFactory.getBean(beanName);
         } else {
-            return beanFactory.getBean("jndiDataSource");
+            return (DataSource)beanFactory.getBean("jndiDataSource");
         }
     }
 

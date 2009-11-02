@@ -208,7 +208,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.platform = pf;
         this.sqlErrorTranslator = new SQLErrorCodeSQLExceptionTranslator(pf.getDataSource());
         this.identifierQuoteString = "\"";
-        jdbcTemplate.execute(new ConnectionCallback() {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData meta = c.getMetaData();
                 databaseName = meta.getDatabaseProductName();
@@ -336,7 +336,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public Set<String> getSqlKeywords() {
         if (sqlKeywords == null) {
-            jdbcTemplate.execute(new ConnectionCallback() {
+            jdbcTemplate.execute(new ConnectionCallback<Object>() {
                 public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                     DatabaseMetaData metaData = con.getMetaData();
                     sqlKeywords = new HashSet<String>(Arrays.asList(metaData.getSQLKeywords().split(",")));
@@ -384,8 +384,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         // multiple schemas/catalogs
         final String schema = StringUtils.isBlank(schemaName) ? getDefaultSchema() : schemaName;
         final String catalog = StringUtils.isBlank(catalogName) ? getDefaultCatalog() : catalogName;
-        return (Table) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+        return (Table) jdbcTemplate.execute(new ConnectionCallback<Table>() {
+            public Table doInConnection(Connection c) throws SQLException, DataAccessException {
                 Table table = null;
                 DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                 metaData.setMetaData(c.getMetaData());
@@ -565,7 +565,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         query.append("\"").append(table.getName()).append("\" t WHERE 1 = 0");
 
         final String finalQuery = query.toString();
-        jdbcTemplate.execute(new StatementCallback() {
+        jdbcTemplate.execute(new StatementCallback<Object>() {
             public Object doInStatement(Statement stmt) throws SQLException, DataAccessException {
                 ResultSet rs = stmt.executeQuery(finalQuery);
                 ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -711,7 +711,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      */
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
             final TriggerHistory hist, final String tablePrefix, final Table table) {
-        jdbcTemplate.execute(new ConnectionCallback() {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 String sourceCatalogName = trigger.getSourceCatalogName();
                 log.info("TriggerCreating", hist.getTriggerNameForDmlType(dml),
@@ -921,8 +921,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public boolean supportsGetGeneratedKeys() {
         if (supportsGetGeneratedKeys == null) {
-            supportsGetGeneratedKeys = (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
-                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+            supportsGetGeneratedKeys = jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
+                public Boolean doInConnection(Connection conn) throws SQLException, DataAccessException {
                     return conn.getMetaData().supportsGetGeneratedKeys();
                 }
             });
@@ -1047,14 +1047,14 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
-            final PreparedStatementCallback callback) {
+            final PreparedStatementCallback<Object> callback) {
         return insertWithGeneratedKey(jdbcTemplate, sql, sequenceId, callback);
     }
 
     public long insertWithGeneratedKey(final JdbcTemplate template, final String sql,
-            final SequenceIdentifier sequenceId, final PreparedStatementCallback callback) {
-        return (Long) template.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+            final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> callback) {
+        return template.execute(new ConnectionCallback<Long>() {
+            public Long doInConnection(Connection conn) throws SQLException, DataAccessException {
 
                 long key = 0;
                 PreparedStatement ps = null;
@@ -1125,7 +1125,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public Object createSavepoint() {
-        return transactionTemplate.execute(new TransactionCallback() {
+        return transactionTemplate.execute(new TransactionCallback<Object>() {
             public Object doInTransaction(TransactionStatus transactionstatus) {
                 return transactionstatus.createSavepoint();
             }

@@ -82,7 +82,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
 
     protected void createConfigureAndStartEngine(ApplicationContext ctx) {
         if (this.engine == null) {
-            this.engine = new SymmetricEngine(ctx);
+            this.engine = new SymmetricEngine(ctx, false);
         }
         engine.start();
     }

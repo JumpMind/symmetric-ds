@@ -26,17 +26,14 @@ import org.springframework.beans.factory.FactoryBean;
 
 /**
  * Used to protect database user and password from casual observation in the properties file
- * 
- * @author elong
- * 
  */
-public class PasswordFactory implements FactoryBean {
+public class PasswordFactory implements FactoryBean<String> {
 
     private ISecurityService securityService;
 
     private String password;
 
-    public Object getObject() throws Exception {
+    public String getObject() throws Exception {
         if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
             return securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
         }

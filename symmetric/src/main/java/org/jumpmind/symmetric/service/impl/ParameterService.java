@@ -194,7 +194,7 @@ public class ParameterService extends AbstractService implements IParameterServi
 
     private Map<String, String> rereadDatabaseParameters(String externalId, String nodeGroupId) {
         final Map<String, String> map = new HashMap<String, String>();
-        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper() {
+        jdbcTemplate.query(getSql("selectParametersSql"), new Object[] { externalId, nodeGroupId }, new RowMapper<Object>() {
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
                 map.put(rs.getString(1), rs.getString(2));
                 return null;

@@ -202,6 +202,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test(timeout = 30000)
     public void syncToClient() {
         logTestRunning();

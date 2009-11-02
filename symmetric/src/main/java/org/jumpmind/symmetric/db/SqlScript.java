@@ -101,7 +101,7 @@ public class SqlScript {
 
     public void execute() {
         JdbcTemplate template = new JdbcTemplate(this.dataSource);
-        template.execute(new ConnectionCallback() {
+        template.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection connection) throws SQLException, DataAccessException {
                 Statement st = null;
                 String fileName = script.getFile();

@@ -38,8 +38,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 abstract public class AbstractServlet extends HttpServlet {
 
@@ -89,10 +87,6 @@ abstract public class AbstractServlet extends HttpServlet {
         }
 
         return is;
-    }
-
-    protected ApplicationContext getDefaultApplicationContext() {
-        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 
     /**

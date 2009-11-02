@@ -45,15 +45,18 @@ public class RandomTimeSlot {
     }
 
     private long fromExternalId(String externalId) {
-        return Math.abs(externalId.hashCode());
+        if (externalId != null) {
+            return Math.abs(externalId.hashCode());
+        } else {
+            return Integer.MAX_VALUE;
+        }
     }
 
     public void setParameterService(IParameterService s) {
         long seed = fromExternalId(s.getExternalId());
         random = new Random(seed);
         if (maxValue < 0) {
-            maxValue = s
-                    .getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
+            maxValue = s.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS);
         }
     }
 

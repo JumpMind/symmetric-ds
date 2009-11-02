@@ -202,10 +202,10 @@ public interface IDbDialect {
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId);
 
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
-            final PreparedStatementCallback psCallback);
+            final PreparedStatementCallback<Object> psCallback);
 
     public long insertWithGeneratedKey(JdbcTemplate jdbcTemplate, final String sql,
-            final SequenceIdentifier sequenceId, final PreparedStatementCallback psCallback);
+            final SequenceIdentifier sequenceId, final PreparedStatementCallback<Object> psCallback);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData);
 

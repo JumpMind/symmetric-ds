@@ -21,8 +21,15 @@ package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+
+import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.service.IParameterService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 class ServletUtils {
     /**
@@ -45,7 +52,7 @@ class ServletUtils {
      * @param resp
      * @param statusCode
      * @param message
-     *                a message to put in the body of the response
+     *            a message to put in the body of the response
      * @return true if the error could be sent to the response
      * @throws IOException
      */
@@ -79,7 +86,7 @@ class ServletUtils {
      * @param resp
      * @param statusCode
      * @param message
-     *                a message to put in the body of the response
+     *            a message to put in the body of the response
      * @return true if the error could be sent to the response
      * @throws IOException
      */
@@ -90,5 +97,27 @@ class ServletUtils {
             retVal = sendError((HttpServletResponse) resp, statusCode, message);
         }
         return retVal;
+    }
+
+    /**
+     * Search in several places for an {@link ApplicationContext} that contains
+     * SymmetricDS services. This method uses existence of
+     * {@link IParameterService} in the context as a clue as to if the context
+     * contains SymmetricDS artifacts.
+     */
+    public static ApplicationContext getApplicationContext(ServletContext servletContext) {
+        ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        if (!(ctx.containsBean(Constants.PARAMETER_SERVICE) && ctx.getBean(Constants.PARAMETER_SERVICE) instanceof IParameterService)) {
+            SymmetricEngine engine = null;
+            if (ctx != null && ctx.containsBean(Constants.SYMMETRIC_ENGINE)) {
+                engine = (SymmetricEngine) ctx.getBean(Constants.SYMMETRIC_ENGINE);
+            } else {
+                engine = SymmetricEngine.getEngine();
+            }
+            if (engine != null) {
+                ctx = engine.getApplicationContext();
+            }
+        }
+        return ctx;
     }
 }

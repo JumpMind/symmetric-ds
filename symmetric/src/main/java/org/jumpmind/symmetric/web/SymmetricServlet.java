@@ -77,12 +77,11 @@ public class SymmetricServlet extends AbstractServlet {
         return log;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         servlets = new ArrayList<IServletExtension>();
-        ApplicationContext ctx = getDefaultApplicationContext();
+        ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
         final Map<String, IServletExtension> servletBeans = new LinkedHashMap<String, IServletExtension>();
         servletBeans.putAll(ctx.getBeansOfType(IServletExtension.class));
         if (ctx.getParent() != null) {
