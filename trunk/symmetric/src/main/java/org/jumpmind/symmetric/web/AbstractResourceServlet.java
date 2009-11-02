@@ -30,6 +30,7 @@ import javax.servlet.ServletRequest;
 
 import org.jumpmind.symmetric.transport.ITransportResource;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @since 1.4.0
@@ -122,9 +123,10 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
      * Returns true if this is a spring managed resource.
      */
     protected boolean isSpringManaged() {
-        boolean managed = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().contains(this);
-        if (!managed && getDefaultApplicationContext().getParent() != null) {
-            managed = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+        ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+        boolean managed = ctx.getBeansOfType(this.getClass()).values().contains(this);
+        if (!managed && ctx.getParent() != null) {
+            managed = ctx.getParent().getBeansOfType(this.getClass()).values()
                     .contains(this);
         }
         return managed;
@@ -135,15 +137,16 @@ public abstract class AbstractResourceServlet extends AbstractServlet implements
      */
     @SuppressWarnings("unchecked")
     protected IServletResource getSpringBean() {
-        IServletResource retVal = this;
+        IServletResource retVal = this;        
         if (!isSpringManaged()) {
-            Iterator iterator = getDefaultApplicationContext().getBeansOfType(this.getClass()).values().iterator();
+            ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
+            Iterator iterator = ctx.getBeansOfType(this.getClass()).values().iterator();
             if (iterator.hasNext()) {
                 retVal = (IServletResource) iterator.next();
             }
 
-            if (retVal == null && getDefaultApplicationContext().getParent() != null) {
-                iterator = getDefaultApplicationContext().getParent().getBeansOfType(this.getClass()).values()
+            if (retVal == null && ctx.getParent() != null) {
+                iterator = ctx.getParent().getBeansOfType(this.getClass()).values()
                         .iterator();
                 if (iterator.hasNext()) {
                     retVal = (IServletResource) iterator.next();

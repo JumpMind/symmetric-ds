@@ -126,12 +126,12 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
     @Override
     protected void initForSpecificDialect() {
     }
-
+    
     @Override
     public long insertWithGeneratedKey(final String sql, final SequenceIdentifier sequenceId,
-            final PreparedStatementCallback callback) {
-        return (Long) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+            final PreparedStatementCallback<Object> callback) {
+        return (Long) jdbcTemplate.execute(new ConnectionCallback<Long>() {
+            public Long doInConnection(Connection conn) throws SQLException, DataAccessException {
 
                 long key = 0;
                 PreparedStatement ps = null;

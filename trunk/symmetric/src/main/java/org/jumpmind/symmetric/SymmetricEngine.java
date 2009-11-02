@@ -63,22 +63,28 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * This is the preferred way to create, configure, start and manage a client-only instance of SymmetricDS. The engine
- * will bootstrap the symmetric.xml Spring context.
+ * This is the preferred way to create, configure, start and manage a
+ * client-only instance of SymmetricDS. The engine will bootstrap the
+ * symmetric.xml Spring context.
  * <p/>
- * The SymmetricDS instance is configured by properties configuration files. By default the engine will look for and
- * override existing properties with ones found in the properties files. SymmetricDS looks for: symmetric.properties in
- * the classpath (it will use the first one it finds), and then for a symmetric.properties found in the user.home system
- * property location. Next, if provided, in the constructor of the SymmetricEngine, it will locate and use the
- * properties file passed to the engine.
+ * The SymmetricDS instance is configured by properties configuration files. By
+ * default the engine will look for and override existing properties with ones
+ * found in the properties files. SymmetricDS looks for: symmetric.properties in
+ * the classpath (it will use the first one it finds), and then for a
+ * symmetric.properties found in the user.home system property location. Next,
+ * if provided, in the constructor of the SymmetricEngine, it will locate and
+ * use the properties file passed to the engine.
  * <p/>
- * When the engine is ready to be started, the {@link #start()} method should be called. It should only be called once.
+ * When the engine is ready to be started, the {@link #start()} method should be
+ * called. It should only be called once.
  */
-public class SymmetricEngine {
+public class SymmetricEngine implements ApplicationContextAware {
 
     protected static final ILog log = LogFactory.getLog(SymmetricEngine.class);
 
@@ -116,18 +122,23 @@ public class SymmetricEngine {
 
     private static Map<String, SymmetricEngine> registeredEnginesByName = new HashMap<String, SymmetricEngine>();
 
+    public SymmetricEngine() {
+    }
+
     public SymmetricEngine(String... overridePropertiesResources) {
-        this(null, overridePropertiesResources);
+        this(null, false, overridePropertiesResources);
     }
 
     /**
-     * Create a SymmetricDS instance using an existing {@link ApplicationContext} as the parent. This gives the
-     * SymmetricDS context access to beans in the parent context.
+     * Create a SymmetricDS instance using an existing
+     * {@link ApplicationContext} as the parent. This gives the SymmetricDS
+     * context access to beans in the parent context.
      * 
      * @param parentContext
      * @param overridePropertiesResources
      */
-    public SymmetricEngine(ApplicationContext parentContext, String... overridePropertiesResources) {
+    public SymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
+            String... overridePropertiesResources) {
         String one = null;
         String two = null;
         if (ArrayUtils.getLength(overridePropertiesResources) > 0) {
@@ -136,25 +147,52 @@ public class SymmetricEngine {
         if (ArrayUtils.getLength(overridePropertiesResources) > 1) {
             two = StringUtils.trim(overridePropertiesResources[1]);
         }
-        init(parentContext, one, two);
+        init(parentContext, isParentContext, one, two);
+    }
+
+    private ApplicationContext createContext(ApplicationContext parentContext) {
+        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
     }
 
     /**
-     * Create a SymmetricDS node. This constructor creates a new {@link ApplicationContext} using SymmetricDS's
-     * classpath:/symmetric.xml.
+     * @param overridePropertiesResource1
+     *            Provide a Spring resource path to a properties file to be used
+     *            for configuration
+     * @param overridePropertiesResource2
+     *            Provide a Spring resource path to a properties file to be used
+     *            for configuration
      */
-    public SymmetricEngine() {
-        init(createContext(null));
+    protected void init(ApplicationContext ctx, boolean isParentContext, String overridePropertiesResource1,
+            String overridePropertiesResource2) {
+        // Setting system properties is probably not the best way to accomplish
+        // this setup. Synchronizing on the class so creating multiple engines
+        // is thread safe.
+        synchronized (SymmetricEngine.class) {
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
+                    : overridePropertiesResource1);
+            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
+                    : overridePropertiesResource2);
+            if (isParentContext) {
+                init(createContext(ctx));
+            } else {
+                init(createContext(null));
+            }
+        }
     }
 
-    /**
-     * Pass in the {@link ApplicationContext} to be used. The context passed in needs to load classpath:/symmetric.xml.
-     * 
-     * @param ctx
-     *            A Spring framework context to use for this SymmetricEngine
-     */
-    public SymmetricEngine(ApplicationContext ctx) {
-        init(ctx);
+    protected void init(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+        configurationService = AppUtils.find(Constants.CONFIG_SERVICE, this);
+        parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, this);
+        nodeService = AppUtils.find(Constants.NODE_SERVICE, this);
+        registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, this);
+        upgradeService = AppUtils.find(Constants.UPGRADE_SERVICE, this);
+        clusterService = AppUtils.find(Constants.CLUSTER_SERVICE, this);
+        purgeService = AppUtils.find(Constants.PURGE_SERVICE, this);
+        dataService = AppUtils.find(Constants.DATA_SERVICE, this);
+        triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
+        dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
+        jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
     }
 
     public void stop() {
@@ -194,48 +232,9 @@ public class SymmetricEngine {
         }
     }
 
-    private ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
-    }
-
     /**
-     * @param overridePropertiesResource1
-     *            Provide a Spring resource path to a properties file to be used for configuration
-     * @param overridePropertiesResource2
-     *            Provide a Spring resource path to a properties file to be used for configuration
-     */
-    private void init(ApplicationContext parentContext, String overridePropertiesResource1,
-            String overridePropertiesResource2) {
-        // Setting system properties is probably not the best way to accomplish
-        // this setup.
-        // Synchronizing on the class so creating multiple engines is thread
-        // safe.
-        synchronized (SymmetricEngine.class) {
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
-                    : overridePropertiesResource1);
-            System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
-                    : overridePropertiesResource2);
-            this.init(createContext(parentContext));
-        }
-    }
-
-    private void init(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-        configurationService = AppUtils.find(Constants.CONFIG_SERVICE, this);
-        parameterService = AppUtils.find(Constants.PARAMETER_SERVICE, this);
-        nodeService = AppUtils.find(Constants.NODE_SERVICE, this);
-        registrationService = AppUtils.find(Constants.REGISTRATION_SERVICE, this);
-        upgradeService = AppUtils.find(Constants.UPGRADE_SERVICE, this);
-        clusterService = AppUtils.find(Constants.CLUSTER_SERVICE, this);
-        purgeService = AppUtils.find(Constants.PURGE_SERVICE, this);
-        dataService = AppUtils.find(Constants.DATA_SERVICE, this);
-        triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
-        dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
-        jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
-    }
-
-    /**
-     * Register this instance of the engine so it can be found by other processes in the JVM.
+     * Register this instance of the engine so it can be found by other
+     * processes in the JVM.
      * 
      * @see #findEngineByUrl(String)
      */
@@ -257,8 +256,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * This is done dynamically because some application servers do not allow the default MBeanServer to be accessed for
-     * security reasons (OC4J).
+     * This is done dynamically because some application servers do not allow
+     * the default MBeanServer to be accessed for security reasons (OC4J).
      */
     private void startDefaultServerJMXExport() {
         if (parameterService.is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
@@ -280,16 +279,19 @@ public class SymmetricEngine {
     }
 
     /**
-     * @return The lower case representation of the engine name as setup in the symmetric.properties file. We always use
-     *         a lower case representation because there are times the engine name is used in triggers at which point
-     *         you can lose the original case representation.
+     * @return The lower case representation of the engine name as setup in the
+     *         symmetric.properties file. We always use a lower case
+     *         representation because there are times the engine name is used in
+     *         triggers at which point you can lose the original case
+     *         representation.
      */
     public String getEngineName() {
         return dbDialect.getEngineName();
     }
 
     /**
-     * Will setup the SymmetricDS tables, if not already setup and if the engine is configured to do so.
+     * Will setup the SymmetricDS tables, if not already setup and if the engine
+     * is configured to do so.
      */
     public synchronized void setup() {
         if (!setup) {
@@ -378,7 +380,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * This can be called to do a purge. It may be called only if the {@link PurgeJob} has not been enabled.
+     * This can be called to do a purge. It may be called only if the
+     * {@link PurgeJob} has not been enabled.
      * 
      * @see IPurgeService#purge()
      */
@@ -418,7 +421,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Simply check and make sure that this node is all configured properly for operation.
+     * Simply check and make sure that this node is all configured properly for
+     * operation.
      */
     public void validateConfiguration() {
         Node node = nodeService.findIdentity();
@@ -478,8 +482,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Give the end user the option to provide a script that will load a registration server with an initial SymmetricDS
-     * setup.
+     * Give the end user the option to provide a script that will load a
+     * registration server with an initial SymmetricDS setup.
      * 
      * Look first on the file system, then in the classpath for the SQL file.
      * 
@@ -514,7 +518,8 @@ public class SymmetricEngine {
     }
 
     /**
-     * Push a copy of the node onto the push queue so the SymmetricDS node 'checks' in with it's root node.
+     * Push a copy of the node onto the push queue so the SymmetricDS node
+     * 'checks' in with it's root node.
      * 
      * @see IconfigurationService#heartbeat()
      */
@@ -594,7 +599,7 @@ public class SymmetricEngine {
         }
     }
 
-/**
+    /**
      * Locate the one and only registered {@link SymmetricEngine}.  Use {@link #findEngineByName(String)} or
      * {@link #findEngineByUrl(String) if there is more than on engine registered.
      * @throws IllegalStateException This exception happens if more than one engine is 
@@ -609,6 +614,10 @@ public class SymmetricEngine {
         } else {
             return registeredEnginesByName.values().iterator().next();
         }
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.init(applicationContext, true, null, null);
     }
 
 }

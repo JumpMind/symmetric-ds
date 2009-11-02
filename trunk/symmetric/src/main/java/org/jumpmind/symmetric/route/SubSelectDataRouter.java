@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 /**
@@ -69,7 +69,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
             Map<String, Object> sqlParams = getDataObjectMap(dataMetaData, dbDialect);
             sqlParams.put("NODE_GROUP_ID", trigger.getRouter().getTargetNodeGroupId());
             nodeIds = simpleTemplate.query(String.format("%s%s", sql, subSelect),
-                    new ParameterizedSingleColumnRowMapper<String>(), sqlParams);
+                    new SingleColumnRowMapper<String>(), sqlParams);
         } else {
             nodeIds = toNodeIds(nodes);
         }

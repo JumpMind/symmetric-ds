@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.ext.IExtensionPoint;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * This filter allows us simplify the configuration of symmetric by defining
@@ -76,11 +75,10 @@ public class SymmetricFilter implements Filter {
         new SymmetricFilterChain(chain).doFilter(request, response);
     }
 
-    @SuppressWarnings("unchecked")
     public void init(FilterConfig filterConfig) throws ServletException {
         servletContext = filterConfig.getServletContext();
         filters = new ArrayList<Filter>();
-        ApplicationContext ctx = getContext();
+        ApplicationContext ctx = ServletUtils.getApplicationContext(getServletContext());
         Map<String, Filter> filterBeans = new LinkedHashMap<String, Filter>();
         filterBeans.putAll(ctx.getBeansOfType(Filter.class));
         if (ctx.getParent() != null) {
@@ -88,10 +86,10 @@ public class SymmetricFilter implements Filter {
         }
         // they will need to be sorted somehow, right now its just the order
         // they appear in the spring file
-        for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {
-            log.debug(String.format("FilterInitializing", filterEntry.getKey()));
+        for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {            
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
+                log.debug(String.format("FilterInitializing", filterEntry.getKey()));
                 filter.init(filterConfig);
                 filters.add(filter);
             } else {
@@ -104,11 +102,6 @@ public class SymmetricFilter implements Filter {
         for (final Filter filter : filters) {
             filter.destroy();
         }
-
-    }
-
-    protected ApplicationContext getContext() {
-        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 
     public ServletContext getServletContext() {

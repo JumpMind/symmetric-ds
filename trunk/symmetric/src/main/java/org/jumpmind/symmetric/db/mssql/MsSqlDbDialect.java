@@ -120,7 +120,7 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            jdbcTemplate.execute(new ConnectionCallback() {
+            jdbcTemplate.execute(new ConnectionCallback<Object>() {
                 public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                     String previousCatalog = con.getCatalog();
                     Statement stmt = null;
@@ -180,8 +180,8 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
             final String triggerName) {
-        return (Boolean) jdbcTemplate.execute(new ConnectionCallback() {
-            public Object doInConnection(Connection con) throws SQLException, DataAccessException {
+        return jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
+            public Boolean doInConnection(Connection con) throws SQLException, DataAccessException {
                 String previousCatalog = con.getCatalog();
                 PreparedStatement stmt = con
                         .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");

@@ -123,7 +123,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     public SymmetricEngine getEngine() {
         if (contextListener == null) {
-            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext,
+            contextListener = new SymmetricEngineContextLoaderListener(new SymmetricEngine(parentContext, true,
                     propertiesFiles));
         }
         return contextListener.getEngine();

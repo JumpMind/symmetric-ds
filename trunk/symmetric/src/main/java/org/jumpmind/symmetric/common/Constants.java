@@ -46,6 +46,8 @@ final public class Constants {
     
     public static final String NA = "NA";
     
+    public static final String SYMMETRIC_ENGINE = "symmetricEngine";
+    
     public static final String MBEAN_SERVER = "mbeanserver";
     
     public static final String PROPERTIES = "symmetricProperties";

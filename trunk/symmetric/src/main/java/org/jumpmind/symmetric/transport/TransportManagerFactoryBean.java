@@ -34,7 +34,7 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
 
-public class TransportManagerFactoryBean implements FactoryBean {
+public class TransportManagerFactoryBean implements FactoryBean<ITransportManager> {
 
     private INodeService nodeService;
 
@@ -42,7 +42,7 @@ public class TransportManagerFactoryBean implements FactoryBean {
 
     private IConfigurationService configurationService;
 
-    public Object getObject() throws Exception {
+    public ITransportManager getObject() throws Exception {
         String transport = parameterService.getString(ParameterConstants.TRANSPORT_TYPE);
         if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
             final String httpSslVerifiedServerNames = parameterService

@@ -94,7 +94,6 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     private IRouterService routingService;
 
-    @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         Map<String, IExtensionPoint> extensions = new HashMap<String, IExtensionPoint>();
         extensions.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));

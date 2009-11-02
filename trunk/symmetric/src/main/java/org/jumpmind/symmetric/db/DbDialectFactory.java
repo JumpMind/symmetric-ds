@@ -49,7 +49,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
-public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
+public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAware {
 
     private static final ILog log = LogFactory.getLog(DbDialectFactory.class);
 
@@ -61,7 +61,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
 
     private Map<String, Class<Platform>> customPlatforms;
 
-    public Object getObject() throws Exception {
+    public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
 
@@ -140,7 +140,7 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
         boolean success = false;
         while (!success) {
             try {
-                jdbcTemplate.execute(new ConnectionCallback() {
+                jdbcTemplate.execute(new ConnectionCallback<Object>() {
                     public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                         return null;
                     }
@@ -157,8 +157,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     }
 
     private int getDbMajorVersion() {
-        return (Integer) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<Integer>() {
+            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData metaData = c.getMetaData();
                 try {
                     return metaData.getDatabaseMajorVersion();
@@ -170,8 +170,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     }
 
     private String getDatabaseProductVersion() {
-        return (String) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<String>() {
+            public String doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData metaData = c.getMetaData();
                 return metaData.getDatabaseProductVersion();
             }
@@ -179,8 +179,8 @@ public class DbDialectFactory implements FactoryBean, BeanFactoryAware {
     }
 
     private String getDbProductName() {
-        return (String) new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<String>() {
+            public String doInConnection(Connection c) throws SQLException, DataAccessException {
                 DatabaseMetaData metaData = c.getMetaData();
                 return metaData.getDatabaseProductName();
             }
