@@ -1,12 +1,11 @@
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
-grails.project.test.reports.dir	= "target/test-reports"
+grails.project.test.reports.dir = "target/test-reports"
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'  
     repositories {
         grailsHome()
-
         // uncomment the below to enable remote dependency resolution
         // from public Maven repositories
         mavenLocal()
@@ -19,7 +18,15 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         // runtime 'com.mysql:mysql-connector-java:5.1.5'
-        runtime 'org.jumpmind.symmetric:symmetric:2.0.0-SNAPSHOT'       
+        runtime 'org.jumpmind.symmetric:symmetric:2.0.0-SNAPSHOT'     
+        runtime 'org.apache.ddlutils:ddlutils:1.0'
+        runtime 'mx4j:mx4j-tools:3.0.1'
+        runtime 'rome:rome:0.9'
+        runtime 'org.jdom:jdom:1.1'
+        runtime 'com.h2database:h2:1.2.122'
+        runtime 'org.apache.derby:derby:10.4.2.0'
+        runtime 'org.apache.derby:derbytools:10.4.2.0'
+        runtime 'org.beanshell:bsh:2.0b4'
     }
 
 }
