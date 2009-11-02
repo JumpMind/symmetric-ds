@@ -1,3 +1,5 @@
+import org.jumpmind.symmetric.SymmetricEngine;
+
 class SymmetricdsGrailsPlugin {
     // the plugin version
     def version = "0.1"
@@ -26,7 +28,7 @@ Brief description of the plugin.
         def lastFilter = filters[filters.size()-1]
         lastFilter + {
             'filter' {
-                'filter-name'('symmetricfilter')
+                'filter-name'("symmetricfilter")
                 'filter-class'(org.jumpmind.symmetric.web.SymmetricFilter.getName())
             }
         }
@@ -35,8 +37,8 @@ Brief description of the plugin.
         def lastFilterMapping = filterMappings[filterMappings.size()-1]
         lastFilterMapping + {
             'filter-mapping' {
-                'filter-name'('symmetricfilter')
-                'url-pattern'('/sync/*')
+                'filter-name'("symmetricfilter")
+                'url-pattern'("/sync/*")
             }
         }    
         
@@ -44,7 +46,7 @@ Brief description of the plugin.
         def lastServlet = servlets[servlets.size()-1]
         lastServlet + {
             'servlet' {
-                'servlet-name'('symmetricds')
+                'servlet-name'("symmetricds")
                 'servlet-class'(org.jumpmind.symmetric.web.SymmetricServlet.getName())
                 'load-on-startup'('1')
             }
@@ -54,25 +56,15 @@ Brief description of the plugin.
         def lastServletMapping = servletMappings[servletMappings.size()-1]
         lastServletMapping + {
             'servlet-mapping' {
-                'servlet-name'('symmetricds')
-                'url-pattern'('/sync/*')
+                'servlet-name'("symmetricds")
+                'url-pattern'("/sync/*")
             }
-        }   
-        
-        /*
-        def listeners = webXml.'listener'
-        def lastListener = listeners[listeners.size()-1]
-        lastListener + {
-            'listener' {
-                'listener-class'(org.jumpmind.symmetric.SymmetricEngineContextLoaderListener.getName())
-            }
-        } 
-        */  
+        }           
     
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        symmetricEngine(SymmetricEngine)
     }
 
     def doWithDynamicMethods = { ctx ->
@@ -80,7 +72,7 @@ Brief description of the plugin.
     }
 
     def doWithApplicationContext = { applicationContext ->
-        // TODO Implement post initialization spring config (optional)
+
     }
 
     def onChange = { event ->

@@ -105,5 +105,6 @@
 	<classpathentry kind="var" path="GRAILS_HOME/dist/grails-bootstrap-1.2-M3.jar"/>
 	<classpathentry kind="var" path="GRAILS_HOME/dist/grails-resources-1.2-M3.jar"/>
 	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/symmetric"/>
 	<classpathentry kind="output" path="web-app/WEB-INF/classes"/>
 </classpath>
