@@ -76,12 +76,7 @@ Brief description of the plugin.
         def config = loadConfig()
         
         symmetricEngine(SpringWireableSymmetricEngine) {
-            properties = [
-              "db.spring.bean.name":Constants.PARENT_PROPERTY_PREFIX+"dataSource",
-              "sync.url":config.sync.url,
-              "external.id":config.external.id,
-              "group.id":config.group.id
-            ]
+            properties = config.toProperties()
         }
     }
 
@@ -120,7 +115,14 @@ Brief description of the plugin.
         GroovyClassLoader classLoader = new GroovyClassLoader(getClass().classLoader)
         
         // merging default config into main application config
-        config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('SymmetricConfig')))
+        config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('DefaultSymmetricConfig')))
+        
+        // merging user-defined config into main application config if provided
+        try {
+            config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('SymmetricConfig')))
+        } catch (Exception ignored) {
+            // ignore, just use the defaults
+        }
         
         return config.symmetric
     }

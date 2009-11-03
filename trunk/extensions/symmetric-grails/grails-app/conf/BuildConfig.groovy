@@ -29,6 +29,7 @@ grails.project.dependency.resolution = {
         runtime 'org.beanshell:bsh:2.0b4'
         runtime 'commons-betwixt:commons-betwixt:0.8'
         runtime 'commons-digester:commons-digester:1.7'
+        runtime 'commons-math:commons-math:1.1'
     }
 
 }
