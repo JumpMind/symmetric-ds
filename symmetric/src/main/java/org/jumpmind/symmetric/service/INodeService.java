@@ -52,6 +52,8 @@ public interface INodeService {
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId);
 
     public NodeSecurity findNodeSecurity(String nodeId);
+    
+    public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
 
     public String findSymmetricVersion();
 
@@ -79,7 +81,13 @@ public interface INodeService {
 
     public boolean isExternalIdRegistered(String nodeGroupId, String externalId);
 
+    public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId);
+    
     public boolean updateNode(Node node);
+    
+    public void insertNodeIdentity(String nodeId);
+    
+    public void insertNodeGroup(String groupId, String description);
 
     public boolean updateNodeSecurity(NodeSecurity security);
 

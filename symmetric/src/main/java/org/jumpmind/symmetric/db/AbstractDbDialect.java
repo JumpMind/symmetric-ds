@@ -222,7 +222,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     abstract protected void initForSpecificDialect();
 
-    public void initSupportDb() {
+    public void initSyncDb() {
         initForSpecificDialect();
         addPrefixAndCreateTablesIfNecessary(getSupportDatabaseFromDdl());
         createRequiredFunctions();

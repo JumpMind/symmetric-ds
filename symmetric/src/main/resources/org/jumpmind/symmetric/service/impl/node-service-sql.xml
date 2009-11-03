@@ -8,6 +8,7 @@
   default-lazy-init="true">
 
   <util:map id="nodeServiceSql">
+  
     <entry key="findSymmetricVersionSql">
       <value>
         select symmetric_version from $[sym.sync.table.prefix]_node where node_id in (select node_id from $[sym.sync.table.prefix]_node_identity)
@@ -17,7 +18,22 @@
       <value>
         select node_id from $[sym.sync.table.prefix]_node_identity
       </value>
-    </entry>          
+    </entry>  
+    <entry key="insertNodeIdentitySql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_identity values(?)
+      </value>
+    </entry> 
+    <entry key="doesNodeGroupExistSql">
+      <value>
+        select count(*) from $[sym.sync.table.prefix]_node_group where node_group_id=?
+      </value>
+    </entry>            
+    <entry key="insertNodeGroupSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node_group (description, node_group_id) values(?, ?)
+      </value>
+    </entry>      
     <entry key="nodeChannelControlIgnoreSql">
       <value>
         update $[sym.sync.table.prefix]_node_channel_ctl set ignore_enabled=? where node_id=? and
@@ -30,6 +46,11 @@
         (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)
       </value>
     </entry>
+    <entry key="insertNodeSql">
+      <value>
+        insert into $[sym.sync.table.prefix]_node (node_id, node_group_id, external_id, created_at_node_id) values (?, ?, ?, ?)
+      </value>
+    </entry>    
     <entry key="updateNodeSql">
       <value>
         update $[sym.sync.table.prefix]_node set node_group_id=?, external_id=?, database_type=?,

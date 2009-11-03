@@ -163,7 +163,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
     @Transactional
     public void markNodeAsRegistered(String nodeId) {
         jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
-
     }
 
     public Map<String, String> getRegistrationRedirectMap() {
@@ -257,30 +256,33 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     /**
      * @see IRegistrationService#openRegistration(String, String)
+     * @return The nodeId of the registered node
      */
-    public void openRegistration(String nodeGroup, String externalId) {
+    public String openRegistration(String nodeGroup, String externalId) {
         Node node = new Node();
         node.setExternalId(externalId);
         node.setNodeGroupId(nodeGroup);
-        openRegistration(node);
+        return openRegistration(node);
     }
 
-    public void openRegistration(Node node) {
+    protected String openRegistration(Node node) {
         Node me = nodeService.findIdentity();
-        if (me != null) {
+        if (me != null || (parameterService.getExternalId().equals(node.getExternalId()) && parameterService.getNodeGroupId().equals(node.getNodeGroupId()))) {
             String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
             Node existingNode = nodeService.findNode(nodeId);
             if (existingNode == null) {
                 String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
                 password = filterPasswordOnSaveIfNeeded(password);
-                jdbcTemplate.update(getSql("openRegistrationNodeSql"), new Object[] { nodeId, node.getNodeGroupId(),
-                        node.getExternalId(), me.getNodeId() });
+                nodeService.insertNode(nodeId, node.getNodeGroupId(),
+                        node.getExternalId(), me.getNodeId() );
                 jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password,
                         me.getNodeId() });
+                nodeService.insertNodeGroup(node.getNodeGroupId(), null);
                 log.info("NodeRegistrationOpened", node.getExternalId(), node.getNodeGroupId(), nodeId);
             } else {
                 reOpenRegistration(nodeId);
             }
+            return nodeId;
         } else {
             throw new IllegalStateException(
                     "This node has not been configured.  Could not find a row in the identity table.");

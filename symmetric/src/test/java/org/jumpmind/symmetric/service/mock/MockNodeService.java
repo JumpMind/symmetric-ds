@@ -36,11 +36,11 @@ public class MockNodeService implements INodeService {
     public boolean isRegistrationServer() {
         return false;
     }
-    
+
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         return null;
     }
-    
+
     public Node findIdentity() {
         return null;
     }
@@ -48,11 +48,25 @@ public class MockNodeService implements INodeService {
     public String findSymmetricVersion() {
         return null;
     }
-    
+
+    public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
+        return null;
+    }
+
+    public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
+
+    }
+
+    public void insertNodeGroup(String groupId, String description) {
+    }
+
+    public void insertNodeIdentity(String nodeId) {
+    }
+
     public String findIdentityNodeId() {
         return null;
     }
-    
+
     public Node findNode(String nodeId) {
         return null;
     }
@@ -112,37 +126,37 @@ public class MockNodeService implements INodeService {
     public Node findIdentity(boolean useCache) {
         return null;
     }
-    
+
     public String generateNodeId(String nodeGroupId, String externalId) {
         return null;
     }
-    
+
     public String generatePassword() {
         return null;
     }
 
     public void flushNodeAuthorizedCache() {
     }
-    
+
     public INodeIdGenerator getNodeIdGenerator() {
         return null;
     }
-    
-    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) { 
+
+    public void setNodeIdGenerator(INodeIdGenerator nodeIdGenerator) {
     }
 
     public boolean isDataLoadCompleted() {
         return false;
     }
 
-    public boolean isDataLoadStarted() {      
+    public boolean isDataLoadStarted() {
         return false;
     }
-    
+
     public NodeStatus getNodeStatus() {
         return null;
     }
 
-	public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
-	}
+    public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+    }
 }

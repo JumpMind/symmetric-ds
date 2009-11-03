@@ -33,11 +33,6 @@
         registration_time = null where node_id = ?
       </value>
     </entry>
-    <entry key="openRegistrationNodeSql">
-      <value>
-        insert into $[sym.sync.table.prefix]_node (node_id, node_group_id, external_id, created_at_node_id) values (?, ?, ?, ?)
-      </value>
-    </entry>
     <entry key="openRegistrationNodeSecuritySql">
       <value>
         insert into $[sym.sync.table.prefix]_node_security (node_id, node_password,
