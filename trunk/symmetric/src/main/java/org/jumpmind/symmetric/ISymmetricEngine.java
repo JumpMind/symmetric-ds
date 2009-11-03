@@ -145,6 +145,12 @@ public interface ISymmetricEngine {
     public boolean isStarting();
 
     /**
+     * Will check to see if this instance of SymmetricDS is configured with the
+     * required properties for a node to operate.
+     */
+    public boolean isConfigured();
+
+    /**
      * Expose access to the Spring context. This is for advanced use only.
      * 
      * @return the Spring application context that SymmetricDS runs in

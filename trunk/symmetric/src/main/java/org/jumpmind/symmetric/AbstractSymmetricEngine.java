@@ -63,6 +63,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 
+    public AbstractSymmetricEngine() {
+    }
+
     /**
      * Locate a {@link StandaloneSymmetricEngine} in the same JVM
      */
@@ -74,8 +77,94 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-    private ApplicationContext createContext(ApplicationContext parentContext) {
-        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
+    /**
+     * Locate a {@link StandaloneSymmetricEngine} in the same JVM
+     */
+    public static ISymmetricEngine findEngineByName(String name) {
+        if (registeredEnginesByName != null && name != null) {
+            return registeredEnginesByName.get(name.toLowerCase());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Locate the one and only registered {@link StandaloneSymmetricEngine}.  Use {@link #findEngineByName(String)} or
+     * {@link #findEngineByUrl(String) if there is more than on engine registered.
+     * @throws IllegalStateException This exception happens if more than one engine is 
+     * registered  
+     */
+    public static ISymmetricEngine getEngine() {
+        int numberOfEngines = registeredEnginesByName.size();
+        if (numberOfEngines == 0) {
+            return null;
+        } else if (numberOfEngines > 1) {
+            throw new IllegalStateException("More than one SymmetricEngine is currently registered");
+        } else {
+            return registeredEnginesByName.values().iterator().next();
+        }
+    }
+    
+    public boolean isConfigured() {
+        return parameterService != null && !StringUtils.isBlank(parameterService.getNodeGroupId()) &&
+        !StringUtils.isBlank(parameterService.getExternalId()) && !StringUtils.isBlank(parameterService.getSyncUrl());
+    }
+
+    public synchronized void start() {
+        if (!starting && !started) {
+            try {
+                starting = true;
+                parameterService.rereadParameters();
+                setup();
+                validateConfiguration();
+                registerEngine();
+                startDefaultServerJMXExport();
+                Node node = nodeService.findIdentity();
+                if (node != null) {
+                    log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
+                } else {
+                    log.info("UnregisteredNodeStarting", parameterService.getNodeGroupId(), parameterService
+                            .getExternalId());
+                }
+                triggerService.syncTriggers();
+                heartbeat(false);
+                jobManager.startJobs();
+                log
+                        .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
+                                .getName());
+                started = true;
+            } finally {
+                starting = false;
+            }
+        }
+    }
+
+    public synchronized void stop() {
+        log.info("SymmetricDSClosing", parameterService.getExternalId(), Version.version(), dbDialect.getName());
+        jobManager.stopJobs();
+        removeMeFromMap(registeredEnginesByName);
+        removeMeFromMap(registeredEnginesByUrl);
+        DataSource ds = dbDialect.getJdbcTemplate().getDataSource();
+        if (ds instanceof BasicDataSource) {
+            try {
+                ((BasicDataSource) ds).close();
+            } catch (SQLException ex) {
+                log.error(ex);
+            }
+        }
+        applicationContext = null;
+        configurationService = null;
+        parameterService = null;
+        clusterService = null;
+        upgradeService = null;
+        triggerService = null;
+        nodeService = null;
+        registrationService = null;
+        purgeService = null;
+        dataService = null;
+        dbDialect = null;
+        started = false;
+        starting = false;
     }
 
     /**
@@ -94,7 +183,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         synchronized (StandaloneSymmetricEngine.class) {
             if (overrideProperties != null) {
                 for (Object key : overrideProperties.keySet()) {
-                    log.debug("InitAddingSystemProperty", key, overrideProperties.getProperty((String)key));
+                    log.debug("InitAddingSystemProperty", key, overrideProperties.getProperty((String) key));
                 }
                 System.getProperties().putAll(overrideProperties);
             }
@@ -125,32 +214,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
     }
 
-    public void stop() {
-        log.info("SymmetricDSClosing", parameterService.getExternalId(), Version.version(), dbDialect.getName());
-        jobManager.stopJobs();
-        removeMeFromMap(registeredEnginesByName);
-        removeMeFromMap(registeredEnginesByUrl);
-        DataSource ds = dbDialect.getJdbcTemplate().getDataSource();
-        if (ds instanceof BasicDataSource) {
-            try {
-                ((BasicDataSource) ds).close();
-            } catch (SQLException ex) {
-                log.error(ex);
-            }
-        }
-        applicationContext = null;
-        configurationService = null;
-        parameterService = null;
-        clusterService = null;
-        upgradeService = null;
-        triggerService = null;
-        nodeService = null;
-        registrationService = null;
-        purgeService = null;
-        dataService = null;
-        dbDialect = null;
-        started = false;
-        starting = false;
+    private ApplicationContext createContext(ApplicationContext parentContext) {
+        return new ClassPathXmlApplicationContext(new String[] { "classpath:/symmetric.xml" }, parentContext);
     }
 
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
@@ -178,7 +243,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         if (node != null) {
             return node.getSyncURL();
         } else {
-            return parameterService.getMyUrl();
+            return parameterService.getSyncUrl();
         }
     }
 
@@ -210,35 +275,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!setup) {
             setupDatabase(true);
             setup = true;
-        }
-    }
-
-    public synchronized void start() {
-        if (!starting && !started) {
-            try {
-                starting = true;
-                parameterService.rereadParameters();
-                setup();
-                validateConfiguration();
-                registerEngine();
-                startDefaultServerJMXExport();
-                Node node = nodeService.findIdentity();
-                if (node != null) {
-                    log.info("RegisteredNodeStarting", node.getNodeGroupId(), node.getNodeId(), node.getExternalId());
-                } else {
-                    log.info("UnregisteredNodeStarting", parameterService.getNodeGroupId(), parameterService
-                            .getExternalId());
-                }
-                triggerService.syncTriggers();
-                heartbeat(false);
-                jobManager.startJobs();
-                log
-                        .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
-                                .getName());
-                started = true;
-            } finally {
-                starting = false;
-            }
         }
     }
 
@@ -420,38 +456,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;
-    }
-
-    /**
-     * Locate a {@link StandaloneSymmetricEngine} in the same JVM
-     */
-    public static ISymmetricEngine findEngineByName(String name) {
-        if (registeredEnginesByName != null && name != null) {
-            return registeredEnginesByName.get(name.toLowerCase());
-        } else {
-            return null;
-        }
-    }
-
-/**
-     * Locate the one and only registered {@link StandaloneSymmetricEngine}.  Use {@link #findEngineByName(String)} or
-     * {@link #findEngineByUrl(String) if there is more than on engine registered.
-     * @throws IllegalStateException This exception happens if more than one engine is 
-     * registered  
-     */
-    public static ISymmetricEngine getEngine() {
-        int numberOfEngines = registeredEnginesByName.size();
-        if (numberOfEngines == 0) {
-            return null;
-        } else if (numberOfEngines > 1) {
-            throw new IllegalStateException("More than one SymmetricEngine is currently registered");
-        } else {
-            return registeredEnginesByName.values().iterator().next();
-        }
-    }
-
-    public AbstractSymmetricEngine() {
-        super();
     }
 
     public IConfigurationService getConfigurationService() {

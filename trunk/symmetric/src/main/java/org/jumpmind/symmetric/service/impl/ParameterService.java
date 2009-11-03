@@ -243,7 +243,7 @@ public class ParameterService extends AbstractService implements IParameterServi
         return getString(ParameterConstants.EXTERNAL_ID);
     }
 
-    public String getMyUrl() {
+    public String getSyncUrl() {
         return getString(ParameterConstants.SYNC_URL);
     }
 
