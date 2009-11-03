@@ -244,7 +244,7 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getMyUrl() {
-        return getString(ParameterConstants.MY_URL);
+        return getString(ParameterConstants.SYNC_URL);
     }
 
     public String getNodeGroupId() {
