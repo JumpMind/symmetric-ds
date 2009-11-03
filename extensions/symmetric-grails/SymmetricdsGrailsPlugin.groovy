@@ -1,4 +1,6 @@
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.SpringWireableSymmetricEngine;
+import java.io.File;
 
 class SymmetricdsGrailsPlugin {
     // the plugin version
@@ -64,7 +66,11 @@ Brief description of the plugin.
     }
 
     def doWithSpring = {
-        symmetricEngine(SymmetricEngine)
+        symmetricEngine(SpringWireableSymmetricEngine) {
+            properties = [
+              "db.spring.bean.name":Constants.PARENT_PROPERTY_PREFIX+"dataSource"
+            ]
+        }
     }
 
     def doWithDynamicMethods = { ctx ->
@@ -72,7 +78,9 @@ Brief description of the plugin.
     }
 
     def doWithApplicationContext = { applicationContext ->
-
+        String userDir = System.properties['user.home'];
+        File file = new File('$userDir/.symmetric/');
+        
     }
 
     def onChange = { event ->
