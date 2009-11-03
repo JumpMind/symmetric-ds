@@ -71,7 +71,7 @@ log4j = {
                'org.codehaus.groovy.grails.commons', // core / classloading                
 	       'org.codehaus.groovy.grails.web.mapping' // URL mapping
         
-    debug      'org.jumpmind'        
+    info      'org.jumpmind'        
 
     warn   'org.mortbay.log'
 }
