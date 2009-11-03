@@ -89,7 +89,8 @@ public class SymmetricFilter implements Filter {
         for (final Map.Entry<String, Filter> filterEntry : filterBeans.entrySet()) {            
             final Filter filter = filterEntry.getValue();
             if (filter instanceof IExtensionPoint) {
-                log.debug(String.format("FilterInitializing", filterEntry.getKey()));
+                String filterKey = filterEntry.getKey();
+                log.debug("FilterInitializing", filterKey);
                 filter.init(filterConfig);
                 filters.add(filter);
             } else {

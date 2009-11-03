@@ -89,7 +89,7 @@ public class SymmetricServlet extends AbstractServlet {
         }
         // TODO order using initOrder
         for (final Map.Entry<String, IServletExtension> servletEntry : servletBeans.entrySet()) {
-            log.info("ServletInitializing", servletEntry.getKey());
+            log.debug("ServletInitializing", servletEntry.getKey());
             final IServletExtension extension = servletEntry.getValue();
             extension.getServlet().init(config);
             servlets.add(extension);
