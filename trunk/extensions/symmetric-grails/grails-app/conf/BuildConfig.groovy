@@ -27,6 +27,8 @@ grails.project.dependency.resolution = {
         runtime 'org.apache.derby:derby:10.4.2.0'
         runtime 'org.apache.derby:derbytools:10.4.2.0'
         runtime 'org.beanshell:bsh:2.0b4'
+        runtime 'commons-betwixt:commons-betwixt:0.8'
+        runtime 'commons-digester:commons-digester:1.7'
     }
 
 }
