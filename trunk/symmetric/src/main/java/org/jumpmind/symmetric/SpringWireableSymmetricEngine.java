@@ -20,6 +20,8 @@
 
 package org.jumpmind.symmetric;
 
+import java.util.Properties;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,11 +33,17 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class SpringWireableSymmetricEngine extends AbstractSymmetricEngine implements ApplicationContextAware {
 
+    private Properties properties;
+    
     public SpringWireableSymmetricEngine() {
+    }
+    
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.init(applicationContext, true, null, null);
+        this.init(applicationContext, true, properties, null, null);
     }
 
 }
