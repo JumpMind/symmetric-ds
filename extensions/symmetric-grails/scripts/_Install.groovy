@@ -8,3 +8,4 @@
 //
 //    ant.mkdir(dir:"${basedir}/grails-app/jobs")
 //
+Ant.mkdir(dir:"${basedir}/grails-app/symmetric")

@@ -1,6 +1,12 @@
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import groovy.util.ConfigSlurper;
+
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.jumpmind.symmetric.SpringWireableSymmetricEngine;
+import grails.util.GrailsUtil;
+import groovy.lang.GroovyClassLoader;
+
 import java.io.File;
 
 class SymmetricdsGrailsPlugin {
@@ -67,9 +73,14 @@ Brief description of the plugin.
     }
 
     def doWithSpring = {
+        def config = loadConfig()
+        
         symmetricEngine(SpringWireableSymmetricEngine) {
             properties = [
-              "db.spring.bean.name":Constants.PARENT_PROPERTY_PREFIX+"dataSource"
+              "db.spring.bean.name":Constants.PARENT_PROPERTY_PREFIX+"dataSource",
+              "sync.url":config.sync.url,
+              "external.id":config.external.id,
+              "group.id":config.group.id
             ]
         }
     }
@@ -79,9 +90,12 @@ Brief description of the plugin.
     }
 
     def doWithApplicationContext = { applicationContext ->
+        def config = loadConfig()
         ISymmetricEngine engine = applicationContext.symmetricEngine;
-        if (engine.configured) {
+        if (engine.configured && config.auto.startup) {
             engine.start();
+        } else if (config.auto.startup){
+            log.warn 'Not configured to auto startup'
         } else {
             log.warn 'The symmetric engine is not configured.  Not starting.'
         }
@@ -98,4 +112,19 @@ Brief description of the plugin.
         // TODO Implement code that is executed when the project configuration changes.
         // The event is the same as for 'onChange'.
     }
+    
+    private ConfigObject loadConfig() {
+        
+        def config = ConfigurationHolder.config
+        
+        GroovyClassLoader classLoader = new GroovyClassLoader(getClass().classLoader)
+        
+        // merging default config into main application config
+        config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('SymmetricConfig')))
+        
+        return config.symmetric
+    }
+        
+    
+    
 }
