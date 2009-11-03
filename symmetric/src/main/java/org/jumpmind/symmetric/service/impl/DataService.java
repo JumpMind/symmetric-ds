@@ -66,7 +66,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 
 import com.csvreader.CsvWriter;
 
@@ -146,7 +146,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public long insertData(final Data data) {
         long id = dbDialect.insertWithGeneratedKey(getSql("insertIntoDataSql"), SequenceIdentifier.DATA,
-                new PreparedStatementCallback() {
+                new PreparedStatementCallback<Object>() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, data.getTableName());
                         ps.setString(2, data.getEventType().getCode());
@@ -379,7 +379,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public DataRef getDataRef() {
-        List<DataRef> refs = getSimpleTemplate().query(getSql("findDataRefSql"), new ParameterizedRowMapper<DataRef>() {
+        List<DataRef> refs = getSimpleTemplate().query(getSql("findDataRefSql"), new RowMapper<DataRef>() {
             public DataRef mapRow(ResultSet rs, int rowNum) throws SQLException {
                 return new DataRef(rs.getLong(1), rs.getDate(2));
             }

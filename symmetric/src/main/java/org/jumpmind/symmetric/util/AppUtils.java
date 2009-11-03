@@ -27,7 +27,8 @@ import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -90,12 +91,12 @@ public class AppUtils {
      * @see Constants
      */
     @SuppressWarnings("unchecked")
-    public static <T> T find(String name, SymmetricEngine engine) {
+    public static <T> T find(String name, ISymmetricEngine engine) {
         return (T) engine.getApplicationContext().getBean(name);
     }
 
     /**
-     * @see #find(String, SymmetricEngine)
+     * @see #find(String, StandaloneSymmetricEngine)
      */
     @SuppressWarnings("unchecked")
     public static <T> T find(String name, SymmetricWebServer server) {

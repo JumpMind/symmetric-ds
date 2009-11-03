@@ -25,7 +25,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.context.ApplicationContext;
@@ -108,11 +109,11 @@ class ServletUtils {
     public static ApplicationContext getApplicationContext(ServletContext servletContext) {
         ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         if (!(ctx.containsBean(Constants.PARAMETER_SERVICE) && ctx.getBean(Constants.PARAMETER_SERVICE) instanceof IParameterService)) {
-            SymmetricEngine engine = null;
+            ISymmetricEngine engine = null;
             if (ctx != null && ctx.containsBean(Constants.SYMMETRIC_ENGINE)) {
-                engine = (SymmetricEngine) ctx.getBean(Constants.SYMMETRIC_ENGINE);
+                engine = (ISymmetricEngine) ctx.getBean(Constants.SYMMETRIC_ENGINE);
             } else {
-                engine = SymmetricEngine.getEngine();
+                engine = StandaloneSymmetricEngine.getEngine();
             }
             if (engine != null) {
                 ctx = engine.getApplicationContext();

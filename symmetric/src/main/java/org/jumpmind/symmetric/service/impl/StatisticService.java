@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.statistic.Statistic;
 import org.jumpmind.symmetric.statistic.StatisticAlertThresholds;
 import org.jumpmind.symmetric.util.AppUtils;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 public class StatisticService extends AbstractService implements IStatisticService {
@@ -46,7 +46,7 @@ public class StatisticService extends AbstractService implements IStatisticServi
 
     public List<StatisticAlertThresholds> getAlertThresholds() {
         return getSimpleTemplate().query(getSql("getAlertThresholdsSql"),
-                new ParameterizedRowMapper<StatisticAlertThresholds>() {
+                new RowMapper<StatisticAlertThresholds>() {
                     public StatisticAlertThresholds mapRow(ResultSet rs, int rowNum) throws SQLException {
                         return new StatisticAlertThresholds(rs.getString("statistic_name"), rs
                                 .getBigDecimal("threshold_total_max"), rs.getLong("threshold_count_max"), rs

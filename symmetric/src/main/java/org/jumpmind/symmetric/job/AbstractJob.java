@@ -26,7 +26,8 @@ import java.util.TimerTask;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
@@ -55,7 +56,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
 
     private boolean requiresRegistration = true;
 
-    private SymmetricEngine engine;
+    private ISymmetricEngine engine;
 
     protected boolean rescheduleImmediately = false;
 
@@ -71,7 +72,7 @@ abstract public class AbstractJob extends TimerTask implements BeanFactoryAware,
     public void run() {
         try {
             if (engine == null) {
-                engine = SymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
+                engine = StandaloneSymmetricEngine.findEngineByName(parameterService.getString(ParameterConstants.ENGINE_NAME));
             }
 
             if (engine == null) {

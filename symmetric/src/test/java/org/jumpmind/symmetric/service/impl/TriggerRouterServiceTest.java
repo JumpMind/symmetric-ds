@@ -124,7 +124,6 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
                 + " however, we expected the string to end with " + EXPECTED_INSERT1_CSV_ENDSWITH);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();

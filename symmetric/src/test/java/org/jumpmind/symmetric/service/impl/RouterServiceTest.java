@@ -264,9 +264,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getConfigurationService().saveChannel(testChannel, true);
 
         long ts = System.currentTimeMillis();
-        TransactionCallback callback = new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-
+        TransactionCallback<Integer> callback = new TransactionCallback<Integer>() {
+            public Integer doInTransaction(TransactionStatus status) {
                 SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
                 return t.update(String.format("update %s set ROUTING_VARCHAR=?", TEST_TABLE_1), NODE_GROUP_NODE_3.getNodeId());
             }
@@ -316,8 +315,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         testChannel.setBatchAlgorithm("nontransactional");
         getConfigurationService().saveChannel(testChannel, true);
 
-        TransactionCallback callback = new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
+        TransactionCallback<Integer> callback = new TransactionCallback<Integer>() {
+            public Integer doInTransaction(TransactionStatus status) {
                 SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
                 return t.update(String.format("delete from %s", TEST_TABLE_1));
             }

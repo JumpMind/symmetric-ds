@@ -460,7 +460,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    class TransactionalLoadDelegate implements TransactionCallback {
+    class TransactionalLoadDelegate implements TransactionCallback<LoadStatus> {
         IncomingBatch batch;
         IDataLoader dataLoader;
         LoadStatus loadStatus = LoadStatus.DONE;
@@ -470,7 +470,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             this.dataLoader = dataLoader;
         }
 
-        public Object doInTransaction(TransactionStatus txStatus) {
+        public LoadStatus doInTransaction(TransactionStatus txStatus) {
             try {
                 boolean done = true;
                 dbDialect.disableSyncTriggers(dataLoader.getContext().getNodeId());

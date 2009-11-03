@@ -47,12 +47,12 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
 
     static final ILog log = LogFactory.getLog(SymmetricEngineContextLoaderListener.class);
 
-    SymmetricEngine engine = null;
+    ISymmetricEngine engine = null;
 
     public SymmetricEngineContextLoaderListener() {
     }
 
-    public SymmetricEngineContextLoaderListener(SymmetricEngine engine) {
+    public SymmetricEngineContextLoaderListener(ISymmetricEngine engine) {
         this.engine = engine;
     }
 
@@ -82,7 +82,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
 
     protected void createConfigureAndStartEngine(ApplicationContext ctx) {
         if (this.engine == null) {
-            this.engine = new SymmetricEngine(ctx, false);
+            this.engine = new StandaloneSymmetricEngine(ctx, false);
         }
         engine.start();
     }
@@ -119,7 +119,7 @@ public class SymmetricEngineContextLoaderListener extends ContextLoaderListener 
         };
     }
 
-    public SymmetricEngine getEngine() {
+    public ISymmetricEngine getEngine() {
         return engine;
     }
 

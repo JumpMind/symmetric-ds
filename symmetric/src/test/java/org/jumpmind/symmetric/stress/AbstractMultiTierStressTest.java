@@ -190,9 +190,9 @@ abstract public class AbstractMultiTierStressTest {
                 if (insertSql != null) {
                     for (int p = 0; p < numberOfInsertsPerIteration; p++) {
                         JdbcTemplate t = getTemplate(client);
-                        insertedCount += t.update(insertSql, new String[] {
+                        insertedCount += t.update(insertSql,
                                 ps.getExternalId() + "-" + i + "-" + p,
-                                "The hyper blue dog jumped off a cliff" });
+                                "The hyper blue dog jumped off a cliff" );
                     }
                 }
                 client.getEngine().push();

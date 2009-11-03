@@ -49,7 +49,7 @@ import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,7 +138,6 @@ public class RegistrationService extends AbstractService implements IRegistratio
         return true;
     }
 
-    @SuppressWarnings("unchecked")
     protected String getRedirectionUrlFor(String externalId) {
         List<String> list = jdbcTemplate.queryForList(getSql("getRegistrationRedirectUrlSql"),
                 new Object[] { externalId }, new int[] { Types.VARCHAR }, String.class);
@@ -170,7 +169,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     public Map<String, String> getRegistrationRedirectMap() {
         SimpleJdbcTemplate template = new SimpleJdbcTemplate(this.jdbcTemplate);
         return template.queryForObject(getSql("getRegistrationRedirectSql"),
-                new ParameterizedRowMapper<Map<String, String>>() {
+                new RowMapper<Map<String, String>>() {
                     public Map<String, String> mapRow(ResultSet rs, int rowNum) throws SQLException {
                         Map<String, String> results = new HashMap<String, String>();
                         do {
