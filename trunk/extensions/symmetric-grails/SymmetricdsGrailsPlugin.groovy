@@ -1,3 +1,4 @@
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.SpringWireableSymmetricEngine;
 import java.io.File;
@@ -78,15 +79,19 @@ Brief description of the plugin.
     }
 
     def doWithApplicationContext = { applicationContext ->
-        String userDir = System.properties['user.home'];
-        File file = new File('$userDir/.symmetric/');
-        
+        ISymmetricEngine engine = applicationContext.symmetricEngine;
+        if (engine.configured) {
+            engine.start();
+        } else {
+            log.warn 'The symmetric engine is not configured.  Not starting.'
+        }
     }
 
     def onChange = { event ->
         // TODO Implement code that is executed when any artefact that this plugin is
         // watching is modified and reloaded. The event contains: event.source,
         // event.application, event.manager, event.ctx, and event.plugin.
+        
     }
 
     def onConfigChange = { event ->
