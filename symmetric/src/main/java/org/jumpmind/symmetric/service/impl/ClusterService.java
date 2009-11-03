@@ -66,10 +66,10 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void initLockTable(final String action, final String lockId) {
         try {
             jdbcTemplate.update(getSql("insertLockSql"), new Object[] { lockId, action });
-            log.debug("LockInserted", lockId);
+            log.debug("LockInserted", action);
 
         } catch (final DataIntegrityViolationException ex) {
-            log.debug("LockInsertFailed", lockId);
+            log.debug("LockInsertFailed", action);
         }
     }
 
