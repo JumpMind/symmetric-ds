@@ -1,6 +1,6 @@
 
 symmetric {
-    SymmetricConfig.startup = true
+    auto.startup = true
     sync.url = 'http://localhost:8080/symmetric-grails/sync'
     external.id = 'setme'
     group.id = 'setme'    
