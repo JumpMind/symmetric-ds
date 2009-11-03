@@ -20,10 +20,8 @@
 
 package org.jumpmind.symmetric;
 
+import java.util.Properties;
 
-
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -45,30 +43,38 @@ import org.springframework.context.ApplicationContext;
 public class StandaloneSymmetricEngine extends AbstractSymmetricEngine {
 
     public StandaloneSymmetricEngine() {
+        this(null, false, null, null, null);
     }
 
-    public StandaloneSymmetricEngine(String... overridePropertiesResources) {
-        this(null, false, overridePropertiesResources);
+    public StandaloneSymmetricEngine(Properties overrideProperties) {
+        this(null, false, overrideProperties, null, null);
+    }
+
+    public StandaloneSymmetricEngine(String overridePropertiesResource) {
+        this(null, false, null, overridePropertiesResource, null);
+    }
+
+    public StandaloneSymmetricEngine(String overridePropertiesResource1, String overridePropertiesResource2) {
+        this(null, false, null, overridePropertiesResource1, overridePropertiesResource2);
+    }
+
+    public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext) {
+        this(parentContext, isParentContext, null, null, null);
+    }
+
+    public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
+            String overridePropertiesResource) {
+        this(parentContext, isParentContext, null, overridePropertiesResource, null);
     }
 
     /**
      * Create a SymmetricDS instance using an existing
      * {@link ApplicationContext} as the parent. This gives the SymmetricDS
      * context access to beans in the parent context.
-     * 
-     * @param parentContext
-     * @param overridePropertiesResources
      */
     public StandaloneSymmetricEngine(ApplicationContext parentContext, boolean isParentContext,
-            String... overridePropertiesResources) {
-        String one = null;
-        String two = null;
-        if (ArrayUtils.getLength(overridePropertiesResources) > 0) {
-            one = StringUtils.trim(overridePropertiesResources[0]);
-        }
-        if (ArrayUtils.getLength(overridePropertiesResources) > 1) {
-            two = StringUtils.trim(overridePropertiesResources[1]);
-        }
-        init(parentContext, isParentContext, one, two);
+            Properties overrideProperties, String overridePropertiesResource1, String overridePropertiesResource2) {
+        init(parentContext, isParentContext, overrideProperties, overridePropertiesResource1,
+                overridePropertiesResource2);
     }
 }

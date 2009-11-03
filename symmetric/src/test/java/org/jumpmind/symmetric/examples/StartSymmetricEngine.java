@@ -31,10 +31,7 @@ public class StartSymmetricEngine {
      * properties.
      */
     public static void main(String[] args) throws Exception {
-        String workingDirectory = System.getProperty("user.dir");
-
-        SymmetricWebServer node = new SymmetricWebServer(new String[] {"classpath://my-application.properties", "file://"
-                + workingDirectory + "/my-environment.properties"});
+        SymmetricWebServer node = new SymmetricWebServer("classpath://my-application.properties");
 
         // this will create the database, sync triggers, start jobs running
         node.start(8080);

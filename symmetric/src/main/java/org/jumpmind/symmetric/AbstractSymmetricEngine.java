@@ -86,11 +86,18 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      *            Provide a Spring resource path to a properties file to be used
      *            for configuration
      */
-    protected void init(ApplicationContext ctx, boolean isParentContext, String overridePropertiesResource1, String overridePropertiesResource2) {
+    protected void init(ApplicationContext ctx, boolean isParentContext, Properties overrideProperties,
+            String overridePropertiesResource1, String overridePropertiesResource2) {
         // Setting system properties is probably not the best way to accomplish
         // this setup. Synchronizing on the class so creating multiple engines
         // is thread safe.
         synchronized (StandaloneSymmetricEngine.class) {
+            if (overrideProperties != null) {
+                for (Object key : overrideProperties.keySet()) {
+                    log.debug("InitAddingSystemProperty", key, overrideProperties.getProperty((String)key));
+                }
+                System.getProperties().putAll(overrideProperties);
+            }
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
                     : overridePropertiesResource1);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
@@ -283,12 +290,12 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                 throw new SymmetricException("SymmetricDSUpgradeNeeded");
             }
         }
-    
+
         if (nodeService.findIdentity() == null) {
             buildTablesFromDdlUtilXmlIfProvided();
             loadFromScriptIfProvided();
         }
-    
+
         // lets do this every time init is called.
         clusterService.initLockTable();
     }
@@ -313,7 +320,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
         // TODO Add more validation checks to make sure that the system is
         // configured correctly
-    
+
         // TODO Add method to configuration service to validate triggers and
         // call from here.
         // Make sure there are not duplicate trigger rows with the same name
@@ -334,7 +341,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             } else {
                 fileUrl = getClass().getResource(xml);
             }
-    
+
             if (fileUrl != null) {
                 try {
                     log.info("DatabaseSchemaBuilding", xml);
@@ -376,7 +383,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
                 }
             }
-    
+
             if (fileUrl != null) {
                 log.info("ScriptRunning", sqlScript);
                 new SqlScript(fileUrl, dbDialect.getJdbcTemplate().getDataSource(), true).execute();
@@ -425,7 +432,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-    /**
+/**
      * Locate the one and only registered {@link StandaloneSymmetricEngine}.  Use {@link #findEngineByName(String)} or
      * {@link #findEngineByUrl(String) if there is more than on engine registered.
      * @throws IllegalStateException This exception happens if more than one engine is 

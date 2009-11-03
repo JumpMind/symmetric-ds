@@ -29,7 +29,6 @@ import javax.management.ObjectName;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -80,7 +79,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
 
     protected int httpsPort = -1;
 
-    protected String[] propertiesFiles;
+    protected String propertiesFile;
 
     protected String host;
 
@@ -93,12 +92,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
     public SymmetricWebServer() {
     }
 
-    public SymmetricWebServer(String[] propertiesUrls) {       
-        this.setPropertiesFiles(propertiesUrls);
-    }
-
     public SymmetricWebServer(String propertiesUrl) {
-        this.propertiesFiles = new String[] { propertiesUrl };
+        this.propertiesFile = propertiesUrl ;
     }
 
     public SymmetricWebServer(int maxIdleTime) {
@@ -106,25 +101,25 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl, boolean join) {
-        this.propertiesFiles = new String[] { propertiesUrl };
+        this.propertiesFile = propertiesUrl ;
         this.maxIdleTime = maxIdleTime;
         this.join = join;
     }
 
     public SymmetricWebServer(int maxIdleTime, String propertiesUrl) {
-        this.propertiesFiles = new String[] { propertiesUrl };
+        this.propertiesFile = propertiesUrl ;
         this.maxIdleTime = maxIdleTime;
     }
 
     public void start(int port, String propertiesUrl) throws Exception {
-        this.propertiesFiles = new String[] { propertiesUrl };
+        this.propertiesFile = propertiesUrl ;
         start(port);
     }
 
     public ISymmetricEngine getEngine() {
         if (contextListener == null) {
             contextListener = new SymmetricEngineContextLoaderListener(new StandaloneSymmetricEngine(parentContext, true,
-                    propertiesFiles));
+                    propertiesFile));
         }
         return contextListener.getEngine();
     }
@@ -307,11 +302,7 @@ public class SymmetricWebServer implements ApplicationContextAware {
     }
 
     public void setPropertiesFile(String propertiesFile) {
-        this.propertiesFiles = new String[] { propertiesFile };
-    }
-
-    public void setPropertiesFiles(String[] propertiesFiles) {
-        this.propertiesFiles = (String[])ArrayUtils.clone(propertiesFiles);
+        this.propertiesFile = propertiesFile;
     }
 
     /**
