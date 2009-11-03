@@ -86,6 +86,6 @@ public interface IParameterService {
     /**
      * Provide information about the URL used to contact this symmetric instance
      */
-    public String getMyUrl();
+    public String getSyncUrl();
 
 }

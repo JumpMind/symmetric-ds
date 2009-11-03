@@ -88,7 +88,7 @@ public class Node {
         setExternalId(runtimeConfig.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
-        setSyncURL(runtimeConfig.getMyUrl());
+        setSyncURL(runtimeConfig.getSyncUrl());
         setSchemaVersion(runtimeConfig.getString(ParameterConstants.SCHEMA_VERSION));
     }
 

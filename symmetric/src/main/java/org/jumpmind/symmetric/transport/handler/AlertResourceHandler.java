@@ -67,7 +67,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
         try {
             SyndFeed feed = new SyndFeedImpl();
             feed.setFeedType("rss_2.0");
-            feed.setTitle("SymmetricDS Alerts for " + parameterService.getMyUrl());
+            feed.setTitle("SymmetricDS Alerts for " + parameterService.getSyncUrl());
             feed.setDescription("Problems synchronizing data");
             feed.setLink(feedURL.toString());
 
