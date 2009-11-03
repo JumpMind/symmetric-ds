@@ -38,8 +38,9 @@ public interface IRegistrationService {
      * are generated and stored in the node and node_security tables with the
      * registration_enabled flag turned on. The next node to try registering for
      * this node group and external ID will be given this information.
+     * @return the node id
      */
-    public void openRegistration(String nodeGroupId, String externalId);
+    public String openRegistration(String nodeGroupId, String externalId);
 
     /**
      * Re-open registration for a single node that already exists in the

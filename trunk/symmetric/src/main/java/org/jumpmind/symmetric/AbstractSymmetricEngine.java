@@ -44,7 +44,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
-    protected static final ILog log = LogFactory.getLog(StandaloneSymmetricEngine.class);
+    protected final ILog log = LogFactory.getLog(getClass());
+
+    private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
+    private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
+    
     private ApplicationContext applicationContext;
     private IConfigurationService configurationService;
     private IParameterService parameterService;
@@ -60,10 +64,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private boolean setup = false;
     private IDbDialect dbDialect;
     private IJobManager jobManager;
-    private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
-    private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
 
-    public AbstractSymmetricEngine() {
+    protected AbstractSymmetricEngine() {
     }
 
     /**
@@ -365,7 +367,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     private boolean buildTablesFromDdlUtilXmlIfProvided() {
         boolean loaded = false;
-        String xml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML);
+        String xml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML);
         if (!StringUtils.isBlank(xml)) {
             File file = new File(xml);
             URL fileUrl = null;
@@ -404,7 +406,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      */
     private boolean loadFromScriptIfProvided() {
         boolean loaded = false;
-        String sqlScript = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REGISTRATION_SERVER_SQL_SCRIPT);
+        String sqlScript = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT);
         if (!StringUtils.isBlank(sqlScript)) {
             File file = new File(sqlScript);
             URL fileUrl = null;

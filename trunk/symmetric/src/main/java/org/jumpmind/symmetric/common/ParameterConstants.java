@@ -50,11 +50,12 @@ final public class ParameterConstants {
 
     public final static String AUTO_REGISTER_ENABLED = "auto.registration";
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
+    public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
-    public final static String AUTO_CONFIGURE_REGISTRATION_SERVER_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
-    public final static String AUTO_CONFIGURE_REGISTRATION_SERVER_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
+    public final static String AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT = "auto.config.registration.svr.sql.script";
+    public final static String AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML = "auto.config.registration.svr.ddlutil.xml";
     public final static String AUTO_UPGRADE = "auto.upgrade";
     public final static String AUTO_DELETE_BEFORE_RELOAD = "initial.load.delete.first";    
     public final static String AUTO_CREATE_SCHEMA_BEFORE_RELOAD = "initial.load.create.first";

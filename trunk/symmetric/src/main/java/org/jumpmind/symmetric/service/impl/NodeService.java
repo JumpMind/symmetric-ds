@@ -160,6 +160,21 @@ public class NodeService extends AbstractService implements INodeService {
         password = filterPasswordOnSaveIfNeeded(password);
         jdbcTemplate.update(getSql("insertNodeSecuritySql"), new Object[] { id, password, findIdentity().getNodeId() });
     }
+    
+    public void insertNodeIdentity(String nodeId) {
+        jdbcTemplate.update(getSql("insertNodeIdentitySql"), nodeId);
+    }
+    
+    public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
+        jdbcTemplate.update(getSql("insertNodeSql"), new Object[] { nodeId, nodeGroupdId,
+            externalId, createdAtNodeId });
+    }
+    
+    public void insertNodeGroup(String groupId, String description) {
+        if (jdbcTemplate.queryForInt(getSql("doesNodeGroupExistSql"), groupId) == 0) {
+            jdbcTemplate.update(getSql("insertNodeGroupSql"), description, groupId);
+        }
+    }
 
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),

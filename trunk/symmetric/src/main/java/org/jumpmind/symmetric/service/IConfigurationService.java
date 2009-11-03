@@ -62,7 +62,7 @@ public interface IConfigurationService {
     public NodeChannel getNodeChannel(String channelId, String nodeId);
 
     public void reloadChannels();
-
+    
     public void autoConfigDatabase(boolean force);
 
     /**

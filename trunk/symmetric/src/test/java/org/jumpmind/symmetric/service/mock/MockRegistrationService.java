@@ -37,8 +37,8 @@ public class MockRegistrationService implements IRegistrationService {
         return false;
     }
 
-    public void openRegistration(String nodeGroupId, String externalId) {
-
+    public String openRegistration(String nodeGroupId, String externalId) {
+        return null;
     }
 
     public void markNodeAsRegistered(String nodeId) {

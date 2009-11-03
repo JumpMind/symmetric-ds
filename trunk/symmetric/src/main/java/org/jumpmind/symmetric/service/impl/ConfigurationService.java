@@ -28,18 +28,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ConfigurationService extends AbstractService implements IConfigurationService {
 
@@ -208,27 +212,51 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return DataEventAction.fromCode(code);
     }
 
+    @Transactional
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             log.info("SymmetricDSDatabaseInitializing");
-            dbDialect.initSupportDb();
-            if (defaultChannels != null) {
-                reloadChannels();
-                List<NodeChannel> channels = getNodeChannels();
-                for (Channel defaultChannel : defaultChannels) {
-                    if (!defaultChannel.isInList(channels)) {
-                        log.info("ChannelAutoConfiguring", defaultChannel.getId());
-                        saveChannel(defaultChannel, true);
-                    } else {
-                        log.info("ChannelExists", defaultChannel.getId());
-                    }
-                }
-                reloadChannels();
-            }
+            dbDialect.initSyncDb();
+            autoConfigChannels();
+            autoConfigRegistrationServer();
             parameterService.rereadParameters();
             log.info("SymmetricDSDatabaseInitialized");
         } else {
             log.info("SymmetricDSDatabaseNotAutoConfig");
+        }
+    }
+
+    protected void autoConfigChannels() {
+        if (defaultChannels != null) {
+            reloadChannels();
+            List<NodeChannel> channels = getNodeChannels();
+            for (Channel defaultChannel : defaultChannels) {
+                if (!defaultChannel.isInList(channels)) {
+                    log.info("ChannelAutoConfiguring", defaultChannel.getId());
+                    saveChannel(defaultChannel, true);
+                } else {
+                    log.info("ChannelExists", defaultChannel.getId());
+                }
+            }
+            reloadChannels();
+        }
+    }
+
+    protected void autoConfigRegistrationServer() {
+        Node node = nodeService.findIdentity();
+        if (node == null && StringUtils.isBlank(parameterService.getRegistrationUrl()) &&
+                parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND)) {
+            log.info("AutoConfigRegistrationService");
+            String nodeGroupId = parameterService.getNodeGroupId();
+            String nodeId = parameterService.getExternalId();
+            nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
+            nodeService.insertNodeIdentity(nodeId);
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
+            nodeSecurity.setInitialLoadTime(new Date());
+            nodeSecurity.setRegistrationTime(new Date());
+            nodeSecurity.setInitialLoadEnabled(false);
+            nodeSecurity.setRegistrationEnabled(false);
+            nodeService.updateNodeSecurity(nodeSecurity);
         }
     }
 
@@ -264,7 +292,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
 
     class NodeGroupChannelWindowMapper implements RowMapper<NodeGroupChannelWindow> {
         public NodeGroupChannelWindow mapRow(ResultSet rs, int rowNum) throws SQLException {

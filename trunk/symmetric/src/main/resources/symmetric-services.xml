@@ -57,7 +57,6 @@
     <bean id="configurationService" class="org.jumpmind.symmetric.service.impl.ConfigurationService" scope="singleton" parent="abstractService">
         <property name="sql" ref="configurationServiceSql" />
         <property name="nodeService" ref="nodeService" />
-        
         <property name="defaultChannels">
             <list>
                 <bean class="org.jumpmind.symmetric.model.Channel">
