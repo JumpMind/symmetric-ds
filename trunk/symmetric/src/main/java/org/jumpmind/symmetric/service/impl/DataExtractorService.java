@@ -243,7 +243,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
 
-        jdbcTemplate.execute(new ConnectionCallback() {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
                     Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
@@ -463,7 +463,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     private void selectEventDataToExtract(final IExtractListener handler, final OutgoingBatch batch) {
-        jdbcTemplate.execute(new ConnectionCallback() {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement ps = conn.prepareStatement(getSql("selectEventDataToExtractSql"),
                         ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

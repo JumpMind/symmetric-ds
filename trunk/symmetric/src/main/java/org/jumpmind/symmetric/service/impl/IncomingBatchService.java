@@ -48,7 +48,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
-    @SuppressWarnings("unchecked")
     public List<IncomingBatch> findIncomingBatchErrors(int maxRows) {
         return (List<IncomingBatch>) jdbcTemplate.query(new MaxRowsStatementCreator(
                 getSql("findIncomingBatchErrorsSql"), maxRows), new IncomingBatchMapper());
@@ -104,8 +103,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 batch.getLastUpdatedTime(), Long.valueOf(batch.getBatchId()), batch.getNodeId() });
     }
 
-    class IncomingBatchMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
+    class IncomingBatchMapper implements RowMapper<IncomingBatch> {
+        public IncomingBatch mapRow(ResultSet rs, int num) throws SQLException {
             IncomingBatch batch = new IncomingBatch();
             batch.setBatchId(rs.getLong(1));
             batch.setNodeId(rs.getString(2));

@@ -57,7 +57,7 @@ public class DBDialectFactoryTest {
                 return null;
             }
 
-            public Object getBean(String name, Object[] args) throws BeansException {
+            public Object getBean(String name, Object... args) throws BeansException {
                 return null;
             }
 

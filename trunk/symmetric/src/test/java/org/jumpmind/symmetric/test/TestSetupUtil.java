@@ -47,7 +47,8 @@ import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.io.DatabaseIO;
 import org.apache.ddlutils.model.Database;
 import org.apache.derby.jdbc.EmbeddedDriver;
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.SymmetricWebServer;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -64,7 +65,7 @@ public class TestSetupUtil {
 
     static final Log logger = LogFactory.getLog(TestSetupUtil.class);
 
-    private static SymmetricEngine clientEngine;
+    private static ISymmetricEngine clientEngine;
 
     private static SymmetricWebServer rootServer;
 
@@ -142,7 +143,7 @@ public class TestSetupUtil {
         }
 
         if (clientDb != null) {
-            clientEngine = new SymmetricEngine("file:"
+            clientEngine = new StandaloneSymmetricEngine("file:"
                     + writeTempPropertiesFileFor(testPrefix, clientDb, DatabaseRole.CLIENT).getAbsolutePath(), null);
             dropAndCreateDatabaseTables(clientDb, clientEngine);
         }
@@ -178,11 +179,11 @@ public class TestSetupUtil {
         }
     }
 
-    public static SymmetricEngine getRootEngine() {
+    public static ISymmetricEngine getRootEngine() {
         return rootServer.getEngine();
     }
 
-    public static SymmetricEngine getClientEngine() {
+    public static ISymmetricEngine getClientEngine() {
         return clientEngine;
     }
 
@@ -200,7 +201,7 @@ public class TestSetupUtil {
         }
     }
 
-    protected static void dropAndCreateDatabaseTables(String databaseType, SymmetricEngine engine) {
+    protected static void dropAndCreateDatabaseTables(String databaseType, ISymmetricEngine engine) {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);

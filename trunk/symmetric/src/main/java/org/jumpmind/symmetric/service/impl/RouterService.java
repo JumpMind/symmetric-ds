@@ -134,7 +134,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel, final Node sourceNode) {
-        jdbcTemplate.execute(new ConnectionCallback() {
+        jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection c) throws SQLException, DataAccessException {
                 RouterContext context = null;
                 try {
@@ -166,8 +166,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected void findAndSaveNextDataId(final DataRef ref) {
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] { ref
-                .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor() {
-            public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+                .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor<Long>() {
+            public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
                 long lastDataId = -1;
                 while (rs.next()) {
                     long dataId = rs.getLong(1);

@@ -193,7 +193,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getSql("selectTriggerRouterPrefixSql");
     }
 
-    @SuppressWarnings("unchecked")
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("selectTriggerSql"), new Object[] { table, sourceNodeGroupId }, new TriggerRouterMapper());
@@ -262,7 +261,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getActiveTriggerRoutersCache(sourceNodeGroupId, refreshCache).routersByRouterId.get(routerId);
     }
 
-    @SuppressWarnings("unchecked")
     public List<TriggerRouter> getActiveTriggerRouters(String sourceNodeGroupId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("activeTriggersForSourceNodeGroupSql"), new Object[] { sourceNodeGroupId },
@@ -271,21 +269,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggers;
     }
 
-    @SuppressWarnings("unchecked")
     public List<TriggerRouter> getActiveTriggerRoutersForReload(String sourceNodeGroupId, String targetNodeGroupId) {
         return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("activeTriggersForReloadSql"), new Object[] { sourceNodeGroupId, targetNodeGroupId,
                 Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
     }
 
-    @SuppressWarnings("unchecked")
     public List<TriggerRouter> getInactiveTriggerRouters(String sourceNodeGroupId) {
         return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("inactiveTriggersForSourceNodeGroupSql"), new Object[] { sourceNodeGroupId },
                 new TriggerRouterMapper());
     }
 
-    @SuppressWarnings("unchecked")
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId,
             String channel) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
@@ -298,7 +293,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Trigger getTriggerById(String triggerId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("selectTriggerByIdSql"), new Object[] { triggerId }, new TriggerRouterMapper());
@@ -313,7 +307,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         final Map<String, List<TriggerRouter>> retMap = new HashMap<String, List<TriggerRouter>>();
         jdbcTemplate.query(getTriggerRouterSqlPrefix() + getSql("selectGroupTriggersSql"),
                 new Object[] { nodeGroupId }, new TriggerRouterMapper() {
-                    public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+                    public TriggerRouter mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
                         TriggerRouter config = (TriggerRouter) super.mapRow(rs, arg1);
                         List<TriggerRouter> list = retMap.get(config.getTrigger().getChannelId());
                         if (list == null) {
@@ -626,8 +620,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return hist;
     }
 
-    class NodeGroupLinkMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
+    class NodeGroupLinkMapper implements RowMapper<NodeGroupLink> {
+        public NodeGroupLink mapRow(ResultSet rs, int num) throws SQLException {
             NodeGroupLink node_groupTarget = new NodeGroupLink();
             node_groupTarget.setSourceGroupId(rs.getString(1));
             node_groupTarget.setTargetGroupId(rs.getString(2));
@@ -636,7 +630,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerHistoryMapper implements RowMapper {
+    class TriggerHistoryMapper implements RowMapper<TriggerHistory> {
         Map<Long, TriggerHistory> retMap = null;
 
         TriggerHistoryMapper() {
@@ -646,7 +640,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             this.retMap = map;
         }
 
-        public Object mapRow(ResultSet rs, int i) throws SQLException {
+        public TriggerHistory mapRow(ResultSet rs, int i) throws SQLException {
             TriggerHistory hist = new TriggerHistory();
             hist.setTriggerHistoryId(rs.getInt(1));
             hist.setTriggerId(rs.getString(2));
@@ -669,8 +663,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerRouterMapper implements RowMapper {
-        public Object mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
+    class TriggerRouterMapper implements RowMapper<TriggerRouter> {
+        public TriggerRouter mapRow(java.sql.ResultSet rs, int arg1) throws java.sql.SQLException {
             TriggerRouter trig = new TriggerRouter();
             trig.getTrigger().setTriggerId(rs.getString("trigger_id"));
             trig.getTrigger().setChannelId(rs.getString("channel_id"));

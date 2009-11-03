@@ -243,7 +243,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     }
 
     private int updateNodeChannelLastExtractTimeManually(final Date newTime, final String nodeId, final String channelId) {
-        return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
+        return (Integer) getJdbcTemplate().execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement s = conn
                         .prepareStatement("update sym_node_channel_ctl set last_extract_time=? where node_id= ? and channel_id= ?");
@@ -266,7 +266,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     }
 
     protected int getBatchSize(final long batchId) {
-        return (Integer) getJdbcTemplate().execute(new ConnectionCallback() {
+        return (Integer) getJdbcTemplate().execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 PreparedStatement s = conn.prepareStatement("select count(*) from sym_data_event where batch_id = ?");
                 s.setLong(1, batchId);

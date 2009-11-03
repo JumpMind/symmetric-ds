@@ -101,7 +101,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(AppUtils.getServerId());
         long batchId = dbDialect.insertWithGeneratedKey(jdbcTemplate, getSql("insertOutgoingBatchSql"),
-                SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback() {
+                SequenceIdentifier.OUTGOING_BATCH, new PreparedStatementCallback<Object>() {
                     public Object doInPreparedStatement(PreparedStatement ps) throws SQLException, DataAccessException {
                         ps.setString(1, outgoingBatch.getNodeId());
                         ps.setString(2, outgoingBatch.getChannelId());
@@ -114,7 +114,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setBatchId(batchId);
     }
 
-    @SuppressWarnings("unchecked")
     public OutgoingBatch findOutgoingBatch(long batchId) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("findOutgoingBatchSql"),
                 new Object[] { batchId }, new int[] { Types.INTEGER }, new OutgoingBatchMapper());
@@ -132,7 +131,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
      * been created by {@link #buildOutgoingBatches(String)} in channel priority
      * order.
      */
-    @SuppressWarnings("unchecked")
     public OutgoingBatches getOutgoingBatches(Node node) {
         List<OutgoingBatch> list = (List<OutgoingBatch>) jdbcTemplate.query(getSql("selectOutgoingBatchSql"),
                 new Object[] { node.getNodeId(), OutgoingBatch.Status.NE.toString(), OutgoingBatch.Status.SE.toString(),
@@ -155,7 +153,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batches;
     }
 
-    @SuppressWarnings("unchecked")
     public OutgoingBatches getOutgoingBatchRange(String startBatchId, String endBatchId) {
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(jdbcTemplate.query(getSql("selectOutgoingBatchRangeSql"), new Object[] { startBatchId,
@@ -163,7 +160,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batches;
     }
 
-    @SuppressWarnings("unchecked")
     public OutgoingBatches getOutgoingBatchErrors(int maxRows) {
         OutgoingBatches batches = new OutgoingBatches();
         batches.setBatches(jdbcTemplate.query(new MaxRowsStatementCreator(getSql("selectOutgoingBatchErrorsSql"),
@@ -171,7 +167,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batches;
     }
 
-    @SuppressWarnings("unchecked")
     public boolean isInitialLoadComplete(String nodeId) {
 
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
@@ -212,8 +207,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return false;
     }
 
-    class OutgoingBatchMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
+    class OutgoingBatchMapper implements RowMapper<OutgoingBatch> {
+        public OutgoingBatch mapRow(ResultSet rs, int num) throws SQLException {
             OutgoingBatch batch = new OutgoingBatch();
             batch.setNodeId(rs.getString(1));
             batch.setChannelId(rs.getString(2));

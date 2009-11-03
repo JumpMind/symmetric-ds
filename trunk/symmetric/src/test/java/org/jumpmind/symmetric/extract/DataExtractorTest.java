@@ -252,7 +252,7 @@ public class DataExtractorTest extends AbstractDatabaseTest {
     }
 
     protected void reset() {
-        this.getJdbcTemplate().execute(new ConnectionCallback() {
+        this.getJdbcTemplate().execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection connection) throws SQLException, DataAccessException {
                 Statement s = connection.createStatement();
                 s.executeUpdate(String.format("delete from sym_trigger_hist where source_table_name in ('%s','%s','%s','%s')", TD1.table, TD2.table, TD3.table, TD4.table));

@@ -77,7 +77,6 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Set<Node> findNodesThatOriginatedFromNodeId(String originalNodeId) {
         Set<Node> all = new HashSet<Node>();
         List<Node> list = jdbcTemplate.query(String.format("%s%s", getSql("selectNodePrefixSql"),
@@ -95,14 +94,12 @@ public class NodeService extends AbstractService implements INodeService {
      * Lookup a node in the database, which contains information for syncing
      * with it.
      */
-    @SuppressWarnings("unchecked")
     public Node findNode(String id) {
         List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeSql"),
                 new Object[] { id }, new NodeRowMapper());
         return (Node) getFirstEntry(list);
     }
 
-    @SuppressWarnings("unchecked")
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {
         List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeByExternalIdSql"),
                 new Object[] { nodeGroupId, externalId }, new NodeRowMapper());
@@ -134,7 +131,6 @@ public class NodeService extends AbstractService implements INodeService {
         return findNodeSecurity(id, false);
     }
 
-    @SuppressWarnings("unchecked")
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {
         try {
             if (nodeId != null) {
@@ -186,7 +182,6 @@ public class NodeService extends AbstractService implements INodeService {
      * Check that the given node and password match in the node_security table.
      * A node must authenticate before it's allowed to sync data.
      */
-    @SuppressWarnings("unchecked")
     public boolean isNodeAuthorized(String id, String password) {
         long maxSecurityCacheTime = parameterService
                 .getLong(ParameterConstants.NODE_SECURITY_CACHE_REFRESH_PERIOD_IN_MS);
@@ -213,7 +208,6 @@ public class NodeService extends AbstractService implements INodeService {
         return findIdentity(true);
     }
 
-    @SuppressWarnings("unchecked")
     public Node findIdentity(boolean useCache) {
         if (cachedNodeIdentity == null || useCache == false) {
             List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodeIdentitySql"),
@@ -231,7 +225,6 @@ public class NodeService extends AbstractService implements INodeService {
         return findTargetNodesFor(DataEventAction.PUSH);
     }
 
-    @SuppressWarnings("unchecked")
     public List<Node> findSourceNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
@@ -242,7 +235,6 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public List<Node> findTargetNodesFor(DataEventAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
@@ -277,8 +269,8 @@ public class NodeService extends AbstractService implements INodeService {
         return false;
     }
 
-    class NodeRowMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
+    class NodeRowMapper implements RowMapper<Node> {
+        public Node mapRow(ResultSet rs, int num) throws SQLException {
             Node node = new Node();
             node.setNodeId(rs.getString(1));
             node.setNodeGroupId(rs.getString(2));
@@ -297,8 +289,8 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    class NodeSecurityRowMapper implements RowMapper {
-        public Object mapRow(ResultSet rs, int num) throws SQLException {
+    class NodeSecurityRowMapper implements RowMapper<NodeSecurity> {
+        public NodeSecurity mapRow(ResultSet rs, int num) throws SQLException {
             NodeSecurity nodeSecurity = new NodeSecurity();
             nodeSecurity.setNodeId(rs.getString(1));
             nodeSecurity.setPassword(rs.getString(2));
@@ -311,8 +303,8 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    class NodeSecurityResultSetExtractor implements ResultSetExtractor {
-        public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+    class NodeSecurityResultSetExtractor implements ResultSetExtractor<Map<String, NodeSecurity>> {
+        public Map<String, NodeSecurity> extractData(ResultSet rs) throws SQLException, DataAccessException {
             Map<String, NodeSecurity> result = new HashMap<String, NodeSecurity>();
             NodeSecurityRowMapper mapper = new NodeSecurityRowMapper();
 

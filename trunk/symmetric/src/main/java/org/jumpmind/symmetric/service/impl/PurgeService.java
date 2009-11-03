@@ -136,8 +136,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private long[] queryForMinMax(String sql, Object[] params) {
-        long[] minMax = (long[]) jdbcTemplate.queryForObject(sql, params, new RowMapper() {
-            public Object mapRow(ResultSet rs, int row) throws SQLException {
+        long[] minMax = (long[]) jdbcTemplate.queryForObject(sql, params, new RowMapper<long[]>() {
+            public long[] mapRow(ResultSet rs, int row) throws SQLException {
                 return new long[] { rs.getLong(1), rs.getLong(2) };
             }
         });

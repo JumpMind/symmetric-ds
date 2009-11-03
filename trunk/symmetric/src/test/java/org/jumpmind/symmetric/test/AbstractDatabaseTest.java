@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -70,7 +70,7 @@ public class AbstractDatabaseTest {
         return " The database we are testing against is " + database + ".";
     }
 
-    protected SymmetricEngine getSymmetricEngine() {
+    protected ISymmetricEngine getSymmetricEngine() {
         return TestSetupUtil.getRootEngine();
     }
 

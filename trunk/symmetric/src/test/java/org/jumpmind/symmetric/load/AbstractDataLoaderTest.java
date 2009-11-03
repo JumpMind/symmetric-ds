@@ -126,7 +126,6 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         writer.writeRecord(columns);
     }
 
-    @SuppressWarnings("unchecked")
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where " + getWhere(TEST_KEYS);
         Map<String, Object> results = null;

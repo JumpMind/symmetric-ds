@@ -139,7 +139,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         verifySql.append(TABLE_TEST_1);
         verifySql.append(" where PK1=? and PK2=?");
 
-        jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper() {
+        jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper<Object>() {
 
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Assert.assertEquals(rs.getDouble("ADD1"), 2.0, 0.0001);
@@ -168,7 +168,7 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         verifySql.append(TABLE_TEST_1);
         verifySql.append(" where PK1=? and PK2=?");
 
-        jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper() {
+        jdbcTemplate.query(verifySql.toString(), new Object[] { "k3", "k4" }, new RowMapper<Object>() {
 
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
                 Assert.assertEquals(rs.getDouble("ADD1"), 1.0, 0.0001);

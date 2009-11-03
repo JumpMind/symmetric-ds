@@ -1014,7 +1014,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         statisticManager.flush();
         Assert.assertEquals(0, statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED)
                 .getCount());
-        rootJdbcTemplate.execute(new ConnectionCallback() {
+        rootJdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
                 con.setAutoCommit(false);
                 PreparedStatement stmt = con.prepareStatement("insert into ONE_COLUMN_TABLE values(?)");

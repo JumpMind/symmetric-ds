@@ -19,7 +19,7 @@
  */
 package org.jumpmind.symmetric.test;
 
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
 
 /**
  * Simple test utility class to help with stand-alone testing. Run this class
@@ -32,8 +32,8 @@ public class RunTestEngines {
         String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator().next();
         TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT,
                 databases[0], databases[1]);
-        SymmetricEngine root = TestSetupUtil.getRootEngine();
-        SymmetricEngine client = TestSetupUtil.getClientEngine();
+        ISymmetricEngine root = TestSetupUtil.getRootEngine();
+        ISymmetricEngine client = TestSetupUtil.getClientEngine();
         root.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);
         client.start();
         while (true) {

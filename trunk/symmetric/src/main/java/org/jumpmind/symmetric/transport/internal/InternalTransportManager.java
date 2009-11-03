@@ -30,7 +30,8 @@ import java.io.PrintWriter;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.jumpmind.symmetric.SymmetricEngine;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.StandaloneSymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -133,7 +134,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
         try {
             if (list != null && list.size() > 0) {
-                SymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
+                ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
 
                 String ackData = getAcknowledgementData(local.getNodeId(), list);
                 List<BatchInfo> batches = readAcknowledgement(ackData);
@@ -162,7 +163,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         new Thread() {
             public void run() {
                 try {
-                    SymmetricEngine engine = getTargetEngine(url);
+                    ISymmetricEngine engine = getTargetEngine(url);
                     runnable.run(engine.getApplicationContext(), is, os);
                 } catch (Exception e) {
                     log.error(e);
@@ -174,8 +175,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
         }.start();
     }
 
-    private SymmetricEngine getTargetEngine(String url) {
-        SymmetricEngine engine = SymmetricEngine.findEngineByUrl(url);
+    private ISymmetricEngine getTargetEngine(String url) {
+        ISymmetricEngine engine = StandaloneSymmetricEngine.findEngineByUrl(url);
         if (engine == null) {
             throw new NullPointerException("Could not find the engine reference for the following url: " + url);
         } else {
