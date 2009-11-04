@@ -13,9 +13,9 @@
         databases and ad centralized 'corporate' database.
     </description>
     <scm>
-        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-2.0.beta.1</connection>
-        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/tags/symmetric-2.0.beta.1</developerConnection>
-        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-2.0.beta.1</url>
+        <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</connection>
+        <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</developerConnection>
+        <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</url>
     </scm>
     <issueManagement>
         <system>JIRA</system>
