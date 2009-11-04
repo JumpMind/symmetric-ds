@@ -11,16 +11,14 @@ hibernate {
 }
 // environment specific settings
 environments {
-	development {
+	root {
 		dataSource {
-			dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-			url = "jdbc:h2:file:target/h2/symmetric-dev"
+			url = "jdbc:h2:file:target/h2/root"
 		}
 	}
-	test {
+	client {
 		dataSource {
-			dbCreate = "update"
-			url = "jdbc:h2:file:target/h2/symmetric-test"
+			url = "jdbc:h2:file:target/h2/client"
 		}
 	}
 	production {
