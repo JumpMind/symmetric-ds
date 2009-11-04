@@ -108,22 +108,10 @@ Brief description of the plugin.
         // The event is the same as for 'onChange'.
     }
     
-    private ConfigObject loadConfig() {
-        
-        def config = ConfigurationHolder.config
-        
-        GroovyClassLoader classLoader = new GroovyClassLoader(getClass().classLoader)
-        
-        // merging default config into main application config
-        config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('DefaultSymmetricConfig')))
-        
-        // merging user-defined config into main application config if provided
-        try {
-            config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('SymmetricConfig')))
-        } catch (Exception ignored) {
-            // ignore, just use the defaults
-        }
-        
+    protected ConfigObject loadConfig() {        
+        def config = ConfigurationHolder.config        
+        GroovyClassLoader classLoader = new GroovyClassLoader(getClass().classLoader)        
+        config.merge(new ConfigSlurper(GrailsUtil.environment).parse(classLoader.loadClass('SymmetricConfig')))        
         return config.symmetric
     }
         
