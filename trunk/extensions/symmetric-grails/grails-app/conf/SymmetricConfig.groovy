@@ -17,7 +17,7 @@ environments {
             group.id = 'root'     
             auto.registration=true            
             auto.reload=true
-            auto.config.registration.svr.sql.script='classpath:/test-root-config.sql'
+            auto.config.registration.svr.sql.script='/test-root-config.sql'
         }
     }
     client {

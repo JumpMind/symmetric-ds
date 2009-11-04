@@ -5,7 +5,7 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
-    log "info" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'  
+    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'  
     repositories {
         grailsHome()
         // uncomment the below to enable remote dependency resolution
