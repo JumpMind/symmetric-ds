@@ -17,5 +17,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="grails.util.GrailsMain"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric-grails"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dbase.dir=&quot;${project_loc:symmetric-grails}&quot; -Dserver.port=8080 -Dgrails.env=development"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dbase.dir=&quot;${project_loc:symmetric-grails}&quot; -Dgrails.server.port.http=8090 -Dgrails.env=client"/>
 </launchConfiguration>
