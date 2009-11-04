@@ -330,11 +330,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         }
 
-        if (nodeService.findIdentity() == null) {
-            buildTablesFromDdlUtilXmlIfProvided();
-            loadFromScriptIfProvided();
-        }
-
         // lets do this every time init is called.
         clusterService.initLockTable();
     }
@@ -363,73 +358,6 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         // TODO Add method to configuration service to validate triggers and
         // call from here.
         // Make sure there are not duplicate trigger rows with the same name
-    }
-
-    private boolean buildTablesFromDdlUtilXmlIfProvided() {
-        boolean loaded = false;
-        String xml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_DDLUTIL_XML);
-        if (!StringUtils.isBlank(xml)) {
-            File file = new File(xml);
-            URL fileUrl = null;
-            if (file.isFile()) {
-                try {
-                    fileUrl = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                fileUrl = getClass().getResource(xml);
-            }
-
-            if (fileUrl != null) {
-                try {
-                    log.info("DatabaseSchemaBuilding", xml);
-                    Database database = new DatabaseIO().read(new InputStreamReader(fileUrl.openStream()));
-                    Platform platform = dbDialect.getPlatform();
-                    platform.createTables(database, false, true);
-                    loaded = true;
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
-        }
-        return loaded;
-    }
-
-    /**
-     * Give the end user the option to provide a script that will load a
-     * registration server with an initial SymmetricDS setup.
-     * 
-     * Look first on the file system, then in the classpath for the SQL file.
-     * 
-     * @return true if the script was executed
-     */
-    private boolean loadFromScriptIfProvided() {
-        boolean loaded = false;
-        String sqlScript = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT);
-        if (!StringUtils.isBlank(sqlScript)) {
-            File file = new File(sqlScript);
-            URL fileUrl = null;
-            if (file.isFile()) {
-                try {
-                    fileUrl = file.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                fileUrl = getClass().getResource(sqlScript);
-                if (fileUrl == null) {
-                    fileUrl = Thread.currentThread().getContextClassLoader().getResource(sqlScript);
-                }
-            }
-
-            if (fileUrl != null) {
-                log.info("ScriptRunning", sqlScript);
-                new SqlScript(fileUrl, dbDialect.getJdbcTemplate().getDataSource(), true).execute();
-                loaded = true;
-            }
-        }
-        return loaded;
     }
 
     public void heartbeat(boolean force) {
