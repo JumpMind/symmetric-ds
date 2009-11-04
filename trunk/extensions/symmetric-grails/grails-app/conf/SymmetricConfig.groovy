@@ -15,8 +15,9 @@ environments {
             sync.url = 'http://localhost:8080/symmetric-grails/sync'
             external.id = 'root'
             group.id = 'root'     
-            auto.registration=true
+            auto.registration=true            
             auto.reload=true
+            auto.config.registration.svr.sql.script='classpath:/test-root-config.sql'
         }
     }
     client {
