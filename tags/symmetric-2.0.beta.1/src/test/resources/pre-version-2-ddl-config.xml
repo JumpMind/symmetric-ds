@@ -1,0 +1,272 @@
+<?xml version="1.0"?>
+<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd">
+
+<database name="symmetric">
+
+    <table name="channel">
+        <column name="channel_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="processing_order" type="INTEGER" required="true" default="1" />
+        <column name="max_batch_size" type="INTEGER" required="true" default="1000" />
+        <column name="max_batch_to_send" type="INTEGER" required="true" default="60" />
+        <column name="enabled" type="BOOLEANINT" size="1" required="true" default="1" />
+        <column name="description" type="VARCHAR" size="1000" />
+    </table>
+
+    <table name="data">
+        <column name="data_id" type="INTEGER" required="true" primaryKey="true"
+            autoIncrement="true" />
+        <column name="table_name" type="VARCHAR" size="50" required="true" />
+        <column name="event_type" type="CHAR" size="1" />
+        <column name="row_data" type="LONGVARCHAR" />
+        <column name="pk_data" type="LONGVARCHAR" />
+        <column name="old_data" type="LONGVARCHAR" />
+        <column name="trigger_hist_id" type="INTEGER" required="true" />
+        <column name="create_time" type="TIMESTAMP" />
+        <!-- This helps the purge query -->
+        <index name="idx_data_create_time">
+            <index-column name="create_time" />
+        </index>        
+    </table>
+
+    <table name="event_status">
+        <column name="event_status_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="description" type="VARCHAR" size="50" />
+    </table>
+
+    <table name="outgoing_batch">
+        <column name="batch_id" type="INTEGER" required="true" primaryKey="true"
+            autoIncrement="true" />
+        <column name="node_id" type="VARCHAR" size="50" required="false" primaryKey="false" />
+        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="batch_type" type="CHAR" size="2" required="true" default="EV" />
+        <column name="status" type="CHAR" size="2" />
+        <column name="create_time" type="TIMESTAMP" />
+        <index name="idx_ob_node_id_status">
+            <index-column name="node_id" />
+            <index-column name="status" />
+        </index>        
+    </table>
+
+    <table name="outgoing_batch_hist">
+        <column name="batch_id" type="INTEGER" required="true" />
+        <column name="node_id" type="VARCHAR" size="50" />
+        <column name="status" type="CHAR" size="2" />
+        <column name="start_time" type="TIMESTAMP" />
+        <column name="end_time" type="TIMESTAMP" />
+        <column name="network_millis" type="INTEGER" />
+        <column name="filter_millis" type="INTEGER" />
+        <column name="database_millis" type="INTEGER" />
+        <column name="host_name" type="VARCHAR" size="50" />
+        <column name="byte_count" type="INTEGER" />
+        <column name="data_event_count" type="INTEGER" />
+        <column name="failed_data_id" type="INTEGER" />
+        <column name="sql_state" type="VARCHAR" size="10" />
+        <column name="sql_code" type="INTEGER" />
+        <column name="sql_message" type="VARCHAR" size="50" />
+        <index name="idx_outgoing_batch_hist">
+            <index-column name="node_id" />
+            <index-column name="batch_id" />
+        </index>
+    </table>
+
+    <table name="data_event">
+        <column name="data_id" type="INTEGER" required="true" primaryKey="true" />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="transaction_id" type="VARCHAR" size="1000" />        
+        <column name="batch_id" type="INTEGER" />
+        <column name="batched" type="BOOLEANINT" size="1" required="true" default="0" />
+        <index name="idx_de_batchid_nodeid">
+            <index-column name="batch_id" />
+            <index-column name="node_id" />
+        </index>        
+        <index name="idx_de_batched_nodeid_channel">
+            <index-column name="batched" />
+            <index-column name="node_id" />
+            <index-column name="channel_id" />
+        </index>
+    </table>
+
+    <table name="node_group">
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="description" type="VARCHAR" size="2000" />
+    </table>
+
+    <table name="node_group_link">
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true"
+            primaryKey="true" />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true"
+            primaryKey="true" />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" />
+    </table>
+
+    <table name="node">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" />
+        <column name="external_id" type="VARCHAR" size="50" required="true" />
+        <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="sync_url" type="VARCHAR" size="2000" />
+        <column name="schema_version" type="VARCHAR" size="50" />
+        <column name="symmetric_version" type="VARCHAR" size="50" />
+        <column name="database_type" type="VARCHAR" size="50" />
+        <column name="database_version" type="VARCHAR" size="50" />
+        <column name="heartbeat_time" type="TIMESTAMP" />
+        <column name="timezone_offset" type="VARCHAR" size="6" />
+        <column name="created_at_node_id" type="VARCHAR" size="50" />        
+    </table>
+    
+    <table name="lock">
+        <column name="lock_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="lock_action" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="locking_server_id" type="VARCHAR" size="100" />
+        <column name="lock_time" type="TIMESTAMP" />
+    </table>    
+    
+    <table name="node_channel_ctl">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="suspend_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="ignore_enabled" type="BOOLEANINT" size="1" default="0" />
+    </table>    
+
+    <table name="node_security">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="node_password" type="VARCHAR" size="50" required="true" />
+        <column name="registration_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="registration_time" type="TIMESTAMP" required="false" />
+        <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0" />
+        <column name="initial_load_time" type="TIMESTAMP" required="false" />
+        <column name="created_at_node_id" type="VARCHAR" size="50" required="true" />
+    </table>
+
+    <table name="node_identity">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+    </table>
+
+    <table name="trigger">
+        <column name="trigger_id" type="INTEGER" required="true" primaryKey="true"
+            autoIncrement="true" />
+        <column name="source_catalog_name" type="VARCHAR" size="50" />            
+        <column name="source_schema_name" type="VARCHAR" size="50" />
+        <column name="source_table_name" type="VARCHAR" size="50" required="true" />
+        <column name="target_catalog_name" type="VARCHAR" size="50" />        
+        <column name="target_schema_name" type="VARCHAR" size="50" />
+        <column name="target_table_name" type="VARCHAR" size="50" />        
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" />
+        <column name="channel_id" type="VARCHAR" size="50" required="true" />
+        <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1" />
+        <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1" />
+        <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1" />
+        <column name="sync_on_incoming_batch" type="BOOLEANINT" size="1" required="true" default="0" />
+        <column name="sync_column_level" type="BOOLEANINT" size="1" required="true" default="0" />
+        <column name="name_for_update_trigger" type="VARCHAR" size="50" />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="50" />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="50" />
+        <column name="sync_on_update_condition" type="CLOB" />
+        <column name="sync_on_insert_condition" type="CLOB" />
+        <column name="sync_on_delete_condition" type="CLOB" />
+        <column name="initial_load_select" type="CLOB" />
+        <column name="node_select" type="CLOB" />
+        <column name="tx_id_expression" type="VARCHAR" size="500" />
+        <column name="excluded_column_names" type="CLOB" />
+        <column name="initial_load_order" type="INTEGER" required="true" default="1" />
+        <column name="create_time" type="TIMESTAMP" required="true" />
+        <column name="inactive_time" type="TIMESTAMP" />
+        <column name="last_updated_by" type="VARCHAR" size="50" />
+        <column name="last_updated_time" type="TIMESTAMP" required="true" />
+    </table>
+
+    <table name="trigger_hist">
+        <column name="trigger_hist_id" type="INTEGER" required="true" primaryKey="true"
+            autoIncrement="true" />
+        <column name="trigger_id" type="INTEGER" required="true" />
+        <column name="source_table_name" type="VARCHAR" default="" size="50" required="true" />
+        <column name="source_catalog_name" type="VARCHAR" size="50" />        
+        <column name="source_schema_name" type="VARCHAR" size="50" />
+        <column name="name_for_update_trigger" type="VARCHAR" size="50" required="true" />
+        <column name="name_for_insert_trigger" type="VARCHAR" size="50" required="true" />
+        <column name="name_for_delete_trigger" type="VARCHAR" size="50" required="true" />
+        <column name="table_hash" type="BIGINT" required="true" />
+        <column name="trigger_row_hash" type="BIGINT" required="true" />
+        <column name="column_names" type="LONGVARCHAR" required="true" />
+        <column name="pk_column_names" type="LONGVARCHAR" required="true" />
+        <column name="last_trigger_build_reason" size="1" type="CHAR" required="true" />
+        <column name="create_time" type="TIMESTAMP" required="true" />
+        <column name="inactive_time" type="TIMESTAMP" />
+    </table>
+
+    <table name="incoming_batch">
+        <column name="batch_id" type="INTEGER" size="50" required="true" primaryKey="true" />
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="channel_id" type="VARCHAR" size="50" />
+        <column name="status" type="CHAR" size="2" />
+        <column name="create_time" type="TIMESTAMP" />
+    </table>
+
+    <table name="incoming_batch_hist">
+        <column name="batch_id" type="INTEGER" size="50" required="true"/>
+        <column name="node_id" type="VARCHAR" size="50" />
+        <column name="status" type="CHAR" size="2" />
+        <column name="start_time" type="TIMESTAMP" />
+        <column name="end_time" type="TIMESTAMP" />
+        <column name="network_millis" type="INTEGER" />
+        <column name="filter_millis" type="INTEGER" />
+        <column name="database_millis" type="INTEGER" />
+        <column name="host_name" type="VARCHAR" size="50" />
+        <column name="failed_row_number" type="INTEGER" />
+        <column name="byte_count" type="INTEGER" />
+        <column name="statement_count" type="INTEGER" />
+        <column name="fallback_insert_count" type="INTEGER" />
+        <column name="fallback_update_count" type="INTEGER" />
+        <column name="missing_delete_count" type="INTEGER" />
+        <column name="sql_state" type="VARCHAR" size="10" />
+        <column name="sql_code" type="INTEGER" />
+        <column name="sql_message" type="VARCHAR" size="50" />
+        <index name="idx_incoming_batch_hist">
+            <index-column name="batch_id" />
+            <index-column name="node_id" />
+        </index>
+    </table>
+
+    <table name="statistic">
+        <column name="node_id" type="VARCHAR" size="50" />
+        <column name="host_name" type="VARCHAR" size="50" />
+        <column name="statistic_name" type="VARCHAR" size="50" />
+        <column name="statistic_total" type="DECIMAL" size="20" />
+        <column name="statistic_count" type="BIGINT" />
+        <column name="capture_start_time" type="TIMESTAMP" />
+        <column name="capture_end_time" type="TIMESTAMP" />
+        <index name="idx_stat">
+            <index-column name="node_id" />
+            <index-column name="statistic_name" />
+        </index>
+        <index name="idx_stat_end_time">
+            <index-column name="capture_end_time" />
+        </index>
+    </table>
+    
+    <!-- This table configures thresholds at which JMX notifications will be fired -->
+    <table name="statistic_alert">
+        <column name="statistic_name" type="VARCHAR" size="50" required="true" primaryKey="true"/>
+        <column name="threshold_total_max" type="DECIMAL" size="20" />
+        <column name="threshold_avg_max" type="DECIMAL" size="20" />
+        <column name="threshold_count_max" type="BIGINT" />
+        <column name="threshold_total_min" type="DECIMAL" size="20" />
+        <column name="threshold_count_min" type="BIGINT" /> 
+        <column name="threshold_avg_min" type="DECIMAL" size="20" />               
+    </table>
+    
+    <table name="parameter">
+        <column name="external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" />
+        <column name="param_key" type="VARCHAR" size="100" required="true" primaryKey="true" />
+        <column name="param_value" type="VARCHAR" size="1000" />
+    </table>
+    
+    <table name="registration_redirect">
+        <column name="registrant_external_id" type="VARCHAR" size="50" required="true" primaryKey="true" />    
+        <column name="registration_node_id" type="VARCHAR" size="50" required="true" />
+    </table>
+
+</database>

@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Run SymmetricDS as a Unix daemon
+#
+
+if [ -z "$SYM_HOME" ]
+then
+   SYM_HOME=/usr/local/symmetric
+fi
+
+if [ \! -d "$SYM_HOME" ]
+then
+   echo "Please set the SYM_HOME variable to the SymmetricDS home directory"
+   exit 1
+fi
+
+CLASSPATH=
+export CLASSPATH
+
+for jar in "$SYM_HOME/lib/*"
+do
+   CLASSPATH="$CLASSPATH:$jar"
+done
+
+cd "$SYM_HOME"
+java -Xms256m -Xmx256m \
+   -Dsym.keystore.file="$SYM_HOME/security/keystore" \
+   -Djavax.net.ssl.trustStore="$SYM_HOME/security/cacerts" \
+   -Dlog4j.configuration=file:"$SYM_HOME/conf/log4j.xml" \
+   -Dsun.net.client.defaultReadTimeout=1800000 \
+   -Dsun.net.client.defaultConnectTimeout=1800000 \ 
+   org.jumpmind.symmetric.SymmetricLauncher \
+   --properties "$SYM_HOME/conf/symmetric.properties" \
+   --port 8080 \
+   --server \
+   > "$SYM_HOME/logs/service-out.log" \
+   2> "$SYM_HOME/logs/service-err.log" &
+
+if [ -w /var/run ]
+then
+   echo $! > /var/run/symmetric.pid
+fi
