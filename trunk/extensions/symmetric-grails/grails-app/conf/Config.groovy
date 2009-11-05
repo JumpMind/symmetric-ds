@@ -66,9 +66,9 @@ log4j = {
 	       'org.springframework',
 	       'org.hibernate'
    
-    info   'org.codehaus.groovy.grails.web.servlet',
+    warn   'org.codehaus.groovy.grails.web.servlet',
 	       'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
-               'org.codehaus.groovy.grails.commons', // core / classloading                
+           'org.codehaus.groovy.grails.commons', // core / classloading                
 	       'org.codehaus.groovy.grails.web.mapping' // URL mapping
         
     info   'org.jumpmind'
