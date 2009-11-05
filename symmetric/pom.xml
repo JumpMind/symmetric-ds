@@ -3,7 +3,7 @@
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.beta.1-SNAPSHOT</version>
+    <version>2.0.beta.2-SNAPSHOT</version>
     <name>SymmetricDS Library</name>
     <url>http://symmetricds.org</url>
     <inceptionYear>2007</inceptionYear>
@@ -222,7 +222,6 @@
     </distributionManagement>
 
     <properties>
-        <wtp.version>1.5</wtp.version>
         <springframework.version>3.0.0.RC1</springframework.version>
         <derby.version>10.4.2.0</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
@@ -259,7 +258,6 @@
         <plugin>
             <artifactId>maven-eclipse-plugin</artifactId>
             <configuration>
-                <wtpVersion>${wtp.version}</wtpVersion>
                 <downloadSources>true</downloadSources>
                 <downloadJavadocs>true</downloadJavadocs>
             </configuration>
