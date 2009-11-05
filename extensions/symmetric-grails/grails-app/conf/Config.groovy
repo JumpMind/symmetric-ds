@@ -59,19 +59,19 @@ log4j = {
     //}
 
     
-    warn       'org.codehaus.groovy.grails.web.pages', //  GSP
+    warn   'org.codehaus.groovy.grails.web.pages', //  GSP
 	       'org.codehaus.groovy.grails.web.sitemesh', //  layouts
 	       'org.codehaus.groovy.grails.plugins', // plugins
 	       'org.codehaus.groovy.grails.orm.hibernate', // hibernate integration
 	       'org.springframework',
 	       'org.hibernate'
    
-    info      'org.codehaus.groovy.grails.web.servlet',
+    info   'org.codehaus.groovy.grails.web.servlet',
 	       'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
                'org.codehaus.groovy.grails.commons', // core / classloading                
 	       'org.codehaus.groovy.grails.web.mapping' // URL mapping
         
-    info      'org.jumpmind'        
+    info   'org.jumpmind'
 
     warn   'org.mortbay.log'
 }
