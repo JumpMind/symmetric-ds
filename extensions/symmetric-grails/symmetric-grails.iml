@@ -27,6 +27,9 @@
       </configuration>
     </facet>
   </component>
+  <component name="GrailsPluginsStorage">
+    <option name="fullPluginsInfo" />
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../.grails/1.2-M3/projects/symmetric-grails/plugins">

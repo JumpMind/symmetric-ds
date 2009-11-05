@@ -3,8 +3,8 @@ System.setProperty  "ivy.checksums", ""
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
-grails.plugin.repos.distribution.symmetric="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/"
-grails.plugin.repos.resolveOrder=['symmetric','default','core']
+//grails.plugin.repos.distribution.symmetric="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/trunk/extensions/"
+//grails.plugin.repos.resolveOrder=['symmetric','default','core']
 
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
