@@ -1,6 +1,6 @@
 
 symmetric {
-    auto.startup = true
+    auto.startup = false
     db.spring.bean.name='parent.dataSource'
     auto.insert.registration.svr.if.not.found=true
     web.base.servlet.path='/sync'
@@ -12,6 +12,7 @@ symmetric {
 environments {
     root {
         symmetric {
+            auto.startup = true
             sync.url = 'http://localhost:8080/symmetric-grails/sync'
             external.id = 'root'
             group.id = 'root'     
@@ -22,6 +23,7 @@ environments {
     }
     client {
         symmetric {
+            auto.startup = true
             sync.url = 'http://localhost:8090/symmetric-grails/sync'
             external.id = 'client'
             group.id = 'client'

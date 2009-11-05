@@ -22,35 +22,28 @@ Brief description of the plugin.
       <resolver type='mavenRepo' root='http://download.java.net/maven/2/' name='http://download.java.net/maven/2/' m2compatbile='true' />
       <resolver type='mavenRepo' root='http://repository.jboss.com/maven2/' name='http://repository.jboss.com/maven2/' m2compatbile='true' />
     </resolvers>
+    <dependency group='rome' name='rome' version='0.9' conf='runtime' transitive='false' />
+    <dependency group='org.apache.ddlutils' name='ddlutils' version='1.0' conf='runtime' transitive='false' />
+    <dependency group='org.jdom' name='jdom' version='1.1' conf='runtime' transitive='false' />
+    <dependency group='org.apache.derby' name='derby' version='10.4.2.0' conf='runtime' transitive='false' />
+    <dependency group='org.beanshell' name='bsh' version='2.0b4' conf='runtime' transitive='false' />
+    <dependency group='commons-betwixt' name='commons-betwixt' version='0.8' conf='runtime' transitive='false' />
+    <dependency group='commons-math' name='commons-math' version='1.1' conf='runtime' transitive='false' />
+    <dependency group='mx4j' name='mx4j-tools' version='3.0.1' conf='runtime' transitive='false' />
+    <dependency group='org.jumpmind.symmetric' name='symmetric' version='2.0.beta.1' conf='runtime' transitive='false' />
+    <dependency group='com.h2database' name='h2' version='1.2.122' conf='runtime' transitive='false' />
     <dependency group='org.apache.derby' name='derbytools' version='10.4.2.0' conf='runtime' transitive='false' />
     <dependency group='commons-digester' name='commons-digester' version='1.7' conf='runtime' transitive='false' />
-    <dependency group='org.hibernate' name='hibernate-core' version='3.3.1.GA' conf='compile' transitive='true'>
-      <excludes group='*' name='ehcache' />
-      <excludes group='*' name='xml-apis' />
-      <excludes group='*' name='commons-logging' />
-    </dependency>
-    <dependency group='mx4j' name='mx4j-tools' version='3.0.1' conf='runtime' transitive='false' />
-    <dependency group='javassist' name='javassist' version='3.4.GA' conf='runtime' transitive='true' />
-    <dependency group='org.apache.derby' name='derby' version='10.4.2.0' conf='runtime' transitive='false' />
-    <dependency group='org.hibernate' name='hibernate-annotations' version='3.4.0.GA' conf='compile' transitive='true' />
-    <dependency group='org.hibernate' name='hibernate-commons-annotations' version='3.3.0.ga' conf='compile' transitive='true'>
-      <excludes group='*' name='hibernate' />
-    </dependency>
-    <dependency group='org.hibernate' name='hibernate-ehcache' version='3.3.1.GA' conf='runtime' transitive='true'>
-      <excludes group='*' name='ehcache' />
-    </dependency>
-    <dependency group='commons-betwixt' name='commons-betwixt' version='0.8' conf='runtime' transitive='false' />
-    <dependency group='org.apache.ddlutils' name='ddlutils' version='1.0' conf='runtime' transitive='false' />
-    <dependency group='antlr' name='antlr' version='2.7.6' conf='runtime' transitive='true' />
-    <dependency group='org.jdom' name='jdom' version='1.1' conf='runtime' transitive='false' />
-    <dependency group='org.jumpmind.symmetric' name='symmetric' version='2.0.beta.1' conf='runtime' transitive='false' />
-    <dependency group='dom4j' name='dom4j' version='1.6.1' conf='runtime' transitive='true'>
-      <excludes group='*' name='xml-apis' />
-    </dependency>
-    <dependency group='rome' name='rome' version='0.9' conf='runtime' transitive='false' />
-    <dependency group='org.beanshell' name='bsh' version='2.0b4' conf='runtime' transitive='false' />
-    <dependency group='com.h2database' name='h2' version='1.2.122' conf='runtime' transitive='false' />
-    <dependency group='commons-math' name='commons-math' version='1.1' conf='runtime' transitive='false' />
   </dependencies>
-  <behavior />
+  <behavior>
+    <method name='getProperty' artefact='Filters' type='SymmetricConfig'>
+      <description />
+      <argument type='java.lang.String' />
+    </method>
+    <method name='invokeMethod' artefact='Filters' type='SymmetricConfig'>
+      <description />
+      <argument type='java.lang.String' />
+      <argument type='java.lang.Object' />
+    </method>
+  </behavior>
 </plugin>
