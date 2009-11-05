@@ -1,6 +1,7 @@
 dataSource {
 	pooled = true
 	driverClassName = "org.h2.Driver"
+    url = "jdbc:h2:file:target/h2/test"
 	username = "sa"
 	password = ""
 }
