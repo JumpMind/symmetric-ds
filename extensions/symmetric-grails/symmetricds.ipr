@@ -57,7 +57,12 @@
         <option name="myLocal" value="false" />
       </profile>
     </profiles>
-    <list size="0" />
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="SERVER PROBLEM" />
+      <item index="1" class="java.lang.String" itemvalue="INFO" />
+      <item index="2" class="java.lang.String" itemvalue="WARNING" />
+      <item index="3" class="java.lang.String" itemvalue="ERROR" />
+    </list>
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -227,6 +232,40 @@
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
+  <component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="Grails:symmetricds - root" type="GrailsRunConfigurationType" factoryName="Grails Application">
+      <module name="symmetric-grails" />
+      <setting name="vmparams" value="-Dgrails.env=root" />
+      <setting name="grailsparams" value="" />
+      <setting name="hostik" value="localhost" />
+      <setting name="port" value="8080" />
+      <setting name="jndi" value="false" />
+      <setting name="recomp" value="false" />
+      <setting name="recompileFreq" value="3" />
+      <setting name="launchBrowser" value="false" />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
+    <configuration default="false" name="Grails:symmetricds - client" type="GrailsRunConfigurationType" factoryName="Grails Application">
+      <module name="symmetric-grails" />
+      <setting name="vmparams" value="-Dgrails.env=client -Dgrails.server.port.http=8090" />
+      <setting name="grailsparams" value="" />
+      <setting name="hostik" value="localhost" />
+      <setting name="port" value="0000" />
+      <setting name="jndi" value="false" />
+      <setting name="recomp" value="false" />
+      <setting name="recompileFreq" value="3" />
+      <setting name="launchBrowser" value="false" />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -247,182 +286,6 @@
         <entry key="$PROJECT_DIR$/../symmetric">
           <value>
             <SvnBranchConfiguration>
-              <option name="branchMap">
-                <map>
-                  <entry key="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches">
-                    <value>
-                      <list>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253320436448" />
-                          <option name="revision" value="2289" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.7" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1245951272704" />
-                          <option name="revision" value="2009" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.6.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1235099415009" />
-                          <option name="revision" value="1613" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.5.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230732651156" />
-                          <option name="revision" value="1476" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.4" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230060215023" />
-                          <option name="revision" value="1431" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.4.1.appaji" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1220906465788" />
-                          <option name="revision" value="1169" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1205376551849" />
-                          <option name="revision" value="654" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.2.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1203710983081" />
-                          <option name="revision" value="603" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.1.0.b1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1199471546080" />
-                          <option name="revision" value="488" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.2.0.a1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1197228989756" />
-                          <option name="revision" value="369" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.1.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1194024283144" />
-                          <option name="revision" value="210" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/0.0.9" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1194024154433" />
-                          <option name="revision" value="203" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.0.0" />
-                        </SvnBranchItem>
-                      </list>
-                    </value>
-                  </entry>
-                  <entry key="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags">
-                    <value>
-                      <list>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253320428860" />
-                          <option name="revision" value="2288" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.6" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253102205574" />
-                          <option name="revision" value="2283" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.5" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1252068050610" />
-                          <option name="revision" value="2233" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.4" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1250619351043" />
-                          <option name="revision" value="2194" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1248270706195" />
-                          <option name="revision" value="2112" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1246121158730" />
-                          <option name="revision" value="2019" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1245345055122" />
-                          <option name="revision" value="1991" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1244050045180" />
-                          <option name="revision" value="1972" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1242674667360" />
-                          <option name="revision" value="1885" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1242053959186" />
-                          <option name="revision" value="1835" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1239216078933" />
-                          <option name="revision" value="1784" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1231984136167" />
-                          <option name="revision" value="1537" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.5.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230760473803" />
-                          <option name="revision" value="1484" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.5.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1227551451091" />
-                          <option name="revision" value="1390" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1227186911484" />
-                          <option name="revision" value="1364" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1224634785451" />
-                          <option name="revision" value="1288" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1223514923555" />
-                          <option name="revision" value="1256" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1222907634326" />
-                          <option name="revision" value="1224" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.rc.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1221095631513" />
-                          <option name="revision" value="1183" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.beta.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1217506258327" />
-                          <option name="revision" value="1120" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.beta.1" />
-                        </SvnBranchItem>
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches" />
@@ -436,182 +299,6 @@
         <entry key="$PROJECT_DIR$">
           <value>
             <SvnBranchConfiguration>
-              <option name="branchMap">
-                <map>
-                  <entry key="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches">
-                    <value>
-                      <list>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253320436448" />
-                          <option name="revision" value="2289" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.7" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1245951272704" />
-                          <option name="revision" value="2009" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.6.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1235099415009" />
-                          <option name="revision" value="1613" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.5.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230732651156" />
-                          <option name="revision" value="1476" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.4" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230060215023" />
-                          <option name="revision" value="1431" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.4.1.appaji" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1220906465788" />
-                          <option name="revision" value="1169" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1205376551849" />
-                          <option name="revision" value="654" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.2.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1203710983081" />
-                          <option name="revision" value="603" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.1.0.b1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1199471546080" />
-                          <option name="revision" value="488" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.2.0.a1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1197228989756" />
-                          <option name="revision" value="369" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.1.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1194024283144" />
-                          <option name="revision" value="210" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/0.0.9" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1194024154433" />
-                          <option name="revision" value="203" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches/1.0.0" />
-                        </SvnBranchItem>
-                      </list>
-                    </value>
-                  </entry>
-                  <entry key="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags">
-                    <value>
-                      <list>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253320428860" />
-                          <option name="revision" value="2288" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.6" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1253102205574" />
-                          <option name="revision" value="2283" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.5" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1252068050610" />
-                          <option name="revision" value="2233" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.4" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1250619351043" />
-                          <option name="revision" value="2194" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1248270706195" />
-                          <option name="revision" value="2112" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1246121158730" />
-                          <option name="revision" value="2019" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1245345055122" />
-                          <option name="revision" value="1991" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.7.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1244050045180" />
-                          <option name="revision" value="1972" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1242674667360" />
-                          <option name="revision" value="1885" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1242053959186" />
-                          <option name="revision" value="1835" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1239216078933" />
-                          <option name="revision" value="1784" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.6.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1231984136167" />
-                          <option name="revision" value="1537" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.5.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1230760473803" />
-                          <option name="revision" value="1484" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.5.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1227551451091" />
-                          <option name="revision" value="1390" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.3" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1227186911484" />
-                          <option name="revision" value="1364" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1224634785451" />
-                          <option name="revision" value="1288" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1223514923555" />
-                          <option name="revision" value="1256" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1222907634326" />
-                          <option name="revision" value="1224" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.rc.1" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1221095631513" />
-                          <option name="revision" value="1183" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.beta.2" />
-                        </SvnBranchItem>
-                        <SvnBranchItem>
-                          <option name="creationDateMillis" value="1217506258327" />
-                          <option name="revision" value="1120" />
-                          <option name="url" value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/tags/symmetric-1.4.0.beta.1" />
-                        </SvnBranchItem>
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="branchUrls">
                 <list>
                   <option value="https://symmetricds.svn.sourceforge.net/svnroot/symmetricds/branches" />
@@ -739,28 +426,6 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/junit/junit/4.4/junit-4.4-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: log4j:log4j:1.2.14">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.14/log4j-1.2.14.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.14/log4j-1.2.14-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.14/log4j-1.2.14-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: org.springframework:spring:2.5.6">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring/2.5.6/spring-2.5.6.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring/2.5.6/spring-2.5.6-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring/2.5.6/spring-2.5.6-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: commons-logging:commons-logging:1.1.1">
@@ -1225,15 +890,202 @@
         <root url="jar://$MAVEN_REPOSITORY$/hsqldb/hsqldb/1.8.0.10/hsqldb-1.8.0.10-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: com.h2database:h2:1.2.121">
+    <library name="Maven: log4j:log4j:1.2.15">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.121/h2-1.2.121.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.15/log4j-1.2.15.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.121/h2-1.2.121-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.15/log4j-1.2.15-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.121/h2-1.2.121-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.15/log4j-1.2.15-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javax.mail:mail:1.4">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/mail/mail/1.4/mail-1.4.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/mail/mail/1.4/mail-1.4-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/mail/mail/1.4/mail-1.4-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javax.activation:activation:1.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/activation/activation/1.1/activation-1.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: javax.jms:jms:1.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jms/jms/1.1/jms-1.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jms/jms/1.1/jms-1.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/javax/jms/jms/1.1/jms-1.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: com.sun.jdmk:jmxtools:1.2.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jdmk/jmxtools/1.2.1/jmxtools-1.2.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jdmk/jmxtools/1.2.1/jmxtools-1.2.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jdmk/jmxtools/1.2.1/jmxtools-1.2.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: com.sun.jmx:jmxri:1.2.1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jmx/jmxri/1.2.1/jmxri-1.2.1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jmx/jmxri/1.2.1/jmxri-1.2.1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/sun/jmx/jmxri/1.2.1/jmxri-1.2.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-core:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-core/3.0.0.RC1/spring-core-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-core/3.0.0.RC1/spring-core-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-core/3.0.0.RC1/spring-core-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-asm:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-asm/3.0.0.RC1/spring-asm-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-asm/3.0.0.RC1/spring-asm-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-asm/3.0.0.RC1/spring-asm-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-context:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-context/3.0.0.RC1/spring-context-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-context/3.0.0.RC1/spring-context-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-context/3.0.0.RC1/spring-context-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: aopalliance:aopalliance:1.0">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/aopalliance/aopalliance/1.0/aopalliance-1.0.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/aopalliance/aopalliance/1.0/aopalliance-1.0-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/aopalliance/aopalliance/1.0/aopalliance-1.0-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-aop:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-aop/3.0.0.RC1/spring-aop-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-aop/3.0.0.RC1/spring-aop-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-aop/3.0.0.RC1/spring-aop-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-beans:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-beans/3.0.0.RC1/spring-beans-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-beans/3.0.0.RC1/spring-beans-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-beans/3.0.0.RC1/spring-beans-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-expression:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-expression/3.0.0.RC1/spring-expression-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-expression/3.0.0.RC1/spring-expression-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-expression/3.0.0.RC1/spring-expression-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-jdbc:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jdbc/3.0.0.RC1/spring-jdbc-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jdbc/3.0.0.RC1/spring-jdbc-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jdbc/3.0.0.RC1/spring-jdbc-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-tx:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-tx/3.0.0.RC1/spring-tx-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-tx/3.0.0.RC1/spring-tx-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-tx/3.0.0.RC1/spring-tx-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-web:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/3.0.0.RC1/spring-web-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/3.0.0.RC1/spring-web-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/3.0.0.RC1/spring-web-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.springframework:spring-jms:3.0.0.RC1">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jms/3.0.0.RC1/spring-jms-3.0.0.RC1.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jms/3.0.0.RC1/spring-jms-3.0.0.RC1-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/springframework/spring-jms/3.0.0.RC1/spring-jms-3.0.0.RC1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: com.h2database:h2:1.2.122">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.122/h2-1.2.122.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.122/h2-1.2.122-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/com/h2database/h2/1.2.122/h2-1.2.122-sources.jar!/" />
       </SOURCES>
     </library>
   </component>
