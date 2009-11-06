@@ -302,7 +302,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
                             triggerRouter, context), false);
                     context.incrementStat(System.currentTimeMillis() - ts, "data.router.ms");
-                    insertDataEvents(context, dataMetaData, nodeIds, triggerRouter);
+                    if (!insertDataEvents(context, dataMetaData, nodeIds, triggerRouter)) {                        
+                        log.debug("NoNodesToRouteTo", data.getDataId());
+                    }
                 }
 
                 if (!context.isRouted()) {
@@ -323,7 +325,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    protected void insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds,
+    protected boolean insertDataEvents(RouterContext context, DataMetaData dataMetaData, Collection<String> nodeIds,
             TriggerRouter triggerRouter) {
         if (nodeIds != null && nodeIds.size() > 0) {
             long ts = System.currentTimeMillis();
@@ -347,6 +349,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
             }
             context.incrementStat(System.currentTimeMillis() - ts, "insert.data.events.ms");
+            return true;
+        } else {
+            return false;
         }
 
     }
