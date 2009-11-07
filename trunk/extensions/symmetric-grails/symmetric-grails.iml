@@ -27,14 +27,8 @@
       </configuration>
     </facet>
   </component>
-  <component name="GrailsPluginsStorage">
-    <option name="fullPluginsInfo" />
-  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/../../../.grails/1.2-M3/projects/symmetric-grails/plugins">
-      <sourceFolder url="file://$MODULE_DIR$/../../../.grails/1.2-M3/projects/symmetric-grails/plugins/tomcat-1.2-M3/src/groovy" isTestSource="false" />
-    </content>
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/grails-app/conf/hibernate" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/grails-app/controllers" isTestSource="false" />
@@ -48,20 +42,16 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="grails-1.2-M3" level="application" />
+    <orderEntry type="library" name="Grails 1.2-M4" level="project" />
     <orderEntry type="module-library">
       <library name="Grails User Library">
         <CLASSES>
           <root url="file://$MODULE_DIR$/lib" />
-          <root url="file://$MODULE_DIR$/../../../.grails/1.2-M3/projects/symmetric-grails/plugins/tomcat-1.2-M3/lib" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/../../../.grails/1.2-M3/projects/symmetric-grails/plugins/tomcat-1.2-M3/lib" recursive="false" />
         <jarDirectory url="file://$MODULE_DIR$/lib" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="symmetric" />
   </component>
 </module>
-
