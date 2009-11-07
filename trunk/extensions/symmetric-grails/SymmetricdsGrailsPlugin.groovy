@@ -24,9 +24,9 @@ class SymmetricdsGrailsPlugin {
     // TODO Fill in these fields
     def author = "Chris Henson"
     def authorEmail = "chenson42@sourceforge.users.net"
-    def title = "Plugin for SymmetricDS data synchronization software"
+    def title = "SymmetricDS"
     def description = '''\\
-Brief description of the plugin.
+Plugin that adds SymmetricDS synchronization capability to a Grails application.
 '''
 
     // URL to the plugin's documentation
