@@ -43,7 +43,7 @@ public class Node {
 
     private String externalId;
 
-    private String syncURL;
+    private String syncUrl;
 
     /**
      * Record the version of the schema. This is recorded and managed by the
@@ -88,13 +88,13 @@ public class Node {
         setExternalId(runtimeConfig.getExternalId());
         setDatabaseType(dbDialect.getName());
         setDatabaseVersion(dbDialect.getVersion());
-        setSyncURL(runtimeConfig.getSyncUrl());
+        setSyncUrl(runtimeConfig.getSyncUrl());
         setSchemaVersion(runtimeConfig.getString(ParameterConstants.SCHEMA_VERSION));
     }
 
     public Node(String nodeId, String syncURL, String version) {
         this.nodeId = nodeId;
-        this.syncURL = syncURL;
+        this.syncUrl = syncURL;
         this.schemaVersion = version;
     }
 
@@ -115,12 +115,12 @@ public class Node {
         this.nodeId = nodeId;
     }
 
-    public String getSyncURL() {
-        return syncURL;
+    public String getSyncUrl() {
+        return syncUrl;
     }
 
-    public void setSyncURL(String syncURL) {
-        this.syncURL = syncURL;
+    public void setSyncUrl(String syncURL) {
+        this.syncUrl = syncURL;
     }
 
     public String getSchemaVersion() {

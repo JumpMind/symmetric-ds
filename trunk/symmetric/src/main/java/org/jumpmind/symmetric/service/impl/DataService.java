@@ -493,7 +493,7 @@ public class DataService extends AbstractService implements IDataService {
                             me.setExternalId(parameterService.getExternalId());
                             me.setNodeGroupId(parameterService.getNodeGroupId());
                             if (!StringUtils.isBlank(parameterService.getSyncUrl())) {
-                                me.setSyncURL(parameterService.getSyncUrl());
+                                me.setSyncUrl(parameterService.getSyncUrl());
                             }
                         }
 

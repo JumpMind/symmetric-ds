@@ -129,7 +129,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         builder.append("/registration?");
         append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
         append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
-        append(builder, WebConstants.SYNC_URL, node.getSyncURL());
+        append(builder, WebConstants.SYNC_URL, node.getSyncUrl());
         append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
         append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
         append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
@@ -163,7 +163,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
      * Build a url for an action. Include the nodeid and the security token.
      */
     protected String buildURL(String action, Node remote, Node local) throws IOException {
-        return addSecurityToken((resolveURL(remote.getSyncURL()) + "/" + action), "&");
+        return addSecurityToken((resolveURL(remote.getSyncUrl()) + "/" + action), "&");
     }
 
     private String addSecurityToken(String base, String connector) {

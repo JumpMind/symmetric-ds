@@ -132,8 +132,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 status = PushStatus.NOTHING_TO_PUSH;
             }
         } catch (ConnectException ex) {            
-            log.warn("TransportFailedConnectionUnavailable", (remote.getSyncURL() == null ? parameterService
-                    .getRegistrationUrl() : remote.getSyncURL()));
+            log.warn("TransportFailedConnectionUnavailable", (remote.getSyncUrl() == null ? parameterService
+                    .getRegistrationUrl() : remote.getSyncUrl()));
             fireOffline(ex, remote);
         } catch (ConnectionRejectedException ex) {
             log.warn("TransportFailedConnectionBusy");

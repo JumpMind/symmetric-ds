@@ -68,8 +68,8 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             }
                         } catch (ConnectException ex) {
                             log.warn("TransportFailedConnectionUnavailable",
-                                    (node.getSyncURL() == null ? parameterService.getRegistrationUrl() : node
-                                            .getSyncURL()));
+                                    (node.getSyncUrl() == null ? parameterService.getRegistrationUrl() : node
+                                            .getSyncUrl()));
                             fireOffline(ex, node);
                         } catch (ConnectionRejectedException ex) {
                             log.warn("TransportFailedConnectionBusy");
