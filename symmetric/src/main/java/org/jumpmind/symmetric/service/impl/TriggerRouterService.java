@@ -506,7 +506,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         forceRebuildOfTriggers = true;
 
                     } else if (trigger.hasChangedSinceLastTriggerBuild(latestHistoryBeforeRebuild.getCreateTime())
-                            || trigger.getHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
+                            || trigger.toHashedValue() != latestHistoryBeforeRebuild.getTriggerRowHash()) {
                         reason = TriggerReBuildReason.TABLE_SYNC_CONFIGURATION_CHANGED;
                         forceRebuildOfTriggers = true;
                     } else if (gen_always) {

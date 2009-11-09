@@ -97,7 +97,7 @@ public class TriggerHistory extends AbstractCsvData {
         this.sourceCatalogName = trigger.getSourceCatalogName();
         this.triggerId = trigger.getTriggerId();
         this.pkColumnNames = getCommaDeliminatedColumns(table.getPrimaryKeyColumns());
-        this.triggerRowHash = trigger.getHashedValue();
+        this.triggerRowHash = trigger.toHashedValue();
         // set primary key equal to all the columns to make data sync work for
         // tables with no primary keys
         if (pkColumnNames == null) {
