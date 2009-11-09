@@ -69,7 +69,7 @@ public class Node {
 
     private Date heartbeatTime = new Date();
 
-    private String createdByNodeId;
+    private String createdAtNodeId;
     
     private int batchToSendCount;
     
@@ -200,12 +200,12 @@ public class Node {
         this.timezoneOffset = timezoneOffset;
     }
 
-    public String getCreatedByNodeId() {
-        return createdByNodeId;
+    public String getCreatedAtNodeId() {
+        return createdAtNodeId;
     }
 
-    public void setCreatedByNodeId(String createdByNodeId) {
-        this.createdByNodeId = createdByNodeId;
+    public void setCreatedAtNodeId(String createdByNodeId) {
+        this.createdAtNodeId = createdByNodeId;
     }
 
     public void setBatchInErrorCount(int batchesInErrorCount) {
