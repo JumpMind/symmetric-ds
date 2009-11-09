@@ -78,7 +78,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
         final ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists(remote.getNodeId());
 
-        runAtClient(remote.getSyncURL(), null, respOs, new IClientRunnable() {
+        runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // TODO this is duplicated from the Pull Servlet. It should be
                 // consolidated somehow!
@@ -105,7 +105,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(remote.getSyncURL(), pushIs, respOs, new IClientRunnable() {
+        runAtClient(remote.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the push servlet does ...
                 IDataLoaderService service = (IDataLoaderService) factory.getBean(Constants.DATALOADER_SERVICE);
@@ -134,7 +134,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
         try {
             if (list != null && list.size() > 0) {
-                ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncURL());
+                ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
 
                 String ackData = getAcknowledgementData(local.getNodeId(), list);
                 List<BatchInfo> batches = readAcknowledgement(ackData);

@@ -85,7 +85,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00002");
-        node.setSyncURL("http://localhost:8080/sync");
+        node.setSyncUrl("http://localhost:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
@@ -98,7 +98,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         assertEquals(node.getExternalId(), "00002", "Wrong domainId");
-        assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
+        assertEquals(node.getSyncUrl().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
@@ -115,7 +115,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId(null);
-        node.setSyncURL("http://localhost:8080/sync");
+        node.setSyncUrl("http://localhost:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
@@ -141,7 +141,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00008");
-        node.setSyncURL("http://localhost:8080/sync");
+        node.setSyncUrl("http://localhost:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
@@ -154,7 +154,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00008", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         assertEquals(node.getExternalId(), "00008", "Wrong domainId");
-        assertEquals(node.getSyncURL().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
+        assertEquals(node.getSyncUrl().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), "MySQL", "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), "5", "Wrong databaseVersion");
@@ -170,7 +170,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00009");
-        node.setSyncURL("http://localhost:8080/sync");
+        node.setSyncUrl("http://localhost:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
@@ -185,7 +185,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId("test-root-group");
         node.setExternalId("09999");
-        node.setSyncURL("http://localhost:8080/sync");
+        node.setSyncUrl("http://localhost:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
@@ -213,7 +213,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00003");
-        node.setSyncURL("http://0:8080/sync");
+        node.setSyncUrl("http://0:8080/sync");
         node.setSchemaVersion("1");
         node.setDatabaseType("hqsql");
         node.setDatabaseVersion("1");
@@ -226,7 +226,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         assertEquals(node.getExternalId(), "00003", "Wrong domainId");
-        assertEquals(node.getSyncURL().toString(), "http://0:8080/sync", "Wrong syncUrl");
+        assertEquals(node.getSyncUrl().toString(), "http://0:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), "hqsql", "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), "1", "Wrong databaseVersion");
@@ -253,7 +253,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(node.getNodeId(), "00005", "Wrong nodeId");
         assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
         assertEquals(node.getExternalId(), "00005", "Wrong domainId");
-        assertEquals(node.getSyncURL(), null, "Wrong syncUrl");
+        assertEquals(node.getSyncUrl(), null, "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), null, "Wrong schemaVersion");
         assertEquals(node.getDatabaseType(), null, "Wrong databaseType");
         assertEquals(node.getDatabaseVersion(), null, "Wrong databaseVersion");
@@ -271,7 +271,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00006");
-        node.setSyncURL("http://127.0.0.1");
+        node.setSyncUrl("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
         registrationService.markNodeAsRegistered("00006");
@@ -285,7 +285,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00007");
-        node.setSyncURL("http://0");
+        node.setSyncUrl("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
         registrationService.markNodeAsRegistered("00007");
@@ -302,7 +302,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00012");
         node.setSymmetricVersion("1.5.0");
-        node.setSyncURL("http://127.0.0.1");
+        node.setSyncUrl("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
         // older versions of software to not ack.  let's simulate this by not marking the node as registered

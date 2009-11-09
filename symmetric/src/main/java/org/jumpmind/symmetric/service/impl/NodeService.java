@@ -179,7 +179,7 @@ public class NodeService extends AbstractService implements INodeService {
     public boolean updateNode(Node node) {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
                 node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
-                node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
+                node.getSymmetricVersion(), node.getSyncUrl(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
                 node.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR }) == 1;
@@ -291,7 +291,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setNodeGroupId(rs.getString(2));
             node.setExternalId(rs.getString(3));
             node.setSyncEnabled(rs.getBoolean(4));
-            node.setSyncURL(rs.getString(5));
+            node.setSyncUrl(rs.getString(5));
             node.setSchemaVersion(rs.getString(6));
             node.setDatabaseType(rs.getString(7));
             node.setDatabaseVersion(rs.getString(8));

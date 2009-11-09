@@ -106,7 +106,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             nodeService.findIdentity(false);
             wasWorkDone = true;
         } catch (MalformedURLException e) {
-            log.error("URLConnectingFailure", remote.getNodeId(), remote.getSyncURL());
+            log.error("URLConnectingFailure", remote.getNodeId(), remote.getSyncUrl());
         }
         return wasWorkDone;
     }

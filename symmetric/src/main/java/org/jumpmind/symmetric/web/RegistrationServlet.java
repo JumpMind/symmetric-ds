@@ -67,7 +67,7 @@ public class RegistrationServlet extends AbstractTransportResourceServlet<Regist
         node.setExternalId(getParameter(req, WebConstants.EXTERNAL_ID));
         String syncUrlString = getParameter(req, WebConstants.SYNC_URL);
         if (StringUtils.isNotBlank(syncUrlString)) {
-            node.setSyncURL(syncUrlString);
+            node.setSyncUrl(syncUrlString);
         }
         node.setSchemaVersion(getParameter(req, WebConstants.SCHEMA_VERSION));
         node.setDatabaseType(getParameter(req, WebConstants.DATABASE_TYPE));

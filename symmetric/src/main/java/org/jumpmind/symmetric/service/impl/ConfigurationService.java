@@ -268,7 +268,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);            
             nodeService.insertNodeIdentity(nodeId);
             node = nodeService.findIdentity();
-            node.setSyncURL(parameterService.getSyncUrl());
+            node.setSyncUrl(parameterService.getSyncUrl());
             node.setHeartbeatTime(new Date());
             nodeService.updateNode(node);
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);

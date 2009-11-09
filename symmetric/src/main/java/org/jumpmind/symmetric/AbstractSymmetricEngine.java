@@ -245,7 +245,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     public String getMyUrl() {
         Node node = nodeService.findIdentity();
         if (node != null) {
-            return node.getSyncURL();
+            return node.getSyncUrl();
         } else {
             return parameterService.getSyncUrl();
         }

@@ -91,7 +91,7 @@ public class AlertResourceHandler extends AbstractTransportResourceHandler {
                     value.append(msg);
                 }
                 entries.add(createEntry(title, value.toString(), batch.getCreateTime(), nodeService.findNode(
-                        batch.getNodeId()).getSyncURL()
+                        batch.getNodeId()).getSyncUrl()
                         + "/batch/" + batch.getBatchId()));
             }
 
