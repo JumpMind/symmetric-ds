@@ -1,5 +1,8 @@
 package org.jumpmind.symmetric;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +13,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -40,7 +44,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
-    
+
     private ApplicationContext applicationContext;
     private IConfigurationService configurationService;
     private IParameterService parameterService;
@@ -82,7 +86,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         }
     }
 
-    /**
+/**
      * Locate the one and only registered {@link StandaloneSymmetricEngine}.  Use {@link #findEngineByName(String)} or
      * {@link #findEngineByUrl(String) if there is more than on engine registered.
      * @throws IllegalStateException This exception happens if more than one engine is 
@@ -98,10 +102,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
             return registeredEnginesByName.values().iterator().next();
         }
     }
-    
+
     public boolean isConfigured() {
-        return parameterService != null && !StringUtils.isBlank(parameterService.getNodeGroupId()) &&
-        !StringUtils.isBlank(parameterService.getExternalId()) && !StringUtils.isBlank(parameterService.getSyncUrl());
+        return parameterService != null && !StringUtils.isBlank(parameterService.getNodeGroupId())
+                && !StringUtils.isBlank(parameterService.getExternalId())
+                && !StringUtils.isBlank(parameterService.getSyncUrl());
     }
 
     public synchronized void start() {
@@ -163,11 +168,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     /**
      * @param overridePropertiesResource1
-     *            Provide a Spring resource path to a properties file to be used
-     *            for configuration
+     *            Provide a Spring resource path to a properties file to be used for configuration
      * @param overridePropertiesResource2
-     *            Provide a Spring resource path to a properties file to be used
-     *            for configuration
+     *            Provide a Spring resource path to a properties file to be used for configuration
      */
     protected void init(ApplicationContext ctx, boolean isParentContext, Properties overrideProperties,
             String overridePropertiesResource1, String overridePropertiesResource2) {
@@ -176,10 +179,18 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         // is thread safe.
         synchronized (StandaloneSymmetricEngine.class) {
             if (overrideProperties != null) {
-                for (Object key : overrideProperties.keySet()) {
-                    log.debug("InitAddingSystemProperty", key, overrideProperties.getProperty((String) key));
+                FileOutputStream fos = null;
+                try {
+                    File file = File.createTempFile("symmetric", "properties");
+                    fos = new FileOutputStream(file);
+                    overrideProperties.store(fos, "");
+                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_TEMP, file.getAbsolutePath());                    
+                } catch (IOException ex) {
+                    log.error(ex);
+                    throw new RuntimeException(ex);
+                } finally {
+                    IOUtils.closeQuietly(fos);
                 }
-                System.getProperties().putAll(overrideProperties);
             }
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_1, overridePropertiesResource1 == null ? ""
                     : overridePropertiesResource1);
@@ -222,8 +233,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     /**
-     * Register this instance of the engine so it can be found by other
-     * processes in the JVM.
+     * Register this instance of the engine so it can be found by other processes in the JVM.
      * 
      * @see #findEngineByUrl(String)
      */
@@ -242,8 +252,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     /**
-     * This is done dynamically because some application servers do not allow
-     * the default MBeanServer to be accessed for security reasons (OC4J).
+     * This is done dynamically because some application servers do not allow the default MBeanServer to be accessed for
+     * security reasons (OC4J).
      */
     private void startDefaultServerJMXExport() {
         if (parameterService.is(ParameterConstants.JMX_LEGACY_BEANS_ENABLED)) {
@@ -343,8 +353,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                             + parameterService.getExternalId() + ".  The recorded node group id is "
                             + node.getNodeGroupId() + " while the configured node group id is "
                             + parameterService.getNodeGroupId());
-        } else if (node != null && StringUtils.isBlank(parameterService.getRegistrationUrl()) && StringUtils.isBlank(node.getSyncURL())) {
-            throw new IllegalStateException("The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it.");
+        } else if (node != null && StringUtils.isBlank(parameterService.getRegistrationUrl())
+                && StringUtils.isBlank(node.getSyncURL())) {
+            throw new IllegalStateException(
+                    "The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it.");
         }
         // TODO Add more validation checks to make sure that the system is
         // configured correctly
