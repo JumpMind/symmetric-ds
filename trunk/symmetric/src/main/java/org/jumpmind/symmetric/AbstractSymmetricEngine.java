@@ -184,7 +184,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     File file = File.createTempFile("symmetric.", ".properties");
                     fos = new FileOutputStream(file);
                     overrideProperties.store(fos, "");
-                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_TEMP, file.getAbsolutePath());                    
+                    System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_TEMP, "file:" + file.getAbsolutePath());                    
                 } catch (IOException ex) {
                     log.error(ex);
                     throw new RuntimeException(ex);

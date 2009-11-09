@@ -265,8 +265,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             log.info("AutoConfigRegistrationService");
             String nodeGroupId = parameterService.getNodeGroupId();
             String nodeId = parameterService.getExternalId();
-            nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);
+            nodeService.insertNode(nodeId, nodeGroupId, nodeId, nodeId);            
             nodeService.insertNodeIdentity(nodeId);
+            node = nodeService.findIdentity();
+            node.setSyncURL(parameterService.getSyncUrl());
+            node.setHeartbeatTime(new Date());
+            nodeService.updateNode(node);
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
             nodeSecurity.setInitialLoadTime(new Date());
             nodeSecurity.setRegistrationTime(new Date());
