@@ -203,7 +203,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void reloadChannels() {
         synchronized (this) {
-        nodeChannelCache = null;
+            nodeChannelCache = null;
         }
     }
 

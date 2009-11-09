@@ -22,8 +22,9 @@ package org.jumpmind.symmetric.config;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 
@@ -46,11 +47,12 @@ public class DynamicPropertiesFiles extends ArrayList<String> {
                 log.error(e);
             }
         }
-        if (!StringUtils.isBlank(System.getProperty("symmetric.override.properties.file.1"))) {
-            add(System.getProperty("symmetric.override.properties.file.1"));
-        }
-        if (!StringUtils.isBlank(System.getProperty("symmetric.override.properties.file.2"))) {
-            add(System.getProperty("symmetric.override.properties.file.2"));
+        
+        Properties systemProperties = System.getProperties();
+        for (Object key : systemProperties.keySet()) {
+            if (key.toString().startsWith(Constants.OVERRIDE_PROPERTIES_FILE_PREFIX)) {
+                add(System.getProperty(key.toString()));
+            }
         }
     }
 }
