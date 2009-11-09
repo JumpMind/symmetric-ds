@@ -354,7 +354,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                             + node.getNodeGroupId() + " while the configured node group id is "
                             + parameterService.getNodeGroupId());
         } else if (node != null && StringUtils.isBlank(parameterService.getRegistrationUrl())
-                && StringUtils.isBlank(node.getSyncURL())) {
+                && StringUtils.isBlank(parameterService.getSyncUrl())) {
             throw new IllegalStateException(
                     "The sync.url property must be set for the registration server.  Otherwise, registering nodes will not be able to sync with it.");
         }
