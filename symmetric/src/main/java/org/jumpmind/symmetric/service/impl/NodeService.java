@@ -180,7 +180,7 @@ public class NodeService extends AbstractService implements INodeService {
         boolean updated = jdbcTemplate.update(getSql("updateNodeSql"), new Object[] { node.getNodeGroupId(),
                 node.getExternalId(), node.getDatabaseType(), node.getDatabaseVersion(), node.getSchemaVersion(),
                 node.getSymmetricVersion(), node.getSyncURL(), node.getHeartbeatTime(), node.isSyncEnabled() ? 1 : 0,
-                node.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedByNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR,
+                node.getTimezoneOffset(), node.getBatchToSendCount(), node.getBatchInErrorCount(), node.getCreatedAtNodeId(), node.getNodeId() }, new int[] { Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.TIMESTAMP, Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR }) == 1;
         return updated;
@@ -296,7 +296,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDatabaseType(rs.getString(7));
             node.setDatabaseVersion(rs.getString(8));
             node.setSymmetricVersion(rs.getString(9));
-            node.setCreatedByNodeId(rs.getString(10));
+            node.setCreatedAtNodeId(rs.getString(10));
             node.setTimezoneOffset(rs.getString(11));
             node.setBatchToSendCount(rs.getInt(12));
             node.setBatchInErrorCount(rs.getInt(13));
