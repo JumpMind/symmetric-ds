@@ -336,7 +336,7 @@ public class Trigger {
         this.sourceCatalogName = sourceCatalogName;
     }
 
-    public long getHashedValue() {
+    public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {
             hashedValue += sourceTableName.hashCode();
