@@ -195,8 +195,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * Provide a default implementation of this method using DDLUtils,
-     * getMaxColumnNameLength()
+     * Provide a default implementation of this method using DDLUtils, getMaxColumnNameLength()
      */
     public int getMaxTriggerNameLength() {
         int max = getPlatform().getPlatformInfo().getMaxColumnNameLength();
@@ -302,11 +301,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * This method uses the ddlutil's model reader which uses the jdbc metadata
-     * to lookup up table metadata.
+     * This method uses the ddlutil's model reader which uses the jdbc metadata to lookup up table metadata.
      * <p/>
-     * Dialect may optionally override this method to more efficiently lookup up
-     * table metadata directly against information schemas.
+     * Dialect may optionally override this method to more efficiently lookup up table metadata directly against
+     * information schemas.
      */
     public Table getMetaDataFor(String catalogName, String schemaName, String tableName, boolean useCache) {
         Table retTable = cachedModel.findTable(tableName);
@@ -706,8 +704,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * Create the configured trigger. The catalog will be changed to the source
-     * schema if the source schema is configured.
+     * Create the configured trigger. The catalog will be changed to the source schema if the source schema is
+     * configured.
      */
     public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
             final TriggerHistory hist, final String tablePrefix, final Table table) {
@@ -846,13 +844,23 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected void addPrefixAndCreateTablesIfNecessary(Database targetTables) {
         try {
-            boolean createTables = prefixConfigDatabase(targetTables);
-            if (createTables) {
-                log.info("TablesCreating");
-                platform.createTables(targetTables, false, true);
-            } else {
-                log.info("TablesCreatingSkipped");
+            prefixConfigDatabase(targetTables);
+            log.info("TablesAutoUpdatingStart");
+            Database mergedDb = platform.readModelFromDatabase(databaseName, null, getDefaultSchema(), null);
+            log.info("TablesExisting", mergedDb.getTableCount());
+            log.info("TablesMerging", targetTables.getTableCount());
+            Table[] tables = targetTables.getTables();
+            for (Table table : tables) {
+                Table[] existingTables = mergedDb.getTables();
+                for (Table existing : existingTables) {
+                    if (existing.getName().toLowerCase().equals(table.getName().toLowerCase())) {
+                        mergedDb.removeTable(existing);
+                    }
+                }
+                mergedDb.addTable(table);
             }
+            log.info("TablesAutoUpdatingDone");
+            platform.alterTables(null, getDefaultSchema(), null, mergedDb, false);
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -1237,9 +1245,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return identifierQuoteString;
     }
 
-    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
-            TriggerHistory history) {
-        
+    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, TriggerHistory history) {
+
         String triggerName = null;
         switch (dml) {
         case INSERT:
@@ -1258,15 +1265,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
             break;
         }
-                
+
         if (triggerName == null) {
             String triggerPrefix1 = tablePrefix + "_";
-            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_" + trigger.getTriggerId();            
-            String triggerSuffix2 = "_" + parameterService.getNodeGroupId().replaceAll("[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
+            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_" + trigger.getTriggerId();
+            String triggerSuffix2 = "_"
+                    + parameterService.getNodeGroupId().replaceAll("[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
             triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
-            // use the node group id as part of the trigger if we can because it helps uniquely identify 
-            // the trigger in embedded databases.  In hsqldb we choose the correct connection based on the presense of
-            // a table that is named for the trigger.  If the trigger isn't unique across all databases, then we can 
+            // use the node group id as part of the trigger if we can because it helps uniquely identify
+            // the trigger in embedded databases. In hsqldb we choose the correct connection based on the presense of
+            // a table that is named for the trigger. If the trigger isn't unique across all databases, then we can
             // choose the wrong connection.
             if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
                 triggerName = triggerPrefix1 + triggerSuffix1;

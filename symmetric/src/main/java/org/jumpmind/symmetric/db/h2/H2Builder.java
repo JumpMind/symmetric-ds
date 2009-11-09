@@ -146,9 +146,6 @@ public class H2Builder extends SqlBuilder {
                         needsAlter = false;
                     }
                 }
-                if (change instanceof ColumnRequiredChange) {
-                    needsAlter = false;
-                }
                 if (change instanceof ColumnSizeChange) {
                     ColumnSizeChange sizeChange = (ColumnSizeChange) change;
                     if (sizeChange.getNewScale() == 0 && sizeChange.getNewSize() == 0) {
@@ -173,7 +170,18 @@ public class H2Builder extends SqlBuilder {
         printlnIdentifier(getTableName(columnChange.getChangedTable()));
         printIndent();
         print("ALTER COLUMN ");
-        writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
+        if (columnChange instanceof ColumnRequiredChange) {
+            ColumnRequiredChange columnRequiredChange = (ColumnRequiredChange)columnChange;
+            printlnIdentifier(getColumnName(columnChange.getChangedColumn())); 
+            printIndent();
+            if (columnRequiredChange.getChangedColumn().isRequired()) {
+                print(" SET NOT NULL ");
+            } else {
+                print(" SET NULL ");
+            }
+        } else {
+          writeColumn(columnChange.getChangedTable(), columnChange.getChangedColumn());
+        }
         printEndOfStatement();
     }
 

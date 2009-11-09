@@ -36,9 +36,11 @@ public class H2Platform extends PlatformImplBase implements Platform {
 
     /** Database name of this platform. */
     public static final String DATABASENAME = "H2";
+    
     /** The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.h2.Driver";
-    /** The subprotocol used by the H2 driver. */
+    
+    /** The sub protocol used by the H2 driver. */
     public static final String JDBC_SUBPROTOCOL = "h2";
 
     /**
