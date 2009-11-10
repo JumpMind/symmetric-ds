@@ -228,7 +228,7 @@
         <springframework.version>2.5.6</springframework.version>
         <derby.version>10.4.2.0</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
-        <docbook.target>${basedir}/target/site/guide</docbook.target>
+        <docbook.target>${basedir}/target/site/guide/1.x</docbook.target>
     </properties>
 
     <repositories>
