@@ -846,7 +846,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         try {
             prefixConfigDatabase(targetTables);
             log.info("TablesAutoUpdatingStart");
-            Database mergedDb = platform.readModelFromDatabase(databaseName, null, getDefaultSchema(), null);
+            Database mergedDb = platform.readModelFromDatabase(targetTables.getName(), null, getDefaultSchema(), null);
             log.info("TablesExisting", mergedDb.getTableCount());
             log.info("TablesMerging", targetTables.getTableCount());
             Table[] tables = targetTables.getTables();

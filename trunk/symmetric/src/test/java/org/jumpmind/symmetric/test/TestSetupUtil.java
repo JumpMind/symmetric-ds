@@ -205,7 +205,6 @@ public class TestSetupUtil {
         DataSource ds = (DataSource) engine.getApplicationContext().getBean(Constants.DATA_SOURCE);
         try {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
-            dialect.initSyncDb();
             Platform platform = dialect.getPlatform();
             Database testDb = getTestDatabase();
             platform.dropTables(testDb, true);
