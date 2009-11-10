@@ -43,6 +43,10 @@
     <category name="org.apache.ddlutils.platform.derby">
         <priority value="ERROR" />
     </category>
+    
+    <category name="org.apache.ddlutils">
+        <priority value="DEBUG" />
+    </category>    
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
