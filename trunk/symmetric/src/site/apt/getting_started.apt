@@ -14,14 +14,20 @@ Users Guide 1.x
  intended for users who want to be quickly familiarized with the software, configure it,
  and use its features.
 
- {{{guide/html-single/user-guide.html}User Guide (Single Page HTML)}}
+ {{{guide/1.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
 
- {{{guide/html/user-guide.html}User Guide (Multi Page HTML)}}
+ {{{guide/1.x/html/user-guide.html}User Guide (Multi Page HTML)}}
  
- {{{guide/pdf/user-guide.pdf}User Guide (PDF)}}
+ {{{guide/1.x/pdf/user-guide.pdf}User Guide (PDF)}}
  
  Please be aware that the User Guide is not yet complete, but is useful already.
   
 Users Guide 2.x
 
- The 2.x User Guide is a work in progress.  It can be found {{{http://docs.codehaus.org/display/SYMMETRICDS/Users+Guide+2.x}here}}.
+ {{{guide/2.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
+
+ {{{guide/2.x/html/user-guide.html}User Guide (Multi Page HTML)}}
+ 
+ {{{guide/2.x/pdf/user-guide.pdf}User Guide (PDF)}}
+
+ The 2.x User Guide is a work in progress.  It can also be found {{{http://docs.codehaus.org/display/SYMMETRICDS/Users+Guide+2.x}here}}.

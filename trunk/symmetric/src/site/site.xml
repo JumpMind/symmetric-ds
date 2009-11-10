@@ -29,7 +29,7 @@
         </menu>
 
         <menu name="Documentation">
-            <item name="Users Guide" href="getting_started.html" />
+            <item name="Users Guides" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
             <item name="JavaDoc 1.x" href="apidocs/index.html" />
             <item name="JavaDoc 2.x" href="apidocs-2/index.html" />
