@@ -17,19 +17,23 @@
                 <firstname>Chris</firstname>
                 <surname>Henson</surname>
             </author>
+            <author>
+                <firstname>Mark</firstname>
+                <surname>Hanes</surname>
+            </author>
         </authorgroup>
-        <edition>Version 1.0 for SymmetricDS v1.6</edition>
+        <edition>Version 2.0 for SymmetricDS v2.0</edition>
         <copyright>
             <year>2007, 2008, 2009</year>
-            <holder>Eric Long and Chris Henson</holder>
+            <holder>Eric Long, Chris Henson</holder>
         </copyright>
         <releaseinfo>
-            User Guide 1.0
+            v2.0
         </releaseinfo>
         <legalnotice>
             <para>
                 Permission to use, copy, modify, and distribute the SymmetricDS User Guide Version
-                1.0 for any purpose and without fee is hereby granted in perpetuity, provided that
+                2.0 for any purpose and without fee is hereby granted in perpetuity, provided that
                 the above copyright notice and this paragraph appear in all copies.
             </para>
         </legalnotice>
