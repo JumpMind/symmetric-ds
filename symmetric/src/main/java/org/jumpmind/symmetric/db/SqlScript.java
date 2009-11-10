@@ -166,8 +166,8 @@ public class SqlScript {
                                 } catch (SQLException e) {
                                     if (failOnError) {
                                         log
-                                                .error("SqlError", sql
-                                                        .toString(), e);
+                                                .error("SqlError", e, sql
+                                                        .toString());
                                         throw e;
                                     } else {
                                         if (e.getErrorCode() != 942
