@@ -861,7 +861,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 }
                 mergedDb.addTable(table);
             }            
-            platform.alterTables(getDefaultCatalog(), getDefaultSchema(), null, mergedDb, false);
+            String alterSql = platform.getAlterTablesSql(getDefaultCatalog(), getDefaultSchema(), null, mergedDb);            
+            new SqlScript(alterSql, jdbcTemplate.getDataSource(), true, platform.getPlatformInfo().getSqlCommandDelimiter(), null).execute();
             log.info("TablesAutoUpdatingDone", mergedDb.getTableCount());
         } catch (RuntimeException ex) {
             throw ex;

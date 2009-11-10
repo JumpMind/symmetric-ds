@@ -20,16 +20,19 @@
 
 package org.jumpmind.symmetric.db;
 
-import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.springframework.dao.DataAccessException;
@@ -46,11 +49,11 @@ public class SqlScript {
 
     static final ILog log = LogFactory.getLog(SqlScript.class);
 
-    public final static char QUERY_ENDS = ';';
+    public final static String QUERY_ENDS = ";";
 
-    private char delimiter = QUERY_ENDS;
+    private String delimiter = QUERY_ENDS;
 
-    private URL script;
+    private List<String> script;
 
     private DataSource dataSource;
 
@@ -60,6 +63,8 @@ public class SqlScript {
 
     private Map<String, String> replacementTokens;
 
+    private String fileName = "no file";
+
     public SqlScript(URL url, DataSource ds) {
         this(url, ds, true, QUERY_ENDS, null);
     }
@@ -68,12 +73,41 @@ public class SqlScript {
         this(url, ds, failOnError, QUERY_ENDS, null);
     }
 
-    public SqlScript(URL url, DataSource ds, char delimiter) {
+    public SqlScript(URL url, DataSource ds, String delimiter) {
         this(url, ds, true, delimiter, null);
     }
 
-    public SqlScript(URL url, DataSource ds, boolean failOnError, char delimiter, Map<String, String> replacementTokens) {
-        this.script = url;
+    @SuppressWarnings("unchecked")
+    public SqlScript(URL url, DataSource ds, boolean failOnError,
+            String delimiter, Map<String, String> replacementTokens) {
+        try {
+            fileName = url.getFile();
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+            log.info("ScriptLoading", fileName);
+            init(IOUtils.readLines(new InputStreamReader(url.openStream(),
+                    "UTF-8")), ds, failOnError, delimiter, replacementTokens);
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public SqlScript(String sqlScript, DataSource ds, boolean failOnError,
+            String delimiter, Map<String, String> replacementTokens) {
+        try {
+            init(IOUtils.readLines(new StringReader(sqlScript)), ds,
+                    failOnError, delimiter, replacementTokens);
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void init(List<String> sqlScript, DataSource ds,
+            boolean failOnError, String delimiter,
+            Map<String, String> replacementTokens) {
+        this.script = sqlScript;
         this.dataSource = ds;
         this.failOnError = failOnError;
         this.delimiter = delimiter;
@@ -93,7 +127,8 @@ public class SqlScript {
     protected String replaceTokens(String original) {
         if (this.replacementTokens != null) {
             for (Object key : this.replacementTokens.keySet()) {
-                original = original.replaceAll("\\%" + key + "\\%", this.replacementTokens.get((String) key));
+                original = original.replaceAll("\\%" + key + "\\%",
+                        this.replacementTokens.get((String) key));
             }
         }
         return original;
@@ -102,28 +137,25 @@ public class SqlScript {
     public void execute() {
         JdbcTemplate template = new JdbcTemplate(this.dataSource);
         template.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection connection) throws SQLException, DataAccessException {
+            public Object doInConnection(Connection connection)
+                    throws SQLException, DataAccessException {
                 Statement st = null;
-                String fileName = script.getFile();
-                fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-                log.info("ScriptRunning", fileName);
                 int lineCount = 0;
 
                 try {
                     connection.setAutoCommit(false);
                     st = connection.createStatement();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(script.openStream(), "UTF-8"));
-                    String line;
                     StringBuilder sql = new StringBuilder();
                     int count = 0;
                     int notFoundCount = 0;
-                    while ((line = reader.readLine()) != null) {
+                    for (String line : script) {
                         lineCount++;
                         line = trimComments(line);
                         if (line.length() > 0) {
                             if (checkStatementEnds(line)) {
                                 sql.append(" ");
-                                sql.append(line.substring(0, line.lastIndexOf(delimiter)));
+                                sql.append(line.substring(0, line
+                                        .lastIndexOf(delimiter)));
                                 log.debug("Sql", sql);
                                 try {
                                     st.execute(replaceTokens(sql.toString()));
@@ -133,12 +165,17 @@ public class SqlScript {
                                     }
                                 } catch (SQLException e) {
                                     if (failOnError) {
-                                        log.error("SqlError", sql.toString(), e);
+                                        log
+                                                .error("SqlError", sql
+                                                        .toString(), e);
                                         throw e;
                                     } else {
-                                        if (e.getErrorCode() != 942 && e.getErrorCode() != 2289) {
-                                            log.warn("Sql", e.getMessage() + ": " + sql.toString());
-                                        } else if (sql.toString().toLowerCase().startsWith("drop")) {
+                                        if (e.getErrorCode() != 942
+                                                && e.getErrorCode() != 2289) {
+                                            log.warn("Sql", e.getMessage()
+                                                    + ": " + sql.toString());
+                                        } else if (sql.toString().toLowerCase()
+                                                .startsWith("drop")) {
                                             notFoundCount++;
                                         }
                                     }
