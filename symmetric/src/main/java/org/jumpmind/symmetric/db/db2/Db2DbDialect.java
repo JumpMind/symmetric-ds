@@ -44,7 +44,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
             try {
                 log.info("EnvironmentVariablesCreating", SYNC_TRIGGERS_DISABLED_USER_VARIABLE,
                         SYNC_TRIGGERS_DISABLED_NODE_VARIABLE);
-                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ';').execute();
+                new SqlScript(getSqlScriptUrl(), getPlatform().getDataSource(), ";").execute();
             } catch (Exception ex) {
                 log.error("DB2DialectInitializingError", ex);
             }

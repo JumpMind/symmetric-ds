@@ -5,7 +5,7 @@
 
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d %-5p [%c] [%t] %m%n" />
+            <param name="ConversionPattern" value="%d %-5p [%c{2}] [%t] %m%n" />
         </layout>
     </appender>
 
@@ -49,7 +49,7 @@
     </category>    
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
-        <priority value="ERROR" />
+        <priority value="DEBUG" />
     </category>
 
     <!--
