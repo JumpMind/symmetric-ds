@@ -711,11 +711,10 @@ abstract public class AbstractDbDialect implements IDbDialect {
             final TriggerHistory hist, final String tablePrefix, final Table table) {
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection con) throws SQLException, DataAccessException {
-                String sourceCatalogName = trigger.getSourceCatalogName();
-                log.info("TriggerCreating", hist.getTriggerNameForDmlType(dml),
-                        (sourceCatalogName != null ? (sourceCatalogName + ".") : ""), trigger.getSourceTableName());
+                log.info("TriggerCreating", hist.getTriggerNameForDmlType(dml), trigger.getSourceTableName());
 
                 String previousCatalog = null;
+                String sourceCatalogName = trigger.getSourceCatalogName();                
                 String defaultCatalog = getDefaultCatalog();
                 String defaultSchema = getDefaultSchema();
                 try {
