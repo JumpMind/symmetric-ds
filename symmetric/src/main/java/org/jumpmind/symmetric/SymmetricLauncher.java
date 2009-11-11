@@ -183,13 +183,13 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_DDL_GEN)) {
                 testConnection(line);
-                generateDDL(new StandaloneSymmetricEngine(), line.getOptionValue(OPTION_DDL_GEN));
+                generateDDL(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_DDL_GEN));
                 return;
             }
 
             if (line.hasOption(OPTION_PURGE)) {
                 testConnection(line);
-                ((IPurgeService) new StandaloneSymmetricEngine().getApplicationContext().getBean(Constants.PURGE_SERVICE))
+                ((IPurgeService) new StandaloneSymmetricEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
                         .purge();
                 return;
             }
@@ -197,7 +197,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_OPEN_REGISTRATION)) {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
-                openRegistration(new StandaloneSymmetricEngine(), arg);
+                openRegistration(new StandaloneSymmetricEngine(propertiesFile), arg);
                 System.out.println(Message.get("RegistrationOpened", arg));
                 return;
             }
@@ -205,7 +205,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_RELOAD_NODE)) {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_RELOAD_NODE);
-                String message = reloadNode(new StandaloneSymmetricEngine(), arg);
+                String message = reloadNode(new StandaloneSymmetricEngine(propertiesFile), arg);
                 System.out.println(message);
                 return;
             }
@@ -213,7 +213,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_DUMP_BATCH)) {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_DUMP_BATCH);
-                dumpBatch(new StandaloneSymmetricEngine(), arg);
+                dumpBatch(new StandaloneSymmetricEngine(propertiesFile), arg);
                 return;
             }
 
@@ -221,42 +221,42 @@ public class SymmetricLauncher {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
                 boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
-                syncTrigger(new StandaloneSymmetricEngine(), arg, gen_always);
+                syncTrigger(new StandaloneSymmetricEngine(propertiesFile), arg, gen_always);
                 return;
             }
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 testConnection(line);
-                autoCreateDatabase(new StandaloneSymmetricEngine());
+                autoCreateDatabase(new StandaloneSymmetricEngine(propertiesFile));
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
                 testConnection(line);
-                runDdlXml(new StandaloneSymmetricEngine(), line.getOptionValue(OPTION_RUN_DDL_XML));
+                runDdlXml(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_DDL_XML));
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_SQL)) {
                 testConnection(line);
-                runSql(new StandaloneSymmetricEngine(), line.getOptionValue(OPTION_RUN_SQL));
+                runSql(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_SQL));
                 return;
             }
 
             if (line.hasOption(OPTION_LOAD_BATCH)) {
                 testConnection(line);
-                loadBatch(new StandaloneSymmetricEngine(), line.getOptionValue(OPTION_LOAD_BATCH));
+                loadBatch(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_LOAD_BATCH));
                 return;
             }
 
             if (line.hasOption(OPTION_ENCRYPT_TEXT)) {
                 testConnection(line);
-                encryptText(new StandaloneSymmetricEngine(), line.getOptionValue(OPTION_ENCRYPT_TEXT));
+                encryptText(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_ENCRYPT_TEXT));
                 return;
             }
 
             if (line.hasOption(OPTION_START_CLIENT)) {
-                new StandaloneSymmetricEngine().start();
+                new StandaloneSymmetricEngine(propertiesFile).start();
                 return;
             }
 
