@@ -24,6 +24,10 @@ Users Guide 1.x
   
 Users Guide 2.x
 
+ This guide has not been fully updated (or even mostly updated) to reflect the 2.x changes.
+ If you are curious about 2.0, check out the guide's {{{/guide/2.x/html/ch01-introduction.html#ch01-whats-new}What's New in 2.x}} 
+ section in the first chapter.
+
  {{{guide/2.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
 
  {{{guide/2.x/html/user-guide.html}User Guide (Multi Page HTML)}}
