@@ -312,9 +312,9 @@ registration.url=http://localhost:8080/sync]]></programlisting>
         </procedure>
         <tip>
             <title>Tip</title>
-            <para> If you want to change the port number used by SymmetricDS, you need to also set the my.url runtime property to
+            <para> If you want to change the port number used by SymmetricDS, you need to also set the sync.url runtime property to
                 match. The default value is:</para>
-            <programlisting><![CDATA[my.url=http://localhost:8080/sync]]></programlisting>
+            <programlisting><![CDATA[sync.url=http://localhost:8080/sync]]></programlisting>
         </tip>
     </section>
     <section id="ch02-register-node">
