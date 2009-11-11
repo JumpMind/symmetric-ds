@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.db.hsqldb;
 
+import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractEmbeddedDbDialect;
@@ -31,27 +32,21 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
 
     public static String DUAL_TABLE = "DUAL";
 
-    private boolean hsqldbInitialized = false;
-    
     private boolean enforceStrictSize = true;
-
+   
     @Override
-    protected void initForSpecificDialect() {
-        if (!hsqldbInitialized) {
-            jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
-            jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
-            jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    jdbcTemplate.update("SHUTDOWN");
-                }
-            });
-            hsqldbInitialized = true;
-        }
-
-        createDummyDualTable();
-
+    public void init(Platform pf) {
+        super.init(pf);
+        jdbcTemplate.update("SET WRITE_DELAY 100 MILLIS");
+        jdbcTemplate.update("SET PROPERTY \"hsqldb.default_table_type\" 'cached'");
+        jdbcTemplate.update("SET PROPERTY \"sql.enforce_strict_size\" " + enforceStrictSize);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                jdbcTemplate.update("SHUTDOWN");
+            }
+        });
+        createDummyDualTable();        
     }
 
     @Override

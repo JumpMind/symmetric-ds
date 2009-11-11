@@ -30,11 +30,11 @@
         <priority value="ERROR" />
     </category>
 
-<!-- 
+    <!-- 
     <category name="org.springframework.jdbc.core.JdbcTemplate">
         <priority value="DEBUG" />
     </category>
- -->
+     -->
  
     <category name="org.springframework.jmx.export.MBeanExporter">
         <priority value="ERROR" />
@@ -43,13 +43,9 @@
     <category name="org.apache.ddlutils.platform.derby">
         <priority value="ERROR" />
     </category>
-    
-    <category name="org.apache.ddlutils">
-        <priority value="DEBUG" />
-    </category>    
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
-        <priority value="DEBUG" />
+        <priority value="ERROR" />
     </category>
 
     <!--
