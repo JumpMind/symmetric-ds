@@ -41,12 +41,12 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     boolean open = true;
 
     public InternalOutgoingTransport(OutputStream pushOs) throws UnsupportedEncodingException {
-        this(pushOs,new ChannelMap());
+        this(pushOs, new ChannelMap());
     }
-    
+
     public InternalOutgoingTransport(OutputStream pushOs, ChannelMap map) throws UnsupportedEncodingException {
         writer = new BufferedWriter(new OutputStreamWriter(pushOs, Constants.ENCODING));
-            this.map = map;
+        this.map = map;
     }
 
     public InternalOutgoingTransport(BufferedWriter writer) {
