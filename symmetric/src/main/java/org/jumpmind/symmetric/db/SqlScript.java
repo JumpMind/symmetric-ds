@@ -63,7 +63,7 @@ public class SqlScript {
 
     private Map<String, String> replacementTokens;
 
-    private String fileName = "no file";
+    private String fileName = "memory";
 
     public SqlScript(URL url, DataSource ds) {
         this(url, ds, true, QUERY_ENDS, null);
