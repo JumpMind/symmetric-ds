@@ -1,0 +1,48 @@
+## Licensed to the Apache Software Foundation (ASF) under one
+## or more contributor license agreements.  See the NOTICE file
+## distributed with this work for additional information
+## regarding copyright ownership.  The ASF licenses this file
+## to you under the Apache License, Version 2.0 (the
+## "License"); you may not use this file except in compliance
+## with the License.  You may obtain a copy of the License at
+##
+##   http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing,
+## software distributed under the License is distributed on an
+## "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+## KIND, either express or implied.  See the License for the
+## specific language governing permissions and limitations
+## under the License.
+<a name="$table.Name"/>
+<h2>$table.Name</h2>
+$!table.Description
+<p/>
+<table class="detailtable">
+  <tr class="detailhead">
+    <th class="detailheadbackground detailborder detailheadname">Name</th>
+    <th class="detailheadbackground detailborder detailheadtype">Type</th>
+    <th class="detailheadbackground detailborder detailheadsize">Size</th>
+    <th class="detailheadbackground detailborder detailheaddefault">Default</th>
+    <th class="detailheadbackground detailborder detailheadjavaname">JavaName</th>
+    <th class="detailheadbackground detailborder detailheadpk">PK</th>
+    <th class="detailheadbackground detailborder detailheadfk">FK</th>
+    <th class="detailheadbackground detailborder detailheadnotnull">not null</th>
+    <th class="detailheadbackground detailborder detailheaddescription">Description</th>
+  </tr>
+#foreach ($col in $table.Columns)
+  <tr class="detailrow">
+    <td class="detailbackground detailborder detailname#if ($col.isPrimaryKey()==true) primarykey#end#if ($col.isForeignKey()==true) foreignkey#end#if ($col.isNotNull()==true) notnull#end" id="$table.Name$col.Name">#if ($col.isForeignKey() == true)
+<a href="#$col.RelatedTableName" title="Foreign key to ${col.RelatedTableName}.${col.RelatedColumnName}" class="link detailforeignkeylink">$col.Name</a>
+#else$col.Name#end</td>
+    <td class="detailbackground detailborder detailtype">$col.Type</td>
+    <td class="detailbackground detailborder detailsize">#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize() #else &nbsp;#end</td>
+    <td class="detailbackground detailborder detaildefault">#if ($col.DefaultValue) $col.DefaultValue#else &nbsp;#end</td>
+    <td class="detailbackground detailborder detailjavaname">$col.JavaName</td>
+    <td class="detailbackground detailborder detailpk"><center> #if ($col.isPrimaryKey()==true)X#else &nbsp;#end </center></td>
+    <td class="detailbackground detailborder detailfk"><center> #if ($col.isForeignKey()==true)X#else &nbsp;#end </center></td>
+    <td class="detailbackground detailborder detailnotnull"><center> #if ($col.isNotNull()==true)X#else &nbsp;#end </center></td>
+    <td class="detailbackground detailborder detaildescription">#if ($col.Description) $col.Description#else &nbsp;#end</td>
+  </tr>
+#end
+</table>

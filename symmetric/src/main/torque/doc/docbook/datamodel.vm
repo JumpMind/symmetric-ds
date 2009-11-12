@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+## Licensed to the Apache Software Foundation (ASF) under one
+## or more contributor license agreements.  See the NOTICE file
+## distributed with this work for additional information
+## regarding copyright ownership.  The ASF licenses this file
+## to you under the Apache License, Version 2.0 (the
+## "License"); you may not use this file except in compliance
+## with the License.  You may obtain a copy of the License at
+##
+##   http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing,
+## software distributed under the License is distributed on an
+## "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+## KIND, either express or implied.  See the License for the
+## specific language governing permissions and limitations
+## under the License.
+#set ( $database = $dataModel )
+
+<chapter version="5.0" xml:id="$dataModel.name-chapter" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+
+   <title>$dataModel.name</title>
+    <section id="$dataModel.name">
+    <title>$dataModel.name</title>
+    
+    
+    <table>
+    <title>$dataModel.name</title>
+    <tgroup cols="3">
+        <colspec colwidth="90px" />
+        <colspec colwidth="65px" />
+        <colspec colwidth="220px" />
+        <thead>
+            <row>
+                <entry>Table Name</entry>
+                <entry>OM Class</entry>
+                <entry>Description</entry>
+            </row>
+        </thead>
+         <tbody>
+    
+        #foreach ($tbl in $database.tables)
+ 
+               <row>
+                <entry>
+                    $tbl.Name
+                </entry>
+                <entry>$tbl.JavaName</entry>
+                <entry>#if ($tbl.Description) $tbl.Description#else &nbsp;#end
+                </entry>
+		</row>
+ 		#end
+		</tbody>
+		</tgroup>
+		 </table>
+    </section>
+    </chapter>
