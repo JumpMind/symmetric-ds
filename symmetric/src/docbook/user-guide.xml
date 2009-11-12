@@ -64,5 +64,6 @@
     <xi:include href="user-guide/appendix/ap02-databases.xml" />
     <xi:include href="user-guide/appendix/ap03-data-format.xml" />
     <xi:include href="user-guide/appendix/ap04-version-numbering.xml" />
+    <xi:include href="schema/symmetric-schema.xml" />
 
 </book>
