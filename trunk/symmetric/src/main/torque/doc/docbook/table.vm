@@ -14,35 +14,56 @@
 ## KIND, either express or implied.  See the License for the
 ## specific language governing permissions and limitations
 ## under the License.
-<a name="$table.Name"/>
-<h2>$table.Name</h2>
-$!table.Description
-<p/>
-<table class="detailtable">
-  <tr class="detailhead">
-    <th class="detailheadbackground detailborder detailheadname">Name</th>
-    <th class="detailheadbackground detailborder detailheadtype">Type</th>
-    <th class="detailheadbackground detailborder detailheadsize">Size</th>
-    <th class="detailheadbackground detailborder detailheaddefault">Default</th>
-    <th class="detailheadbackground detailborder detailheadjavaname">JavaName</th>
-    <th class="detailheadbackground detailborder detailheadpk">PK</th>
-    <th class="detailheadbackground detailborder detailheadfk">FK</th>
-    <th class="detailheadbackground detailborder detailheadnotnull">not null</th>
-    <th class="detailheadbackground detailborder detailheaddescription">Description</th>
-  </tr>
-#foreach ($col in $table.Columns)
-  <tr class="detailrow">
-    <td class="detailbackground detailborder detailname#if ($col.isPrimaryKey()==true) primarykey#end#if ($col.isForeignKey()==true) foreignkey#end#if ($col.isNotNull()==true) notnull#end" id="$table.Name$col.Name">#if ($col.isForeignKey() == true)
-<a href="#$col.RelatedTableName" title="Foreign key to ${col.RelatedTableName}.${col.RelatedColumnName}" class="link detailforeignkeylink">$col.Name</a>
-#else$col.Name#end</td>
-    <td class="detailbackground detailborder detailtype">$col.Type</td>
-    <td class="detailbackground detailborder detailsize">#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize() #else &nbsp;#end</td>
-    <td class="detailbackground detailborder detaildefault">#if ($col.DefaultValue) $col.DefaultValue#else &nbsp;#end</td>
-    <td class="detailbackground detailborder detailjavaname">$col.JavaName</td>
-    <td class="detailbackground detailborder detailpk"><center> #if ($col.isPrimaryKey()==true)X#else &nbsp;#end </center></td>
-    <td class="detailbackground detailborder detailfk"><center> #if ($col.isForeignKey()==true)X#else &nbsp;#end </center></td>
-    <td class="detailbackground detailborder detailnotnull"><center> #if ($col.isNotNull()==true)X#else &nbsp;#end </center></td>
-    <td class="detailbackground detailborder detaildescription">#if ($col.Description) $col.Description#else &nbsp;#end</td>
-  </tr>
-#end
+
+ <section >
+    <title>$table.Name</title>
+ <table id="table-def-$table.Name">
+    <title>$table.Name</title>
+    <tgroup cols="9">
+        <colspec colwidth="90px" />
+        <colspec colwidth="55px" />
+        <colspec colwidth="25px" />
+       <colspec colwidth="30px" />
+       <colspec colwidth="35px" />
+       <colspec colwidth="20px" />
+       <colspec colwidth="20px" />
+       <colspec colwidth="30px" />
+       <colspec colwidth="120px" />
+         <thead>
+            <row>
+                <entry>Name</entry>
+                <entry>Type</entry>
+                <entry>Size</entry>
+	            <entry>Default</entry>
+	            <entry>JavaName</entry>
+	            <entry>PK</entry>
+	            <entry>FK</entry>
+	            <entry>not null</entry>
+	            <entry>Description</entry>
+            </row>
+        </thead>
+         <tbody>
+         #foreach ($col in $table.Columns)
+         
+           <row>
+                <entry>
+                 #if ($col.isForeignKey() == true)
+				 <link linkend="table-def-$col.RelatedTableName">$col.Name</link>
+					#else$col.Name#end
+                </entry>
+                <entry>$col.Type</entry>
+                <entry>#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize() #else - #end
+                </entry>
+
+			<entry>#if ($col.DefaultValue) $col.DefaultValue#else - #end</entry>
+			<entry>#if ($col.isPrimaryKey()==true)X#else - #end</entry>    
+			<entry>#if ($col.isForeignKey()==true)X#else -  #end </entry>
+			<entry>#if ($col.isNotNull()==true)X#else -  #end</entry>
+			<entry>#if ($col.isNotNull()==true)X#else -  #end</entry>
+			<entry>#if ($col.Description) $col.Description#else -  #end</entry>
+		</row>
+		#end
+		</tbody>
+	</tgroup>
 </table>
+</section>
