@@ -15,55 +15,52 @@
 ## specific language governing permissions and limitations
 ## under the License.
 
- <section >
+<section>
     <title>$table.Name</title>
- <table id="table-def-$table.Name">
-    <title>$table.Name</title>
-    <tgroup cols="9">
-        <colspec colwidth="90px" />
-        <colspec colwidth="55px" />
-        <colspec colwidth="25px" />
-       <colspec colwidth="30px" />
-       <colspec colwidth="35px" />
-       <colspec colwidth="20px" />
-       <colspec colwidth="20px" />
-       <colspec colwidth="30px" />
-       <colspec colwidth="120px" />
+	<table id="table-def-$table.Name">
+    	<title>$table.Name</title>
+    	<tgroup cols="9">
+        	<colspec colwidth="85px" />
+        	<colspec colwidth="55px" />
+        	<colspec colwidth="25px" />
+       		<colspec colwidth="35px" />
+       		<colspec colwidth="30px" />
+       		<colspec colwidth="20px" />
+       		<colspec colwidth="20px" />
+       		<colspec colwidth="30px" />
+       		<colspec colwidth="120px" />
          <thead>
             <row>
                 <entry>Name</entry>
                 <entry>Type</entry>
                 <entry>Size</entry>
 	            <entry>Default</entry>
-	            <entry>JavaName</entry>
+	            <entry>Java Name</entry>
 	            <entry>PK</entry>
 	            <entry>FK</entry>
 	            <entry>not null</entry>
 	            <entry>Description</entry>
             </row>
         </thead>
-         <tbody>
-         #foreach ($col in $table.Columns)
-         
-           <row>
+        <tbody>
+         #foreach ($col in $table.Columns)  
+            <row>
                 <entry>
-                 #if ($col.isForeignKey() == true)
-				 <link linkend="table-def-$col.RelatedTableName">$col.Name</link>
+                 	#if ($col.isForeignKey() == true)
+					 	<link linkend="table-def-$col.RelatedTableName">$col.Name</link>
 					#else$col.Name#end
                 </entry>
                 <entry>$col.Type</entry>
-                <entry>#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize() #else - #end
-                </entry>
-
-			<entry>#if ($col.DefaultValue) $col.DefaultValue#else - #end</entry>
-			<entry>#if ($col.isPrimaryKey()==true)X#else - #end</entry>    
-			<entry>#if ($col.isForeignKey()==true)X#else -  #end </entry>
-			<entry>#if ($col.isNotNull()==true)X#else -  #end</entry>
-			<entry>#if ($col.isNotNull()==true)X#else -  #end</entry>
-			<entry>#if ($col.Description) $col.Description#else -  #end</entry>
-		</row>
-		#end
+                <entry>#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize()#end</entry>
+				<entry>#if ($col.DefaultValue) $col.DefaultValue#end</entry>
+				<entry>$col.JavaName</entry>
+				<entry>#if ($col.isPrimaryKey()==true)X#end</entry>
+				<entry>#if ($col.isForeignKey()==true)X#end</entry>
+				<entry>#if ($col.isNotNull()==true)X#end</entry>
+				<entry>#if ($col.Description) $col.Description#end</entry>
+		    </row>
+		 #end
 		</tbody>
-	</tgroup>
-</table>
+		</tgroup>
+	</table>
 </section>

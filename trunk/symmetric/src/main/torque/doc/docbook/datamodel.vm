@@ -21,7 +21,7 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
 
-   <title>SymmetricDS Data Model</title>
+    <title>SymmetricDS Data Model</title>
     <section id="data-model">
     <title>Data Model</title>
     
@@ -39,26 +39,23 @@
                 <entry>Description</entry>
             </row>
         </thead>
-         <tbody>
-    
+        <tbody>
         #foreach ($tbl in $database.tables)
- 
-               <row>
-                <entry id="table-$tbl.Name">
+        	<row>
+            	<entry id="table-$tbl.Name">
                     <link linkend="table-def-$tbl.Name">$tbl.Name</link>
                 </entry>
                 <entry>$tbl.JavaName</entry>
-                <entry>#if ($tbl.Description) $tbl.Description#else &nbsp;#end
-                </entry>
-		</row>
+                <entry>#if ($tbl.Description) $tbl.Description#else &nbsp;#end</entry>
+			</row>
  		#end
 		</tbody>
 		</tgroup>
-		 </table>
+	</table>
 		 
 		 
-  #foreach ($tbl in $database.tables)
-    $generator.parse("doc/docbook/table.vm",$outFile,"table",$tbl)
-  #end
+	  #foreach ($tbl in $database.tables)
+	    $generator.parse("doc/docbook/table.vm",$outFile,"table",$tbl)
+	  #end
     </section>
-    </chapter>
+</chapter>
