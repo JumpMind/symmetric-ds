@@ -17,27 +17,22 @@
 
 <section>
     <title>$table.Name.toUpperCase()</title>
+    <para>$table.Description</para>
 	<table id="table-def-$table.Name">
     	<title>$table.Name.toUpperCase()</title>
-    	<tgroup cols="9">
-        	<colspec colwidth="85px" />
-        	<colspec colwidth="55px" />
-        	<colspec colwidth="25px" />
-       		<colspec colwidth="35px" />
-       		<colspec colwidth="30px" />
-       		<colspec colwidth="20px" />
-       		<colspec colwidth="20px" />
-       		<colspec colwidth="30px" />
-       		<colspec colwidth="120px" />
+    	<tgroup cols="6">
+        	<colspec colwidth="115px" />
+        	<colspec colwidth="50px" />
+        	<colspec colwidth="30px" />
+       		<colspec colwidth="18px" />
+       		<colspec colwidth="18px" />
+       		<colspec colwidth="150px" />
          <thead>
             <row>
                 <entry>Name</entry>
-                <entry>Type</entry>
-                <entry>Size</entry>
+                <entry>Type / Size</entry>
 	            <entry>Default</entry>
-	            <entry>Java Name</entry>
-	            <entry>PK</entry>
-	            <entry>FK</entry>
+	            <entry>PK FK</entry>
 	            <entry>not null</entry>
 	            <entry>Description</entry>
             </row>
@@ -50,12 +45,11 @@
 					 	<link linkend="table-def-$col.RelatedTableName">$col.Name</link>
 					#else$col.Name.toUpperCase()#end
                 </entry>
-                <entry>$col.Type</entry>
-                <entry>#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize()#end</entry>
+                <entry>$col.Type #if ($col.printSize() && $col.printSize().length() > 0) $col.printSize()#end</entry>
+                
 				<entry>#if ($col.DefaultValue) $col.DefaultValue#end</entry>
-				<entry>$col.JavaName</entry>
-				<entry>#if ($col.isPrimaryKey()==true)X#end</entry>
-				<entry>#if ($col.isForeignKey()==true)X#end</entry>
+				<entry>#if ($col.isPrimaryKey()==true)PK#end
+				#if ($col.isForeignKey()==true)FK#end</entry>
 				<entry>#if ($col.isNotNull()==true)X#end</entry>
 				<entry>#if ($col.Description) $col.Description#end</entry>
 		    </row>
