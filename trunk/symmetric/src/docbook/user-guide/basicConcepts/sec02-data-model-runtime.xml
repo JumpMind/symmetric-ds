@@ -15,7 +15,7 @@
             <title>Runtime Data Model</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/data-model-runtime.gif" format="GIF" />
+                    <imagedata fileref="../../../images/data-model-runtime.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
         </figure>

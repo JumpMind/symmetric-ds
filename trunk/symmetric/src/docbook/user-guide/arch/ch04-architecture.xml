@@ -23,7 +23,7 @@
             <title>Software Stack</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/software-stack.gif" format="GIF" />
+                    <imagedata fileref="../images/software-stack.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
         </figure>
@@ -57,7 +57,7 @@
             <title>Node Communication</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/seq-node-communication.gif" format="GIF" />
+                    <imagedata fileref="../images/seq-node-communication.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
         </figure>
@@ -75,7 +75,7 @@
                 <title>Startup Sequence Diagram</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/seq-startup.gif" format="GIF" />
+                        <imagedata fileref="../images/seq-startup.gif" format="GIF" />
                     </imageobject>
                 </mediaobject>
             </figure>
@@ -85,7 +85,7 @@
                 <title>Client Side Pull Sequence Diagram</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/seq-pull-client.gif" format="GIF"  />
+                        <imagedata fileref="../images/seq-pull-client.gif" format="GIF"  />
                     </imageobject>
                 </mediaobject>
             </figure>
@@ -95,7 +95,7 @@
                 <title>Host Side Pull Sequence Diagram</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/seq-pull-host.gif" format="GIF"  />
+                        <imagedata fileref="../images/seq-pull-host.gif" format="GIF"  />
                     </imageobject>
                 </mediaobject>
             </figure>
@@ -105,7 +105,7 @@
                 <title>Client Side Push Sequence Diagram</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/seq-push-client.gif" format="GIF"  />
+                        <imagedata fileref="../images/seq-push-client.gif" format="GIF"  />
                     </imageobject>
                 </mediaobject>
             </figure>
@@ -115,7 +115,7 @@
                 <title>Host Side Push Sequence Diagram</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/seq-push-host.gif" format="GIF"  />
+                        <imagedata fileref="../images/seq-push-host.gif" format="GIF"  />
                     </imageobject>
                 </mediaobject>
             </figure>
@@ -170,7 +170,7 @@
             </para>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/symmetric_war.gif" format="GIF" />
+                    <imagedata fileref="../images/symmetric_war.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
             <para>
