@@ -53,13 +53,14 @@
         </para>
     </preface>
 
-    <xi:include href="user-guide/ch01-introduction.xml" />
-    <xi:include href="user-guide/ch02-getting-started.xml" />
-    <xi:include href="user-guide/ch03-concepts.xml" />
-    <xi:include href="user-guide/ch04-architecture.xml" />
-    <xi:include href="user-guide/ch05-basic-configuration.xml" />
-    <xi:include href="user-guide/ch06-advanced-configuration.xml" />
-    <xi:include href="user-guide/ch07-administration.xml" />
+    <xi:include href="user-guide/intro/ch01-introduction.xml" />
+    <xi:include href="user-guide/intro/ch02-getting-started.xml" />
+    <xi:include href="user-guide/basicConcepts/ch03-concepts.xml" />
+    <xi:include href="user-guide/arch/ch04-architecture.xml" />
+    <xi:include href="user-guide/basicConfig/ch05-basic-configuration.xml" />
+    <xi:include href="user-guide/advConfig/ch06-advanced-configuration.xml" />
+    <xi:include href="user-guide/admin/ch07-administration.xml" />
+    <xi:include href="user-guide/admin/ch08-ip-filtering.xml" />
     <xi:include href="user-guide/appendix/ap01-startup-properties.xml" />
     <xi:include href="user-guide/appendix/ap02-databases.xml" />
     <xi:include href="user-guide/appendix/ap03-data-format.xml" />
