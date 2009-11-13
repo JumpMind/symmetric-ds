@@ -268,4 +268,7 @@
         <para> The team created a custom solution that met the requirements and made the project successful. From this initial
             challenge came the knowledge and experience that SymmetricDS benefits from today.</para>
     </section>
+    
+    
+    <xi:include href="tutorial.xml" />
 </chapter>
