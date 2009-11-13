@@ -27,15 +27,13 @@
     
     
     <table>
-    <title>Tables</title>
-    <tgroup cols="3">
-        <colspec colwidth="90px" />
-        <colspec colwidth="65px" />
-        <colspec colwidth="220px" />
+    <title>Table Summary</title>
+    <tgroup cols="2">
+        <colspec colwidth="130px" />
+        <colspec colwidth="245px" />
         <thead>
             <row>
                 <entry>Table Name</entry>
-                <entry>OM Class</entry>
                 <entry>Description</entry>
             </row>
         </thead>
@@ -45,7 +43,6 @@
             	<entry id="table-$tbl.Name.toUpperCase()">
                     <link linkend="table-def-$tbl.Name">$tbl.Name.toUpperCase()</link>
                 </entry>
-                <entry>$tbl.JavaName</entry>
                 <entry>#if ($tbl.Description) $tbl.Description#else &nbsp;#end</entry>
 			</row>
  		#end
