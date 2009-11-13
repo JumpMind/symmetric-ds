@@ -15,7 +15,7 @@
         may coexist in the same database.  The default prefix is <emphasis>sym_</emphasis>. 
     </para>
 
-    <xi:include href="ch03/sec01-data-model-config.xml" />
-    <xi:include href="ch03/sec02-data-model-runtime.xml" />
+    <xi:include href="sec01-data-model-config.xml" />
+    <xi:include href="sec02-data-model-runtime.xml" />
 
 </chapter>
