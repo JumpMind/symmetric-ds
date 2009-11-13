@@ -42,8 +42,8 @@
         <tbody>
         #foreach ($tbl in $database.tables)
         	<row>
-            	<entry id="table-$tbl.Name">
-                    <link linkend="table-def-$tbl.Name">$tbl.Name</link>
+            	<entry id="table-$tbl.Name.toUpperCase()">
+                    <link linkend="table-def-$tbl.Name">$tbl.Name.toUpperCase()</link>
                 </entry>
                 <entry>$tbl.JavaName</entry>
                 <entry>#if ($tbl.Description) $tbl.Description#else &nbsp;#end</entry>

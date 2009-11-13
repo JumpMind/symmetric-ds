@@ -16,9 +16,9 @@
 ## under the License.
 
 <section>
-    <title>$table.Name</title>
+    <title>$table.Name.toUpperCase()</title>
 	<table id="table-def-$table.Name">
-    	<title>$table.Name</title>
+    	<title>$table.Name.toUpperCase()</title>
     	<tgroup cols="9">
         	<colspec colwidth="85px" />
         	<colspec colwidth="55px" />
@@ -48,7 +48,7 @@
                 <entry>
                  	#if ($col.isForeignKey() == true)
 					 	<link linkend="table-def-$col.RelatedTableName">$col.Name</link>
-					#else$col.Name#end
+					#else$col.Name.toUpperCase()#end
                 </entry>
                 <entry>$col.Type</entry>
                 <entry>#if ($col.printSize() && $col.printSize().length() > 0) $col.printSize()#end</entry>
