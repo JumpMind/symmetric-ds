@@ -23,12 +23,10 @@
       <directory>src/main/deploy</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
-    <!-- 
     <fileSet>
       <directory>target/site/guide</directory>
       <outputDirectory>/doc</outputDirectory>
     </fileSet>
-       -->    
   </fileSets>
   <dependencySets>
     <dependencySet>
