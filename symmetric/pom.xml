@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jumpmind.symmetric</groupId>
     <artifactId>symmetric</artifactId>
@@ -226,6 +227,7 @@
         <derby.version>10.4.2.0</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
+        <docbook.build>${basedir}/target/docbook</docbook.build>
     </properties>
 
     <repositories>
@@ -353,12 +355,13 @@
             <groupId>org.apache.db.torque</groupId>
             <artifactId>torque-maven-plugin</artifactId>
             <configuration>
+            
                  <outputFormat>docbook</outputFormat>
                  <targetDatabase>symmetric</targetDatabase>
-                 <outputDir>${basedir}/src/docbook/schema</outputDir>
+                 <outputDir>${docbook.build}/schema</outputDir>
                  <schemaDir>${basedir}/src/main/resources</schemaDir>
                  <templatePath>${basedir}/src/main/torque</templatePath>
-                 <useClasspath>false</useClasspath>
+                 <useClasspath>false</useClasspath>                
             </configuration>
             <executions>
                 <execution>
@@ -725,14 +728,20 @@
                                     <goal>generate-pdf</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${docbook.source}</sourceDirectory>
+                                     <preProcess>
+                                        <copy todir="${docbook.build}">
+                                            <fileset dir="${docbook.source}">
+                                            </fileset>
+                                          </copy>
+                                    </preProcess>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
                                     <targetDirectory>${docbook.target}/pdf</targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>*.xml</includes>
-                                    <imgSrcPath>${docbook.source}/images</imgSrcPath>
-                                    <admonGraphicsPath>${docbook.source}/resources/images/admons/
+                                    <imgSrcPath>${docbook.build}/images</imgSrcPath>
+                                    <admonGraphicsPath>${docbook.build}/resources/images/admons/
                                     </admonGraphicsPath>
-                                    <foCustomization>${docbook.source}/resources/xsl/docbook-fopdf.xsl
+                                    <foCustomization>${docbook.build}/resources/xsl/docbook-fopdf.xsl
                                     </foCustomization>
                                     <postProcess>
                                         <delete file="${docbook.target}/pdf/user-guide.fo" />
@@ -746,29 +755,29 @@
                                     <goal>generate-html</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${docbook.source}</sourceDirectory>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
                                     <targetDirectory>${docbook.target}/html-single
                                     </targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>*.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
                                     <htmlCustomization>
-                                        ${docbook.source}/resources/xsl/docbook-html.xsl
+                                        ${docbook.build}/resources/xsl/docbook-html.xsl
                                     </htmlCustomization>
                                     <chunkedOutput>false</chunkedOutput>
                                     <postProcess>
                                         <copy todir="${docbook.target}/html-single">
-                                            <fileset dir="${docbook.source}/resources">
+                                            <fileset dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.source}/resources">
+                                            <fileset dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
                                         <copy todir="${docbook.target}/html-single/images" flatten="true">
-                                            <fileset dir="${docbook.source}">
+                                            <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
@@ -782,31 +791,33 @@
                                     <goal>generate-html</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${docbook.source}</sourceDirectory>
+                                    <sourceDirectory>${docbook.build}</sourceDirectory>
                                     <targetDirectory>${docbook.target}/html</targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
                                     <includes>*.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
                                     <htmlCustomization>
-                                        ${docbook.source}/resources/xsl/docbook-html-chunk.xsl
+                                        ${docbook.build}/resources/xsl/docbook-html-chunk.xsl
                                     </htmlCustomization>
                                     <chunkedOutput>true</chunkedOutput>
                                     <postProcess>
                                         <copy todir="${docbook.target}/html">
-                                            <fileset dir="${docbook.source}/resources">
+                                            <fileset dir="${docbook.build}/resources">
                                                 <include name="images/*.png" />
                                                 <include name="images/*.gif" />
                                                 <include name="images/*.jpg" />
                                             </fileset>
-                                            <fileset dir="${docbook.source}/resources">
+                                            <fileset dir="${docbook.build}/resources">
                                                 <include name="css/*.css" />
                                             </fileset>
                                         </copy>
                                         <copy todir="${docbook.target}/html/images" flatten="true">
-                                            <fileset dir="${docbook.source}">
+                                            <fileset dir="${docbook.build}">
                                                 <include name="**/images/*" />
                                             </fileset>
                                         </copy>
+                                        <delete file="${docbook.build}/schema/symmetric-schema.xml" />
+                                        <delete file="${basedir}/target/torque/report.symmetric.doc.generation" /> 
                                     </postProcess>
                                 </configuration>
                             </execution>
