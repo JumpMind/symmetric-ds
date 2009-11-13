@@ -16,7 +16,7 @@
             <title>Configuration Data Model</title>
             <mediaobject>
                 <imageobject>
-                    <imagedata fileref="images/data-model-config.gif" format="GIF" />
+                    <imagedata fileref="../images/data-model-config.gif" format="GIF" />
                 </imageobject>
             </mediaobject>
         </figure>

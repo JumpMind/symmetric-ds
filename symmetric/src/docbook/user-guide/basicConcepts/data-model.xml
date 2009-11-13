@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ch03-concepts" xmlns="http://docbook.org/ns/docbook"
+<section version="5.0" xml:id="ch03-concepts" xmlns="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-    <title>Concepts</title>
+    <title>Data Model</title>
     <para>
         Many of the data synchronization concepts can be understood by examining the data model. The
         configuration data model is stored in a set of tables updated by the user as needed to
@@ -18,4 +18,4 @@
     <xi:include href="sec01-data-model-config.xml" />
     <xi:include href="sec02-data-model-runtime.xml" />
 
-</chapter>
+</section>
