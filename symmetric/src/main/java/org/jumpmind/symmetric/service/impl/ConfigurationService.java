@@ -79,8 +79,8 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveChannel(Channel channel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateChannelSql"), new Object[] { channel.getProcessingOrder(),
                 channel.getMaxBatchSize(), channel.getMaxBatchToSend(), channel.isEnabled() ? 1 : 0,
-                channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(), channel.getId() })) {
-            jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getId(),
+                channel.getBatchAlgorithm(), channel.getExtractPeriodMillis(), channel.getChannelId() })) {
+            jdbcTemplate.update(getSql("insertChannelSql"), new Object[] { channel.getChannelId(),
                     channel.getProcessingOrder(), channel.getMaxBatchSize(), channel.getMaxBatchToSend(),
                     channel.isEnabled() ? 1 : 0, channel.getBatchAlgorithm(), channel.getExtractPeriodMillis() });
         }
@@ -112,7 +112,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void deleteChannel(Channel channel) {
-        jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getId() });
+        jdbcTemplate.update(getSql("deleteChannelSql"), new Object[] { channel.getChannelId() });
     }
 
     public NodeChannel getNodeChannel(String channelId) {
@@ -242,10 +242,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             List<NodeChannel> channels = getNodeChannels();
             for (Channel defaultChannel : defaultChannels) {
                 if (!defaultChannel.isInList(channels)) {
-                    log.info("ChannelAutoConfiguring", defaultChannel.getId());
+                    log.info("ChannelAutoConfiguring", defaultChannel.getChannelId());
                     saveChannel(defaultChannel, true);
                 } else {
-                    log.info("ChannelExists", defaultChannel.getId());
+                    log.info("ChannelExists", defaultChannel.getChannelId());
                 }
             }
             reloadChannels();

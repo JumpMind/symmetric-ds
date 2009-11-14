@@ -30,7 +30,7 @@ public class Channel {
 
     private static final long serialVersionUID = -8183376200537307264L;
 
-    private String id;
+    private String channelId;
 
     private int processingOrder;
 
@@ -48,7 +48,7 @@ public class Channel {
     }
 
     public Channel(String id, int processingOrder) {
-        this.id = id;
+        this.channelId = id;
         this.processingOrder = processingOrder;
     }
 
@@ -61,12 +61,12 @@ public class Channel {
         this.extractPeriodMillis = extractPeriodMillis;
     }
 
-    public String getId() {
-        return id;
+    public String getChannelId() {
+        return channelId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setChannelId(String id) {
+        this.channelId = id;
     }
 
     public int getProcessingOrder() {
@@ -110,7 +110,7 @@ public class Channel {
     public boolean isInList(Collection<? extends NodeChannel> channels) {
         if (channels != null) {
             for (NodeChannel channel : channels) {
-                if (channel.getId().equals(id)) {
+                if (channel.getId().equals(channelId)) {
                     return true;
                 }
             }
