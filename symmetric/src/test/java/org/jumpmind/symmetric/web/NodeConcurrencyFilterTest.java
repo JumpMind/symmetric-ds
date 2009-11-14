@@ -208,14 +208,14 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         List<NodeChannel> ncs = configurationService.getNodeChannels(nodeId);
 
-        ncs.get(0).setSuspended(false);
-        ncs.get(0).setIgnored(false);
+        ncs.get(0).setSuspendEnabled(false);
+        ncs.get(0).setIgnoreEnabled(false);
 
-        ncs.get(1).setSuspended(false);
-        ncs.get(1).setIgnored(false);
+        ncs.get(1).setSuspendEnabled(false);
+        ncs.get(1).setIgnoreEnabled(false);
 
-        ncs.get(2).setSuspended(false);
-        ncs.get(2).setIgnored(false);
+        ncs.get(2).setSuspendEnabled(false);
+        ncs.get(2).setIgnoreEnabled(false);
 
         filter.buildSuspendIgnoreResponseHeaders(nodeId, resp);
 
@@ -229,9 +229,9 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
 
         ncs = configurationService.getNodeChannels(nodeId);
 
-        ncs.get(0).setSuspended(true);
-        ncs.get(1).setIgnored(true);
-        ncs.get(2).setSuspended(true);
+        ncs.get(0).setSuspendEnabled(true);
+        ncs.get(1).setIgnoreEnabled(true);
+        ncs.get(2).setSuspendEnabled(true);
 
         configurationService.saveNodeChannelControl(ncs.get(0), false);
         configurationService.saveNodeChannelControl(ncs.get(1), false);
@@ -242,8 +242,8 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         suspended = (String) (resp.getHeader(WebConstants.SUSPENDED_CHANNELS));
         ignored = (String) (resp.getHeader(WebConstants.IGNORED_CHANNELS));
 
-        Assert.assertEquals(suspended, ncs.get(0).getId() + "," + ncs.get(2).getId());
-        Assert.assertEquals(ignored, ncs.get(1).getId());
+        Assert.assertEquals(suspended, ncs.get(0).getChannelId() + "," + ncs.get(2).getChannelId());
+        Assert.assertEquals(ignored, ncs.get(1).getChannelId());
 
     }
 

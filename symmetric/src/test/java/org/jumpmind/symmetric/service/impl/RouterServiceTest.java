@@ -362,7 +362,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             OutgoingBatch outgoingBatch = iterator.next();
             boolean foundChannel = false;
             for (NodeChannel nodeChannel : channels) {
-                if (outgoingBatch.getChannelId().equals(nodeChannel.getId())) {
+                if (outgoingBatch.getChannelId().equals(nodeChannel.getChannelId())) {
                     foundChannel = true;
                 }
             }
@@ -383,7 +383,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         int count = 0;
         for (Iterator<OutgoingBatch> iterator = batches.getBatches().iterator(); iterator.hasNext();) {
             OutgoingBatch outgoingBatch = iterator.next();
-            count += outgoingBatch.getChannelId().equals(channel.getId()) ? 1 : 0;
+            count += outgoingBatch.getChannelId().equals(channel.getChannelId()) ? 1 : 0;
         }
         return count;
     }

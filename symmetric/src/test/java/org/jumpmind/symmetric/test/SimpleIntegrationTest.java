@@ -266,7 +266,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(true);
+        c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
@@ -284,7 +284,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
+        c.setIgnoreEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
         getClientEngine().push();
 
@@ -298,8 +298,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
         getClientEngine().push();
     }
@@ -325,7 +325,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(true);
+        c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
@@ -342,7 +342,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
+        c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
         getClientEngine().push();
 
@@ -356,8 +356,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Cleanup!
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
         getClientEngine().push();
     }
@@ -385,7 +385,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IConfigurationService rootConfigurationService = findOnRoot(Constants.CONFIG_SERVICE);
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(true);
+        c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
@@ -400,7 +400,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
+        c.setIgnoreEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
 
         // ignore
@@ -414,8 +414,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
 
         getClientEngine().pull();
@@ -451,14 +451,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         NodeChannel c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(true);
+        c.setSuspendEnabled(true);
         rootConfigurationService.saveNodeChannel(c, true);
 
         // ignore on local
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
+        c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
@@ -475,16 +475,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
-        c.setSuspended(false);
+        c.setIgnoreEnabled(true);
+        c.setSuspendEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
 
         // suspend on local
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(false);
-        c.setSuspended(true);
+        c.setIgnoreEnabled(false);
+        c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
@@ -500,14 +500,14 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Cleanup!
         c = rootConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         rootConfigurationService.saveNodeChannel(c, true);
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
 
         getClientEngine().pull();
@@ -537,7 +537,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IConfigurationService clientConfigurationService = findOnClient(Constants.CONFIG_SERVICE);
         NodeChannel c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(true);
+        c.setSuspendEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
 
         date = DateUtils.parseDate("2009-09-30", new String[] { "yyyy-MM-dd" });
@@ -552,7 +552,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setIgnored(true);
+        c.setIgnoreEnabled(true);
         clientConfigurationService.saveNodeChannel(c, true);
 
         // ignore
@@ -567,8 +567,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
         c = clientConfigurationService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_CLIENT_EXTERNAL_ID);
-        c.setSuspended(false);
-        c.setIgnored(false);
+        c.setSuspendEnabled(false);
+        c.setIgnoreEnabled(false);
         clientConfigurationService.saveNodeChannel(c, true);
 
         getClientEngine().pull();
@@ -701,8 +701,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         NodeChannel channel = rootConfigService.getNodeChannel(TestConstants.TEST_CHANNEL_ID,
                 TestConstants.TEST_ROOT_EXTERNAL_ID);
         Assert.assertNotNull(channel);
-        Assert.assertTrue(channel.isIgnored());
-        Assert.assertFalse(channel.isSuspended());
+        Assert.assertTrue(channel.isIgnoreEnabled());
+        Assert.assertFalse(channel.isSuspendEnabled());
 
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 201, "Charlie Dude", "1", "300 Grub Street",
                 "New Yorl", "NY", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });

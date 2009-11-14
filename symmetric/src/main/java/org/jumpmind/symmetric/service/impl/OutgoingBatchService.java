@@ -147,7 +147,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         for (NodeChannel channel : channels) {
             keepers.addAll(batches
                     .getBatchesForChannelWindows(node, channel, configurationService
-                            .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getId())));
+                            .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getChannelId())));
         }
         batches.setBatches(keepers);
         return batches;

@@ -110,7 +110,7 @@ public class Channel {
     public boolean isInList(Collection<? extends NodeChannel> channels) {
         if (channels != null) {
             for (NodeChannel channel : channels) {
-                if (channel.getId().equals(channelId)) {
+                if (channel.getChannelId().equals(channelId)) {
                     return true;
                 }
             }

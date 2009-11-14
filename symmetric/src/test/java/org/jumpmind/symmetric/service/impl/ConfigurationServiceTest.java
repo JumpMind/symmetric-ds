@@ -58,8 +58,8 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(4, nodeChannels.size());
         for (NodeChannel nc : nodeChannels) {
             Assert.assertTrue("00000".equals(nc.getNodeId()));
-            Assert.assertFalse(nc.isIgnored());
-            Assert.assertFalse(nc.isSuspended());
+            Assert.assertFalse(nc.isIgnoreEnabled());
+            Assert.assertFalse(nc.isSuspendEnabled());
             Assert.assertNull(nc.getLastExtractedTime());
         }
 
@@ -74,48 +74,48 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(4, nodeChannels.size());
         for (NodeChannel nc : nodeChannels) {
             Assert.assertTrue(nodeId.equals(nc.getNodeId()));
-            Assert.assertFalse(nc.isIgnored());
-            Assert.assertFalse(nc.isSuspended());
+            Assert.assertFalse(nc.isIgnoreEnabled());
+            Assert.assertFalse(nc.isSuspendEnabled());
             Assert.assertNull(nc.getLastExtractedTime());
         }
 
         NodeChannel nc = nodeChannels.get(0);
-        String updatedChannelId = nc.getId();
+        String updatedChannelId = nc.getChannelId();
 
         // Test "ignored"
-        nc.setIgnored(true);
+        nc.setIgnoreEnabled(true);
         configurationService.saveNodeChannelControl(nc, false);
         NodeChannel compareTo = configurationService.getNodeChannel(updatedChannelId, nodeId);
-        Assert.assertTrue(compareTo.isIgnored());
-        Assert.assertFalse(compareTo.isSuspended());
+        Assert.assertTrue(compareTo.isIgnoreEnabled());
+        Assert.assertFalse(compareTo.isSuspendEnabled());
         Assert.assertNull(compareTo.getLastExtractedTime());
 
         // Test "suspended"
-        compareTo.setSuspended(true);
+        compareTo.setSuspendEnabled(true);
         configurationService.saveNodeChannelControl(compareTo, false);
         compareTo = configurationService.getNodeChannel(updatedChannelId, nodeId);
-        Assert.assertTrue(compareTo.isIgnored());
-        Assert.assertTrue(compareTo.isSuspended());
+        Assert.assertTrue(compareTo.isIgnoreEnabled());
+        Assert.assertTrue(compareTo.isSuspendEnabled());
         Assert.assertNull(compareTo.getLastExtractedTime());
 
         // Test saving "last extracted time"
         NodeChannel nc1 = nodeChannels.get(1);
-        String updatedChannelId1 = nc1.getId();
+        String updatedChannelId1 = nc1.getChannelId();
 
         Date date = new Date();
         nc1.setLastExtractedTime(date);
         configurationService.saveNodeChannelControl(nc1, false);
 
         compareTo = configurationService.getNodeChannel(updatedChannelId1, nodeId);
-        Assert.assertFalse(compareTo.isIgnored());
-        Assert.assertFalse(compareTo.isSuspended());
+        Assert.assertFalse(compareTo.isIgnoreEnabled());
+        Assert.assertFalse(compareTo.isSuspendEnabled());
         Assert.assertNotNull(compareTo.getLastExtractedTime());
         Assert.assertEquals(date.getTime(), compareTo.getLastExtractedTime().getTime());
 
         // make sure other nodeChannel not effected
         compareTo = configurationService.getNodeChannel(updatedChannelId, nodeId);
-        Assert.assertTrue(compareTo.isIgnored());
-        Assert.assertTrue(compareTo.isSuspended());
+        Assert.assertTrue(compareTo.isIgnoreEnabled());
+        Assert.assertTrue(compareTo.isSuspendEnabled());
         Assert.assertNull(compareTo.getLastExtractedTime());
     }
 
@@ -134,31 +134,31 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
 
         NodeChannel nc = ncs.get(1);
 
-        nc.setSuspended(true);
+        nc.setSuspendEnabled(true);
         configurationService.saveNodeChannelControl(nc, false);
 
         result = configurationService.getSuspendIgnoreChannelLists(nodeId);
 
-        Assert.assertTrue(result.getSuspendChannels().contains(nc.getId()));
+        Assert.assertTrue(result.getSuspendChannels().contains(nc.getChannelId()));
 
         nc = ncs.get(0);
-        nc.setSuspended(true);
+        nc.setSuspendEnabled(true);
 
         configurationService.saveNodeChannelControl(nc, false);
 
         // String channelIds = ncs.get(0).getId() + "," + ncs.get(1).getId();
         result = configurationService.getSuspendIgnoreChannelLists(nodeId);
 
-        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(0).getId()));
-        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(1).getId()));
+        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(0).getChannelId()));
+        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(1).getChannelId()));
 
-        nc.setIgnored(true);
+        nc.setIgnoreEnabled(true);
         configurationService.saveNodeChannelControl(nc, false);
         result = configurationService.getSuspendIgnoreChannelLists(nodeId);
 
-        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(0).getId()));
-        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(1).getId()));
-        Assert.assertTrue(result.getIgnoreChannels().contains(nc.getId()));
+        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(0).getChannelId()));
+        Assert.assertTrue(result.getSuspendChannels().contains(ncs.get(1).getChannelId()));
+        Assert.assertTrue(result.getIgnoreChannels().contains(nc.getChannelId()));
     }
 
     @After

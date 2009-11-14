@@ -36,10 +36,11 @@ public class NodeChannel {
     public NodeChannel(String channelId) {
         channel = new Channel();
         nodeChannelControl = new NodeChannelControl();
+        nodeChannelControl.setChannelId(channelId);
         channel.setChannelId(channelId);
     }
 
-    public String getId() {
+    public String getChannelId() {
         return channel.getChannelId();
     }
 
@@ -79,12 +80,12 @@ public class NodeChannel {
         return channel.isEnabled();
     }
 
-    public boolean isSuspended() {
-        return nodeChannelControl.isSuspended();
+    public boolean isSuspendEnabled() {
+        return nodeChannelControl.isSuspendEnabled();
     }
 
-    public boolean isIgnored() {
-        return nodeChannelControl.isIgnored();
+    public boolean isIgnoreEnabled() {
+        return nodeChannelControl.isIgnoreEnabled();
     }
 
     public String getNodeId() {
@@ -96,27 +97,28 @@ public class NodeChannel {
     }
 
     public void setLastExtractedTime(Date lastExtractedTime) {
-        nodeChannelControl.setLastExtractedTime(lastExtractedTime);
+        nodeChannelControl.setLastExtractTime(lastExtractedTime);
     }
 
     public Date getLastExtractedTime() {
-        return nodeChannelControl.getLastExtractedTime();
+        return nodeChannelControl.getLastExtractTime();
     }
 
-    public void setIgnored(boolean ignored) {
-        nodeChannelControl.setIgnored(ignored);
+    public void setIgnoreEnabled(boolean ignored) {
+        nodeChannelControl.setIgnoreEnabled(ignored);
     }
 
     public void setProcessingOrder(int priority) {
         channel.setProcessingOrder(priority);
     }
 
-    public void setId(String id) {
+    public void setChannelId(String id) {
         channel.setChannelId(id);
+        nodeChannelControl.setChannelId(id);
     }
 
-    public void setSuspended(boolean suspended) {
-        nodeChannelControl.setSuspended(suspended);
+    public void setSuspendEnabled(boolean suspended) {
+        nodeChannelControl.setSuspendEnabled(suspended);
     }
 
     public Channel getChannel() {
