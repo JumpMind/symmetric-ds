@@ -24,9 +24,9 @@ public class NodeGroupLink {
 
     private static final long serialVersionUID = 1L;
 
-    private String sourceGroupId;
+    private String sourceNodeGroupId;
 
-    private String targetGroupId;
+    private String targetNodeGroupId;
 
     private DataEventAction dataEventAction = DataEventAction.WAIT_FOR_PULL;
 
@@ -38,19 +38,19 @@ public class NodeGroupLink {
         this.dataEventAction = dataEventAction;
     }
 
-    public String getSourceGroupId() {
-        return sourceGroupId;
+    public String getSourceNodeGroupId() {
+        return sourceNodeGroupId;
     }
 
-    public void setSourceGroupId(String domainName) {
-        this.sourceGroupId = domainName;
+    public void setSourceNodeGroupId(String domainName) {
+        this.sourceNodeGroupId = domainName;
     }
 
-    public String getTargetGroupId() {
-        return targetGroupId;
+    public String getTargetNodeGroupId() {
+        return targetNodeGroupId;
     }
 
-    public void setTargetGroupId(String targetDomainName) {
-        this.targetGroupId = targetDomainName;
+    public void setTargetNodeGroupId(String targetDomainName) {
+        this.targetNodeGroupId = targetDomainName;
     }
 }
