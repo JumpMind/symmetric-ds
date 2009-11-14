@@ -132,12 +132,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<NodeGroupLink> links = configurationService.getGroupLinksFor(sourceNodeGroupId);
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
-                triggers.addAll(getTriggerRoutersForRegistration(nodeGroupLink.getSourceGroupId(), nodeGroupLink
-                        .getTargetGroupId()));
+                triggers.addAll(getTriggerRoutersForRegistration(nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
+                        .getTargetNodeGroupId()));
             } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
                 triggers.add(buildRegistrationTriggerRouter(TableConstants.getTableName(tablePrefix,
-                        TableConstants.SYM_NODE), false, nodeGroupLink.getSourceGroupId(), nodeGroupLink
-                        .getTargetGroupId()));
+                        TableConstants.SYM_NODE), false, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
+                        .getTargetNodeGroupId()));
                 log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
 
             } else {
@@ -623,8 +623,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     class NodeGroupLinkMapper implements RowMapper<NodeGroupLink> {
         public NodeGroupLink mapRow(ResultSet rs, int num) throws SQLException {
             NodeGroupLink node_groupTarget = new NodeGroupLink();
-            node_groupTarget.setSourceGroupId(rs.getString(1));
-            node_groupTarget.setTargetGroupId(rs.getString(2));
+            node_groupTarget.setSourceNodeGroupId(rs.getString(1));
+            node_groupTarget.setTargetNodeGroupId(rs.getString(2));
             node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs.getString(3)));
             return node_groupTarget;
         }
