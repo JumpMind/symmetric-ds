@@ -24,16 +24,16 @@ public class NodeGroup {
 
     private static final long serialVersionUID = -8244845505598568994L;
 
-    private String groupId;
+    private String nodeGroupId;
 
     private String description;
 
-    public String getGroupId() {
-        return groupId;
+    public String getNodeGroupId() {
+        return nodeGroupId;
     }
 
-    public void setGroupId(String name) {
-        this.groupId = name;
+    public void setNodeGroupId(String name) {
+        this.nodeGroupId = name;
     }
 
     public String getDescription() {
