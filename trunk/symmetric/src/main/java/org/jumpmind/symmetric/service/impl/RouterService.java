@@ -127,7 +127,7 @@ public class RouterService extends AbstractService implements IRouterService {
     protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getNodeChannels();
         for (NodeChannel nodeChannel : channels) {
-            if (!nodeChannel.isSuspended()) {
+            if (!nodeChannel.isSuspendEnabled()) {
                 routeDataForChannel(ref, nodeChannel, sourceNode);
             }
         }
@@ -144,7 +144,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (context != null) {
                         context.rollback();
                     }
-                    log.error("RouterRoutingFailed", ex, nodeChannel.getId());
+                    log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
                 } finally {
                     try {
                         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
@@ -242,7 +242,7 @@ public class RouterService extends AbstractService implements IRouterService {
             ps = conn.prepareStatement(getSql("selectDataToBatchSql"), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
             ps.setFetchSize(dbDialect.getStreamingResultsFetchSize());
-            ps.setString(1, context.getChannel().getId());
+            ps.setString(1, context.getChannel().getChannelId());
             ps.setLong(2, ref.getRefDataId());
             rs = ps.executeQuery();
             int peekAheadLength = dbDialect.getRouterDataPeekAheadCount();
@@ -295,7 +295,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context.getChannel());
 
                 context.resetForNextData();
-                if (!context.getChannel().isIgnored() && triggerRouter.isRouted(data.getEventType())) {
+                if (!context.getChannel().isIgnoreEnabled() && triggerRouter.isRouted(data.getEventType())) {
                     IDataRouter dataRouter = getDataRouter(triggerRouter);
                     context.addUsedDataRouter(dataRouter);
                     long ts = System.currentTimeMillis();
@@ -334,7 +334,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         || !dataMetaData.getData().getSourceNodeId().equals(nodeId)) {
                     OutgoingBatch batch = context.getBatchesByNodes().get(nodeId);
                     if (batch == null) {
-                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getId());
+                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId());
                         outgoingBatchService.insertOutgoingBatch(context.getJdbcTemplate(), batch);
                         context.getBatchesByNodes().put(nodeId, batch);
                     }

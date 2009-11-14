@@ -27,7 +27,15 @@ public class NodeChannelControl {
     private static final long serialVersionUID = -2493052366767513160L;
 
     private String nodeId = null;
+    
+    private String channelId = null;
 
+    private boolean ignoreEnabled = false;
+
+    private boolean suspendEnabled = false;
+
+    private Date lastExtractTime = null;
+    
     public String getNodeId() {
         return nodeId;
     }
@@ -35,35 +43,37 @@ public class NodeChannelControl {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-
-    public boolean isIgnored() {
-        return ignored;
+    
+    public String getChannelId() {
+        return channelId;
     }
 
-    public void setIgnored(boolean ignored) {
-        this.ignored = ignored;
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
-    public boolean isSuspended() {
-        return suspended;
+    public boolean isIgnoreEnabled() {
+        return ignoreEnabled;
     }
 
-    public void setSuspended(boolean suspended) {
-        this.suspended = suspended;
+    public void setIgnoreEnabled(boolean ignored) {
+        this.ignoreEnabled = ignored;
     }
 
-    public Date getLastExtractedTime() {
-        return lastExtractedTime;
+    public boolean isSuspendEnabled() {
+        return suspendEnabled;
     }
 
-    public void setLastExtractedTime(Date lastExtractedTime) {
-        this.lastExtractedTime = lastExtractedTime;
+    public void setSuspendEnabled(boolean suspended) {
+        this.suspendEnabled = suspended;
     }
 
-    private boolean ignored = false;
+    public Date getLastExtractTime() {
+        return lastExtractTime;
+    }
 
-    private boolean suspended = false;
-
-    private Date lastExtractedTime = null;
+    public void setLastExtractTime(Date lastExtractedTime) {
+        this.lastExtractTime = lastExtractedTime;
+    }
 
 }

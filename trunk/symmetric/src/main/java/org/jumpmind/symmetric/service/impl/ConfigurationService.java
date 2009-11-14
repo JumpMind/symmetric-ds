@@ -100,10 +100,10 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveNodeChannelControl(NodeChannel nodeChannel, boolean reloadChannels) {
         if (0 == jdbcTemplate.update(getSql("updateNodeChannelControlSql"), new Object[] {
-                nodeChannel.isSuspended() ? 1 : 0, nodeChannel.isIgnored() ? 1 : 0, nodeChannel.getLastExtractedTime(),
-                nodeChannel.getNodeId(), nodeChannel.getId() })) {
+                nodeChannel.isSuspendEnabled() ? 1 : 0, nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractedTime(),
+                nodeChannel.getNodeId(), nodeChannel.getChannelId() })) {
             jdbcTemplate.update(getSql("insertNodeChannelControlSql"), new Object[] { nodeChannel.getNodeId(),
-                    nodeChannel.getId(), nodeChannel.isSuspended() ? 1 : 0, nodeChannel.isIgnored() ? 1 : 0,
+                    nodeChannel.getChannelId(), nodeChannel.isSuspendEnabled() ? 1 : 0, nodeChannel.isIgnoreEnabled() ? 1 : 0,
                     nodeChannel.getLastExtractedTime() });
         }
         if (reloadChannels) {
@@ -122,7 +122,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public NodeChannel getNodeChannel(String channelId, String nodeId) {
         List<NodeChannel> channels = getNodeChannels(nodeId);
         for (NodeChannel nodeChannel : channels) {
-            if (nodeChannel.getId().equals(channelId)) {
+            if (nodeChannel.getChannelId().equals(channelId)) {
                 return nodeChannel;
             }
         }
@@ -150,12 +150,12 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                             new Object[] { nodeId }, new RowMapper() {
                                 public Object mapRow(java.sql.ResultSet rs, int arg1) throws SQLException {
                                     NodeChannel nodeChannel = new NodeChannel();
-                                    nodeChannel.setId(rs.getString(1));
+                                    nodeChannel.setChannelId(rs.getString(1));
                                     // note that 2 is intentionally missing
                                     // here.
                                     nodeChannel.setNodeId(nodeId);
-                                    nodeChannel.setIgnored(isSet(rs.getObject(3)));
-                                    nodeChannel.setSuspended(isSet(rs.getObject(4)));
+                                    nodeChannel.setIgnoreEnabled(isSet(rs.getObject(3)));
+                                    nodeChannel.setSuspendEnabled(isSet(rs.getObject(4)));
                                     nodeChannel.setProcessingOrder(rs.getInt(5));
                                     nodeChannel.setMaxBatchSize(rs.getInt(6));
                                     nodeChannel.setEnabled(rs.getBoolean(7));
@@ -182,7 +182,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             final Map<String, NodeChannel> nodeChannelsMap = new HashMap<String, NodeChannel>();
 
             for (NodeChannel nc : nodeChannels) {
-                nodeChannelsMap.put(nc.getId(), nc);
+                nodeChannelsMap.put(nc.getChannelId(), nc);
             }
 
             jdbcTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"), new Object[] { nodeId },
@@ -357,11 +357,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         List<NodeChannel> ncs = getNodeChannels(nodeId);
 
         for (NodeChannel nc : ncs) {
-            if (nc.isSuspended()) {
-                map.addSuspendChannels(nc.getId());
+            if (nc.isSuspendEnabled()) {
+                map.addSuspendChannels(nc.getChannelId());
             }
-            if (nc.isIgnored()) {
-                map.addIgnoreChannels(nc.getId());
+            if (nc.isIgnoreEnabled()) {
+                map.addIgnoreChannels(nc.getChannelId());
             }
         }
         return map;

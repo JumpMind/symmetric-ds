@@ -49,14 +49,14 @@ public class OutgoingBatches {
 
     public void addActiveChannel(NodeChannel nodeChannel) {
         activeChannels.add(nodeChannel);
-        activeChannelIds.add(nodeChannel.getId());
+        activeChannelIds.add(nodeChannel.getChannelId());
     }
 
     public void setActiveChannels(Set<NodeChannel> activeChannels) {
         this.activeChannels = activeChannels;
         activeChannelIds = new HashSet<String>();
         for (NodeChannel nodeChannel : activeChannels) {
-            activeChannelIds.add(nodeChannel.getId());
+            activeChannelIds.add(nodeChannel.getChannelId());
         }
     }
 
@@ -150,7 +150,7 @@ public class OutgoingBatches {
                     int max = channel.getMaxBatchToSend();
                     int count = 0;
                     for (OutgoingBatch outgoingBatch : batches) {
-                        if (channel.getId().equals(outgoingBatch.getChannelId()) && count < max) {
+                        if (channel.getChannelId().equals(outgoingBatch.getChannelId()) && count < max) {
                             keeping.add(outgoingBatch);
                             count++;
                         }
@@ -210,12 +210,12 @@ public class OutgoingBatches {
 
         Collections.sort(channels, new Comparator<NodeChannel>() {
             public int compare(NodeChannel b1, NodeChannel b2) {
-                boolean isError1 = errorChannels.containsKey(b1.getId());
-                boolean isError2 = errorChannels.containsKey(b2.getId());
+                boolean isError1 = errorChannels.containsKey(b1.getChannelId());
+                boolean isError2 = errorChannels.containsKey(b2.getChannelId());
                 if (!isError1 && !isError2) {
                     return b1.getProcessingOrder() < b2.getProcessingOrder() ? -1 : 1;
                 } else if (isError1 && isError2) {
-                    return errorChannels.get(b1.getId()).compareTo(errorChannels.get(b2.getId()));
+                    return errorChannels.get(b1.getChannelId()).compareTo(errorChannels.get(b2.getChannelId()));
                 } else if (!isError1 && isError2) {
                     return -1;
                 } else {
