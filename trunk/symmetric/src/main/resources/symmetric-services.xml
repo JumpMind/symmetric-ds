@@ -60,14 +60,14 @@
         <property name="defaultChannels">
             <list>
                 <bean class="org.jumpmind.symmetric.model.Channel">
-                    <property name="id" value="config" />
+                    <property name="channelId" value="config" />
                     <property name="processingOrder" value="0" />
                     <property name="maxBatchSize" value="100" />
                     <property name="maxBatchToSend" value="100" />
                     <property name="enabled" value="true" />
                 </bean>
                 <bean class="org.jumpmind.symmetric.model.Channel">
-                    <property name="id" value="reload" />
+                    <property name="channelId" value="reload" />
                     <property name="processingOrder" value="1" />
                     <property name="maxBatchSize" value="1" />
                     <property name="maxBatchToSend" value="10" />
