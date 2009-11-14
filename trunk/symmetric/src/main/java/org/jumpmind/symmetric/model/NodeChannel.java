@@ -36,11 +36,11 @@ public class NodeChannel {
     public NodeChannel(String channelId) {
         channel = new Channel();
         nodeChannelControl = new NodeChannelControl();
-        channel.setId(channelId);
+        channel.setChannelId(channelId);
     }
 
     public String getId() {
-        return channel.getId();
+        return channel.getChannelId();
     }
 
     public int getMaxBatchSize() {
@@ -112,7 +112,7 @@ public class NodeChannel {
     }
 
     public void setId(String id) {
-        channel.setId(id);
+        channel.setChannelId(id);
     }
 
     public void setSuspended(boolean suspended) {
