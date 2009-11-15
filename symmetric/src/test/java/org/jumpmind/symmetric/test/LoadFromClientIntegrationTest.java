@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
 
@@ -43,8 +42,7 @@ public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
         String result = getClientEngine().reloadNode("00000");
         Assert.assertTrue(result, result.startsWith("Successfully opened initial load for node"));
         getClientEngine().push();
-        JdbcTemplate jdbcTemplate = getClientDbDialect().getJdbcTemplate();
-        int initialLoadEnabled = jdbcTemplate.queryForInt("select initial_load_enabled from sym_node_security where node_id='00000'");
+        int initialLoadEnabled = clientJdbcTemplate.queryForInt("select initial_load_enabled from sym_node_security where node_id='00000'");
         Assert.assertEquals(0, initialLoadEnabled);
     }
 

@@ -59,6 +59,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 public class SimpleIntegrationTest extends AbstractIntegrationTest {
@@ -151,8 +152,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         IDbDialect rootDialect = getRootDbDialect();
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 301, "Linus", "1", "42 Blanket Street",
                 "Santa Claus", "IN", 90009, new Date(), new Date(), "This is a test", BINARY_DATA });
-        insertIntoTestTriggerTable(rootDialect, new Object[] { 1, "wow", "mom" });
-        insertIntoTestTriggerTable(rootDialect, new Object[] { 2, "mom", "wow" });
+        insertIntoTestTriggerTable(rootJdbcTemplate, rootDialect, new Object[] { 1, "wow", "mom" });
+        insertIntoTestTriggerTable(rootJdbcTemplate, rootDialect, new Object[] { 2, "mom", "wow" });
 
         INodeService rootNodeService = AppUtils.find(Constants.NODE_SERVICE, getRootEngine());
         INodeService clientNodeService = AppUtils.find(Constants.NODE_SERVICE, getClientEngine());
@@ -192,11 +193,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "Initial load was not successful accordign to the root");
     }
 
-    private void insertIntoTestTriggerTable(IDbDialect dialect, Object[] values) {
+    private void insertIntoTestTriggerTable(JdbcTemplate jdbcTemplate, IDbDialect dialect, Object[] values) {
         Table testTriggerTable = dialect.getTable(null, null, "test_triggers_table", true);
         try {
             dialect.prepareTableForDataLoad(testTriggerTable);
-            dialect.getJdbcTemplate().update(insertTestTriggerTableSql, values);
+            jdbcTemplate.update(insertTestTriggerTableSql, values);
         } finally {
             dialect.cleanupAfterDataLoad(testTriggerTable);
         }
@@ -584,7 +585,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         final String NEW_VALUE = "unique new value one value";
         IDbDialect clientDialect = getClientDbDialect();
-        insertIntoTestTriggerTable(clientDialect, new Object[] { 3, "value one", "value \" two" });
+        insertIntoTestTriggerTable(clientJdbcTemplate, clientDialect, new Object[] { 3, "value one", "value \" two" });
         getClientEngine().push();
         clientJdbcTemplate.update(updateTestTriggerTableSql, new Object[] { NEW_VALUE });
         final String verifySql = "select count(*) from test_triggers_table where string_one_value=?";
@@ -598,7 +599,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         getRootEngine().reOpenRegistration(TestConstants.TEST_CLIENT_EXTERNAL_ID);
         getClientEngine().pull();
-        Assert.assertEquals(1, getRootDbDialect().getJdbcTemplate().queryForInt(isRegistrationClosedSql,
+        Assert.assertEquals(1, rootJdbcTemplate.queryForInt(isRegistrationClosedSql,
                 new Object[] { TestConstants.TEST_CLIENT_EXTERNAL_ID }, new int[] { Types.VARCHAR }));
     }
 

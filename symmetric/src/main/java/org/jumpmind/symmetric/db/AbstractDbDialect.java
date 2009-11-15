@@ -1223,10 +1223,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
         this.streamingResultsFetchSize = streamingResultsFetchSize;
     }
 
-    public JdbcTemplate getJdbcTemplate() {
-        return jdbcTemplate;
-    }
-
     public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
         this.transactionTemplate = transactionTemplate;
     }
@@ -1325,6 +1321,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public void truncateTable(String tableName) {
-        getJdbcTemplate().update("truncate table " + tableName);
+        jdbcTemplate.update("truncate table " + tableName);
     }
 }

@@ -166,8 +166,6 @@ public interface IDbDialect {
 
     public int getStreamingResultsFetchSize();
 
-    public JdbcTemplate getJdbcTemplate();
-
     public String getCreateSymmetricDDL();
 
     public String getCreateTableXML(TriggerRouter triggerRouter);
