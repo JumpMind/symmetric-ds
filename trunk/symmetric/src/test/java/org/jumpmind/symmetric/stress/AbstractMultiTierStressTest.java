@@ -152,7 +152,7 @@ abstract public class AbstractMultiTierStressTest {
     }
 
     protected JdbcTemplate getTemplate(SymmetricWebServer server) {
-        JdbcTemplate t = AppUtils.find(Constants.JDBC, server.getEngine());
+        JdbcTemplate t = AppUtils.find(Constants.JDBC_TEMPLATE, server.getEngine());
         return t;
     }
 

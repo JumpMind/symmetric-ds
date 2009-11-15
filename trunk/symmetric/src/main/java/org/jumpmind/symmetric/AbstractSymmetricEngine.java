@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
@@ -53,8 +54,9 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private IUpgradeService upgradeService;
     private IClusterService clusterService;
     private IPurgeService purgeService;
-    private ITriggerRouterService triggerService;
+    private ITriggerRouterService triggerService;    
     private IDataService dataService;
+    private JdbcTemplate jdbcTemplate;
     private boolean started = false;
     private boolean starting = false;
     private boolean setup = false;
@@ -143,7 +145,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         jobManager.stopJobs();
         removeMeFromMap(registeredEnginesByName);
         removeMeFromMap(registeredEnginesByUrl);
-        DataSource ds = dbDialect.getJdbcTemplate().getDataSource();
+        DataSource ds = jdbcTemplate.getDataSource();
         if (ds instanceof BasicDataSource) {
             try {
                 ((BasicDataSource) ds).close();
@@ -161,6 +163,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         registrationService = null;
         purgeService = null;
         dataService = null;
+        jdbcTemplate = null;
         dbDialect = null;
         started = false;
         starting = false;
@@ -217,6 +220,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         triggerService = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, this);
         dbDialect = AppUtils.find(Constants.DB_DIALECT, this);
         jobManager = AppUtils.find(Constants.JOB_MANAGER, this);
+        jdbcTemplate = AppUtils.find(Constants.JDBC_TEMPLATE, this);
     }
 
     private ApplicationContext createContext(ApplicationContext parentContext) {

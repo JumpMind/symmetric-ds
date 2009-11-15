@@ -164,7 +164,7 @@ final public class Constants {
 
     public static final String PURGE_SERVICE = "purgeService";
 
-    public static final String JDBC = "jdbcTemplate";
+    public static final String JDBC_TEMPLATE = "jdbcTemplate";
     
     public static final String PARENT_PROPERTY_PREFIX = "parent.";
 

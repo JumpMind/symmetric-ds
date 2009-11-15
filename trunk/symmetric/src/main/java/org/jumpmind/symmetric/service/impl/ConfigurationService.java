@@ -340,7 +340,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (fileUrl != null) {
-                new SqlScript(fileUrl, dbDialect.getJdbcTemplate().getDataSource(), true).execute();
+                new SqlScript(fileUrl, dataSource, true).execute();
                 loaded = true;
             }
         }

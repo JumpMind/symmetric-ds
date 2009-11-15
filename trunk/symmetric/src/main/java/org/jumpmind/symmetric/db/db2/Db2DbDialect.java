@@ -157,7 +157,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
     public void truncateTable(String tableName) {
-        getJdbcTemplate().update("delete from " + tableName);
+        jdbcTemplate.update("delete from " + tableName);
     }
     
 }
