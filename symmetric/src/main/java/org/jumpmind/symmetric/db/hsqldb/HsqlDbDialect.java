@@ -66,7 +66,7 @@ public class HsqlDbDialect extends AbstractEmbeddedDbDialect implements IDbDiale
      * old and new columns values to bump SQL expressions up against.
      */
     private void createDummyDualTable() {
-        Table table = getMetaDataFor(null, null, DUAL_TABLE, false);
+        Table table = getTable(null, null, DUAL_TABLE, false);
         if (table == null) {
             jdbcTemplate.update("CREATE MEMORY TABLE " + DUAL_TABLE + "(DUMMY VARCHAR(1))");
             jdbcTemplate.update("INSERT INTO " + DUAL_TABLE + " VALUES(NULL)");

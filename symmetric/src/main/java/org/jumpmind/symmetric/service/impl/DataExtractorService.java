@@ -159,7 +159,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
-            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getMetaDataFor(triggerRouter.getTrigger(),
+            TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
                     false), triggerRouter.getTrigger());
             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
             if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
@@ -246,7 +246,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {
-                    Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
+                    Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId())
                             : new NodeChannel(Constants.CHANNEL_RELOAD);
                     Set<Node> oneNodeSet = new HashSet<Node>();

@@ -489,7 +489,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
-                Table table = dbDialect.getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                Table table = dbDialect.getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
 
                 if (table != null) {
