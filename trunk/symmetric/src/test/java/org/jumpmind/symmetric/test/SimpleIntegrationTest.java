@@ -193,7 +193,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void insertIntoTestTriggerTable(IDbDialect dialect, Object[] values) {
-        Table testTriggerTable = dialect.getMetaDataFor(null, null, "test_triggers_table", true);
+        Table testTriggerTable = dialect.getTable(null, null, "test_triggers_table", true);
         try {
             dialect.prepareTableForDataLoad(testTriggerTable);
             dialect.getJdbcTemplate().update(insertTestTriggerTableSql, values);

@@ -271,7 +271,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 node,
                 this,
                 trigger,
-                getMetaDataFor(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(),
+                getTable(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(),
                         trigger.getTrigger().getSourceTableName(), true)).trim();
     }
 
@@ -283,7 +283,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sqlTemplate.createCsvDataSql(
                 this,
                 trigger,
-                getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
+                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
     }
 
@@ -291,12 +291,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return sqlTemplate.createCsvPrimaryKeySql(
                 this,
                 trigger,
-                getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
+                getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                         .getSourceTableName(), true), whereClause).trim();
     }
 
-    public Table getMetaDataFor(Trigger trigger, boolean useCache) {
-        return getMetaDataFor(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
+    public Table getTable(Trigger trigger, boolean useCache) {
+        return getTable(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(), trigger
                 .getSourceTableName(), useCache);
     }
 
@@ -306,7 +306,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      * Dialect may optionally override this method to more efficiently lookup up table metadata directly against
      * information schemas.
      */
-    public Table getMetaDataFor(String catalogName, String schemaName, String tableName, boolean useCache) {
+    public Table getTable(String catalogName, String schemaName, String tableName, boolean useCache) {
         Table retTable = cachedModel.findTable(tableName);
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
@@ -776,7 +776,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateTableSQL(TriggerRouter trig) {
-        Table table = getMetaDataFor(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger()
+        Table table = getTable(null, trig.getTrigger().getSourceSchemaName(), trig.getTrigger()
                 .getSourceTableName(), true);
         String sql = null;
         try {
@@ -830,7 +830,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 table.setName(tblPrefix + table.getName());
                 fixForeignKeys(table, tblPrefix, false);
 
-                if (getMetaDataFor(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
+                if (getTable(getDefaultCatalog(), getDefaultSchema(), table.getName(), false) == null) {
                     createTables = true;
                 }
             }
@@ -924,7 +924,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String replaceTemplateVariables(DataEventType dml, Trigger trigger, TriggerHistory history,
             String targetString) {
-        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix, getMetaDataFor(trigger
+        return sqlTemplate.replaceTemplateVariables(this, dml, trigger, history, tablePrefix, getTable(trigger
                 .getSourceCatalogName(), trigger.getSourceSchemaName(), trigger.getSourceTableName(), true),
                 getDefaultCatalog(), getDefaultSchema(), targetString);
     }

@@ -291,7 +291,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TriggerRouter> triggerRouters = getTriggerForData(data);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
-                Table table = dbDialect.getMetaDataFor(triggerRouter.getTrigger(), true);
+                Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, context.getChannel());
 
                 context.resetForNextData();

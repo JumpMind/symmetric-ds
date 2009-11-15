@@ -99,7 +99,7 @@ public class TableTemplate {
     }
 
     public void resetMetaData(boolean useCache) {
-        table = dbDialect.getMetaDataFor(catalog, schema, tableName, useCache);
+        table = dbDialect.getTable(catalog, schema, tableName, useCache);
         allMetaData = new HashMap<String, Column>();
         statementMap = new HashMap<DmlType, StatementBuilder>();
         keyMetaData = null;
