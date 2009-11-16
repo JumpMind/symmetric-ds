@@ -107,7 +107,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
-    public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
+    public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 30;
 
     protected JdbcTemplate jdbcTemplate;
 
@@ -199,7 +199,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
      */
     public int getMaxTriggerNameLength() {
         int max = getPlatform().getPlatformInfo().getMaxColumnNameLength();
-        return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE ? max : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
+        return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
 
     public void init(Platform pf) {
