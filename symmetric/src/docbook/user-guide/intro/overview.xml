@@ -51,7 +51,7 @@
                 Because routing no longer takes place in the SymmetricDS triggers, a new mechanism for routing was needed. In
                 SymmetricDS 1.x, the node_select expression was used for specifying the desired data routing. It was a SQL
                 expression that qualified the insert into data_event from the SymmetricDS triggers. In SymmetricDS 2 there is a
-                new extension point called the data router. Data routers are configured in the router table with a router_name and
+                new extension point called the data router. Data routers are configured in the router table with a router_type and
                 a router_expression. We will be providing several different routers that will serve the majority of users routing
                 needs, but the framework is in place for a SymmetricDS programmer to develop domain- or application-specific
                 routers.

@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
- * This data router is invoked when the router_name='column'. The router_expression is always a name value pair of a
+ * This data router is invoked when the router_type='column'. The router_expression is always a name value pair of a
  * column on the table that is being synchronized to the value it should be matched with.
  * <P>
  * The value can be a constant. In the data router the value of the new data is always represented by a string so all
@@ -56,7 +56,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * and return the associated registration_node_id in the list of node id to route to. For example, if the 'price' table
  * was being routed to to a region 1 node based on the store_id, the store_id would be the external_id of a node in the
  * registration_redirect table and the router_expression for trigger entry for the 'price' table would be
- * 'store_id=:REDIRECT_NODE' and the router_name would be 'column'.
+ * 'store_id=:REDIRECT_NODE' and the router_type would be 'column'.
  * 
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {

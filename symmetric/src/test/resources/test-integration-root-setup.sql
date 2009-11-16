@@ -39,7 +39,7 @@ insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last
 
 insert into sym_trigger        (trigger_id,                source_table_name,    channel_id,                              sync_on_update_condition,                              sync_on_insert_condition,  last_update_time,      create_time)
                          values(    '4500',              'test_order_header', 'testchannel', '$(newTriggerValue).$(newColumnPrefix)status = ''C''', '$(newTriggerValue).$(newColumnPrefix)status = ''C''', current_timestamp,current_timestamp);
-insert into sym_router  (router_id,source_node_group_id, target_node_group_id,   router_name, router_expression,       create_time,  last_update_time) 
+insert into sym_router  (router_id,source_node_group_id, target_node_group_id,   router_type, router_expression,       create_time,  last_update_time) 
                   values(   '4500',   'test-root-group',    'test-node-group',      'column',         'STATUS=C', current_timestamp, current_timestamp);  
 insert into sym_trigger_router (trigger_id, router_id, initial_load_order,  last_update_time,       create_time)
                          values(    '4500',    '4500',                  1, current_timestamp, current_timestamp);

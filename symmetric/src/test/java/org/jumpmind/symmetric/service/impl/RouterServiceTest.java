@@ -97,7 +97,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterName("column");
+        trigger1.getRouter().setRouterType("column");
         trigger1.getRouter().setRouterExpression("ROUTING_VARCHAR=:NODE_ID");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
@@ -136,7 +136,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterName("subselect");
+        trigger1.getRouter().setRouterType("subselect");
         trigger1.getRouter().setRouterExpression("c.node_id=:ROUTING_VARCHAR");
         getTriggerRouterService().saveTriggerRouter(trigger1);
         getTriggerRouterService().syncTriggers();
@@ -178,7 +178,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getTrigger().setSyncOnIncomingBatch(true);
         trigger1.getRouter().setRouterExpression(null);
-        trigger1.getRouter().setRouterName(null);
+        trigger1.getRouter().setRouterType(null);
         getTriggerRouterService().saveTriggerRouter(trigger1);
 
         NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
@@ -212,7 +212,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterName("column");
+        trigger1.getRouter().setRouterType("column");
         // set up a constant to force the data to be routed through the column
         // data matcher, but to everyone
         trigger1.getRouter().setRouterExpression("ROUTING_VARCHAR=00001");
@@ -250,7 +250,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterName("bsh");
+        trigger1.getRouter().setRouterType("bsh");
         trigger1.getRouter().setRouterExpression(
                 "targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
 
@@ -303,7 +303,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
 
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
-        trigger1.getRouter().setRouterName("bsh");
+        trigger1.getRouter().setRouterType("bsh");
         trigger1.getRouter().setRouterExpression(
                 "targetNodes.add(ROUTING_VARCHAR); targetNodes.add(OLD_ROUTING_VARCHAR);");
         getTriggerRouterService().saveTriggerRouter(trigger1);
