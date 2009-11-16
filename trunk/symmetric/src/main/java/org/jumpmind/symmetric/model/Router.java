@@ -50,7 +50,7 @@ public class Router {
 
     private String targetCatalogName;
 
-    private String routerName = null;
+    private String routerType = null;
 
     /**
      * Default to routing all data to all nodes.
@@ -158,12 +158,12 @@ public class Router {
         this.targetCatalogName = targetCatalogName;
     }
 
-    public void setRouterName(String routerName) {
-        this.routerName = routerName;
+    public void setRouterType(String routerName) {
+        this.routerType = routerName;
     }
 
-    public String getRouterName() {
-        return routerName;
+    public String getRouterType() {
+        return routerType;
     }
 
     public void setInitialLoadSelect(String intialLoadSelect) {

@@ -369,10 +369,10 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected IDataRouter getDataRouter(TriggerRouter trigger) {
         IDataRouter router = null;
-        if (!StringUtils.isBlank(trigger.getRouter().getRouterName())) {
-            router = routers.get(trigger.getRouter().getRouterName());
+        if (!StringUtils.isBlank(trigger.getRouter().getRouterType())) {
+            router = routers.get(trigger.getRouter().getRouterType());
             if (router == null) {
-                log.warn("RouterMissing", trigger.getRouter().getRouterName(), trigger.getTrigger().getTriggerId());
+                log.warn("RouterMissing", trigger.getRouter().getRouterType(), trigger.getTrigger().getTriggerId());
             }
         }
 

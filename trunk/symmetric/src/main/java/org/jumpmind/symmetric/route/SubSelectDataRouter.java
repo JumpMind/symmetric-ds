@@ -33,7 +33,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 /**
- * This data router is invoked when the router_name is 'subselect'. The router_expression is always a SQL expression
+ * This data router is invoked when the router_type is 'subselect'. The router_expression is always a SQL expression
  * that is used to find the list of nodes a row of data will be routed to. This router should never be used for high throughput
  * tables because it makes a call back to the database for each row that is routed.
  * <P/>

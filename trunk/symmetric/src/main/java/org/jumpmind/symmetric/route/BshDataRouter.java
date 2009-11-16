@@ -14,7 +14,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * This data router is invoked when the router_name is 'bsh'. The router_expression is always a bean shell expression.  See
+ * This data router is invoked when the router_type is 'bsh'. The router_expression is always a bean shell expression.  See
  * <a href='http://www.beanshell.org'>the bean shell site</a> for information about the capabilities of the bean shell scripting
  * language.
  * <P/>

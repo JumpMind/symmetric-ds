@@ -354,7 +354,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         router.setLastUpdateTime(new Date());
         if (0 == jdbcTemplate.update(getSql("updateRouterSql"), new Object[] { router.getTargetCatalogName(),
                 router.getTargetSchemaName(), router.getTargetTableName(), router.getSourceNodeGroupId(),
-                router.getTargetNodeGroupId(), router.getRouterName(), router.getRouterExpression(),
+                router.getTargetNodeGroupId(), router.getRouterType(), router.getRouterExpression(),
                 router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
                 router.getInitialLoadSelect(), router.getLastUpdateBy(), router.getLastUpdateTime(),
                 router.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -363,7 +363,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             router.setCreateTime(router.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertRouterSql"), new Object[] { router.getTargetCatalogName(),
                     router.getTargetSchemaName(), router.getTargetTableName(), router.getSourceNodeGroupId(),
-                    router.getTargetNodeGroupId(), router.getRouterName(), router.getRouterExpression(),
+                    router.getTargetNodeGroupId(), router.getRouterType(), router.getRouterExpression(),
                     router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
                     router.getInitialLoadSelect(), router.getCreateTime(), router.getLastUpdateBy(),
                     router.getLastUpdateTime(), router.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
@@ -714,7 +714,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (!StringUtils.isBlank(condition)) {
                 trig.getRouter().setRouterExpression(condition);
             }
-            trig.getRouter().setRouterName(rs.getString("router_name"));
+            trig.getRouter().setRouterType(rs.getString("router_type"));
             trig.getRouter().setRouterId(rs.getString("router_id"));
             trig.getRouter().setCreateTime(rs.getTimestamp("r_create_time"));
             trig.getRouter().setLastUpdateTime(rs.getTimestamp("r_last_update_time"));
