@@ -53,7 +53,7 @@
     </category>
 
     <!--
-        Enable this to see extract output <category name="org.jumpmind.symmetric.extract.csv"> <priority value="DEBUG"
+        Enable this to see extract output <category name="org.jumpmind.symmetric.util.CsvUtils"> <priority value="DEBUG"
         /> </category>
     -->
 
