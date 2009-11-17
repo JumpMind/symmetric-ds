@@ -1248,17 +1248,17 @@ abstract public class AbstractDbDialect implements IDbDialect {
         String triggerName = null;
         switch (dml) {
         case INSERT:
-            if (trigger.getNameForInsertTrigger() != null) {
+            if (!StringUtils.isBlank(trigger.getNameForInsertTrigger())) {
                 triggerName = trigger.getNameForInsertTrigger();
             }
             break;
         case UPDATE:
-            if (trigger.getNameForUpdateTrigger() != null) {
+            if (!StringUtils.isBlank(trigger.getNameForUpdateTrigger())) {
                 triggerName = trigger.getNameForUpdateTrigger();
             }
             break;
         case DELETE:
-            if (trigger.getNameForDeleteTrigger() != null) {
+            if (!StringUtils.isBlank(trigger.getNameForDeleteTrigger())) {
                 triggerName = trigger.getNameForDeleteTrigger();
             }
             break;
