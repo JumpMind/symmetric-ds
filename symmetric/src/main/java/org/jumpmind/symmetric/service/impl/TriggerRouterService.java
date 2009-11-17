@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -279,9 +280,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected List<TriggerHistory> getInactiveTriggerHistories() {
-        return (List<TriggerHistory>) jdbcTemplate.query(getSql("allTriggerHistSql")
-                + getSql("inactiveTriggerHistoryWhereSql") + "'" + tablePrefix.toUpperCase() + "_%'",
+        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
+                + getSql("inactiveTriggerHistoryWhereSql"),
                 new TriggerHistoryMapper());
+        for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
+            TriggerHistory triggerHistory = iterator.next();
+            if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
+                iterator.remove();
+            }            
+        }
+        return hists;
     }
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId,
