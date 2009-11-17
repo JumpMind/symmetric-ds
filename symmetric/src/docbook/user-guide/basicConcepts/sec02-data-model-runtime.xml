@@ -173,14 +173,6 @@
                             <entry></entry>
                             <entry>The date and time when this entry was recorded.</entry>
                         </row>
-                        <row>
-                            <entry>inactive_time</entry>
-                            <entry>timestamp</entry>
-                            <entry>Y</entry>
-                            <entry></entry>
-                            <entry></entry>
-                            <entry>The date and time when a Trigger was inactivated.</entry>
-                        </row>
                     </tbody>
                 </tgroup>
             </table>

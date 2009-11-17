@@ -69,7 +69,7 @@
     </entry>
     <entry key="selectTriggerRouterPrefixSql">
       <value>select 
-          t.trigger_id,t.channel_id,t.source_table_name,t.inactive_time,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
+          t.trigger_id,t.channel_id,t.source_table_name,t.sync_on_insert,t.sync_on_update,t.sync_on_delete,r.sync_on_insert as r_sync_on_insert,r.sync_on_update as r_sync_on_update,r.sync_on_delete as r_sync_on_delete,t.sync_on_incoming_batch,t.excluded_column_names,
           t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,t.source_schema_name,t.source_catalog_name,
           t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,t.tx_id_expression,t.create_time as t_create_time,
           t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by, 
@@ -88,19 +88,19 @@
     </entry>
     <entry key="activeTriggersForSourceNodeGroupSql">
       <value>
-          where r.source_node_group_id = ? and t.inactive_time is null
+          where r.source_node_group_id = ?
       </value>
     </entry>
     <entry key="activeTriggersForReloadSql">
       <value>
         where r.source_node_group_id = ? and
-        r.target_node_group_id = ? and t.channel_id != ? and t.inactive_time is null order by
+        r.target_node_group_id = ? and t.channel_id != ? order by
         tr.initial_load_order
       </value>
     </entry>
     <entry key="inactiveTriggersForSourceNodeGroupSql">
       <value>
-        where r.source_node_group_id = ? and t.inactive_time is not null
+        where r.source_node_group_id = ?
       </value>
     </entry>
     <entry key="allTriggerHistSql">
@@ -139,8 +139,8 @@
         (source_catalog_name,source_schema_name,source_table_name,channel_id,sync_on_update,sync_on_insert,sync_on_delete,
          sync_on_incoming_batch,name_for_update_trigger,name_for_insert_trigger,name_for_delete_trigger,
          sync_on_update_condition,sync_on_insert_condition,sync_on_delete_condition,tx_id_expression,excluded_column_names,
-         create_time,inactive_time,last_update_by,last_update_time,trigger_id)
-        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         create_time,last_update_by,last_update_time,trigger_id)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       </value>
     </entry>
     <entry key="updateTriggerSql">
@@ -150,8 +150,7 @@
          channel_id=?,sync_on_update=?,sync_on_insert=?,sync_on_delete=?,
          sync_on_incoming_batch=?,name_for_update_trigger=?,name_for_insert_trigger=?,
          name_for_delete_trigger=?,sync_on_update_condition=?,sync_on_insert_condition=?,
-         sync_on_delete_condition=?,tx_id_expression=?,excluded_column_names=?,
-         inactive_time=?,last_update_by=?,last_update_time=?
+         sync_on_delete_condition=?,tx_id_expression=?,excluded_column_names=?,last_update_by=?,last_update_time=?
         where trigger_id=?
       </value>
     </entry>   

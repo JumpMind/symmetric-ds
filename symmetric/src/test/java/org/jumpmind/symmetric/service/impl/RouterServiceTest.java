@@ -206,8 +206,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     }
 
-    @Ignore
-    @Test
+    //@Test
     public void testLargeNumberOfEventsToManyNodes() {
         resetBatches();
 

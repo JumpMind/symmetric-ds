@@ -128,7 +128,6 @@
         <column name="tx_id_expression" type="VARCHAR" size="500"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
         <column name="excluded_column_names" type="CLOB"  description="Specify a comma-delimited list of columns that should not be synchronized from this table." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <column name="inactive_time" type="TIMESTAMP"  description="Timestamp when this entry was inactivated, which stops capturing of data changes." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
     </table>

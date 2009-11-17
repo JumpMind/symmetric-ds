@@ -98,7 +98,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         int expectedCount = origCount
                 + getJdbcTemplate()
                         .update(
-                                "update sym_trigger set last_update_time=? where inactive_time is null and trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
+                                "update sym_trigger set last_update_time=? where trigger_id in (select trigger_id from sym_trigger_router where router_id in (select router_id from sym_router where source_node_group_id=?))",
                                 new Object[] { lastUpdateTime.getTime(), TestConstants.TEST_ROOT_NODE_GROUP });
 
         service.syncTriggers();
@@ -184,20 +184,6 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
         assertTrue(match, "Received " + csvString + ", Expected the string to end with "
                 + EXPECTED_INSERT2_CSV_ENDSWITH);
-    }
-
-    @Test
-    public void inactivateTriggersTest() throws Exception {
-        JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        jdbcTemplate.update("update sym_trigger set inactive_time=current_timestamp where source_table_name='"
-                + TEST_TRIGGERS_TABLE + "'");
-        getSymmetricEngine().syncTriggers();
-
-        Assert.assertEquals(1, insert(INSERT3_VALUES, jdbcTemplate, getDbDialect()));
-        String csvString = getNextDataRow();
-        Assert.assertNotSame(UNEXPECTED_INSERT3_CSV_ENDSWITH, csvString,
-                "Data was captured when it should not have been");
-
     }
 
     @Test
