@@ -20,19 +20,7 @@ set channel_id = 'price',
     last_update_by = 'jsmith',
     last_update_time = current_timestamp
 where source_table_name = 'price_changes';
-]]></programlisting>
-            
-            The Trigger entry can be inactivated, which would drop the triggers (and any functions 
-            used by them) from the database.  For example, dropping all the triggers used by the
-            client node group would be accomplished with the following statement:
-            
-            <programlisting>
-<![CDATA[update SYM_TRIGGER
-set inactive_time = current_timestamp,
-    last_update_by = 'jsmith',
-    last_update_time = current_timestamp
-where source_node_group_id = 'client';
-]]></programlisting>
+]]></programlisting>            
             All configuration should be managed centrally at the registration node.  If enabled, configuration 
             changes will be synchronized out to client nodes.  When trigger changes reach the client
             nodes the Sync Triggers process will run automatically.

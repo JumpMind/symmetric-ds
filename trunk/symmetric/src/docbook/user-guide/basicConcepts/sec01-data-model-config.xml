@@ -868,17 +868,6 @@
                             <entry>Timestamp when this entry was created.</entry>
                         </row>
                         <row>
-                            <entry>inactive_time</entry>
-                            <entry>timestamp</entry>
-                            <entry>Y</entry>
-                            <entry></entry>
-                            <entry></entry>
-                            <entry>
-                                Timestamp when this entry was inactivated, which stops capturing of
-                                data changes.
-                            </entry>
-                        </row>
-                        <row>
                             <entry>last_update_by</entry>
                             <entry>varchar(50)</entry>
                             <entry>Y</entry>

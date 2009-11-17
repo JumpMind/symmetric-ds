@@ -84,8 +84,6 @@ public class Trigger {
      */
     private String txIdExpression = null;
 
-    private Date inactiveTime;
-
     private Date createTime;
 
     private Date lastUpdateTime;
@@ -310,14 +308,6 @@ public class Trigger {
                 maxTriggerId = id + 1;
             }
         }
-    }
-
-    public Date getInactiveTime() {
-        return inactiveTime;
-    }
-
-    public void setInactiveTime(Date inactiveTime) {
-        this.inactiveTime = inactiveTime;
     }
 
     public boolean isSyncOnIncomingBatch() {
