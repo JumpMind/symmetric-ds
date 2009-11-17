@@ -278,10 +278,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
     }
 
-    public List<TriggerRouter> getInactiveTriggerRouters(String sourceNodeGroupId) {
-        return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
-                + getSql("inactiveTriggersForSourceNodeGroupSql"), new Object[] { sourceNodeGroupId },
-                new TriggerRouterMapper());
+    protected List<TriggerHistory> getInactiveTriggerHistories() {
+        return (List<TriggerHistory>) jdbcTemplate.query(getSql("allTriggerHistSql")
+                + getSql("inactiveTriggerHistoryWhereSql"), new Object[] { tablePrefix.toUpperCase() + "_%" },
+                new TriggerHistoryMapper());
     }
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId,
@@ -429,23 +429,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void removeInactiveTriggers(StringBuilder sqlBuffer) {
-        List<Trigger> triggers = new TriggerSelector(getInactiveTriggerRouters(parameterService
-                .getString(ParameterConstants.NODE_GROUP_ID))).select();
-        for (Trigger trigger : triggers) {
-            TriggerHistory history = getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
-            if (history != null) {
+        List<TriggerHistory> triggers = getInactiveTriggerHistories();
+        for (TriggerHistory history : triggers) {
                 log.info("TriggersRemoving", history.getSourceTableName());
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForInsertTrigger(), trigger.getSourceTableName(), history);
+                        history.getNameForInsertTrigger(), history.getSourceTableName(), history);
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForDeleteTrigger(), trigger.getSourceTableName(), history);
+                        history.getNameForDeleteTrigger(), history.getSourceTableName(), history);
                 dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForUpdateTrigger(), trigger.getSourceTableName(), history);
+                        history.getNameForUpdateTrigger(), history.getSourceTableName(), history);
 
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                     if (this.triggerCreationListeners != null) {
                         for (ITriggerCreationListener l : this.triggerCreationListeners) {
-                            l.triggerInactivated(trigger, history);
+                            l.triggerInactivated(null, history);
                         }
                     }
                 }
@@ -461,10 +458,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 } else {
                     inactivateTriggerHistory(history);
                 }
-
-            } else {
-                log.info("TriggersRemovingSkipped");
-            }
         }
     }
 
