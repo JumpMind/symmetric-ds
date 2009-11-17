@@ -241,17 +241,21 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getExternalId() {
-        return getString(ParameterConstants.EXTERNAL_ID);
+        return getWithHostName(ParameterConstants.EXTERNAL_ID);
     }
 
     public String getSyncUrl() {
-        String syncUrl = getString(ParameterConstants.SYNC_URL);
-        if (!StringUtils.isBlank(syncUrl)) {
-            syncUrl = AppUtils.replace("hostName", AppUtils.getHostName(), syncUrl);
-        }
-        return syncUrl;
+        return getWithHostName(ParameterConstants.SYNC_URL);
     }
-
+    
+    protected String getWithHostName(String paramKey) {
+        String value = getString(paramKey);
+        if (!StringUtils.isBlank(value)) {
+            value = AppUtils.replace("hostName", AppUtils.getHostName(), value);
+        }
+        return value;
+    }
+    
     public String getNodeGroupId() {
         return getString(ParameterConstants.NODE_GROUP_ID);
     }

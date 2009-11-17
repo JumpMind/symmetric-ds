@@ -107,7 +107,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected final ILog log = LogFactory.getLog(getClass());
 
-    public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 30;
+    public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected JdbcTemplate jdbcTemplate;
 
