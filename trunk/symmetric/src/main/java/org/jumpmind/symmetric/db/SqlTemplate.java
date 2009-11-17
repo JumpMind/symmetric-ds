@@ -369,9 +369,9 @@ public class SqlTemplate {
 
     // TODO: move to DerbySqlTemplate or change language for use in all DBMSes
     private String getPrimaryKeyWhereString(String alias, Column[] columns) {
-        StringBuilder b = new StringBuilder();
+        StringBuilder b = new StringBuilder("'");
         for (Column column : columns) {
-            b.append("'\"").append(column.getName()).append("\"=");
+            b.append("\"").append(column.getName()).append("\"=");
             switch (column.getTypeCode()) {
             case Types.BIT:
             case Types.TINYINT:
