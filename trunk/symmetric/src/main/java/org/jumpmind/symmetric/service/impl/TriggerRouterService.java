@@ -280,7 +280,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected List<TriggerHistory> getInactiveTriggerHistories() {
         return (List<TriggerHistory>) jdbcTemplate.query(getSql("allTriggerHistSql")
-                + getSql("inactiveTriggerHistoryWhereSql"), new Object[] { tablePrefix.toUpperCase() + "_%" },
+                + getSql("inactiveTriggerHistoryWhereSql") + "'" + tablePrefix.toUpperCase() + "_%'",
                 new TriggerHistoryMapper());
     }
 

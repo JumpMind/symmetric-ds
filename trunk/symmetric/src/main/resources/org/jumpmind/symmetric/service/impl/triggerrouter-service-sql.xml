@@ -100,7 +100,7 @@
     </entry>
     <entry key="inactiveTriggerHistoryWhereSql">
       <value>
-        where trigger_id not in (select trigger_id from $[sym.sync.table.prefix]_trigger) and source_table_name not like ?
+        where trigger_id not in (select trigger_id from $[sym.sync.table.prefix]_trigger) and source_table_name not like 
       </value>
     </entry>
     <entry key="allTriggerHistSql">
