@@ -98,9 +98,9 @@
         tr.initial_load_order
       </value>
     </entry>
-    <entry key="inactiveTriggersForSourceNodeGroupSql">
+    <entry key="inactiveTriggerHistoryWhereSql">
       <value>
-        where r.source_node_group_id = ?
+        where trigger_id not in (select trigger_id from $[sym.sync.table.prefix]_trigger) and source_table_name not like ?
       </value>
     </entry>
     <entry key="allTriggerHistSql">

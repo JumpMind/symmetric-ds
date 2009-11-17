@@ -53,8 +53,6 @@ public interface ITriggerRouterService {
 
     public List<TriggerRouter> getActiveTriggerRoutersForReload(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public List<TriggerRouter> getInactiveTriggerRouters(String sourceNodeGroupId);
-
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId);
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
