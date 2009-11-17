@@ -51,7 +51,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
             triggerRouter.setRouter(new Router());
             // The initial_load_select can be overridden
             if (data.getRowData() != null) {      
-                triggerRouter.getRouter().setInitialLoadSelect(data.getRowData());
+                triggerRouter.setInitialLoadSelect(data.getRowData());
             }
             Node node = nodeService.findNode(context.getBatch().getNodeId());
             dataExtractorService.extractInitialLoadWithinBatchFor(node, triggerRouter, out, context);

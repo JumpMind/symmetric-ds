@@ -98,8 +98,7 @@ public class DataService extends AbstractService implements IDataService {
         // initial_load_select for table can be overridden by populating the
         // row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD,
-                overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter.getRouter()
-                        .getInitialLoadSelect(), null, history, Constants.CHANNEL_RELOAD, null, null);
+                overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter.getInitialLoadSelect(), null, history, Constants.CHANNEL_RELOAD, null, null);
         insertDataAndDataEvent(data, targetNode.getNodeId(), triggerRouter.getRouter().getRouterId());
     }
 
