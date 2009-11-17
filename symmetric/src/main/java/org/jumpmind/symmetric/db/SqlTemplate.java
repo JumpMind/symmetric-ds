@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.util.AppUtils;
 
 public class SqlTemplate {
 
@@ -104,18 +105,18 @@ public class SqlTemplate {
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT).columnString;
-        sql = replace("columns", columnsText, sql);
-        sql = replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
-        sql = replace("tableName", trig.getTrigger().getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getTrigger().getSourceSchemaName() != null ? trig.getTrigger().getSourceSchemaName() + "." : "", sql);
-        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
+        sql = AppUtils.replace("columns", columnsText, sql);
+        sql = AppUtils.replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
+        sql = AppUtils.replace("tableName", trig.getTrigger().getSourceTableName(), sql);
+        sql = AppUtils.replace("schemaName", trig.getTrigger().getSourceSchemaName() != null ? trig.getTrigger().getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 
         // Replace these parameters to give the initiaLoadContition a chance to
         // reference the node that is being loaded
-        sql = replace("groupId", node.getNodeGroupId(), sql);
-        sql = replace("externalId", node.getExternalId(), sql);
-        sql = replace("nodeId", node.getNodeId(), sql);
+        sql = AppUtils.replace("groupId", node.getNodeGroupId(), sql);
+        sql = AppUtils.replace("externalId", node.getExternalId(), sql);
+        sql = AppUtils.replace("nodeId", node.getNodeId(), sql);
 
         return sql;
     }
@@ -130,12 +131,12 @@ public class SqlTemplate {
         Column[] columns = trig.orderColumnsForTable(metaData);
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT).columnString;
-        sql = replace("columns", columnsText, sql);
+        sql = AppUtils.replace("columns", columnsText, sql);
 
-        sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
-        sql = replace("whereClause", whereClause, sql);
-        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
+        sql = AppUtils.replace("tableName", trig.getSourceTableName(), sql);
+        sql = AppUtils.replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("whereClause", whereClause, sql);
+        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
 
         return sql;
@@ -147,12 +148,12 @@ public class SqlTemplate {
         Column[] columns = metaData.getPrimaryKeyColumns();
         String columnsText = buildColumnString(dialect.getInitialLoadTableAlias(), dialect.getInitialLoadTableAlias(),
                 "", columns, dialect, DataEventType.INSERT).columnString;
-        sql = replace("columns", columnsText, sql);
+        sql = AppUtils.replace("columns", columnsText, sql);
 
-        sql = replace("tableName", trig.getSourceTableName(), sql);
-        sql = replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
-        sql = replace("whereClause", whereClause, sql);
-        sql = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), columns),
+        sql = AppUtils.replace("tableName", trig.getSourceTableName(), sql);
+        sql = AppUtils.replace("schemaName", trig.getSourceSchemaName() != null ? trig.getSourceSchemaName() + "." : "", sql);
+        sql = AppUtils.replace("whereClause", whereClause, sql);
+        sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), columns),
                 sql);
 
         return sql;
@@ -201,84 +202,84 @@ public class SqlTemplate {
         boolean resolveSchemaAndCatalogs = trigger.getSourceCatalogName() != null
                 || trigger.getSourceSchemaName() != null;
 
-        ddl = replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
+        ddl = AppUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history), ddl);
 
-        ddl = replace("defaultSchema",
+        ddl = AppUtils.replace("defaultSchema",
                 resolveSchemaAndCatalogs && defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "."
                         : "", ddl);
-        ddl = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+        ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
 
-        ddl = replace("triggerName", dialect.getTriggerName(dml, dialect.getMaxTriggerNameLength(),
+        ddl = AppUtils.replace("triggerName", dialect.getTriggerName(dml, dialect.getMaxTriggerNameLength(),
                 trigger, history).toUpperCase(), ddl);
-        ddl = replace("prefixName", tablePrefix, ddl);
-        ddl = replace("channelName", trigger.getChannelId(), ddl);
-        ddl = replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
+        ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
+        ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
+        ddl = AppUtils.replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog, defaultSchema, trigger);
         if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
             triggerExpression = trigger.getTxIdExpression();
         }
-        ddl = replace("txIdExpression", dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
-        ddl = replace("syncOnInsertCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
+        ddl = AppUtils.replace("txIdExpression", dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
+        ddl = AppUtils.replace("syncOnInsertCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
                 ddl);
-        ddl = replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
+        ddl = AppUtils.replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
                 ddl);
-        ddl = replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
+        ddl = AppUtils.replace("syncOnDeleteCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnDeleteCondition()),
                 ddl);
         String syncTriggersExpression = dialect.getSyncTriggersExpression();
-        syncTriggersExpression = replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
+        syncTriggersExpression = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", syncTriggersExpression);
-        syncTriggersExpression = replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
+        syncTriggersExpression = AppUtils.replace("defaultSchema", resolveSchemaAndCatalogs && defaultSchema != null
                 && defaultSchema.length() > 0 ? defaultSchema + "." : "", syncTriggersExpression);
-        ddl = replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1"
+        ddl = AppUtils.replace("syncOnIncomingBatchCondition", trigger.isSyncOnIncomingBatch() ? "1=1"
                 : syncTriggersExpression, ddl);
-        ddl = replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
+        ddl = AppUtils.replace("origTableAlias", ORIG_TABLE_ALIAS, ddl);
 
         Column[] columns = trigger.orderColumnsForTable(metaData);
         ColumnString columnString = buildColumnString(ORIG_TABLE_ALIAS, newTriggerValue, newColumnPrefix, columns, dialect, dml);
-        ddl = replace("columns", columnString.columnString, ddl);
-        ddl = replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
+        ddl = AppUtils.replace("columns", columnString.columnString, ddl);
+        ddl = AppUtils.replace("virtualOldNewTable", buildVirtualTableSql(dialect, oldColumnPrefix, newColumnPrefix, metaData.getColumns()),
                 ddl);
-        ddl = replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
+        ddl = AppUtils.replace("oldColumns", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
         ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
 
         // some column templates need tableName and schemaName
-        ddl = replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);
-        ddl = replace("schemaName", (history == null ? (resolveSchemaAndCatalogs
+        ddl = AppUtils.replace("tableName", history == null ? trigger.getSourceTableName() : history.getSourceTableName(), ddl);
+        ddl = AppUtils.replace("schemaName", (history == null ? (resolveSchemaAndCatalogs
                 && trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() + "." : "")
                 : (resolveSchemaAndCatalogs && history.getSourceSchemaName() != null ? history.getSourceSchemaName()
                         + "." : "")), ddl);
 
         columns = metaData.getPrimaryKeyColumns();
-        ddl = replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
-        ddl = replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
-        ddl = replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
-        ddl = replace("primaryKeyWhereString", getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue : newTriggerValue, columns), ddl);
+        ddl = AppUtils.replace("oldKeys", buildColumnString(ORIG_TABLE_ALIAS, oldTriggerValue, oldColumnPrefix, columns, dialect, dml).columnString, ddl);
+        ddl = AppUtils.replace("oldNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(oldTriggerValue, newTriggerValue, columns), ddl);
+        ddl = AppUtils.replace("tableNewPrimaryKeyJoin", aliasedPrimaryKeyJoin(ORIG_TABLE_ALIAS, newTriggerValue, columns), ddl);
+        ddl = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dml == DataEventType.DELETE ? oldTriggerValue : newTriggerValue, columns), ddl);
 
-        ddl = replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"), ddl);
-        ddl = replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"), ddl);
-        ddl = replace("oldKeyNames", buildColumnNameString(oldTriggerValue, columns), ddl);
-        ddl = replace("newKeyNames", buildColumnNameString(newTriggerValue, columns), ddl);
-        ddl = replace("oldKeyVariables", buildKeyVariablesString(columns, "old"), ddl);
-        ddl = replace("newKeyVariables", buildKeyVariablesString(columns, "new"), ddl);
-        ddl = replace("varNewPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
-        ddl = replace("varOldPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", columns), ddl);
+        ddl = AppUtils.replace("declareOldKeyVariables", buildKeyVariablesDeclare(columns, "old"), ddl);
+        ddl = AppUtils.replace("declareNewKeyVariables", buildKeyVariablesDeclare(columns, "new"), ddl);
+        ddl = AppUtils.replace("oldKeyNames", buildColumnNameString(oldTriggerValue, columns), ddl);
+        ddl = AppUtils.replace("newKeyNames", buildColumnNameString(newTriggerValue, columns), ddl);
+        ddl = AppUtils.replace("oldKeyVariables", buildKeyVariablesString(columns, "old"), ddl);
+        ddl = AppUtils.replace("newKeyVariables", buildKeyVariablesString(columns, "new"), ddl);
+        ddl = AppUtils.replace("varNewPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(newTriggerValue, "new", columns), ddl);
+        ddl = AppUtils.replace("varOldPrimaryKeyJoin", aliasedPrimaryKeyJoinVar(oldTriggerValue, "old", columns), ddl);
 
         // replace $(newTriggerValue) and $(oldTriggerValue)
-        ddl = replace("newTriggerValue", newTriggerValue, ddl);
-        ddl = replace("oldTriggerValue", oldTriggerValue, ddl);
-        ddl = replace("newColumnPrefix", newColumnPrefix, ddl);
-        ddl = replace("oldColumnPrefix", oldColumnPrefix, ddl);
+        ddl = AppUtils.replace("newTriggerValue", newTriggerValue, ddl);
+        ddl = AppUtils.replace("oldTriggerValue", oldTriggerValue, ddl);
+        ddl = AppUtils.replace("newColumnPrefix", newColumnPrefix, ddl);
+        ddl = AppUtils.replace("oldColumnPrefix", oldColumnPrefix, ddl);
         switch (dml) {
         case DELETE:
-            ddl = replace("curTriggerValue", oldTriggerValue, ddl);
-            ddl = replace("curColumnPrefix", oldColumnPrefix, ddl);
+            ddl = AppUtils.replace("curTriggerValue", oldTriggerValue, ddl);
+            ddl = AppUtils.replace("curColumnPrefix", oldColumnPrefix, ddl);
             break;
         case INSERT:
         case UPDATE:
         default:
-            ddl = replace("curTriggerValue", newTriggerValue, ddl);
-            ddl = replace("curColumnPrefix", newColumnPrefix, ddl);
+            ddl = AppUtils.replace("curTriggerValue", newTriggerValue, ddl);
+            ddl = AppUtils.replace("curColumnPrefix", newColumnPrefix, ddl);
             break;
         }
         return ddl;
@@ -487,7 +488,7 @@ public class SqlTemplate {
             }
 
             columnsText = columnsText + "\n          "
-                    + replace("columnName", String.format("%s%s", columnPrefix, column.getName()), templateToUse);
+                    + AppUtils.replace("columnName", String.format("%s%s", columnPrefix, column.getName()), templateToUse);
 
         }
 
@@ -506,8 +507,8 @@ public class SqlTemplate {
             columnsText = columnsText.substring(0, columnsText.length() - lastCommandToken.length());
         }
 
-        columnsText = replace("origTableAlias", origTableAlias, columnsText);
-        columnsText = replace("tableAlias", tableAlias, columnsText);
+        columnsText = AppUtils.replace("origTableAlias", origTableAlias, columnsText);
+        columnsText = AppUtils.replace("tableAlias", tableAlias, columnsText);
         return new ColumnString(columnsText, isBlobClob);
     }
 
@@ -597,10 +598,6 @@ public class SqlTemplate {
         return text;
     }
 
-    private String replace(String prop, String replaceWith, String sourceString) {
-        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
-    }
-
     public void setStringColumnTemplate(String columnTemplate) {
         this.stringColumnTemplate = columnTemplate;
     }
@@ -679,9 +676,9 @@ public class SqlTemplate {
 
     public String getFunctionSql(String functionKey, String functionName, String defaultSchema) {
         if (this.functionTemplatesToInstall != null) {
-            String ddl = replace("functionName", functionName, this.functionTemplatesToInstall.get(functionKey));
-            ddl = replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = replace("defaultSchema",
+            String ddl = AppUtils.replace("functionName", functionName, this.functionTemplatesToInstall.get(functionKey));
+            ddl = AppUtils.replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = AppUtils.replace("defaultSchema",
                     defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
             return ddl;
         } else {
@@ -691,9 +688,9 @@ public class SqlTemplate {
 
     public String getFunctionInstalledSql(String functionName, String defaultSchema) {
         if (functionInstalledSql != null) {
-            String ddl = replace("functionName", functionName, functionInstalledSql);
-            ddl = replace("version", Version.versionWithUnderscores(), ddl);
-            ddl = replace("defaultSchema",
+            String ddl = AppUtils.replace("functionName", functionName, functionInstalledSql);
+            ddl = AppUtils.replace("version", Version.versionWithUnderscores(), ddl);
+            ddl = AppUtils.replace("defaultSchema",
                     defaultSchema != null && defaultSchema.length() > 0 ? defaultSchema + "." : "", ddl);
             return ddl;
         } else {

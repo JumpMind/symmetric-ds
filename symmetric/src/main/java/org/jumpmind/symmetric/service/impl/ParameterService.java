@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -244,7 +245,11 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getSyncUrl() {
-        return getString(ParameterConstants.SYNC_URL);
+        String syncUrl = getString(ParameterConstants.SYNC_URL);
+        if (!StringUtils.isBlank(syncUrl)) {
+            syncUrl = AppUtils.replace("hostName", AppUtils.getHostName(), syncUrl);
+        }
+        return syncUrl;
     }
 
     public String getNodeGroupId() {
