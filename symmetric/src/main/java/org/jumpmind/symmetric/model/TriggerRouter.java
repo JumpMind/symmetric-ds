@@ -42,6 +42,8 @@ public class TriggerRouter {
      * This is the order in which the definitions will be processed.
      */
     private int initialLoadOrder;
+    
+    private String initialLoadSelect;
 
     private Trigger trigger;
 
@@ -113,6 +115,14 @@ public class TriggerRouter {
 
     public Trigger getTrigger() {
         return trigger;
+    }
+    
+    public void setInitialLoadSelect(String initialLoadSelect) {
+        this.initialLoadSelect = initialLoadSelect;
+    }
+    
+    public String getInitialLoadSelect() {
+        return initialLoadSelect;
     }
 
     public boolean isRouted(DataEventType event) {

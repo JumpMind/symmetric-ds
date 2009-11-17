@@ -157,7 +157,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             TriggerRouter trigger = buildRegistrationTriggerRouter(tableName, syncChanges, sourceGroupId, targetGroupId);
             trigger.setInitialLoadOrder(initialLoadOrder++);
             String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(tableName);
-            trigger.getRouter().setInitialLoadSelect(initialLoadSelect);
+            trigger.setInitialLoadSelect(initialLoadSelect);
             triggers.add(trigger);
         }
         return triggers;
@@ -166,7 +166,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected TriggerRouter buildRegistrationTriggerRouter(String tableName, boolean syncChanges, String sourceGroupId,
             String targetGroupId) {
         boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
+
         TriggerRouter triggerRouter = new TriggerRouter();
+        triggerRouter.setInitialLoadSelect(rootConfigChannelInitialLoadSelect.get(tableName));
+        
         Trigger trigger = triggerRouter.getTrigger();
         trigger.setTriggerId(Integer.toString(Math.abs(tableName.hashCode() + targetGroupId.hashCode())));
         trigger.setSyncOnDelete(syncChanges && autoSyncConfig);
@@ -179,13 +182,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         Router router = triggerRouter.getRouter();
         router.setSourceNodeGroupId(sourceGroupId);
         router.setTargetNodeGroupId(targetGroupId);
-        router.setInitialLoadSelect(rootConfigChannelInitialLoadSelect.get(tableName));
 
         // little trick to force the rebuild of sym triggers every time
         // there is a new version of symmetricds
         trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
         router.setLastUpdateTime(trigger.getLastUpdateTime());
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
+
         return triggerRouter;
     }
 
@@ -338,15 +341,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         saveRouter(triggerRouter.getRouter());
         triggerRouter.setLastUpdateTime(new Date());
         if (0 == jdbcTemplate.update(getSql("updateTriggerRouterSql"), new Object[] {
-                triggerRouter.getInitialLoadOrder(), triggerRouter.getLastUpdateBy(),
+                triggerRouter.getInitialLoadOrder(), triggerRouter.getInitialLoadSelect(), triggerRouter.getLastUpdateBy(),
                 triggerRouter.getLastUpdateTime(), triggerRouter.getTrigger().getTriggerId(),
-                triggerRouter.getRouter().getRouterId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.TIMESTAMP,
+                triggerRouter.getRouter().getRouterId() }, new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                 Types.VARCHAR, Types.VARCHAR })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertTriggerRouterSql"), new Object[] { triggerRouter.getInitialLoadOrder(),
-                    triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(), triggerRouter.getLastUpdateTime(),
+                    triggerRouter.getInitialLoadSelect(), triggerRouter.getCreateTime(), triggerRouter.getLastUpdateBy(), triggerRouter.getLastUpdateTime(),
                     triggerRouter.getTrigger().getTriggerId(), triggerRouter.getRouter().getRouterId() }, new int[] {
-                    Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
+                    Types.INTEGER, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -356,19 +359,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 router.getTargetSchemaName(), router.getTargetTableName(), router.getSourceNodeGroupId(),
                 router.getTargetNodeGroupId(), router.getRouterType(), router.getRouterExpression(),
                 router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
-                router.getInitialLoadSelect(), router.getLastUpdateBy(), router.getLastUpdateTime(),
+                router.getLastUpdateBy(), router.getLastUpdateTime(),
                 router.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,  Types.SMALLINT, Types.SMALLINT,
-                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
+                Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
             router.setCreateTime(router.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertRouterSql"), new Object[] { router.getTargetCatalogName(),
                     router.getTargetSchemaName(), router.getTargetTableName(), router.getSourceNodeGroupId(),
                     router.getTargetNodeGroupId(), router.getRouterType(), router.getRouterExpression(),
                     router.isSyncOnUpdate() ? 1 : 0, router.isSyncOnInsert() ? 1 : 0, router.isSyncOnDelete() ? 1 : 0,
-                    router.getInitialLoadSelect(), router.getCreateTime(), router.getLastUpdateBy(),
+                    router.getCreateTime(), router.getLastUpdateBy(),
                     router.getLastUpdateTime(), router.getRouterId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                    Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
+                    Types.SMALLINT, Types.SMALLINT, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP,
                     Types.VARCHAR });
         }
     }
@@ -707,7 +710,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trig.getRouter().setTargetTableName(rs.getString("target_table_name"));
             trig.getRouter().setTargetNodeGroupId(rs.getString("target_node_group_id"));
             trig.getTrigger().setExcludedColumnNames(rs.getString("excluded_column_names"));
-            trig.getRouter().setInitialLoadSelect(rs.getString("initial_load_select"));
 
             condition = rs.getString("router_expression");
             if (!StringUtils.isBlank(condition)) {
@@ -723,6 +725,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trig.setLastUpdateTime(rs.getTimestamp("last_update_time"));
             trig.setLastUpdateBy(rs.getString("last_update_by"));
             trig.setInitialLoadOrder(rs.getInt("initial_load_order"));
+            trig.setInitialLoadSelect(rs.getString("initial_load_select"));
 
             return trig;
         }

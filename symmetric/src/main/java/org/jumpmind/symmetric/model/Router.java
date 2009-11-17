@@ -63,8 +63,6 @@ public class Router {
 
     private boolean syncOnDelete = true;
     
-    private String initialLoadSelect = null;
-
     private Date createTime;
 
     private Date lastUpdateTime;
@@ -164,14 +162,6 @@ public class Router {
 
     public String getRouterType() {
         return routerType;
-    }
-
-    public void setInitialLoadSelect(String intialLoadSelect) {
-        this.initialLoadSelect = intialLoadSelect;
-    }
-
-    public String getInitialLoadSelect() {
-        return initialLoadSelect;
     }
 
     public String getRouterExpression() {
