@@ -55,7 +55,7 @@ public class AppUtils {
                 serverId = System.getProperty("bind.address", null);
                 if (StringUtils.isBlank(serverId)) {
                     try {
-                        serverId = InetAddress.getLocalHost().getHostName();
+                        serverId = getHostName();
                     } catch (Exception ex) {
                         serverId = "unknown";
                     }
@@ -63,6 +63,20 @@ public class AppUtils {
             }
         }
         return serverId;
+    }
+    
+    public static String getHostName() {
+        String hostName = System.getProperty("host.name", "unknown");
+        try {
+            hostName = InetAddress.getLocalHost().getHostName();
+        } catch (Exception ex) {
+            log.warn(ex);
+        }
+        return hostName;
+    }
+    
+    public static String replace(String prop, String replaceWith, String sourceString) {
+        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
     /**
