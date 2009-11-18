@@ -216,7 +216,7 @@ public class SqlTemplate {
         ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
         ddl = AppUtils.replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
         String triggerExpression = dialect.getTransactionTriggerExpression(defaultCatalog, defaultSchema, trigger);
-        if (dialect.isTransactionIdOverrideSupported() && trigger.getTxIdExpression() != null) {
+        if (dialect.isTransactionIdOverrideSupported() && !StringUtils.isBlank(trigger.getTxIdExpression())) {
             triggerExpression = trigger.getTxIdExpression();
         }
         ddl = AppUtils.replace("txIdExpression", dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
