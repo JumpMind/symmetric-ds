@@ -237,7 +237,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#reOpenRegistration(String)
      */
-    public void reOpenRegistration(String nodeId) {
+    public synchronized void reOpenRegistration(String nodeId) {
         Node node = nodeService.findNode(nodeId);
         String password = nodeService.getNodeIdGenerator().generatePassword(nodeService, node);
         password = filterPasswordOnSaveIfNeeded(password);
@@ -258,14 +258,14 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#openRegistration(String, String)
      * @return The nodeId of the registered node
      */
-    public String openRegistration(String nodeGroup, String externalId) {
+    public synchronized String openRegistration(String nodeGroup, String externalId) {
         Node node = new Node();
         node.setExternalId(externalId);
         node.setNodeGroupId(nodeGroup);
         return openRegistration(node);
     }
 
-    protected String openRegistration(Node node) {
+    protected synchronized String openRegistration(Node node) {
         Node me = nodeService.findIdentity();
         if (me != null || (parameterService.getExternalId().equals(node.getExternalId()) && parameterService.getNodeGroupId().equals(node.getNodeGroupId()))) {
             String nodeId = nodeService.getNodeIdGenerator().generateNodeId(nodeService, node);
