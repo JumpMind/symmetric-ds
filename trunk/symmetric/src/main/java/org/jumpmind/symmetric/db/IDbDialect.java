@@ -81,7 +81,7 @@ public interface IDbDialect {
      */
     public boolean doesDatabaseNeedConfigured();
 
-    public void initSyncDb();
+    public void initTablesAndFunctions();
 
     public Platform getPlatform();
 
