@@ -226,7 +226,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void autoConfigDatabase(boolean force) {
         if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
             log.info("SymmetricDSDatabaseInitializing");
-            dbDialect.initSyncDb();
+            dbDialect.initTablesAndFunctions();
             autoConfigChannels();
             autoConfigRegistrationServer();
             parameterService.rereadParameters();

@@ -221,10 +221,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     abstract protected void initForSpecificDialect();
 
-    public void initSyncDb() {
+    public void initTablesAndFunctions() {
         initForSpecificDialect();
         addPrefixAndCreateTablesIfNecessary(getSupportDatabaseFromDdl());
         createRequiredFunctions();
+        resetCachedTableModel();
     }
 
     final public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName) {
