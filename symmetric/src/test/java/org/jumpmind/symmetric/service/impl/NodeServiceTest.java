@@ -91,7 +91,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
     public void testFindNodeSecurity() throws Exception {
         NodeSecurity node = nodeService.findNodeSecurity("00001");
         assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
-        assertEquals(node.getPassword(), "secret", "Wrong password");
+        assertEquals(node.getNodePassword(), "secret", "Wrong password");
         assertEquals(node.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertEquals(node.getRegistrationTime().toString(), "2007-01-01 01:01:01.0", "Wrong registrationTime");
     }
@@ -101,7 +101,7 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         NodeSecurity node = nodeService.findNodeSecurity("00001");
         nodeService.setNodePasswordFilter(new MockNodePasswordFilter());
         assertEquals(node.getNodeId(), "00001", "Wrong nodeId");
-        assertEquals(node.getPassword(), "secret", "Wrong password");
+        assertEquals(node.getNodePassword(), "secret", "Wrong password");
         assertEquals(node.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertEquals(node.getRegistrationTime().toString(), "2007-01-01 01:01:01.0", "Wrong registrationTime");
     }

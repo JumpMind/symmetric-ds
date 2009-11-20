@@ -175,7 +175,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         NodeSecurity security = nodeService.findNodeSecurity(nodeId);
         String securityToken = "none";
         if (security != null) {
-            securityToken = security.getPassword();
+            securityToken = security.getNodePassword();
         }
         sb.append(securityToken);
         return sb.toString();
