@@ -61,7 +61,7 @@ public class DerbyFunctions {
     }
 
     public static void insertData(String schemaName, String prefixName, String tableName, String channelName,
-            String dmlType, long triggerHistId, String transactionId, String targetGroupId, String nodeSelectWhere,
+            String dmlType, int triggerHistId, String transactionId, String targetGroupId, String nodeSelectWhere,
             String pkData, String rowData, String oldRowData) throws SQLException {
         if (((dmlType.equals("I") || dmlType.equals("U")) && rowData != null)
                 || (dmlType.equals("D") && pkData != null)) {
