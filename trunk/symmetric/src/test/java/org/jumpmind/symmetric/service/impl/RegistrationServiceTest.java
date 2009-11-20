@@ -105,7 +105,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         NodeSecurity security = nodeService.findNodeSecurity("00002");
         assertEquals(security.getNodeId(), "00002", "Wrong nodeId");
-        assertNotSame(security.getPassword(), null, "Wrong password");
+        assertNotSame(security.getNodePassword(), null, "Wrong password");
         assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
     }
@@ -161,7 +161,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         NodeSecurity security = nodeService.findNodeSecurity("00008");
         assertEquals(security.getNodeId(), "00008", "Wrong nodeId");
-        assertNotSame(security.getPassword(), null, "Wrong password");
+        assertNotSame(security.getNodePassword(), null, "Wrong password");
         assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
 
@@ -206,7 +206,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         registrationService.reOpenRegistration("00003");
         NodeSecurity security = nodeService.findNodeSecurity("00003");
         assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
-        assertNotSame(security.getPassword(), "notsecret", "Wrong password");
+        assertNotSame(security.getNodePassword(), "notsecret", "Wrong password");
         assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
         assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
 
@@ -233,7 +233,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         security = nodeService.findNodeSecurity("00003");
         assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
-        assertNotSame(security.getPassword(), "notsecret", "Wrong password");
+        assertNotSame(security.getNodePassword(), "notsecret", "Wrong password");
         assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
     }
@@ -260,7 +260,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         NodeSecurity security = nodeService.findNodeSecurity("00005");
         assertEquals(security.getNodeId(), "00005", "Wrong nodeId");
-        assertNotSame(security.getPassword(), null, "Wrong password");
+        assertNotSame(security.getNodePassword(), null, "Wrong password");
         assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
         assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
     }

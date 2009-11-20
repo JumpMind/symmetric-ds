@@ -141,7 +141,7 @@ public class NodeService extends AbstractService implements INodeService {
                     insertNodeSecurity(nodeId);
                     security = findNodeSecurity(nodeId, false);
                 } else if (security != null) {
-                    security.setPassword(filterPasswordOnRenderIfNeeded(security.getPassword()));
+                    security.setNodePassword(filterPasswordOnRenderIfNeeded(security.getNodePassword()));
                 }
                 return security;
             } else {
@@ -208,8 +208,8 @@ public class NodeService extends AbstractService implements INodeService {
 
         NodeSecurity nodeSecurity = securityCache.get(id);
         if (nodeSecurity != null
-                && ((nodeSecurity.getPassword() != null && !nodeSecurity.getPassword().equals("") && nodeSecurity
-                        .getPassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
+                && ((nodeSecurity.getNodePassword() != null && !nodeSecurity.getNodePassword().equals("") && nodeSecurity
+                        .getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
             return true;
         }
         return false;
@@ -262,10 +262,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean updateNodeSecurity(NodeSecurity security) {
         flushNodeAuthorizedCache();
-        security.setPassword(filterPasswordOnSaveIfNeeded(security.getPassword()));
-        return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getPassword(),
+        security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
+        return jdbcTemplate.update(getSql("updateNodeSecuritySql"), new Object[] { security.getNodePassword(),
                 security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedByNodeId(),
+                security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedAtNodeId(),
                 security.getNodeId() }, new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                 Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR }) == 1;
     }
@@ -308,12 +308,12 @@ public class NodeService extends AbstractService implements INodeService {
         public NodeSecurity mapRow(ResultSet rs, int num) throws SQLException {
             NodeSecurity nodeSecurity = new NodeSecurity();
             nodeSecurity.setNodeId(rs.getString(1));
-            nodeSecurity.setPassword(rs.getString(2));
+            nodeSecurity.setNodePassword(rs.getString(2));
             nodeSecurity.setRegistrationEnabled(rs.getBoolean(3));
             nodeSecurity.setRegistrationTime(rs.getTimestamp(4));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean(5));
             nodeSecurity.setInitialLoadTime(rs.getTimestamp(6));
-            nodeSecurity.setCreatedByNodeId(rs.getString(7));
+            nodeSecurity.setCreatedAtNodeId(rs.getString(7));
             return nodeSecurity;
         }
     }

@@ -29,7 +29,7 @@ public class NodeSecurity {
 
     private String nodeId;
 
-    private String password;
+    private String nodePassword;
 
     private boolean registrationEnabled;
 
@@ -39,7 +39,7 @@ public class NodeSecurity {
 
     private Date initialLoadTime;
     
-    private String createdByNodeId;
+    private String createdAtNodeId;
 
     public String getNodeId() {
         return nodeId;
@@ -49,12 +49,12 @@ public class NodeSecurity {
         this.nodeId = nodeId;
     }
 
-    public String getPassword() {
-        return password;
+    public String getNodePassword() {
+        return nodePassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setNodePassword(String password) {
+        this.nodePassword = password;
     }
 
     public boolean isRegistrationEnabled() {
@@ -89,12 +89,12 @@ public class NodeSecurity {
         this.initialLoadTime = initialLoadTime;
     }
 
-    public String getCreatedByNodeId() {
-        return createdByNodeId;
+    public String getCreatedAtNodeId() {
+        return createdAtNodeId;
     }
 
-    public void setCreatedByNodeId(String createdByNodeId) {
-        this.createdByNodeId = createdByNodeId;
+    public void setCreatedAtNodeId(String createdByNodeId) {
+        this.createdAtNodeId = createdByNodeId;
     }
 
 }
