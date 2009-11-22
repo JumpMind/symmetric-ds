@@ -36,7 +36,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -233,28 +233,28 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public List<Node> findNodesToPull() {
-        return findSourceNodesFor(DataEventAction.WAIT_FOR_PULL);
+        return findSourceNodesFor(NodeGroupLinkAction.W);
     }
 
     public List<Node> findNodesToPushTo() {
-        return findTargetNodesFor(DataEventAction.PUSH);
+        return findTargetNodesFor(NodeGroupLinkAction.P);
     }
 
-    public List<Node> findSourceNodesFor(DataEventAction eventAction) {
+    public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
             return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoTargetMeSql"), new Object[] {
-                    node.getNodeGroupId(), eventAction.getCode() }, new NodeRowMapper());
+                    node.getNodeGroupId(), eventAction.name() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
         }
     }
 
-    public List<Node> findTargetNodesFor(DataEventAction eventAction) {
+    public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         Node node = findIdentity();
         if (node != null) {
             return jdbcTemplate.query(getSql("selectNodePrefixSql") + getSql("findNodesWhoITargetSql"), new Object[] {
-                    node.getNodeGroupId(), eventAction.getCode() }, new NodeRowMapper());
+                    node.getNodeGroupId(), eventAction.name() }, new NodeRowMapper());
         } else {
             return Collections.emptyList();
         }

@@ -40,7 +40,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.SqlScript;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
@@ -215,11 +215,11 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId) {
+    public NodeGroupLinkAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId) {
         String code = (String) jdbcTemplate.queryForObject(getSql("selectDataEventActionsByIdSql"), new Object[] {
                 sourceGroupId, targetGroupId }, String.class);
 
-        return DataEventAction.fromCode(code);
+        return NodeGroupLinkAction.fromCode(code);
     }
 
     @Transactional
@@ -397,7 +397,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             NodeGroupLink node_groupTarget = new NodeGroupLink();
             node_groupTarget.setSourceNodeGroupId(rs.getString(1));
             node_groupTarget.setTargetNodeGroupId(rs.getString(2));
-            node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs.getString(3)));
+            node_groupTarget.setDataEventAction(NodeGroupLinkAction.fromCode(rs.getString(3)));
             return node_groupTarget;
         }
     }

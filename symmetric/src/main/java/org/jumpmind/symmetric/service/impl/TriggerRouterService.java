@@ -41,7 +41,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
@@ -132,10 +132,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
         List<NodeGroupLink> links = configurationService.getGroupLinksFor(sourceNodeGroupId);
         for (NodeGroupLink nodeGroupLink : links) {
-            if (nodeGroupLink.getDataEventAction().equals(DataEventAction.WAIT_FOR_PULL)) {
+            if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.W)) {
                 triggers.addAll(getTriggerRoutersForRegistration(nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
                         .getTargetNodeGroupId()));
-            } else if (nodeGroupLink.getDataEventAction().equals(DataEventAction.PUSH)) {
+            } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
                 triggers.add(buildRegistrationTriggerRouter(TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_NODE), false, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
                         .getTargetNodeGroupId()));
@@ -629,7 +629,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             NodeGroupLink node_groupTarget = new NodeGroupLink();
             node_groupTarget.setSourceNodeGroupId(rs.getString(1));
             node_groupTarget.setTargetNodeGroupId(rs.getString(2));
-            node_groupTarget.setDataEventAction(DataEventAction.fromCode(rs.getString(3)));
+            node_groupTarget.setDataEventAction(NodeGroupLinkAction.fromCode(rs.getString(3)));
             return node_groupTarget;
         }
     }

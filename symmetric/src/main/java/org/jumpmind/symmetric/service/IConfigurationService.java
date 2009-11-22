@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -51,7 +51,7 @@ public interface IConfigurationService {
 
     public List<NodeGroupChannelWindow> getNodeGroupChannelWindows(String nodeGroupId, String channelId);
 
-    public DataEventAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
+    public NodeGroupLinkAction getDataEventActionsByGroupId(String sourceGroupId, String targetGroupId);
 
     public List<NodeChannel> getNodeChannels();
 

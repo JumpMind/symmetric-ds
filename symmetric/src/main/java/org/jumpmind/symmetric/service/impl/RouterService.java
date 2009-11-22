@@ -40,7 +40,7 @@ import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
@@ -204,8 +204,8 @@ public class RouterService extends AbstractService implements IRouterService {
         Set<Node> nodes = context.getAvailableNodes().get(trigger);
         if (nodes == null) {
             nodes = new HashSet<Node>();
-            nodes.addAll(nodeService.findTargetNodesFor(DataEventAction.PUSH));
-            nodes.addAll(nodeService.findTargetNodesFor(DataEventAction.WAIT_FOR_PULL));
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
+            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
             filterDisabledNodes(nodes);
             context.getAvailableNodes().put(trigger, nodes);
         }
