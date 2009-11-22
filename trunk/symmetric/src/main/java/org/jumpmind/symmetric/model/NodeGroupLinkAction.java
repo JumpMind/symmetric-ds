@@ -20,32 +20,21 @@
 
 package org.jumpmind.symmetric.model;
 
-import org.jumpmind.symmetric.util.ICoded;
 
 /**
  * Identifies the action to take when the event watcher sees events in the event
  * table.
  */
-public enum DataEventAction implements ICoded {
+public enum NodeGroupLinkAction {
 
-    PUSH("P"), WAIT_FOR_PULL("W");
+    P, W;
 
-    private String code;
-
-    DataEventAction(String code) {
-        this.code = code;
-    }
-
-    public String getCode() {
-        return this.code;
-    }
-
-    public static DataEventAction fromCode(String code) {
+    public static NodeGroupLinkAction fromCode(String code) {
         if (code != null && code.length() > 0) {
-            if (PUSH.code.equals(code)) {
-                return PUSH;
-            } else if (WAIT_FOR_PULL.code.equals(code)) {
-                return WAIT_FOR_PULL;
+            if (P.name().equals(code)) {
+                return P;
+            } else if (W.name().equals(code)) {
+                return W;
             }
         }
         return null;

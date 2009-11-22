@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
-import org.jumpmind.symmetric.model.DataEventAction;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -87,11 +87,11 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-    public List<Node> findSourceNodesFor(DataEventAction eventAction) {
+    public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {
         return null;
     }
 
-    public List<Node> findTargetNodesFor(DataEventAction eventAction) {
+    public List<Node> findTargetNodesFor(NodeGroupLinkAction eventAction) {
         return null;
     }
 

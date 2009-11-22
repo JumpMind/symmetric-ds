@@ -28,13 +28,13 @@ public class NodeGroupLink {
 
     private String targetNodeGroupId;
 
-    private DataEventAction dataEventAction = DataEventAction.WAIT_FOR_PULL;
+    private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
 
-    public DataEventAction getDataEventAction() {
+    public NodeGroupLinkAction getDataEventAction() {
         return dataEventAction;
     }
 
-    public void setDataEventAction(DataEventAction dataEventAction) {
+    public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         this.dataEventAction = dataEventAction;
     }
 
