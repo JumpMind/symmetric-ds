@@ -3,30 +3,37 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Introduction</title>
-    <section id="ch01-intro">
+    <section id="intro">
         <title>Introduction</title>
-        <section id="ch01-definition">
+        <para>Welcome to SymmetricDS!  This User's Guide will introduce you to both basic and advanced concepts and configuration of SymmetricDS.
+        This chapter servers as a high-level introduction to SymmetricDS.  By the end of this Chapter, you will have a better understanding of 
+        SymmetricDS' capabilities,
+        and many of its basic concepts.  This chapter ends with a hands-on, step-by-step, tutorial meant to demonstrate some of the potential 
+        applications for SymmetricDS. </para>
+        <section id="definition">
             <title>What is SymmetricDS?</title>
-            <para> SymmetricDS is asynchronous data replication software supporting multiple subscribers and bi-directional
+            <para> SymmetricDS is an asynchronous data replication software package that supports multiple subscribers and bi-directional
                 synchronization. It uses web and database technologies to replicate tables between relational databases in near
                 real time. The software was designed to scale for a large number of databases, work across low-bandwidth
                 connections, and withstand periods of network outage.</para>
             <para>
-                The software is installed either standalone, as a web application in a Java application server or can be embedded
+                The software can be installed as a standalone process, as a web application in a Java application server, or it can be embedded
                 into another Java application. A single installation of SymmetricDS is called a
-                <emphasis>Node</emphasis>
-                . A Node is initialized by a properties file and is configured by inserting configuration data into a series of
-                database tables. It then creates database triggers on the application tables specified so that database events are
+                <emphasis>Node</emphasis>. A Node is initialized by a properties file and is configured by inserting configuration data into a series of
+                database tables. It then creates database triggers on the application tables to be synchronized so that database events are
                 captured for delivery to other SymmetricDS nodes.
             </para>
             <para> SymmetricDS supports synchronization across different database platforms through the concept of database
-                dialects. A database dialect is an abstraction layer that SymmetricDS interacts with to insulated the main
+                <emphasis>dialects</emphasis>. A database dialect is an abstraction layer that SymmetricDS interacts with to insulated the main
                 synchronization logic from database specific implementation details.</para>
+               
         </section>
-        <section id="ch01-whats-new">
-            <title>What's new in Symmetric 2.0</title>
-            <para> SymmetricDS 2.x builds upon the existing SymmetricDS 1.x software base and incorporates a number of changes and
-                improvements to take SymmetricDS to the next level of performance.</para>
+        <section id="whats-new">
+            <title>What's new in SymmetricDS 2.x</title>
+            
+            <para> SymmetricDS 2.x builds upon the existing SymmetricDS 1.x software base and incorporates a number of architectural changes and
+                performance improvements.  If you are brand new to SymmetricDS, you can safely skip this section.  If you have used SymmetricDS 1.x 
+                in the past, this section summarizes the key differences you will encounter when moving to 2.x.</para>
             <para>The first significant architectural change involves SymmetricDS's use of triggers. In 1.x, triggers capture and
                 record both data changes and the nodes to which the changes must be applied as row inserts into the data_event
                 table. Thus, the number of row-inserts grows linearly with the number of client nodes. This can lead to an obvious
@@ -83,7 +90,7 @@
                 <itemizedlist>
                     <listitem>Batching can have the traditional SymmetricDS 1.x behavior of batching up to a max batch size but
                         never breaking on a database transaction boundary.</listitem>
-                    <listitem> Batching can be completely tied to a database transaction. One batch per database transaction.
+                    <listitem>Batching can be completely tied to a database transaction. One batch per database transaction.
                     </listitem>
                     <listitem>Batching can ignore database transactions altogether and always batch based on a max batch size.
                     </listitem>
@@ -96,10 +103,15 @@
                 statistics, have been moved over to the batch tables. The statistics in the batch tables now always represent the
                 latest synchronization attempt.</para>
         </section>
+        <section>
+        <title>SymmetricDS Features</title>
+        <para>At a high level, SymmetricDS comes with a number of features that you are likely to need or want when doing data synchronization.  
+        A majority of these features were created as a direct result of real-world use of SymmetricDS in production settings.</para>
+        </section>
         <section id="ch01-notification">
             <title>Notification Schemes</title>
             <para> After a change to the database is recorded, the nodes interested in the change are notified. Change
-                notification is configured to perform a push (trickle-back) or a pull (trickle-poll) of data. When several nodes
+                notification is configured to perform a <emphasis>push</emphasis> (trickle-back) or a <emphasis>pull</emphasis> (trickle-poll) of data. When several nodes
                 target their changes to a central node, it is efficient to push the changes instead of waiting for the central
                 node to pull from each source node. When network configuration protects a node with a firewall, a pull
                 configuration allows the node to receive data changes that might otherwise be blocked using push. The frequency of
