@@ -3,6 +3,8 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
+   
+   <!--  THESE FILES ARE OBSOLETE in 2.0's USER'S GUIDE -->
     <title>Configuration Data Model</title>
     <para>
         The configuration is entered by the user into the data model to control the behavior of what
