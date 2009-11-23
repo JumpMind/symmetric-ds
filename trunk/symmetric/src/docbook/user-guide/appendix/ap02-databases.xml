@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<appendix version="5.0" xml:id="ap02-databases" xmlns="http://docbook.org/ns/docbook"
+<appendix version="5.0" xml:id="databases" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
          xmlns:ns="http://docbook.org/ns/docbook"
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
-    <title id="databases">Database Notes</title>
+    <title>Database Notes</title>
     <para>
         Each database management system has its own characteristics that results in
         feature coverage in SymmetricDS.  The following table shows which features are available

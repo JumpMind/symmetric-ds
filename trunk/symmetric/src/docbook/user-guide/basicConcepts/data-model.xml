@@ -1,21 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section version="5.0" xml:id="ch03-concepts" xmlns="http://docbook.org/ns/docbook"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
-    xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
+<section version="5.0" xml:id="ch03-concepts" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Data Model</title>
-    <para>
-        Many of the data synchronization concepts can be understood by examining the data model. The
-        configuration data model is stored in a set of tables updated by the user as needed to
-        configure the system. In contrast, the set of tables for the runtime data model change
-        constantly as the system captures data changes and records the activity to deliver them.
+    <para> Having done a brief introduction to some fundamental terms, what follows is the complete SymmetricDS data model.
+        Note that all tables are prepended with a configurable prefix so that multiple instances of SymmetricDS may coexist in the
+        same database. The default prefix is
+        <emphasis>sym_</emphasis>
+        .
     </para>
-    <para>
-        Note that all tables are prepended with a configurable prefix so that multiple instances of SymmetricDS
-        may coexist in the same database.  The default prefix is <emphasis>sym_</emphasis>. 
-    </para>
-
-    <xi:include href="sec01-data-model-config.xml" />
-    <xi:include href="sec02-data-model-runtime.xml" />
-
+    <section>
+        <title>Configuration Data Model</title>
+        <para> The configuration is entered by the user into the data model to control the behavior of what data is synchronized
+            to which nodes. To ease management of several databases, nodes are put into groups, and groups are linked together for
+            synchronization. A trigger captures data for a table, which can include conditions and criteria for subsets. Triggers
+            are grouped into channels for prioritization and control of data flow.</para>
+        <para>
+            <figure>
+                <title>Configuration Data Model</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../../../images/data-model-config.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+    </section>
+    <section>
+        <title>Runtime Data Model</title>
+        <para> At runtime, the configuration is used to capture data changes and route them to nodes. The data changes are placed
+            together in a single unit called a batch that can be loaded by another node. Outgoing batches are delivered to nodes
+            and acknowledged. Incoming batches are received and loaded. History is recorded for batch status changes and
+            statistics.</para>
+        <para>
+            <figure>
+                <title>Runtime Data Model</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="../../../images/data-model-runtime.gif" format="GIF" />
+                    </imageobject>
+                </mediaobject>
+            </figure>
+        </para>
+    </section>
+    
+    <xi:include href="../../schema/symmetric-schema.xml" />
+    
 </section>
