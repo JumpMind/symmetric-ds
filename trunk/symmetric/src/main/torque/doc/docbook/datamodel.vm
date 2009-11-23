@@ -17,12 +17,7 @@
 ## under the License.
 #set ( $database = $dataModel )
 
-<appendix version="5.0" xml:id="chapter-$dataModel.name" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
-    xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
-
-    <title>SymmetricDS Data Model</title>
-    <section id="data-model">
+ <section id="data-model">
     <title>Data Model</title>
     
     
@@ -54,5 +49,5 @@
 	  #foreach ($tbl in $database.tables)
 	    $generator.parse("doc/docbook/table.vm",$outFile,"table",$tbl)
 	  #end
-    </section>
-</appendix>
+</section>
+
