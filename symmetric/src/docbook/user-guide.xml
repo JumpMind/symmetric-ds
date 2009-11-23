@@ -41,13 +41,13 @@
     <preface>
         <title>Preface</title>
         <para>
-            SymmetricDS is web-enabled, database independent, data synchronization software. It uses
+            SymmetricDS is an open-source, web-enabled, database independent, data synchronization software application. It uses
             web and database technologies to replicate tables between relational databases in near
             real time. The software was designed to scale for a large number of databases, work
-            across low-bandwidth connections, and withstand periods of network outage.
+            across low-bandwidth connections, and withstand periods of network outages.
         </para>
         <para>
-            This User Guide describes the SymmetricDS library for data synchronization. It is
+            This User Guide introduces SymmetricDS and its uses for data synchronization. It is
             intended for users who want to be quickly familiarized with the software, configure it,
             and use its features.
         </para>
