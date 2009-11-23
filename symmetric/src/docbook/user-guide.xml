@@ -54,7 +54,7 @@
     </preface>
 
     <xi:include href="user-guide/intro/overview.xml" />
-    <xi:include href="user-guide/basicConcepts/basic-terms.xml" />
+    <xi:include href="user-guide/basicConcepts/concepts.xml" />
     <xi:include href="user-guide/arch/ch04-architecture.xml" />
     <xi:include href="user-guide/basicConfig/ch05-basic-configuration.xml" />
     <xi:include href="user-guide/advConfig/ch06-advanced-configuration.xml" />
@@ -64,6 +64,5 @@
     <xi:include href="user-guide/appendix/ap02-databases.xml" />
     <xi:include href="user-guide/appendix/ap03-data-format.xml" />
     <xi:include href="user-guide/appendix/ap04-version-numbering.xml" />
-    <xi:include href="schema/symmetric-schema.xml" />
 
 </book>

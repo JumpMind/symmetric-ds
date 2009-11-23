@@ -136,7 +136,7 @@
             <para>At a high level, SymmetricDS comes with a number of features that you are likely to need or want when doing data
                 synchronization. A majority of these features were created as a direct result of real-world use of SymmetricDS in
                 production settings.</para>
-        </section>
+       
         <section id="notification">
             <title>Notification Schemes</title>
             <para>
@@ -248,6 +248,7 @@
                 any other event type.</para>
         </section>
     </section>
+     </section>
     <section id="requirements">
         <title>Requirements</title>
         <para> SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or Java SE Development Kit (JDK)
