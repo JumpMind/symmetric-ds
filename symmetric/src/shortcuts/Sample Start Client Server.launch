@@ -12,7 +12,7 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.jumpmind.symmetric.SymmetricLauncher"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-v -p client.properties --port 9090 --server"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-p client.properties --port 9090 --server"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="symmetric"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:symmetric/src/main/deploy/samples}"/>
 </launchConfiguration>
