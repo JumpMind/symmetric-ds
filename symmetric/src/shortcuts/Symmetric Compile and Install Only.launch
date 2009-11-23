@@ -5,7 +5,7 @@
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
 <mapEntry key="JAVA_HOME" value="C:\anf-sdk\jdk\jdk1.5.0_15"/>
 </mapAttribute>
-<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="C:\anf-sdk\maven\apache-maven-2.0.9\bin\mvn.bat"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="${system_path:/mvn.bat}"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-Dmaven.test.skip=true clean install"/>
 <stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="${workspace_loc:/symmetric}"/>
 </launchConfiguration>
