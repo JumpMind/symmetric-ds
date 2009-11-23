@@ -32,10 +32,10 @@
         </section>
         <section id="background">
             <title>Background</title>
-            <para>The idea of SymmetricDS was born from a real-word need.  Several of the original developers were, several years ago, 
-             implementing a commercial Point of Sale (POS) system for a large retailer.  The development team came to the conclusion that 
-                that the software available for trickling back transactions to the general office did not meet the project needs.
-                The list of problems in the requirements made finding the ideal solution difficult:</para>
+            <para>The idea of SymmetricDS was born from a real-word need. Several of the original developers were, several years
+                ago, implementing a commercial Point of Sale (POS) system for a large retailer. The development team came to the
+                conclusion that that the software available for trickling back transactions to the general office did not meet the
+                project needs. The list of problems in the requirements made finding the ideal solution difficult:</para>
             <itemizedlist>
                 <listitem>
                     <para> Sending and receiving data with 2000 stores during peak holiday loads.</para>
@@ -53,8 +53,8 @@
                     <para> Preparing the store database with an initial load of data from general office.</para>
                 </listitem>
             </itemizedlist>
-            <para> The team ultimately created a custom solution that met the requirements and made the project successful. From this initial
-                challenge came the knowledge and experience that SymmetricDS benefits from today.</para>
+            <para> The team ultimately created a custom solution that met the requirements and made the project successful. From
+                this initial challenge came the knowledge and experience that SymmetricDS benefits from today.</para>
         </section>
         <section id="whats-new">
             <title>What's new in SymmetricDS 2.x</title>
@@ -140,8 +140,8 @@
         <section id="notification">
             <title>Notification Schemes</title>
             <para>
-                After a change to the database is recorded, the nodes interested in the change are notified. Change notification
-                is configured to perform a
+                After a change to the database is recorded, the SymmetricDS nodes interested in the change are notified. Change
+                notification is configured to perform a
                 <emphasis>push</emphasis>
                 (trickle-back) or a
                 <emphasis>pull</emphasis>
@@ -153,16 +153,17 @@
         </section>
         <section id="bi-sync">
             <title>Two-Way Table Synchronization</title>
-            <para> Some data may synchronize in one direction. For example, a retail store sends its sales transactions to a
-                central office, and the central office sends its stock items to the store. Some data may synchronize in both
+            <para> In pracice, some data may require synchronization in just one direction. For example, a retail store sends its sales transactions to a
+                central office, and the central office sends its stock items and pricing to the store. Other data may synchronize in both
                 directions. For example, the retail store sends the central office an inventory document, and the central office
-                updates the document status, which is sent back to the store. SymmetricDS supports bi-directional synchronization
+                updates the document status, which is sent back to the store. SymmetricDS supports bi-directional or two-way table synchronization
                 and avoids getting into update loops by only recording data changes outside of synchronization.</para>
         </section>
         <section id="data-channels">
             <title>Data Channels</title>
-            <para> Data synchronization is defined at the table (or table subset) level. Each managed table can be assigned to a
-                channel that helps control the flow of data. A channel is a category of data that can be enabled, prioritized and
+            <para> SymmetricDS supports the concept of <emphasis>channels</emphasis> of data.  
+                Data synchronization is defined at the table (or table subset) level, and each managed table can be assigned to a
+                <emphasis>channel</emphasis> that helps control the flow of data. A channel is a category of data that can be enabled, prioritized and
                 synchronized independently of other channels. For example, in a retail environment, users may be waiting for
                 inventory documents to update while a promotional sale event updates a large number of items. If processed in
                 order, the item updates would delay the inventory updates even though the data is unrelated. By assigning item
@@ -171,18 +172,18 @@
         </section>
         <section id="transactions">
             <title>Transaction Awareness</title>
-            <para> Many databases provide a unique transaction identifier associated with the rows that are committed together.
-                SymmetricDS stores the transaction ID along with the data that changed so it can play back the transaction exactly
-                the way it happened. This means the target database maintains the same integrity as its source. Support for
-                transaction ID is documented in the appendix of this guide.</para>
+            <para> Many databases provide a unique transaction identifier associated with the rows that are committed together as a transaction.
+                SymmetricDS stores the transaction identifier along with the data that changed so it can play back the transaction exactly
+                as it occurred originally. This means the target database maintains the same integrity as its source. Support for
+                transaction identification is documented in the appendix of this guide.</para>
         </section>
         <section id="plugins">
             <title>Data Filtering and Rerouting</title>
             <para>
-                Data can be filtered as it is recorded, extracted, and loaded.
+                Using SymmetricDS, data can be filtered as it is recorded, extracted, and loaded.
                 <itemizedlist>
                     <listitem>
-                        <para>
+                        <para><!--  MDH:  Chris - this section needs updated to reflect routers and triggers and the link between -->
                             Data routing and filtering is specified using SQL expressions in the trigger configuration. The SQL
                             expressions are configured in the node_select (for real time routing) and initial_load_select (for
                             initial data loads) columns of the
