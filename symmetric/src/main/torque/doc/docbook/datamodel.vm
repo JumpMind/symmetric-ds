@@ -18,7 +18,7 @@
 #set ( $database = $dataModel )
 
  <section id="data-model">
-    <title>Data Model</title>
+    <title>SymmetricDS Data Model</title>
     
     
     <table>
