@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <section id="terminology">
         <title>Terminology</title>
-        <para>A majority of the SymmetricDS data synchronization concepts can be understood by
-         examining the data model. The
-        configuration data model is stored in a set of tables updated by the user as needed to
-        configure the system. In contrast, the set of tables for the runtime data model change
-        constantly as the system captures data changes and records the activity to deliver them.
-        </para>
-    
-        <para>A few key terms, however, are worth additional consideration. Terms such as "nodes", "channels", "routers", 
+     
+         <para>Before we provide the complete data model, however, a few key terms are worth additional consideration. Terms such as "nodes", "channels", "routers", 
         and "triggers" are fundamental to understanding SymmetricDS, and thus we will define them now.</para>
         <section id="terminology-nodes">
             <title>Nodes</title>
