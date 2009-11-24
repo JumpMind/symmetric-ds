@@ -224,7 +224,7 @@
 
     <properties>
         <springframework.version>3.0.0.RC1</springframework.version>
-        <derby.version>10.4.2.0</derby.version>
+        <derby.version>10.5.3.0</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
         <docbook.build>${basedir}/target/docbook</docbook.build>
