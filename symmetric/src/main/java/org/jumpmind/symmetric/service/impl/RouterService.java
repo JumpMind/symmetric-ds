@@ -393,7 +393,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected List<TriggerRouter> getTriggerForData(Data data) {
-        return triggerRouterService.getActiveTriggerRouters(
+        return triggerRouterService.getTriggerRoutersForCurrentNode(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
                 (data.getTriggerHistory().getTriggerId()));
     }

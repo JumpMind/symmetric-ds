@@ -86,7 +86,7 @@ public class CsvExtractor extends CsvExtractor16 {
     
     protected void writeTable(Data data, String routerId, BufferedWriter out) throws IOException {
         // TODO Add property and write the source schema and the source catalog if set
-        Router router = triggerRouterService.getActiveRouterById(parameterService.getNodeGroupId(), routerId, false);
+        Router router = triggerRouterService.getRouterByIdForCurrentNode(parameterService.getNodeGroupId(), routerId, false);
         String schemaName = (router == null || router.getTargetSchemaName() == null) ? "" : router
                 .getTargetSchemaName();
         CsvUtils.write(out, CsvConstants.SCHEMA, ", ", schemaName);

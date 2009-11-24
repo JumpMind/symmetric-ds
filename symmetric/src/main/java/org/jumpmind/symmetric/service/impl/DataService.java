@@ -221,7 +221,7 @@ public class DataService extends AbstractService implements IDataService {
         // an initial load is currently happening
         insertNodeSecurityUpdate(targetNode);
 
-        List<TriggerRouter> triggerRouters = triggerRouterService.getActiveTriggerRoutersForReload(sourceNode
+        List<TriggerRouter> triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode
                 .getNodeGroupId(), targetNode.getNodeGroupId());
 
         if (parameterService.is(ParameterConstants.AUTO_CREATE_SCHEMA_BEFORE_RELOAD)) {
@@ -278,7 +278,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.getTriggerRouterForCurrentNode(tableName, sourceNode.getNodeGroupId());
         if (trigger == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -301,7 +301,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouter(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(tableName, sourceNode.getNodeGroupId());
         if (triggerRouter == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -344,7 +344,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.findTriggerRouter(tableName, parameterService.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.getTriggerRouterForCurrentNode(tableName, parameterService.getNodeGroupId());
         if (trigger != null) {
             data = createData(trigger.getTrigger(), whereClause);
         }
