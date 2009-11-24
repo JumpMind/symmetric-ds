@@ -3,7 +3,12 @@
     xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>SymmetricDS Data Model</title>
-
+   <para>A majority of the SymmetricDS data synchronization concepts can be understood by
+         examining the data model. The
+        configuration data model is stored in a set of tables updated by the user as needed to
+        configure the system. In contrast, the set of tables for the runtime data model change
+        constantly as the system captures data changes and records the activity to deliver them.
+        </para>
   <xi:include href="basic-terminology.xml" />
   <xi:include href="data-model.xml" />    
     
