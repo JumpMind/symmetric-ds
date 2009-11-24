@@ -124,29 +124,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return null;
         }
     }
-
-    /**
-     * Create triggers on SymmetricDS tables so changes to configuration can be synchronized.
-     */
-    protected List<TriggerRouter> getTriggerRoutersForRegistration(String sourceNodeGroupId) {
-        List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
-        List<NodeGroupLink> links = configurationService.getGroupLinksFor(sourceNodeGroupId);
-        for (NodeGroupLink nodeGroupLink : links) {
-            if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.W)) {
-                triggers.addAll(getTriggerRoutersForRegistration(nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
-                        .getTargetNodeGroupId()));
-            } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
-                triggers.add(buildRegistrationTriggerRouter(TableConstants.getTableName(tablePrefix,
-                        TableConstants.SYM_NODE), false, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
-                        .getTargetNodeGroupId()));
-                log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-
-            } else {
-                log.warn("TriggerConfigurationCreatingFailed", sourceNodeGroupId, nodeGroupLink.getDataEventAction());
-            }
+    
+    protected List<TriggerHistory> getInactiveTriggerHistories() {
+        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
+                + getSql("inactiveTriggerHistoryWhereSql"),
+                new TriggerHistoryMapper());
+        for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
+            TriggerHistory triggerHistory = iterator.next();
+            if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
+                iterator.remove();
+            }            
         }
-        return triggers;
-    }
+        return hists;
+    }    
 
     public List<TriggerRouter> getTriggerRoutersForRegistration(String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
@@ -197,13 +187,13 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return getSql("selectTriggerRouterPrefixSql");
     }
 
-    public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId) {
+    public TriggerRouter getTriggerRouterForCurrentNode(String table, String sourceNodeGroupId) {
         List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("selectTriggerSql"), new Object[] { table, sourceNodeGroupId }, new TriggerRouterMapper());
         if (configs.size() > 0) {
             return configs.get(0);
         } else {
-            List<TriggerRouter> triggers = getActiveTriggerRouters(sourceNodeGroupId);
+            List<TriggerRouter> triggers = getAllTriggerRoutersForCurrentNode(sourceNodeGroupId);
             for (TriggerRouter trigger : triggers) {
                 if (trigger.getTrigger().getSourceTableName().equalsIgnoreCase(table)) {
                     return trigger;
@@ -213,8 +203,31 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return null;
     }
 
-    protected void mergeInTriggerRouters(String sourceNodeGroupId, List<TriggerRouter> configuredInDatabase) {
-        List<TriggerRouter> virtualConfigTriggers = getTriggerRoutersForRegistration(sourceNodeGroupId);
+    /**
+     * Create a list of {@link TriggerRouter} for the SymmetricDS tables that should have triggers created for them on the current node.
+     */
+    protected List<TriggerRouter> getConfigurationTablesTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
+        List<TriggerRouter> triggers = new ArrayList<TriggerRouter>();
+        List<NodeGroupLink> links = configurationService.getGroupLinksFor(sourceNodeGroupId);
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.W)) {
+                triggers.addAll(getTriggerRoutersForRegistration(nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
+                        .getTargetNodeGroupId()));
+            } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
+                triggers.add(buildRegistrationTriggerRouter(TableConstants.getTableName(tablePrefix,
+                        TableConstants.SYM_NODE), false, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
+                        .getTargetNodeGroupId()));
+                log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+
+            } else {
+                log.warn("TriggerConfigurationCreatingFailed", sourceNodeGroupId, nodeGroupLink.getDataEventAction());
+            }
+        }
+        return triggers;
+    }
+
+    protected void mergeInConfigurationTablesTriggerRoutersForCurrentNode(String sourceNodeGroupId, List<TriggerRouter> configuredInDatabase) {
+        List<TriggerRouter> virtualConfigTriggers = getConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId);
         for (TriggerRouter trigger : virtualConfigTriggers) {
             if (trigger.getRouter().getSourceNodeGroupId().equalsIgnoreCase(sourceNodeGroupId)
                     && !doesTriggerExistInList(configuredInDatabase, trigger)) {
@@ -232,14 +245,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return false;
     }
 
-    public Map<String, List<TriggerRouter>> getActiveTriggerRouters(String sourceNodeGroupId, boolean refreshCache) {
-        return getActiveTriggerRoutersCache(sourceNodeGroupId, refreshCache).triggerRoutersByTriggerId;
+    public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(String sourceNodeGroupId, boolean refreshCache) {
+        return getTriggerRoutersCacheForCurrentNode(sourceNodeGroupId, refreshCache).triggerRoutersByTriggerId;
     }
 
-    protected TriggerRoutersCache getActiveTriggerRoutersCache(String sourceNodeGroupId, boolean refreshCache) {
+    protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(String sourceNodeGroupId, boolean refreshCache) {
         if (!triggerRouterCacheByNodeGroupId.containsKey(sourceNodeGroupId) || refreshCache) {
             synchronized (this) {
-                List<TriggerRouter> triggerRouters = getActiveTriggerRouters(sourceNodeGroupId);
+                List<TriggerRouter> triggerRouters = getAllTriggerRoutersForCurrentNode(sourceNodeGroupId);
                 Map<String, List<TriggerRouter>> triggerRoutersByTriggerId = new HashMap<String, List<TriggerRouter>>(
                         triggerRouters.size());
                 Map<String, Router> routers = new HashMap<String, Router>(triggerRouters.size());
@@ -261,35 +274,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRouterCacheByNodeGroupId.get(sourceNodeGroupId);
     }
 
-    public Router getActiveRouterById(String sourceNodeGroupId, String routerId, boolean refreshCache) {
-        return getActiveTriggerRoutersCache(sourceNodeGroupId, refreshCache).routersByRouterId.get(routerId);
+    public Router getRouterByIdForCurrentNode(String sourceNodeGroupId, String routerId, boolean refreshCache) {
+        return getTriggerRoutersCacheForCurrentNode(sourceNodeGroupId, refreshCache).routersByRouterId.get(routerId);
     }
 
-    public List<TriggerRouter> getActiveTriggerRouters(String sourceNodeGroupId) {
+    public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("activeTriggersForSourceNodeGroupSql"), new Object[] { sourceNodeGroupId },
                 new TriggerRouterMapper());
-        mergeInTriggerRouters(sourceNodeGroupId, triggers);
+        mergeInConfigurationTablesTriggerRoutersForCurrentNode(sourceNodeGroupId, triggers);
         return triggers;
     }
 
-    public List<TriggerRouter> getActiveTriggerRoutersForReload(String sourceNodeGroupId, String targetNodeGroupId) {
+    public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId) {
         return (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
                 + getSql("activeTriggersForReloadSql"), new Object[] { sourceNodeGroupId, targetNodeGroupId,
                 Constants.CHANNEL_CONFIG }, new TriggerRouterMapper());
-    }
-
-    protected List<TriggerHistory> getInactiveTriggerHistories() {
-        List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
-                + getSql("inactiveTriggerHistoryWhereSql"),
-                new TriggerHistoryMapper());
-        for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
-            TriggerHistory triggerHistory = iterator.next();
-            if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
-                iterator.remove();
-            }            
-        }
-        return hists;
     }
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId,
@@ -480,7 +480,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        List<Trigger> triggers = new TriggerSelector(toList(getActiveTriggerRouters(
+        List<Trigger> triggers = new TriggerSelector(toList(getTriggerRoutersForCurrentNode(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).values())).select();
 
         for (Trigger trigger : triggers) {

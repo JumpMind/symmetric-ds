@@ -73,7 +73,7 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         BufferedWriter writer = mockTransport.open();
         JdbcTemplate template = getJdbcTemplate();
         template.update("delete from " + TriggerRouterServiceTest.TEST_TRIGGERS_TABLE);
-        TriggerRouter trigger = getTriggerRouterService().findTriggerRouter(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
+        TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForCurrentNode(TriggerRouterServiceTest.TEST_TRIGGERS_TABLE, TestConstants.TEST_CONTINUOUS_NODE_GROUP);
         dataExtractorService.extractInitialLoadFor(node, trigger, writer);
         String loadResults = mockTransport.toString();
         assertEquals(countLines(loadResults), 5, "Unexpected number of lines in the csv result: " + loadResults);
