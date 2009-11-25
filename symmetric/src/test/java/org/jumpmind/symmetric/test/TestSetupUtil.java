@@ -207,7 +207,9 @@ public class TestSetupUtil {
             IDbDialect dialect = (IDbDialect) engine.getApplicationContext().getBean(Constants.DB_DIALECT);
             Platform platform = dialect.getPlatform();
             Database testDb = getTestDatabase();
+            Database previousSymmetricVersionTables = getPreviousSymmetricVersionTables();
             platform.dropTables(testDb, true);
+            platform.dropTables(previousSymmetricVersionTables, true);
             dialect.purge();
 
             new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute();
@@ -219,6 +221,7 @@ public class TestSetupUtil {
             }
 
             platform.createTables(testDb, false, true);
+            platform.createTables(previousSymmetricVersionTables, false, true);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -231,6 +234,10 @@ public class TestSetupUtil {
 
     protected static Database getTestDatabase() throws IOException {
         return new DatabaseIO().read(new InputStreamReader(getResource("/test-tables-ddl.xml").openStream()));
+    }
+    
+    protected static Database getPreviousSymmetricVersionTables() throws IOException {
+        return new DatabaseIO().read(new InputStreamReader(getResource("/test-tables-old-symmetric-ddl.xml").openStream()));
     }
 
     public static File writeTempPropertiesFileFor(String testPrefix, String databaseType, DatabaseRole databaseRole) {
