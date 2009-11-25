@@ -25,7 +25,7 @@ Users Guide 1.x
 Users Guide 2.x
 
  This guide has not been fully updated (or even mostly updated) to reflect the 2.x changes.
- If you are curious about 2.0, check out the guide's {{{/guide/2.x/html/ch01-introduction.html#ch01-whats-new}What's New in 2.x}} 
+ If you are curious about 2.0, check out the guide's {{{/guide/2.x/html/introduction.html#whats-new}What's New in 2.x}} 
  section in the first chapter.
 
  {{{guide/2.x/html-single/user-guide.html}User Guide (Single Page HTML)}}
@@ -34,4 +34,3 @@ Users Guide 2.x
  
  {{{guide/2.x/pdf/user-guide.pdf}User Guide (PDF)}}
 
- The 2.x User Guide is a work in progress.  It can also be found {{{http://docs.codehaus.org/display/SYMMETRICDS/Users+Guide+2.x}here}}.
