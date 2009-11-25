@@ -41,7 +41,7 @@ public interface ITriggerRouterService {
      * @param sourceGroupId group id of the node being registered with
      * @param targetGroupId group id of the node that is registering
      */
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String sourceGroupId, String targetGroupId);
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,String sourceGroupId, String targetGroupId);
     
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
 

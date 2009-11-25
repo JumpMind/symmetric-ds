@@ -113,5 +113,8 @@ public class CsvExtractor14 implements IDataExtractor {
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
+    public String getTableName(String currentTableName) {
+        return currentTableName;
+    }
 
 }

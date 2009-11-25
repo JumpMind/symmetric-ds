@@ -146,7 +146,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(parameterService
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(node
+                .getSymmetricVersion(),parameterService
                 .getNodeGroupId(), node.getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
@@ -159,6 +160,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         for (int i = 0; i < triggerRouters.size(); i++) {
             TriggerRouter triggerRouter = triggerRouters.get(i);
+            final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
+                    .getSymmetricVersion());
+            triggerRouter.getTrigger().setSourceTableName(
+                    dataExtractor.getTableName(triggerRouter.getTrigger().getSourceTableName()));
+            
             TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
                     false), triggerRouter.getTrigger());
             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
@@ -168,7 +174,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 Data data = new Data(1, null, node.getNodeId(), DataEventType.INSERT, triggerRouter.getTrigger()
                         .getSourceTableName(), null, triggerHistory, triggerRouter.getTrigger().getChannelId(), null,
                         null);
-                ctx.getDataExtractor().write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
+                dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctx);
             }
         }
 
@@ -201,6 +207,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     beanName += "13";
                 } else if (versions[1] <= 4 && !version.equals("1.4.1-appaji")) {
                     beanName += "14";
+                } else if (versions[1] <= 7) {
+                    beanName += "16";
                 }
             }
         }
@@ -239,10 +247,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
         final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter);
-
+       
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
-
+        
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
                 try {

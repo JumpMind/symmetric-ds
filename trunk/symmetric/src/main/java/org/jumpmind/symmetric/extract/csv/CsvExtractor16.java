@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.extract.csv;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
@@ -32,6 +34,12 @@ import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.util.CsvUtils;
 
 public class CsvExtractor16 extends CsvExtractor14 {
+
+    private Map<String, String> legacyTableMapping = new HashMap<String, String>();
+
+    public CsvExtractor16() {
+        legacyTableMapping.put("sym_trigger", "sym_trigger_old");
+    }
 
     @Override
     public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context)
@@ -46,7 +54,8 @@ public class CsvExtractor16 extends CsvExtractor14 {
     }
 
     /**
-     * Writes the table metadata out to a stream only if it hasn't already been written out before
+     * Writes the table metadata out to a stream only if it hasn't already been
+     * written out before
      * 
      * @param out
      * @param tableName
@@ -67,7 +76,9 @@ public class CsvExtractor16 extends CsvExtractor14 {
         }
         String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
-            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
+            
+            CsvUtils.write(out, CsvConstants.TABLE, ", ",
+                       data.getTableName().endsWith("_old")?data.getTableName().substring(0,data.getTableName().length()-4) :data.getTableName());
             out.newLine();
             CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
@@ -86,4 +97,12 @@ public class CsvExtractor16 extends CsvExtractor14 {
         context.setLastTableName(data.getTableName());
     }
 
+    public String getTableName(String currentTableName) {
+        String result = currentTableName;
+
+        if (legacyTableMapping.get(currentTableName.toLowerCase()) != null) {
+            result = legacyTableMapping.get(currentTableName.toLowerCase());
+        }
+        return result;
+    }
 }

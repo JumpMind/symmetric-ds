@@ -107,5 +107,8 @@ public class CsvExtractor10 implements IDataExtractor {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-
+    
+    public String getTableName(String currentTableName) {
+        return currentTableName;
+    }
 }

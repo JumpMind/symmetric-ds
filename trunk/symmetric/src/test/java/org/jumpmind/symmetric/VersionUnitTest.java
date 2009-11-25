@@ -22,8 +22,8 @@ public class VersionUnitTest {
         Assert.assertTrue(Version.isOlderVersion("1.5.0"));
         Assert.assertTrue(Version.isOlderVersion("1.5.1"));
         Assert.assertTrue(Version.isOlderVersion("1.5.5"));
-        Assert.assertFalse(Version.isOlderVersion("1.6.0"));
-        Assert.assertFalse(Version.isOlderVersion("1.6.1"));
+        Assert.assertTrue(Version.isOlderVersion("1.6.0"));
+        Assert.assertTrue(Version.isOlderVersion("1.6.1"));
         Assert.assertFalse(Version.isOlderVersion("2.0.1"));
     }
 }
