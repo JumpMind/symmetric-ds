@@ -7,6 +7,15 @@
 	default-lazy-init="true">
 
 	<util:map id="routers">
+		<entry key="default">
+			<bean class="org.jumpmind.symmetric.route.DefaultDataRouter">
+			</bean>
+		</entry>	
+		<entry key="column">
+			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
+                <property name="registrationService" ref="registrationService" />
+            </bean>
+		</entry>  		
 		<entry key="subselect">
 			<bean class="org.jumpmind.symmetric.route.SubSelectDataRouter">
 				<property name="sql"
@@ -19,16 +28,7 @@
             <bean class="org.jumpmind.symmetric.route.BshDataRouter">
                 <property name="dbDialect" ref="dbDialect" />
             </bean>
-        </entry>        
-		<entry key="column">
-			<bean class="org.jumpmind.symmetric.route.ColumnMatchDataRouter">
-                <property name="registrationService" ref="registrationService" />
-            </bean>
-		</entry>      
-		<entry key="default">
-			<bean class="org.jumpmind.symmetric.route.DefaultDataRouter">
-			</bean>
-		</entry>
+        </entry>            
 	</util:map>
 
 	<util:map id="batchAlgorithms">
