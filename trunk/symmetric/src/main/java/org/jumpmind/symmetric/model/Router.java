@@ -40,15 +40,9 @@ public class Router {
 
     private String routerId;
 
-    private String targetTableName;
-
     private String sourceNodeGroupId;
 
     private String targetNodeGroupId;
-
-    private String targetSchemaName;
-
-    private String targetCatalogName;
 
     private String routerType = null;
 
@@ -63,6 +57,12 @@ public class Router {
 
     private boolean syncOnDelete = true;
     
+    private String targetCatalogName;
+    
+    private String targetSchemaName;
+
+    private String targetTableName;
+
     private Date createTime;
 
     private Date lastUpdateTime;
