@@ -53,7 +53,7 @@ import org.springframework.jdbc.core.ConnectionCallback;
 public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     
     @Override
-    protected void initForSpecificDialect() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
     @Override

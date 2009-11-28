@@ -124,7 +124,7 @@ public class Db2zSeriesDbDialect extends AbstractDbDialect implements IDbDialect
     }
 
     @Override
-    protected void initForSpecificDialect() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
     
     @Override

@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.model.Column;
+import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IColumnFilter;
@@ -67,6 +68,8 @@ public interface IDbDialect {
      */
     public void cleanupAfterDataLoad(Table table);
 
+    public Database readPlatformDatabase(boolean includeSymmetricTables);
+    
     /**
      * For performance reasons, the as table metadata is read in, it is cached.
      * This method will clear that cache.
