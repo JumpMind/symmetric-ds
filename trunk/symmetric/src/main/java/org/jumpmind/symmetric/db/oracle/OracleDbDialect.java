@@ -182,7 +182,7 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     @Override
-    protected void initForSpecificDialect() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
 }

@@ -242,11 +242,11 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
      * @see #findEngineByUrl(String)
      */
     private void registerEngine() {
-        registeredEnginesByUrl.put(getMyUrl(), this);
+        registeredEnginesByUrl.put(getSyncUrl(), this);
         registeredEnginesByName.put(getEngineName(), this);
     }
 
-    public String getMyUrl() {
+    public String getSyncUrl() {
         Node node = nodeService.findIdentity();
         if (node != null) {
             return node.getSyncUrl();

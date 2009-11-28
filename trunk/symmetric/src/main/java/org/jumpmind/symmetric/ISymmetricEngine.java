@@ -28,7 +28,7 @@ public interface ISymmetricEngine {
     /**
      * @return the URL that represents this engine
      */
-    public String getMyUrl();
+    public String getSyncUrl();
 
     /**
      * Get a list of configured properties for Symmetric. Read-only.

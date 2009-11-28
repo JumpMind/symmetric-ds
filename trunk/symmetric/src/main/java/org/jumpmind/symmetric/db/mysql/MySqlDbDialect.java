@@ -43,7 +43,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     private String functionTemplateKeySuffix = null;
 
     @Override
-    protected void initForSpecificDialect() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
         int[] versions = Version.parseVersion(getProductVersion());
         if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
             this.functionTemplateKeySuffix = "_pre_5_1_23";

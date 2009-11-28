@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.model.Trigger;
 public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     @Override
-    protected void initForSpecificDialect() {
+    protected void initTablesAndFunctionsForSpecificDialect() {
     }
 
     @Override
