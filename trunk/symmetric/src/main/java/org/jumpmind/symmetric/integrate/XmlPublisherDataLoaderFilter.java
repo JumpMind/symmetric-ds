@@ -68,6 +68,8 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
             if (xml != null) {
                 toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), null, null, ctx.getKeyNames(), keys);
             }
+        } else if (log.isDebugEnabled()) {
+            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
         }
         return loadDataInTargetDatabase;
     }
@@ -78,6 +80,8 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
             if (xml != null) {
                 toXmlElement(DataEventType.UPDATE, xml, ctx.getTableName(), ctx.getColumnNames(), data, ctx.getKeyNames(), keys);
             }
+        } else if (log.isDebugEnabled()) {
+            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
         }
         return loadDataInTargetDatabase;
     }
@@ -88,6 +92,8 @@ public class XmlPublisherDataLoaderFilter extends AbstractXmlPublisherExtensionP
             if (xml != null) {
                 toXmlElement(DataEventType.INSERT, xml, ctx.getTableName(), ctx.getColumnNames(), data, null, null);
             }
+        } else if (log.isDebugEnabled()) {
+            log.debug("XmlPublisherTableNotFound", ctx.getTableName());
         }
         return loadDataInTargetDatabase;
     }
