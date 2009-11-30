@@ -920,7 +920,19 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (!includeSymmetricTables) {
             Database symmetricTables = readSymmetricSchemaFromXml();
             Table[] tables = symmetricTables.getTables();
-            for (Table table : tables) {
+            for (Table symTable : tables) {
+                for (Table table : database.getTables()) {
+                    if (table.getName().equalsIgnoreCase(symTable.getName())) {
+                        database.removeTable(table);
+                    }
+                }
+            }
+        }
+        
+        Table[] allTables = database.getTables();
+        for (Table table : allTables) {
+            // Remove SYM_ON_ trigger tables for embedded databases
+            if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_")) {
                 database.removeTable(table);
             }
         }
