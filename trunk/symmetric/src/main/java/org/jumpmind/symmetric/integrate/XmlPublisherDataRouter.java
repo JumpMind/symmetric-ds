@@ -56,6 +56,8 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
                                 .getParsedRowData(), dataMetaData.getTriggerHistory().getParsedPkColumnNames(),
                         dataMetaData.getData().getParsedPkData());
             }
+        } else if (log.isDebugEnabled()) {
+            log.debug("XmlPublisherTableNotFound", dataMetaData.getData().getTableName());
         }
         return Collections.emptySet();
     }
