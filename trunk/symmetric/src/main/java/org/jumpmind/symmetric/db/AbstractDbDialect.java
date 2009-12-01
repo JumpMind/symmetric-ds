@@ -915,8 +915,12 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public Database readPlatformDatabase(boolean includeSymmetricTables) {
-        Database database = platform.readModelFromDatabase(null,
-                getDefaultCatalog(), getDefaultSchema(), null);
+        String schema = getDefaultSchema();
+        String catalog = getDefaultCatalog();
+        Database database = platform.readModelFromDatabase(!StringUtils
+                .isBlank(schema) ? schema
+                : (!StringUtils.isBlank(catalog) ? catalog : "database"),
+                catalog, schema, null);
         if (!includeSymmetricTables) {
             Database symmetricTables = readSymmetricSchemaFromXml();
             Table[] tables = symmetricTables.getTables();
@@ -928,7 +932,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
                 }
             }
         }
-        
+
         Table[] allTables = database.getTables();
         for (Table table : allTables) {
             // Remove SYM_ON_ trigger tables for embedded databases
