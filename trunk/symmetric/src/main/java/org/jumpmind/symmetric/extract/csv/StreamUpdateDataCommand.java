@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 class StreamUpdateDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
+    public void execute(BufferedWriter out, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(out, CsvConstants.UPDATE, DELIMITER, data.getRowData(), DELIMITER, data.getPkData());
         out.newLine();
     }

@@ -27,8 +27,6 @@ import java.io.IOException;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.Router;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -42,13 +40,10 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
 
     private INodeService nodeService;
 
-    public void execute(BufferedWriter out, Data data, DataExtractorContext context) throws IOException {
-        String id = data.getTriggerHistory().getTriggerId();
-        Trigger trigger = triggerRouterService.getTriggerById(id);
-        if (trigger != null) {
-            TriggerRouter triggerRouter = new TriggerRouter();
-            triggerRouter.setTrigger(trigger);
-            triggerRouter.setRouter(new Router());
+    public void execute(BufferedWriter out, Data data, String routerId, DataExtractorContext context) throws IOException {
+        String triggerId = data.getTriggerHistory().getTriggerId();
+        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterById(triggerId, routerId);
+        if (triggerRouter != null) {
             // The initial_load_select can be overridden
             if (data.getRowData() != null) {      
                 triggerRouter.setInitialLoadSelect(data.getRowData());
@@ -57,7 +52,7 @@ class StreamReloadDataCommand extends AbstractStreamDataCommand {
             dataExtractorService.extractInitialLoadWithinBatchFor(node, triggerRouter, out, context);
             out.flush();
         } else {
-            log.error("TriggerUnavailable", id);
+            log.error("TriggerRouterUnavailable", triggerId, routerId);
         }
     }
 

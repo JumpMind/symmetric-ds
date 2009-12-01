@@ -128,6 +128,15 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(0, batches.getBatches().size());
 
         resetBatches();
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        getJdbcTemplate().update("delete from " + TEST_TABLE_1);
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
+        getRoutingService().routeData();
+        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
+
+        resetBatches();
+        
     }
 
     @Test

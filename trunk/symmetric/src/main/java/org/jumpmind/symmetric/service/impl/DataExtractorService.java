@@ -234,15 +234,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     /**
-     * 
-     * @param node
-     * @param triggerRouter
-     * @param hist
-     * @param transport
      * @param batch
      *            If null, then assume this 'initial load' is part of another
      *            batch.
-     * @param ctx
      */
     protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, final TriggerHistory hist,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
