@@ -156,9 +156,9 @@
                                   if ($(syncOnIncomingBatchCondition)) begin
                                     declare DataCursor cursor local for
                                     $(if:containsBlobClobColumns)
-                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)
                                     $(else:containsBlobClobColumns)
-                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnInsertCondition)                                    
+                                       select $(columns), $(oldKeys), $(oldColumns), $(oldKeyNames), $(newKeyNames) from inserted inner join deleted on $(oldNewPrimaryKeyJoin) where $(syncOnUpdateCondition)                                    
                                     $(end:containsBlobClobColumns)
                                        open DataCursor
                                        fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
