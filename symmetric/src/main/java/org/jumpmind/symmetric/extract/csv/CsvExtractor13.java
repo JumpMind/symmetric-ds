@@ -67,7 +67,7 @@ public class CsvExtractor13 implements IDataExtractor {
 
     public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         preprocessTable(data, routerId, writer, context);
-        dictionary.get(data.getEventType().getCode()).execute(writer, data, context);
+        dictionary.get(data.getEventType().getCode()).execute(writer, data, routerId, context);
     }
 
     /**

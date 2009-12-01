@@ -305,6 +305,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return null;
         }
     }
+    
+    public TriggerRouter findTriggerRouterById(String triggerId, String routerId) {
+        List<TriggerRouter> configs = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()
+                + getSql("selectTriggerRouterSql"),
+                new Object[] { triggerId, routerId }, new TriggerRouterMapper());
+        if (configs.size() > 0) {
+            return configs.get(0);
+        } else {
+            return null;
+        }
+    }
 
     public Trigger getTriggerById(String triggerId) {
         List<TriggerRouter> triggers = (List<TriggerRouter>) jdbcTemplate.query(getTriggerRouterSqlPrefix()

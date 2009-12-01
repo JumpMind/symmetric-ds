@@ -56,6 +56,8 @@ public interface ITriggerRouterService {
     public TriggerRouter getTriggerRouterForCurrentNode(String table, String sourceNodeGroupId);
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
+    
+    public TriggerRouter findTriggerRouterById(String triggerId, String routerId);
 
     public void inactivateTriggerHistory(TriggerHistory history);
 

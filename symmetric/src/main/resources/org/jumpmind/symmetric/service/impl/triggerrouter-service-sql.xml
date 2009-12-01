@@ -265,6 +265,9 @@
         where t.source_table_name = ? and r.target_node_group_id = ? and t.channel_id = ? and r.source_node_group_id = ?
       </value>
     </entry>
+    <entry key="selectTriggerRouterSql">
+      <value>where t.trigger_id=? and r.router_id=?</value>
+    </entry>
     <entry key="selectTriggerByIdSql">
       <value>where t.trigger_id = ?</value>
     </entry>

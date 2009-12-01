@@ -50,7 +50,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
         } else if (cmd.isTriggerHistoryRequired()) {
             preprocessTable(data, routerId, writer, context);
         }
-        cmd.execute(writer, data, context);
+        cmd.execute(writer, data, routerId, context);
     }
 
     /**

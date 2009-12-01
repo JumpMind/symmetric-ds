@@ -10,7 +10,7 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 public class StreamCreateDataCommand extends AbstractStreamDataCommand {
 
-    public void execute(BufferedWriter writer, Data data, DataExtractorContext context) throws IOException {
+    public void execute(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException {
         CsvUtils.write(writer, CsvConstants.CREATE, DELIMITER, data.getRowData());
         writer.newLine();
     }
