@@ -133,7 +133,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getJdbcTemplate().update("delete from " + TEST_TABLE_1);
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
         getRoutingService().routeData();
-        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 100, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
 
         resetBatches();
         
@@ -287,7 +287,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
         OutgoingBatches batches = getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1);
         filterForChannels(batches, testChannel);
-        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 1000, batches.getBatches().size());
+        Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 510, batches.getBatches().size());
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? count : 1, (int) batches.getBatches().get(0)
                 .getDataEventCount());
 
