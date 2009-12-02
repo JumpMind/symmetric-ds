@@ -101,7 +101,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 }
             }
 
-            transport = transportManager.getPushTransport(remote, nodeService.findIdentity());
+            NodeSecurity localNodeSecurity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId()); 
+            transport = transportManager.getPushTransport(remote, nodeService.findIdentity(), localNodeSecurity.getNodePassword());
 
             if (extractor.extract(remote, transport)) {
                 log.info("DataSent", remote);

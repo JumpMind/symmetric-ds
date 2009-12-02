@@ -33,10 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -55,14 +53,17 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private int httpTimeout;
 
     private boolean useCompression;
+    
+    private int compressionStrategy;
+    
+    private int compressionLevel;
 
-    private IParameterService parameterService;
-
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, IParameterService parameterService) {
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, int compressionStrategy, int compressionLevel) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
-        this.parameterService = parameterService;
+        this.compressionLevel = compressionLevel;
+        this.compressionStrategy = compressionStrategy;
     }
 
     public void close() throws IOException {
@@ -125,9 +126,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (useCompression) {
             out = new GZIPOutputStream(out) {
                 {
-                    this.def.setLevel(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL));
-                    this.def.setStrategy(parameterService
-                            .getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
+                    this.def.setLevel(compressionLevel);
+                    this.def.setStrategy(compressionStrategy);
                 }
             };
         }

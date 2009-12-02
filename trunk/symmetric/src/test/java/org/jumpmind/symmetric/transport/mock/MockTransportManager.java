@@ -46,27 +46,25 @@ public class MockTransportManager implements ITransportManager {
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
     }
 
-    public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException {
+    public IIncomingTransport getPullTransport(Node remote, Node local,
+            String securityToken, Map<String, String> requestProperties)
+            throws IOException {
         return incomingTransport;
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException {
+    public IOutgoingWithResponseTransport getPushTransport(Node remote,
+        Node local, String securityToken) throws IOException {
         return outgoingTransport;
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
+                Node local, String securityToken) throws IOException {
         return true;
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {
-
-    }
-
-    public boolean sendMessage(Node node, String data) throws IOException {
-        return true;
-    }
-
-    public void writeMessage(OutputStream out, String data) throws IOException {
+    public void writeAcknowledgement(OutputStream out,
+            List<IncomingBatch> list, Node local, String securityToken)
+            throws IOException {
     }
 
     public IIncomingTransport getIncomingTransport() {

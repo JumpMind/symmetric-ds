@@ -138,7 +138,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return hists;
     }    
 
-    public List<TriggerRouter> getTriggerRoutersForRegistration(String version,String sourceGroupId, String targetGroupId) {
+    public List<TriggerRouter> getTriggerRoutersForRegistration(String version, String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
         String majorVersion = ""+Version.parseVersion(version)[0];
         List<String> tables = rootConfigChannelTableNames.get(majorVersion);
