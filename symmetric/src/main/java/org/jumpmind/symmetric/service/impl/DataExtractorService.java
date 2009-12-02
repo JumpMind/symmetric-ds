@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
@@ -146,8 +147,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void extractConfiguration(Node node, BufferedWriter writer, DataExtractorContext ctx) throws IOException {
-        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(node
-                .getSymmetricVersion(),parameterService
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForRegistration(StringUtils.isBlank(node
+                .getSymmetricVersion()) ? Version.version() : node.getSymmetricVersion(),parameterService
                 .getNodeGroupId(), node.getNodeGroupId());
         if (node.isVersionGreaterThanOrEqualTo(1, 5, 0)) {
             for (int i = triggerRouters.size() - 1; i >= 0; i--) {
