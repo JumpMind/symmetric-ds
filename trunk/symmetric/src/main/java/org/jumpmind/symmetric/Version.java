@@ -114,11 +114,13 @@ final public class Version {
     public static boolean isOlderThanVersion(String checkVersion,
             String targetVersion) {
         
-        if(noTargetVersion(targetVersion))
+        if(noVersion(targetVersion) || noVersion(checkVersion)) {
             return false;
+        }
         
         int[] checkVersions = parseVersion(checkVersion);
         int[] targetVersions = parseVersion(targetVersion);
+        
         if (checkVersions[MAJOR_INDEX] < targetVersions[MAJOR_INDEX]) {
             return true;
         } else if (checkVersions[MAJOR_INDEX] == targetVersions[MAJOR_INDEX]
@@ -132,7 +134,7 @@ final public class Version {
         return false;
     }
     
-    private static boolean noTargetVersion(String targetVersion) {
+    private static boolean noVersion(String targetVersion) {
         return StringUtils.isBlank(targetVersion);
     }
 }
