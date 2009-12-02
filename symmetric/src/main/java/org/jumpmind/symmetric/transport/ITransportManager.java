@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.transport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -30,15 +31,15 @@ import org.jumpmind.symmetric.model.Node;
 
 public interface ITransportManager {
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException;
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException;
+    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
     public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
 
-    public IIncomingTransport getPullTransport(Node remote, Node local) throws IOException;
+    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties) throws IOException;
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local) throws IOException;
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken) throws IOException;
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException;
     

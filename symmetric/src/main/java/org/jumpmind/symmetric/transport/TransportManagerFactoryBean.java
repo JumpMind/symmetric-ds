@@ -28,15 +28,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
 
 public class TransportManagerFactoryBean implements FactoryBean<ITransportManager> {
-
-    private INodeService nodeService;
 
     private IParameterService parameterService;
 
@@ -60,9 +57,9 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
                     return false;
                 }
             });
-            return new HttpTransportManager(nodeService, parameterService, configurationService);
+            return new HttpTransportManager(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT), parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY), parameterService.getRegistrationUrl());
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
-            return new InternalTransportManager(nodeService, parameterService, configurationService);
+            return new InternalTransportManager(configurationService, parameterService.getRegistrationUrl());
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");
         }
@@ -74,10 +71,6 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
 
     public boolean isSingleton() {
         return true;
-    }
-
-    public void setNodeService(INodeService nodeService) {
-        this.nodeService = nodeService;
     }
 
     public void setParameterService(IParameterService parameterService) {

@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.BatchInfo;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatch.Status;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.web.WebConstants;
 
 abstract public class AbstractTransportManager {
@@ -47,12 +46,12 @@ abstract public class AbstractTransportManager {
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers;
 
-    protected IParameterService parameterService;
-
-    public AbstractTransportManager(IParameterService parameterService) {
-        this.parameterService = parameterService;
+    protected String registrationUrl;
+    
+    public AbstractTransportManager(String registrationUrl) {
+        this.registrationUrl = registrationUrl;
     }
-
+    
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
         if (extensionSyncUrlHandlers == null) {
             extensionSyncUrlHandlers = new HashMap<String, ISyncUrlExtension>();
@@ -70,7 +69,7 @@ abstract public class AbstractTransportManager {
     public String resolveURL(String url) {
         if (StringUtils.isBlank(url) || url.startsWith(Constants.PROTOCOL_NONE)) {
             log.debug("TransportSyncURLBlank");
-            return parameterService.getRegistrationUrl();
+            return registrationUrl;
         } else if (url.startsWith(Constants.PROTOCOL_EXT)) {
             try {
                 URI uri = new URI(url);

@@ -31,7 +31,6 @@
     </bean>
 
     <bean id="transportManager" class="org.jumpmind.symmetric.transport.TransportManagerFactoryBean" scope="singleton">
-        <property name="nodeService" ref="nodeService" />
         <property name="parameterService" ref="parameterService" />
         <property name="configurationService" ref="configurationService" />
     </bean>
@@ -144,6 +143,7 @@
     <bean id="dataLoaderService" class="org.jumpmind.symmetric.service.impl.DataLoaderService" scope="singleton" parent="abstractService">
         <property name="transportManager" ref="transportManager" />
         <property name="incomingBatchService" ref="incomingBatchService" />
+        <property name="configurationService" ref="configurationService"/>
         <property name="statisticManager" ref="statisticManager" />
         <property name="nodeService" ref="nodeService" />
     </bean>

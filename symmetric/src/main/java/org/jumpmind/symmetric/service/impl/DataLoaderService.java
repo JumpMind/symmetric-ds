@@ -45,8 +45,11 @@ import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
+import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -62,6 +65,7 @@ import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -73,6 +77,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private IDbDialect dbDialect;
 
     private IIncomingBatchService incomingBatchService;
+    
+    private IConfigurationService configurationService;
 
     private ITransportManager transportManager;
 
@@ -95,7 +101,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public boolean loadData(Node remote, Node local) throws IOException {
         boolean wasWorkDone = false;
         try {
-            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local));
+            NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+            Map<String, String> requestProperties = new HashMap<String, String>();
+            ChannelMap suspendIgnoreChannels = configurationService.getSuspendIgnoreChannelLists();
+            requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
+            requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
+
+            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties));
             if (list.size() > 0) {
                 sendAck(remote, local, list);
                 wasWorkDone = true;
@@ -118,9 +130,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Exception error = null;
         boolean sendAck = false;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
+        NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
         for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
             try {
-                sendAck = transportManager.sendAcknowledgement(remote, list, local);
+                sendAck = transportManager.sendAcknowledgement(remote, list, local, security.getNodePassword());
             } catch (IOException ex) {
                 log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;
@@ -371,14 +384,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     /**
      * Load database from input stream and write acknowledgment to output stream. This is used for a "push" request with
      * a response of an acknowledgment.
-     * 
-     * @param in
-     * @param out
-     * @throws IOException
      */
     public void loadData(InputStream in, OutputStream out) throws IOException {
         List<IncomingBatch> list = loadDataAndReturnBatches(new InternalIncomingTransport(in));
-        transportManager.writeAcknowledgement(out, list);
+        Node local = nodeService.findIdentity();
+        NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
+        transportManager.writeAcknowledgement(out, list, local, security != null ? security.getNodePassword() : null);
     }
 
     public void setDataLoaderFilters(List<IDataLoaderFilter> filters) {
@@ -433,6 +444,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+    
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
     }
 
     private enum LoadStatus {

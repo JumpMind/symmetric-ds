@@ -44,7 +44,8 @@ import com.csvreader.CsvWriter;
 
 public class DataLoaderServiceTest extends AbstractDataLoaderTest {
 
-    protected Node client = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, null, null);;
+    protected Node client = new Node(TestConstants.TEST_CLIENT_EXTERNAL_ID, null, null);
+    protected Node root = new Node(TestConstants.TEST_ROOT_EXTERNAL_ID, null, null);
 
     public DataLoaderServiceTest() throws Exception {
         super();
@@ -462,7 +463,7 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
     protected void load(ByteArrayOutputStream out) throws Exception {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         getTransportManager().setIncomingTransport(new InternalIncomingTransport(in));
-        getDataLoaderService().loadData(client, null);
+        getDataLoaderService().loadData(client, root);
     }
 
     protected IncomingBatch.Status findIncomingBatchStatus(int batchId, String nodeId) {

@@ -28,6 +28,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -46,7 +47,6 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -62,17 +62,15 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     static final ILog log = LogFactory.getLog(InternalTransportManager.class);
 
-    private INodeService nodeService;
-    private IConfigurationService configurationService;
-
-    public InternalTransportManager(INodeService nodeService, IParameterService config,
-            IConfigurationService configurationService) {
-        super(config);
-        this.nodeService = nodeService;
+    IConfigurationService configurationService;
+    public InternalTransportManager(IConfigurationService configurationService, String registrationUrl) {
+        super(registrationUrl);
         this.configurationService = configurationService;
     }
 
-    public IIncomingTransport getPullTransport(final Node remote, final Node local) throws IOException {
+    public IIncomingTransport getPullTransport(Node remote, final Node local,
+            String securityToken, Map<String, String> requestProperties)
+            throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
@@ -97,8 +95,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local) throws IOException {
-
+    public IOutgoingWithResponseTransport getPushTransport(Node remote,
+        Node local, String securityToken) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
@@ -120,7 +118,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
-        runAtClient(parameterService.getRegistrationUrl(), null, respOs, new IClientRunnable() {
+        runAtClient(registrationUrl, null, respOs, new IClientRunnable() {
             public void run(BeanFactory factory, InputStream is, OutputStream os) throws Exception {
                 // This should be basically what the registration servlet does
                 // ...
@@ -131,7 +129,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalIncomingTransport(respIs);
     }
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
+            Node local, String securityToken) throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
@@ -152,9 +151,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         }
     }
 
-    public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list) throws IOException {
+    public void writeAcknowledgement(OutputStream out,
+        List<IncomingBatch> list, Node local, String securityToken)
+        throws IOException {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.ENCODING), true);
-        pw.println(getAcknowledgementData(nodeService.findIdentity().getNodeId(), list));
+        pw.println(getAcknowledgementData(local.getNodeId(), list));
         pw.close();
     }
 

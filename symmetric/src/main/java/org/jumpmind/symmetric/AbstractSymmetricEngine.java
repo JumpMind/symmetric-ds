@@ -1,4 +1,4 @@
-package org.jumpmind.symmetric;
+    package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileOutputStream;
