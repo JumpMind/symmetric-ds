@@ -212,12 +212,12 @@ public class TestSetupUtil {
             platform.dropTables(previousSymmetricVersionTables, true);
             dialect.purge();
 
-            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute();
+            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
 
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
             URL url = getResource(fileName);
             if (url != null) {
-                new SqlScript(url, ds, false).execute();
+                new SqlScript(url, ds, false).execute(true);
             }
 
             platform.createTables(testDb, false, true);
