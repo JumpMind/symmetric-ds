@@ -135,6 +135,10 @@ public class SqlScript {
     }
 
     public void execute() {
+        execute(false);    
+    }
+    
+    public void execute(final boolean autoCommit) {
         JdbcTemplate template = new JdbcTemplate(this.dataSource);
         template.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection connection)
@@ -143,7 +147,7 @@ public class SqlScript {
                 int lineCount = 0;
 
                 try {
-                    connection.setAutoCommit(false);
+                    connection.setAutoCommit(autoCommit);
                     st = connection.createStatement();
                     StringBuilder sql = new StringBuilder();
                     int count = 0;
@@ -188,7 +192,9 @@ public class SqlScript {
                         }
                     }
 
-                    connection.commit();
+                    if (!autoCommit) {
+                        connection.commit();
+                    }
 
                     log.info("ScriptCompleted", count, fileName);
                     if (notFoundCount > 0) {
