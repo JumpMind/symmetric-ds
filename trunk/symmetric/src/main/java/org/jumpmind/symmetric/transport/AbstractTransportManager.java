@@ -44,7 +44,7 @@ abstract public class AbstractTransportManager {
 
     protected ILog log = LogFactory.getLog(getClass());
 
-    protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers;
+    protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
 
     protected String registrationUrl;
     
