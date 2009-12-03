@@ -61,6 +61,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public HttpTransportManager(String registrationUrl) {
       this(120000, true, -1, 0, registrationUrl);   
     }
+    
     public HttpTransportManager(int httpTimeOutInMs, boolean useCompression, int compressionLevel, int compressionStrategy, String registrationUrl) {
         super(registrationUrl);
         this.httpTimeOutInMs = httpTimeOutInMs;
@@ -124,6 +125,22 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getRegisterTransport(Node node) throws IOException {
         return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))));
+    }
+    
+    public void setCompressionLevel(int compressionLevel) {
+        this.compressionLevel = compressionLevel;
+    }
+    
+    public void setCompressionStrategy(int compressionStrategy) {
+        this.compressionStrategy = compressionStrategy;
+    }
+    
+    public void setHttpTimeOutInMs(int httpTimeOutInMs) {
+        this.httpTimeOutInMs = httpTimeOutInMs;
+    }
+    
+    public void setUseCompression(boolean useCompression) {
+        this.useCompression = useCompression;
     }
 
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
