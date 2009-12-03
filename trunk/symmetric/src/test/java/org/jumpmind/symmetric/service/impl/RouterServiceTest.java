@@ -130,7 +130,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         resetBatches();
         
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
-        getJdbcTemplate().update("delete from " + TEST_TABLE_1);
+        execute("delete from " + TEST_TABLE_1, true, null);
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
         getRoutingService().routeData();
         Assert.assertEquals(getDbDialect().supportsTransactionId() ? 1 : 100, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));        
@@ -426,5 +426,31 @@ public class RouterServiceTest extends AbstractDatabaseTest {
             callback.doInTransaction(null);
         }
     }
+    
+    protected void execute(final String sql, boolean transactional, final String node2disable) {
+        TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
+                try {
+                    if (node2disable != null) {
+                        getDbDialect().disableSyncTriggers(node2disable);
+                    }
+                        t.update(sql);
+                } finally {
+                    if (node2disable != null) {
+                        getDbDialect().enableSyncTriggers();
+                    }
+                }
+
+            }
+        };
+
+        if (transactional) {
+            getTransactionTemplate().execute(callback);
+        } else {
+            callback.doInTransaction(null);
+        }
+    }
+
 
 }
