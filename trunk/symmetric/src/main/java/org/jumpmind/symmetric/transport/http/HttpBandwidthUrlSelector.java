@@ -31,6 +31,7 @@ import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.transport.ISyncUrlExtension;
 
 /**
@@ -60,7 +61,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
     private Map<URI, List<SyncUrl>> cachedUrls = new HashMap<URI, List<SyncUrl>>();
 
     private INodeService nodeService;
-    private IBandwidthService bandwidthService;
+    private IBandwidthService bandwidthService = new BandwidthService();
 
     public String resolveUrl(URI uri) {
         Map<String, String> params = getParameters(uri);
@@ -73,7 +74,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension {
         }
 
         boolean initialLoadOnly = isInitialLoadOnly(params);
-        if ((initialLoadOnly && !nodeService.isDataLoadCompleted()) || !initialLoadOnly) {
+        if ((initialLoadOnly && nodeService != null && !nodeService.isDataLoadCompleted()) || !initialLoadOnly) {
             long ts = System.currentTimeMillis();
             if (ts - getSampleTTL(params) > lastSampleTs) {
                 for (SyncUrl syncUrl : urls) {
