@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -167,7 +168,7 @@ public class NodeService extends AbstractService implements INodeService {
     
     public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
         jdbcTemplate.update(getSql("insertNodeSql"), new Object[] { nodeId, nodeGroupdId,
-            externalId, createdAtNodeId });
+            externalId, createdAtNodeId, AppUtils.getTimezoneOffset() });
     }
     
     public void insertNodeGroup(String groupId, String description) {
