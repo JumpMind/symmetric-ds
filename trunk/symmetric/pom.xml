@@ -223,7 +223,7 @@
     </distributionManagement>
 
     <properties>
-        <springframework.version>3.0.0.RC3</springframework.version>
+        <springframework.version>3.0.0.RELEASE</springframework.version>
         <derby.version>10.5.3.0_1</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/2.x</docbook.target>
