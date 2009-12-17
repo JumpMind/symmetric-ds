@@ -14,7 +14,7 @@
     </category>
 
     <category name="org.jumpmind">
-        <priority value="DEBUG" />
+        <priority value="INFO" />
     </category>
 
     <!-- Disable the not found override properties file warnings to avoid confusion -->
@@ -30,9 +30,11 @@
         <priority value="ERROR" />
     </category>
 
+    <!-- 
     <category name="org.springframework.jdbc.core.JdbcTemplate">
         <priority value="DEBUG" />
     </category>
+     -->
  
     <category name="org.springframework.jmx.export.MBeanExporter">
         <priority value="ERROR" />
@@ -43,7 +45,7 @@
     </category>
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
-        <priority value="DEBUG" />
+        <priority value="ERROR" />
     </category>
 
     <!--

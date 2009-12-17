@@ -19,7 +19,6 @@ package org.jumpmind.symmetric.db.h2;
  * under the License.
  */
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,18 +55,6 @@ public class H2ModelReader extends JdbcModelReader {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    protected Map readColumns(ResultSet resultSet, List columnDescriptors) throws SQLException {
-        if (logger.isDebugEnabled()) {
-            int count = resultSet.getMetaData().getColumnCount();
-            for (int i = 1; i <= count; i++) {
-                logger.debug(resultSet.getMetaData().getColumnName(i) + "=" + resultSet.getString(i));
-            }
-        }
-        return super.readColumns(resultSet, columnDescriptors);
     }
 
     @Override
