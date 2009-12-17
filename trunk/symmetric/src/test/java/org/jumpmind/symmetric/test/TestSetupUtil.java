@@ -212,12 +212,14 @@ public class TestSetupUtil {
             platform.dropTables(previousSymmetricVersionTables, true);
             dialect.purge();
 
-            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(true);
+            boolean autocommitDdl = databaseType.equals("postgres") ? true : false;
+            
+            new SqlScript(getResource(TestConstants.TEST_DROP_ALL_SCRIPT), ds, false).execute(autocommitDdl);
 
             String fileName = TestConstants.TEST_DROP_SEQ_SCRIPT + databaseType + ".sql";
             URL url = getResource(fileName);
             if (url != null) {
-                new SqlScript(url, ds, false).execute(true);
+                new SqlScript(url, ds, false).execute(autocommitDdl);
             }
 
             platform.createTables(testDb, false, true);
