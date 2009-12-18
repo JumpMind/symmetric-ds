@@ -59,19 +59,28 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             }
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId());
-            outgoingBatch.setStatus(batch.isOk() ? Status.OK : Status.ER);
-            outgoingBatch.setByteCount(batch.getByteCount());
-            outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
-            outgoingBatch.setFilterMillis(batch.getFilterMillis());
-            outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
+            Status status = batch.isOk() ? Status.OK : Status.ER;
+            if (outgoingBatch != null) {
+                outgoingBatch.setStatus(status);
+                outgoingBatch.setByteCount(batch.getByteCount());
+                outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
+                outgoingBatch.setFilterMillis(batch.getFilterMillis());
+                outgoingBatch.setLoadMillis(batch.getDatabaseMillis());
 
-            if (!batch.isOk() && batch.getErrorLine() != 0) {
-                CallBackHandler handler = new CallBackHandler(batch.getErrorLine());
-                jdbcTemplate.query(getSql("selectDataIdSql"), new Object[] { outgoingBatch.getBatchId() }, handler);
-                outgoingBatch.setFailedDataId(handler.getDataId());
+                if (!batch.isOk() && batch.getErrorLine() != 0) {
+                    CallBackHandler handler = new CallBackHandler(batch
+                            .getErrorLine());
+                    jdbcTemplate.query(getSql("selectDataIdSql"),
+                            new Object[] { outgoingBatch.getBatchId() },
+                            handler);
+                    outgoingBatch.setFailedDataId(handler.getDataId());
+                }
+
+                outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+            } else {
+                log.error("BatchNotFoundForAck", batch.getBatchId(), status
+                        .name());
             }
-
-            outgoingBatchService.updateOutgoingBatch(outgoingBatch);
         }
     }
 
