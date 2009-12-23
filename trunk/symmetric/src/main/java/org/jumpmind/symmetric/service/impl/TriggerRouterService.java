@@ -216,10 +216,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 triggers.addAll(getTriggerRoutersForRegistration(Version.version(),nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
                         .getTargetNodeGroupId()));
             } else if (nodeGroupLink.getDataEventAction().equals(NodeGroupLinkAction.P)) {
+                
                 triggers.add(buildRegistrationTriggerRouter(Version.version(),TableConstants.getTableName(tablePrefix,
                         TableConstants.SYM_NODE), false, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
                         .getTargetNodeGroupId()));
                 log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+                
+                triggers.add(buildRegistrationTriggerRouter(Version.version(),TableConstants.getTableName(tablePrefix,
+                        TableConstants.SYM_NODE_HOST), true, nodeGroupLink.getSourceNodeGroupId(), nodeGroupLink
+                        .getTargetNodeGroupId()));                
+                log.debug("TriggerHistCreating", TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
+
 
             } else {
                 log.warn("TriggerConfigurationCreatingFailed", sourceNodeGroupId, nodeGroupLink.getDataEventAction());

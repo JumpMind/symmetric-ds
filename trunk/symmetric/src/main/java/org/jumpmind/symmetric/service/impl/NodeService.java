@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
@@ -61,6 +62,8 @@ public class NodeService extends AbstractService implements INodeService {
     private INodeIdGenerator nodeIdGenerator;
 
     private INodePasswordFilter nodePasswordFilter;
+    
+    private NodeHost nodeHostForCurrentNode = null;
 
     public String findSymmetricVersion() {
         try {
@@ -130,6 +133,35 @@ public class NodeService extends AbstractService implements INodeService {
      */
     public NodeSecurity findNodeSecurity(String id) {
         return findNodeSecurity(id, false);
+    }
+    
+    public void updateNodeHostForCurrentNode() {
+        if (nodeHostForCurrentNode == null) {
+            nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
+        }
+        nodeHostForCurrentNode.refresh();        
+        Object[] params = new Object[] {
+                nodeHostForCurrentNode.getIpAddress(),
+                nodeHostForCurrentNode.getOsUser(),
+                nodeHostForCurrentNode.getOsName(),
+                nodeHostForCurrentNode.getOsArch(),
+                nodeHostForCurrentNode.getOsVersion(),
+                nodeHostForCurrentNode.getAvailableProcessors(),
+                nodeHostForCurrentNode.getFreeMemoryBytes(),
+                nodeHostForCurrentNode.getTotalMemoryBytes(),
+                nodeHostForCurrentNode.getMaxMemoryBytes(),
+                nodeHostForCurrentNode.getJavaVersion(),
+                nodeHostForCurrentNode.getJavaVendor(),
+                nodeHostForCurrentNode.getSymmetricVersion(),
+                nodeHostForCurrentNode.getTimezoneOffset(),
+                nodeHostForCurrentNode.getHeartbeatTime(),
+                nodeHostForCurrentNode.getLastRestartTime(),
+                nodeHostForCurrentNode.getNodeId(),
+                nodeHostForCurrentNode.getHostName()
+            };
+        if (jdbcTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
+            jdbcTemplate.update(getSql("insertNodeHostSql"), params);
+        }
     }
 
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound) {

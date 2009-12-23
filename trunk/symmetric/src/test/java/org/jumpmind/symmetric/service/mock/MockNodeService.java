@@ -54,9 +54,11 @@ public class MockNodeService implements INodeService {
     }
 
     public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
-
     }
 
+    public void updateNodeHostForCurrentNode() {
+    }
+    
     public void insertNodeGroup(String groupId, String description) {
     }
 
