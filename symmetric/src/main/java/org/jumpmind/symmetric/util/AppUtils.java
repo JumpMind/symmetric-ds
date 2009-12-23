@@ -75,6 +75,16 @@ public class AppUtils {
         return hostName;
     }
     
+    public static String getIpAddress() {
+        String ipAddress = System.getProperty("ip.address", "unknown");
+        try {
+            ipAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception ex) {
+            log.warn(ex);
+        }
+        return ipAddress;
+    }
+    
     public static String replace(String prop, String replaceWith, String sourceString) {
         return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
     }

@@ -85,6 +85,8 @@ public interface INodeService {
     
     public boolean updateNode(Node node);
     
+    public void updateNodeHostForCurrentNode();
+    
     public void insertNodeIdentity(String nodeId);
     
     public void insertNodeGroup(String groupId, String description);

@@ -497,6 +497,7 @@ public class DataService extends AbstractService implements IDataService {
                         }
 
                         nodeService.updateNode(me);
+                        nodeService.updateNodeHostForCurrentNode();
                         log.info("NodeVersionUpdated");
 
                         Set<Node> children = nodeService.findNodesThatOriginatedFromNodeId(me.getNodeId());
