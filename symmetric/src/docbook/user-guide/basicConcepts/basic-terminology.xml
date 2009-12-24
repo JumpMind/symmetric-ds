@@ -84,13 +84,15 @@
                <section id="terminology-triggers-routers">
                 <title>Synch Conditions (Triggers and Routers)</title>
          
-            <para> SymmetricDS makes extensive use of database triggers to capture and record changes to data of interest to a
-                particular SymmetricDS instance. SymmetricDS creates these triggers automatically for the user based on
-                configuration specified in the SymmetricDS <emphasis>trigger</emphasis> configuration tables. Triggers can be quite simple or quite
+            <para> SymmetricDS uses database triggers to capture and record changes to data. SymmetricDS creates these triggers 
+                automatically based on
+                configuration specified in the Trigger, Router and 
+                TriggerRouter tables. Triggers can be quite simple or quite
                 sophisticated. You can, for example, control whether data changes are captured on inserts, deletes, updates, or
-                any combination thereof. You can control whether you trigger changes when data has been received from other nodes
-                (i.e., synchronize on incoming batches). Triggers are configured based on source and target <emphasis>node groups</emphasis>.</para>
-            <para> While triggers specify which data changes to capture, <emphasis>routers</emphasis> are used to specify when and where the data
+                any combination thereof. You can control whether a trigger fires when data has been received from other nodes
+                (i.e., synchronize on incoming batches to further propagate data). Triggers will be installed on a system when a router
+                is linked to the trigger definition that has a source node group id that matches the node group id of the current node.</para>
+            <para> While Triggers specify which data changes to capture, Routers are used to specify when and where the data
                 changes are to be sent. You can, for example, choose to only route data when certain column values match a
                 particular constant or come from a particular node.</para>
             <para> Routers can also specify whether to route when a node is undergoing what is known as an initial load (a clean,
@@ -106,10 +108,10 @@
                     <listitem>Bean Shell Router - a router that executes a BSH expression in order to select nodes to route to.
                         The BSH expression can use the the old and new column values.</listitem>
                     <listitem>Xml Publishing Router - a router the publishes data changes directly to a messaging solution instead
-                        of transmitting changes to registered nodes.</listitem>
+                        of transmitting changes to registered nodes.  This router must be configured manually in XML as an extension point.</listitem>
                 </itemizedlist>
-                The mapping between the set of triggers and set of routers is many-to-many. More than one trigger can make use of
-                a given router and vice versa.
+                The mapping between the set of triggers and set of routers is many-to-many.  It is done in the TriggerRouter table.
+                 More than one trigger can make use of a given router and vice versa.
             </para>
         </section>
     </section>

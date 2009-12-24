@@ -25,7 +25,7 @@
             <step>
                 <para>
                     Download the
-                    <ulink url="http://sourceforge.net/project/showfiles.php?group_id=206470"> symmetric-ds-1.6.X.zip</ulink>
+                    <ulink url="https://sourceforge.net/projects/symmetricds/files/"> symmetric-ds-2.x.x.zip</ulink>
                     file from
                     <ulink url="http://www.symmetricds.org/">http://www.symmetricds.org/</ulink>
                 </para>
@@ -33,7 +33,7 @@
             <step>
                 <para>
                     Unzip the file in any directory you choose. This will create a
-                    <filename class="directory">symmetric-ds-1.6.X</filename>
+                    <filename class="directory">symmetric-ds-2.x.x</filename>
                     subdirectory, which corresponds to the version you downloaded.
                 </para>
             </step>
@@ -361,16 +361,6 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                     synchronization, when the status is set to "NE" for new. The receiving node acknowledges the batch with a
                     status of "OK" for success or "ER" for error.</para>
             </step>
-            <step>
-                <para> Verify that the batch history was recorded, using the batch_id from the previous step:</para>
-                <para>
-                    <command> select * from sym_outgoing_batch_hist where batch_id = ?;</command>
-                </para>
-                <para> Work performed on the batch is recorded in the history table. A new batch with status of "NE" records the
-                    number of data changes it contains in the data_event_count field. The status of "SE" shows that a batch is
-                    being sent to a node. The acknowledgement status from the receiving node is also recorded. If the status is
-                    error, the failed_data_id indicates which row in sym_data caused the error.</para>
-            </step>
         </procedure>
     </section>
     <section id="ch02-verify-incoming">
@@ -389,16 +379,6 @@ registration.url=http://localhost:8080/sync]]></programlisting>
                 </para>
                 <para> A batch represents a collection of changes loaded by the node. The sending node that created the batch is
                     recorded. The status is either "OK" for success or "ER" for error.</para>
-            </step>
-            <step>
-                <para> Verify that the batch history was recorded, using the batch_id from the previous step:</para>
-                <para>
-                    <command> select * from sym_incoming_batch_hist where batch_id = ?;</command>
-                </para>
-                <para> Work performed on the batch is recorded in the history table. If a duplicate batch was skipped, the status
-                    is recorded as "SK". Otherwise, the status is either "OK" for success or "ER" for error. The statement_count
-                    is the number of rows loaded and the byte_count is the size of the batch in bytes. The database_millis is the
-                    amount of time in milliseconds spent loading data in the database.</para>
             </step>
         </procedure>
     </section>

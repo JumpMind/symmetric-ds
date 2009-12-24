@@ -51,14 +51,7 @@
             During an incoming synchronization the source node_id is put into a database session variable that is 
             available to the database trigger.  Data events are not generated if the target node_id 
             on an outgoing synchronization is equal to the source node_id.  
-        </para> 
-        <para>
-            When synchronizing tables in both directions, the sync_column_level flag may be enabled.  
-            This indicates to the data loader that only columns that have changed should be updated.  
-            In order to accomplish this, both old and new data are transmitted from the source node 
-            to the target node.  Because of the extra data overhead this feature should only be 
-            enabled if needed.
-        </para>         
+        </para>       
         <para>
             More complex conflict resolution strategies can be accomplished by using the 
             <literal>IDataLoaderFilter</literal> extension point which has access to both 
@@ -90,13 +83,12 @@
             an initial load.
             <programlisting>
 <![CDATA[insert into SYM_TRIGGER 
-  (source_table_name, source_node_group_id, target_node_group_id, channel_id, 
+  (source_table_name,  channel_id, 
    sync_on_insert, sync_on_update, sync_on_delete, 
-   initial_load_order, last_update_by, last_update_time, create_time)
+   last_update_by, last_update_time, create_time)
 values
-  ('sale_transaction', 'corp', 'store', 'sale_transaction', 
-   0, 0, 0, 
-   105, 'demo', current_timestamp, current_timestamp);]]></programlisting>
+  ('sale_transaction', 'sale_transaction', 
+   0, 0, 0, 'demo', current_timestamp, current_timestamp);]]></programlisting>
         </para>
     </section>
     <section id="ch06-purge">
@@ -302,7 +294,47 @@ values
             <para>
             Implement this extension point to get status callbacks during trigger creation.
             </para>
-        </section>                
+        </section>       
+        <section id="ch06-extensions-batch-algorithm">
+            <title>IBatchAlgorithm</title>
+            <para>
+            Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use.
+            This extension point gives fine grained control over how a channel is batched.
+            </para>
+        </section>                   
+        <section id="ch06-extensions-data-router">
+            <title>IDataRouter</title>
+            <para>
+            Implement this extension point and set the name of the Spring bean on the router_type column
+            of the Router table to use.  This extension point gives the ability to programatically decide
+            which nodes data should be routed to.
+            </para>
+        </section>  
+        <section id="ch06-extensions-heartbeat-listener">
+            <title>IHeartbeatListener</title>
+            <para>
+            Implement this extension point to get callbacks during the heartbeat job.
+            </para>
+        </section>
+        <section id="ch06-extensions-offline-listener">
+            <title>IOfflineListener</title>
+            <para>
+            Implement this extension point to get callbacks for offline events.
+            </para>
+        </section> 
+        <section id="ch06-extensions-node-password">
+            <title>INodePasswordFilter</title>
+            <para>
+            Implement this extension point to intercept the saving and rendering of the node password.
+            </para>
+        </section>        
+        <section id="ch06-extensions-servlets">
+            <title>IServletExtension</title>
+            <para>
+            Implement this extension point to allow additional Servlets to be registered with SymmetricDS.  This is probably only 
+            useful if SymmetricDS is running in standalone or embedded mode.
+            </para>
+        </section>                      
     </section>
     <section id="ch06-encrypted-passwords">
         <title>Encrypted Passwords</title>
@@ -331,7 +363,7 @@ values
             <variablelist>
                 <varlistentry>
                     <term>
-                        <command>my.url</command>
+                        <command>sync.url</command>
                     </term>
                     <listitem>
                         <para>
