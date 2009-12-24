@@ -116,7 +116,7 @@
                 SymmetricDS 2, batching is now configured on the channel configuration table. This provides additional flexibility
                 for batching:
                 <itemizedlist>
-                    <listitem>Batching can have the traditional SymmetricDS 1.x behavior of batching up to a max batch size but
+                    <listitem>Batching can have the traditional SymmetricDS 1.x behavior of batching up to a max batch size, but
                         never breaking on a database transaction boundary.</listitem>
                     <listitem>Batching can be completely tied to a database transaction. One batch per database transaction.
                     </listitem>
@@ -153,7 +153,7 @@
         </section>
         <section id="bi-sync">
             <title>Two-Way Table Synchronization</title>
-            <para> In pracice, some data may require synchronization in just one direction. For example, a retail store sends its sales transactions to a
+            <para> In practice, some data may require synchronization in just one direction. For example, a retail store sends its sales transactions to a
                 central office, and the central office sends its stock items and pricing to the store. Other data may synchronize in both
                 directions. For example, the retail store sends the central office an inventory document, and the central office
                 updates the document status, which is sent back to the store. SymmetricDS supports bi-directional or two-way table synchronization
@@ -183,13 +183,10 @@
                 Using SymmetricDS, data can be filtered as it is recorded, extracted, and loaded.
                 <itemizedlist>
                     <listitem>
-                        <para><!--  MDH:  Chris - this section needs updated to reflect routers and triggers and the link between -->
-                            Data routing and filtering is specified using SQL expressions in the trigger configuration. The SQL
-                            expressions are configured in the node_select (for real time routing) and initial_load_select (for
-                            initial data loads) columns of the
-                            <xref linkend="table.trigger" />
-                            . The SQL expressions are used to create the SQL triggers that SymmetricDS installs to capture data
-                            changes. Using this technique data can be routed to a specific node or group of nodes.
+                        <para>
+                            Data routing is accomplished by assigning a router type to a <xref linkend="table.router" /> configuration.
+                            Routers are responsible for identifying what target nodes captured changes should be delivered to.  Custom 
+                            routers are possible by providing a class implementing <literal>IDataRouter</literal>. 
                         </para>
                     </listitem>
                     <listitem>
@@ -231,10 +228,7 @@
                 lightweight and easy to manage. A series of filters are also provided to enforce authentication and to restrict
                 the number of simultaneous synchronization streams. The
                 <literal>ITransportManager</literal>
-                interface allows other transports to be implemented. (The unit tests for SymmetricDS take advantage of this by
-                using an
-                <literal>InternalTransportManager</literal>
-                that makes it easy to run automated tests locally.)
+                interface allows other transports to be implemented. 
             </para>
         </section>
         <section id="jmx">
@@ -250,7 +244,7 @@
     </section>
      </section>
     <section id="requirements">
-        <title>Requirements</title>
+        <title>System Requirements</title>
         <para> SymmetricDS is written in Java 5 and requires a Java SE Runtime Environment (JRE) or Java SE Development Kit (JDK)
             version 5.0 or above.</para>
         <para> Any database with trigger technology and a JDBC driver has the potential to run SymmetricDS. The database is
@@ -273,7 +267,7 @@
                 <para>HSQLDB 1.8</para>
             </listitem>
             <listitem>
-                <para>H2 1.1</para>
+                <para>H2 1.x</para>
             </listitem>
             <listitem>
                 <para>Apache Derby 10.3.2.1 and above</para>

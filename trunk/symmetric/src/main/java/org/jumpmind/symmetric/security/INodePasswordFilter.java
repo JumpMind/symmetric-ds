@@ -1,9 +1,7 @@
 /*
  * SymmetricDS is an open source database synchronization solution.
  *   
- * Copyright (C) Eric Long <erilong@users.sourceforge.net>,
- *               Andrew Wilcox <andrewbwilcox@users.sourceforge.net>,
- *               Chris Henson <chenson42@users.sourceforge.net>
+ * Copyright (C) Jon Krajewski <jkrajewski@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,20 +24,19 @@ import org.jumpmind.symmetric.ext.IExtensionPoint;
 
 /**
  * Used to intercept the saving and rendering of the node password.
- * @author jkrajewski
  */
 public interface INodePasswordFilter extends IExtensionPoint {
 
 	/**
 	 * Called on when the node security password is being saved
-	 * to the dB.
+	 * to the DB.
 	 * @param password - The password being saved
 	 */
 	public String onNodeSecuritySave(String password);
 	
 	/**
 	 * Called on when the password has been
-	 * selected from the dB.
+	 * selected from the DB.
 	 * @param password - The password to be used
 	 */
 	public String onNodeSecurityRender(String password);

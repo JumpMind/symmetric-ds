@@ -783,7 +783,7 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>my.url</command>
+                        <command>sync.url</command>
                     </term>
                     <listitem>
                         <para>
