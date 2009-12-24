@@ -108,8 +108,8 @@ public interface ISymmetricEngine {
     /**
      * Push a copy of the node onto the push queue so the SymmetricDS node
      * 'checks' in with it's root node.
-     * 
-     * @see IconfigurationService#heartbeat()
+     * @param force When force is true the heart beat will always be inserted.  If it is false, 
+     * the heart beat will only be inserted if the period between heart beats has expired.
      */
     public void heartbeat(boolean force);
 

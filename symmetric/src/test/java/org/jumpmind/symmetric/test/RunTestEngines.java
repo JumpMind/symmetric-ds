@@ -39,7 +39,9 @@ public class RunTestEngines {
         while (true) {
             client.pull();
             client.push();
-            Thread.sleep(10000);
+            client.heartbeat(false);
+            root.heartbeat(false);
+            Thread.sleep(5000);
         }
     }
 
