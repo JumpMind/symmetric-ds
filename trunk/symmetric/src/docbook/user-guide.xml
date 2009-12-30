@@ -55,14 +55,14 @@
 
     <xi:include href="user-guide/intro/overview.xml" />
     <xi:include href="user-guide/basicConcepts/concepts.xml" />
-    <xi:include href="user-guide/arch/ch04-architecture.xml" />
-    <xi:include href="user-guide/basicConfig/ch05-basic-configuration.xml" />
-    <xi:include href="user-guide/advConfig/ch06-advanced-configuration.xml" />
-    <xi:include href="user-guide/admin/ch07-administration.xml" />
-    <xi:include href="user-guide/admin/ch08-ip-filtering.xml" />
-    <xi:include href="user-guide/appendix/ap01-startup-properties.xml" />
-    <xi:include href="user-guide/appendix/ap02-databases.xml" />
-    <xi:include href="user-guide/appendix/ap03-data-format.xml" />
-    <xi:include href="user-guide/appendix/ap04-version-numbering.xml" />
+    <xi:include href="user-guide/arch/architecture.xml" />
+    <xi:include href="user-guide/basicConfig/basic-configuration.xml" />
+    <xi:include href="user-guide/advConfig/advanced-configuration.xml" />
+    <xi:include href="user-guide/admin/administration.xml" />
+    <xi:include href="user-guide/admin/ip-filtering.xml" />
+    <xi:include href="user-guide/appendix/startup-properties.xml" />
+    <xi:include href="user-guide/appendix/databases.xml" />
+    <xi:include href="user-guide/appendix/data-format.xml" />
+    <xi:include href="user-guide/appendix/version-numbering.xml" />
 
 </book>
