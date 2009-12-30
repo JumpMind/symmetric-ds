@@ -10,6 +10,6 @@
         constantly as the system captures data changes and records the activity to deliver them.
         </para>
   <xi:include href="basic-terminology.xml" />
-  <xi:include href="data-model.xml" />    
+  <xi:include href="../../schema/symmetric-schema.xml" />    
     
 </chapter>
