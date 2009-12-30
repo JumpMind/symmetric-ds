@@ -413,11 +413,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 trigger.getNameForInsertTrigger(), trigger.getNameForDeleteTrigger(),
                 trigger.getSyncOnUpdateCondition(), trigger.getSyncOnInsertCondition(),
                 trigger.getSyncOnDeleteCondition(), trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
-                trigger.getLastUpdateBy(), trigger.getLastUpdateTime(),
+                trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), trigger.getExternalSelect(),
                 trigger.getTriggerId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR })) {
+                Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             jdbcTemplate.update(getSql("insertTriggerSql"), new Object[] { trigger.getSourceCatalogName(),
                     trigger.getSourceSchemaName(), trigger.getSourceTableName(), trigger.getChannelId(),
@@ -427,11 +427,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                     trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
                     trigger.getTxIdExpression(), trigger.getExcludedColumnNames(), trigger.getCreateTime(),
-                    trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), trigger.getTriggerId() }, new int[] {
+                    trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), trigger.getExternalSelect(), trigger.getTriggerId() }, new int[] {
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.SMALLINT,
                     Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                     Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, 
-                    Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
+                    Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
 
