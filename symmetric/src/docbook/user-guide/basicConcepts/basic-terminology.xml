@@ -82,7 +82,7 @@
                 error. Finally, data synchronization can be enabled or disabled by channel.</para>
             </section>
                <section id="terminology-triggers-routers">
-                <title>Synch Conditions (Triggers and Routers)</title>
+                <title>Sync Conditions (Triggers and Routers)</title>
          
             <para> SymmetricDS uses database triggers to capture and record changes to data. SymmetricDS creates these triggers 
                 automatically based on
