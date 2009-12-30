@@ -717,6 +717,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (!StringUtils.isBlank(condition)) {
                 trig.getTrigger().setSyncOnDeleteCondition(condition);
             }
+            
+            condition = rs.getString("external_select");
+            if (!StringUtils.isBlank(condition)) {
+                trig.getTrigger().setExternalSelect(condition);
+            }
+            
             trig.getTrigger().setTxIdExpression(rs.getString("tx_id_expression"));
             trig.getTrigger().setCreateTime(rs.getTimestamp("t_create_time"));
             trig.getTrigger().setLastUpdateTime(rs.getTimestamp("t_last_update_time"));

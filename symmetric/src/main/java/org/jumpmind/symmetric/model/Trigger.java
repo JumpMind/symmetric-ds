@@ -83,6 +83,8 @@ public class Trigger {
      * can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
+    
+    private String externalSelect = null;
 
     private Date createTime;
 
@@ -96,30 +98,6 @@ public class Trigger {
 
     public Trigger(String tableName) {
         this.sourceTableName = tableName;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public Date getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public String getLastUpdateBy() {
-        return lastUpdateBy;
-    }
-
-    public void setCreateTime(Date createdOn) {
-        this.createTime = createdOn;
-    }
-
-    public void setLastUpdateTime(Date lastModifiedOn) {
-        this.lastUpdateTime = lastModifiedOn;
-    }
-
-    public void setLastUpdateBy(String updatedBy) {
-        this.lastUpdateBy = updatedBy;
     }
 
     /**
@@ -184,44 +162,52 @@ public class Trigger {
                 || lastTriggerBuildTime.before(getLastUpdateTime());
     }
 
+
+    public String getTriggerId() {
+        return triggerId;
+    }
+    
+    public void setTriggerId(String triggerId) {
+        this.triggerId = triggerId;
+        if (StringUtils.isNumeric(triggerId)) {
+            int id = Integer.parseInt(triggerId);
+            if (id >= maxTriggerId) {
+                maxTriggerId = id + 1;
+            }
+        }
+    }    
+    
+
+    public String getSourceTableName() {
+        return sourceTableName;
+    }
+
+    public void setSourceTableName(String sourceTableName) {
+        this.sourceTableName = sourceTableName;
+    }
+
+    public String getSourceSchemaName() {
+        return sourceSchemaName;
+    }
+
+    public void setSourceSchemaName(String sourceSchemaName) {
+        this.sourceSchemaName = sourceSchemaName;
+    }
+
+    public String getSourceCatalogName() {
+        return sourceCatalogName;
+    }
+
+    public void setSourceCatalogName(String sourceCatalogName) {
+        this.sourceCatalogName = sourceCatalogName;
+    }
+
     public String getChannelId() {
         return channelId;
     }
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
-    }
-
-    public boolean isSyncOnDelete() {
-        return syncOnDelete;
-    }
-
-    public void setSyncOnDelete(boolean syncOnDelete) {
-        this.syncOnDelete = syncOnDelete;
-    }
-
-    public String getSyncOnDeleteCondition() {
-        return syncOnDeleteCondition;
-    }
-
-    public void setSyncOnDeleteCondition(String syncOnDeleteCondition) {
-        this.syncOnDeleteCondition = syncOnDeleteCondition;
-    }
-
-    public boolean isSyncOnInsert() {
-        return syncOnInsert;
-    }
-
-    public void setSyncOnInsert(boolean syncOnInsert) {
-        this.syncOnInsert = syncOnInsert;
-    }
-
-    public String getSyncOnInsertCondition() {
-        return syncOnInsertCondition;
-    }
-
-    public void setSyncOnInsertCondition(String syncOnInsertCondition) {
-        this.syncOnInsertCondition = syncOnInsertCondition;
     }
 
     public boolean isSyncOnUpdate() {
@@ -232,52 +218,28 @@ public class Trigger {
         this.syncOnUpdate = syncOnUpdate;
     }
 
-    public String getSyncOnUpdateCondition() {
-        return syncOnUpdateCondition;
+    public boolean isSyncOnInsert() {
+        return syncOnInsert;
     }
 
-    public void setSyncOnUpdateCondition(String syncOnUpdateCondition) {
-        this.syncOnUpdateCondition = syncOnUpdateCondition;
+    public void setSyncOnInsert(boolean syncOnInsert) {
+        this.syncOnInsert = syncOnInsert;
     }
 
-    public String getSourceTableName() {
-        return sourceTableName;
+    public boolean isSyncOnDelete() {
+        return syncOnDelete;
     }
 
-    public void setSourceTableName(String tableName) {
-        this.sourceTableName = tableName;
+    public void setSyncOnDelete(boolean syncOnDelete) {
+        this.syncOnDelete = syncOnDelete;
     }
 
-    public String getTxIdExpression() {
-        return txIdExpression;
+    public boolean isSyncOnIncomingBatch() {
+        return syncOnIncomingBatch;
     }
 
-    public void setTxIdExpression(String batchIdExpression) {
-        this.txIdExpression = batchIdExpression;
-    }
-
-    public String getSourceSchemaName() {
-        return sourceSchemaName;
-    }
-
-    public void setSourceSchemaName(String schemaName) {
-        this.sourceSchemaName = schemaName;
-    }
-
-    public String getExcludedColumnNames() {
-        return excludedColumnNames;
-    }
-
-    public void setExcludedColumnNames(String excludeColumnNames) {
-        this.excludedColumnNames = excludeColumnNames;
-    }
-
-    public String getNameForDeleteTrigger() {
-        return nameForDeleteTrigger;
-    }
-
-    public void setNameForDeleteTrigger(String nameForDeleteTrigger) {
-        this.nameForDeleteTrigger = nameForDeleteTrigger;
+    public void setSyncOnIncomingBatch(boolean syncOnIncomingBatch) {
+        this.syncOnIncomingBatch = syncOnIncomingBatch;
     }
 
     public String getNameForInsertTrigger() {
@@ -296,36 +258,86 @@ public class Trigger {
         this.nameForUpdateTrigger = nameForUpdateTrigger;
     }
 
-    public String getTriggerId() {
-        return triggerId;
+    public String getNameForDeleteTrigger() {
+        return nameForDeleteTrigger;
     }
 
-    public void setTriggerId(String triggerId) {
-        this.triggerId = triggerId;
-        if (StringUtils.isNumeric(triggerId)) {
-            int id = Integer.parseInt(triggerId);
-            if (id >= maxTriggerId) {
-                maxTriggerId = id + 1;
-            }
-        }
+    public void setNameForDeleteTrigger(String nameForDeleteTrigger) {
+        this.nameForDeleteTrigger = nameForDeleteTrigger;
     }
 
-    public boolean isSyncOnIncomingBatch() {
-        return syncOnIncomingBatch;
+    public String getSyncOnUpdateCondition() {
+        return syncOnUpdateCondition;
     }
 
-    public void setSyncOnIncomingBatch(boolean syncOnIncomingBatch) {
-        this.syncOnIncomingBatch = syncOnIncomingBatch;
+    public void setSyncOnUpdateCondition(String syncOnUpdateCondition) {
+        this.syncOnUpdateCondition = syncOnUpdateCondition;
     }
 
-    public String getSourceCatalogName() {
-        return sourceCatalogName;
+    public String getSyncOnInsertCondition() {
+        return syncOnInsertCondition;
     }
 
-    public void setSourceCatalogName(String sourceCatalogName) {
-        this.sourceCatalogName = sourceCatalogName;
+    public void setSyncOnInsertCondition(String syncOnInsertCondition) {
+        this.syncOnInsertCondition = syncOnInsertCondition;
     }
 
+    public String getSyncOnDeleteCondition() {
+        return syncOnDeleteCondition;
+    }
+
+    public void setSyncOnDeleteCondition(String syncOnDeleteCondition) {
+        this.syncOnDeleteCondition = syncOnDeleteCondition;
+    }
+
+    public String getExcludedColumnNames() {
+        return excludedColumnNames;
+    }
+
+    public void setExcludedColumnNames(String excludedColumnNames) {
+        this.excludedColumnNames = excludedColumnNames;
+    }
+
+    public String getTxIdExpression() {
+        return txIdExpression;
+    }
+
+    public void setTxIdExpression(String txIdExpression) {
+        this.txIdExpression = txIdExpression;
+    }           
+
+    public String getExternalSelect() {
+        return externalSelect;
+    }
+
+    public void setExternalSelect(String externalSelect) {
+        this.externalSelect = externalSelect;
+    }
+
+    public void setLastUpdateBy(String updatedBy) {
+        this.lastUpdateBy = updatedBy;
+    }
+    
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
+    }
+
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(Date lastModifiedOn) {
+        this.lastUpdateTime = lastModifiedOn;
+    }
+    
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createdOn) {
+        this.createTime = createdOn;
+    }
+    
     public long toHashedValue() {
         long hashedValue = triggerId != null ? triggerId.hashCode() : 0;
         if (null != sourceTableName) {

@@ -590,6 +590,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setChannelId(results.getString(9));
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));
+        data.setExternalData(results.getString(12));
         return data;
     }
 

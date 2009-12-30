@@ -27,41 +27,45 @@ import java.util.Date;
  */
 public class Data extends AbstractCsvData {
 
-    // PK
+    /**
+     * Primary key
+     */
     private long dataId;
 
+    private String tableName;
+
+    private DataEventType eventType;
+
     /**
-     * Comma deliminated primary key data.
+     * Comma delimited row data.
+     */
+    private String rowData;
+
+    /**
+     * Comma delimited primary key data.
      */
     private String pkData;
 
     /**
-     * Comma deliminated row data.
-     */
-    private String rowData;
-    
-    /**
-     * To support column-level sync and conflict resolution.
-     * Comma delimited old row data from an update.
+     * To support column-level sync and conflict resolution. Comma delimited old
+     * row data from an update.
      */
 
     private String oldData;
-    
-    private String sourceNodeId;
-    
-    private String transactionId;
 
     /**
-     * This is a reference to the triggerHistory row the trigger referred to when the data
-     * event fired.
+     * This is a reference to the triggerHistory row the trigger referred to
+     * when the data event fired.
      */
-    private TriggerHistory triggerHistory;    
+    private TriggerHistory triggerHistory;
 
-    private DataEventType eventType;
-
-    private String tableName;
-    
     private String channelId;
+
+    private String transactionId;
+
+    private String sourceNodeId;
+
+    private String externalData;
 
     /**
      * This is populated by the trigger when the event happens. It will be
@@ -69,8 +73,10 @@ public class Data extends AbstractCsvData {
      */
     private Date createTime;
 
-    public Data(long dataId, String pkData, String rowData, DataEventType eventType, String tableName, Date createTime,
-            TriggerHistory triggerHistory, String channelId, String transactionId, String sourceNodeId) {
+    public Data(long dataId, String pkData, String rowData,
+            DataEventType eventType, String tableName, Date createTime,
+            TriggerHistory triggerHistory, String channelId,
+            String transactionId, String sourceNodeId) {
         super();
         this.dataId = dataId;
         this.pkData = pkData;
@@ -84,7 +90,9 @@ public class Data extends AbstractCsvData {
         this.sourceNodeId = sourceNodeId;
     }
 
-    public Data(String tableName, DataEventType eventType, String rowData, String pkData, TriggerHistory triggerHistory, String channelId, String transactionId, String sourceNodeId) {
+    public Data(String tableName, DataEventType eventType, String rowData,
+            String pkData, TriggerHistory triggerHistory, String channelId,
+            String transactionId, String sourceNodeId) {
         this.tableName = tableName;
         this.eventType = eventType;
         this.rowData = rowData;
@@ -94,19 +102,19 @@ public class Data extends AbstractCsvData {
         this.transactionId = transactionId;
         this.sourceNodeId = sourceNodeId;
     }
-    
+
     public Data() {
     }
-    
-    public String[] getParsedRowData() {
+
+    public String[] toParsedRowData() {
         return getData("rowData", rowData);
     }
-    
-    public String[] getParsedOldData() {
+
+    public String[] toParsedOldData() {
         return getData("oldData", oldData);
     }
-    
-    public String[] getParsedPkData() {
+
+    public String[] toParsedPkData() {
         return getData("pkData", pkData);
     }
 
@@ -118,20 +126,20 @@ public class Data extends AbstractCsvData {
         this.dataId = dataId;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
     public DataEventType getEventType() {
         return eventType;
     }
 
     public void setEventType(DataEventType eventType) {
         this.eventType = eventType;
-    }
-
-    public String getPkData() {
-        return pkData;
-    }
-
-    public void setPkData(String pkData) {
-        this.pkData = pkData;
     }
 
     public String getRowData() {
@@ -142,28 +150,12 @@ public class Data extends AbstractCsvData {
         this.rowData = rowData;
     }
 
-    public String getTableName() {
-        return tableName;
+    public String getPkData() {
+        return pkData;
     }
 
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public TriggerHistory getTriggerHistory() {
-        return triggerHistory;
-    }
-
-    public void setTriggerHistory(TriggerHistory triggerHistory) {
-        this.triggerHistory = triggerHistory;
+    public void setPkData(String pkData) {
+        this.pkData = pkData;
     }
 
     public String getOldData() {
@@ -174,27 +166,52 @@ public class Data extends AbstractCsvData {
         this.oldData = oldData;
     }
 
-    public String getSourceNodeId() {
-        return sourceNodeId;
+    public TriggerHistory getTriggerHistory() {
+        return triggerHistory;
     }
-    
-    public void setSourceNodeId(String sourceNodeId) {
-        this.sourceNodeId = sourceNodeId;
+
+    public void setTriggerHistory(TriggerHistory triggerHistory) {
+        this.triggerHistory = triggerHistory;
     }
-    
-    public String getTransactionId() {
-        return transactionId;
-    }
-    
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-    
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
-    
+
     public String getChannelId() {
         return channelId;
     }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+
+    public void setSourceNodeId(String sourceNodeId) {
+        this.sourceNodeId = sourceNodeId;
+    }
+
+    public String getExternalData() {
+        return externalData;
+    }
+
+    public void setExternalData(String externalData) {
+        this.externalData = externalData;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
 }
