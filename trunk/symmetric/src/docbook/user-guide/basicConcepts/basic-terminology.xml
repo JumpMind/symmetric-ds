@@ -2,28 +2,29 @@
   <section id="terminology">
         <title>Terminology</title>
      
-         <para>Before we provide the complete data model, however, a few key terms are worth additional consideration. Terms such as "nodes", "channels", "routers", 
-        and "triggers" are fundamental to understanding SymmetricDS, and thus we will define them now.</para>
+         <para>Before the complete data model is revealed, a few key terms should be explained. Terms such as "nodes", "groups", "links", "channels", "routers", 
+        and "triggers" are fundamental to understanding SymmetricDS.</para>
         <section id="terminology-nodes">
             <title>Nodes</title>
             <para>
-                A <emphasis>node</emphasis> is a single instance of SymmetricDS, and can be thought of as a location which
-                captures and <emphasis>synchronizes</emphasis> (receives or sends) data. Normally a node has a corresponding database that is
-                associated with the node. Examples of nodes include:
+                A <emphasis>node</emphasis> is a single instance of SymmetricDS, and can be thought of as a proxy for a database which
+                manages the <emphasis>synchronization</emphasis> of data. Examples of nodes include:
                 <itemizedlist>
-                    <listitem>A single retail store register which contains a database that contains item information, item
+                    <listitem>A single workstation at a store which hosts a database that contains item information, item
                         prices, and saves sale information.</listitem>
                     <listitem>A laptop computer that is used to collect new employee hire information for later sending to a
                         central server.</listitem>
-                    <listitem>A central office server that is used for aggregating sales data that has been sent from retail store
-                        registers.</listitem>
-                   
+                    <listitem>A central office server that is used for aggregating sales data that has been sent from store
+                        workstations or laptop computers.</listitem>                   
                 </itemizedlist>
-                In all of these examples, an instance of SymmetricDS would be installed on the computer and would interact with
+                In all of these examples, an instance of SymmetricDS could be installed on the computer which would interact with
                 the database on the computer.
             </para>
-            <para>A node also has a domain-specific identifier, an <emphasis>externalId</emphasis> that provides context within the local system.
-           <!--  MDH:  Chris - can you provide an example of when this is useful? -->
+            <para>A node is identified to the system by it's assigned node group id and its external id.  Based on those properties, the system
+            assign determines if a node is allowed to register with the system, and if so, it is assigned a node id.  The node group identifies
+            a tier of like nodes that have the same synchronization profile.  The external id is a domain-specific identifier, an <emphasis>externalId</emphasis> 
+            that provides context within the local system.  For example, a server at a store may belong to the node group 'store' and have and external
+            id of '00010.'           
            </para>
         </section>
         <section id="terminology-node-topology">
