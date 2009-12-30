@@ -34,8 +34,6 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     static final ILog log = LogFactory.getLog(DataLoaderContext.class);
 
-    private String version;
-
     private String nodeId;
 
     private String tableName;
@@ -135,14 +133,6 @@ public class DataLoaderContext implements IDataLoaderContext {
 
     public String[] getOldData() {
         return this.tableTemplate != null ? this.tableTemplate.getOldData() : null;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public boolean isSkipping() {

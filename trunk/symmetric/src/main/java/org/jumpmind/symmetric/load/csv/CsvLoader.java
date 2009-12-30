@@ -102,8 +102,6 @@ public class CsvLoader implements IDataLoader {
                 return true;
             } else if (tokens[0].equals(CsvConstants.NODEID)) {
                 context.setNodeId(tokens[1]);
-            } else if (tokens[0].equals(CsvConstants.VERSION)) {
-                context.setVersion(tokens[1] + "." + tokens[2] + "." + tokens[3]);
             } else if (isMetaTokenParsed(tokens)) {
                 continue;
             } else {

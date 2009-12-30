@@ -30,7 +30,7 @@
         <priority value="ERROR" />
     </category>
 
-    <!-- 
+    <!-- Enable this to see SQL output
     <category name="org.springframework.jdbc.core.JdbcTemplate">
         <priority value="DEBUG" />
     </category>
@@ -48,9 +48,10 @@
         <priority value="ERROR" />
     </category>
 
-    <!--
-        Enable this to see extract output <category name="org.jumpmind.symmetric.util.CsvUtils"> <priority value="DEBUG"
-        /> </category>
+    <!-- Enable this to see CSV extract output
+    <category name="org.jumpmind.symmetric.util.CsvUtils"> 
+        <priority value="DEBUG"/> 
+     </category>
     -->
 
     <root>
