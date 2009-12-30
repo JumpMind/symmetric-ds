@@ -28,8 +28,6 @@ final public class CsvConstants {
     
     public static final String BINARY = "binary";
 
-    public static final String VERSION = "version";
-
     public static final String NODEID = "nodeid";
 
     public static final String SCHEMA = "schema";

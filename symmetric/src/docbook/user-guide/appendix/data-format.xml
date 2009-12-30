@@ -24,18 +24,58 @@
         <variablelist>
             <varlistentry>
                 <term>
-                    <command>version, {major},{minor},{patch}</command>
+                    <command>nodeid, {node_id}</command>
                 </term>
                 <listitem>
-                    <para>Indicates the version of the file format</para>
+                    <para>Identifies which node the data is coming from.  Occurs once in CSV file.</para>
                 </listitem>
             </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>binary, {BASE64|NONE|HEX}</command>
+                </term>
+                <listitem>
+                    <para>Identifies the type of decoding the loader needs to use to decode binary data in the pay load.  This varies depending on what database is the source of the data.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>batch, {batch_id}</command>
+                </term>
+                <listitem>
+                    <para>Uniquely identifies a batch.  Used to track whether a batch has been loaded before. A batch of -9999 is considered a virtual batch and will be loaded, but will not be recorded in incoming_batch.</para>
+                </listitem>
+            </varlistentry>             
+            <varlistentry>
+                <term>
+                    <command>channel, {channel_id}</command>
+                </term>
+                <listitem>
+                    <para>Identifies which channel a batch belongs to.</para>
+                </listitem>
+            </varlistentry>   
+            <varlistentry>
+                <term>
+                    <command>schema, {schema name}</command>
+                </term>
+                <listitem>
+                    <para>The name of the schema that is being targeted.</para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>catalog, {catalog name}</command>
+                </term>
+                <listitem>
+                    <para>The name of the catalog that is being targeted.</para>
+                </listitem>
+            </varlistentry>                     
             <varlistentry>
                 <term>
                     <command>table, {table name}</command>
                 </term>
                 <listitem>
-                    <para>Sets the context of which table on which to operate.</para>
+                    <para>The name of the table that is being targeted.</para>
                 </listitem>
             </varlistentry>
             <varlistentry>
@@ -82,29 +122,82 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>old, {old column value...}</command>
+                </term>
+                <listitem>
+                    <para>
+                        Represent all the old values of the data.  This data can be used for conflict 
+                        resolution.
+                    </para>
+                </listitem>
+            </varlistentry>            
+            <varlistentry>
+                <term>
                     <command>delete, {old key value...}</command>
                 </term>
                 <listitem>
                     <para>Delete from the table using the old key values.</para>
                 </listitem>
             </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>sql, {sql statement}</command>
+                </term>
+                <listitem>
+                    <para>Optional notation that instructs the data loader to run the accompanying SQL statement.</para>
+                </listitem>
+            </varlistentry>            
+            <varlistentry>
+                <term>
+                    <command>bsh, {bsh script}</command>
+                </term>
+                <listitem>
+                    <para>Optional notation that instructs the data loader to run the accompanying  <ulink url="http://www.beanshell.org/">BeanShell</ulink> snippet.</para>
+                </listitem>
+            </varlistentry>              
+            <varlistentry>
+                <term>
+                    <command>create, {xml}</command>
+                </term>
+                <listitem>
+                    <para>Optional notation that instructs the data loader to run the accompanying <ulink url="http://db.apache.org/ddlutils/">DdlUtils</ulink> XML table definition in order to create a database table.</para>
+                </listitem>
+            </varlistentry>              
+            <varlistentry>
+                <term>
+                    <command>commit, {batch_id}</command>
+                </term>
+                <listitem>
+                    <para>An indicator that the batch has been transmitted and the data can be committed to the database.</para>
+                </listitem>
+            </varlistentry>            
         </variablelist>
     </para>
     <example>
         <title>Data Format Stream</title>
         <programlisting>
-<![CDATA[version, 1,0,0
+<![CDATA[nodeid, 1001
+channel, pricing
+binary, BASE64
+batch, 100
+schema,
+catalog,
 table, item_selling_price
 keys, price_id
 columns, price_id, price, cost
 insert, 55, 0.65, 0.55
+schema,
+catalog,
 table, item
 keys, item_id 
 columns, item_id, price_id, name
 insert, 110000055, 55, "Soft Drink"
 delete, 110000001
+schema,
+catalog,
 table, item_selling_price
-update, 55, 0.75, 0.65, 55]]>
+update, 55, 0.75, 0.65, 55
+commit, 100]]>
         </programlisting>
     </example>
 </appendix>

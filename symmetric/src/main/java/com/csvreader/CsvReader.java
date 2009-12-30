@@ -89,14 +89,14 @@ public class CsvReader {
     private boolean closed = false;
 
     /**
-     * Double up the text qualifier to represent an occurance of the text
+     * Double up the text qualifier to represent an occurrence of the text
      * qualifier.
      */
     public static final int ESCAPE_MODE_DOUBLED = 1;
 
     /**
      * Use a backslash character before the text qualifier to represent an
-     * occurance of the text qualifier.
+     * occurrence of the text qualifier.
      */
     public static final int ESCAPE_MODE_BACKSLASH = 2;
 
@@ -372,10 +372,10 @@ public class CsvReader {
     }
 
     /**
-     * Gets the current way to escape an occurance of the text qualifier inside
+     * Gets the current way to escape an occurrence of the text qualifier inside
      * qualified data.
      * 
-     * @return The current way to escape an occurance of the text qualifier
+     * @return The current way to escape an occurrence of the text qualifier
      *         inside qualified data.
      */
     public int getEscapeMode() {
@@ -383,11 +383,11 @@ public class CsvReader {
     }
 
     /**
-     * Sets the current way to escape an occurance of the text qualifier inside
+     * Sets the current way to escape an occurrence of the text qualifier inside
      * qualified data.
      * 
      * @param escapeMode
-     *                The way to escape an occurance of the text qualifier
+     *                The way to escape an occurrence of the text qualifier
      *                inside qualified data.
      * @exception IllegalArgumentException
      *                    When an illegal value is specified for escapeMode.

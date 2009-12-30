@@ -45,9 +45,9 @@ public class CsvExtractor extends CsvExtractor16 {
 
     @Override
     public void begin(OutgoingBatch batch, BufferedWriter writer) throws IOException {
-        CsvUtils.write(writer, CsvConstants.CHANNEL, CsvUtils.DELIMITER, batch.getChannelId());
-        writer.newLine();
         CsvUtils.write(writer, CsvConstants.BATCH, CsvUtils.DELIMITER, Long.toString(batch.getBatchId()));
+        writer.newLine();        
+        CsvUtils.write(writer, CsvConstants.CHANNEL, CsvUtils.DELIMITER, batch.getChannelId());
         writer.newLine();
     }
     

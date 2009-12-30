@@ -50,14 +50,14 @@ public class CsvWriter {
     private boolean closed = false;
 
     /**
-     * Double up the text qualifier to represent an occurance of the text
+     * Double up the text qualifier to represent an occurrence of the text
      * qualifier.
      */
     public static final int ESCAPE_MODE_DOUBLED = 1;
 
     /**
      * Use a backslash character before the text qualifier to represent an
-     * occurance of the text qualifier.
+     * occurrence of the text qualifier.
      */
     public static final int ESCAPE_MODE_BACKSLASH = 2;
 

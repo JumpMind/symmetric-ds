@@ -39,8 +39,6 @@ public interface IDataLoaderContext extends ICacheContext {
 
     public String getChannelId();
 
-    public String getVersion();
-
     public boolean isSkipping();
 
     public String[] getColumnNames();
