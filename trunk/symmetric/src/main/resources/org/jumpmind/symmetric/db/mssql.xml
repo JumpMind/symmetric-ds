@@ -128,8 +128,8 @@
                                        open DataCursor
                                        fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin
-                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, create_time) 
-                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)                                   
+                                           insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                             values('$(targetTableName)','I', $(triggerHistoryId), @DataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)                                   
                                            fetch next from DataCursor into @DataRow, $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -163,8 +163,8 @@
                                        open DataCursor
                                        fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        while @@FETCH_STATUS = 0 begin                                   
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time) 
-                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)
                                          fetch next from DataCursor into @DataRow, @OldPk, @OldDataRow, $(oldKeyVariables), $(newKeyVariables)
                                        end
                                        close DataCursor
@@ -192,8 +192,8 @@
                                       open DataCursor
                                        fetch next from DataCursor into @OldPk, @OldDataRow, $(oldKeyVariables)
                                        while @@FETCH_STATUS = 0 begin 
-                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time) 
-                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), current_timestamp)
+                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) 
+                                           values('$(targetTableName)','D', $(triggerHistoryId), @OldPk, @OldDataRow, '$(channelName)', $(txIdExpression), $(defaultCatalog)dbo.$[sym.sync.table.prefix]_node_disabled(), $(externalSelect), current_timestamp)
                                          fetch next from DataCursor into @OldPk,@OldDataRow, $(oldKeyVariables)
                                        end
                                        close DataCursor

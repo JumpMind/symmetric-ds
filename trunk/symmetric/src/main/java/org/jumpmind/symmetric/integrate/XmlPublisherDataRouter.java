@@ -48,13 +48,13 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
         if (tableNamesToPublishAsGroup == null
                 || tableNamesToPublishAsGroup.contains(dataMetaData.getData().getTableName())) {
             Element xml = getXmlFromCache(context, dataMetaData.getTriggerHistory().getParsedColumnNames(),
-                    dataMetaData.getData().getParsedRowData(), dataMetaData.getTriggerHistory()
-                            .getParsedPkColumnNames(), dataMetaData.getData().getParsedPkData());
+                    dataMetaData.getData().toParsedRowData(), dataMetaData.getTriggerHistory()
+                            .getParsedPkColumnNames(), dataMetaData.getData().toParsedPkData());
             if (xml != null) {
                 toXmlElement(dataMetaData.getData().getEventType(), xml, dataMetaData.getData().getTableName(),
                         dataMetaData.getTriggerHistory().getParsedColumnNames(), dataMetaData.getData()
-                                .getParsedRowData(), dataMetaData.getTriggerHistory().getParsedPkColumnNames(),
-                        dataMetaData.getData().getParsedPkData());
+                                .toParsedRowData(), dataMetaData.getTriggerHistory().getParsedPkColumnNames(),
+                        dataMetaData.getData().toParsedPkData());
             }
         } else if (log.isDebugEnabled()) {
             log.debug("XmlPublisherTableNotFound", dataMetaData.getData().getTableName());

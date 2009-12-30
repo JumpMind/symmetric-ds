@@ -477,7 +477,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     while (rs.next()) {
                         try {
-                            handler.dataExtracted(dataService.readData(rs), rs.getString(12));
+                            handler.dataExtracted(dataService.readData(rs), rs.getString(13));
                         } catch (RuntimeException e) {
                             throw e;
                         } catch (Exception e) {

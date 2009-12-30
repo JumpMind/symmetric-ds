@@ -62,10 +62,11 @@
                                 BEGIN ATOMIC
                                     IF $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then
                                         INSERT into $(defaultSchema)$(prefixName)_data 
-                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, create_time)
+                                            (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)
                                         VALUES('$(targetTableName)', 'I', $(triggerHistoryId),
                                             $(columns), 
                                             '$(channelName)', $(txIdExpression), sync_node_disabled,
+                                            $(externalSelect),
                                             CURRENT_TIMESTAMP);
                                     END IF;
                                 END
@@ -82,12 +83,15 @@
                                 BEGIN ATOMIC
                                     IF $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then
                                         INSERT into $(defaultSchema)$(prefixName)_data 
-                                            (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, create_time)
+                                            (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
                                         VALUES('$(targetTableName)', 'U', $(triggerHistoryId),
                                             $(oldKeys),
                                             $(columns),
                                             $(oldColumns),
-                                            '$(channelName)', $(txIdExpression), sync_node_disabled,
+                                            '$(channelName)', 
+                                            $(txIdExpression), 
+                                            sync_node_disabled,
+                                            $(externalSelect),                                            
                                             CURRENT_TIMESTAMP);
                                     END IF;
                                 END
@@ -108,7 +112,10 @@
                                         VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),
                                             $(oldKeys),
                                             $(oldColumns),
-                                            '$(channelName)', $(txIdExpression), sync_node_disabled,
+                                            '$(channelName)', 
+                                            $(txIdExpression), 
+                                            sync_node_disabled,
+                                            $(externalSelect),                                            
                                             CURRENT_TIMESTAMP);
                                     END IF;
                                 END

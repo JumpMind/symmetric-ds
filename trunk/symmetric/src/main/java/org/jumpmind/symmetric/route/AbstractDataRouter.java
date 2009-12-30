@@ -57,17 +57,20 @@ public abstract class AbstractDataRouter implements IDataRouter {
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsString(null, dataMetaData));
             data.putAll(getOldDataAsString(OLD_, dataMetaData));
+            data.put("EXTERNAL_ID", dataMetaData.getData().getExternalData());
             break;
         case INSERT:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsString(null, dataMetaData));
             Map<String,String> map = getNullData(OLD_, dataMetaData);
             data.putAll(map);
+            data.put("EXTERNAL_ID", dataMetaData.getData().getExternalData());
             break;
         case DELETE:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getOldDataAsString(null, dataMetaData));
             data.putAll(getOldDataAsString(OLD_, dataMetaData));
+            data.put("EXTERNAL_ID", dataMetaData.getData().getExternalData());
             break;
         default:
             break;
@@ -76,12 +79,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, String> getNewDataAsString(String prefix, DataMetaData dataMetaData) {
-        String[] rowData = dataMetaData.getData().getParsedRowData();
+        String[] rowData = dataMetaData.getData().toParsedRowData();
         return getDataAsString(prefix, dataMetaData, rowData);
     }
     
     protected Map<String, String> getOldDataAsString(String prefix, DataMetaData dataMetaData) {
-        String[] rowData = dataMetaData.getData().getParsedOldData();
+        String[] rowData = dataMetaData.getData().toParsedOldData();
         return getDataAsString(prefix, dataMetaData, rowData);
     }
     
@@ -122,11 +125,11 @@ public abstract class AbstractDataRouter implements IDataRouter {
     }
 
     protected Map<String, Object> getNewDataAsObject(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().getParsedRowData());
+        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().toParsedRowData());
     }
 
     protected Map<String, Object> getOldDataAsObject(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().getParsedOldData());
+        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().toParsedOldData());
     }
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {

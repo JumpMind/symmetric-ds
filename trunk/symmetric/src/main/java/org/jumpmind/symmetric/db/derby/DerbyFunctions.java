@@ -61,7 +61,7 @@ public class DerbyFunctions {
     }
 
     public static void insertData(String schemaName, String prefixName, String tableName, String channelName,
-            String dmlType, int triggerHistId, String transactionId,
+            String dmlType, int triggerHistId, String transactionId, String externalData,
             String pkData, String rowData, String oldRowData) throws SQLException {
         if (((dmlType.equals("I") || dmlType.equals("U")) && rowData != null)
                 || (dmlType.equals("D") && pkData != null)) {
@@ -69,8 +69,8 @@ public class DerbyFunctions {
             StringBuilder sql = new StringBuilder("insert into ");
             sql.append(schemaName);
             sql.append(prefixName);
-            sql.append("_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, create_time) ");
-            sql.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
+            sql.append("_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) ");
+            sql.append(" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
             PreparedStatement ps = conn.prepareStatement(sql.toString());
             ps.setString(1, tableName);
             ps.setString(2, dmlType);
@@ -81,6 +81,7 @@ public class DerbyFunctions {
             ps.setString(7, channelName);
             ps.setString(8, transactionId);
             ps.setString(9, getSyncNodeDisabled());  
+            ps.setString(10, externalData);
             ps.executeUpdate();
             ps.close();
             conn.close();

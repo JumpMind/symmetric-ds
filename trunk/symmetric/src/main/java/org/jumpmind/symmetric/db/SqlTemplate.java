@@ -220,6 +220,9 @@ public class SqlTemplate {
             triggerExpression = trigger.getTxIdExpression();
         }
         ddl = AppUtils.replace("txIdExpression", dialect.preProcessTriggerSqlClause(triggerExpression), ddl);
+        
+        ddl = AppUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null" : "(" + dialect.preProcessTriggerSqlClause(trigger.getExternalSelect()) + ")"), ddl);
+
         ddl = AppUtils.replace("syncOnInsertCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnInsertCondition()),
                 ddl);
         ddl = AppUtils.replace("syncOnUpdateCondition", dialect.preProcessTriggerSqlClause(trigger.getSyncOnUpdateCondition()),
