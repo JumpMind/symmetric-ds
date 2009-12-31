@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ch05-basic-configuration" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="basic-configuration" xmlns="http://docbook.org/ns/docbook"
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude"
     xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="http://docbook.org/ns/docbook"
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
@@ -9,40 +9,36 @@
         to connect to the database it will manage.  A basic way to specify this is to place properties
         in the symmetric.properties file.  When started up, the SymmetricDS reads the configuration
         and state from the database.  If the configuration tables are missing, they are created
-        automatically (auto creation can be disabled).  A basic configuration describes the
-        following:
+        automatically (auto creation can be disabled).  A basic configuration is described by inserting into the following tables:
             <itemizedlist>
                 <listitem>
-                    <para><emphasis role="bold">Node Group</emphasis> - each node belongs to a group</para>
+                    <para><link linkend="node_group">Node Group</link> - specify the tiers that exist in a topology</para>
                 </listitem>
                 <listitem>
-                    <para><emphasis role="bold">Node Group Link</emphasis> - two nodes groups are linked together for synchronization</para>
+                    <para><link linkend="node_group_link">Node Group Link</link> - two nodes groups are linked together for synchronization</para>
                 </listitem>
                 <listitem>
-                    <para><emphasis role="bold">Node</emphasis> - an instance of SymmetricDS</para>
+                    <para><link linkend="channel">Channel</link> - grouping to control synchronizations</para>
                 </listitem>
                 <listitem>
-                    <para><emphasis role="bold">Channel</emphasis> - data is categorized to synchronize independently</para>
+                    <para><link linkend="trigger">Trigger</link> - specify tables, <link linkend="channel">channels</link> and conditions for which changes in the database should be captured</para>
                 </listitem>
                 <listitem>
-                    <para><emphasis role="bold">Trigger</emphasis> - specify tables for which changes in the database should be captured</para>
+                    <para><link linkend="router">Router</link> - specify the <link linkend="node_group_link">node group link</link> to be used for synchronization, along with other routing details</para>
                 </listitem>
                 <listitem>
-                    <para><emphasis role="bold">Router</emphasis> - specify the node groups between which changes should be synchronized</para>
-                </listitem>
-                <listitem>
-                    <para><emphasis role="bold">TriggerRouter</emphasis> - map routers to triggers</para>
+                    <para><link linkend="trigger_router">TriggerRouter</link> - map <link linkend="router">routers</link> to <link linkend="trigger">triggers</link></para>
                 </listitem>
             </itemizedlist>
-        During start up, the Triggers are verified against the database, and database triggers
+        During start up, triggers are verified against the database, and database triggers
         are installed on tables that require data changes to be captured.  The route job, pull job and push job
         begin running as required to synchronize changes with other nodes.
     </para>
-    <section id="ch05-basic-properties">
+    <section id="basic-properties">
         <title>Basic Properties</title>
         <para>
-            Each node requires properties that will connect it to the database and register
-            it with a parent node.  To give a node its identity, the following properties are used:
+            Each node requires properties that allow it to connect to a database and register
+            with a parent node.  To give a node its identity, the following properties are used:
         </para>
         <variablelist>
             <varlistentry>
@@ -53,8 +49,7 @@
                     <para>
                         The node group that this node is a member of. Synchronization is specified
                         between node groups, which means you only need to specify it once for
-                        multiple nodes in the same group. For example, you might have groups of
-                        "STORE", "REGION", and "CENTRAL" that synchronize.
+                        multiple nodes in the same group. 
                     </para>
                 </listitem>
             </varlistentry>
@@ -64,12 +59,12 @@
                 </term>
                 <listitem>
                     <para>
-                        The External ID for this node has meaning to the user and provides
+                        The external id for this node has meaning to the user and provides
                         integration into the system where it is deployed. For example, it might be a
-                        retail store number or a region number. The External ID can be used in
+                        retail store number or a region number. The external id can be used in
                         expressions for conditional and subset data synchronization. Behind the
                         scenes, each node has a unique sequence number for tracking synchronization
-                        events. That makes it possible to assign the same External ID to multiple
+                        events. That makes it possible to assign the same external id to multiple
                         nodes, if desired.
                     </para>
                 </listitem>
@@ -82,7 +77,7 @@
                     <para>
                         The URL where this node can be contacted for synchronization.
                         At startup and during each heartbeat, the node updates its entry in
-                        the database with this URL.
+                        the database with this URL.  
                     </para>
                 </listitem>
             </varlistentry>
@@ -172,7 +167,7 @@
             </varlistentry>
         </variablelist>
     </section>
-    <section id="ch05-node-group">
+    <section id="node-group">
         <title>Node Group</title>
         <para>
             Each node must belong to a node group, a collection of one or more nodes.
@@ -196,7 +191,7 @@ values
   ('corp', 'A corporate node');]]></programlisting>
         </para>
     </section>
-    <section id="ch05-node-group-link">
+    <section id="basic-node-group-link">
         <title>Node Group Link</title>
         <para>
             To establish synchronization between nodes, two node groups are linked together.  The direction
@@ -223,7 +218,7 @@ values
   ('corp', 'store', 'W');]]></programlisting>
         </para>
     </section>
-    <section id="ch05-node">
+    <section id="basic-node">
         <title>Node</title>
         <para>
             Each instance of SymmetricDS is a node that can be uniquely identified. 
@@ -246,7 +241,7 @@ values
 insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         </para>
     </section>
-    <section id="ch05-channel">
+    <section id="basic-channel">
         <title>Channel</title>
         <para>
             Data changes in the database are captured in the order that they occur, which is preserved
@@ -263,17 +258,17 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
             
             <programlisting>
 <![CDATA[insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, enabled, description)
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, extract_period_millis, batch_algorithm, enabled, description)
 values
-  ('item', 10, 1000, 1, 'Item and pricing data');
+  ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
 
 insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, enabled, description)
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, extract_period_millis, batch_algorithm, enabled, description)
 values
-  ('sale_transaction', 1, 1000, 1, 'retail sale transactions from register');]]></programlisting>
+  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 'retail sale transactions from register');]]></programlisting>
         </para>
     </section>
-    <section id="ch05-trigger">
+    <section id="basic-trigger">
         <title>Trigger</title>
         <para>
             At the heart of SymmetricDS are Triggers. Whenever the Trigger entry is updated, 
