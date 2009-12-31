@@ -7,99 +7,109 @@
         <section id="terminology-nodes">
             <title>Nodes</title>
             <para>
-                A <emphasis>node</emphasis> is a single instance of SymmetricDS, and can be thought of as a proxy for a database which
-                manages the <emphasis>synchronization</emphasis> of data. Examples of nodes include:
-                <itemizedlist>
-                    <listitem>A single workstation at a store which hosts a database that contains item information, item
-                        prices, and saves sale information.</listitem>
-                    <listitem>A laptop computer that is used to collect new employee hire information for later sending to a
-                        central server.</listitem>
-                    <listitem>A central office server that is used for aggregating sales data that has been sent from store
-                        workstations or laptop computers.</listitem>                   
-                </itemizedlist>
-                In all of these examples, an instance of SymmetricDS could be installed on the computer which would interact with
-                the database on the computer.
+                A <emphasis>node</emphasis> is a single instance of SymmetricDS. It can be thought of as a proxy for a database which
+                manages the synchronization of data. 
             </para>
-            <para>A node is identified to the system by it's assigned node group id and its external id.  Based on those properties, the system
-            assign determines if a node is allowed to register with the system, and if so, it is assigned a node id.  The node group identifies
+            <para>    
+                One use case where SymmetricDS has been used is retail.
+                An example retail deployment of SymmetricDS might include many point-of-sale workstations located at stores that may have 
+                intermittent network connection to a central location.  These workstations might have point-sale-software that uses a local
+                relational database.  The database is populated with items, prices and tax information from a centralized
+                database.  The point-of-sale software looks up item information from the local database and also saves 
+                sale information to the same database.   The persisted sales need to be propagated back to the centralized database.  
+                In this example the following would be SymmetricDS nodes:
+                <itemizedlist>
+                    <listitem>Each point-of-sale workstation.</listitem>
+                    <listitem>A central office database server.</listitem>                   
+                </itemizedlist>
+                A node instance of SymmetricDS is a program that is either embedded in another application or is running in the background as a service.  Centralized
+                nodes that have many clients can be clustered to help disperse load.
+            </para>
+            <para>A node must be configured to communicate with the database it is synchronizing. This includes providing database connection information, database credentials, and depending on the database, a 
+            JDBC driver library.  A node is identified to a registration server by it's assigned node group id and its external id.  Based on those properties, the system
+            determines if a node is allowed to register with the system, and if so, it is assigns it a node id.  The node group identifies
             a tier of like nodes that have the same synchronization profile.  The external id is a domain-specific identifier, an <emphasis>externalId</emphasis> 
             that provides context within the local system.  For example, a server at a store may belong to the node group 'store' and have and external
             id of '00010.'           
            </para>
+            <para>Node configuration is typically stored in a local properties file.  All other configuration is retrieved during registration
+            and is stored in the SymmetricDS tables located in the database.</para>  
         </section>
         <section id="terminology-node-topology">
             <title>Node Topology</title>
-            <para> Nodes in SymmetricDS are organized into an overall node topology, such as hub-and-spoke, tree-hiearchy, etc.
-                The hierarchy chosen varies based on the particular goals of the SymmetricDS installation.</para>
-            <para> For example, consider a small retail company which has a single register in each store. The company wishes to
-                collect sales data on a common, central server, for use in tracking and reporting sales. The company might also
-                want to be able to update prices on the central server and have the prices automatically sent down to each
-                register. This is a simple SymmetricDS hub-and-spoke topology, with the central server serving as the hub and the
+            <para> Nodes in SymmetricDS are organized into an overall node topology, such as hub-and-spoke, tree-hierarchy, etc.
+                The hierarchy chosen varies based on the goals of the SymmetricDS installation.</para>
+            <para> For example, the above retail use case is a simple SymmetricDS hub-and-spoke topology, with the central server serving as the hub and the
                 registers as the nodes at the end of each spoke. If this hub-and-spoke topology where drawn as a tree hierarchy,
                 the central office server would be the top node in the tree, and a series of child nodes representing each
                 individual register would represent the lower level of the hierarchy.</para>
-            <para> More complex topologies can also be used. Consider, for example, the same retail company that has expanded to
-                have multiple registers in each store. The company may choose to place store servers in each store to perform
+            <para> More complex topologies can also be used. Consider, for example, if same retail example is expanded to
+                to place store servers in each store to perform
                 tasks such as opening the store for the day, reconciling registers, assigning employees, etc. One approach to this
-                could be to create a three-tier tree hierarchy. The highest tier, the central office, connects with each store's
-                server. The store servers, in turn, communicate with the individual registers at the store.</para>
+                could be to create a three-tier tree hierarchy. The highest tier, the centralized database, connects with each store's
+                server. The store servers, in turn, communicate with the individual point-of-sale workstations at the store.</para>                 
         </section>
         <section id="terminology-node-groups">
             <title>Node Groups</title>
             <para>
-                As you can see, the individual nodes in a SymmetricDS installation (registers, servers, etc.) naturally organize
-                into tiers or levels in an overall hierarchy, and typically the grouped nodes share common attributes. In fact, it
-                is quite common for SymmetricDS to have hundreds or thousands of nodes sending and receiving information. Nodes
-                which share common attributes are assigned to <emphasis>node groups</emphasis>. These node groups are frequently used to represent
-                all nodes at a particular level of the overall node hierarchy. For the examples above, we might define a node
-                group of:
+                Each node must be assigned to a node group.  Node groups are a way to share synchronization profiles.
+                The individual nodes in a SymmetricDS installation (workstations, servers, etc.), when assigned to a node group,
+                naturally organize into tiers or levels in an overall hierarchy. A synchronization
+                profile is a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
+                a particular level of the overall node hierarchy. For the examples above, we might define a node
+                groups of:
                 <itemizedlist>
-                    <listitem>"register", to represent each store register</listitem>
-                    <listitem>"hr-laptop", to represent all laptops that are used to collect employee information when detached
-                        from the network.</listitem>
-                    <listitem>"corp" or "central-office" to represent the node(s) that are aggregating sales data.</listitem>
-                    <listitem>"store-server" to represent the back-office server that interacts with store registers and sends and
+                    <listitem>"workstation", to represent each point-of-sale workstation</listitem>
+                    <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
+                    <listitem>"store" to represent the store server that interacts with store workstations and sends and
                         receives data from a central office server.</listitem>
                 </itemizedlist>
-                Node groups are used to ease configuration, primarily. For example, you can define the method in which data is
-                synchronized by node group. In addition, specifying the specific data to be synchronized is done based on node
-                groups.
+                Considerable thought should be given to how node groups are organized.  Groups should be created for each set of nodes
+                that synchronize the same tables.  Note that there are other mechanisms in SymmetricDS to route to individual nodes 
+                or smaller subsets of nodes in a node group.  
+                <para>
+                For example, although you could, you would not want to create a node group
+                for each store even though different tax rates need to be routed to each store.  Each store needs to synchronize the same tables
+                to the same groups, so 'store' would be a good choice for a node group.
+                </para>  
             </para>
         </section>
         <section id="terminology-node-group-links">
-            <title>Moving Data - Node Group Links and Push/Pull</title>
-            <para> In SymmetricDS, a node group is <emphasis>linked</emphasis> to another node group through a node group link. In addition to
-                establishing the flow of data between the two node groups, the link also specifies whether data is <emphasis>pushed</emphasis> to or
-                <emphasis>pulled</emphasis> from a node.</para>
+            <title>Node Group Links</title>
+            <para>
+              In SymmetricDS, a node group is <emphasis>linked</emphasis> to another node group through a node group link. 
+              In addition to establishing the flow of data between the two node groups, the link also specifies whether data is <emphasis>pushed</emphasis> to or
+              <emphasis>pulled</emphasis> from a node.
+            </para>
         </section>
         <section id="terminology-channels">
             <title>Channels</title>
-            <para> In most SymmetricDS applications, not all data is created the same. Inevitably, some data is more important
-                than the other data. SymmetricDS supports this idea through the concept of data channels, or <emphasis>channels</emphasis> for short.
-                In SymmetricDS, you can assign a priority to individual channels such that your most important data is
-                synchronized first. Through the use of channels you can also control how much data is synchronized in each channel
-                each time. In addition, if synchronization errors should occur, the errors only block the individual channel in
-                which they have occurred. Thus, other channels can continue synchronizing even if a particular channel is in
-                error. Finally, data synchronization can be enabled or disabled by channel.</para>
+            <para>SymmetricDS enables, suspends, prioritizes, schedules and groups tables that are being synchronized 
+                using <emphasis>channels</emphasis>.  Tables that are collected data for synchronization are assigned a 
+                channel.  The default behavior of SymmetricDS is to halt synchronization if an error occurs.  However, 
+                synchronization is only blocked for the channel that produced the error.
+            </para> 
+            <para>The frequency of synchronization and order that data gets synchronized is also controlled at 
+            the channel level.
+            </para>
             </section>
                <section id="terminology-triggers-routers">
-                <title>Sync Conditions (Triggers and Routers)</title>
-         
-            <para> SymmetricDS uses database triggers to capture and record changes to data. SymmetricDS creates these triggers 
-                automatically based on
-                configuration specified in the Trigger, Router and 
-                TriggerRouter tables. Triggers can be quite simple or quite
-                sophisticated. You can, for example, control whether data changes are captured on inserts, deletes, updates, or
-                any combination thereof. You can control whether a trigger fires when data has been received from other nodes
-                (i.e., synchronize on incoming batches to further propagate data). Triggers will be installed on a system when a router
-                is linked to the trigger definition that has a source node group id that matches the node group id of the current node.</para>
-            <para> While Triggers specify which data changes to capture, Routers are used to specify when and where the data
-                changes are to be sent. You can, for example, choose to only route data when certain column values match a
-                particular constant or come from a particular node.</para>
-            <para> Routers can also specify whether to route when a node is undergoing what is known as an initial load (a clean,
-                fresh load of data) or whether to route under normal (non-initial-load) synchronizing situations). Finally,
-                routers can even be used to override default behavior and route by way of XML publishing.</para>
-            <para>
+                <title>Triggers and Routers</title>         
+            <para> SymmetricDS uses database <emphasis>triggers</emphasis> to capture and record changes to data.  After the data is captured,
+            <emphasis>routers</emphasis> choose the nodes that the data will be synchronized to. The default router configuration 
+            is to synchronize data between all nodes in a node group.   Other router configurations can route based on hard coded 
+            column values or matches between columns and some node attribute like external id.
+            </para>
+            <para> 
+                Triggers can be configured to control whether data changes are captured on inserts, deletes, updates, or
+                any combination thereof. They can also be configured to fire when data has been received from other nodes
+                in order to propagate data to another tier or back to other nodes in the originating tier node group tier.
+           </para>
+           <para> 
+                Database triggers are installed on a system when a router is linked to a trigger definition that has a source node group id 
+                that matches the node group id of the current node.
+           </para>
+           <para>
                 Routers provided in the base implementation currently include:
                 <itemizedlist>
                     <listitem>Column Match Router - a router that compares old or new column values to a constant value or the
@@ -111,8 +121,8 @@
                     <listitem>Xml Publishing Router - a router the publishes data changes directly to a messaging solution instead
                         of transmitting changes to registered nodes.  This router must be configured manually in XML as an extension point.</listitem>
                 </itemizedlist>
-                The mapping between the set of triggers and set of routers is many-to-many.  It is done in the TriggerRouter table.
-                 More than one trigger can make use of a given router and vice versa.
+                The mapping between the set of triggers and set of routers is many-to-many.  This means that one trigger can capture changes and route
+                to multiple locations.  It also means that one router can be defined an associated with many different triggers.
             </para>
         </section>
     </section>
