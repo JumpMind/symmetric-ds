@@ -20,6 +20,31 @@
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
     </table>
     
+    <table name="node_security" description="Security features like node passwords and open registration flag are stored in the node_security table. ">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+        <column name="node_password" type="VARCHAR" size="50" required="true"  description="The password used by the node to prove its identity during synchronization." />
+        <column name="registration_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether registration is open for this node.  Re-registration may be forced for a node if this is set back to '1' in a parent database for the node_id that should be re-registred." />
+        <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
+        <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
+        <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node started the initial load." />
+        <column name="created_at_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
+    </table>
+
+    <table name="node_identity" description="After registration, this table will have one row representing the identity of the node. For a root node, the row is entered by the user.">
+        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
+    </table>
+    
+    <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
+        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
+        <column name="description" type="VARCHAR" size="1000" description="A description of this node group."/>
+    </table>
+
+    <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
+        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
+        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
+        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull) " />
+    </table>
+    
     <table name="node_host" description="Representation of an physical workstation or server that is hosting the SymmetricDS software. In a clustered environment there may be more than one entry per node in this table.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="host_name" type="VARCHAR" size="255" required="true" primaryKey="true"  description="The host name of a workstation or server. If more than one instance of SymmetricDS runs on the same server, then this value can be a 'server id' specified by -Druntime.symmetric.cluster.server.id" />
@@ -40,31 +65,6 @@
         <column name="last_restart_time" type="TIMESTAMP" required="true"  description="Timestamp when this instance was last restarted." />        
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
     </table>    
-    
-    <table name="node_security" description="Security features like node passwords and open registration flag are stored in the node_security table. ">
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
-        <column name="node_password" type="VARCHAR" size="50" required="true"  description="The password used by the node to prove its identity during synchronization." />
-        <column name="registration_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether registration is open for this node.  Re-registration may be forced for a node if this is set back to '1' in a parent database for the node_id that should be re-registred." />
-        <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
-        <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
-        <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node started the initial load." />
-        <column name="created_at_node_id" type="VARCHAR" size="50" required="true"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
-    </table>
-
-    <table name="node_identity" description="After registration, this table will have one row representing the identity of the node. For a root node, the row is entered by the user.">
-        <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="Unique identifier for a node." />
-    </table>
-
-    <table name="node_group" description="A category of Nodes that synchronizes data with one or more NodeGroups. A common use of NodeGroup is to describe a level in a hierarchy of data synchronization.">
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
-        <column name="description" type="VARCHAR" size="1000" description="A description of this node group."/>
-    </table>
-
-    <table name="node_group_link" description="A source node_group sends its data updates to a target NodeGroup using a pull, push, or custom technique.">
-        <column name="source_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes should be captured." />
-        <column name="target_node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="The node group where data changes will be sent." />
-        <column name="data_event_action" type="CHAR" size="1" default="W" required="true" description="The notification scheme used to send data changes to the target node group. (P = Push, W = Wait for Pull) " />
-    </table>
 
     <table name="channel" description="This table represents a category of data that can be synchronized independently of other channels. Channels allow control over the type of data flowing and prevents one type of synchronization from contending with another.">
         <column name="channel_id" type="VARCHAR" size="20" required="true" primaryKey="true" description="A unique identifer, usually named something meaningful, like 'sales' or 'inventory'."/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ch06-advanced-configuration" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="advanced-configuration" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -7,7 +7,7 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
-    <section id="ch06-multi-tier">
+    <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
             At times, there may be scenarios where data needs to flow through multiple tiers of nodes that
@@ -41,7 +41,10 @@
             instances that are configured the same and are fronted by some type of stateless load balancer. 
         </para>        
     </section>
-    <section id="ch06-bi-direction-sync">
+    <section id='registration-redirect'>
+        <title>Registration Redirect</title>    
+    </section>
+    <section id="bi-direction-sync">
         <title>Bi-Directional Synchronization</title>
         <para>
             SymmetricDS allows tables to be synchronized bi-directionally.  Note that an outgoing 
@@ -57,8 +60,11 @@
             <literal>IDataLoaderFilter</literal> extension point which has access to both 
             old and new data.
         </para>         
-    </section>    
-    <section id="ch06-dead-triggers">
+    </section>  
+    <section id='relational-routing'>
+        <title>Relational Routing</title>    
+    </section>         
+    <section id="dead-triggers">
         <title>Dead Triggers</title>
         <para>
             Normally a Trigger is specified to capture data changes to a table and send them to
@@ -91,13 +97,22 @@ values
    0, 0, 0, 'demo', current_timestamp, current_timestamp);]]></programlisting>
         </para>
     </section>
-    <section id="ch06-purge">
+    <section id='jms-publishing'>
+        <title>JMS Publishing</title>    
+    </section>     
+    <section id="purge">
         <title>Database Purging</title>
     </section>
-    <section id="ch06-clustering">
+    <section id="clustering">
         <title>Clustering</title>
-    </section>    
-    <section id="ch06-extensions">
+    </section>   
+    <section id='logging'>
+        <title>Logging Configuration</title>    
+    </section> 
+    <section id='statistics'>
+        <title>Statistics</title>    
+    </section>           
+    <section id="extensions">
         <title>Extension Points</title>
         <para>
              SymmetricDS may be extended via a plug-in like architecture where extension point interfaces 
@@ -125,7 +140,7 @@ values
              SymmetricDS will look for Spring configured extensions in the application Classpath by importing any Spring 
              XML configuration files found matching the following pattern: META-INF/services/symmetric-*-ext.xml.
         </para>
-        <section id="ch06-parameter-filter">
+        <section id="parameter-filter">
             <title>IParameterFilter</title>
             <para>
                 Parameter values can be specified in code using a parameter filter.  Note that there can be only one parameter
@@ -232,28 +247,28 @@ values
 </beans>]]></programlisting>
             </para>
         </section>
-        <section id="ch06-extensions-table-column-filter">
+        <section id="extensions-table-column-filter">
             <title>ITableColumnFilter</title>
             <para>
             Implement this extension point to filter out specific columns from
             use by the dataloader. Only one column filter may be added per target table.
             </para>
         </section>
-        <section id="ch06-extensions-batch-listener">
+        <section id="extensions-batch-listener">
             <title>IBatchListener</title>
             <para>
             This extension point is called whenever a batch has completed loading but before
             the transaction has committed.
             </para>
         </section>
-        <section id="ch06-extensions-acknowledge-event-listener">
+        <section id="extensions-acknowledge-event-listener">
             <title>IAcknowledgeEventListener</title>
             <para>
             Implement this extension point to receive callback events when a batch is acknowledged.  
             The callback for this listener happens at the point of extraction.
             </para>
         </section>                
-        <section id="ch06-extensions-reload-listener">
+        <section id="extensions-reload-listener">
             <title>IReloadListener</title>
             <para>
             Implement this extension point to listen in and take
@@ -261,7 +276,7 @@ values
             happens at the point of extraction.
             </para>
         </section>                
-        <section id="ch06-extensions-extractor-filter">
+        <section id="extensions-extractor-filter">
             <title>IExtractorFilter</title>
             <para>
             This extension point is called after data has been extracted, but before it has been streamed.  It
@@ -269,7 +284,7 @@ values
             row should not be streamed.
             </para>
         </section>
-        <section id="ch06-extensions-sync-url-extension">
+        <section id="extensions-sync-url-extension">
             <title>ISyncUrlExtension</title>
             <para>
              This extension point is used to select an appropriate URL based on
@@ -281,7 +296,7 @@ values
              point in the extension xml file.
             </para>
         </section>        
-        <section id="ch06-extensions-node-id-generator">
+        <section id="extensions-node-id-generator">
             <title>INodeIdGenerator</title>
             <para>
              This extension point allows SymmetricDS users to implement their own algorithms for how 
@@ -289,20 +304,20 @@ values
              only one node generator per SymmetricDS instance.
             </para>
         </section>
-        <section id="ch06-extensions-trigger-creation-listener">
+        <section id="extensions-trigger-creation-listener">
             <title>ITriggerCreationListener</title>
             <para>
             Implement this extension point to get status callbacks during trigger creation.
             </para>
         </section>       
-        <section id="ch06-extensions-batch-algorithm">
+        <section id="extensions-batch-algorithm">
             <title>IBatchAlgorithm</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the batch_algorithm column of the Channel table to use.
             This extension point gives fine grained control over how a channel is batched.
             </para>
         </section>                   
-        <section id="ch06-extensions-data-router">
+        <section id="extensions-data-router">
             <title>IDataRouter</title>
             <para>
             Implement this extension point and set the name of the Spring bean on the router_type column
@@ -310,25 +325,25 @@ values
             which nodes data should be routed to.
             </para>
         </section>  
-        <section id="ch06-extensions-heartbeat-listener">
+        <section id="extensions-heartbeat-listener">
             <title>IHeartbeatListener</title>
             <para>
             Implement this extension point to get callbacks during the heartbeat job.
             </para>
         </section>
-        <section id="ch06-extensions-offline-listener">
+        <section id="extensions-offline-listener">
             <title>IOfflineListener</title>
             <para>
             Implement this extension point to get callbacks for offline events.
             </para>
         </section> 
-        <section id="ch06-extensions-node-password">
+        <section id="extensions-node-password">
             <title>INodePasswordFilter</title>
             <para>
             Implement this extension point to intercept the saving and rendering of the node password.
             </para>
         </section>        
-        <section id="ch06-extensions-servlets">
+        <section id="extensions-servlets">
             <title>IServletExtension</title>
             <para>
             Implement this extension point to allow additional Servlets to be registered with SymmetricDS.  This is probably only 
@@ -336,7 +351,7 @@ values
             </para>
         </section>                      
     </section>
-    <section id="ch06-encrypted-passwords">
+    <section id="encrypted-passwords">
         <title>Encrypted Passwords</title>
         <para>
             The db.user and db.password properties will accept encrypted text, which protects
@@ -354,7 +369,7 @@ values
             is generated.
         </para>
     </section>
-    <section id="ch06-secure-transport">
+    <section id="secure-transport">
         <title>Secure Transport</title>
         <para>
             By specifying the "https" protocol for a URL, SymmetricDS will communicate over
@@ -390,7 +405,7 @@ values
             As a standalone deployment, the "sym" launcher command provides options for 
             enabling HTTPS support.
         </para>
-        <section id="ch06-secure-transport-sym">
+        <section id="secure-transport-sym">
             <title>Sym Launcher</title>
             <para>
                 The "sym" launch command uses Jetty as an embedded web server.
@@ -407,7 +422,7 @@ values
                 <command>sym --port 8080 --secure-port 8443 --mixed-server</command>
             </para>
         </section>
-        <section id="ch06-secure-transport-tomcat">
+        <section id="secure-transport-tomcat">
             <title>Tomcat</title>
             <para>
                 If you deploy SymmetricDS to Apache Tomcat, it can be secured by editing the
@@ -422,7 +437,7 @@ values
   keystoreFile="/symmetric-ds-1.x.x/security/keystore" />]]></programlisting>
             </para>
         </section>
-        <section id="ch06-secure-transport-keystore">
+        <section id="secure-transport-keystore">
             <title>Keystores</title>
             <para>
                 When SymmetricDS connects to a URL with HTTPS, Java checks the validity of the
@@ -445,7 +460,7 @@ values
                 re-generated for security.
             </para>
         </section>
-        <section id="ch06-secure-transport-keys">
+        <section id="secure-transport-keys">
             <title>Generating Keys</title>
             <para>
                 To generate new keys and install a server certificate, use the
