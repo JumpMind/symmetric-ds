@@ -108,7 +108,7 @@
                                 BEGIN ATOMIC
                                     IF $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then
                                         INSERT into $(defaultSchema)$(prefixName)_data 
-                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, create_time)
+                                            (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)
                                         VALUES ('$(targetTableName)', 'D', $(triggerHistoryId),
                                             $(oldKeys),
                                             $(oldColumns),
