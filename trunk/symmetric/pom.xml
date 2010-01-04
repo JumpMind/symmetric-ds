@@ -13,11 +13,13 @@
         web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
         databases and ad centralized 'corporate' database.
     </description>
+
     <scm>
         <connection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</connection>
         <developerConnection>scm:svn:https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</developerConnection>
         <url>https://symmetricds.svn.sourceforge.net/svnroot/symmetricds</url>
     </scm>
+
     <issueManagement>
         <system>JIRA</system>
         <url>http://jira.codehaus.org/BrowseProject.jspa?id=11906</url>
