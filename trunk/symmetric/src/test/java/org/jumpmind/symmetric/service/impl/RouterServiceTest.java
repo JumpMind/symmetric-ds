@@ -358,7 +358,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_SUBTABLE);
         trigger2.getRouter().setRouterType("column");
         trigger2.getRouter().setRouterExpression("EXTERNAL_DATA=:NODE_ID");
-        trigger2.getTrigger().setExternalSelect("select ROUTING_VARCHAR from " + TEST_TABLE_1 + " where PK=$(curTriggerValue).$(curColumnPrefix)FK");
+        trigger2.getTrigger().setExternalSelect("select ROUTING_VARCHAR from " + TEST_TABLE_1 + " where PK=$(curTriggerValue).$(curColumnPrefix)\"FK\"");
         getTriggerRouterService().saveTriggerRouter(trigger2);
 
         getTriggerRouterService().syncTriggers();
@@ -367,7 +367,7 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         getRoutingService().routeData();        
         resetBatches();
 
-        int pk = (Integer)getJdbcTemplate().queryForList("select * from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='" +NODE_GROUP_NODE_1.getNodeId() + "'").get(0).get("PK");
+        int pk = ((Number)getJdbcTemplate().queryForList("select * from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='" +NODE_GROUP_NODE_1.getNodeId() + "'").get(0).get("PK")).intValue();
         getJdbcTemplate().update("insert into " + TEST_SUBTABLE + " (FK) values(?)", new Object[] {pk});
         
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
