@@ -7,7 +7,9 @@
     <version>2.0.beta.2-SNAPSHOT</version>
     <name>SymmetricDS Library</name>
     <url>http://symmetricds.org</url>
+
     <inceptionYear>2007</inceptionYear>
+
     <description>
         SymmetricDS is an open source database synchronization solution. It is platform-independent,
         web-enabled, and database-agnostic. SymmetricDS was first built to replicate changes between 'retail store'
