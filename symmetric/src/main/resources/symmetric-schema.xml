@@ -106,12 +106,12 @@
         <column name="name_for_update_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the update trigger." />
         <column name="name_for_insert_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the insert trigger." />
         <column name="name_for_delete_trigger" type="VARCHAR" size="50"  description="Override the default generated name for the delete trigger." />
-        <column name="sync_on_update_condition" type="CLOB"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
-        <column name="sync_on_insert_condition" type="CLOB"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
-        <column name="sync_on_delete_condition" type="CLOB"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
-        <column name="external_select" type="CLOB"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
+        <column name="sync_on_update_condition" type="LONGVARCHAR"  description="Specify a condition for the update trigger firing using an expression specific to the database." />
+        <column name="sync_on_insert_condition" type="LONGVARCHAR"  description="Specify a condition for the insert trigger firing using an expression specific to the database." />
+        <column name="sync_on_delete_condition" type="LONGVARCHAR"  description="Specify a condition for the delete trigger firing using an expression specific to the database." />
+        <column name="external_select" type="LONGVARCHAR"  description="Specify a SQL select statement that returns a single result.  It will be used in the generated database trigger to populate the EXTERNAL_DATA field on the data table." />
         <column name="tx_id_expression" type="VARCHAR" size="500"  description="Override the default expression for the transaction identifier that groups the data changes that were committed together." />
-        <column name="excluded_column_names" type="CLOB"  description="Specify a comma-delimited list of columns that should not be synchronized from this table." />
+        <column name="excluded_column_names" type="LONGVARCHAR"  description="Specify a comma-delimited list of columns that should not be synchronized from this table." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
@@ -125,7 +125,7 @@
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true"  description="Routers with this node_group_id will install triggers that are mapped to this router." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="The node_group_id for nodes to route data to.  Note that routing can be further narrowed down by the configured router_type and router_expression." />
         <column name="router_type" type="VARCHAR" size="50"  description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', and 'subselect.'  Custom routers can be configured as extension points." />
-        <column name="router_expression" type="CLOB"  description="An expression that is specific to the type of router that is configured in router_type.  See the documentation for each router for more details." />
+        <column name="router_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of router that is configured in router_type.  See the documentation for each router for more details." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />
         <column name="sync_on_delete" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route deletes." />
@@ -138,7 +138,7 @@
         <column name="trigger_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a trigger." />
         <column name="router_id" type="VARCHAR" size="50" required="true" primaryKey="true"  description="The id of a router." />
         <column name="initial_load_order" type="INTEGER" required="true" default="1"  description="Order sequence of this table when an initial load is sent to a node. " />
-        <column name="initial_load_select" type="CLOB"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
+        <column name="initial_load_select" type="LONGVARCHAR"  description="Optional expression that can be used to pair down the data selected from a table during the initial load process." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
         <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
