@@ -5,6 +5,7 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
+import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -359,8 +360,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         TriggerRouter trigger2 = getTestRoutingTableTrigger(TEST_SUBTABLE);
         trigger2.getRouter().setRouterType("column");
         trigger2.getRouter().setRouterExpression("EXTERNAL_DATA=:NODE_ID");
-        if (getDbDialect() instanceof DerbyDbDialect) {
-            // TODO could not get subselect to work in trigger text for derby.  probably need to work on derby's support of external_select a bit more
+        if (getDbDialect() instanceof DerbyDbDialect || getDbDialect() instanceof MsSqlDbDialect) {
+            // TODO could not get subselect to work in trigger text for derby or mssql.  probably need to work on derby's support of external_select a bit more
             trigger2.getTrigger().setExternalSelect("'"+NODE_GROUP_NODE_1.getNodeId()+"'");
         } else {
             trigger2.getTrigger().setExternalSelect("select ROUTING_VARCHAR from " + TEST_TABLE_1 + " where PK=$(curTriggerValue).$(curColumnPrefix)FK");
