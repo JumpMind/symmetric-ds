@@ -291,11 +291,11 @@ public class DataExtractorTest extends AbstractDatabaseTest {
         }
 
         void batchBegin(long batchId) throws IOException {
-            writeCSV(CsvConstants.CHANNEL);
-            writer.write("null");
-            writer.newLine();
             writeCSV(CsvConstants.BATCH);
             writer.write(new Long(batchId).toString());
+            writer.newLine();
+            writeCSV(CsvConstants.CHANNEL);
+            writer.write("null");
             writer.newLine();
         }
 
