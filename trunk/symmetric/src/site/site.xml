@@ -10,8 +10,6 @@
             name="Support SymmetricDS" href="http://sourceforge.net/donate/index.php?group_id=206470" />
         <logo img="http://sflogo.sourceforge.net/sflogo.php?group_id=108357&amp;type=1"
             name="Powered by Sourceforge" href="http://sourceforge.net" />
-        <logo img="images/logos/maven-feather.png" name="Powered by Apache Maven"
-            href="http://maven.apache.org/" />
     </poweredBy>
     <body>
         <links>
@@ -31,8 +29,6 @@
         <menu name="Documentation">
             <item name="Users Guides" href="getting_started.html" />
             <item name="Wiki" href="http://docs.codehaus.org/display/SYMMETRICDS" />            
-            <item name="JavaDoc 1.x" href="apidocs/index.html" />
-            <item name="JavaDoc 2.x" href="apidocs-2/index.html" />
             <item name="Recent Changes" href="http://jira.codehaus.org/sr/jira.issueviews:searchrequest-printable/temp/SearchRequest.html?fixfor=-3&amp;pid=11906&amp;sorter/field=issuekey&amp;sorter/order=DESC&amp;sorter/field=fixVersions&amp;sorter/order=DESC&amp;tempMax=1000" />
         </menu>
 
