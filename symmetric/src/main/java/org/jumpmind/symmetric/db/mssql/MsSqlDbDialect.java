@@ -25,7 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +62,17 @@ public class MsSqlDbDialect extends AbstractDbDialect implements IDbDialect {
     protected boolean allowsNullForIdentityColumn() {
         return false;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Integer overrideJdbcTypeForColumn(Map values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.startsWith("TEXT")) {
+            return Types.CLOB;          
+        } else {
+            return super.overrideJdbcTypeForColumn(values);
+        }
+    }    
 
     @Override
     public IColumnFilter getDatabaseColumnFilter() {
