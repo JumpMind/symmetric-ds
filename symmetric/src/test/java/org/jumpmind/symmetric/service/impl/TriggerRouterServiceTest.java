@@ -106,6 +106,23 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals("Wrong trigger_hist row count. The original count was " + origCount + ".", expectedCount,
                 getTriggerHistTableRowCount());
     }
+    
+    @Test
+    public void testSchemaSyncNoChanges() throws Exception {
+        ITriggerRouterService service = getTriggerRouterService();
+
+        service.syncTriggers();
+
+        int origCount = getTriggerHistTableRowCount();
+
+        Thread.sleep(1000);
+
+        getConfigurationService().autoConfigDatabase(true);
+        service.syncTriggers();
+
+        Assert.assertEquals("Wrong trigger_hist row count.  No new triggers should have been generated.", origCount,
+                getTriggerHistTableRowCount());
+    }    
 
     private int getTriggerHistTableRowCount() {
         return getJdbcTemplate().queryForInt("select count(*) from sym_trigger_hist");
