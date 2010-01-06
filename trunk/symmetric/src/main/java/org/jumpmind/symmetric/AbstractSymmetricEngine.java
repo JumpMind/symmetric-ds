@@ -23,15 +23,26 @@ import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INotificationService;
+import org.jumpmind.symmetric.service.IOfflineDetectorService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.util.AppUtils;
@@ -61,8 +72,23 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
     private boolean starting = false;
     private boolean setup = false;
     private IDbDialect dbDialect;
-    private IJobManager jobManager;
-
+    private IJobManager jobManager;    
+    private IOutgoingBatchService outgoingBatchService;
+    private IAcknowledgeService acknowledgeService;
+    private IBandwidthService bandwidthService;
+    private IDataExtractorService dataExtractorService;
+    private IDataLoaderService dataLoaderService;
+    private IIncomingBatchService incomingBatchService;
+    private INotificationService notificationService;
+    private IOfflineDetectorService offlineDetectorService;
+    private IPullService pullService;
+    private IPushService pushService;
+    private IRouterService routerService;
+    private ISecurityService securityService;
+    private IStatisticService statisticService;
+    private ITriggerRouterService triggerRouterService;
+    
+    
     protected AbstractSymmetricEngine() {
     }
 
@@ -440,6 +466,63 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public IJobManager getJobManager() {
         return jobManager;
+    }
+    
+    
+    public IOutgoingBatchService getOutgoingBatchService() {
+    	return outgoingBatchService;
+    }
+    
+    public IAcknowledgeService getAcknowledgeService() {
+    	return acknowledgeService;
+    }
+    
+    public IBandwidthService getBandwidthService() {
+    	return bandwidthService;
+    }
+    
+    public IDataExtractorService getDataExtractorService() {
+    	return dataExtractorService;
+    }
+    
+    public IDataLoaderService getDataLoaderService() {
+    	return dataLoaderService;
+    }
+    
+    public IIncomingBatchService getIncomingBatchService() {
+    	return incomingBatchService;
+    }
+    
+    public INotificationService getNotificationService() {
+    	return notificationService;
+    }
+    
+    public IOfflineDetectorService getOfflineDetectorService() {
+    	return offlineDetectorService;
+    }
+    
+    public IPullService getPullService() {
+    	return pullService;
+    }
+    
+    public IPushService getPushService() {
+    	return pushService;
+    }
+    
+    public IRouterService getRouterService() {
+    	return routerService;
+    }
+    
+    public ISecurityService getSecurityService() {
+    	return securityService;
+    }
+    
+    public IStatisticService getStatisticService() {
+    	return statisticService;
+    }
+    
+    public ITriggerRouterService getTriggerRouterService() {
+    	return triggerRouterService;
     }
 
 }
