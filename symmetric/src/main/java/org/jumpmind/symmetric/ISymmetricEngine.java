@@ -8,15 +8,26 @@ import org.jumpmind.symmetric.job.PullJob;
 import org.jumpmind.symmetric.job.PurgeJob;
 import org.jumpmind.symmetric.job.PushJob;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
+import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.INotificationService;
+import org.jumpmind.symmetric.service.IOfflineDetectorService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.IRegistrationService;
+import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ISecurityService;
+import org.jumpmind.symmetric.service.IStatisticService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.springframework.context.ApplicationContext;
@@ -178,5 +189,33 @@ public interface ISymmetricEngine {
     public IDbDialect getDbDialect();
 
     public IJobManager getJobManager();
+    
+    public IOutgoingBatchService getOutgoingBatchService();
+    
+    public IAcknowledgeService getAcknowledgeService();
+    
+    public IBandwidthService getBandwidthService();
+    
+    public IDataExtractorService getDataExtractorService();
+    
+    public IDataLoaderService getDataLoaderService();
+    
+    public IIncomingBatchService getIncomingBatchService();
+    
+    public INotificationService getNotificationService();
+    
+    public IOfflineDetectorService getOfflineDetectorService();
+    
+    public IPullService getPullService();
+    
+    public IPushService getPushService();
+    
+    public IRouterService getRouterService();
+    
+    public ISecurityService getSecurityService();
+    
+    public IStatisticService getStatisticService();
+    
+    public ITriggerRouterService getTriggerRouterService();
 
 }
