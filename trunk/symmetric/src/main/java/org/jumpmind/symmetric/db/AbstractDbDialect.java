@@ -585,11 +585,11 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected void determineAutoIncrementFromResultSetMetaData(Table table,
             final Column columnsToCheck[]) throws SQLException {
-        StringBuffer query;
+        StringBuilder query;
         if (columnsToCheck == null || columnsToCheck.length == 0) {
             return;
         }
-        query = new StringBuffer();
+        query = new StringBuilder();
         query.append("SELECT ");
         for (int idx = 0; idx < columnsToCheck.length; idx++) {
             if (idx > 0)
@@ -931,15 +931,16 @@ abstract public class AbstractDbDialect implements IDbDialect {
                     }
                 }
             }
-        }
-
-        Table[] allTables = database.getTables();
-        for (Table table : allTables) {
-            // Remove SYM_ON_ trigger tables for embedded databases
-            if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_")) {
-                database.removeTable(table);
+            
+            Table[] allTables = database.getTables();
+            for (Table table : allTables) {
+                // Remove SYM_ON_ trigger tables for embedded databases
+                if (table.getName().startsWith(tablePrefix.toUpperCase() + "_ON_")) {
+                    database.removeTable(table);
+                }
             }
         }
+
         return database;
     }
 
