@@ -187,6 +187,8 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;]]></programlisting>
         <title>PostgreSQL</title>
         <para>
             Starting with PostgreSQL 8.3, SymmetricDS supports the transaction identifier.
+            Binary Large Object (BLOB) replication is supported for byte array (bytea)
+            data type, but not for object identifier (OID) data that is stored in pg_largeobject.
         </para>
         <para>
             In order to function properly, SymmetricDS needs to use session variables.
