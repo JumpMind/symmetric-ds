@@ -25,6 +25,9 @@ import java.net.InetAddress;
 import java.util.Date;
 import java.util.TimeZone;
 
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -40,7 +43,8 @@ public class AppUtils {
 
     private static String serverId;
 
-    private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
+    private static FastDateFormat timezoneFormatter = FastDateFormat
+            .getInstance("Z");
 
     /**
      * Get a unique identifier that represents the JVM instance this server is
@@ -48,7 +52,8 @@ public class AppUtils {
      */
     public static String getServerId() {
         if (StringUtils.isBlank(serverId)) {
-            serverId = System.getProperty("runtime.symmetric.cluster.server.id", null);
+            serverId = System.getProperty(
+                    "runtime.symmetric.cluster.server.id", null);
             if (StringUtils.isBlank(serverId)) {
                 // JBoss uses this system property to identify a server in a
                 // cluster
@@ -64,7 +69,7 @@ public class AppUtils {
         }
         return serverId;
     }
-    
+
     public static String getHostName() {
         String hostName = System.getProperty("host.name", "unknown");
         try {
@@ -74,7 +79,7 @@ public class AppUtils {
         }
         return hostName;
     }
-    
+
     public static String getIpAddress() {
         String ipAddress = System.getProperty("ip.address", "unknown");
         try {
@@ -84,9 +89,11 @@ public class AppUtils {
         }
         return ipAddress;
     }
-    
-    public static String replace(String prop, String replaceWith, String sourceString) {
-        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+
+    public static String replace(String prop, String replaceWith,
+            String sourceString) {
+        return StringUtils
+                .replace(sourceString, "$(" + prop + ")", replaceWith);
     }
 
     /**
@@ -143,7 +150,8 @@ public class AppUtils {
     public static Date getLocalDateForOffset(String timezoneOffset) {
         long currentTime = System.currentTimeMillis();
         int myOffset = TimeZone.getDefault().getOffset(currentTime);
-        int theirOffset = TimeZone.getTimeZone("GMT" + timezoneOffset).getOffset(currentTime);
+        int theirOffset = TimeZone.getTimeZone("GMT" + timezoneOffset)
+                .getOffset(currentTime);
         return new Date(currentTime - myOffset + theirOffset);
     }
 
@@ -159,6 +167,21 @@ public class AppUtils {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
             log.warn("Message", e.getMessage());
+        }
+    }
+
+    /**
+     * Attempt to close all the connections to a database that a DataSource has.  This method 
+     * should not be relied upon as it only works with certain {@link DataSource} implementations.
+     */
+    public static void resetDataSource(DataSource ds) {
+        if (ds instanceof BasicDataSource) {
+            BasicDataSource bds = (BasicDataSource) ds;
+            try {
+                bds.close();
+            } catch (Exception ex) {
+                log.warn(ex);
+            }
         }
     }
 
