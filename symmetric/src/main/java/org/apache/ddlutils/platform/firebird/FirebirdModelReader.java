@@ -46,6 +46,7 @@ import org.apache.ddlutils.platform.JdbcModelReader;
  *
  * @version $Revision: $
  */
+@SuppressWarnings("unchecked")
 public class FirebirdModelReader extends JdbcModelReader
 {
     /**
