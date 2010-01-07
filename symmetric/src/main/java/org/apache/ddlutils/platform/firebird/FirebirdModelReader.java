@@ -114,7 +114,10 @@ public class FirebirdModelReader extends JdbcModelReader
                 {
                     Map values = readColumns(columnData, getColumnsForColumn());
 
-                    columns.add(readColumn(metaData, values));
+                    if (tableName.equals(values.get("TABLE_NAME")))
+                    {
+                        columns.add(readColumn(metaData, values));
+                    }
                 }
             }
 
@@ -228,7 +231,10 @@ public class FirebirdModelReader extends JdbcModelReader
                 {
                     Map values = readColumns(pkData, getColumnsForPK());
     
-                    pks.add(readPrimaryKeyName(metaData, values));
+                    if (tableName.equals(values.get("TABLE_NAME")))
+                    {
+                        pks.add(readPrimaryKeyName(metaData, values));
+                    }
                 }
             }
         }
