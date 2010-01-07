@@ -400,9 +400,58 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_2), testChannel));
         Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_3), testChannel));
 
-       // resetBatches();
+        resetBatches();
         
     }
+    
+    @Test
+    public void testSyncOnColumnChange() {     
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        testChannel.setMaxBatchToSend(100);
+        testChannel.setBatchAlgorithm("transactional");
+        getConfigurationService().saveChannel(testChannel, true);
+        
+        TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger1.getRouter().setRouterType("column");
+        trigger1.getRouter().setRouterExpression(
+                "ROUTING_INT!=:OLD_ROUTING_INT");
+        getTriggerRouterService().saveTriggerRouter(trigger1);
+
+        getTriggerRouterService().syncTriggers();
+        
+        resetBatches();
+
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+
+        insert(TEST_TABLE_1, 1, true);
+        getRoutingService().routeData();        
+
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        resetBatches();
+
+        int pk = ((Number)getJdbcTemplate().queryForList("select * from " + TEST_TABLE_1 + " where ROUTING_VARCHAR='" +NODE_GROUP_NODE_1.getNodeId() + "'").get(0).get("PK")).intValue();
+        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?", new Object[] {pk});
+        
+        getRoutingService().routeData();
+        
+        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+
+        resetBatches();
+        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=1 where PK=?", new Object[] {pk});
+
+        getRoutingService().routeData();
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+
+        resetBatches();
+        getJdbcTemplate().update("update " + TEST_TABLE_1 + " set ROUTING_INT=10 where PK=?", new Object[] {pk});
+
+        getRoutingService().routeData();
+        
+        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+
+    }    
     
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
