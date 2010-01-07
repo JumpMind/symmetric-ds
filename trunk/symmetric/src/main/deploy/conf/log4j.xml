@@ -41,7 +41,7 @@
     </category>
 
     <category name="org.jumpmind.symmetric.db.SqlScript">
-        <priority value="DEBUG" />
+        <priority value="ERROR" />
     </category>
 
     <category name="org.springframework">

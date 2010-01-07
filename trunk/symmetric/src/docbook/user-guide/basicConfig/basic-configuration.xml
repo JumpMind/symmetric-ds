@@ -258,12 +258,14 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
             
             <programlisting>
 <![CDATA[insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, extract_period_millis, batch_algorithm, enabled, description)
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
 values
   ('item', 10, 1000, 10,  0, 'default', 1, 'Item and pricing data');
 
 insert into SYM_CHANNEL 
-  (channel_id, processing_order, max_batch_size, max_batch_to_send, extract_period_millis, batch_algorithm, enabled, description)
+  (channel_id, processing_order, max_batch_size, max_batch_to_send, 
+   extract_period_millis, batch_algorithm, enabled, description)
 values
   ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 'retail sale transactions from register');]]></programlisting>
         </para>
@@ -271,19 +273,112 @@ values
     <section id="basic-trigger">
         <title>Trigger</title>
         <para>
-            At the heart of SymmetricDS are Triggers. Whenever the Trigger entry is updated, 
-            the last_update_time should be updated to indicate that the database trigger should also be updated.
+            SymmetricDS captures synchronization data using database triggers. Triggers are defined in the <link linkend="trigger">trigger</link> table.  
+            Each record is used by SymmetricDS when generating database triggers.  Database triggers are only generated when a trigger 
+            is associated with a <link linkend="router">router</link> whose source_node_group_id matches the node group id of the current node.
         </para>
         <para>
-            The following SQL statement defines a Trigger that will capture data for a table named "item"
+            The following SQL statement defines a trigger that will capture data for a table named "item"
             whenever data is inserted, updated, or deleted. The trigger is assigned to a channel also called 'item'.            
             <programlisting>
-<![CDATA[insert into sym_trigger 
+<![CDATA[insert into SYM_TRIGGER 
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values('item','item','item',current_timestamp,current_timestamp);
+values('item', 'item', 'item', current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>
     </section>
+    <section id="basic-route">
+        <title>Simple Router</title>
+        <para>
+            The simplest route is a route that sends all the data that is captured by its 
+            associated triggers to all the nodes that belong to the target node group defined
+            in the route.  A route is defined as a row in the <link linkend="router">router</link> table.
+            It is then linked to triggers in the <link linkend="trigger_router">trigger router</link> table.  
+        </para>
+        <para>
+            The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id,create_time, last_update_time)
+values('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
 
+]]></programlisting>
+        </para>
+        <para>
+            The following SQL statement maps the 'corp-2-store' router to the item trigger.            
+            <programlisting>
+<![CDATA[insert into SYM_TRIGGER_ROUTER 
+(trigger_id, router_id, initial_load_order,  create_time, last_update_time)
+values('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
+
+]]></programlisting>
+        </para>        
+    </section>
+    
+    <section id="basic-route-column-match">
+        <title>Column Router</title>
+        <para>
+            Sometimes requirements may exist that require data to be routed based on the current value or the old value of a 
+            column on the table that is being routed.  Column routers are configured by setting the router_type column on the <link linkend="router">router</link> table
+            to 'column' and setting the router_expression column to an equality expression that represents the
+            the expected value of the column.
+        </para>
+        <para>             
+            The first part of the expression is always the column name.  The column name should always be defined in upper case.
+            The upper case column name prefixed by OLD_ can be used for a comparison being done with the old column data value.
+        </para>
+        <para>
+            The second part of the expression can be a constant value, a token that represents another column, or a token
+            that represents some other SymmetricDS concept.  Token values always begin with a colon (:).
+        </para>                  
+        <para>
+            Consider a table that needs to be routed to all nodes in the target group only when a status column is set to 'OK.'  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store','corp', 'store', 'column', 'STATUS=OK', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+        <para>
+            Consider a table that needs to be routed to all nodes in the target group only when a status column changes values.  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>            
+        <para>
+            Consider a table that needs to be routed to only nodes in the target group whose store_id column matches the external id of a node.  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+
+]]></programlisting>
+            Attributes on <link linkend="node">node</link> that can be referenced with tokens include:
+            <itemizedlist>
+                <listitem>NODE_ID</listitem>
+                <listitem>EXTERNAL_ID</listitem>
+                <listitem>NODE_GROUP_ID</listitem>
+            </itemizedlist>
+        </para>   
+        <para>
+            Consider a table that needs to be routed to a redirect node defined by it's external_id in the <link linkend="registration_redirect">registration redirect</link> table.  The following 
+            SQL statement will insert a column router to accomplish that.            
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
+
+]]></programlisting>
+         </para>                    
+           
+    
+    </section>    
 
 </chapter>

@@ -34,7 +34,6 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
-import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -118,8 +117,8 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
         Thread.sleep(1000);
 
-        AppUtils.resetDataSource(getDataSource());
         getConfigurationService().autoConfigDatabase(true);
+        
         service.syncTriggers();
 
         Assert.assertEquals("Wrong trigger_hist row count.  No new triggers should have been generated.", origCount,
