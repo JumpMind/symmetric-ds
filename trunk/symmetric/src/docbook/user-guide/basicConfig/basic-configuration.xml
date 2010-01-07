@@ -385,16 +385,16 @@ values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NODE', curr
             Sometimes routing decisions need to be made based on data that is not in the current row being synchronized.  Consider an 
             example where an Order table and a OrderLineItem table need to be routed to a specific store.  The Order table has a column 
             named order_id and store_id.  A store node has an external_id that is equal to the store_id on the Order table.  OrderLineItem, 
-            however, only has a foreign key to its order of order_id.  In order to route it to the same desitnation, we need to reference
-            the master Order record.
+            however, only has a foreign key to its Order of order_id.  To route OrderLineItems to the same nodes that the Order will be routed
+            to, we need to reference the master Order record.
         </para>
         <para>             
-            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure the 'subselect' router_type on the <link linkend="router">router</link> table
+            There are two possible ways to route the OrderLineItem in SymmetricDS.  One is to configure a 'subselect' router_type on the <link linkend="router">router</link> table
             and the other is to configure an external_select on the <link linkend="trigger">trigger</link> table. 
         </para>
         <para>
-            A 'subselect' is configured with a router_expression that is a SQL select statement that returns a result set of the node_ids that need routed to.  Column tokens can
-            be used in the SQL expression and will be replaced with row column data.  The overhead of using this router type is high because the 'subselect' runs for each row 
+            A 'subselect' is configured with a router_expression that is a SQL select statement which returns a result set of the node_ids that need routed to.  Column tokens can
+            be used in the SQL expression and will be replaced with row column data.  The overhead of using this router type is high because the 'subselect' statement runs for each row 
             that is routed.  It should not be used for tables that have a lot of rows that are updated.  It also has the disadvantage that if the Order master record is deleted, 
             then no results would be returned and routing would not happen.  
         </para>                  
@@ -408,8 +408,8 @@ values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_n
 ]]></programlisting>
          </para>            
         <para>
-            When using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the external_data column of the <link linkend="data">data</link> table when a trigger 
-            fires.  This 'external data' can then be used for routing by a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
+            When using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the external_data column of the <link linkend="data">data</link> table at the time a trigger 
+            fires.  The external_data can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
             will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
             the extra external_select inline with application database updates.  
         </para>            
@@ -429,7 +429,10 @@ values('corp-2-store','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', c
 
 ]]></programlisting>
          </para>            
-    </section>    
-
+    </section>  
+    
+    <section id="basic-route-scripted">
+        <title>Scripted Router</title>
+    </section>  
 
 </chapter>
