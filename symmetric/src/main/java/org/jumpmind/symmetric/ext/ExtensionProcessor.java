@@ -19,9 +19,9 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -95,7 +95,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
     private IRouterService routingService;
 
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        Map<String, IExtensionPoint> extensions = new HashMap<String, IExtensionPoint>();
+        Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
         extensions.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
         if (beanFactory.getParentBeanFactory() != null
                 && beanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
