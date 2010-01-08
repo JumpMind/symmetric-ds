@@ -19,8 +19,8 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,7 +74,7 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
 
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        Map<String, IExtensionPoint> extensions = new HashMap<String, IExtensionPoint>();
+        Map<String, IExtensionPoint> extensions = new TreeMap<String, IExtensionPoint>();
         extensions.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
         if (beanFactory.getParentBeanFactory() != null
                 && beanFactory.getParentBeanFactory() instanceof ListableBeanFactory) {
