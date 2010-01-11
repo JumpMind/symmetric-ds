@@ -48,7 +48,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
     public void setAutoRegister(boolean autoRegister) {
         this.autoRegister = autoRegister;
     }
-    
+
     protected Map<String, String> getDataMap(DataMetaData dataMetaData) {
         Map<String, String> data = null;
         DataEventType dml = dataMetaData.getData().getEventType();
@@ -62,7 +62,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         case INSERT:
             data = new HashMap<String, String>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsString(null, dataMetaData));
-            Map<String,String> map = getNullData(OLD_, dataMetaData);
+            Map<String, String> map = getNullData(OLD_, dataMetaData);
             data.putAll(map);
             data.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
             break;
@@ -82,13 +82,14 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] rowData = dataMetaData.getData().toParsedRowData();
         return getDataAsString(prefix, dataMetaData, rowData);
     }
-    
+
     protected Map<String, String> getOldDataAsString(String prefix, DataMetaData dataMetaData) {
         String[] rowData = dataMetaData.getData().toParsedOldData();
         return getDataAsString(prefix, dataMetaData, rowData);
     }
-    
-    protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData, String[] rowData) {
+
+    protected Map<String, String> getDataAsString(String prefix, DataMetaData dataMetaData,
+            String[] rowData) {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new HashMap<String, String>(columns.length);
         for (int i = 0; i < columns.length; i++) {
@@ -110,7 +111,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         case INSERT:
             data = new HashMap<String, Object>(dataMetaData.getTable().getColumnCount() * 2);
             data.putAll(getNewDataAsObject(null, dataMetaData, dbDialect));
-            Map<String,Object> map = getNullData(OLD_, dataMetaData);
+            Map<String, Object> map = getNullData(OLD_, dataMetaData);
             data.putAll(map);
             break;
         case DELETE:
@@ -124,12 +125,16 @@ public abstract class AbstractDataRouter implements IDataRouter {
         return data;
     }
 
-    protected Map<String, Object> getNewDataAsObject(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().toParsedRowData());
+    protected Map<String, Object> getNewDataAsObject(String prefix, DataMetaData dataMetaData,
+            IDbDialect dbDialect) {
+        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData()
+                .toParsedRowData());
     }
 
-    protected Map<String, Object> getOldDataAsObject(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect) {
-        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData().toParsedOldData());
+    protected Map<String, Object> getOldDataAsObject(String prefix, DataMetaData dataMetaData,
+            IDbDialect dbDialect) {
+        return getDataAsObject(prefix, dataMetaData, dbDialect, dataMetaData.getData()
+                .toParsedOldData());
     }
 
     protected <T> Map<String, T> getNullData(String prefix, DataMetaData dataMetaData) {
@@ -141,15 +146,16 @@ public abstract class AbstractDataRouter implements IDataRouter {
         return data;
     }
 
-    protected Map<String, Object> getDataAsObject(String prefix, DataMetaData dataMetaData, IDbDialect dbDialect,
-            String[] rowData) {
+    protected Map<String, Object> getDataAsObject(String prefix, DataMetaData dataMetaData,
+            IDbDialect dbDialect, String[] rowData) {
         if (rowData != null) {
             Map<String, Object> data = new HashMap<String, Object>(rowData.length);
             String[] columnNames = dataMetaData.getTriggerHistory().getParsedColumnNames();
-            Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(), dataMetaData.getTable(),
-                    columnNames, rowData);
+            Object[] objects = dbDialect.getObjectValues(dbDialect.getBinaryEncoding(),
+                    dataMetaData.getTable(), columnNames, rowData);
             for (int i = 0; i < columnNames.length; i++) {
-                data.put(prefix != null ? (prefix + columnNames[i]).toUpperCase() : columnNames[i].toUpperCase(), objects[i]);
+                data.put(prefix != null ? (prefix + columnNames[i]).toUpperCase() : columnNames[i]
+                        .toUpperCase(), objects[i]);
             }
             return data;
         } else {
@@ -157,8 +163,14 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
     }
 
-    protected Set<String> toNodeIds(Set<Node> nodes) {
-        Set<String> nodeIds = new HashSet<String>(nodes.size());
+    protected Set<String> addNodeId(String nodeId, Set<String> nodeIds) {
+        nodeIds = nodeIds == null ? new HashSet<String>(1) : nodeIds;
+        nodeIds.add(nodeId);
+        return nodeIds;
+    }
+
+    protected Set<String> toNodeIds(Set<Node> nodes, Set<String> nodeIds) {
+        nodeIds = nodeIds == null ? new HashSet<String>(nodes.size()) : nodeIds;
         for (Node node : nodes) {
             nodeIds.add(node.getNodeId());
         }

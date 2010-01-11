@@ -25,6 +25,8 @@ import bsh.Interpreter;
 public class BshDataRouter extends AbstractDataRouter {
 
     protected IDbDialect dbDialect;
+    
+    final static String INTERPRETER_KEY = String.format("%s.Interpreter", BshDataRouter.class.getName());
 
     public Collection<String> routeToNodes(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
@@ -47,11 +49,10 @@ public class BshDataRouter extends AbstractDataRouter {
     }
 
     protected Interpreter getInterpreter(IRouterContext context) {
-        final String KEY = String.format("%s.Interpreter", getClass().getName());
-        Interpreter interpreter = (Interpreter) context.getContextCache().get(KEY);
+        Interpreter interpreter = (Interpreter) context.getContextCache().get(INTERPRETER_KEY);
         if (interpreter == null) {
             interpreter = new Interpreter();
-            context.getContextCache().put(KEY, interpreter);
+            context.getContextCache().put(INTERPRETER_KEY, interpreter);
         }
         return interpreter;
     }
@@ -69,7 +70,7 @@ public class BshDataRouter extends AbstractDataRouter {
             }
             return nodeIds;
         } else if (value instanceof Boolean && value.equals(Boolean.TRUE)) {
-            return toNodeIds(nodes);
+            return toNodeIds(nodes, null);
         } else {
             return Collections.emptySet();
         }

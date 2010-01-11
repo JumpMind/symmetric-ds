@@ -19,8 +19,9 @@
  */
 package org.jumpmind.symmetric.route;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,83 +70,107 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  * 
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
+
     private IRegistrationService registrationService;
+
+    final static String EXPRESSION_KEY = String.format("%s.Expression", ColumnMatchDataRouter.class
+            .getName());
 
     public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
-        Collection<String> nodeIds = null;
-        String expression = dataMetaData.getTrigger().getRouter().getRouterExpression();
-        if (!StringUtils.isBlank(expression)) {
-            Map<String, String> columnValues = getDataMap(dataMetaData);
-            String[] tokens = null;
-            boolean equals = !expression.contains("!=");
-            if (!equals) {
-                tokens = expression.split("!=");
-            } else {
-                tokens = expression.split("=");
-            }
-
-            if (tokens.length == 2) {
-                String column = tokens[0];
-                String value = tokens[1];
-                if (value.equalsIgnoreCase(":NODE_ID")) {
-                    nodeIds = new HashSet<String>();
-                    for (Node node : nodes) {
-                        if (equals && node.getNodeId().equals(columnValues.get(column))) {
-                            nodeIds.add(node.getNodeId());
-                        }
-                    }
-                } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
-                    nodeIds = new HashSet<String>();
-                    for (Node node : nodes) {
-                        if (equals && node.getExternalId().equals(columnValues.get(column))) {
-                            nodeIds.add(node.getNodeId());
-                        }
-                    }
-                } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
-                    nodeIds = new HashSet<String>();
-                    for (Node node : nodes) {
-                        if (equals && node.getNodeGroupId().equals(columnValues.get(column))) {
-                            nodeIds.add(node.getNodeId());
-                        }
-                    }
-                } else if (equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
-                    nodeIds = new HashSet<String>();
-                    Map<String, String> redirectMap = getRedirectMap(routingContext);
-                    String nodeId = redirectMap.get(columnValues.get(column));
-                    if (nodeId != null) {
-                        nodeIds.add(nodeId);
-                    }
-                } else if (value.startsWith(":")) {
-                    String firstValue = columnValues.get(column);
-                    String secondValue = columnValues.get(value.substring(1));
-                    if (equals
-                            && ((firstValue == null && secondValue == null) || (firstValue != null
-                                    && secondValue != null && firstValue.equals(secondValue)))) {
-                        nodeIds = toNodeIds(nodes);
-                    } else if (!equals
-                            && ((firstValue != null && secondValue == null)
-                                    || (firstValue == null && secondValue != null) || (firstValue != null
-                                    && secondValue != null && !firstValue.equals(secondValue)))) {
-                        nodeIds = toNodeIds(nodes);
-                    }
-                } else {
-                    if (equals && value.equals(columnValues.get(column))) {
-                        nodeIds = toNodeIds(nodes);
-                    } else if (!equals && !value.equals(columnValues.get(column))) {
-                        nodeIds = toNodeIds(nodes);
+        Set<String> nodeIds = null;
+        List<Expression> expressions = getExpression(dataMetaData.getTrigger().getRouter()
+                .getRouterExpression(), routingContext);
+        Map<String, String> columnValues = getDataMap(dataMetaData);
+        for (Expression e : expressions) {
+            String column = e.tokens[0];
+            String value = e.tokens[1];
+            if (value.equalsIgnoreCase(":NODE_ID")) {
+                for (Node node : nodes) {
+                    if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
                     }
                 }
+            } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
+                for (Node node : nodes) {
+                    if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                    }
+                }
+            } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
+                for (Node node : nodes) {
+                    if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
+                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                    }
+                }
+            } else if (e.equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
+                Map<String, String> redirectMap = getRedirectMap(routingContext);
+                String nodeId = redirectMap.get(columnValues.get(column));
+                if (nodeId != null) {
+                    nodeIds = addNodeId(nodeId, nodeIds);
+                }
+            } else if (value.startsWith(":")) {
+                String firstValue = columnValues.get(column);
+                String secondValue = columnValues.get(value.substring(1));
+                if (e.equals
+                        && ((firstValue == null && secondValue == null) || (firstValue != null
+                                && secondValue != null && firstValue.equals(secondValue)))) {
+                    nodeIds = toNodeIds(nodes, nodeIds);
+                } else if (!e.equals
+                        && ((firstValue != null && secondValue == null)
+                                || (firstValue == null && secondValue != null) || (firstValue != null
+                                && secondValue != null && !firstValue.equals(secondValue)))) {
+                    nodeIds = toNodeIds(nodes, nodeIds);
+                }
             } else {
-                log.warn("RouterIllegalColumnMatchExpression", expression);
+                if (e.equals && value.equals(columnValues.get(column))) {
+                    nodeIds = toNodeIds(nodes, nodeIds);
+                } else if (!e.equals && !value.equals(columnValues.get(column))) {
+                    nodeIds = toNodeIds(nodes, nodeIds);
+                }
             }
 
-        } else {
-            nodeIds = toNodeIds(nodes);
         }
 
         return nodeIds;
 
+    }
+
+    /**
+     * Cache parsed expressions in the context to minimize the amount of parsing we 
+     * have to do when we have lots of throughput.
+     */
+    @SuppressWarnings("unchecked")
+    protected List<Expression> getExpression(String routerExpression, IRouterContext context) {
+        List<Expression> expressions = (List<Expression>) context.getContextCache().get(
+                EXPRESSION_KEY);
+        if (expressions == null) {
+            expressions = new ArrayList<Expression>();
+            if (!StringUtils.isBlank(routerExpression)) {
+                context.getContextCache().put(EXPRESSION_KEY, expressions);
+                String[] expTokens = routerExpression.split("\r\n|\r|\n");
+                if (expTokens != null) {
+                    for (String t : expTokens) {
+                        if (!StringUtils.isBlank(t)) {
+                            String[] tokens = null;
+                            boolean equals = !routerExpression.contains("!=");
+                            if (!equals) {
+                                tokens = routerExpression.split("!=");
+                            } else {
+                                tokens = routerExpression.split("=");
+                            }
+                            if (tokens.length == 2) {
+                                expressions.add(new Expression(equals, tokens));
+                            } else {
+                                log.warn("RouterIllegalColumnMatchExpression", routerExpression);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return expressions;
     }
 
     @SuppressWarnings("unchecked")
@@ -162,5 +187,15 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     public void setRegistrationService(IRegistrationService registrationService) {
         this.registrationService = registrationService;
+    }
+
+    class Expression {
+        boolean equals;
+        String[] tokens;
+
+        public Expression(boolean equals, String[] tokens) {
+            this.equals = equals;
+            this.tokens = tokens;
+        }
     }
 }

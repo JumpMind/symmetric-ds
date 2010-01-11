@@ -71,7 +71,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
             nodeIds = simpleTemplate.query(String.format("%s%s", sql, subSelect),
                     new SingleColumnRowMapper<String>(), sqlParams);
         } else {
-            nodeIds = toNodeIds(nodes);
+            nodeIds = toNodeIds(nodes, null);
         }
         return nodeIds;
     }
