@@ -69,7 +69,7 @@ public class DerbyDbDialect extends AbstractDbDialect implements IDbDialect {
 
     public void enableSyncTriggers() {
         jdbcTemplate.queryForInt(String.format("values %s_sync_triggers_set_disabled(0)", tablePrefix));
-        jdbcTemplate.queryForInt(String.format("values %s_sync_node_set_disabled(null)", tablePrefix));
+        jdbcTemplate.queryForObject(String.format("values %s_sync_node_set_disabled(null)", tablePrefix), String.class);
     }
 
     public String getSyncTriggersExpression() {
