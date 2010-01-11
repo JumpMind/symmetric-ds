@@ -30,7 +30,7 @@ public class DefaultDataRouter extends AbstractDataRouter {
 
     public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
-        return toNodeIds(nodes);
+        return toNodeIds(nodes, null);
     }
 
     public void completeBatch(IRouterContext context, OutgoingBatch batch) {
