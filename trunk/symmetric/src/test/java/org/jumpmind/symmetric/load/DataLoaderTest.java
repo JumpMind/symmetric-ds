@@ -35,6 +35,7 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
@@ -328,6 +329,39 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         filters.put(tableName, filter);
         load(out, filters);
         Assert.assertEquals(1, getJdbcTemplate().queryForInt("select count(*) from TEST_CHANGING_COLUMN_NAME"));
+    }
+
+    @Test
+    public void testBinaryColumnTypesForPostgres() throws Exception {
+        if (getDbDialect() instanceof PostgreSqlDbDialect) {
+            getJdbcTemplate().update("drop table if exists test_postgres_binary_types");
+            getJdbcTemplate().update("create table test_postgres_binary_types (binary_data oid)");
+
+            String tableName = "test_postgres_binary_types";
+            String[] keys = {"binary_data"};
+            String[] columns = {"binary_data"};
+            String[] values = {"dGVzdCAxIDIgMw=="};
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            CsvWriter writer = getWriter(out);
+            writer.writeRecord(new String[] {CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID});
+            writeTable(writer, tableName, keys, columns);
+            String nextBatchId = getNextBatchId();
+            writer.writeRecord(new String[] {CsvConstants.BATCH, nextBatchId});
+            writer.writeRecord(new String[] {CsvConstants.BINARY, BinaryEncoding.BASE64.name()});
+            writer.write(CsvConstants.INSERT);
+            writer.writeRecord(values, true);
+            writer.writeRecord(new String[] {CsvConstants.COMMIT, nextBatchId});
+            writer.close();
+            load(out);
+
+            String result = (String) getJdbcTemplate().queryForObject(
+                "select data from pg_largeobject where loid in (select binary_data from test_postgres_binary_types)",
+                String.class);
+            // clean up the object from pg_largeobject, otherwise it becomes abandoned on subsequent runs
+            getJdbcTemplate().queryForList("select lo_unlink(binary_data) from test_postgres_binary_types");
+            assertEquals(result, "test 1 2 3");
+        }
     }
 
     @Test
