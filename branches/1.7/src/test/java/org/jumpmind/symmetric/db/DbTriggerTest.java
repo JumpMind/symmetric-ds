@@ -20,8 +20,13 @@
 
 package org.jumpmind.symmetric.db;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+
+import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,6 +34,7 @@ import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -39,6 +45,8 @@ import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -57,6 +65,14 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_oracle_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'chenson', current_timestamp,current_timestamp)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
+
+    public final static String CREATE_POSTGRES_BINARY_TYPE = "create table test_postgres_binary_types (id integer, binary_data oid, primary key(id))";
+    public final static String INSERT_POSTGRES_BINARY_TYPE_TRIGGER = "insert into "
+            + TestConstants.TEST_PREFIX
+            + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_postgres_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'erilong', current_timestamp,current_timestamp)";
+    public final static String INSERT_POSTGRES_BINARY_TYPE_1 = "insert into test_postgres_binary_types values(47, ?)";
+    public final static String EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1 = "\"47\",\"dGVzdCAxIDIgMw==\"";
+    public final static String DROP_POSTGRES_BINARY_TYPE = "drop table if exists test_postgres_binary_types";
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
@@ -273,6 +289,32 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
             String csvString = getNextDataRow(getSymmetricEngine());
             Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
+        }
+    }
+
+    @Test
+    public void testBinaryColumnTypesForPostgres() {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof PostgreSqlDbDialect) {
+            getJdbcTemplate().update(DROP_POSTGRES_BINARY_TYPE);
+            getJdbcTemplate().update(CREATE_POSTGRES_BINARY_TYPE);
+            getJdbcTemplate().update(INSERT_POSTGRES_BINARY_TYPE_TRIGGER);
+            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
+            bootstrapService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers().size());
+            
+            getJdbcTemplate().execute(new ConnectionCallback() {
+                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                    conn.setAutoCommit(false);
+                    PreparedStatement ps = conn.prepareStatement(INSERT_POSTGRES_BINARY_TYPE_1);
+                    ps.setBlob(1, new SerialBlob("test 1 2 3".getBytes()));
+                    ps.executeUpdate();
+                    conn.commit();
+                    return null;
+                }            
+            });
+            String csvString = getNextDataRow(getSymmetricEngine());
+            Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);            
         }
     }
 

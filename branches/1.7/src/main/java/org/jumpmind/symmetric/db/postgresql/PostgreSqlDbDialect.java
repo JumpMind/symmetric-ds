@@ -72,6 +72,9 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
         }
+        else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
+            return Types.BLOB;
+        }
         else {
             return super.overrideJdbcTypeForColumn(values);
         }
