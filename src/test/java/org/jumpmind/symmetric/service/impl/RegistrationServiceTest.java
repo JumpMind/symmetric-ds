@@ -246,6 +246,25 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
     }
 
     @Test
+    public void testReOpenRegistrationMissing() throws Exception {
+        registrationService.reOpenRegistration("00003");
+        NodeSecurity security = nodeService.findNodeSecurity("00003");
+        assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
+        assertNotSame(security.getPassword(), "notsecret", "Wrong password");
+        assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
+        assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
+
+        getJdbcTemplate().update("delete from sym_node_security where node_id = '00003'");
+
+        registrationService.reOpenRegistration("00003");
+        security = nodeService.findNodeSecurity("00003");
+        assertEquals(security.getNodeId(), "00003", "Wrong nodeId");
+        assertNotSame(security.getPassword(), "notsecret", "Wrong password");
+        assertEquals(security.isRegistrationEnabled(), true, "Wrong isRegistrationEnabled");
+        assertEquals(security.getRegistrationTime(), null, "Wrong registrationTime");
+    }
+
+    @Test
     public void testOpenRegistration() throws Exception {
         registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00005");
 
