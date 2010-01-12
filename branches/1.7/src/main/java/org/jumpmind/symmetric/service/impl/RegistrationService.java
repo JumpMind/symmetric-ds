@@ -233,7 +233,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 // if the update count was 0, then we probably have a row in the
                 // node table, but not in node security.
                 // lets go ahead and try to insert into node security.
-                jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] { nodeId, password });
+                jdbcTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {nodeId, password,
+                    nodeService.findNode(nodeId).getNodeId()});
             }
         } else {
             logger.warn("There was no row with a node id of " + nodeId + " to 'reopen' registration for.");
