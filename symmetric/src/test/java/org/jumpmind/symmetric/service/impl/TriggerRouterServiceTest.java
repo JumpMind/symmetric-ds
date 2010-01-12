@@ -20,13 +20,19 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Calendar;
 import java.util.List;
 
+import javax.sql.rowset.serial.SerialBlob;
+
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -36,6 +42,8 @@ import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class TriggerRouterServiceTest extends AbstractDatabaseTest {
@@ -45,6 +53,11 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     public final static String CREATE_ORACLE_BINARY_TYPE = "create table test_oracle_binary_types (id varchar(4), num_one binary_float, num_two binary_double)";
     public final static String INSERT_ORACLE_BINARY_TYPE_1 = "insert into test_oracle_binary_types values('1', 2.04299998, 5.2212)";
     public final static String EXPECTED_INSERT_ORALCE_BINARY_TYPE_1 = "\"1\",\"2.04299998\",\"5.2212\"";
+
+    public final static String CREATE_POSTGRES_BINARY_TYPE = "create table test_postgres_binary_types (id integer, binary_data oid, primary key(id))";
+    public final static String INSERT_POSTGRES_BINARY_TYPE_1 = "insert into test_postgres_binary_types values(47, ?)";
+    public final static String EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1 = "\"47\",\"dGVzdCAxIDIgMw==\"";
+    public final static String DROP_POSTGRES_BINARY_TYPE = "drop table if exists test_postgres_binary_types";
 
     public final static String INSERT = "insert into "
             + TEST_TRIGGERS_TABLE
@@ -225,6 +238,42 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             getJdbcTemplate().update(INSERT_ORACLE_BINARY_TYPE_1);
             String csvString = getNextDataRow();
             Assert.assertEquals(EXPECTED_INSERT_ORALCE_BINARY_TYPE_1, csvString);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBinaryColumnTypesForPostgres() {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof PostgreSqlDbDialect) {
+            getJdbcTemplate().update(DROP_POSTGRES_BINARY_TYPE);
+            getJdbcTemplate().update(CREATE_POSTGRES_BINARY_TYPE);
+            TriggerRouter trouter = new TriggerRouter();
+            Trigger trigger = trouter.getTrigger();
+            trigger.setSourceTableName("test_postgres_binary_types");
+            trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+            Router router = trouter.getRouter();
+            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            getTriggerRouterService().saveTriggerRouter(trouter);
+
+            ITriggerRouterService triggerService = getTriggerRouterService();
+            triggerService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
+                    .size());
+            
+            getJdbcTemplate().execute(new ConnectionCallback() {
+                public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
+                    conn.setAutoCommit(false);
+                    PreparedStatement ps = conn.prepareStatement(INSERT_POSTGRES_BINARY_TYPE_1);
+                    ps.setBlob(1, new SerialBlob("test 1 2 3".getBytes()));
+                    ps.executeUpdate();
+                    conn.commit();
+                    return null;
+                }
+            });
+            String csvString = getNextDataRow();
+            Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);            
         }
     }
 

@@ -23,7 +23,10 @@ package org.jumpmind.symmetric.db.postgresql;
 import java.sql.Types;
 import java.util.Map;
 
+import javax.sql.rowset.serial.SerialBlob;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.ddlutils.model.Column;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
@@ -68,9 +71,28 @@ public class PostgreSqlDbDialect extends AbstractDbDialect implements IDbDialect
         String typeName = (String) values.get("TYPE_NAME");
         if (typeName != null && typeName.equalsIgnoreCase("ABSTIME")) {
             return Types.TIMESTAMP;
+        } else if (typeName != null && typeName.equalsIgnoreCase("OID")) {
+            return Types.BLOB;
         } else {
             return super.overrideJdbcTypeForColumn(values);
         }
+    }
+    
+    @Override
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
+        Column[] orderedMetaData) {
+
+        Object[] objectValues = super.getObjectValues(encoding, values, orderedMetaData);
+        for (int i = 0; i < orderedMetaData.length; i++) {
+            if (orderedMetaData[i] != null && orderedMetaData[i].getTypeCode() == Types.BLOB) {
+                try {
+                    objectValues[i] = new SerialBlob((byte[]) objectValues[i]);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }                
+            }
+        }
+        return objectValues;
     }
 
     @Override
