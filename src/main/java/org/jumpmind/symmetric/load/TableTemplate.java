@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.rowset.serial.SerialBlob;
+
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -43,6 +45,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
+import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -350,6 +353,14 @@ public class TableTemplate {
                             try {
                                 objectValue = Hex.decodeHex(value.toCharArray());
                             } catch (DecoderException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        // Needs wrapped in a BLOB object before going to the driver
+                        if (dbDialect instanceof PostgreSqlDbDialect && type == Types.BLOB) {
+                            try {
+                                objectValue = new SerialBlob((byte[]) objectValue);
+                            } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         }

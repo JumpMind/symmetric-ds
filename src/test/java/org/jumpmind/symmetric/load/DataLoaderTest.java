@@ -35,6 +35,8 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
+import org.jumpmind.symmetric.db.BinaryEncoding;
+import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlDbDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
@@ -282,7 +284,7 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         }
         if (values[10] != null && !(getDbDialect() instanceof OracleDbDialect)) {
             int scale = 17;
-            if (getDbDialect() instanceof MySqlDbDialect || getDbDialect() instanceof PostgreSqlDbDialect) {
+            if (getDbDialect() instanceof MySqlDbDialect) {
                 scale = 16;
             }
             DecimalFormat df = new DecimalFormat("0.00####################################");
@@ -330,6 +332,40 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
         assertTestTableEquals(insertValues[0], insertValues);
     }
 
+    @Test
+    public void testBinaryColumnTypesForPostgres() throws Exception {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof PostgreSqlDbDialect) {
+            getJdbcTemplate().update("drop table if exists test_postgres_binary_types");
+            getJdbcTemplate().update("create table test_postgres_binary_types (binary_data oid)");
+
+            String tableName = "test_postgres_binary_types";
+            String[] keys = {"binary_data"};
+            String[] columns = {"binary_data"};
+            String[] values = {"dGVzdCAxIDIgMw=="};
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            CsvWriter writer = getWriter(out);
+            writer.writeRecord(new String[] {CsvConstants.NODEID, TestConstants.TEST_CLIENT_EXTERNAL_ID});
+            writeTable(writer, tableName, keys, columns);
+            String nextBatchId = getNextBatchId();
+            writer.writeRecord(new String[] {CsvConstants.BATCH, nextBatchId});
+            writer.writeRecord(new String[] {CsvConstants.BINARY, BinaryEncoding.BASE64.name()});
+            writer.write(CsvConstants.INSERT);
+            writer.writeRecord(values, true);
+            writer.writeRecord(new String[] {CsvConstants.COMMIT, nextBatchId});
+            writer.close();
+            load(out);
+
+            String result = (String) getJdbcTemplate().queryForObject(
+                "select data from pg_largeobject where loid in (select binary_data from test_postgres_binary_types)",
+                String.class);
+            // clean up the object from pg_largeobject, otherwise it becomes abandoned on subsequent runs
+            getJdbcTemplate().queryForList("select lo_unlink(binary_data) from test_postgres_binary_types");
+            assertEquals(result, "test 1 2 3");
+        }
+    }
+    
     @Test
     public void testBenchmark() throws Exception {
         ZipInputStream in = new ZipInputStream(getClass().getResourceAsStream("/test-data-loader-benchmark.zip"));

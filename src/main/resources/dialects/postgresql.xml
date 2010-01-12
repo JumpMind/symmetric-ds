@@ -55,6 +55,23 @@
                                 ]]>
                             </value>
                         </entry>
+                        <entry key="fn_sym_largeobject">
+                            <value>
+                                <![CDATA[                                 
+                                CREATE OR REPLACE FUNCTION $(defaultSchema)fn_sym_largeobject(objectId oid) RETURNS text AS $$
+                                DECLARE
+                                  encodedBlob text;
+                                BEGIN
+                                  select encode(data, 'base64') into encodedBlob
+                                  from pg_largeobject where loid = objectId;
+                                  RETURN encodedBlob;
+                                EXCEPTION WHEN OTHERS THEN
+                                  RETURN '';
+                                END
+                                $$ LANGUAGE plpgsql;
+                                ]]>
+                            </value>
+                        </entry>
                     </map>
                 </property>
                 <property name="stringColumnTemplate" >
@@ -69,7 +86,12 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || replace(replace(encode($(tableAlias)."$(columnName)", 'base64'),E'\\',E'\\\\'),'"',E'\\"') || '"' end ||','||]]>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || encode($(tableAlias)."$(columnName)", 'base64') || '"' end ||','||]]>
+                    </value>
+                </property>
+                <property name="wrappedBlobColumnTemplate">
+                    <value>
+                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || fn_sym_largeobject($(tableAlias)."$(columnName)") || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
