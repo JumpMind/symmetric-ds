@@ -337,7 +337,7 @@ values('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'column', 'STATUS=OK', current_timestamp, current_timestamp);
+values('corp-2-store-ok','corp', 'store', 'column', 'STATUS=OK', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -347,7 +347,7 @@ values('corp-2-store','corp', 'store', 'column', 'STATUS=OK', current_timestamp,
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
+values('corp-2-store-status','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -357,7 +357,7 @@ values('corp-2-store','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', current_
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+values('corp-2-store-id','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
             Attributes on <link linkend="node">node</link> that can be referenced with tokens include:
@@ -373,10 +373,20 @@ values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', curren
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
-]]></programlisting>
-            
-         </para>                    
+values('corp-2-store-redirect','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
+]]></programlisting>                        
+         </para>
+         <para>
+            More than one column may be configured in a router_expression.  When more than one column is configured, all matches are added to the list of nodes to route to.  The following is
+            an example where the store_id column may contain the store_id to route to or the constant of ALL which indicates that all nodes should receive the update.       
+            <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store-multiple-matches','corp', 'store', 'column', 
+ 'STORE_ID=ALL
+  STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+]]></programlisting>                        
+         </para>                        
     </section>    
 
     <section id="basic-route-relational">
