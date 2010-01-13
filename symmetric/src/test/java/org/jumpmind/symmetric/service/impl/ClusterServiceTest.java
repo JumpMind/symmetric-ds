@@ -32,10 +32,6 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public ClusterServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Test
     public void testLock() throws Exception {
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);

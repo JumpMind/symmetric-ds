@@ -32,10 +32,6 @@ public class FunkyDataTypesTest extends AbstractDatabaseTest {
     static final Log logger = LogFactory.getLog(FunkyDataTypesTest.class);
     static final String TABLE_NAME = "TEST_ORACLE_DATES";
 
-    public FunkyDataTypesTest(String dbName) {
-        super(dbName);
-    }
-
     public FunkyDataTypesTest() throws Exception {
         super();
     }

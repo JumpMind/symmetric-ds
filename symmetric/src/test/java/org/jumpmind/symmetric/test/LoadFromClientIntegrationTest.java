@@ -31,10 +31,6 @@ public class LoadFromClientIntegrationTest extends AbstractIntegrationTest {
     public LoadFromClientIntegrationTest() throws Exception {
     }
 
-    public LoadFromClientIntegrationTest(String client, String root) throws Exception {
-        super(client, root);
-    }
-
     @Test(timeout = 30000)
     public void registerClientWithRoot() {
         getRootEngine().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, TestConstants.TEST_CLIENT_EXTERNAL_ID);

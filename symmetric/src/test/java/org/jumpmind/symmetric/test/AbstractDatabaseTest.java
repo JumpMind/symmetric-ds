@@ -47,16 +47,16 @@ public class AbstractDatabaseTest {
 
     private String database = TestSetupUtil.getRootDbTypes(DatabaseTestSuite.DEFAULT_TEST_PREFIX)[0];
     
-    static boolean standalone = false;
-
-    public AbstractDatabaseTest(String dbName) {
-        this.database = dbName;
+    static boolean standalone = true;
+   
+    public void init(String database) {
+        this.database = database;
     }
 
     public AbstractDatabaseTest() throws Exception {
-        if (!standalone) {
+        if (standalone) {
             logger.info("Running test in standalone mode against " + database);
-            standalone = true;
+            standalone = false;
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT,
                     null, database);
         }

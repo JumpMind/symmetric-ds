@@ -51,10 +51,6 @@ public class AcknowledgeServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public AcknowledgeServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         ackService = (IAcknowledgeService) find(Constants.ACKNOWLEDGE_SERVICE);

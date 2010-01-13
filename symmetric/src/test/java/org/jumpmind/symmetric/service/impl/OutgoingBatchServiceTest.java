@@ -59,11 +59,7 @@ public class OutgoingBatchServiceTest extends AbstractDatabaseTest {
     public OutgoingBatchServiceTest() throws Exception {
         super();
     }
-
-    public OutgoingBatchServiceTest(String dbName) {
-        super(dbName);
-    }
-
+    
     @Before
     public void setUp() {
         batchService = (IOutgoingBatchService) find(Constants.OUTGOING_BATCH_SERVICE);

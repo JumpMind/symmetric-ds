@@ -12,10 +12,6 @@ public class ParameterServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public ParameterServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Test
     public void testParameterGetFromDefaults() {
         Assert.assertEquals("Unexpected default table prefix found.", getParameterService().getString(

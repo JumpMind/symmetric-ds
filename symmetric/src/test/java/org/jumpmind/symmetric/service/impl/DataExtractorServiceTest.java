@@ -52,10 +52,6 @@ public class DataExtractorServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public DataExtractorServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         dataExtractorService = (IDataExtractorService) find(Constants.DATAEXTRACTOR_SERVICE);

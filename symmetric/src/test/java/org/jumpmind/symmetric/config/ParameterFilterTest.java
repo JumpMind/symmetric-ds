@@ -11,10 +11,6 @@ public class ParameterFilterTest extends AbstractDatabaseTest {
     public ParameterFilterTest() throws Exception {
     }
 
-    public ParameterFilterTest(String db) {
-        super(db);
-    }
-
     @Test
     public void testParameterFilter() {
         IParameterService service = find(Constants.PARAMETER_SERVICE);

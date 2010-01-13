@@ -39,21 +39,20 @@ public class AbstractIntegrationTest {
     protected String root;
     protected JdbcTemplate rootJdbcTemplate;
     protected JdbcTemplate clientJdbcTemplate;
-    protected static boolean standalone = false;
+    protected static boolean standalone = true;
 
-    public AbstractIntegrationTest(String client, String root) {
+    public void init(String client, String root) {
         this.client = client;
         this.root = root;
     }
 
     public AbstractIntegrationTest() throws Exception {
-        if (!standalone) {
+        if (standalone) {
             String[] databases = TestSetupUtil.lookupDatabasePairs(DatabaseTestSuite.DEFAULT_TEST_PREFIX).iterator()
                     .next();
             logger.info("Running test in standalone mode with databases " + databases[0] + " and " + databases[1]);
-            this.root = databases[1];
-            this.client = databases[0];
-            standalone = true;
+            init(databases[0],databases[1]);
+            standalone = false;
             TestSetupUtil.setup(DatabaseTestSuite.DEFAULT_TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT,
                     databases[0], databases[1]);
         }

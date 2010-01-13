@@ -29,10 +29,6 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     final static Node NODE_GROUP_NODE_2 = new Node("00002",TestConstants.TEST_CLIENT_NODE_GROUP);
     final static Node NODE_GROUP_NODE_3 = new Node("00003",TestConstants.TEST_CLIENT_NODE_GROUP);
 
-    public RouterServiceTest(String dbName) {
-        super(dbName);
-    }
-
     public RouterServiceTest() throws Exception {
     }
 

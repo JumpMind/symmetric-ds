@@ -28,10 +28,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class CrossCatalogSyncTest extends AbstractDatabaseTest {
 
-    public CrossCatalogSyncTest(String db) {
-        super(db);
-    }
-
     public CrossCatalogSyncTest() throws Exception {
         super();
     }

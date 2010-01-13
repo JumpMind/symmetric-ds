@@ -46,10 +46,6 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public NodeServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         nodeService = (INodeService) find(Constants.NODE_SERVICE);
