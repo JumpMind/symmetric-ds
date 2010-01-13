@@ -31,17 +31,17 @@ import org.jumpmind.symmetric.model.Node;
 
 public interface ITransportManager {
 
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException;
 
     public void writeAcknowledgement(OutputStream out, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 
     public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException;
 
-    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties) throws IOException;
+    public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken) throws IOException;
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException;
 
-    public IIncomingTransport getRegisterTransport(Node node) throws IOException;
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException;
     
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler);
     
@@ -51,6 +51,6 @@ public interface ITransportManager {
      * url selection schemes.
      * @param url This is the url configured in sync_url of the node table
      */
-    public String resolveURL(String url);
+    public String resolveURL(String url, String registrationUrl);
 
 }

@@ -39,7 +39,7 @@ public class MockTransportManager implements ITransportManager {
 
     protected IOutgoingWithResponseTransport outgoingTransport;
 
-    public String resolveURL(String url) {
+    public String resolveURL(String url, String registrationUrl) {
         return null;
     }
 
@@ -47,18 +47,18 @@ public class MockTransportManager implements ITransportManager {
     }
 
     public IIncomingTransport getPullTransport(Node remote, Node local,
-            String securityToken, Map<String, String> requestProperties)
+            String securityToken, Map<String, String> requestProperties, String registrationUrl)
             throws IOException {
         return incomingTransport;
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
-        Node local, String securityToken) throws IOException {
+        Node local, String securityToken, String registrationUrl) throws IOException {
         return outgoingTransport;
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
-                Node local, String securityToken) throws IOException {
+                Node local, String securityToken, String registrationUrl) throws IOException {
         return true;
     }
 
@@ -83,7 +83,7 @@ public class MockTransportManager implements ITransportManager {
         this.outgoingTransport = outgoingTransport;
     }
 
-    public IIncomingTransport getRegisterTransport(Node node) throws IOException {
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
         return incomingTransport;
     }
 
@@ -98,5 +98,7 @@ public class MockTransportManager implements ITransportManager {
     public List<BatchInfo> readAcknowledgement(String parameterString1, String parameterString2) throws IOException {
         return null;
     }
+
+
 
 }

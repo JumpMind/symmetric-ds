@@ -57,9 +57,9 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
                     return false;
                 }
             });
-            return new HttpTransportManager(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT), parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY), parameterService.getRegistrationUrl());
+            return new HttpTransportManager(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT), parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
-            return new InternalTransportManager(configurationService, parameterService.getRegistrationUrl());
+            return new InternalTransportManager(configurationService);
         } else {
             throw new IllegalStateException("An invalid transport type of " + transport + " was specified.");
         }

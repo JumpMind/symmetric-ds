@@ -142,7 +142,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         List<String> list = jdbcTemplate.queryForList(getSql("getRegistrationRedirectUrlSql"),
                 new Object[] { externalId }, new int[] { Types.VARCHAR }, String.class);
         if (list.size() > 0) {
-            return transportManager.resolveURL(list.get(0));
+            return transportManager.resolveURL(list.get(0), parameterService.getRegistrationUrl());
         } else {
             return null;
         }
@@ -204,7 +204,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             try {
                 log.info("NodeRegisterting", parameterService.getRegistrationUrl());
                 registered = dataLoaderService.loadData(transportManager.getRegisterTransport(new Node(
-                        this.parameterService, dbDialect)));
+                        this.parameterService, dbDialect), parameterService.getRegistrationUrl()));
             } catch (ConnectException e) {
                 log.warn("NodeRegistertingFailedConnection");
             } catch (Exception e) {

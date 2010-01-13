@@ -30,18 +30,18 @@ public class AbstractTransportManagerUnitTest {
     @Test
     public void testChooseURL() {
         AbstractTransportManager tm = getMockTransportManager();
-        Assert.assertEquals("test",tm.resolveURL("ext://me/"));
+        Assert.assertEquals("test",tm.resolveURL("ext://me/", null));
     }
     
     @Test
     public void testChooseBadURL() {
         AbstractTransportManager tm = getMockTransportManager();
         String notFound = "ext://notfound/";
-        Assert.assertEquals(notFound,tm.resolveURL(notFound));
+        Assert.assertEquals(notFound,tm.resolveURL(notFound, null));
     }
     
     protected AbstractTransportManager getMockTransportManager() {
-        AbstractTransportManager tm = new AbstractTransportManager(null) {};
+        AbstractTransportManager tm = new AbstractTransportManager() {};
        
         tm.addExtensionSyncUrlHandler("me", new ISyncUrlExtension() {
             public String resolveUrl(URI url) {

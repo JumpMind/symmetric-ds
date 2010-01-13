@@ -46,10 +46,7 @@ abstract public class AbstractTransportManager {
 
     protected Map<String, ISyncUrlExtension> extensionSyncUrlHandlers  = new HashMap<String, ISyncUrlExtension>();
 
-    protected String registrationUrl;
-    
-    public AbstractTransportManager(String registrationUrl) {
-        this.registrationUrl = registrationUrl;
+    public AbstractTransportManager() {
     }
     
     public void addExtensionSyncUrlHandler(String name, ISyncUrlExtension handler) {
@@ -66,26 +63,26 @@ abstract public class AbstractTransportManager {
      * Build the url for remote node communication. Use the remote sync_url
      * first, if it is null or blank, then use the registration url instead.
      */
-    public String resolveURL(String url) {
-        if (StringUtils.isBlank(url) || url.startsWith(Constants.PROTOCOL_NONE)) {
+    public String resolveURL(String syncUrl, String registrationUrl) {
+        if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
             log.debug("TransportSyncURLBlank");
             return registrationUrl;
-        } else if (url.startsWith(Constants.PROTOCOL_EXT)) {
+        } else if (syncUrl.startsWith(Constants.PROTOCOL_EXT)) {
             try {
-                URI uri = new URI(url);
+                URI uri = new URI(syncUrl);
                 ISyncUrlExtension handler = extensionSyncUrlHandlers.get(uri.getHost());
                 if (handler == null) {
-                    log.error("TransportSyncURLMissing", uri.getHost(), url);
-                    return url;
+                    log.error("TransportSyncURLMissing", uri.getHost(), syncUrl);
+                    return syncUrl;
                 } else {
                     return handler.resolveUrl(uri);
                 }
             } catch (URISyntaxException e) {
                 log.error(e);
-                return url;
+                return syncUrl;
             }
         } else {
-            return url;
+            return syncUrl;
         }
     }
 
