@@ -154,7 +154,7 @@ public class ParameterizedSuite extends Suite {
     private final ArrayList<Runner> runners = new ArrayList<Runner>();
 
     protected ParameterizedSuite(Class<?> klass, Class<?>[] annotatedClasses) throws Exception {
-        super(klass, annotatedClasses);
+        super(klass,  new Class<?>[0]);
 
         for (final Object each : getParametersList()) {
             if (each instanceof Object[]) {
