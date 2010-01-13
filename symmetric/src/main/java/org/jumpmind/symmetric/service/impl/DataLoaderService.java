@@ -107,14 +107,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             requestProperties.put(WebConstants.SUSPENDED_CHANNELS, suspendIgnoreChannels.getSuspendChannelsAsString());
             requestProperties.put(WebConstants.IGNORED_CHANNELS, suspendIgnoreChannels.getIgnoreChannelsAsString());
 
-            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties));
+            List<IncomingBatch> list = loadDataAndReturnBatches(transportManager.getPullTransport(remote, local, security.getNodePassword(), requestProperties, parameterService.getRegistrationUrl()));
             if (list.size() > 0) {
                 sendAck(remote, local, list);
                 wasWorkDone = true;
             }
         } catch (RegistrationRequiredException e) {
             log.warn("RegistrationLost");
-            loadData(transportManager.getRegisterTransport(local));
+            loadData(transportManager.getRegisterTransport(local, parameterService.getRegistrationUrl()));
             nodeService.findIdentity(false);
             wasWorkDone = true;
         } catch (MalformedURLException e) {
@@ -133,7 +133,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
         for (int i = 0; i < numberOfStatusSendRetries && !sendAck; i++) {
             try {
-                sendAck = transportManager.sendAcknowledgement(remote, list, local, security.getNodePassword());
+                sendAck = transportManager.sendAcknowledgement(remote, list, local, security.getNodePassword(), parameterService.getRegistrationUrl());
             } catch (IOException ex) {
                 log.warn("AckSendingFailed", (i + 1), ex.getMessage());
                 error = ex;

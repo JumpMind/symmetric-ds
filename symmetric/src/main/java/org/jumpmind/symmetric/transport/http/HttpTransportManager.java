@@ -58,22 +58,22 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     int compressionLevel;
     int compressionStrategy;
     
-    public HttpTransportManager(String registrationUrl) {
-      this(120000, true, -1, 0, registrationUrl);   
+    public HttpTransportManager() {
+      this(120000, true, -1, 0);   
     }
     
-    public HttpTransportManager(int httpTimeOutInMs, boolean useCompression, int compressionLevel, int compressionStrategy, String registrationUrl) {
-        super(registrationUrl);
+    public HttpTransportManager(int httpTimeOutInMs, boolean useCompression, int compressionLevel, int compressionStrategy) {
+        super();
         this.httpTimeOutInMs = httpTimeOutInMs;
         this.useCompression = useCompression;
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
     }
     
-    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException {
+    public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {
         if (list != null && list.size() > 0) {
             String data = getAcknowledgementData(local.getNodeId(), list);
-            return sendMessage("ack", remote, local, data, securityToken);
+            return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
         }
         return true;
     }
@@ -82,8 +82,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         writeMessage(out, getAcknowledgementData(local.getNodeId(), list));
     }
 
-    protected boolean sendMessage(String action, Node remote, Node local, String data, String securityToken) throws IOException {
-        HttpURLConnection conn = sendMessage(new URL(buildURL(action, remote, local, securityToken)), data);
+    protected boolean sendMessage(String action, Node remote, Node local, String data, String securityToken, String registrationUrl) throws IOException {
+        HttpURLConnection conn = sendMessage(new URL(buildURL(action, remote, local, securityToken, registrationUrl)), data);
         return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
     }
 
@@ -106,10 +106,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getPullTransport(Node remote, Node local,
-            String securityToken, Map<String, String> requestProperties)
+            String securityToken, Map<String, String> requestProperties, String registrationUrl)
             throws IOException {
         HttpURLConnection conn = createGetConnectionFor(new URL(buildURL(
-                "pull", remote, local, securityToken)));
+                "pull", remote, local, securityToken, registrationUrl)));
         if (requestProperties != null) {
             for (String key : requestProperties.keySet()) {
                 conn.addRequestProperty(key, requestProperties.get(key));
@@ -118,12 +118,12 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return new HttpIncomingTransport(conn);
     }
 
-    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken) throws IOException {
-        URL url = new URL(buildURL("push", remote, local, securityToken));
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
+        URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
         return new HttpOutgoingTransport(url, httpTimeOutInMs, useCompression, compressionStrategy, compressionLevel);
     }
 
-    public IIncomingTransport getRegisterTransport(Node node) throws IOException {
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
         return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))));
     }
     
@@ -180,8 +180,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     /**
      * Build a url for an action. Include the nodeid and the security token.
      */
-    protected String buildURL(String action, Node remote, Node local, String securityToken) throws IOException {
-        return addSecurityToken((resolveURL(remote.getSyncUrl()) + "/" + action), "&", local.getNodeId(), securityToken);
+    protected String buildURL(String action, Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
+        return addSecurityToken((resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + action), "&", local.getNodeId(), securityToken);
     }
 
     protected String addSecurityToken(String base, String connector, String nodeId, String securityToken) {

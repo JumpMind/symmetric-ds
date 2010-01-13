@@ -63,13 +63,13 @@ public class InternalTransportManager extends AbstractTransportManager implement
     static final ILog log = LogFactory.getLog(InternalTransportManager.class);
 
     IConfigurationService configurationService;
-    public InternalTransportManager(IConfigurationService configurationService, String registrationUrl) {
-        super(registrationUrl);
+    public InternalTransportManager(IConfigurationService configurationService) {
+        super();
         this.configurationService = configurationService;
     }
 
     public IIncomingTransport getPullTransport(Node remote, final Node local,
-            String securityToken, Map<String, String> requestProperties)
+            String securityToken, Map<String, String> requestProperties, String registrationUrl)
             throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
@@ -96,7 +96,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote,
-        Node local, String securityToken) throws IOException {
+        Node local, String securityToken, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
@@ -113,7 +113,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }
 
-    public IIncomingTransport getRegisterTransport(final Node client) throws IOException {
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl) throws IOException {
 
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
@@ -130,7 +130,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list,
-            Node local, String securityToken) throws IOException {
+            Node local, String securityToken, String registrationUrl) throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
