@@ -22,12 +22,12 @@
                 </property>
                 <property name="functionTemplatesToInstall">
                     <map>
-                        <entry key="FN_SYM_REPLACE">
+                        <entry key="FN_SYM_ESCAPE">
                             <value>
                                 <![CDATA[ 
-                                CREATE FUNCTION fn_sym_replace(STR VARCHAR(10000), OLD VARCHAR(10000), NEW VARCHAR(10000)) RETURNS
+                                CREATE FUNCTION fn_sym_escape(STR VARCHAR(10000)) RETURNS
                                 VARCHAR(10000) PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA EXTERNAL NAME
-                                'org.apache.commons.lang.StringUtils.replace'
+                                'org.jumpmind.symmetric.db.derby.DerbyFunctions.escape'
                                 ]]>
                             </value>
                         </entry>
@@ -103,7 +103,7 @@
                 </property>
                 <property name="stringColumnTemplate" >
                     <value>
-                        <![CDATA[ case when $(tableAlias)."$(columnName)" is null then '' else '"' || fn_sym_replace(fn_sym_replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"') || '"' end ||','||]]>
+                        <![CDATA[ fn_sym_escape($(tableAlias)."$(columnName)") ||','||]]>
                     </value>
                 </property>
                 <property name="clobColumnTemplate">
