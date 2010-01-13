@@ -134,10 +134,11 @@ public class ParameterizedSuite extends Suite {
                     .toString(fParameters));
         }
 
-        private Method getInitMethod() {            
+        private Method getInitMethod() {
             Method[] methods = ReflectionUtils.getAllDeclaredMethods(getTestClass().getJavaClass());
             for (Method method : methods) {
-                if (method.getName().equals("init") && method.getGenericParameterTypes().length == fParameters.length) {
+                if (method.getName().equals("init")
+                        && method.getGenericParameterTypes().length == fParameters.length) {
                     return method;
                 }
             }
@@ -154,13 +155,13 @@ public class ParameterizedSuite extends Suite {
     private final ArrayList<Runner> runners = new ArrayList<Runner>();
 
     protected ParameterizedSuite(Class<?> klass, Class<?>[] annotatedClasses) throws Exception {
-        super(klass,  new Class<?>[0]);
+        super(klass, new Class<?>[0]);
 
         for (final Object each : getParametersList()) {
             if (each instanceof Object[]) {
                 for (Class<?> clazz : annotatedClasses) {
                     try {
-                    runners.add(new TestClassRunnerForParameters(clazz, (Object[]) each));
+                        runners.add(new TestClassRunnerForParameters(clazz, (Object[]) each));
                     } catch (Exception ex) {
                         Assert.fail(ex.getMessage() + " for " + clazz.getName());
                     }
@@ -205,15 +206,5 @@ public class ParameterizedSuite extends Suite {
 
         throw new Exception("No public static parameters method on class " + getName());
     }
-
-    // @Override
-    // public void run(final RunNotifier notifier) {
-    // new ClassRoadie(notifier, getTestClass(), getDescription(), new
-    // Runnable() {
-    // public void run() {
-    // runChildren(notifier);
-    // }
-    // }).runProtected();
-    // }
 
 }
