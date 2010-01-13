@@ -27,10 +27,6 @@ public class StatisticServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public StatisticServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         statisticService = AppUtils.find(Constants.STATISTIC_SERVICE, getSymmetricEngine());

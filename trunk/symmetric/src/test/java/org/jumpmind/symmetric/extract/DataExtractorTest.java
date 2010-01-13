@@ -73,10 +73,6 @@ public class DataExtractorTest extends AbstractDatabaseTest {
         super();
     }
 
-    public DataExtractorTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         dataExtractor = (IDataExtractor) find(Constants.DATA_EXTRACTOR);

@@ -38,11 +38,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     public PurgeServiceTest() throws Exception {
         super();
     }
-
-    public PurgeServiceTest(String dbName) {
-        super(dbName);
-    }
-
+    
     @Test
     public void testThatPurgeExecutes() {
         IPurgeService service = find(Constants.PURGE_SERVICE);

@@ -69,10 +69,6 @@ public abstract class AbstractDataLoaderTest extends AbstractDatabaseTest {
         super();
     }
 
-    public AbstractDataLoaderTest(String dbType) {
-        super(dbType);
-    }
-
     protected MockTransportManager getTransportManager() {
         if (transportManager == null) {
             transportManager = new MockTransportManager();

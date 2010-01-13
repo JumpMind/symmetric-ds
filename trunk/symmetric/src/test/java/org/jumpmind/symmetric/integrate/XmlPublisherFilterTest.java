@@ -45,10 +45,6 @@ public class XmlPublisherFilterTest extends AbstractDatabaseTest {
         super();
     }
 
-    public XmlPublisherFilterTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         ctx = new DataLoaderContext();

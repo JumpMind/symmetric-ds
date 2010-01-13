@@ -116,10 +116,6 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         super();
     }
 
-    public SimpleIntegrationTest(String client, String root) throws Exception {
-        super(client, root);
-    }
-
     protected void checkForFailedTriggers() {
         ITriggerRouterService service = AppUtils.find(Constants.TRIGGER_ROUTER_SERVICE, getClientEngine());
         Assert.assertEquals(0, service.getFailedTriggers().size());

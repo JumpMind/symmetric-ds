@@ -51,10 +51,6 @@ public class DataLoaderServiceTest extends AbstractDataLoaderTest {
         super();
     }
 
-    public DataLoaderServiceTest(String dbType) {
-        super(dbType);
-    }
-
     protected Level setLoggingLevelForTest(Level level) {
         Level old = Logger.getLogger(DataLoaderService.class).getLevel();
         Logger.getLogger(DataLoaderService.class).setLevel(level);

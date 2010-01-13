@@ -89,10 +89,6 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public TriggerRouterServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Test
     public void testSchemaSync() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();

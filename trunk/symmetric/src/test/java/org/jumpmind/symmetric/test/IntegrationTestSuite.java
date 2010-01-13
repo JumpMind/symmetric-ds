@@ -39,14 +39,15 @@ public class IntegrationTestSuite {
 
     String root;
     String client;
-
-    public IntegrationTestSuite(String client, String root) {
+    
+    public void init(String client, String root) {
         this.client = client;
         this.root = root;
     }
 
     @Test
     public void setup() throws Exception {
+        AbstractIntegrationTest.standalone = false;
         TestSetupUtil.setup(TEST_PREFIX, TestConstants.TEST_ROOT_DOMAIN_SETUP_SCRIPT, client, root);
     }
 

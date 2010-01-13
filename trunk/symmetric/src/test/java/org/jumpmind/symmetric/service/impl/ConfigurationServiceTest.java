@@ -42,10 +42,6 @@ public class ConfigurationServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public ConfigurationServiceTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
         configurationService = (IConfigurationService) find(Constants.CONFIG_SERVICE);

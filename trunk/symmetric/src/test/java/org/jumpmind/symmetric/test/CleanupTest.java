@@ -29,15 +29,18 @@ public class CleanupTest {
     String client;
     String root;
 
-    public CleanupTest(String client, String root) throws Exception {
+    public CleanupTest() throws Exception {
+    }
+
+    public void init(String client, String root) {
         this.client = client;
         this.root = root;
     }
-    
-    public CleanupTest(String client) throws Exception {
-        this.client = null;
-    }
 
+    public void init(String database) {
+        this.root = database;
+    }
+    
     @Test
     public void cleanup() throws Exception {
         TestSetupUtil.cleanup();

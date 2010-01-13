@@ -53,10 +53,6 @@ public class DataLoaderTest extends AbstractDataLoaderTest {
     public DataLoaderTest() throws Exception {
     }
 
-    public DataLoaderTest(String db) {
-        super(db);
-    }
-
     @Test
     public void testInsertExisting() throws Exception {
         String[] values = { getNextId(), "string2", "string not null2", "char2", "char not null2",

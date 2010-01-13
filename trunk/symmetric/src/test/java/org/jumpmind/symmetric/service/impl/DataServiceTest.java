@@ -17,10 +17,6 @@ public class DataServiceTest extends AbstractDatabaseTest {
         super();
     }
 
-    public DataServiceTest(String dbType) {
-        super(dbType);
-    }
-
     @Test
     public void testGetHeartbeatListeners() throws Exception {
         DataService ds = new DataService();

@@ -23,64 +23,64 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Assert;
-import org.junit.internal.runners.ClassRoadie;
-import org.junit.internal.runners.CompositeRunner;
-import org.junit.internal.runners.InitializationError;
-import org.junit.internal.runners.JUnit4ClassRunner;
-import org.junit.internal.runners.MethodValidator;
-import org.junit.internal.runners.TestClass;
-import org.junit.runner.notification.RunNotifier;
+import org.junit.Test;
+import org.junit.runner.Runner;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.Suite;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Merge JUnits Parameterized runner and their Suite runner so we have a nice
  * efficient way to run an entire suite of tests against parameterized 'sets' of
  * data across the entire suite.
  */
-public class ParameterizedSuite extends CompositeRunner {
+public class ParameterizedSuite extends Suite {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public static @interface ParameterMatcher {
         String[] value();
     }
-    
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public static @interface ParameterExcluder {
         String[] value();
     }
 
-    static class TestClassRunnerForParameters extends JUnit4ClassRunner {
+    static class TestClassRunnerForParameters extends BlockJUnit4ClassRunner {
         private final Object[] fParameters;
+        private final Method initMethod;
 
-        private final Constructor<?> fConstructor;
+        TestClassRunnerForParameters(Class<?> type, Object[] parameterList)
+                throws org.junit.runners.model.InitializationError {
+            super(type);
+            fParameters = parameterList;
+            initMethod = getInitMethod();
+            filterParameters();
+        }
 
-        private List<Method> methods;
-
-        TestClassRunnerForParameters(TestClass testClass, Object[] parameters) throws InitializationError {
-            super(testClass.getJavaClass());
-            fParameters = parameters;
-            fConstructor = getOnlyConstructor();
-            filterParameters();          
+        @Override
+        protected void validateConstructor(List<Throwable> errors) {
         }
 
         protected void filterParameters() {
-            for (Iterator<Method> iterator = methods.iterator(); iterator.hasNext();) {
-                Method method = (Method) iterator.next();
+            List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(Test.class);
+            for (Iterator<FrameworkMethod> iterator = methods.iterator(); iterator.hasNext();) {
+                FrameworkMethod method = (FrameworkMethod) iterator.next();
                 ParameterMatcher match = method.getAnnotation(ParameterMatcher.class);
                 if (match != null) {
                     boolean remove = true;
@@ -89,14 +89,14 @@ public class ParameterizedSuite extends CompositeRunner {
                         for (String matchValue : matchValues) {
                             if (p != null && p.toString().equals(matchValue)) {
                                 remove = false;
-                            }                            
+                            }
                         }
                     }
                     if (remove) {
                         iterator.remove();
                     }
                 }
-                
+
                 ParameterExcluder excluder = method.getAnnotation(ParameterExcluder.class);
                 if (excluder != null) {
                     boolean remove = false;
@@ -105,7 +105,7 @@ public class ParameterizedSuite extends CompositeRunner {
                         for (String excludeValue : excludeValues) {
                             if (p != null && p.toString().equals(excludeValue)) {
                                 remove = true;
-                            }                            
+                            }
                         }
                     }
                     if (remove) {
@@ -117,99 +117,71 @@ public class ParameterizedSuite extends CompositeRunner {
 
         @Override
         protected Object createTest() throws Exception {
-            return fConstructor.newInstance(fParameters);
+            Object test = super.createTest();
+            initMethod.invoke(test, fParameters);
+            return test;
         }
 
         @Override
         protected String getName() {
-            return String.format("%s with params %s", getTestClass().getName(), ArrayUtils.toString(fParameters));
-        }
-
-        /**
-         * Get a sneaky handle on methods so we can filter them.
-         */
-        @Override
-        protected List<Method> getTestMethods() {
-            methods = super.getTestMethods();
-            return methods;
+            return String.format("%s with params %s", getTestClass().getName(), ArrayUtils
+                    .toString(fParameters));
         }
 
         @Override
-        protected String testName(final Method method) {
-            return String.format("%s with params %s", method.getName(), ArrayUtils.toString(fParameters));
+        protected String testName(final FrameworkMethod method) {
+            return String.format("%s with params %s", method.getName(), ArrayUtils
+                    .toString(fParameters));
         }
 
-        private Constructor<?> getOnlyConstructor() {
-            Constructor<?> c = null;
-            Constructor<?>[] constructors = getTestClass().getJavaClass().getConstructors();
-            for (Constructor<?> constructor : constructors) {
-                if (constructor.getGenericParameterTypes().length == fParameters.length) {
-                    c = constructor;
-                    break;
+        private Method getInitMethod() {            
+            Method[] methods = ReflectionUtils.getAllDeclaredMethods(getTestClass().getJavaClass());
+            for (Method method : methods) {
+                if (method.getName().equals("init") && method.getGenericParameterTypes().length == fParameters.length) {
+                    return method;
                 }
             }
-            Assert.assertNotNull("Could not find an appropriate constructor for " + getName(), c);
-            return c;
+            Assert.fail("Could not find an appropriate method for " + getName());
+            return null;
         }
 
-        @Override
-        protected void validate() throws InitializationError {
-            // do nothing: validated before.
-        }
-
-        @Override
-        public void run(RunNotifier notifier) {
-            runMethods(notifier);
-        }
     }
 
     public ParameterizedSuite(Class<?> klass) throws Exception {
         this(klass, getAnnotatedClasses(klass));
     }
 
-    // This won't work correctly in the face of concurrency. For that we need to
-    // add parameters to getRunner(), which would be much more complicated.
-    private static Set<Class<?>> parents = new HashSet<Class<?>>();
-    private TestClass fTestClass;
+    private final ArrayList<Runner> runners = new ArrayList<Runner>();
 
     protected ParameterizedSuite(Class<?> klass, Class<?>[] annotatedClasses) throws Exception {
-        super(klass.getName());
+        super(klass, annotatedClasses);
 
-        fTestClass = new TestClass(klass);
-
-        addParent(klass);
         for (final Object each : getParametersList()) {
             if (each instanceof Object[]) {
                 for (Class<?> clazz : annotatedClasses) {
-                    add(new TestClassRunnerForParameters(new TestClass(clazz), (Object[]) each));
+                    try {
+                    runners.add(new TestClassRunnerForParameters(clazz, (Object[]) each));
+                    } catch (Exception ex) {
+                        Assert.fail(ex.getMessage() + " for " + clazz.getName());
+                    }
                 }
             } else {
-                throw new Exception(String.format("%s.%s() must return a Collection of arrays.", fTestClass.getName(),
-                        getParametersMethod().getName()));
+                throw new Exception(String.format("%s.%s() must return a Collection of arrays.",
+                        getTestClass().getName(), getParametersMethod().getName()));
             }
         }
-        removeParent(klass);
-        MethodValidator methodValidator = new MethodValidator(fTestClass);
-        methodValidator.validateStaticMethods();
-        methodValidator.assertValid();
     }
 
-    private Class<?> addParent(Class<?> parent) throws InitializationError {
-        if (!parents.add(parent))
-            throw new InitializationError(String.format(
-                    "class '%s' (possibly indirectly) contains itself as a SuiteClass", parent.getName()));
-        return parent;
-    }
-
-    private void removeParent(Class<?> klass) {
-        parents.remove(klass);
+    @Override
+    protected List<Runner> getChildren() {
+        return runners;
     }
 
     private static Class<?>[] getAnnotatedClasses(Class<?> klass) throws InitializationError {
         SuiteClasses annotation = klass.getAnnotation(SuiteClasses.class);
         if (annotation == null)
-            throw new InitializationError(String.format("class '%s' must have a SuiteClasses annotation", klass
-                    .getName()));
+            throw new InitializationError(String.format(
+                    "class '%s' must have a SuiteClasses annotation", klass.getName()));
         Class<?>[] classes = new Class[annotation.value().length + 1];
         classes[0] = klass;
         for (int i = 1; i <= annotation.value().length; i++) {
@@ -218,33 +190,30 @@ public class ParameterizedSuite extends CompositeRunner {
         return classes;
     }
 
-    protected void validate(MethodValidator methodValidator) {
-        methodValidator.validateStaticMethods();
-        methodValidator.validateInstanceMethods();
-    }
-
-    private Collection<?> getParametersList() throws IllegalAccessException, InvocationTargetException, Exception {
+    private Collection<?> getParametersList() throws IllegalAccessException,
+            InvocationTargetException, Exception {
         return (Collection<?>) getParametersMethod().invoke(null);
     }
 
     private Method getParametersMethod() throws Exception {
-        List<Method> methods = fTestClass.getAnnotatedMethods(Parameters.class);
-        for (Method each : methods) {
-            int modifiers = each.getModifiers();
+        List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(Parameters.class);
+        for (FrameworkMethod each : methods) {
+            int modifiers = each.getMethod().getModifiers();
             if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers))
-                return each;
+                return each.getMethod();
         }
 
         throw new Exception("No public static parameters method on class " + getName());
     }
 
-    @Override
-    public void run(final RunNotifier notifier) {
-        new ClassRoadie(notifier, fTestClass, getDescription(), new Runnable() {
-            public void run() {
-                runChildren(notifier);
-            }
-        }).runProtected();
-    }
+    // @Override
+    // public void run(final RunNotifier notifier) {
+    // new ClassRoadie(notifier, getTestClass(), getDescription(), new
+    // Runnable() {
+    // public void run() {
+    // runChildren(notifier);
+    // }
+    // }).runProtected();
+    // }
 
 }

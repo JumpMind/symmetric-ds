@@ -53,22 +53,28 @@ import org.junit.runners.Suite.SuiteClasses;
         OutgoingBatchServiceTest.class, ParameterServiceTest.class, PurgeServiceTest.class,
         RegistrationServiceTest.class, StatisticServiceTest.class, XmlPublisherFilterTest.class,
         AdditiveDataLoaderFilterTest.class, DataServiceTest.class, CleanupTest.class })
-public class DatabaseTestSuite extends AbstractDatabaseTest {
+public class DatabaseTestSuite {
 
+    String database;
+    
     public static final String DEFAULT_TEST_PREFIX = "test";
 
+    public DatabaseTestSuite() throws Exception {
+    }
+    
+    public void init(String database) {
+        this.database = database;
+    }
+    
     @Parameters
     public static Collection<String[]> lookupDatabases() {
         return TestSetupUtil.lookupDatabases(DEFAULT_TEST_PREFIX);
     }
 
-    public DatabaseTestSuite(String dbName) {
-        super(dbName);
-    }
-
     @Test
     public void setup() throws Exception {
-        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, getDatabase());
+        AbstractDatabaseTest.standalone = false;
+        TestSetupUtil.setup(DEFAULT_TEST_PREFIX, TestConstants.TEST_CONTINUOUS_SETUP_SCRIPT, null, database);
     }
 
 }

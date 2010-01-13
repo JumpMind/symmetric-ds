@@ -44,10 +44,6 @@ public class AdditiveDataLoaderFilterTest extends AbstractDatabaseTest {
         super();
     }
 
-    public AdditiveDataLoaderFilterTest(String dbName) {
-        super(dbName);
-    }
-
     @Before
     public void setUp() {
 

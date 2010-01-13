@@ -46,10 +46,6 @@ public class NodeConcurrencyFilterTest extends AbstractDatabaseTest {
         super();
     }
 
-    public NodeConcurrencyFilterTest(String dbName) {
-        super(dbName);
-    }
-
     @Test(timeout = 60000)
     public void testPullConcurrency() throws Exception {
         IParameterService parameterService = getParameterService();
