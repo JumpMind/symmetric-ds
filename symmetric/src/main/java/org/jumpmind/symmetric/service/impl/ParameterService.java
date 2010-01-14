@@ -245,7 +245,14 @@ public class ParameterService extends AbstractService implements IParameterServi
     }
 
     public String getSyncUrl() {
-        return getWithHostName(ParameterConstants.SYNC_URL);
+        String value = getWithHostName(ParameterConstants.SYNC_URL);
+        if (StringUtils.isBlank(value)) {
+            value = getWithHostName("my.url");
+            if (!StringUtils.isBlank(value)) {
+                log.warn("DeprecatedPropertyMsg", "my.url", ParameterConstants.SYNC_URL);
+            }
+        }
+        return value;
     }
     
     protected String getWithHostName(String paramKey) {
