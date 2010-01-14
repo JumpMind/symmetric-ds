@@ -337,7 +337,7 @@ registration.url=http://localhost:8080/sync]]></programlisting>
             <step>
                 <para> Verify that the data change was captured:</para>
                 <para>
-                    <command> select * from sym_data where table_name like 'item%' or table_name like 'sale%';</command>
+                    <command> select * from sym_data order by data_id desc;</command>
                 </para>
                 <para> Each row represents a row of data that was changed. The event_type is "I" for insert, "U" for update", or
                     "D" for delete. For insert and update, the captured data values are listed in row_data. For update and delete,
