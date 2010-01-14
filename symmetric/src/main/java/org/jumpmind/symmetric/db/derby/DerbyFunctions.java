@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.derby.iapi.sql.conn.LanguageConnectionContext;
 import org.apache.derby.impl.jdbc.EmbedConnection;
 
@@ -86,6 +87,13 @@ public class DerbyFunctions {
             ps.close();
             conn.close();
         }
+    }
+
+    public static String escape(String str) {
+        if (str != null) {
+            return "\"" + StringUtils.replace(StringUtils.replace(str, "\\", "\\\\"), "\"", "\\\"") + "\"";
+        }
+        return "";
     }
 
     public static String blobToString(String columnName, String tableName, String whereClause) throws SQLException {
