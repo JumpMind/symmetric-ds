@@ -352,7 +352,7 @@ values('corp-2-store-status','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', c
 ]]></programlisting>
          </para>            
         <para>
-            Consider a table that needs to be routed to only nodes in the target group whose store_id column matches the external id of a node.  The following 
+            Consider a table that needs to be routed to only nodes in the target group whose STORE_ID column matches the external id of a node.  The following 
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
@@ -378,7 +378,7 @@ values('corp-2-store-redirect','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NO
          </para>
          <para>
             More than one column may be configured in a router_expression.  When more than one column is configured, all matches are added to the list of nodes to route to.  The following is
-            an example where the store_id column may contain the store_id to route to or the constant of ALL which indicates that all nodes should receive the update.       
+            an example where the STORE_ID column may contain the STORE_ID to route to or the constant of ALL which indicates that all nodes should receive the update.       
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
@@ -394,7 +394,7 @@ values('corp-2-store-multiple-matches','corp', 'store', 'column',
         <para>
             Sometimes routing decisions need to be made based on data that is not in the current row being synchronized.  Consider an 
             example where an Order table and a OrderLineItem table need to be routed to a specific store.  The Order table has a column 
-            named order_id and store_id.  A store node has an external_id that is equal to the store_id on the Order table.  OrderLineItem, 
+            named order_id and STORE_ID.  A store node has an external_id that is equal to the STORE_ID on the Order table.  OrderLineItem, 
             however, only has a foreign key to its Order of order_id.  To route OrderLineItems to the same nodes that the Order will be routed
             to, we need to reference the master Order record.
         </para>
@@ -414,28 +414,28 @@ values('corp-2-store-multiple-matches','corp', 'store', 'column',
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_node c where c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and c.external_id in (select store_id from order where order_id=:ORDER_ID)', current_timestamp, current_timestamp);
+values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_node c where c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', current_timestamp, current_timestamp);
 ]]></programlisting>
          </para>            
         <para>
-            When using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the external_data column of the <link linkend="data">data</link> table at the time a trigger 
-            fires.  The external_data can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
+            When using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the EXTERNAL_DATA column of the <link linkend="data">data</link> table at the time a trigger 
+            fires.  The EXTERNAL_DATA can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
             will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
             the extra external_select inline with application database updates.  
         </para>            
         <para>
-            In the following example, the store_id is captured from the Order table in the external_data column.  EXTERNAL_DATA is always available for routing as a virtual column in a 'column'
+            In the following example, the STORE_ID is captured from the Order table in the EXTERNAL_DATA column.  EXTERNAL_DATA is always available for routing as a virtual column in a 'column'
             router.  The router is configured to route based on the captured EXTERNAL_DATA to all nodes whose external_id matches.  Note that other supported node attribute token can also be 
             used for routing.      
             <programlisting>
 <![CDATA[
 insert into SYM_TRIGGER 
 (trigger_id,source_table_name,channel_id,external_select,last_update_time,create_time)
-values('orderlineitem', 'orderlineitem', 'orderlineitem','select store_id from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',current_timestamp, current_timestamp);
+values('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',current_timestamp, current_timestamp);
 
 insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
+values('corp-2-store-ext','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -443,6 +443,25 @@ values('corp-2-store','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', c
     
     <section id="basic-route-scripted">
         <title>Scripted Router</title>
+        <para>
+            When more flexibility is needed in the logic to choose the nodes to route to, then the a Bean Shell router may be used.  Bean Shell is a Java-like scripting language.  Documentation 
+            for the Bean Shell scripting language can be found at <ulink url="http://www.beanshell.org/">http://www.beanshell.org</ulink>. 
+        </para>
+        <para>
+            The router_type for a Bean Shell router is 'bsh'.  The router_expression is a valid Bean Shell script that adds to the 'targetNodes' collection which is bound to the script 
+            evaluation.  The script should add the node_ids that should be routed to 'targetNodes' as Strings.  Also bound to the script evaluation is a list of 'nodes'.  The list of 'nodes' is 
+            a list of eligible Node objects.  The current data column values and the old data column values are bound to the script evaluation as Java object representations of the column data. 
+            The columns are bound using the uppercase names of the columns.  Old values are bound to uppercase representations that are prefixed with 'OLD_'. 
+        </para>        
+        <para>
+            In the following example, the node_id is a combination of STORE_ID and WORKSTATION_NUMBER, both of which are columns on the table that is being routed.
+            <programlisting>
+<![CDATA[
+insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
+values('corp-2-store-bsh','corp', 'store', 'bsh', 'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', current_timestamp, current_timestamp);
+]]></programlisting>
+         </para>
     </section>  
 
 </chapter>
