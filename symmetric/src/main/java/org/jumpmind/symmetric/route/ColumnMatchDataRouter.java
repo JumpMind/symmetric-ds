@@ -83,7 +83,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                 .getRouterExpression(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData);
         for (Expression e : expressions) {
-            String column = e.tokens[0];
+            String column = e.tokens[0].trim();
             String value = e.tokens[1];
             if (value.equalsIgnoreCase(":NODE_ID")) {
                 for (Node node : nodes) {
@@ -153,23 +153,25 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                     for (String t : expTokens) {
                         if (!StringUtils.isBlank(t)) {
                             String[] tokens = null;
-                            boolean equals = !routerExpression.contains("!=");
+                            boolean equals = !t.contains("!=");
                             if (!equals) {
-                                tokens = routerExpression.split("!=");
+                                tokens = t.split("!=");
                             } else {
-                                tokens = routerExpression.split("=");
+                                tokens = t.split("=");
                             }
                             if (tokens.length == 2) {
                                 expressions.add(new Expression(equals, tokens));
                             } else {
-                                log.warn("RouterIllegalColumnMatchExpression", routerExpression);
+                                log.warn("RouterIllegalColumnMatchExpression", t, routerExpression);
                             }
 
                         }
                     }
                 }
+            } else {
+                log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
             }
-        }
+        } 
         return expressions;
     }
 
