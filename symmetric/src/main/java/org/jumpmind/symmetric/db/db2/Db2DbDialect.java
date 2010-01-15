@@ -52,7 +52,7 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     private URL getSqlScriptUrl() {
-        return getClass().getResource("/dialects/db2.sql");
+        return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
     }
 
     @Override
