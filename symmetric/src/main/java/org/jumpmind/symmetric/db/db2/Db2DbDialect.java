@@ -58,8 +58,8 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
         schema = schema == null ? (getDefaultSchema() == null ? null : getDefaultSchema()) : schema;
-        return jdbcTemplate.queryForInt("select count(*) from syscat.triggers where trigname = ?",
-                new Object[] { triggerName.toUpperCase() }) > 0;
+        return jdbcTemplate.queryForInt("select count(*) from syscat.triggers where trigname = ? and trigschema = ?",
+                new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
     }
 
     @Override
