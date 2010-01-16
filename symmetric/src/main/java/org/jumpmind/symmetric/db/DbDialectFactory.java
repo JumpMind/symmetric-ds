@@ -77,8 +77,6 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
-        
-        
 
         initPlatforms();
 
