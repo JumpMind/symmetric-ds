@@ -77,8 +77,9 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         if (productName.startsWith("DB2")) {
             productString = "DB2v8";
         }
+        
+        
 
-        String currentDbProductVersion = getDatabaseProductVersion();
         initPlatforms();
 
         Platform pf = PlatformFactory.createNewPlatformInstance(productString);
@@ -109,6 +110,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
+            String currentDbProductVersion = getDatabaseProductVersion();
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
