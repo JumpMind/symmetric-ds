@@ -158,7 +158,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                 jobManager.startJobs();
                 log
                         .info("SymmetricDSStarted", parameterService.getExternalId(), Version.version(), dbDialect
-                                .getName());
+                                .getName(), dbDialect.getVersion());
                 started = true;
             } finally {
                 starting = false;
