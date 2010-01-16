@@ -83,9 +83,6 @@ public class FirebirdModelReader extends JdbcModelReader
     protected Collection readColumns(DatabaseMetaDataWrapper metaData, String tableName) throws SQLException
     {
         ResultSet columnData = null;
- if (tableName.equals("SYM_DATA")) {
-     System.out.println("Test");
- }
         try
         {
             List columns = new ArrayList();
