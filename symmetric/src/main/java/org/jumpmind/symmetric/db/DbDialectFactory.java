@@ -21,15 +21,11 @@
 package org.jumpmind.symmetric.db;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.apache.ddlutils.Platform;
-import org.apache.ddlutils.PlatformFactory;
 import org.apache.ddlutils.platform.db2.Db2Platform;
 import org.apache.ddlutils.platform.derby.DerbyPlatform;
-import org.apache.ddlutils.platform.firebird.FirebirdPlatform;
 import org.apache.ddlutils.platform.hsqldb.HsqlDbPlatform;
 import org.apache.ddlutils.platform.mssql.MSSqlPlatform;
 import org.apache.ddlutils.platform.mysql.MySqlPlatform;
@@ -39,7 +35,9 @@ import org.apache.ddlutils.platform.oracle.Oracle9Platform;
 import org.apache.ddlutils.platform.postgresql.PostgreSqlPlatform;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
-import org.jumpmind.symmetric.db.h2.H2Platform;
+import org.jumpmind.symmetric.ddlutils.PlatformFactory;
+import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
+import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.FactoryBean;
@@ -59,33 +57,11 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
     private BeanFactory beanFactory;
 
-    private Map<String, Class<Platform>> customPlatforms;
-
     public IDbDialect getObject() throws Exception {
 
         waitForAvailableDatabase();
 
-        String productName = getDbProductName();
-        int majorVersion = getDbMajorVersion();
-
-        // Try to use latest version of platform, then fallback on default
-        // platform
-        String productString = productName;
-        if (majorVersion > 0) {
-            productString += majorVersion;
-        }
-        if (productName.startsWith("DB2")) {
-            productString = "DB2v8";
-        }
-
-        initPlatforms();
-
-        Platform pf = PlatformFactory.createNewPlatformInstance(productString);
-        if (pf == null) {
-            pf = PlatformFactory.createNewPlatformInstance(jdbcTemplate.getDataSource());
-        } else {
-            pf.setDataSource(jdbcTemplate.getDataSource());
-        }
+        Platform pf = PlatformFactory.getPlatform(jdbcTemplate.getDataSource());
 
         AbstractDbDialect dialect = null;
 
@@ -108,7 +84,7 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         } else if (pf instanceof HsqlDbPlatform) {
             dialect = (AbstractDbDialect) beanFactory.getBean("hsqldbDialect");
         } else if (pf instanceof Db2Platform) {
-            String currentDbProductVersion = getDatabaseProductVersion();
+            String currentDbProductVersion = PlatformFactory.getDatabaseProductVersion(jdbcTemplate.getDataSource());
             if (currentDbProductVersion.equals(db2zSeriesProductVersion)) {
                 dialect = (AbstractDbDialect) beanFactory.getBean("db2zSeriesDialect");
             } else {
@@ -123,17 +99,6 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         dialect.init(pf);
         dialect.setTransactionTemplate((TransactionTemplate) beanFactory.getBean("currentTransactionTemplate"));
         return dialect;
-    }
-
-    private void initPlatforms() throws IllegalStateException {
-        if (customPlatforms != null) {
-            for (Map.Entry<String, Class<Platform>> entry : customPlatforms.entrySet()) {
-                if (!Platform.class.isAssignableFrom(entry.getValue())) {
-                    throw new IllegalStateException("Platform is not valid:" + entry.getValue());
-                }
-                PlatformFactory.registerPlatform(entry.getKey(), entry.getValue());
-            }
-        }
     }
 
     private void waitForAvailableDatabase() {
@@ -156,37 +121,6 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
         }
     }
 
-    private int getDbMajorVersion() {
-        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<Integer>() {
-            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
-                DatabaseMetaData metaData = c.getMetaData();
-                try {
-                    return metaData.getDatabaseMajorVersion();
-                } catch (UnsupportedOperationException e) {
-                    return 0;
-                }
-            }
-        });
-    }
-
-    private String getDatabaseProductVersion() {
-        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<String>() {
-            public String doInConnection(Connection c) throws SQLException, DataAccessException {
-                DatabaseMetaData metaData = c.getMetaData();
-                return metaData.getDatabaseProductVersion();
-            }
-        });
-    }
-
-    private String getDbProductName() {
-        return new JdbcTemplate(jdbcTemplate.getDataSource()).execute(new ConnectionCallback<String>() {
-            public String doInConnection(Connection c) throws SQLException, DataAccessException {
-                DatabaseMetaData metaData = c.getMetaData();
-                return metaData.getDatabaseProductName();
-            }
-        });
-    }
-
     public Class<IDbDialect> getObjectType() {
         return IDbDialect.class;
     }
@@ -201,10 +135,6 @@ public class DbDialectFactory implements FactoryBean<IDbDialect>, BeanFactoryAwa
 
     public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-    }
-
-    public void setCustomPlatforms(Map<String, Class<Platform>> customPlatforms) {
-        this.customPlatforms = customPlatforms;
     }
 
     /**
