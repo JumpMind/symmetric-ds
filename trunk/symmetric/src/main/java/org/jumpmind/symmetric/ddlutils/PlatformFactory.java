@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.ddlutils.Platform;
+import org.jumpmind.symmetric.ddlutils.db2.Db2Platform;
 import org.jumpmind.symmetric.ddlutils.firebird.FirebirdPlatform;
 import org.jumpmind.symmetric.ddlutils.h2.H2Platform;
 import org.springframework.dao.DataAccessException;
@@ -79,6 +80,8 @@ public class PlatformFactory {
         if (!initialized) {
             org.apache.ddlutils.PlatformFactory.registerPlatform(FirebirdPlatform.DATABASENAME,
                     FirebirdPlatform.class);
+            org.apache.ddlutils.PlatformFactory.registerPlatform(Db2Platform.DATABASENAME,
+                    Db2Platform.class);            
             for (String name : H2Platform.DATABASENAMES) {
                 org.apache.ddlutils.PlatformFactory.registerPlatform(name,
                         H2Platform.class);                
