@@ -50,6 +50,22 @@ public class Db2DbDialect extends AbstractDbDialect implements IDbDialect {
             }
         }
     }
+    
+    protected boolean createTablesIfNecessary() {
+        boolean tablesCreated = super.createTablesIfNecessary();
+        if (tablesCreated) {
+             long triggerHistId = jdbcTemplate.queryForLong("select max(trigger_hist_id) from " + tablePrefix + "_trigger_hist")+1;
+             jdbcTemplate.update("alter table " + tablePrefix + "_trigger_hist alter column trigger_hist_id restart with " + triggerHistId);
+             log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_trigger_hist");
+             long outgoingBatchId = jdbcTemplate.queryForLong("select max(batch_id) from " + tablePrefix + "_outgoing_batch")+1;
+             jdbcTemplate.update("alter table " + tablePrefix + "_outgoing_batch alter column batch_id restart with " + outgoingBatchId);
+             log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_outgoing_batch");
+             long dataId = jdbcTemplate.queryForLong("select max(data_id) from " + tablePrefix + "_data")+1;
+             jdbcTemplate.update("alter table " + tablePrefix + "_data alter column data_id restart with " + dataId);
+             log.info("DB2ResettingAutoIncrementColumns", tablePrefix + "_data");
+        }
+        return tablesCreated;
+    }
 
     private URL getSqlScriptUrl() {
         return getClass().getResource("/org/jumpmind/symmetric/db/db2.sql");
