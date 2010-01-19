@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,16 +168,22 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     public Map<String, String> getRegistrationRedirectMap() {
         SimpleJdbcTemplate template = new SimpleJdbcTemplate(this.jdbcTemplate);
-        return template.queryForObject(getSql("getRegistrationRedirectSql"),
-                new RowMapper<Map<String, String>>() {
-                    public Map<String, String> mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        Map<String, String> results = new HashMap<String, String>();
-                        do {
-                            results.put(rs.getString(1), rs.getString(2));
-                        } while (rs.next());
-                        return results;
-                    }
-                });
+        try {
+            return template.queryForObject(getSql("getRegistrationRedirectSql"),
+                    new RowMapper<Map<String, String>>() {
+                        public Map<String, String> mapRow(ResultSet rs, int rowNum)
+                                throws SQLException {
+                            Map<String, String> results = new HashMap<String, String>();
+                            do {
+                                results.put(rs.getString(1), rs.getString(2));
+                            } while (rs.next());
+                            return results;
+                        }
+                    });
+        } catch (EmptyResultDataAccessException ex) {
+            log.debug("RegistrationRedirectsMissing");
+            return new HashMap<String, String>(0);
+        }
 
     }
 
