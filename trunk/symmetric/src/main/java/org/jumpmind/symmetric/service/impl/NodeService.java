@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
@@ -36,6 +37,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.ext.IOfflineNodeHandler;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -52,7 +54,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class NodeService extends AbstractService implements INodeService {
-
+    
     private Node cachedNodeIdentity;
 
     private Map<String, NodeSecurity> securityCache;
@@ -64,6 +66,10 @@ public class NodeService extends AbstractService implements INodeService {
     private INodePasswordFilter nodePasswordFilter;
     
     private NodeHost nodeHostForCurrentNode = null;
+    
+    private long offlineNodeDetectionMinutes;
+    
+    private IOfflineNodeHandler offlineNodeHandler;
 
     public String findSymmetricVersion() {
         try {
@@ -439,5 +445,35 @@ public class NodeService extends AbstractService implements INodeService {
             s = nodePasswordFilter.onNodeSecurityRender(password);
         }
         return s;
+    }
+    
+    public void checkForOfflineNodes() {
+        if (offlineNodeHandler != null) {
+            
+            List<Node> list = findOfflineNodes();
+            if (list.size() > 0) {
+                offlineNodeHandler.handleOfflineNodes(list);
+            }
+        }
+    }
+    
+    public List<Node> findOfflineNodes() {
+        Timestamp cutOffTime =  new Timestamp(new Date().getTime() - ((getOfflineNodeDetectionMinutes() * 1000)*60));
+        
+        List<Node> list = jdbcTemplate.query(getSql("findOfflineNodesSql"), new Object[] { cutOffTime, findIdentity().getNodeId() }, new NodeRowMapper());
+        
+        return list;
+    }
+    
+    public long getOfflineNodeDetectionMinutes() {
+        return offlineNodeDetectionMinutes;
+    }
+    
+    public void setOfflineNodeDetectionMinutes(long offlineNodeDetectionMinutes) {
+        this.offlineNodeDetectionMinutes = offlineNodeDetectionMinutes;
+    }
+
+    public void setOfflineNodeHandler(IOfflineNodeHandler offlineNodeHandler) {
+        this.offlineNodeHandler = offlineNodeHandler;
     }
 }

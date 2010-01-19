@@ -89,6 +89,11 @@ public class JobManager implements IJobManager, BeanFactoryAware {
                 parameterService.getString(ParameterConstants.START_STATISTIC_FLUSH_JOB))) {
             startJob(Constants.STATISTIC_FLUSH_JOB_TIMER);
         }
+        
+        if (Boolean.TRUE.toString().equalsIgnoreCase(
+                parameterService.getString(ParameterConstants.START_WATCHDOG_JOB))) {
+            startJob(Constants.WATCHDOG_JOB_TIMER);
+        }
 
     }
 

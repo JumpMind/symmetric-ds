@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.ext.IOfflineNodeHandler;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -160,5 +161,15 @@ public class MockNodeService implements INodeService {
     }
 
     public void setNodePasswordFilter(INodePasswordFilter nodePasswordFilter) {
+    }
+
+    public void checkForOfflineNodes() {        
+    }
+
+    public List<Node> findOfflineNodes() {
+        return null;
+    }
+
+    public void setOfflineNodeHandler(IOfflineNodeHandler offlineNodeHandler) {        
     }
 }

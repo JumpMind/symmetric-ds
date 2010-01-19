@@ -155,6 +155,8 @@ final public class Constants {
     public static final String SYNC_TRIGGERS_JOB_TIMER = "syncTriggersJobTimer";
 
     public static final String STATISTIC_FLUSH_JOB_TIMER = "statisticFlushJobTimer";
+    
+    public static final String WATCHDOG_JOB_TIMER = "watchdogJobTimer";
 
     public static final String DATA_EXTRACTOR = "dataExtractor";
 

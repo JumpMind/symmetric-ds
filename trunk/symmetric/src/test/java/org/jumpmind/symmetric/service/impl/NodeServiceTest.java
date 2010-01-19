@@ -209,6 +209,15 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         }
     }
     
+    @Test
+    public void testCheckForOfflineNodes() {
+        List<Node> offlineNodeList = nodeService.findOfflineNodes();
+        Assert.assertEquals("Number of offline nodes before processing, ", 2, offlineNodeList.size());
+        nodeService.checkForOfflineNodes();
+        offlineNodeList = nodeService.findOfflineNodes();
+        Assert.assertEquals("Number of offline nodes after processing, ", 0, offlineNodeList.size());
+    }
+    
     @After
     public void reset(){
     	nodeService.setNodePasswordFilter(null);
