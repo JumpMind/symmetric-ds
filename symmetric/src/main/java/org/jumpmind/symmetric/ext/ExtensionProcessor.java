@@ -207,6 +207,10 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
                 service.addOfflineListener((IOfflineListener)ext);
             }
         }
+        
+        if (ext instanceof IOfflineNodeHandler) {
+            nodeService.setOfflineNodeHandler((IOfflineNodeHandler)ext);
+        }
     }
 
     public void setDataLoaderService(IDataLoaderService dataLoaderService) {

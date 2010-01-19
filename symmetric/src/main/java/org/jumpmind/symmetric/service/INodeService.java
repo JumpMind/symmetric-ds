@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
+import org.jumpmind.symmetric.ext.IOfflineNodeHandler;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -117,4 +118,24 @@ public interface INodeService {
      * @return {@link NodeStatus}
      */
     public NodeStatus getNodeStatus();
+    
+    /**
+     * Check to see if any nodes are offline and
+     * process any nodes found using the configured IOfflineNodeHandler.
+     */
+    public void checkForOfflineNodes();
+    
+    /**
+     * Find offline nodes.
+     * 
+     * @return list of offline nodes
+     */
+    public List<Node> findOfflineNodes();
+    
+    /**
+     * Set the handler for offline nodes.
+     * 
+     * @param offlineNodeHandler
+     */
+    public void setOfflineNodeHandler(IOfflineNodeHandler offlineNodeHandler);
 }

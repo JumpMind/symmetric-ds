@@ -154,6 +154,7 @@
         <property name="nodeIdGenerator">
             <bean class="org.jumpmind.symmetric.util.DefaultNodeIdGenerator" />
         </property>
+        <property name="offlineNodeDetectionMinutes" value="$[sym.offline.node.detection.period.minutes]" />
     </bean>
 
     <bean id="registrationService" class="org.jumpmind.symmetric.service.impl.RegistrationService" scope="singleton" parent="abstractService">

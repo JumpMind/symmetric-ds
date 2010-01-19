@@ -32,6 +32,7 @@ final public class ParameterConstants {
     public final static String START_HEARTBEAT_JOB = "start.heartbeat.job";
     public final static String START_SYNCTRIGGERS_JOB = "start.synctriggers.job";
     public final static String START_STATISTIC_FLUSH_JOB = "start.stat.flush.job";
+    public final static String START_WATCHDOG_JOB = "start.watchdog.job";
 
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
     public final static String JOB_SYNCTRIGGERS_AFTER_MIDNIGHT_MIN = "job.synctriggers.aftermidnight.minutes";
@@ -122,4 +123,7 @@ final public class ParameterConstants {
     public final static String IP_FILTERS = "ip.filters";
     
     public final static String WEB_BATCH_SERVLET_ENABLE = "web.batch.servlet.enable";
+    
+    public final static String OFFLINE_NODE_DETECTION_PERIOD_MINUTES = "offline.node.detection.period.minutes";
+    public final static String HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC ="heartbeat.sync.on.push.period.sec";
 }

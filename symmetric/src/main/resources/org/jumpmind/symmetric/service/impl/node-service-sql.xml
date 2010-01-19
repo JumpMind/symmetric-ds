@@ -152,7 +152,11 @@
         last_restart_time=? where node_id=? and host_name=?
       </value>
     </entry>      
-          
+    <entry key="findOfflineNodesSql">
+      <value>
+        select * from $[sym.sync.table.prefix]_node where sync_enabled = 1 and heartbeat_time &lt; ? and node_id != ?
+      </value>
+    </entry>        
   </util:map>
 
 </beans>
