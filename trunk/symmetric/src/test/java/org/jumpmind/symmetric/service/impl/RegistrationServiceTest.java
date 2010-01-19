@@ -22,6 +22,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -63,17 +64,20 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         // Existing domain name and ID that is not open to register
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("00001");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be allowed to register");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be allowed to register");
 
         // Existing domain name but wrong ID
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId("wrongId");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be allowed to register");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be allowed to register");
 
         // Wrong domain name and wrong ID
         node.setNodeGroupId("wrongDomain");
         node.setExternalId("wrongId");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be allowed to register");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be allowed to register");
     }
 
     @Test
@@ -86,13 +90,15 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be allowed to register");
 
         registrationService.markNodeAsRegistered("00002");
-        
+
         node = nodeService.findNode("00002");
         assertEquals(node.getNodeId(), "00002", "Wrong nodeId");
-        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
+        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP,
+                "Wrong domainName");
         assertEquals(node.getExternalId(), "00002", "Wrong domainId");
         assertEquals(node.getSyncUrl().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -105,9 +111,31 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         assertEquals(security.isRegistrationEnabled(), false, "Wrong isRegistrationEnabled");
         assertNotSame(security.getRegistrationTime(), null, "Wrong registrationTime");
     }
-    
+
     @Test
-    public void testRegisterWithBlankExternalId() throws Exception {        
+    public void testGetRegistrationRedirectMap() {
+        Map<String, String> redirectMap = registrationService.getRegistrationRedirectMap();
+        Assert.assertEquals(0, redirectMap.size());
+
+        getJdbcTemplate()
+                .update(
+                        "insert into sym_registration_redirect (registrant_external_id,registration_node_id) values ('test', '00011')");
+        getJdbcTemplate()
+                .update(
+                        "insert into sym_registration_redirect (registrant_external_id,registration_node_id) values ('00010', '00011')");
+        getJdbcTemplate()
+                .update(
+                        "insert into sym_registration_redirect (registrant_external_id,registration_node_id) values ('test2', 'test3')");
+        redirectMap = registrationService.getRegistrationRedirectMap();
+
+        Assert.assertEquals(3, redirectMap.size());
+        Assert.assertEquals("00011", redirectMap.get("test"));
+        Assert.assertEquals("00011", redirectMap.get("00010"));
+        Assert.assertEquals("test3", redirectMap.get("test2"));
+    }
+
+    @Test
+    public void testRegisterWithBlankExternalId() throws Exception {
         Node node = new Node();
         node.setNodeGroupId(TestConstants.TEST_CLIENT_NODE_GROUP);
         node.setExternalId(null);
@@ -116,11 +144,13 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertFalse(registrationService.registerNode(node, out, true), "Node should not be allowed to register");
+        assertFalse(registrationService.registerNode(node, out, true),
+                "Node should not be allowed to register");
         registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "0");
         node.setExternalId(null);
         node.setNodeId(null);
-        assertTrue(registrationService.registerNode(node, out, true), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, true),
+                "Node should be allowed to register");
     }
 
     @Test
@@ -142,13 +172,15 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be allowed to register");
 
         registrationService.markNodeAsRegistered("00008");
-        
+
         node = nodeService.findNode("00008");
         assertEquals(node.getNodeId(), "00008", "Wrong nodeId");
-        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
+        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP,
+                "Wrong domainName");
         assertEquals(node.getExternalId(), "00008", "Wrong domainId");
         assertEquals(node.getSyncUrl().toString(), "http://localhost:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -171,7 +203,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be allowed to register");
     }
 
     @Test
@@ -186,7 +219,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("MySQL");
         node.setDatabaseVersion("5");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be allowed to register");
         out.close();
         String response = out.toString();
         assertTrue(response.indexOf("batch,") != -1, "Expected batch");
@@ -214,13 +248,15 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setDatabaseType("hqsql");
         node.setDatabaseVersion("1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be allowed to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be allowed to register");
 
         registrationService.markNodeAsRegistered("00003");
-        
+
         node = nodeService.findNode("00003");
         assertEquals(node.getNodeId(), "00003", "Wrong nodeId");
-        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
+        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP,
+                "Wrong domainName");
         assertEquals(node.getExternalId(), "00003", "Wrong domainId");
         assertEquals(node.getSyncUrl().toString(), "http://0:8080/sync", "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), "1", "Wrong schemaVersion");
@@ -266,7 +302,8 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
 
         Node node = nodeService.findNode("00005");
         assertEquals(node.getNodeId(), "00005", "Wrong nodeId");
-        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP, "Wrong domainName");
+        assertEquals(node.getNodeGroupId(), TestConstants.TEST_CLIENT_NODE_GROUP,
+                "Wrong domainName");
         assertEquals(node.getExternalId(), "00005", "Wrong domainId");
         assertEquals(node.getSyncUrl(), null, "Wrong syncUrl");
         assertEquals(node.getSchemaVersion(), null, "Wrong schemaVersion");
@@ -288,9 +325,11 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setExternalId("00006");
         node.setSyncUrl("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be able to register");
         registrationService.markNodeAsRegistered("00006");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be able to register");
     }
 
     @Test
@@ -302,14 +341,17 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setExternalId("00007");
         node.setSyncUrl("http://0");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be able to register");
         registrationService.markNodeAsRegistered("00007");
         node.setNodeId(null);
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be able to register");
         registrationService.markNodeAsRegistered("00007-0");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be able to register");
     }
-    
+
     @Test
     public void testOpenRegistrationOfOlderVersionClient() throws Exception {
         registrationService.openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, "00012");
@@ -319,12 +361,15 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         node.setSymmetricVersion("1.5.0");
         node.setSyncUrl("http://127.0.0.1");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertTrue(registrationService.registerNode(node, out, false), "Node should be able to register");
-        // older versions of software to not ack.  let's simulate this by not marking the node as registered
-        //registrationService.markNodeAsRegistered("00006");
-        assertFalse(registrationService.registerNode(node, out, false), "Node should NOT be able to register");
+        assertTrue(registrationService.registerNode(node, out, false),
+                "Node should be able to register");
+        // older versions of software to not ack. let's simulate this by not
+        // marking the node as registered
+        // registrationService.markNodeAsRegistered("00006");
+        assertFalse(registrationService.registerNode(node, out, false),
+                "Node should NOT be able to register");
     }
-    
+
     @Test
     public void testGetRedirectionUrlFor() throws Exception {
         final String EXPECTED_REDIRECT_URL = "http://snoopdog.com";
@@ -332,7 +377,7 @@ public class RegistrationServiceTest extends AbstractDatabaseTest {
         String url = registrationService.getRedirectionUrlFor("4444");
         Assert.assertEquals(EXPECTED_REDIRECT_URL, url);
         url = registrationService.getRedirectionUrlFor("44445");
-        Assert.assertNull(url);        
+        Assert.assertNull(url);
     }
 
 }

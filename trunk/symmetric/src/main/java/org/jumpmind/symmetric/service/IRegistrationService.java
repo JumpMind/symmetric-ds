@@ -76,6 +76,9 @@ public interface IRegistrationService {
      */
     public void saveRegistrationRedirect(String externalIdToRedirect, String nodeIdToRedirectTo);
     
+    /**
+     * @return a map of nodes to redirect to that is keyed by a list of external_ids that should be redirected.
+     */
     public Map<String,String> getRegistrationRedirectMap();
 
 }
