@@ -349,10 +349,15 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         if (upgradeService.isUpgradeNecessary()) {
             if (parameterService.is(ParameterConstants.AUTO_UPGRADE)) {
                 try {
-                    upgradeService.upgrade();
-                    // rerun the auto configuration to make sure things are
-                    // kosher after the upgrade
-                    configurationService.autoConfigDatabase(force);
+                    if (upgradeService.isUpgradePossible()) {
+                        upgradeService.upgrade();
+                        // rerun the auto configuration to make sure things are
+                        // kosher after the upgrade
+                        configurationService.autoConfigDatabase(force);
+                    } else {
+                        throw new SymmetricException("SymmetricDSManualUpgradeNeeded", nodeService
+                                .findSymmetricVersion(), Version.version());
+                    }
                 } catch (RuntimeException ex) {
                     log.fatal("SymmetricDSUpgradeFailed", ex);
                     throw ex;

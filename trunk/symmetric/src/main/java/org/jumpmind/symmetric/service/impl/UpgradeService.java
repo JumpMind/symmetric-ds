@@ -30,7 +30,6 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IUpgradeService;
 import org.jumpmind.symmetric.upgrade.IUpgradeTask;
 
-// TODO Upgrade for 2.0 or standalone program?
 public class UpgradeService extends AbstractService implements IUpgradeService {
 
     private INodeService nodeService;
@@ -46,6 +45,16 @@ public class UpgradeService extends AbstractService implements IUpgradeService {
             }
         }
         return isUpgradeNecessary;
+    }
+    
+    public boolean isUpgradePossible() {
+        String symmetricVersion = nodeService.findSymmetricVersion();        
+        if (!StringUtils.isBlank(symmetricVersion) && !symmetricVersion.equals("development")) {
+            return !(Version.parseVersion(symmetricVersion)[0] > 1);
+        } else {
+            return true;
+        }
+        
     }
 
     public void upgrade() {
