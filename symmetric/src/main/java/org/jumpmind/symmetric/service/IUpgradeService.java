@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service;
 public interface IUpgradeService {
 
     public boolean isUpgradeNecessary();
+    
+    public boolean isUpgradePossible();
 
     public void upgrade();
 
