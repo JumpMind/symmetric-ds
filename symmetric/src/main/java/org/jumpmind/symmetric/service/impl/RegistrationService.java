@@ -49,9 +49,8 @@ import org.jumpmind.symmetric.service.RegistrationRedirectException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.upgrade.UpgradeConstants;
 import org.jumpmind.symmetric.util.RandomTimeSlot;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -166,25 +165,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
         jdbcTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
     }
 
-    public Map<String, String> getRegistrationRedirectMap() {
-        SimpleJdbcTemplate template = new SimpleJdbcTemplate(this.jdbcTemplate);
-        try {
-            return template.queryForObject(getSql("getRegistrationRedirectSql"),
-                    new RowMapper<Map<String, String>>() {
-                        public Map<String, String> mapRow(ResultSet rs, int rowNum)
-                                throws SQLException {
-                            Map<String, String> results = new HashMap<String, String>();
-                            do {
-                                results.put(rs.getString(1), rs.getString(2));
-                            } while (rs.next());
-                            return results;
-                        }
-                    });
-        } catch (EmptyResultDataAccessException ex) {
-            log.debug("RegistrationRedirectsMissing");
-            return new HashMap<String, String>(0);
-        }
-
+    public Map<String, String> getRegistrationRedirectMap() {        
+        return this.jdbcTemplate.query(getSql("getRegistrationRedirectSql"), new Object[0], new ResultSetExtractor< Map<String, String>>() {
+            public Map<String, String> extractData(ResultSet rs) throws SQLException,
+                    DataAccessException {
+                Map<String, String> results = new HashMap<String, String>();
+                while (rs.next()) {
+                    results.put(rs.getString(1), rs.getString(2));
+                };
+                return results;
+            }
+        }); 
     }
 
     private void sleepBeforeRegistrationRetry() {
