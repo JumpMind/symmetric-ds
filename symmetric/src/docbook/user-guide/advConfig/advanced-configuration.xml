@@ -111,6 +111,51 @@ values
     </section>
     <section id='jms-publishing'>
         <title>JMS Publishing</title>    
+        <para>
+            With the proper configuration SymmetricDS can publish XML messages to JMS transactionally while
+            data loading synchronized data in a target database.  The XmlPublisherDataLoaderFilter is a
+            <link linkend="extensions-data-loader-filter">IDataLoaderFilter</link> that may be configured to 
+            publish specific tables as an XML message to a JMS provider.
+            See <link linkend="extensions">extension points</link> for how 
+            to configure an extension point.            
+        </para>
+        <para>
+                <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+ 
+    <bean id="publishingFilter" class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
+        <property name="xmlTagNameToUseForGroup" value="sale"/>
+        <property name="tableNamesToPublishAsGroup">
+            <list>
+               <value>sale</value>
+               <value>sale_line_item</value>
+               <value>sale_tax</value>
+               <value>sale_totals</value>
+            </list>            
+        </property>
+        <property name="groupByColumnNames">
+            <list>
+               <value>store_id</value>
+               <value>business_day</value>
+               <value>workstation_number</value>
+               <value>transaction_id</value>
+            </list>                      
+        </property>
+        <property name="publisher">
+           <bean class="org.jumpmind.symmetric.integrate.SimpleJmsPublisher">
+               <property name="jmsTemplate" ref="definedSpringJmsTemplate"/>
+           </bean>
+        </property>        
+    </bean>
+     
+</beans>]]></programlisting>        
+        </para>
     </section>     
     <section id="purge">
         <title>Database Purging</title>
@@ -183,7 +228,7 @@ values
 }]]></programlisting> 
             </para>
         </section>        
-        <section id="cho06-extensions-data-loader-filter">
+        <section id="extensions-data-loader-filter">
             <title>IDataLoaderFilter</title>         
             <para>
                 Data can be filtered as it is loaded into the target database or when
