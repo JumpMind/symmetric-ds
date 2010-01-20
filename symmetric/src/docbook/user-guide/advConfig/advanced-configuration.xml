@@ -120,6 +120,9 @@ values
             to configure an extension point.            
         </para>
         <para>
+        The following is an example extension point configuration that will publish four tables in XML with a root 
+        tag of <emphasis>sale</emphasis>.  Each XML message will be grouped by the batch and the column names identified by
+        the groupByColumnNames property which have the same values.
                 <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
