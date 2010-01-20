@@ -5,11 +5,11 @@
     xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Basic Configuration</title>
     <para>
-        To get an instance of SymmetricDS running, it needs to be given an identity and it needs to know how
-        to connect to the database it will manage.  A basic way to specify this is to place properties
-        in the symmetric.properties file.  When started up, the SymmetricDS reads the configuration
+        To get a SymmetricDS node running, it needs to be given an identity and it needs to know how
+        to connect to the database it will be synchronizing.  A typical way to specify this is to place properties
+        in the symmetric.properties file.  When started up, SymmetricDS reads the configuration
         and state from the database.  If the configuration tables are missing, they are created
-        automatically (auto creation can be disabled).  A basic configuration is described by inserting into the following tables:
+        automatically (auto creation can be disabled).  Basic configuration is described by inserting into the following tables:
             <itemizedlist>
                 <listitem>
                     <para><link linkend="node_group">Node Group</link> - specify the tiers that exist in a topology</para>
@@ -32,7 +32,7 @@
             </itemizedlist>
         During start up, triggers are verified against the database, and database triggers
         are installed on tables that require data changes to be captured.  The route job, pull job and push job
-        begin running as required to synchronize changes with other nodes.
+        begin running to synchronize changes with other nodes.
     </para>
     <section id="basic-properties">
         <title>Basic Properties</title>
