@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.SymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
+import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -315,6 +316,27 @@ public class DbTriggerTest extends AbstractDatabaseTest {
             });
             String csvString = getNextDataRow(getSymmetricEngine());
             Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);            
+        }
+    }
+
+    @Test
+    public void testBinaryColumnTypesForDerby() {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof DerbyDbDialect) {
+            try {
+                getJdbcTemplate().update("drop table test_derby_binary_types");
+            } catch (Exception e)
+            { }
+            getJdbcTemplate().update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA)");
+            getJdbcTemplate().update("insert into " + TestConstants.TEST_PREFIX
+                + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_derby_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'erilong', current_timestamp,current_timestamp)");
+            IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
+            bootstrapService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers().size());
+            
+            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?)", new Object[] {23, "test 1 2 3".getBytes()});
+            String csvString = getNextDataRow(getSymmetricEngine());
+            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\"", csvString);            
         }
     }
 
