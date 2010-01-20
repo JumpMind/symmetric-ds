@@ -246,9 +246,10 @@ insert into SYM_NODE_IDENTITY values ('00000');]]></programlisting>
         <para>
             Data changes in the database are captured in the order that they occur, which is preserved
             when synchronizing to other nodes.  Some data may need priority for synchronization despite
-            the normal order of events.  Channels provide a higher-level processing order of data, a limit on the
-            amount of data, and isolation from errors in other channels.  By categorizing data into
-            channels and assigning them to Triggers, the user gains more control and visibility into
+            the normal order of events.  Tables can be grouped together in <link linkend="channel">channels</link>.  
+            Channels provide a processing order for groups of tables, a limit on the
+            amount of data that will be batched together, and isolation from errors in other channels.  
+            By categorizing data into channels and assigning them to <link linkend="trigger">triggers</link>, the user gains more control and visibility into
             the flow of data.
         </para>
         <para>
@@ -268,6 +269,50 @@ insert into SYM_CHANNEL
    extract_period_millis, batch_algorithm, enabled, description)
 values
   ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 'retail sale transactions from register');]]></programlisting>
+        </para>
+        <para>
+            Batching is the grouping of data, by channel, to be transferred and committed at 
+            the client together.  There are three different out-of-the-box batching algorithms which 
+            may be configured in the batch_algorithm column on channel.  
+         <variablelist>
+            <varlistentry>
+                <term>
+                    <command>default</command>
+                </term>
+                <listitem>
+                    <para>
+                        All changes that happen in a transaction are guaranteed to be batched 
+                        together.  Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.
+                    </para>
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>transactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Batches will map directly to database transactions.  If there are many
+                        small database transactions, then there will be many batches.  The max_batch_size
+                        column has no effect.
+                    </para> 
+                </listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>
+                    <command>nontransactional</command>
+                </term>
+                <listitem>
+                    <para>
+                        Multiple transactions will be batched and committed together
+                        until there is no more data to be sent or the max_batch_size is reached.  
+                        The batch will be cut off at the max_batch_size regardless of whether
+                        it is in the middle of a transaction. 
+                    </para>
+                </listitem>
+            </varlistentry>
+        </variablelist>
         </para>
     </section>
     <section id="basic-trigger">
