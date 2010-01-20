@@ -43,6 +43,18 @@
     </section>
     <section id='registration-redirect'>
         <title>Registration Redirect</title>    
+        <para>
+            When deploying a multi-tiered system it may be advantageous to have only one registration server, even though the parent node of a registering node
+            could be any of a number of nodes in the system.  In SymmetricDS the parent node is always the node that a child registers with.  The 
+            <link linkend="registration_redirect">registration redirect</link> table allows a single node, usually the root server in the network, to
+            redirect registering nodes to their true parents.  It does so based on a mapping found in the table of external_id to the parent's node_id.
+        </para>
+        <para>
+            For example, if it is desired to have a series of regional servers that workstations at retail stores get assigned to based on their external_id, the store number, then
+            you might insert into <link linkend="registration_redirect">registration redirect</link> the store number as the registrant_external_id and the node_id of
+            the assigned region as the registration_node_id.  When a workstation at the store registers, the root server send an HTTP redirect to the sync_url of the node 
+            that matches the registration_node_id. 
+        </para>
     </section>
     <section id="bi-direction-sync">
         <title>Bi-Directional Synchronization</title>
@@ -54,15 +66,15 @@
             During an incoming synchronization the source node_id is put into a database session variable that is 
             available to the database trigger.  Data events are not generated if the target node_id 
             on an outgoing synchronization is equal to the source node_id.  
-        </para>       
+        </para>     
+        <para>
+            By default, only the columns that changed will be updated in the target system.
+        </para>  
         <para>
             More complex conflict resolution strategies can be accomplished by using the 
             <literal>IDataLoaderFilter</literal> extension point which has access to both 
             old and new data.
         </para>         
-    </section>  
-    <section id='relational-routing'>
-        <title>Relational Routing</title>    
     </section>         
     <section id="dead-triggers">
         <title>Dead Triggers</title>
