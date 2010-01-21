@@ -111,10 +111,9 @@ public class DerbyFunctions {
         ResultSet rs = ps.executeQuery();
         String str = null;
         if (rs.next()) {
-            
             byte[] bytes = null;
             int type = rs.getMetaData().getColumnType(1);
-            if (type == Types.VARBINARY || type == Types.LONGVARBINARY) {
+            if (type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY) {
                 bytes = rs.getBytes(1);
             } else {
                 Blob blob = rs.getBlob(1);
