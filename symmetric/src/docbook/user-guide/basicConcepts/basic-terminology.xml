@@ -27,7 +27,7 @@
             </para>
             <para>A node must be configured to communicate with the database it is synchronizing. This includes providing database connection information, database credentials, and depending on the database, a 
             JDBC driver library.  A node is identified to a registration server by it's assigned node group id and its external id.  Based on those properties, the system
-            determines if a node is allowed to register with the system, and if so, it is assigns it a node id.  The node group identifies
+            determines if a node is allowed to register with the system, and if so, it is assigned a node id.  The node group identifies
             a tier of like nodes that have the same synchronization profile.  The external id is a domain-specific identifier, an <emphasis>externalId</emphasis> 
             that provides context within the local system.  For example, a server at a store may belong to the node group 'store' and have and external
             id of '00010.'           
