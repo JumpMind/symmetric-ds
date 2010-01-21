@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Hashtable;
 
 import org.apache.commons.codec.binary.Base64;
@@ -103,9 +104,18 @@ public class DerbyFunctions {
         ResultSet rs = ps.executeQuery();
         String str = null;
         if (rs.next()) {
-            Blob blob = rs.getBlob(1);
-            if (blob != null && blob.length() > 0) {
-                str = new String(Base64.encodeBase64(blob.getBytes(1, MAX_BINARY_LENGTH)));
+            byte[] bytes = null;
+            int type = rs.getMetaData().getColumnType(1);
+            if (type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY) {
+                bytes = rs.getBytes(1);
+            } else {
+                Blob blob = rs.getBlob(1);
+                if (blob != null && blob.length() > 0) {
+                    bytes = blob.getBytes(1, MAX_BINARY_LENGTH);
+                }
+            }
+            if (bytes != null && bytes.length > 0) {
+                str = new String(Base64.encodeBase64(bytes));
             }
         }
         ps.close();

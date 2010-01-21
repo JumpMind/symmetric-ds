@@ -31,6 +31,7 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
+import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.db.postgresql.PostgreSqlDbDialect;
 import org.jumpmind.symmetric.model.Node;
@@ -270,6 +271,36 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
             });
             String csvString = getNextDataRow();
             Assert.assertEquals(EXPECTED_INSERT_POSTGRES_BINARY_TYPE_1, csvString);            
+        }
+    }
+
+    @Test
+    public void testBinaryColumnTypesForDerby() {
+        IDbDialect dialect = getDbDialect();
+        if (dialect instanceof DerbyDbDialect) {
+            try {
+                getJdbcTemplate().update("drop table test_derby_binary_types");
+            } catch (Exception e)
+            { }
+            getJdbcTemplate().update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA)");
+            
+            TriggerRouter trouter = new TriggerRouter();
+            Trigger trigger = trouter.getTrigger();
+            trigger.setSourceTableName("test_derby_binary_types");
+            trigger.setChannelId(TestConstants.TEST_CHANNEL_ID);
+            Router router = trouter.getRouter();
+            router.setSourceNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            router.setTargetNodeGroupId(TestConstants.TEST_ROOT_NODE_GROUP);
+            getTriggerRouterService().saveTriggerRouter(trouter);
+
+            ITriggerRouterService triggerService = getTriggerRouterService();
+            triggerService.syncTriggers();
+            Assert.assertEquals("Some triggers must have failed to build.", 0, triggerService.getFailedTriggers()
+                    .size());
+            
+            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?, ?)", new Object[] {23, "test 1 2 3".getBytes(), "test 1 2 3".getBytes()});
+            String csvString = getNextDataRow();
+            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\",\"dGVzdCAxIDIgMyAg\"", csvString);            
         }
     }
 
