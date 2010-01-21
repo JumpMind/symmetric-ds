@@ -43,6 +43,16 @@
                 registers as the nodes at the end of each spoke. If this hub-and-spoke topology where drawn as a tree hierarchy,
                 the central office server would be the top node in the tree, and a series of child nodes representing each
                 individual register would represent the lower level of the hierarchy.</para>
+            <para>
+                <figure>
+                    <title>Two Tiered Retail Store Deployment</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/2-tier-store-deploy.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </para>                
             <para> More complex topologies can also be used. Consider, for example, if same retail example is expanded to
                 to place store servers in each store to perform
                 tasks such as opening the store for the day, reconciling registers, assigning employees, etc. One approach to this
