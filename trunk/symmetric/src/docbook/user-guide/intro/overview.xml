@@ -24,10 +24,20 @@
                 events are captured for delivery to other SymmetricDS nodes.
             </para>
             <para>
+                In most databases, the transaction id is also captured so that the insert, update, and delete events can be replicated via the
+                transport layer to other nodes.  The transport layer is typically a CSV protocol over HTTP.
+            </para>
+            <para>
                 SymmetricDS supports synchronization across different database platforms through the concept of database
                 <emphasis>dialects</emphasis>
                 . A database dialect is an abstraction layer that SymmetricDS interacts with to insulated the main synchronization
                 logic from database specific implementation details.
+            </para>
+            <para>
+                SymmetricDS is extendable through extension points.  Extension points are custom Java code or reusable Java code that is
+                configured via XML.  Extension points hook into key points in the life-cycle of a synchronization to allow for custom 
+                behavior to be injected.  Extension points allow custom behavior like: publishing data to other sources, transforming data,
+                and taking different actions based on the content or status of a synchronization.
             </para>
         </section>
         <section id="background">
