@@ -327,16 +327,16 @@ public class DbTriggerTest extends AbstractDatabaseTest {
                 getJdbcTemplate().update("drop table test_derby_binary_types");
             } catch (Exception e)
             { }
-            getJdbcTemplate().update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA)");
+            getJdbcTemplate().update("create table test_derby_binary_types (id integer, data VARCHAR (100) FOR BIT DATA, data2 CHAR(12) FOR BIT DATA)");
             getJdbcTemplate().update("insert into " + TestConstants.TEST_PREFIX
                 + "trigger (source_table_name,source_node_group_id,target_node_group_id,channel_id,sync_on_update,sync_on_insert,sync_on_delete,initial_load_order,last_updated_by,last_updated_time,create_time) values('test_derby_binary_types','test-root-group','test-root-group','testchannel', 1, 1, 1, 1, 'erilong', current_timestamp,current_timestamp)");
             IBootstrapService bootstrapService = AppUtils.find(Constants.BOOTSTRAP_SERVICE, getSymmetricEngine());
             bootstrapService.syncTriggers();
             Assert.assertEquals("Some triggers must have failed to build.", 0, bootstrapService.getFailedTriggers().size());
             
-            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?)", new Object[] {23, "test 1 2 3".getBytes()});
+            getJdbcTemplate().update("insert into test_derby_binary_types values (?, ?, ?)", new Object[] {23, "test 1 2 3".getBytes(), "test 1 2 3".getBytes()});
             String csvString = getNextDataRow(getSymmetricEngine());
-            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\"", csvString);            
+            Assert.assertEquals("\"23\",\"dGVzdCAxIDIgMw==\",\"dGVzdCAxIDIgMyAg\"", csvString);            
         }
     }
 
