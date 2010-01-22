@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -40,6 +42,8 @@ import org.jumpmind.symmetric.common.logging.LogFactory;
 public class AppUtils {
 
     private static ILog log = LogFactory.getLog(AppUtils.class);
+    
+    private static final String SYM_TEMP_SUFFIX = "sym.tmp";
 
     private static String serverId;
 
@@ -138,7 +142,29 @@ public class AppUtils {
      * Use this method to create any needed temporary files for SymmetricDS.
      */
     public static File createTempFile(String token) throws IOException {
-        return File.createTempFile("sym." + token + ".", ".tmp");
+        return File.createTempFile(token + ".", SYM_TEMP_SUFFIX);
+    }
+    
+    /**
+     * Clean up files created by {@link #createTempFile(String)}.  This only be called
+     * while the engine is not synchronizing!
+     */
+    @SuppressWarnings("unchecked")
+    public static void cleanupTempFiles() {
+        try {
+            File tmp = File.createTempFile("temp", SYM_TEMP_SUFFIX);
+            Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(), new String[] { SYM_TEMP_SUFFIX }, true);
+            int deletedCount = 0;
+            while (it.hasNext()) {
+                FileUtils.forceDelete(it.next());
+                deletedCount++;
+            }
+            if (deletedCount > 1) {
+                log.warn("CleanStrandedTempFiles");
+            }
+        } catch (Exception ex) {
+            log.error(ex);
+        }
     }
 
     /**
