@@ -217,7 +217,7 @@ values
         <para>
              SymmetricDS will look for Spring configured extensions in the application Classpath by importing any Spring 
              XML configuration files found matching the following pattern: META-INF/services/symmetric-*-ext.xml.  When packaged in
-             a jar file the META-INF should be at the root of the jar file.  When packaged in a war file, the META-INF directory
+             a jar file the META-INF directory should be at the root of the jar file.  When packaged in a war file, the META-INF directory
              should be in the WEB-INF/classes directory.
         </para>
         <section id="parameter-filter">
