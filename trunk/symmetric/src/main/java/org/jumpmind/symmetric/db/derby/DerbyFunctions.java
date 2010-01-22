@@ -110,11 +110,11 @@ public class DerbyFunctions {
                 bytes = rs.getBytes(1);
             } else {
                 Blob blob = rs.getBlob(1);
-                if (blob != null && blob.length() > 0) {
+                if (blob != null) {
                     bytes = blob.getBytes(1, MAX_BINARY_LENGTH);
                 }
             }
-            if (bytes != null && bytes.length > 0) {
+            if (bytes != null) {
                 str = new String(Base64.encodeBase64(bytes));
             }
         }
@@ -131,7 +131,7 @@ public class DerbyFunctions {
         String str = null;
         if (rs.next()) {
             Clob clob = rs.getClob(1);
-            if (clob != null && clob.length() > 0) {
+            if (clob != null) {
                 str = clob.getSubString(1, MAX_STRING_LENGTH);
             }
         }
