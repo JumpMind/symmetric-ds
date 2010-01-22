@@ -112,8 +112,8 @@ values
     <section id='jms-publishing'>
         <title>JMS Publishing</title>    
         <para>
-            With the proper configuration SymmetricDS can publish XML messages of captured data changes either
-            to JMS either during routing or transactionally while data loading synchronized data in a target database.
+            With the proper configuration SymmetricDS can publish XML messages of captured data changes to either
+            JMS during routing or transactionally while data loading synchronized data in a target database.
             The following explains how to publish to JMS during data loads in the target database. To publish JMS messages during routing
             the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
             would be configured by setting the router_type of a <link linkend="router">router</link> to the Spring bean
