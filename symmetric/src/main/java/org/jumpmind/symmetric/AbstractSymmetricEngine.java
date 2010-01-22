@@ -141,6 +141,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         if (!starting && !started) {
             try {
                 starting = true;
+                AppUtils.cleanupTempFiles();
                 parameterService.rereadParameters();
                 setup();
                 validateConfiguration();
