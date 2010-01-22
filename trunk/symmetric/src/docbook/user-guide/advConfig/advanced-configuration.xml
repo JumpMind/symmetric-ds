@@ -163,6 +163,17 @@ values
     <section id="purge">
         <title>Database Purging</title>
     </section>
+    <section id="temporary-files">
+        <title>Temporary Files</title>
+        <para>
+        SymmetricDS uses the <emphasis>java.io.tmpdir</emphasis> System property to create extraction and data load files for transfer across the transport when
+        the value of the <emphasis>stream.to.file.threshold.bytes</emphasis> SymmetricDS property has been reached.  Before reaching the threshold files 
+        are streamed to memory.  This feature may be turned off by turning the <emphasis>stream.to.file.enabled</emphasis> property to false.
+        </para>
+        <para>
+        When the SymmmetricDS engine starts up, stranded temporary files are cleaned up.  File should only be stranded if the SymmetricDS engine is force killed.
+        </para>
+    </section>    
     <section id="clustering">
         <title>Clustering</title>
     </section>   
