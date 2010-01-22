@@ -77,7 +77,7 @@
                 <property name="clobColumnTemplate" ref="mysqlStringTemplate" />
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[coalesce(hex($(tableAlias).`$(columnName)`),''),',',]]>
+                        <![CDATA[if($(tableAlias).`$(columnName)` is null,'',concat('"',hex($(tableAlias).`$(columnName)`),'"')),',',]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
