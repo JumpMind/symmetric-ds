@@ -113,12 +113,8 @@ values
         <title>JMS Publishing</title>    
         <para>
             With the proper configuration SymmetricDS can publish XML messages of captured data changes to 
-            JMS during routing or transactionally while data loading synchronized data in a target database.
-            The following explains how to publish to JMS during data loads in the target database. To publish JMS messages during routing
-            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
-            would be configured by setting the router_type of a <link linkend="router">router</link> to the Spring bean
-            name of the registered extension point.  Of course, the router would need to be linked through <link linkend="trigger_router">trigger routers</link>
-            to each <link linkend="trigger">trigger</link> table that needs published. 
+            JMS during routing or transactionally while data loading synchronized data into a target database.
+            The following explains how to publish to JMS during synchronization to the target database. 
        </para>
        <para>     
             The XmlPublisherDataLoaderFilter is a
@@ -218,7 +214,12 @@ values
     <data key="AMOUNT">21.33</data>  
   </row>
 </sale>
-            ]]></programlisting>          
+            ]]></programlisting>     
+            To publish JMS messages during routing
+            the same pattern is valid, with the exception that the extension point would be the XmlPublisherDataRouter and the router 
+            would be configured by setting the router_type of a <link linkend="router">router</link> to the Spring bean
+            name of the registered extension point.  Of course, the router would need to be linked through <link linkend="trigger_router">trigger routers</link>
+            to each <link linkend="trigger">trigger</link> table that needs published.                  
         </para>
     </section>     
     <section id="purge">
