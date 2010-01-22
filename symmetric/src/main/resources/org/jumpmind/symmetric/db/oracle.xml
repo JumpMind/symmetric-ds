@@ -113,7 +113,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"') ||','||]]>
+                        <![CDATA[ decode($(tableAlias)."$(columnName)", null, '', to_clob('"')||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||to_clob('"')) ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
