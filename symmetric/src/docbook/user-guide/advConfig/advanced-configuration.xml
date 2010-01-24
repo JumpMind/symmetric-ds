@@ -224,6 +224,42 @@ values
     </section>     
     <section id="purge">
         <title>Database Purging</title>
+        <para>
+            Purging is the act of cleaning up captured data in SymmetricDS's runtime tables.  Data is purged through
+            delete statements by the purge job.  Only data the has been successfully synchronized will be purged.  Purged tables include:
+            <itemizedlist>
+                <listitem>
+                    <link linkend="data">DATA</link>
+                </listitem>
+                <listitem>
+                    <link linkend="data_event">DATA_EVENT</link>
+                </listitem>
+                <listitem>
+                    <link linkend="outgoing_batch">OUTGOING_BATCH</link>
+                </listitem>
+                <listitem>
+                    <link linkend="incoming_batch">INCOMING_BATCH</link>
+                </listitem>
+                <listitem>
+                    <link linkend="statistic">STATISTIC</link>
+                </listitem>                
+            </itemizedlist>
+            The purge job is enabled by the <emphasis>start.purge.job</emphasis> SymmetricDS property.  The job runs periodically according to the 
+            <emphasis>job.purge.period.time.ms</emphasis> property.  The default period is to run every ten minutes.  The retention period property
+            indicates how much history SymmetricDS will retain before purging.  The <emphasis>purge.retention.minutes</emphasis> property indicates the period
+            of history to keep for synchronization tables.  The default value is 5 days.
+        </para>      
+        <para>
+            The <emphasis>statistic.retention.minutes</emphasis> property
+            indicates the period of history to keep for statistics.  The default value is also 5 days.            
+        </para>
+        <para>
+            The purge properties should be adjusted according to how much data is flowing through the system and the amount of storage space the database has.
+            For an initial deployment it is recommended that the purge properties be kept at the defaults.  It is often helpful to be able to look at 
+            the captured data in order to triage problems and profile the synchronization patterns.  When scaling up to more nodes, it is reccomended that the 
+            purge parameters be scaled back to 24 hours or less.  
+        </para>
+        
     </section>
     <section id="temporary-files">
         <title>Temporary Files</title>
