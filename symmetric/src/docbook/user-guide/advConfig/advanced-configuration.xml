@@ -226,7 +226,7 @@ values
         <title>Database Purging</title>
         <para>
             Purging is the act of cleaning up captured data in SymmetricDS's runtime tables.  Data is purged through
-            delete statements by the purge job.  Only data the has been successfully synchronized will be purged.  Purged tables include:
+            delete statements by the purge job.  Only data that has been successfully synchronized will be purged.  Purged tables include:
             <itemizedlist>
                 <listitem>
                     <link linkend="data">DATA</link>
