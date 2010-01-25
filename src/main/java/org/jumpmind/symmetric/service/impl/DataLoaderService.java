@@ -32,8 +32,11 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -430,6 +433,24 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     public void addColumnFilter(String tableName, IColumnFilter filter) {
         this.columnFilters.put(tableName, filter);
+    }
+    
+    public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter) {
+        Set<Entry<String, IColumnFilter>> entries = this.columnFilters.entrySet();
+        Iterator<Entry<String, IColumnFilter>> it = entries.iterator();
+        while (it.hasNext()) {
+            Entry<String, IColumnFilter> entry = it.next();
+            if (filter.equals(entry.getValue())) {
+                it.remove();
+            }            
+        }
+        
+        if (tableNames != null) {
+            for (String name : tableNames) {
+                this.columnFilters.put(name, filter);
+            }
+        }
+        
     }
 
     public void setStatisticManager(IStatisticManager statisticManager) {

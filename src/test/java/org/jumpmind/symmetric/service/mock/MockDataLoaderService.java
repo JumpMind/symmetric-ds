@@ -82,5 +82,8 @@ public class MockDataLoaderService implements IDataLoaderService {
     public void addBatchListener(IBatchListener listener) {
 
     }
+    
+    public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter) {
+    }
 
 }
