@@ -35,43 +35,78 @@
             <para>Node configuration is typically stored in a local properties file.  All other configuration is retrieved during registration
             and is stored in the SymmetricDS tables located in the database.</para>  
         </section>
-        <section id="terminology-node-topology">
-            <title>Node Topology</title>
-            <para> Nodes in SymmetricDS are organized into an overall node topology, such as hub-and-spoke, tree-hierarchy, etc.
+        <section id="terminology-node-organization">
+            <title>Node Organization</title>
+            <para> Nodes in SymmetricDS are organized into an overall node network, such as hub-and-spoke, tree, etc.
                 The hierarchy chosen varies based on the goals of the SymmetricDS installation.</para>
-            <para> For example, the above retail use case is a simple SymmetricDS hub-and-spoke topology, with the central server serving as the hub and the
-                registers as the nodes at the end of each spoke. If this hub-and-spoke topology where drawn as a tree hierarchy,
+            <para> For example, the above retail store use case is a simple SymmetricDS hub-and-spoke network, 
+                with the central server serving as the hub and the
+                registers as the nodes at the end of each spoke. If this hub-and-spoke network where drawn as a tree hierarchy,
                 the central office server would be the top node in the tree, and a series of child nodes representing each
-                individual register would represent the lower level of the hierarchy.</para>
+                individual register would represent the lower level of the hierarchy.  </para>
             <para>
                 <figure>
-                    <title>Two Tiered Retail Store Deployment</title>
+                    <title>Two Tiered Retail Store Deployment Example</title>
                     <mediaobject>
                         <imageobject>
-                            <imagedata fileref="images/2-tier-store-deploy.gif" format="GIF" />
+                            <imagedata fileref="images/two-tier-arch.gif" format="GIF" />
                         </imageobject>
                     </mediaobject>
                 </figure>
             </para>                
-            <para> More complex topologies can also be used. Consider, for example, if same retail example is expanded to
-                to place store servers in each store to perform
-                tasks such as opening the store for the day, reconciling registers, assigning employees, etc. One approach to this
-                could be to create a three-tier tree hierarchy. The highest tier, the centralized database, connects with each store's
-                server. The store servers, in turn, communicate with the individual point-of-sale workstations at the store.</para>                 
+            <para>More complex topologies can also be used. Consider, for example, if the same retail example is expanded to include 
+              store servers in each
+              store to perform tasks such as opening the store for the day, reconciling registers, assigning employees, etc. 
+              One approach to this new configuration would be to create a three-tier tree hierarchy. The highest tier, the centralized database, 
+              connects with each store server's database. The store servers, in turn, communicate with the 
+              individual point-of-sale workstations at the store.</para>                 
+       
+             <para>
+                <figure>
+                    <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/three-tier-arch.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </para>    
+        </section>
+        <para>One final example, again extending our original two-tier retail use case, would be to organize stores by "region" in the world.  
+        This three tier architecture would introduce new regional servers (and corresponding regional databases)
+        which would consolidate information specific to stores the regional server is responsible for.  The tiers in this case are
+        therefore the central office server, regional servers, and individual store registers. 
+        
+        </para>
+          <para>
+                <figure>
+                    <title>Three Tiered, Regional Server, Retail Store Deployment Example</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/three-tier-regional-arch.gif" format="GIF" />
+                        </imageobject>
+                    </mediaobject>
+                </figure>
+            </para>    
+        <para>
+        These are just three common examples of how one might organize nodes in Symmetric.  While the examples above were for the retail industry, 
+        the organization, they could apply to a variety of application domains.
+        </para>
         </section>
         <section id="terminology-node-groups">
             <title>Node Groups</title>
             <para>
-                Each node must be assigned to a node group.  Node groups are a way to share synchronization profiles.
-                The individual nodes in a SymmetricDS installation (workstations, servers, etc.), when assigned to a node group,
-                naturally organize into tiers or levels in an overall hierarchy. A synchronization
-                profile is a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
+                Once the organization of your SymmetricDS nodes has been chosen, each node in the network is assigned to a 
+                node group.  Typically an individual tier in your network will represent one Node Group. Each Node Groups
+                maps to a synchronization profile, which is just a list of the tables that are being synchronized to and from the different node groups.  Node groups represent
                 a particular level of the overall node hierarchy. For the examples above, we might define a node
                 groups of:
                 <itemizedlist>
                     <listitem>"workstation", to represent each point-of-sale workstation</listitem>
                     <listitem>"corp" or "central-office" to represent the centralized node.</listitem>
                     <listitem>"store" to represent the store server that interacts with store workstations and sends and
+                        receives data from a central office server.</listitem>
+                    <listitem>"region" to represent the a regional server that interacts with store workstations and sends and
                         receives data from a central office server.</listitem>
                 </itemizedlist>
                 Considerable thought should be given to how node groups are organized.  Groups should be created for each set of nodes
