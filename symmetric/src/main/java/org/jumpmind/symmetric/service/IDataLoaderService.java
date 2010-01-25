@@ -71,6 +71,11 @@ public interface IDataLoaderService {
 
     public void addColumnFilter(String tableName, IColumnFilter filter);
 
+    /**
+     * Remove all instances of the filter and re-register under the tables passed in.
+     */
+    public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter);
+    
     public void addBatchListener(IBatchListener listener);
 
     public IDataLoader openDataLoader(BufferedReader reader) throws IOException;

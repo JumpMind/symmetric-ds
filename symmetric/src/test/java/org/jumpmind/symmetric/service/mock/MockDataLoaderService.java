@@ -42,6 +42,9 @@ public class MockDataLoaderService implements IDataLoaderService {
 
     }
 
+    public void reRegisterColumnFilter(String[] tableNames, IColumnFilter filter) {
+    }
+    
     public IDataLoaderStatistics loadDataBatch(String batchData) throws IOException {
         return null;
     }
