@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatches;
@@ -248,6 +249,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         // Test empty large object
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 300, "Eric", "1", "100 Main Street",
                 "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]});
+        
+        if (getRootDbDialect() instanceof OracleDbDialect) {   
+            rootJdbcTemplate.update("update test_customer set notes = empty_clob(), icon = empty_blob() where customer_id = 300");
+        }
+
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
