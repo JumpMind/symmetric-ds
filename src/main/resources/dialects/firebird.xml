@@ -48,7 +48,7 @@
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[sym_hex($(tableAlias).$(columnName))||','||]]>
+                        <![CDATA[case when $(tableAlias).$(columnName) is null then '' else '"' || $[sym.sync.table.prefix]_hex($(tableAlias).$(columnName)) || '"' end ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">

@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IBootstrapService;
@@ -236,24 +237,26 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     @Test(timeout = 30000)
     public void testEmptyNullLob() {
+        final String queryNotes = "select notes from test_customer where customer_id = 300";
+        final String queryIcon = "select icon from test_customer where customer_id = 300";
+
         // Test empty large object
         rootJdbcTemplate.update(insertCustomerSql, new Object[] { 300, "Eric", "1", "100 Main Street",
                 "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]});
+
+        if (getRootDbDialect() instanceof OracleDbDialect) {   
+            rootJdbcTemplate.update("update test_customer set notes = empty_clob(), icon = empty_blob() where customer_id = 300");
+        }
+
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
-            assertEquals(clientJdbcTemplate.queryForObject("select notes from test_customer where customer_id = 300",
-                    String.class), "", "Expected empty CLOB");
+            assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "", "Expected empty CLOB");
         }
 
         if (getRootDbDialect().isBlobSyncSupported()) {
-            byte[] data = (byte[]) clientJdbcTemplate.queryForObject(
-                    "select icon from test_customer where customer_id = 300", new RowMapper() {
-                        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                            return rs.getBytes(1);
-                        }
-                    });
-            Assert.assertTrue("Expected empty BLOB", data != null && data.length == 0);
+            byte[] bytes = (byte[]) clientJdbcTemplate.queryForObject(queryIcon, byte[].class);
+            Assert.assertTrue("Expected empty BLOB", bytes != null && bytes.length == 0);
         }
         
         // Test null large object
@@ -261,18 +264,11 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
-            assertEquals(clientJdbcTemplate.queryForObject("select notes from test_customer where customer_id = 300",
-                    String.class), null, "Expected null CLOB");
+            assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), null, "Expected null CLOB");
         }
     
         if (getRootDbDialect().isBlobSyncSupported()) {
-            byte[] data = (byte[]) clientJdbcTemplate.queryForObject(
-                    "select icon from test_customer where customer_id = 300", new RowMapper() {
-                        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-                            return rs.getBytes(1);
-                        }
-                    });
-            Assert.assertTrue("Expected null BLOB", data == null);
+            assertEquals(clientJdbcTemplate.queryForObject(queryIcon, byte[].class), null, "Expected null BLOB");
         }
     }
 
