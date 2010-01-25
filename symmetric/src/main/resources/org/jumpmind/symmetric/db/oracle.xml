@@ -108,7 +108,7 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[concat(concat('"',replace(replace($(tableAlias)."$(columnName)",to_clob('\'),to_clob('\\')),to_clob('"'),to_clob('\"'))),'"') ||','||]]>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, '', '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
