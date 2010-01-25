@@ -59,8 +59,7 @@
               store to perform tasks such as opening the store for the day, reconciling registers, assigning employees, etc. 
               One approach to this new configuration would be to create a three-tier tree hierarchy. The highest tier, the centralized database, 
               connects with each store server's database. The store servers, in turn, communicate with the 
-              individual point-of-sale workstations at the store.</para>                 
-       
+              individual point-of-sale workstations at the store.</para>                        
              <para>
                 <figure>
                     <title>Three Tiered, In-Store Server, Retail Store Deployment Example</title>
@@ -71,12 +70,10 @@
                     </mediaobject>
                 </figure>
             </para>    
-        </section>
         <para>One final example, again extending our original two-tier retail use case, would be to organize stores by "region" in the world.  
         This three tier architecture would introduce new regional servers (and corresponding regional databases)
         which would consolidate information specific to stores the regional server is responsible for.  The tiers in this case are
-        therefore the central office server, regional servers, and individual store registers. 
-        
+        therefore the central office server, regional servers, and individual store registers.         
         </para>
           <para>
                 <figure>
