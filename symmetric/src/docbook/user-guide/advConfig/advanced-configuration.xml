@@ -265,13 +265,14 @@ values
     <section id="temporary-files">
         <title>Temporary Files</title>
         <para>
-        SymmetricDS creates temporary extraction and data load files with the CSV content for transfer across the transport when
-        the value of the <emphasis>stream.to.file.threshold.bytes</emphasis> SymmetricDS property has been reached.  Before reaching the threshold files 
-        are streamed to memory.  The default value is 32,767 bytes, and this feature may be turned off by turning the <emphasis>stream.to.file.enabled</emphasis> property to false.
+        SymmetricDS creates temporary extraction and data load files with the CSV payload of a syncrhonization when
+        the value of the <emphasis>stream.to.file.threshold.bytes</emphasis> SymmetricDS property has been reached.  Before reaching the threshold, files 
+        are streamed to/from memory.  The default threshold value is 32,767 bytes. This feature may be turned off by setting the <emphasis>stream.to.file.enabled</emphasis> 
+        property to false.
         </para>
         <para>
-        SymmetricDS creates these temporary files in the directory specified by the <emphasis>java.io.tmpdir</emphasis> Java System property.  When the 
-        SymmmetricDS engine starts up, stranded temporary files are cleaned up.  Files should only be stranded if the SymmetricDS engine is force killed.
+        SymmetricDS creates these temporary files in the directory specified by the <emphasis>java.io.tmpdir</emphasis> Java System property.  When  
+        SymmmetricDS starts up, stranded temporary files are aways cleaned up.  Files will only be stranded if the SymmetricDS engine is force killed.
         </para>
         <para>
         The location of the temporary directory may be changed by setting the Java System property passed into the Java program at startup.  For example,
@@ -282,6 +283,27 @@ values
     </section>    
     <section id="clustering">
         <title>Clustering</title>
+        <para>
+        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  Typically, when this is done, a hardware load balancer is used
+        to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  Also, the <link linkend='basic-properties'>sync.url</link>
+        SymmetricDS property should be set to the URL of the load balancer.  
+        </para>
+        <para>
+        If the cluster will be running any of the SymmetricDS jobs, then the <emphasis>cluster.lock.enabled</emphasis> property should be set to <emphasis>true</emphasis>. 
+        By setting this property to true, SymmetricDS will use a row in the <link linkend="lock">lock</link> table as semaphore to make sure that only one instance at a time
+        runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
+        when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock while another instance (according to the server id) releases the lock.  If an 
+        instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If that node remains down, the lock can be 
+        broken after the period of time specified by the <emphasis>cluster.lock.timeout.ms</emphasis> property has expired.  Note that if the job is still running and the lock
+        expires, two jobs could be running at the same time which could cause database deadlocks. 
+        </para>
+        <para>
+        By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <emphasis>cluster.server.id</emphasis> property 
+        may be set to indicate the name that the instance should use for it's server id.
+        </para>
+        <para>
+        When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.  
+        </para>
     </section>   
     <section id='logging'>
         <title>Logging Configuration</title>    
