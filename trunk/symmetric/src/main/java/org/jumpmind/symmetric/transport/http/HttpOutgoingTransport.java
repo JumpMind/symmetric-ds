@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
@@ -145,6 +146,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new ConnectionRejectedException();
         } else if (HttpServletResponse.SC_FORBIDDEN == code) {
             throw new AuthenticationException();
+        } else if (WebConstants.SYNC_DISABLED == code) {
+            throw new SyncDisabledException();
         }
     }
 

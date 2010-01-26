@@ -43,9 +43,14 @@
         <property name="timeBetweenHeartbeats" value="$[sym.heartbeat.sync.on.push.period.sec]" />
     </bean>
     
-    <bean id="offlineNodeHandler" class="org.jumpmind.symmetric.job.DefaultOfflineNodeHandler">
+    <bean id="offlineServerListner" class="org.jumpmind.symmetric.job.DefaultOfflineServerListener">
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
+    </bean>
+    
+    <bean id="offlineClientListener" class="org.jumpmind.symmetric.io.DefaultOfflineClientListener">
+        <property name="nodeService" ref="nodeService" />
+        <property name="parameterService" ref="parameterService" />
     </bean>
 
 </beans>

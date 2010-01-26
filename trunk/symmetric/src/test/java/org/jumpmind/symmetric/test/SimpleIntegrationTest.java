@@ -42,6 +42,8 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -110,6 +112,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     static final String selectSyncColumnLevelSql = "select count(*) from test_sync_column_level where id = ? and $(column) = ?";
 
     static final String isRegistrationClosedSql = "select count(*) from sym_node_security where registration_enabled=0 and node_id=?";
+    
+    static final String makeHeartbeatOld = "update sym_node set heartbeat_time='2000-01-01 01:01:01.0' where node_id=?";
+    
+    static final String deleteNode = "delete from sym_node where node_id=?";
 
     static final byte[] BINARY_DATA = new byte[] { 0x01, 0x02, 0x03 };
 
@@ -1077,6 +1083,70 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         statisticManager.getStatistic(StatisticNameConstants.INCOMING_MAX_ROWS_COMMITTED);
         clientParameterService.saveParameter(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT,
                 oldMaxRowsBeforeCommit);
+    }
+    
+    @Test
+    public void testSyncDisabled() {
+        logTestRunning();
+        
+        Node clientIdentity = getClientEngine().getNodeService().findIdentity();
+        Node clientNodeOnRoot = getRootEngine().getNodeService().findNode(clientIdentity.getNodeId());
+        
+        Assert.assertEquals(true, clientNodeOnRoot.isSyncEnabled());
+        
+        // Update the heartbeat to be an old timestamp so the node will go offline
+        rootJdbcTemplate.update(makeHeartbeatOld, new Object[]{clientIdentity.getNodeId()});
+        // Run the service to look for offline nodes
+        getRootEngine().getNodeService().checkForOfflineNodes();
+        
+        // Verify syncing was disabled for the node
+        clientNodeOnRoot = getRootEngine().getNodeService().findNode(clientIdentity.getNodeId());
+        Assert.assertEquals(false, clientNodeOnRoot.isSyncEnabled());
+        
+        // Verify node security was deleted for the node
+        NodeSecurity clientNodeSecurity = getRootEngine().getNodeService().findNodeSecurity(clientIdentity.getNodeId());
+        Assert.assertNull(clientNodeSecurity);
+        
+        // A client pull will result in client getting a SyncDisabled return code which
+        // will cause the client's identity to be removed.
+        getClientEngine().pull();
+        Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
+        Assert.assertNull(clientNodeAfterPull); 
+        
+        // Turn auto registration and reload on so the client will register and reload
+        getClientEngine().getParameterService().saveParameter("auto.registration", true);
+        getClientEngine().getParameterService().saveParameter("auto.reload", true);
+        getRootEngine().getParameterService().saveParameter("auto.registration", true);
+        getRootEngine().getParameterService().saveParameter("auto.reload", true);
+        
+        // A pull will cause the registration to occur and the node identify to be
+        // reestablished.
+        getClientEngine().pull();
+        clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
+        Assert.assertNotNull(clientNodeAfterPull); 
+    }
+    
+    @Test
+    public void testClientNodeNotRegistered() {
+        logTestRunning();
+        
+        Node clientIdentity = getClientEngine().getNodeService().findIdentity();
+        Node clientNodeOnRoot = getRootEngine().getNodeService().findNode(clientIdentity.getNodeId());
+        // Remove the client node from sym_node and sym_node_security
+        rootJdbcTemplate.update(deleteNode, new Object[]{clientNodeOnRoot.getNodeId()});
+        getRootEngine().getNodeService().deleteNodeSecurity(clientNodeOnRoot.getNodeId());
+        
+        // Turn auto registration and reload on so the client will register and reload
+        getClientEngine().getParameterService().saveParameter("auto.registration", true);
+        getClientEngine().getParameterService().saveParameter("auto.reload", true);
+        getRootEngine().getParameterService().saveParameter("auto.registration", true);
+        getRootEngine().getParameterService().saveParameter("auto.reload", true);
+        
+        // A pull will cause the registration to occur and the node identify to be
+        // reestablished.
+        getClientEngine().pull();
+        Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
+        Assert.assertNotNull(clientNodeAfterPull); 
     }
 
     @Test(timeout = 30000)

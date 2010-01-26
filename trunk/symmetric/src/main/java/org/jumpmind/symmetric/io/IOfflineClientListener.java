@@ -26,7 +26,7 @@ import org.jumpmind.symmetric.model.Node;
  * This is an extension point that is called when the current instance has detected it cannot sync with another
  * {@link Node}.
  */
-public interface IOfflineListener extends IExtensionPoint {
+public interface IOfflineClientListener extends IExtensionPoint {
 
     /**
      * Called when the remote node is unreachable.
@@ -42,5 +42,12 @@ public interface IOfflineListener extends IExtensionPoint {
      * Called when this node has been rejected because the remote node is currently too busy to handle the sync request.
      */
     public void busy(Node remoteNode);
+    
+    /**
+     * Called when this node is rejected because synchronization is disabled on the remoteNode
+     * 
+     * @param remoteNode
+     */
+    public void syncDisabled(Node remoteNode);
 
 }

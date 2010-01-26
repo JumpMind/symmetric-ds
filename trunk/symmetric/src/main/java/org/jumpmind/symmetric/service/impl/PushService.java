@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 
 public class PushService extends AbstractOfflineDetectorService implements IPushService {
@@ -147,6 +148,9 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             fireOffline(ex, remote);
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
+            fireOffline(ex, remote);
+        } catch (SyncDisabledException ex) {
+            log.warn("SyncDisabledException");
             fireOffline(ex, remote);
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes

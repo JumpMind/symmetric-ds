@@ -64,6 +64,7 @@ import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
@@ -230,6 +231,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw ex;
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
+        } catch (SyncDisabledException ex) {
+            log.warn("SyncDisabledException");
+            throw ex;
         } catch (Throwable e) {
             if (dataLoader != null && dataLoader.getContext().getBatchId() > 0 && batch == null) {
                 batch = new IncomingBatch(dataLoader.getContext());

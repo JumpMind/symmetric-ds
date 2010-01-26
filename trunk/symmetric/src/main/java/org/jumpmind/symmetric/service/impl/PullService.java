@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.TransportException;
 
 public class PullService extends AbstractOfflineDetectorService implements IPullService {
@@ -76,6 +77,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             fireOffline(ex, node);
                         } catch (AuthenticationException ex) {
                             log.warn("AuthenticationFailed");
+                            fireOffline(ex, node);
+                        } catch (SyncDisabledException ex) {
+                            log.warn("SyncDisabledException");
                             fireOffline(ex, node);
                         } catch (SocketException ex) {
                             log.warn("Message", ex.getMessage());

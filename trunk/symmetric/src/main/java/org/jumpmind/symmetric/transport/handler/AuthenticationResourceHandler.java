@@ -20,31 +20,40 @@
  */
 package org.jumpmind.symmetric.transport.handler;
 
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class AuthenticationResourceHandler extends AbstractTransportResourceHandler {
 
     public enum AuthenticationStatus {
-        REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED;
+        SYNC_DISABLED, REGISTRATION_REQUIRED, FORBIDDEN, ACCEPTED;
     };
 
     private INodeService nodeService;
 
     public AuthenticationStatus status(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
-
-        if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
-            if (nodeService.findNode(nodeId) == null) {
-                retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
-            } else {
-                retVal = AuthenticationStatus.FORBIDDEN;
-            }
+        if (nodeService.findNode(nodeId) == null) {
+          retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
+        } else if (!syncEnabled(nodeId)) {
+          retVal = AuthenticationStatus.SYNC_DISABLED; 
+        } else if (!nodeService.isNodeAuthorized(nodeId, securityToken)) {
+          retVal = AuthenticationStatus.FORBIDDEN;
         }
         return retVal;
     }
 
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+    
+    protected boolean syncEnabled(String nodeId) {
+        boolean syncEnabled = false;
+        Node node = nodeService.findNode(nodeId);
+        if (node != null) {
+            syncEnabled = node.isSyncEnabled();
+        }
+        return syncEnabled;
     }
 
 }

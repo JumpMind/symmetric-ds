@@ -62,6 +62,8 @@ public class AuthenticationFilter extends AbstractTransportFilter<Authentication
             sendError(resp, HttpServletResponse.SC_FORBIDDEN);
         } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
             sendError(resp, WebConstants.REGISTRATION_REQUIRED);
+        } else if (AuthenticationStatus.SYNC_DISABLED.equals(status)) {
+            sendError(resp, WebConstants.SYNC_DISABLED);
         } else if (AuthenticationStatus.ACCEPTED.equals(status)) {
             chain.doFilter(req, resp);
         }

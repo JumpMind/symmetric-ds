@@ -29,6 +29,6 @@ import org.jumpmind.symmetric.model.Node;
  * to be offline.  An offline node has a heartbeat older than a 
  * configured amount of time.
  */
-public interface IOfflineNodeHandler extends IExtensionPoint {
-    public void handleOfflineNodes(List<Node> offlineNodeList);
+public interface IOfflineServerListener extends IExtensionPoint {
+    public void clientNodeOffline(Node node);
 }
