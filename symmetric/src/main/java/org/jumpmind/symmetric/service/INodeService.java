@@ -22,11 +22,12 @@
 
 package org.jumpmind.symmetric.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.config.INodeIdGenerator;
-import org.jumpmind.symmetric.ext.IOfflineNodeHandler;
+import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -55,6 +56,8 @@ public interface INodeService {
     public NodeSecurity findNodeSecurity(String nodeId);
     
     public NodeSecurity findNodeSecurity(String nodeId, boolean createIfNotFound);
+    
+    public void deleteNodeSecurity(String nodeId);
 
     public String findSymmetricVersion();
 
@@ -71,6 +74,8 @@ public interface INodeService {
     public Node findIdentity();
 
     public Node findIdentity(boolean useCache);
+    
+    public void deleteIdentity();
 
     public List<Node> findNodesToPull();
 
@@ -132,10 +137,7 @@ public interface INodeService {
      */
     public List<Node> findOfflineNodes();
     
-    /**
-     * Set the handler for offline nodes.
-     * 
-     * @param offlineNodeHandler
-     */
-    public void setOfflineNodeHandler(IOfflineNodeHandler offlineNodeHandler);
+    public void addOfflineServerListener(IOfflineServerListener listener);
+
+    public boolean removeOfflineServerListener(IOfflineServerListener listener);
 }

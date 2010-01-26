@@ -25,28 +25,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jumpmind.symmetric.io.IOfflineListener;
+import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 
 public abstract class AbstractOfflineDetectorService extends AbstractService implements IOfflineDetectorService {
 
-    private List<IOfflineListener> offlineListeners;
+    private List<IOfflineClientListener> offlineListeners;
 
-    public void setOfflineListeners(List<IOfflineListener> listeners) {
+    public void setOfflineListeners(List<IOfflineClientListener> listeners) {
         this.offlineListeners = listeners;
     }
 
-    public void addOfflineListener(IOfflineListener listener) {
+    public void addOfflineListener(IOfflineClientListener listener) {
         if (offlineListeners == null) {
-            offlineListeners = new ArrayList<IOfflineListener>();
+            offlineListeners = new ArrayList<IOfflineClientListener>();
         }
         offlineListeners.add(listener);
     }
 
-    public boolean removeOfflineListener(IOfflineListener listener) {
+    public boolean removeOfflineListener(IOfflineClientListener listener) {
         if (offlineListeners != null) {
             return offlineListeners.remove(listener);
         } else {
@@ -56,13 +57,15 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
 
     protected void fireOffline(Exception error, Node remoteNode) {
         if (offlineListeners != null) {
-            for (IOfflineListener listener : offlineListeners) {
+            for (IOfflineClientListener listener : offlineListeners) {
                 if (isOffline(error)) {
                     listener.offline(remoteNode);
                 } else if (isBusy(error)) {
                     listener.busy(remoteNode);
                 } else if (isNotAuthenticated(error)) {
                     listener.notAuthenticated(remoteNode);
+                } else if (isSyncDisabled(error)) {
+                    listener.syncDisabled(remoteNode);
                 }
             }
         }
@@ -98,6 +101,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         if (ex != null) {
             Throwable cause = ExceptionUtils.getRootCause(ex);
             offline = cause instanceof ConnectionRejectedException;
+        }
+        return offline;
+    }
+    
+    protected boolean isSyncDisabled(Exception ex) {
+        boolean offline = false;
+        if (ex != null) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            offline = cause instanceof SyncDisabledException;
+            if (offline == false && ex instanceof SyncDisabledException) {
+                offline = true;
+            }
         }
         return offline;
     }

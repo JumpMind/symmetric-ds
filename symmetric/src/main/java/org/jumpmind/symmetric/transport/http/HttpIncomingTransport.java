@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
+import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
@@ -53,12 +54,14 @@ public class HttpIncomingTransport implements IIncomingTransport {
     }
 
     public BufferedReader open() throws IOException {
-
+    
         switch (connection.getResponseCode()) {
         case WebConstants.REGISTRATION_NOT_OPEN:
             throw new RegistrationNotOpenException();
         case WebConstants.REGISTRATION_REQUIRED:
             throw new RegistrationRequiredException();
+        case WebConstants.SYNC_DISABLED:
+            throw new SyncDisabledException();
         case HttpServletResponse.SC_SERVICE_UNAVAILABLE:
             throw new ConnectionRejectedException();
         case HttpServletResponse.SC_FORBIDDEN:

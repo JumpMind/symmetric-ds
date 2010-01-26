@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +38,8 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
-import org.jumpmind.symmetric.ext.IOfflineNodeHandler;
+import org.jumpmind.symmetric.ext.IOfflineServerListener;
+import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -68,8 +70,8 @@ public class NodeService extends AbstractService implements INodeService {
     private NodeHost nodeHostForCurrentNode = null;
     
     private long offlineNodeDetectionMinutes;
-    
-    private IOfflineNodeHandler offlineNodeHandler;
+        
+    private List<IOfflineServerListener> offlineServerListeners;
 
     public String findSymmetricVersion() {
         try {
@@ -192,6 +194,10 @@ public class NodeService extends AbstractService implements INodeService {
             throw ex;
         }
     }
+    
+    public void deleteNodeSecurity(String nodeId) {
+        jdbcTemplate.update(getSql("deleteNodeSecuritySql"), new Object[] { nodeId });
+    }
 
     public void insertNodeSecurity(String id) {
         flushNodeAuthorizedCache();
@@ -202,6 +208,11 @@ public class NodeService extends AbstractService implements INodeService {
     
     public void insertNodeIdentity(String nodeId) {
         jdbcTemplate.update(getSql("insertNodeIdentitySql"), nodeId);
+    }
+    
+    public void deleteIdentity() {
+        jdbcTemplate.execute(getSql("deleteNodeIdentitySql"));
+        cachedNodeIdentity = null;
     }
     
     public void insertNode(String nodeId, String nodeGroupdId, String externalId, String createdAtNodeId) {
@@ -336,9 +347,10 @@ public class NodeService extends AbstractService implements INodeService {
             node.setDatabaseVersion(rs.getString(8));
             node.setSymmetricVersion(rs.getString(9));
             node.setCreatedAtNodeId(rs.getString(10));
-            node.setTimezoneOffset(rs.getString(11));
-            node.setBatchToSendCount(rs.getInt(12));
-            node.setBatchInErrorCount(rs.getInt(13));
+            node.setHeartbeatTime(rs.getTimestamp(11));
+            node.setTimezoneOffset(rs.getString(12));
+            node.setBatchToSendCount(rs.getInt(13));
+            node.setBatchInErrorCount(rs.getInt(14));
             return node;
         }
     }
@@ -448,21 +460,42 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public void checkForOfflineNodes() {
-        if (offlineNodeHandler != null) {
+        if (offlineServerListeners != null) {
             
             List<Node> list = findOfflineNodes();
             if (list.size() > 0) {
-                offlineNodeHandler.handleOfflineNodes(list);
+                fireOffline(list);
             }
         }
     }
     
     public List<Node> findOfflineNodes() {
-        Timestamp cutOffTime =  new Timestamp(new Date().getTime() - ((getOfflineNodeDetectionMinutes() * 1000)*60));
+        List<Node> offlineNodeList = new ArrayList<Node>();
+        Node myNode = findIdentity();
         
-        List<Node> list = jdbcTemplate.query(getSql("findOfflineNodesSql"), new Object[] { cutOffTime, findIdentity().getNodeId() }, new NodeRowMapper());
+        if (myNode != null) {
+            long offlineNodeDetectionMillis =  (getOfflineNodeDetectionMinutes() * 60)*1000;
+            
+            List<Node> list = jdbcTemplate.query(getSql("selectNodePrefixSql")+getSql("findOfflineNodesSql"), 
+                    new Object[] { myNode.getNodeId(),  myNode.getNodeId()}, 
+                    new NodeRowMapper());
+            
+            for (Node node: list) {
+                // Take the timezone of the client node into account when checking the hearbeat time.
+                Date clientNodeCurrentTime = null;
+                if (node.getTimezoneOffset() != null) {
+                    clientNodeCurrentTime = AppUtils.getLocalDateForOffset(node.getTimezoneOffset());
+                } else {
+                    clientNodeCurrentTime = new Date();
+                }
+                long cutOffTimeMillis = clientNodeCurrentTime.getTime() - offlineNodeDetectionMillis;
+                if (node.getHeartbeatTime().getTime() < cutOffTimeMillis) {
+                    offlineNodeList.add(node);
+                }
+            }
+        }
         
-        return list;
+        return offlineNodeList;
     }
     
     public long getOfflineNodeDetectionMinutes() {
@@ -472,8 +505,33 @@ public class NodeService extends AbstractService implements INodeService {
     public void setOfflineNodeDetectionMinutes(long offlineNodeDetectionMinutes) {
         this.offlineNodeDetectionMinutes = offlineNodeDetectionMinutes;
     }
+    
+    public void setOfflineServerListeners(List<IOfflineServerListener> listeners) {
+        this.offlineServerListeners = listeners;
+    }
 
-    public void setOfflineNodeHandler(IOfflineNodeHandler offlineNodeHandler) {
-        this.offlineNodeHandler = offlineNodeHandler;
+    public void addOfflineServerListener(IOfflineServerListener listener) {
+        if (offlineServerListeners == null) {
+            offlineServerListeners = new ArrayList<IOfflineServerListener>();
+        }
+        offlineServerListeners.add(listener);
+    }
+
+    public boolean removeOfflineServerListener(IOfflineServerListener listener) {
+        if (offlineServerListeners != null) {
+            return offlineServerListeners.remove(listener);
+        } else {
+            return false;
+        }
+    }
+    
+    protected void fireOffline(List<Node> offlineClientNodeList) {
+        if (offlineServerListeners != null) {
+            for (IOfflineServerListener listener : offlineServerListeners) {
+                for (Node node : offlineClientNodeList) {
+                    listener.clientNodeOffline(node);
+                }
+            }
+        }
     }
 }

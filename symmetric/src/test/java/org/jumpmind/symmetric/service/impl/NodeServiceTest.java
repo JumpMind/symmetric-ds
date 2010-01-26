@@ -216,6 +216,16 @@ public class NodeServiceTest extends AbstractDatabaseTest {
         nodeService.checkForOfflineNodes();
         offlineNodeList = nodeService.findOfflineNodes();
         Assert.assertEquals("Number of offline nodes after processing, ", 0, offlineNodeList.size());
+        
+        checkOfflineNode("66666");
+        checkOfflineNode("77777");
+    }
+    
+    protected void checkOfflineNode(String nodeId) {
+        NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
+        Assert.assertNull(nodeSecurity);
+        Node node = nodeService.findNode(nodeId);
+        Assert.assertFalse(node.isSyncEnabled());
     }
     
     @After

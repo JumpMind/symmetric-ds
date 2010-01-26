@@ -29,7 +29,7 @@ import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.extract.IExtractorFilter;
-import org.jumpmind.symmetric.io.IOfflineListener;
+import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
@@ -202,14 +202,14 @@ public class ExtensionProcessor implements BeanFactoryPostProcessor {
             routingService.addBatchAlgorithm(beanName, (IBatchAlgorithm) ext);
         }
         
-        if (ext instanceof IOfflineListener) {
+        if (ext instanceof IOfflineClientListener) {
             for(IOfflineDetectorService service : offlineDetectorServices) {
-                service.addOfflineListener((IOfflineListener)ext);
+                service.addOfflineListener((IOfflineClientListener)ext);
             }
         }
         
-        if (ext instanceof IOfflineNodeHandler) {
-            nodeService.setOfflineNodeHandler((IOfflineNodeHandler)ext);
+        if (ext instanceof IOfflineServerListener) {
+            nodeService.addOfflineServerListener((IOfflineServerListener)ext);
         }
     }
 
