@@ -255,6 +255,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
 
         getClientEngine().pull();
+        getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
             assertEquals(clientJdbcTemplate.queryForObject(queryNotes, String.class), "", "Expected empty CLOB");
