@@ -607,55 +607,11 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>cluster.lock.during.purge</command>
+                        <command>cluster.lock.enabled</command>
                     </term>
                     <listitem>
                         <para>
-                            Indicate if the purge job is clustered and requires a lock before running.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>cluster.lock.during.pull</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Indicate if the pull job is clustered and requires a lock before running.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>cluster.lock.during.push</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Indicate if the push job is clustered and requires a lock before running.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>cluster.lock.during.heartbeat</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Indicate if the heartbeat job is clustered and requires a lock before running.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
-                        </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>
-                        <command>cluster.lock.during.sync.triggers</command>
-                    </term>
-                    <listitem>
-                        <para>
-                            Indicate if the sync triggers job is clustered and requires a lock before running.
+                            Enables clustering of SymmetricDS jobs.
                             [&#xA0;Default:&#xA0;false&#xA0;]
                         </para>
                     </listitem>
