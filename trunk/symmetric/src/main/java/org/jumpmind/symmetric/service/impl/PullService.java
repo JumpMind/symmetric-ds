@@ -79,7 +79,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             log.warn("AuthenticationFailed");
                             fireOffline(ex, node);
                         } catch (SyncDisabledException ex) {
-                            log.warn("SyncDisabledException");
+                            log.warn("SyncDisabled");
                             fireOffline(ex, node);
                         } catch (SocketException ex) {
                             log.warn("Message", ex.getMessage());

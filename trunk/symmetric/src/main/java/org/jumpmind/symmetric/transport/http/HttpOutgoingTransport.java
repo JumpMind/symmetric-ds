@@ -35,6 +35,7 @@ import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -148,6 +149,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new AuthenticationException();
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();
+        } else if (WebConstants.REGISTRATION_REQUIRED == code) {
+            throw new RegistrationRequiredException();
         }
     }
 

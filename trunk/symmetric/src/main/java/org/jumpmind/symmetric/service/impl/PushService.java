@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
 import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -150,7 +151,10 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             log.warn("AuthenticationFailed");
             fireOffline(ex, remote);
         } catch (SyncDisabledException ex) {
-            log.warn("SyncDisabledException");
+            log.warn("SyncDisabled");
+            fireOffline(ex, remote);
+        } catch (RegistrationRequiredException ex) {
+            log.warn("RegistrationRequired");
             fireOffline(ex, remote);
         } catch (Exception ex) {
             // just report the error because we want to push to other nodes
