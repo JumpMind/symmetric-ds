@@ -296,8 +296,8 @@ values
         By setting this property to true, SymmetricDS will use a row in the <link linkend="lock">lock</link> table as semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
         when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an 
-        instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If that node remains down, the lock can be 
-        broken after the period of time specified by the <emphasis>cluster.lock.timeout.ms</emphasis> property has expired.  Note that if the job is still running and the lock
+        instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be 
+        broken after a period of time, specified by the <emphasis>cluster.lock.timeout.ms</emphasis> property, has expired.  Note that if the job is still running and the lock
         expires, two jobs could be running at the same time which could cause database deadlocks. 
         </para>
         <para>
