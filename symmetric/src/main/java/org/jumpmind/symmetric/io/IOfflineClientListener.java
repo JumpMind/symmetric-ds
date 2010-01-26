@@ -44,10 +44,16 @@ public interface IOfflineClientListener extends IExtensionPoint {
     public void busy(Node remoteNode);
     
     /**
-     * Called when this node is rejected because synchronization is disabled on the remoteNode
+     * Called when this node is rejected because synchronization is disabled on the remote node.
      * 
      * @param remoteNode
      */
     public void syncDisabled(Node remoteNode);
+
+    /**
+     * Called when this node is rejected because the node has not been registered with the remote node.
+     * @param remoteNode
+     */
+    public void registrationRequired(Node remoteNode);
 
 }

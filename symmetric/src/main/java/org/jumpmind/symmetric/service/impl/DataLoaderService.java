@@ -232,7 +232,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } catch (AuthenticationException ex) {
             log.warn("AuthenticationFailed");
         } catch (SyncDisabledException ex) {
-            log.warn("SyncDisabledException");
+            log.warn("SyncDisabled");
             throw ex;
         } catch (Throwable e) {
             if (dataLoader != null && dataLoader.getContext().getBatchId() > 0 && batch == null) {

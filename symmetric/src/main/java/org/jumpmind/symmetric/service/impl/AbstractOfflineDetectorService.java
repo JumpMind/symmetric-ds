@@ -28,6 +28,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.symmetric.io.IOfflineClientListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
+import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
@@ -66,6 +67,8 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
                     listener.notAuthenticated(remoteNode);
                 } else if (isSyncDisabled(error)) {
                     listener.syncDisabled(remoteNode);
+                } else if (isRegistrationRequired(error)) {
+                    listener.registrationRequired(remoteNode);
                 }
             }
         }
@@ -106,14 +109,26 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
     }
     
     protected boolean isSyncDisabled(Exception ex) {
-        boolean offline = false;
+        boolean syncDisabled = false;
         if (ex != null) {
             Throwable cause = ExceptionUtils.getRootCause(ex);
-            offline = cause instanceof SyncDisabledException;
-            if (offline == false && ex instanceof SyncDisabledException) {
-                offline = true;
+            syncDisabled = cause instanceof SyncDisabledException;
+            if (syncDisabled == false && ex instanceof SyncDisabledException) {
+                syncDisabled = true;
             }
         }
-        return offline;
+        return syncDisabled;
+    }
+    
+    protected boolean isRegistrationRequired(Exception ex) {
+        boolean registrationRequired = false;
+        if (ex != null) {
+            Throwable cause = ExceptionUtils.getRootCause(ex);
+            registrationRequired = cause instanceof RegistrationRequiredException;
+            if (registrationRequired == false && ex instanceof RegistrationRequiredException) {
+                registrationRequired = true;
+            }
+        }
+        return registrationRequired;
     }
 }

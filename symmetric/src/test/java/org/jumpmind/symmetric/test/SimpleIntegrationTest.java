@@ -1127,7 +1127,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     }
     
     @Test
-    public void testClientNodeNotRegistered() {
+    public void testClientNodeNotRegistered() throws ParseException {
         logTestRunning();
         
         Node clientIdentity = getClientEngine().getNodeService().findIdentity();
@@ -1142,9 +1142,18 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getRootEngine().getParameterService().saveParameter("auto.registration", true);
         getRootEngine().getParameterService().saveParameter("auto.reload", true);
         
+        
+        turnOnNoKeysInUpdateParameter(true);
+        Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
+        clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "99", 100, null, date }, new int[] {
+                Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
+        clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "99", 1, "STK", "110000099", 3, 3.33 });
+        getClientEngine().push();
+        
         // A pull will cause the registration to occur and the node identify to be
         // reestablished.
         getClientEngine().pull();
+        
         Node clientNodeAfterPull = getClientEngine().getNodeService().findIdentity();
         Assert.assertNotNull(clientNodeAfterPull); 
     }

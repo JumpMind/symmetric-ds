@@ -48,7 +48,12 @@ public class DefaultOfflineClientListener implements IOfflineClientListener {
     }
 
     public void syncDisabled(Node remoteNode) {
-        log.warn("SyncDisabledException");
+        log.warn("SyncDisabled");
+        nodeService.deleteIdentity();
+    }
+    
+    public void registrationRequired(Node remoteNode) {
+        log.warn("RegistrationRequired");
         nodeService.deleteIdentity();
     }
 
