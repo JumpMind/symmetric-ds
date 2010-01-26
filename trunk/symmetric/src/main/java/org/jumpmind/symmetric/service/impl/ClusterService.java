@@ -20,15 +20,6 @@
 
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.service.LockActionConstants.HEARTBEAT;
-import static org.jumpmind.symmetric.service.LockActionConstants.PULL;
-import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_INCOMING;
-import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_OUTGOING;
-import static org.jumpmind.symmetric.service.LockActionConstants.PURGE_STATISTICS;
-import static org.jumpmind.symmetric.service.LockActionConstants.PUSH;
-import static org.jumpmind.symmetric.service.LockActionConstants.SYNCTRIGGERS;
-import static org.jumpmind.symmetric.service.LockActionConstants.ROUTE;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -98,7 +89,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     private boolean lock(final String action, final String id) {
-        if (isClusteringEnabled(action)) {
+        if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
                     .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
             return jdbcTemplate.update(getSql("aquireLockSql"),
@@ -117,7 +108,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     private void unlock(final String action, final String id) {
-        if (isClusteringEnabled(action)) {
+        if (isClusteringEnabled()) {
             int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
             if (count == 0) {
                 log.error("ClusterUnlockFailed", id, action, serverId);
@@ -125,22 +116,8 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
-    private boolean isClusteringEnabled(final String action) {
-        if (PULL.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PULL);
-        } else if (PUSH.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PUSH);
-        } else if (ROUTE.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_ROUTE);
-        } else if (PURGE_INCOMING.equals(action) || PURGE_OUTGOING.equals(action) || PURGE_STATISTICS.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_PURGE);
-        } else if (HEARTBEAT.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_HEARTBEAT);
-        } else if (SYNCTRIGGERS.equals(action)) {
-            return parameterService.is(ParameterConstants.CLUSTER_LOCK_DURING_SYNC_TRIGGERS);
-        } else {
-            return true;
-        }
+    private boolean isClusteringEnabled() {
+        return parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
     }
 
 }

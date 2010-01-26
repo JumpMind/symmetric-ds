@@ -103,13 +103,8 @@ final public class ParameterConstants {
 
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
+    public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
-    public final static String CLUSTER_LOCK_DURING_PURGE = "cluster.lock.during.purge";
-    public final static String CLUSTER_LOCK_DURING_PULL = "cluster.lock.during.pull";
-    public final static String CLUSTER_LOCK_DURING_PUSH = "cluster.lock.during.push";
-    public final static String CLUSTER_LOCK_DURING_ROUTE = "cluster.lock.during.route";
-    public final static String CLUSTER_LOCK_DURING_HEARTBEAT = "cluster.lock.during.heartbeat";
-    public final static String CLUSTER_LOCK_DURING_SYNC_TRIGGERS = "cluster.lock.during.sync.triggers";
 
     public final static String PURGE_RETENTION_MINUTES = "purge.retention.minutes";
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.to.delete.in.tx";
