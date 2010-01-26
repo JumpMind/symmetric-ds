@@ -284,7 +284,10 @@ values
     <section id="clustering">
         <title>Clustering</title>
         <para>
-        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  Typically, when this is done, a hardware load balancer is used
+        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover.
+        </para>
+        <para>
+        Typically, when this is done, a hardware load balancer is used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  Also, the <link linkend='basic-properties'>sync.url</link>
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
