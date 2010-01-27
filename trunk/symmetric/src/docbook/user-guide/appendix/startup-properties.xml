@@ -405,7 +405,21 @@
                             [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>                
+                </varlistentry> 
+                <varlistentry>
+                    <term>
+                        <command>start.watchdog.job</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Whether the watchdog job is enabled for this node. The watchdog job monitors child
+                            nodes to detect if they are offline.  Refer to 
+                            <link linkend="extensions-offline-server-listener">IOfflineServerListener</link> for
+                            more information.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>               
                 <varlistentry>
                     <term>
                         <command>job.purge.period.time.ms</command>
@@ -479,6 +493,19 @@
                         <para>
                             This is the number of HTTP concurrent push/pull requests symmetric will accept. This
                             is controlled by the NodeConcurrencyFilter. [&#xA0;Default:&#xA0;20&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>offline.node.detection.period.minutes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the minimum number of minutes that a child node has been offline before taking action.  Refer to 
+                            <link linkend="extensions-offline-server-listener">IOfflineServerListener</link> for
+                            more information.  
+                            [&#xA0;Default:&#xA0;120&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>

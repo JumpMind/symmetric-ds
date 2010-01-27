@@ -543,12 +543,18 @@ values
             Implement this extension point to get callbacks during the heartbeat job.
             </para>
         </section>
-        <section id="extensions-offline-listener">
-            <title>IOfflineListener</title>
+        <section id="extensions-offline-client-listener">
+            <title>IOfflineClientListener</title>
             <para>
-            Implement this extension point to get callbacks for offline events.
+            Implement this extension point to get callbacks for offline events on client nodes.
             </para>
-        </section> 
+        </section>
+        <section id="extensions-offline-server-listener">
+            <title>IOfflineServerListener</title>
+            <para>
+            Implement this extension point to get callbacks for offline events detected on a server node during monitoring of client nodes.
+            </para>
+        </section>
         <section id="extensions-node-password">
             <title>INodePasswordFilter</title>
             <para>

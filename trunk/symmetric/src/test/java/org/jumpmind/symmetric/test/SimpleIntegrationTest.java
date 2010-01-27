@@ -1137,17 +1137,16 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         getRootEngine().getNodeService().deleteNodeSecurity(clientNodeOnRoot.getNodeId());
         
         // Turn auto registration and reload on so the client will register and reload
-        getClientEngine().getParameterService().saveParameter("auto.registration", true);
-        getClientEngine().getParameterService().saveParameter("auto.reload", true);
         getRootEngine().getParameterService().saveParameter("auto.registration", true);
         getRootEngine().getParameterService().saveParameter("auto.reload", true);
-        
         
         turnOnNoKeysInUpdateParameter(true);
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         clientJdbcTemplate.update(insertOrderHeaderSql, new Object[] { "99", 100, null, date }, new int[] {
                 Types.VARCHAR, Types.INTEGER, Types.CHAR, Types.DATE });
         clientJdbcTemplate.update(insertOrderDetailSql, new Object[] { "99", 1, "STK", "110000099", 3, 3.33 });
+        // The push will cause a Registration Required return code which will cause the the client identify to be removed 
+        // in order to force registration.
         getClientEngine().push();
         
         // A pull will cause the registration to occur and the node identify to be
