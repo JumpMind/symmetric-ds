@@ -310,6 +310,14 @@ values
     </section>   
     <section id='logging'>
         <title>Logging Configuration</title>    
+        <para>
+        The standalone SymmetricDS installation uses <ulink url="http://logging.apache.org/log4j/1.2/index.html">Log4J</ulink> for logging.  The configuration file is conf/log4j.xml.
+        The log4j.xml file has hints as to what logging can be enabled for useful, fine-grained logging.
+        </para>
+        <para>
+        SymmetricDS proxies all of its logging through <ulink url="http://commons.apache.org/logging/">Commons Logging</ulink>.  When deploying to an application server, if Log4J is not 
+        being leveraged, then the general rules for for Commons Logging apply.
+        </para>
     </section> 
     <section id='statistics'>
         <title>Statistics</title>    
