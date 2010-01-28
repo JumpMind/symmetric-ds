@@ -447,6 +447,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 configurationService.reloadChannels();
                 removeInactiveTriggers(sqlBuffer);
                 updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
+                triggerRouterCacheByNodeGroupId.clear();
             } finally {
                 clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
                 log.info("TriggersSynchronized");
