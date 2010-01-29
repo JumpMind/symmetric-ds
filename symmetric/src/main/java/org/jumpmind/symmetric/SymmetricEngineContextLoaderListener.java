@@ -33,8 +33,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * This is the standard way to bootstrap SymmetricDS in a stand-alone web container.
- * SymmetricDS uses Spring's WebApplicationContext for access to symmetric from
- * its Servlets. This servlet context listener forces the contextConfigLocation
+ * SymmetricDS uses Spring's WebApplicationContext for access to SymmetricDS from
+ * its Servlets. This Servlet context listener forces the contextConfigLocation
  * for Spring to be load symmetric.xml.
  * <p/>
  * Developers have the option to subclass off of this listener and override the
