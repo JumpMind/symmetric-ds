@@ -82,54 +82,59 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         List<Expression> expressions = getExpression(dataMetaData.getTrigger().getRouter()
                 .getRouterExpression(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData);
-        for (Expression e : expressions) {
-            String column = e.tokens[0].trim();
-            String value = e.tokens[1];
-            if (value.equalsIgnoreCase(":NODE_ID")) {
-                for (Node node : nodes) {
-                    if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
+        
+        if (columnValues != null) {
+            for (Expression e : expressions) {
+                String column = e.tokens[0].trim();
+                String value = e.tokens[1];
+                if (value.equalsIgnoreCase(":NODE_ID")) {
+                    for (Node node : nodes) {
+                        if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                        }
+                    }
+                } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
+                    for (Node node : nodes) {
+                        if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                        }
+                    }
+                } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
+                    for (Node node : nodes) {
+                        if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                        }
+                    }
+                } else if (e.equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
+                    Map<String, String> redirectMap = getRedirectMap(routingContext);
+                    String nodeId = redirectMap.get(columnValues.get(column));
+                    if (nodeId != null) {
+                        nodeIds = addNodeId(nodeId, nodeIds);
+                    }
+                } else if (value.startsWith(":")) {
+                    String firstValue = columnValues.get(column);
+                    String secondValue = columnValues.get(value.substring(1));
+                    if (e.equals
+                            && ((firstValue == null && secondValue == null) || (firstValue != null
+                                    && secondValue != null && firstValue.equals(secondValue)))) {
+                        nodeIds = toNodeIds(nodes, nodeIds);
+                    } else if (!e.equals
+                            && ((firstValue != null && secondValue == null)
+                                    || (firstValue == null && secondValue != null) || (firstValue != null
+                                    && secondValue != null && !firstValue.equals(secondValue)))) {
+                        nodeIds = toNodeIds(nodes, nodeIds);
+                    }
+                } else {
+                    if (e.equals && value.equals(columnValues.get(column))) {
+                        nodeIds = toNodeIds(nodes, nodeIds);
+                    } else if (!e.equals && !value.equals(columnValues.get(column))) {
+                        nodeIds = toNodeIds(nodes, nodeIds);
                     }
                 }
-            } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
-                for (Node node : nodes) {
-                    if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
-                    }
-                }
-            } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
-                for (Node node : nodes) {
-                    if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds);
-                    }
-                }
-            } else if (e.equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
-                Map<String, String> redirectMap = getRedirectMap(routingContext);
-                String nodeId = redirectMap.get(columnValues.get(column));
-                if (nodeId != null) {
-                    nodeIds = addNodeId(nodeId, nodeIds);
-                }
-            } else if (value.startsWith(":")) {
-                String firstValue = columnValues.get(column);
-                String secondValue = columnValues.get(value.substring(1));
-                if (e.equals
-                        && ((firstValue == null && secondValue == null) || (firstValue != null
-                                && secondValue != null && firstValue.equals(secondValue)))) {
-                    nodeIds = toNodeIds(nodes, nodeIds);
-                } else if (!e.equals
-                        && ((firstValue != null && secondValue == null)
-                                || (firstValue == null && secondValue != null) || (firstValue != null
-                                && secondValue != null && !firstValue.equals(secondValue)))) {
-                    nodeIds = toNodeIds(nodes, nodeIds);
-                }
-            } else {
-                if (e.equals && value.equals(columnValues.get(column))) {
-                    nodeIds = toNodeIds(nodes, nodeIds);
-                } else if (!e.equals && !value.equals(columnValues.get(column))) {
-                    nodeIds = toNodeIds(nodes, nodeIds);
-                }
-            }
 
+            }
+        } else {
+            log.warn("RouterNoColumnsToMatch", dataMetaData.getData().getDataId());
         }
 
         return nodeIds;
@@ -137,8 +142,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     }
 
     /**
-     * Cache parsed expressions in the context to minimize the amount of parsing we 
-     * have to do when we have lots of throughput.
+     * Cache parsed expressions in the context to minimize the amount of parsing
+     * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
     protected List<Expression> getExpression(String routerExpression, IRouterContext context) {
@@ -171,7 +176,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             } else {
                 log.warn("RouterIllegalColumnMatchExpression", routerExpression, routerExpression);
             }
-        } 
+        }
         return expressions;
     }
 
