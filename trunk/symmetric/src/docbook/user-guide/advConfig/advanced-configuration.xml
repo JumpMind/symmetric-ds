@@ -7,6 +7,36 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Advanced Configuration</title>
+    <section id='controlling-synchronization'>
+        <title>Controlling Synchronization</title>
+        <para>
+        The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.   
+        </para>    
+        <para>
+        After data is captured, the first event that occurs is the routing of the 
+        captured <link linkend="data">data</link>.  Data is routed by the Route Job.  It is a single background task that inserts into
+        <link linkend="data_event">data event</link> and <link linkend="outgoing_batch">outgoing batch</link>.  The Route Job determines which <link linkend="node">nodes</link>
+        data will be sent to, as well as how much data will be batched together for transport.  When the <emphasis>start.route.job</emphasis> SymmetricDS property is set to 
+        <emphasis>true</emphasis>, how often data is routed is controlled by the <emphasis>job.routing.period.time.ms</emphasis>.  Each time data is routed, the 
+        <link linkend="data_ref">data ref</link> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
+        unrouted data is optimal. 
+        </para>
+        <para>
+        After data is routed, it awaits transport to the target nodes.  Transport can occur when a client node is configured to pull data or when the host node is configured to push data.  These
+        events are controlled by the Push and the Pull Jobs.  When the <emphasis>start.pull.job</emphasis> SymmetricDS property is set to 
+        <emphasis>true</emphasis>, the frequency that data is pulled is controlled by the <emphasis>job.pull.period.time.ms</emphasis>.  When the <emphasis>start.push.job</emphasis> SymmetricDS property is set to 
+        <emphasis>true</emphasis>, the frequency that data is pushed is controlled by the <emphasis>job.push.period.time.ms</emphasis>.  Data is extracted by channel from the source database's 
+        <link linkend="data">data</link> table at an interval controlled by the extract_period_millis column on the <link linkend="channel">channel</link> table.  The last_extract_time is 
+        always recorded, by channel, on the <link linkend="node_channel_ctl">node channel control</link> table for the host node's id.  When the Pull and Push Job run, if the extract period
+        has not passed according to the last extract time, then the channel will be skipped.  If the extract_period_millis is set to zero, data extraction will happen every time the jobs run.
+        </para>
+        <para>
+        SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the <link linkend="node_group_channel_window">node group channel window</link>
+        table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
+        of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the start_time is greater than the end_time, then the window crosses
+        over to the next day.
+        </para>
+    </section>           
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
@@ -319,36 +349,6 @@ values
         being leveraged, then the general rules for for Commons Logging apply.
         </para>
     </section> 
-    <section id='sync-windows'>
-        <title>Controlling Synchronization</title>
-        <para>
-        The frequency of data synchronization is controlled by the coordination of a series of asynchronous events.   
-        </para>    
-        <para>
-        After data is captured, the first event that occurs is the routing of the 
-        captured <link linkend="data">data</link>.  Data is routed by the Route Job.  It is a single background task that inserts into
-        <link linkend="data_event">data event</link> and <link linkend="outgoing_batch">outgoing batch</link>.  The Route Job determines which <link linkend="node">nodes</link>
-        data will be sent to, as well as how much data will be batched together for transport.  When the <emphasis>start.route.job</emphasis> SymmetricDS property is set to 
-        <emphasis>true</emphasis>, how often data is routed is controlled by the <emphasis>job.routing.period.time.ms</emphasis>.  Each time data is routed, the 
-        <link linkend="data_ref">data ref</link> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
-        unrouted data is optimal. 
-        </para>
-        <para>
-        After data is routed, it awaits transport to the target nodes.  Transport can occur when a client node is configured to pull data or when the host node is configured to push data.  These
-        events are controlled by the Push and the Pull Jobs.  When the <emphasis>start.pull.job</emphasis> SymmetricDS property is set to 
-        <emphasis>true</emphasis>, the frequency that data is pulled is controlled by the <emphasis>job.pull.period.time.ms</emphasis>.  When the <emphasis>start.push.job</emphasis> SymmetricDS property is set to 
-        <emphasis>true</emphasis>, the frequency that data is pushed is controlled by the <emphasis>job.push.period.time.ms</emphasis>.  Data is extracted by channel from the source database's 
-        <link linkend="data">data</link> table at an interval controlled by the extract_period_millis column on the <link linkend="channel">channel</link> table.  The last_extract_time is 
-        always recorded, by channel, on the <link linkend="node_channel_ctl">node channel control</link> table for the host node's id.  When the Pull and Push Job run, if the extract period
-        has not passed according to the last extract time, then the channel will be skipped.  If the extract_period_millis is set to zero, data extraction will happen every time the jobs run.
-        </para>
-        <para>
-        SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the <link linkend="node_group_channel_window">node group channel window</link>
-        table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
-        of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the start_time is greater than the end_time, then the window crosses
-        over to the next day.
-        </para>
-    </section>           
     <section id='statistics'>
         <title>Statistics</title>    
     </section>           
