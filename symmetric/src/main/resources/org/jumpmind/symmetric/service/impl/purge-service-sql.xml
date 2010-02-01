@@ -44,10 +44,12 @@
         delete from $[sym.sync.table.prefix]_data where 
           data_id between :MIN and :MAX and 
           create_time &lt; :CUTOFF_TIME and 
+          data_id in (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX)
+          and
           data_id not in 
-            (select d.data_id from $[sym.sync.table.prefix]_data d left join $[sym.sync.table.prefix]_data_event e
-              on d.data_id=e.data_id where 
-              d.data_id between :MIN and :MAX and
+            (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX and
               (e.data_id is null or 
               e.batch_id in 
                 (select batch_id from $[sym.sync.table.prefix]_outgoing_batch where 
