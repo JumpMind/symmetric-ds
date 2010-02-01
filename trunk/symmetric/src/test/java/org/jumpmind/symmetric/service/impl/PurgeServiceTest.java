@@ -77,7 +77,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setDataId(1);
-        getDataService().insertDataAndDataEvent(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
+        getDataService().insertDataAndDataEventAndOutgoingBatch(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
                 router.getRouter().getRouterId());
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
@@ -103,7 +103,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setDataId(1);
-        getDataService().insertDataAndDataEvent(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
+        getDataService().insertDataAndDataEventAndOutgoingBatch(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
                 router.getRouter().getRouterId());
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
         getJdbcTemplate().update("update sym_outgoing_batch set status=?", new Object[] { Status.IG.name() });
@@ -177,6 +177,35 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         data.setDataId(1);
         getDataService().insertData(data);
         getDataService().insertDataEvent(data.getDataId(), Constants.UNROUTED_BATCH_ID, Constants.UNKNOWN_ROUTER_ID);
+    }
+        
+    @Test
+    public void testThatPurgeDoesNotDeletePartiallySentData() {
+        int oldPurgeRetentionPeriod = getParameterService().getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, 10);
+        setupPartiallySentData();
+        makeDataOld();
+        assertCounts(1, 3, 3);
+        getSymmetricEngine().purge();
+        assertCounts(1, 2, 2);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, oldPurgeRetentionPeriod);
+    }
+    
+    private void setupPartiallySentData() {
+        cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
+        assertCounts(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
+                false).values().iterator().next().get(0);
+        Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
+                getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        data.setDataId(1);
+        getDataService().insertDataAndDataEventAndOutgoingBatch(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
+                router.getRouter().getRouterId());
+        int dataId = getJdbcTemplate().queryForInt("select max(data_id) from sym_data");
+        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00002", router.getRouter().getRouterId());
+        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00003", router.getRouter().getRouterId());
+        getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
 
     private void assertCounts(int count) {

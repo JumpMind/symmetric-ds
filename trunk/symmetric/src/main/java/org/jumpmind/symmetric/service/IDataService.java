@@ -55,10 +55,12 @@ public interface IDataService {
     public void insertDataEvent(long dataId, long batchId, String routerId);
 
     public void insertDataEvent(JdbcTemplate template, long dataId, long batchId, String routerId);
+    
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, String routerId);
 
     public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId);
 
-    public void insertDataAndDataEvent(Data data, String nodeId, String routerId);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId);
 
     public void insertPurgeEvent(Node targetNode, TriggerRouter triggerRouter);
 

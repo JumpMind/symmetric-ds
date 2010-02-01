@@ -99,12 +99,12 @@ public class DataService extends AbstractService implements IDataService {
         // row_data
         Data data = new Data(history.getSourceTableName(), DataEventType.RELOAD,
                 overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter.getInitialLoadSelect(), null, history, Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), triggerRouter.getRouter().getRouterId());
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), triggerRouter.getRouter().getRouterId());
     }
 
     public void insertResendConfigEvent(final Node targetNode) {
         Data data = new Data(Constants.NA, DataEventType.CONFIG, null, null, null, Constants.CHANNEL_CONFIG, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
@@ -126,13 +126,13 @@ public class DataService extends AbstractService implements IDataService {
         TriggerHistory history = triggerRouterService.getNewestTriggerHistoryForTrigger(trigger.getTriggerId());
         Data data = new Data(trigger.getSourceTableName(), DataEventType.SQL, CsvUtils.escapeCsvData(sql), null,
                 history, Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public void insertSqlEvent(final Node targetNode, String sql) {
         Data data = new Data(Constants.NA, DataEventType.SQL, CsvUtils.escapeCsvData(sql), null, null,
                 Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public void insertCreateEvent(final Node targetNode, final TriggerRouter triggerRouter, String xml) {
@@ -140,7 +140,7 @@ public class DataService extends AbstractService implements IDataService {
                 .getTriggerId());
         Data data = new Data(triggerRouter.getTrigger().getSourceTableName(), DataEventType.CREATE, CsvUtils
                 .escapeCsvData(xml), null, history, Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public long insertData(final Data data) {
@@ -179,16 +179,16 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
         long dataId = insertData(data);
         for (Node node : nodes) {
-            insertDataEvent(dataId, channelId, node.getNodeId(), routerId);
+            insertDataEventAndOutgoingBatch(dataId, channelId, node.getNodeId(), routerId);
         }
     }
 
-    public void insertDataAndDataEvent(Data data, String nodeId, String routerId) {
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId) {
         long dataId = insertData(data);
-        insertDataEvent(dataId, data.getChannelId(), nodeId, routerId);
+        insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), nodeId, routerId);
     }
 
-    public void insertDataEvent(long dataId, String channelId, String nodeId, String routerId) {
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId, String routerId) {
         OutgoingBatch outgoingBatch = new OutgoingBatch(nodeId, channelId);
         outgoingBatchService.insertOutgoingBatch(outgoingBatch);
         insertDataEvent(new DataEvent(dataId, outgoingBatch.getBatchId(), routerId));
@@ -259,7 +259,7 @@ public class DataService extends AbstractService implements IDataService {
     private void insertNodeSecurityUpdate(Node node) {
         Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'");
         if (data != null) {
-            insertDataAndDataEvent(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+            insertDataAndDataEventAndOutgoingBatch(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
     }
 
@@ -267,7 +267,7 @@ public class DataService extends AbstractService implements IDataService {
         Node targetNode = nodeService.findNode(nodeId);
         Data data = new Data(Constants.NA, DataEventType.BSH, CsvUtils.escapeCsvData(script), null, null,
                 Constants.CHANNEL_RELOAD, null, null);
-        insertDataAndDataEvent(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
+        insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
     }
 
     public String sendSQL(String nodeId, String tableName, String sql) {
