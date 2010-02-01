@@ -345,7 +345,7 @@ values
         <para>
         SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the <link linkend="node_group_channel_window">node group channel window</link>
         table.  A list of allowed time windows can be specified for a node group and a channel.  If one or more windows exist, then data will only be extracted and transported if the time
-        of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the start_time is less than the end_time, then the window crosses
+        of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the start_time is greater than the end_time, then the window crosses
         over to the next day.
         </para>
     </section>           
