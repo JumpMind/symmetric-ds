@@ -5,8 +5,8 @@
     <title>Introduction</title>
     <section id="intro">
         <title>Introduction</title>
-        <para>Welcome to SymmetricDS! This User's Guide will introduce you to both basic and advanced concepts and configuration
-            of SymmetricDS. By the end of this Chapter, you will have a better understanding of SymmetricDS' capabilities, and
+        <para>This User's Guide will introduce both basic and advanced concepts in the configuration
+            of SymmetricDS. By the end of this chapter, you will have a better understanding of SymmetricDS' capabilities, and
             many of its basic concepts. This chapter also includes a hands-on, step-by-step, tutorial meant to demonstrate some of
             the potential applications for SymmetricDS.</para>
         <section id="definition">
@@ -24,8 +24,8 @@
                 events are captured for delivery to other SymmetricDS nodes.
             </para>
             <para>
-                In most databases, the transaction id is also captured so that the insert, update, and delete events can be replicated via the
-                transport layer to other nodes.  The transport layer is typically a CSV protocol over HTTP.
+                In most databases, the transaction id is also captured by the database triggers so that the insert, update, and delete 
+                events can be replicated transactionally via the transport layer to other nodes.  The transport layer is typically a CSV protocol over HTTP.
             </para>
             <para>
                 SymmetricDS supports synchronization across different database platforms through the concept of database
