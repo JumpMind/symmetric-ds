@@ -42,6 +42,11 @@ public class MockDataService implements IDataService {
 
     }
 
+    public void insertDataEventAndOutgoingBatch(long dataId, String channelId, String nodeId,
+            String routerId) {
+
+    }
+
     public void sendScript(String nodeId, String script) {
 
     }
@@ -95,11 +100,12 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
+    public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes,
+            String routerId) {
 
     }
 
-    public void insertDataAndDataEvent(Data data, String nodeId, String routerId) {
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId) {
 
     }
 
