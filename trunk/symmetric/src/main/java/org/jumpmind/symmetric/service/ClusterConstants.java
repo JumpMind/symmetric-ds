@@ -19,7 +19,10 @@
  */
 package org.jumpmind.symmetric.service;
 
-public class LockActionConstants {
+public class ClusterConstants {
+
+    public static final String COMMON_LOCK_ID = "common";
+    
     public static final String ROUTE = "ROUTE";
     public static final String PUSH = "PUSH";
     public static final String PULL = "PULL";

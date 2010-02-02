@@ -20,14 +20,22 @@
 
 package org.jumpmind.symmetric.service.impl;
 
+import static org.jumpmind.symmetric.service.ClusterConstants.COMMON_LOCK_ID;
+import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
+import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
+import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
+import static org.jumpmind.symmetric.service.ClusterConstants.SYNCTRIGGERS;
+
 import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.LockActionConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,23 +43,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class ClusterService extends AbstractService implements IClusterService {
 
-    protected static final String COMMON_LOCK_ID = "common";
-
     protected String serverId = AppUtils.getServerId();
 
     public void initLockTable() {
-        initLockTable(LockActionConstants.ROUTE, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.PULL, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.PUSH, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.HEARTBEAT, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.PURGE_INCOMING, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.PURGE_OUTGOING, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.PURGE_STATISTICS, COMMON_LOCK_ID);
-        initLockTable(LockActionConstants.SYNCTRIGGERS, COMMON_LOCK_ID);
-    }
-
-    public void initLockTableForNode(String action, final Node node) {
-        initLockTable(action, node.getNodeId());
+        initLockTable(ROUTE, COMMON_LOCK_ID);
+        initLockTable(PULL, COMMON_LOCK_ID);
+        initLockTable(PUSH, COMMON_LOCK_ID);
+        initLockTable(HEARTBEAT, COMMON_LOCK_ID);
+        initLockTable(PURGE_INCOMING, COMMON_LOCK_ID);
+        initLockTable(PURGE_OUTGOING, COMMON_LOCK_ID);
+        initLockTable(PURGE_STATISTICS, COMMON_LOCK_ID);
+        initLockTable(SYNCTRIGGERS, COMMON_LOCK_ID);
     }
 
     public void initLockTable(final String action, final String lockId) {
@@ -69,11 +71,6 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean lock(final String action, final Node node) {
-        return lock(action, node.getNodeId());
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean lock(final String action) {
         return lock(action, COMMON_LOCK_ID);
     }
@@ -84,11 +81,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void unlock(final String action, final Node node) {
-        unlock(action, node.getNodeId());
-    }
-
-    private boolean lock(final String action, final String id) {
+    public boolean lock(final String action, final String id) {
         if (isClusteringEnabled()) {
             final Date timeout = DateUtils.add(new Date(), Calendar.MILLISECOND, (int) -parameterService
                     .getLong(ParameterConstants.CLUSTER_LOCK_TIMEOUT_MS));
@@ -107,7 +100,8 @@ public class ClusterService extends AbstractService implements IClusterService {
         return serverId;
     }
 
-    private void unlock(final String action, final String id) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void unlock(final String action, final String id) {
         if (isClusteringEnabled()) {
             int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
             if (count == 0) {

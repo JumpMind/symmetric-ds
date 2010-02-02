@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPushService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -65,7 +65,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public boolean pushData() {
         boolean pushedData = false;
         boolean inError = false;
-        if (clusterService.lock(LockActionConstants.PUSH)) {
+        if (clusterService.lock(ClusterConstants.PUSH)) {
             try {
                 List<Node> nodes = nodeService.findNodesToPushTo();
                 if (nodes != null && nodes.size() > 0) {
@@ -84,7 +84,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     }
                 }
             } finally {
-                clusterService.unlock(LockActionConstants.PUSH);
+                clusterService.unlock(ClusterConstants.PUSH);
             }
         } else {
             log.info("DataPushingFailedLock");

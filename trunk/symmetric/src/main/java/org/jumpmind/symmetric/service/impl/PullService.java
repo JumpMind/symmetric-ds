@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
@@ -49,7 +49,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
 
     synchronized public boolean pullData() {
         boolean dataPulled = false;
-        if (clusterService.lock(LockActionConstants.PULL)) {
+        if (clusterService.lock(ClusterConstants.PULL)) {
             try {
                 // register if we haven't already been registered
                 registrationService.registerWithServer();
@@ -94,7 +94,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                     }
                 }
             } finally {
-                clusterService.unlock(LockActionConstants.PULL);
+                clusterService.unlock(ClusterConstants.PULL);
 
             }
 
