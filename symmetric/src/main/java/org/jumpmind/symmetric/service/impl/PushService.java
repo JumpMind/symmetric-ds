@@ -65,26 +65,30 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     synchronized public boolean pushData() {
         boolean pushedData = false;
         boolean inError = false;
-        if (clusterService.lock(ClusterConstants.PUSH)) {
-            try {
-                List<Node> nodes = nodeService.findNodesToPushTo();
-                if (nodes != null && nodes.size() > 0) {
-                    for (Node node : nodes) {
-                        log.debug("DataPushing", node);
-                        PushStatus status = pushToNode(node);
-                        if (status == PushStatus.PUSHED) {
-                            pushedData = true;
-                            log.info("DataPushed", node);
-                        } else if (status == PushStatus.ERROR) {
-                            inError = true;
-                            log.warn("DataPushingFailed");
+        if (nodeService.findIdentityNodeId() != null) {
+            if (clusterService.lock(ClusterConstants.PUSH)) {
+                try {
+                    List<Node> nodes = nodeService.findNodesToPushTo();
+                    if (nodes != null && nodes.size() > 0) {
+                        for (Node node : nodes) {
+                            log.debug("DataPushing", node);
+                            PushStatus status = pushToNode(node);
+                            if (status == PushStatus.PUSHED) {
+                                pushedData = true;
+                                log.info("DataPushed", node);
+                            } else if (status == PushStatus.ERROR) {
+                                inError = true;
+                                log.warn("DataPushingFailed");
+                            }
+                            log.debug("DataPushingCompleted", node);
+    
                         }
-                        log.debug("DataPushingCompleted", node);
-
                     }
+                } finally {
+                    clusterService.unlock(ClusterConstants.PUSH);
                 }
-            } finally {
-                clusterService.unlock(ClusterConstants.PUSH);
+            } else {
+                log.info("DataPushingFailedLock");
             }
         } else {
             log.info("DataPushingFailedLock");
