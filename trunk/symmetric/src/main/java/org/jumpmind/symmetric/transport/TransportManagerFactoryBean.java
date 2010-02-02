@@ -20,9 +20,17 @@
 
 package org.jumpmind.symmetric.transport;
 
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
@@ -30,6 +38,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
+import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
 import org.springframework.beans.factory.FactoryBean;
 
@@ -57,6 +66,13 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
                     return false;
                 }
             });
+            
+            // Allow self signed certs based on the parameter value.
+            boolean allowSelfSignedCerts = parameterService.is(ParameterConstants.TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
+            if (allowSelfSignedCerts) {
+                HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
+            }
+
             return new HttpTransportManager(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT), parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(configurationService);
@@ -83,6 +99,26 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
 
     public void setConfigurationService(IConfigurationService configurationService) {
         this.configurationService = configurationService;
+    }
+    
+    /**
+     * Create an SSL Socket Factory that accepts self signed certificates.
+     * 
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     * @throws KeyStoreException
+     */
+    private static SSLSocketFactory createSelfSignedSocketFactory() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
+        SSLSocketFactory factory = null;
+        
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(null, 
+                     new TrustManager[] {new SelfSignedX509TrustManager(null)}, 
+                     new SecureRandom());
+        factory = context.getSocketFactory();
+        
+        return factory;
     }
 
 }
