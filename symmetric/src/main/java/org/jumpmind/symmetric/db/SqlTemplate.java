@@ -213,8 +213,7 @@ public class SqlTemplate {
         ddl = AppUtils.replace("defaultCatalog", resolveSchemaAndCatalogs && defaultCatalog != null
                 && defaultCatalog.length() > 0 ? defaultCatalog + "." : "", ddl);
 
-        ddl = AppUtils.replace("triggerName", dialect.getTriggerName(dml, dialect.getMaxTriggerNameLength(),
-                trigger, history).toUpperCase(), ddl);
+        ddl = AppUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
         ddl = AppUtils.replace("prefixName", tablePrefix, ddl);
         ddl = AppUtils.replace("channelName", trigger.getChannelId(), ddl);
         ddl = AppUtils.replace("triggerHistoryId", Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);

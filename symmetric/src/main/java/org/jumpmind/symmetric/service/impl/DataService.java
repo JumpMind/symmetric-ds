@@ -60,7 +60,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.util.AppUtils;
 import org.jumpmind.symmetric.util.CsvUtils;
 import org.springframework.dao.DataAccessException;
@@ -473,7 +473,7 @@ public class DataService extends AbstractService implements IDataService {
     public void heartbeat(boolean force) {
         List<IHeartbeatListener> listeners = getHeartbeatListeners(force);
         if (listeners.size() > 0) {
-            if (clusterService.lock(LockActionConstants.HEARTBEAT)) {
+            if (clusterService.lock(ClusterConstants.HEARTBEAT)) {
                 try {
                     Node me = nodeService.findIdentity();
                     if (me != null) {
@@ -509,7 +509,7 @@ public class DataService extends AbstractService implements IDataService {
 
                 } finally {
                     updateLastHeartbeatTime(listeners);
-                    clusterService.unlock(LockActionConstants.HEARTBEAT);
+                    clusterService.unlock(ClusterConstants.HEARTBEAT);
                 }
 
             } else {

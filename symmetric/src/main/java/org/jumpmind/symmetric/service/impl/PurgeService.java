@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
@@ -71,14 +71,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeStatistic(Calendar retentionCutoff) {
         try {
-            if (clusterService.lock(LockActionConstants.PURGE_STATISTICS)) {
+            if (clusterService.lock(ClusterConstants.PURGE_STATISTICS)) {
                 try {
                     log.info("DataPurgeStatsRunning");
                     int count = jdbcTemplate.update(getSql("deleteFromStatisticSql"), new Object[] { retentionCutoff
                             .getTime() });
                     log.info("DataPurgeStatsRun", count);
                 } finally {
-                    clusterService.unlock(LockActionConstants.PURGE_STATISTICS);
+                    clusterService.unlock(ClusterConstants.PURGE_STATISTICS);
                     log.info("DataPurgeStatsCompleted");
                 }
 
@@ -92,14 +92,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeOutgoing(Calendar retentionCutoff) {
         try {
-            if (clusterService.lock(LockActionConstants.PURGE_OUTGOING)) {
+            if (clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
                 try {
                     log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(
                             retentionCutoff.getTime()));
                     purgeDataRows(retentionCutoff);
                     purgeOutgoingBatch(retentionCutoff);
                 } finally {
-                    clusterService.unlock(LockActionConstants.PURGE_OUTGOING);
+                    clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
                     log.info("DataPurgeOutgoingCompleted");
                 }
             } else {
@@ -180,12 +180,12 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private void purgeIncoming(Calendar retentionCutoff) {
         try {
-            if (clusterService.lock(LockActionConstants.PURGE_INCOMING)) {
+            if (clusterService.lock(ClusterConstants.PURGE_INCOMING)) {
                 try {
                     log.info("DataPurgeIncomingRunning");
                     purgeIncomingBatch(retentionCutoff);
                 } finally {
-                    clusterService.unlock(LockActionConstants.PURGE_INCOMING);
+                    clusterService.unlock(ClusterConstants.PURGE_INCOMING);
                     log.info("DataPurgeIncomingCompleted");
                 }
             } else {

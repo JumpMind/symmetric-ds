@@ -120,7 +120,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     private Map<Integer, String> _defaultSizes;
 
-    protected IParameterService parameterService;
+    protected IParameterService parameterService;        
 
     protected String tablePrefix;
 
@@ -142,7 +142,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     protected Set<String> sqlKeywords;
 
-    protected String defaultSchema;
+    protected String defaultSchema;   
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -1278,52 +1278,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public String getIdentifierQuoteString() {
         return identifierQuoteString;
-    }
-
-    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, TriggerHistory history) {
-
-        String triggerName = null;
-        switch (dml) {
-        case INSERT:
-            if (!StringUtils.isBlank(trigger.getNameForInsertTrigger())) {
-                triggerName = trigger.getNameForInsertTrigger();
-            }
-            break;
-        case UPDATE:
-            if (!StringUtils.isBlank(trigger.getNameForUpdateTrigger())) {
-                triggerName = trigger.getNameForUpdateTrigger();
-            }
-            break;
-        case DELETE:
-            if (!StringUtils.isBlank(trigger.getNameForDeleteTrigger())) {
-                triggerName = trigger.getNameForDeleteTrigger();
-            }
-            break;
-        }
-
-        if (triggerName == null) {
-            String triggerPrefix1 = tablePrefix + "_";
-            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_" + trigger.getTriggerId();
-            String triggerSuffix2 = "_"
-                    + parameterService.getNodeGroupId().replaceAll("[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
-            triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
-            // use the node group id as part of the trigger if we can because it
-            // helps uniquely identify
-            // the trigger in embedded databases. In hsqldb we choose the
-            // correct connection based on the presense of
-            // a table that is named for the trigger. If the trigger isn't
-            // unique across all databases, then we can
-            // choose the wrong connection.
-            if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
-                triggerName = triggerPrefix1 + triggerSuffix1;
-            }
-        }
-
-        if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
-            triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
-            log.warn("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
-        }
-        return triggerName;
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {

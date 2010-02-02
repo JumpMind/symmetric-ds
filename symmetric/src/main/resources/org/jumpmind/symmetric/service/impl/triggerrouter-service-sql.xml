@@ -146,11 +146,16 @@
           r.target_catalog_name,r.source_node_group_id,r.target_schema_name,r.target_table_name,r.target_node_group_id,r.router_expression,
           r.router_type,r.router_id,r.create_time as r_create_time,r.last_update_time as r_last_update_time,r.last_update_by as r_last_update_by,
           tr.create_time,tr.last_update_time,tr.last_update_by,tr.initial_load_order, tr.initial_load_select 
-        from sym_trigger_router tr 
-          inner join sym_trigger t on tr.trigger_id=t.trigger_id 
-          inner join sym_router r on tr.router_id=r.router_id 
+        from $[sym.sync.table.prefix]_trigger_router tr 
+          inner join $[sym.sync.table.prefix]_trigger t on tr.trigger_id=t.trigger_id 
+          inner join $[sym.sync.table.prefix]_router r on tr.router_id=r.router_id 
       </value>
     </entry>
+    <entry key="selectTriggerNameInUseSql">
+      <value>
+          select count(*) from $[sym.sync.table.prefix]_trigger_hist where name_for_update_trigger=? or name_for_insert_trigger=? or name_for_delete_trigger=? and inactive_time is null
+      </value>
+    </entry>    
     <entry key="selectGroupTriggersSql">
       <value>
           where r.source_node_group_id = ? order by t.channel_id

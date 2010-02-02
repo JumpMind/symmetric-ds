@@ -58,7 +58,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -106,14 +106,14 @@ public class RouterService extends AbstractService implements IRouterService {
      * @return true if data was routed
      */
     synchronized public void routeData() {
-        if (clusterService.lock(LockActionConstants.ROUTE)) {
+        if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
                 routeDataForEachChannel(ref, sourceNode);
                 findAndSaveNextDataId(ref);
             } finally {
-                clusterService.unlock(LockActionConstants.ROUTE);
+                clusterService.unlock(ClusterConstants.ROUTE);
             }
         }
     }

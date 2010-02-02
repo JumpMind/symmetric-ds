@@ -52,7 +52,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -89,6 +89,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         final Map<Long, TriggerHistory> retMap = new HashMap<Long, TriggerHistory>();
         jdbcTemplate.query(getSql("allTriggerHistSql"), new TriggerHistoryMapper(retMap));
         return retMap;
+    }
+    
+    public boolean isTriggerNameInUse(String triggerName) {
+        return jdbcTemplate.queryForInt(getSql("selectTriggerNameInUseSql"), triggerName, triggerName, triggerName) > 0;
     }
 
     public TriggerHistory findTriggerHistory(String sourceTableName) {
@@ -440,7 +444,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTriggers(StringBuilder sqlBuffer, boolean gen_always) {
-        if (clusterService.lock(LockActionConstants.SYNCTRIGGERS)) {
+        if (clusterService.lock(ClusterConstants.SYNCTRIGGERS)) {
             try {
                 log.info("TriggersSynchronizing");
                 // make sure channels are read from the database
@@ -449,7 +453,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
                 triggerRouterCacheByNodeGroupId.clear();
             } finally {
-                clusterService.unlock(LockActionConstants.SYNCTRIGGERS);
+                clusterService.unlock(ClusterConstants.SYNCTRIGGERS);
                 log.info("TriggersSynchronized");
             }
         } else {
@@ -595,12 +599,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, reason);
         int maxTriggerNameLength = dbDialect.getMaxTriggerNameLength();
 
-        newTriggerHist.setNameForInsertTrigger(dbDialect.getTriggerName(DataEventType.INSERT, 
-                maxTriggerNameLength, trigger, hist).toUpperCase());
-        newTriggerHist.setNameForUpdateTrigger(dbDialect.getTriggerName(DataEventType.UPDATE, 
-                maxTriggerNameLength, trigger, hist).toUpperCase());
-        newTriggerHist.setNameForDeleteTrigger(dbDialect.getTriggerName(DataEventType.DELETE, 
-                maxTriggerNameLength, trigger, hist).toUpperCase());
+        newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT, 
+                maxTriggerNameLength, trigger).toUpperCase());
+        newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE, 
+                maxTriggerNameLength, trigger).toUpperCase());
+        newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE, 
+                maxTriggerNameLength, trigger).toUpperCase());
 
         String oldTriggerName = null;
         String oldSourceSchema = null;
@@ -644,6 +648,62 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         return hist;
     }
+    
+    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger) {
+
+        String triggerName = null;
+        switch (dml) {
+        case INSERT:
+            if (!StringUtils.isBlank(trigger.getNameForInsertTrigger())) {
+                triggerName = trigger.getNameForInsertTrigger();
+            }
+            break;
+        case UPDATE:
+            if (!StringUtils.isBlank(trigger.getNameForUpdateTrigger())) {
+                triggerName = trigger.getNameForUpdateTrigger();
+            }
+            break;
+        case DELETE:
+            if (!StringUtils.isBlank(trigger.getNameForDeleteTrigger())) {
+                triggerName = trigger.getNameForDeleteTrigger();
+            }
+            break;
+        }
+
+        if (triggerName == null) {
+            String triggerPrefix1 = tablePrefix + "_";
+            String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_" + trigger.getTriggerId();
+            String triggerSuffix2 = "_"
+                    + parameterService.getNodeGroupId().replaceAll("[^a-zA-Z0-9]|[a|e|i|o|u|A|E|I|O|U]", "");
+            triggerName = triggerPrefix1 + triggerSuffix1 + triggerSuffix2;
+            // use the node group id as part of the trigger if we can because it
+            // helps uniquely identify
+            // the trigger in embedded databases. In hsqldb we choose the
+            // correct connection based on the presence of
+            // a table that is named for the trigger. If the trigger isn't
+            // unique across all databases, then we can
+            // choose the wrong connection.
+            if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
+                triggerName = triggerPrefix1 + triggerSuffix1;
+            }
+        }
+
+        if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
+            int duplicateCount = 0;
+            do {
+                if (duplicateCount == 0) {
+                   triggerName = triggerName.substring(0, maxTriggerNameLength - 1);
+                } else {
+                    String duplicateSuffix = Integer.toString(duplicateCount);
+                    triggerName = triggerName.substring(0, triggerName.length() - duplicateSuffix.length()) + duplicateSuffix;
+                }
+                duplicateCount++;
+            } while (isTriggerNameInUse(triggerName));
+            
+            log.info("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
+        }
+        return triggerName;
+    }    
 
     class NodeGroupLinkMapper implements RowMapper<NodeGroupLink> {
         public NodeGroupLink mapRow(ResultSet rs, int num) throws SQLException {

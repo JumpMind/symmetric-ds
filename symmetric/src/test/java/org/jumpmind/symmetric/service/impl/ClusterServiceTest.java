@@ -20,9 +20,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.LockActionConstants;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.junit.Test;
 
@@ -36,13 +35,13 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     public void testLock() throws Exception {
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
         final String serverId = service.getServerId();
-        assertTrue(service.lock(LockActionConstants.PURGE_INCOMING), "Could not lock for PURGE");
+        assertTrue(service.lock(ClusterConstants.PURGE_INCOMING), "Could not lock for PURGE");
         assertEquals(countActivePurgeLocks(), 1, "Could not find the lock in the database.");
         service.setServerId("anotherServer");
-        assertFalse(service.lock(LockActionConstants.PURGE_INCOMING), "Should not have been able to lock for PURGE");
+        assertFalse(service.lock(ClusterConstants.PURGE_INCOMING), "Should not have been able to lock for PURGE");
         service.setServerId(serverId);
-        assertTrue(service.lock(LockActionConstants.PURGE_INCOMING), "Could not lock for PURGE.  Should have been able to break the lock because the server id is the same.");
-        service.unlock(LockActionConstants.PURGE_INCOMING);
+        assertTrue(service.lock(ClusterConstants.PURGE_INCOMING), "Could not lock for PURGE.  Should have been able to break the lock because the server id is the same.");
+        service.unlock(ClusterConstants.PURGE_INCOMING);
         assertEquals(countActivePurgeLocks(), 0, "Could not find the lock in the database.");
     }
 
@@ -50,30 +49,26 @@ public class ClusterServiceTest extends AbstractDatabaseTest {
     public void testOtherNodeLock() throws Exception {
         final String ID_ONE = "00020";
         final String ID_TWO = "00010";
-        final Node nodeOne = new Node();
-        nodeOne.setNodeId(ID_ONE);
 
-        final Node nodeTwo = new Node();
-        nodeTwo.setNodeId(ID_TWO);
 
         final IClusterService service = (IClusterService) find(Constants.CLUSTER_SERVICE);
         final String serverId = service.getServerId();
         service.initLockTable("OTHER", ID_ONE);
         service.initLockTable("OTHER", ID_TWO);
-        assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
+        assertTrue(service.lock("OTHER", ID_ONE), "Could not lock for OTHER " + ID_ONE);
         service.setServerId("anotherServer");
-        assertFalse(service.lock("OTHER", nodeOne), "Should not have been able to lock for OTHER "
+        assertFalse(service.lock("OTHER", ID_ONE), "Should not have been able to lock for OTHER "
                 + ID_ONE);
-        assertTrue(service.lock("OTHER", nodeTwo), "Could not lock for OTHER " + ID_TWO);
+        assertTrue(service.lock("OTHER", ID_TWO), "Could not lock for OTHER " + ID_TWO);
         service.setServerId(serverId);
-        service.unlock("OTHER", nodeOne);
-        assertTrue(service.lock("OTHER", nodeOne), "Could not lock for OTHER " + ID_ONE);
+        service.unlock("OTHER", ID_ONE);
+        assertTrue(service.lock("OTHER", ID_ONE), "Could not lock for OTHER " + ID_ONE);
 
     }
 
     private int countActivePurgeLocks() {
         return getJdbcTemplate().queryForInt(
                 "select count(*) from sym_lock where lock_id=? and lock_action=? and lock_time is not null",
-                new Object[] { ClusterService.COMMON_LOCK_ID, LockActionConstants.PURGE_INCOMING });
+                new Object[] { ClusterConstants.COMMON_LOCK_ID, ClusterConstants.PURGE_INCOMING });
     }
 }
