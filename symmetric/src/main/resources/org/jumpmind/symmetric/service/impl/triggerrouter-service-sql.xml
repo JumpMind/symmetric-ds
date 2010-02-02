@@ -153,7 +153,7 @@
     </entry>
     <entry key="selectTriggerNameInUseSql">
       <value>
-          select count(*) from $[sym.sync.table.prefix]_trigger_hist where name_for_update_trigger=? or name_for_insert_trigger=? or name_for_delete_trigger=? and inactive_time is null
+          select count(*) from $[sym.sync.table.prefix]_trigger_hist where (name_for_update_trigger=? or name_for_insert_trigger=? or name_for_delete_trigger=?) and trigger_id != ? and inactive_time is null
       </value>
     </entry>    
     <entry key="selectGroupTriggersSql">

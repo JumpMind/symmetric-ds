@@ -86,7 +86,5 @@ public interface ITriggerRouterService {
     public void addTriggerCreationListeners(ITriggerCreationListener l);
 
     public Map<Trigger, Exception> getFailedTriggers();
-    
-    public boolean isTriggerNameInUse(String triggerName);
 
 }

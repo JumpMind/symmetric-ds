@@ -91,8 +91,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return retMap;
     }
     
-    public boolean isTriggerNameInUse(String triggerName) {
-        return jdbcTemplate.queryForInt(getSql("selectTriggerNameInUseSql"), triggerName, triggerName, triggerName) > 0;
+    protected boolean isTriggerNameInUse(String triggerId, String triggerName) {
+        return jdbcTemplate.queryForInt(getSql("selectTriggerNameInUseSql"), triggerName, triggerName, triggerName, triggerId) > 0;
     }
 
     public TriggerHistory findTriggerHistory(String sourceTableName) {
@@ -687,6 +687,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 triggerName = triggerPrefix1 + triggerSuffix1;
             }
         }
+        
+        triggerName = triggerName.toUpperCase();
 
         if (triggerName.length() > maxTriggerNameLength && maxTriggerNameLength > 0) {
             int duplicateCount = 0;
@@ -698,9 +700,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     triggerName = triggerName.substring(0, triggerName.length() - duplicateSuffix.length()) + duplicateSuffix;
                 }
                 duplicateCount++;
-            } while (isTriggerNameInUse(triggerName));
+            } while (isTriggerNameInUse(trigger.getTriggerId(), triggerName));
             
-            log.info("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
+            log.debug("TriggerNameTruncated", dml.name().toLowerCase(), trigger.getTriggerId(), maxTriggerNameLength);
         }
         return triggerName;
     }    
