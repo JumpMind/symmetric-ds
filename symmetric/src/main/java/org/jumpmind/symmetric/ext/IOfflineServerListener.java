@@ -19,8 +19,7 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.List;
-
+import org.jumpmind.symmetric.job.WatchdogJob;
 import org.jumpmind.symmetric.model.Node;
 
 /**

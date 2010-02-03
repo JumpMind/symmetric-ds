@@ -20,8 +20,8 @@
 package org.jumpmind.symmetric.service.impl;
 
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.junit.Test;
 
