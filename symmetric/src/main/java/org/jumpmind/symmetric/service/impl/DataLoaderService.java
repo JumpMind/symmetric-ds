@@ -203,7 +203,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 batch = new IncomingBatch(context);
                 list.add(batch);
                 loadBatch(dataLoader, batch);
-                batch.setChannelId(context.getChannelId());
                 batch = null;
             }
 
