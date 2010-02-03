@@ -264,8 +264,12 @@ public class RouterService extends AbstractService implements IRouterService {
                 long ts = System.currentTimeMillis();
                 if (readData(rs, dataQueue, transactionIdDataId)) {
                     dataCount++;
+                    context.incrementStat(System.currentTimeMillis() - ts, "read.data.ms");
+                } else {
+                    // don't count the event if we didn't read it
+                    i--;
                 }
-                context.incrementStat(System.currentTimeMillis() - ts, "read.data.ms");
+                
                 if (hasNext) {
                     hasNext = rs.next();
                 }
