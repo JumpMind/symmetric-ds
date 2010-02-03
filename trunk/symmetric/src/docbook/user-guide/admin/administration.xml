@@ -161,7 +161,19 @@ where source_table_name = 'price_changes';
     </section>
     <section id="ch07-registration">
         <title>Opening Registration</title>
-        <para></para>
+        <para>
+        Node registration is the act of setting up a new <link linkend="node">node</link> and
+         <link linkend="node_security">node security</link> so when the new node is brought online
+         it is allowed to join the system.  Nodes are only allowed to register if rows exist for the
+         node and the registration_enabled flag is set to 1.  If the <emphasis>auto.registration</emphasis>
+         SymmetricDS property is set to true, then when a node attempts to register, if registration
+         has not already occurred, the node will automatically be registered.
+       </para>
+       <para> 
+        SymmetricDS allows you to have multiple nodes with the same external_id.  Out of the box, openRegistration 
+        will open a new registration.  If you want to re-register the same node you can use the reOpenRegistration JMX
+        method which takes a node_id as an argument.
+        </para>
     </section>
     <section id="ch07-batches">
         <title>Viewing Batches</title>
