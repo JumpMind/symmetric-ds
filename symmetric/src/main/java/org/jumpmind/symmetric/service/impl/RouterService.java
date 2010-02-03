@@ -168,7 +168,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] { ref
                 .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor<Long>() {
             public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
-                long lastDataId = -1;
+                long lastDataId = ref.getRefDataId();
                 while (rs.next()) {
                     long dataId = rs.getLong(1);
                     if (lastDataId == -1 || lastDataId + 1 == dataId || lastDataId == dataId) {
