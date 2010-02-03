@@ -108,10 +108,15 @@ public class RouterService extends AbstractService implements IRouterService {
     synchronized public void routeData() {
         if (clusterService.lock(ClusterConstants.ROUTE)) {
             try {
+                long ts = System.currentTimeMillis();
                 Node sourceNode = nodeService.findIdentity();
                 DataRef ref = dataService.getDataRef();
-                routeDataForEachChannel(ref, sourceNode);
+                int dataCount = routeDataForEachChannel(ref, sourceNode);
                 findAndSaveNextDataId(ref);
+                ts = System.currentTimeMillis() - ts;
+                if (dataCount > 0 || ts > 30000) {
+                    log.info("RoutedDataInTime", dataCount, ts);
+                }
             } finally {
                 clusterService.unlock(ClusterConstants.ROUTE);
             }
@@ -124,27 +129,30 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected void routeDataForEachChannel(DataRef ref, Node sourceNode) {
+    protected int routeDataForEachChannel(DataRef ref, Node sourceNode) {
         final List<NodeChannel> channels = configurationService.getNodeChannels();
+        int dataCount = 0;
         for (NodeChannel nodeChannel : channels) {
             if (!nodeChannel.isSuspendEnabled()) {
-                routeDataForChannel(ref, nodeChannel, sourceNode);
+                dataCount += routeDataForChannel(ref, nodeChannel, sourceNode);
             }
         }
+        return dataCount;
     }
 
-    protected void routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel, final Node sourceNode) {
-        jdbcTemplate.execute(new ConnectionCallback<Object>() {
-            public Object doInConnection(Connection c) throws SQLException, DataAccessException {
+    protected int routeDataForChannel(final DataRef ref, final NodeChannel nodeChannel, final Node sourceNode) {
+        return jdbcTemplate.execute(new ConnectionCallback<Integer>() {
+            public Integer doInConnection(Connection c) throws SQLException, DataAccessException {
                 RouterContext context = null;
                 try {
                     context = new RouterContext(sourceNode.getNodeId(), nodeChannel, dataSource);
-                    selectDataAndRoute(c, ref, context);
+                    return selectDataAndRoute(c, ref, context);
                 } catch (Exception ex) {
                     if (context != null) {
                         context.rollback();
                     }
                     log.error("RouterRoutingFailed", ex, nodeChannel.getChannelId());
+                    return 0;
                 } finally {
                     try {
                         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
@@ -159,7 +167,6 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.cleanup();    
                     }
                 }
-                return null;
             }
         });
     }
@@ -235,9 +242,10 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected void selectDataAndRoute(Connection conn, DataRef ref, RouterContext context) throws SQLException {
+    protected int selectDataAndRoute(Connection conn, DataRef ref, RouterContext context) throws SQLException {
         PreparedStatement ps = null;
         ResultSet rs = null;
+        int dataCount = 0;
         try {
             // TODO add a flag to sym_channel to indicate whether we need to
             // read the row_data and or old_data for routing. We will get better
@@ -254,7 +262,9 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean hasNext = rs.next();
             for (int i = 0; i < peekAheadLength && hasNext; i++) {
                 long ts = System.currentTimeMillis();
-                readData(rs, dataQueue, transactionIdDataId);
+                if (readData(rs, dataQueue, transactionIdDataId)) {
+                    dataCount++;
+                }
                 context.incrementStat(System.currentTimeMillis() - ts, "read.data.ms");
                 if (hasNext) {
                     hasNext = rs.next();
@@ -273,13 +283,17 @@ public class RouterService extends AbstractService implements IRouterService {
                 routeData(dataQueue.poll(), transactionIdDataId, context);
                 if (hasNext) {
                     long ts = System.currentTimeMillis();
-                    readData(rs, dataQueue, transactionIdDataId);
+                    if (readData(rs, dataQueue, transactionIdDataId)) {
+                        dataCount++;
+                    }
                     context.incrementStat(System.currentTimeMillis() - ts, "readData");
                     if (hasNext) {
                         hasNext = rs.next();
                     }
                 }
             }
+            
+            return dataCount;
 
         } finally {
             JdbcUtils.closeResultSet(rs);
@@ -385,7 +399,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return router;
     }
 
-    protected void readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
+    protected boolean readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
             throws SQLException {
         if (rs.getString(13) == null) {
             Data data = dataService.readData(rs);
@@ -393,7 +407,10 @@ public class RouterService extends AbstractService implements IRouterService {
             if (data.getTransactionId() != null) {
                 transactionIdDataId.put(data.getTransactionId(), data.getDataId());
             }
-        } 
+            return true;
+        } else {
+            return false;
+        }
     }
 
     protected List<TriggerRouter> getTriggerForData(Data data) {
