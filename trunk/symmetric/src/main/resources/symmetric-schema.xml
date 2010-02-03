@@ -187,6 +187,9 @@
         <column name="source_node_id" type="VARCHAR" size="50"  description="If this data was capture" />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />        
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
+        <index name="idx_d_channel_id">
+            <index-column name="channel_id"/>
+        </index>
     </table>
     
     <table name="data_ref" description="Table that tracks the last known data_id that has been processed.  This table is used so that joins to find unprocessed data can be better optimized.">
