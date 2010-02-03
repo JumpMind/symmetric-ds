@@ -40,20 +40,20 @@
             </varlistentry>
             <varlistentry>
                 <term>
+                    <command>channel, {channel_id}</command>
+                </term>
+                <listitem>
+                    <para>Identifies which channel a batch belongs to.  The SymmetricDS data loader expects the channel to be specified before the batch.</para>
+                </listitem>
+            </varlistentry>   
+            <varlistentry>
+                <term>
                     <command>batch, {batch_id}</command>
                 </term>
                 <listitem>
                     <para>Uniquely identifies a batch.  Used to track whether a batch has been loaded before. A batch of -9999 is considered a virtual batch and will be loaded, but will not be recorded in incoming_batch.</para>
                 </listitem>
             </varlistentry>             
-            <varlistentry>
-                <term>
-                    <command>channel, {channel_id}</command>
-                </term>
-                <listitem>
-                    <para>Identifies which channel a batch belongs to.</para>
-                </listitem>
-            </varlistentry>   
             <varlistentry>
                 <term>
                     <command>schema, {schema name}</command>
