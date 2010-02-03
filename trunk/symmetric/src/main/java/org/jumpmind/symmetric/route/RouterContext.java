@@ -28,6 +28,8 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.symmetric.common.logging.ILog;
+import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -38,6 +40,7 @@ import org.springframework.jdbc.support.JdbcUtils;
 
 public class RouterContext extends SimpleRouterContext implements IRouterContext {
 
+    private final ILog log = LogFactory.getLog(getClass());
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
@@ -45,10 +48,12 @@ public class RouterContext extends SimpleRouterContext implements IRouterContext
     private boolean needsCommitted = false;
     private boolean routed = false;
 
-    public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource) throws SQLException {
+    public RouterContext(String nodeId, NodeChannel channel, DataSource dataSource)
+            throws SQLException {
         this.connection = dataSource.getConnection();
         this.connection.setAutoCommit(false);
-        this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel, nodeId);
+        this.init(new JdbcTemplate(new SingleConnectionDataSource(connection, true)), channel,
+                nodeId);
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {

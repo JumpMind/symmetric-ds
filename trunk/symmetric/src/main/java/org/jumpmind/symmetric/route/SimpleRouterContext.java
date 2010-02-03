@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jumpmind.symmetric.common.logging.ILog;
-import org.jumpmind.symmetric.common.logging.LogFactory;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SimpleRouterContext implements IRouterContext {
 
-    protected final ILog log = LogFactory.getLog(getClass());
     protected NodeChannel channel;
     protected JdbcTemplate jdbcTemplate;
     protected boolean encountedTransactionBoundary = false;

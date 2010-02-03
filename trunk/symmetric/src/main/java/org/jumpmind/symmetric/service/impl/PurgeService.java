@@ -34,10 +34,10 @@ import org.apache.commons.lang.time.DateUtils;
 import org.hsqldb.Types;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.NodeStatus;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPurgeService;
-import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 

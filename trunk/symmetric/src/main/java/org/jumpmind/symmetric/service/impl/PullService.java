@@ -26,12 +26,12 @@ import java.net.SocketException;
 import java.util.List;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IPullService;
 import org.jumpmind.symmetric.service.IRegistrationService;
-import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
