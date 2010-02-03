@@ -185,7 +185,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 return lastDataId;
             }
         });
-        dataService.saveDataRef(new DataRef(lastDataId, new Date()));
+        
+        if (ref.getRefDataId() != lastDataId) {
+            dataService.saveDataRef(new DataRef(lastDataId, new Date()));
+        }
     }
 
     protected boolean isDataGapExpired(long dataId, DataRef ref) {
