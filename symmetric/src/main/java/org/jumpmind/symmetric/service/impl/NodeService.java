@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,9 +38,8 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdGenerator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
-import org.jumpmind.symmetric.io.IOfflineClientListener;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
