@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.io.ThresholdFileWriter;
 import org.jumpmind.symmetric.load.IBatchListener;
 import org.jumpmind.symmetric.load.IColumnFilter;
 import org.jumpmind.symmetric.load.IDataLoader;
+import org.jumpmind.symmetric.load.IDataLoaderContext;
 import org.jumpmind.symmetric.load.IDataLoaderFilter;
 import org.jumpmind.symmetric.load.IDataLoaderStatistics;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -197,10 +198,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 totalNetworkMillis = System.currentTimeMillis() - totalNetworkMillis;
             }
             dataLoader = openDataLoader(transport.open());
+            IDataLoaderContext context = dataLoader.getContext();
             while (dataLoader.hasNext()) {
-                batch = new IncomingBatch(dataLoader.getContext());
+                batch = new IncomingBatch(context);
                 list.add(batch);
                 loadBatch(dataLoader, batch);
+                batch.setChannelId(context.getChannelId());
                 batch = null;
             }
 
