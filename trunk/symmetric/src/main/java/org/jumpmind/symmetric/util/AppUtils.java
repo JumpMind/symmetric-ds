@@ -43,7 +43,7 @@ public class AppUtils {
 
     private static ILog log = LogFactory.getLog(AppUtils.class);
     
-    private static final String SYM_TEMP_SUFFIX = "sym.tmp";
+    private static final String SYM_TEMP_SUFFIX = ".sym.tmp";
 
     private static String serverId;
 
@@ -152,7 +152,7 @@ public class AppUtils {
     @SuppressWarnings("unchecked")
     public static void cleanupTempFiles() {
         try {
-            File tmp = File.createTempFile("temp", SYM_TEMP_SUFFIX);
+            File tmp = File.createTempFile("temp.", SYM_TEMP_SUFFIX);
             Iterator<File> it = FileUtils.iterateFiles(tmp.getParentFile(), new String[] { SYM_TEMP_SUFFIX }, true);
             int deletedCount = 0;
             while (it.hasNext()) {
