@@ -171,7 +171,9 @@ where source_table_name = 'price_changes';
        </para>
        <para> 
         SymmetricDS allows you to have multiple nodes with the same external_id.  Out of the box, openRegistration 
-        will open a new registration.  If you want to re-register the same node you can use the reOpenRegistration JMX
+        will open a new registration if a registration already exists for a node with the same external_id.  A new 
+        registration mean a new node with a new node_id and the same external_id.  
+        If you want to re-register the same node you can use the reOpenRegistration JMX
         method which takes a node_id as an argument.
         </para>
     </section>
