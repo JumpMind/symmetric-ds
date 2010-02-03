@@ -385,14 +385,15 @@ public class RouterService extends AbstractService implements IRouterService {
         return router;
     }
 
-    protected Data readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
+    protected void readData(ResultSet rs, LinkedList<Data> dataStack, Map<String, Long> transactionIdDataId)
             throws SQLException {
-        Data data = dataService.readData(rs);
-        dataStack.addLast(data);
-        if (data.getTransactionId() != null) {
-            transactionIdDataId.put(data.getTransactionId(), data.getDataId());
-        }
-        return data;
+        if (rs.getString(13) == null) {
+            Data data = dataService.readData(rs);
+            dataStack.addLast(data);
+            if (data.getTransactionId() != null) {
+                transactionIdDataId.put(data.getTransactionId(), data.getDataId());
+            }
+        } 
     }
 
     protected List<TriggerRouter> getTriggerForData(Data data) {

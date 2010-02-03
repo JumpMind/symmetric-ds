@@ -591,6 +591,7 @@ public class DataService extends AbstractService implements IDataService {
         data.setTransactionId(results.getString(10));
         data.setSourceNodeId(results.getString(11));
         data.setExternalData(results.getString(12));
+        // TODO Be careful add more columns.  Callers might not be expecting them.
         return data;
     }
 
