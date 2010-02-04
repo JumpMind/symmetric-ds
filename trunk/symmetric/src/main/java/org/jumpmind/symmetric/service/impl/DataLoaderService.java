@@ -201,8 +201,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             IDataLoaderContext context = dataLoader.getContext();
             while (dataLoader.hasNext()) {
                 batch = new IncomingBatch(context);
-                list.add(batch);
-                loadBatch(dataLoader, batch);
+                if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED) || 
+                    (batch.getChannelId() != null && batch.getChannelId().equals(Constants.CHANNEL_CONFIG))) {
+                    list.add(batch);
+                    loadBatch(dataLoader, batch);
+                }
                 batch = null;
             }
 

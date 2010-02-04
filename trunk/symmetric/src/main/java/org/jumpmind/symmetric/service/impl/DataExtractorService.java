@@ -169,6 +169,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
                     false), triggerRouter.getTrigger());
             triggerHistory.setTriggerHistoryId(Integer.MAX_VALUE - i);
+            
             if (!triggerRouter.getTrigger().getSourceTableName().endsWith(TableConstants.SYM_NODE_IDENTITY)) {
                 writeInitialLoad(node, triggerRouter, triggerHistory, writer, null, ctx);
             } else {
