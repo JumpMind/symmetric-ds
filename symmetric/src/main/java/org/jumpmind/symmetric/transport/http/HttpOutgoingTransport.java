@@ -59,13 +59,20 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private int compressionStrategy;
     
     private int compressionLevel;
+    
+    private String basicAuthUsername;
+    
+    private String basicAuthPassword;
 
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, int compressionStrategy, int compressionLevel) {
+    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression, int compressionStrategy, int compressionLevel,
+            String basicAuthUsername, String basicAuthPassword) {
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
+        this.basicAuthUsername = basicAuthUsername;
+        this.basicAuthPassword = basicAuthPassword;
     }
 
     public void close() throws IOException {
@@ -107,6 +114,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         connection.setConnectTimeout(httpTimeout);
         connection.setReadTimeout(httpTimeout);
         connection.setRequestMethod("HEAD");
+        HttpTransportManager.setBasicAuthIfNeeded(connection, basicAuthUsername, basicAuthPassword);
+        
         analyzeResponseCode(connection.getResponseCode());
         return connection;
     }
@@ -124,6 +133,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (useCompression) {
             connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
         }
+        HttpTransportManager.setBasicAuthIfNeeded(connection, basicAuthUsername, basicAuthPassword);
+
         OutputStream out = connection.getOutputStream();
         if (useCompression) {
             out = new GZIPOutputStream(out) {

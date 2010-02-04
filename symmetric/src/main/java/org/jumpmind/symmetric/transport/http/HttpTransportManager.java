@@ -32,12 +32,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -53,21 +56,13 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     protected static final Log logger = LogFactory.getLog(HttpTransportManager.class);
 
-    int httpTimeOutInMs;
-    boolean useCompression;
-    int compressionLevel;
-    int compressionStrategy;
+    private IParameterService parameterService;
     
     public HttpTransportManager() {
-      this(120000, true, -1, 0);   
     }
     
-    public HttpTransportManager(int httpTimeOutInMs, boolean useCompression, int compressionLevel, int compressionStrategy) {
-        super();
-        this.httpTimeOutInMs = httpTimeOutInMs;
-        this.useCompression = useCompression;
-        this.compressionLevel = compressionLevel;
-        this.compressionStrategy = compressionStrategy;
+    public HttpTransportManager(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
     
     public boolean sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException {
@@ -92,11 +87,46 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
-        conn.setConnectTimeout(httpTimeOutInMs);
-        conn.setReadTimeout(httpTimeOutInMs);
+        conn.setConnectTimeout(getHttpTimeOutInMs());
+        conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
+        setBasicAuthIfNeeded(conn, getBasicAuthUsername(), getBasicAuthPassword());
+        
         writeMessage(conn.getOutputStream(), data);
         return conn;
+    }
+
+    public static void setBasicAuthIfNeeded(HttpURLConnection conn, String username, String password) {
+        if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
+            String userpassword = username + ":" + password;
+            String encodedAuthorization = new String(Base64.encodeBase64( userpassword.getBytes()));
+            conn.setRequestProperty("Authorization", "Basic "+
+                  encodedAuthorization);
+        }
+    }
+    
+    public int getHttpTimeOutInMs() {
+        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
+    }
+
+    public boolean isUseCompression() {
+        return parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT);
+    }
+
+    public int getCompressionLevel() {
+        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL);
+    }
+
+    public int getCompressionStrategy() {
+        return parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY);
+    }
+
+    public String getBasicAuthUsername() {
+        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME);
+    }
+
+    public String getBasicAuthPassword() {
+        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {
@@ -120,27 +150,16 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, httpTimeOutInMs, useCompression, compressionStrategy, compressionLevel);
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(), getCompressionStrategy(), getCompressionLevel(), 
+                getBasicAuthUsername(), getBasicAuthPassword());
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
         return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))));
     }
     
-    public void setCompressionLevel(int compressionLevel) {
-        this.compressionLevel = compressionLevel;
-    }
-    
-    public void setCompressionStrategy(int compressionStrategy) {
-        this.compressionStrategy = compressionStrategy;
-    }
-    
-    public void setHttpTimeOutInMs(int httpTimeOutInMs) {
-        this.httpTimeOutInMs = httpTimeOutInMs;
-    }
-    
-    public void setUseCompression(boolean useCompression) {
-        this.useCompression = useCompression;
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
     }
 
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
@@ -159,9 +178,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("accept-encoding", "gzip");
-        conn.setConnectTimeout(httpTimeOutInMs);
-        conn.setReadTimeout(httpTimeOutInMs);
+        conn.setConnectTimeout(getHttpTimeOutInMs());
+        conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestMethod("GET");
+        setBasicAuthIfNeeded(conn, getBasicAuthUsername(), getBasicAuthPassword());
         return conn;
     }
 
