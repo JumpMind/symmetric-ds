@@ -287,6 +287,23 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
     }
     
+    @Test(timeout = 30000)
+    public void testLargeLob() {
+        if (! (getRootDbDialect() instanceof OracleDbDialect)) {
+            return;
+        }
+        int blobType = Types.BINARY;
+        if (getRootDbDialect() instanceof OracleDbDialect) {
+            blobType = Types.BLOB;
+        }
+        String bigString = StringUtils.rightPad("Feeling tired... ", 6000, "Z");
+        Object[] args = new Object[] { 400, "Eric", "1", "100 Main Street", "Columbus", "OH", 43082, new Date(), new Date(), bigString, bigString.getBytes()};
+        int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.CLOB, blobType};
+        
+        rootJdbcTemplate.update(insertCustomerSql, new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
+        getClientEngine().pull();
+    }
+
     @Test
     // (timeout = 300000)
     public void testSuspendIgnorePushRemoteBatches() throws ParseException {

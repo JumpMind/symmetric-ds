@@ -108,12 +108,12 @@
                 </property>
                 <property name="clobColumnTemplate">
                     <value>
-                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, '', '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"') ||','||]]>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||replace(replace($(tableAlias)."$(columnName)",'\','\\'),'"','\"')||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="blobColumnTemplate">
                     <value>
-                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, '', '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"') ||','||]]>
+                        <![CDATA[ decode(dbms_lob.getlength($(tableAlias)."$(columnName)"), null, to_clob(''), '"'||$[sym.sync.table.prefix]_blob2clob($(tableAlias)."$(columnName)")||'"') ||','||]]>
                     </value>
                 </property>
                 <property name="numberColumnTemplate">
