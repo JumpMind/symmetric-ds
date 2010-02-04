@@ -90,26 +90,26 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                 if (value.equalsIgnoreCase(":NODE_ID")) {
                     for (Node node : nodes) {
                         if (e.equals && node.getNodeId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
                 } else if (value.equalsIgnoreCase(":EXTERNAL_ID")) {
                     for (Node node : nodes) {
                         if (e.equals && node.getExternalId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
                 } else if (value.equalsIgnoreCase(":NODE_GROUP_ID")) {
                     for (Node node : nodes) {
                         if (e.equals && node.getNodeGroupId().equals(columnValues.get(column))) {
-                            nodeIds = addNodeId(node.getNodeId(), nodeIds);
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                         }
                     }
                 } else if (e.equals && value.equalsIgnoreCase(":REDIRECT_NODE")) {
                     Map<String, String> redirectMap = getRedirectMap(routingContext);
                     String nodeId = redirectMap.get(columnValues.get(column));
                     if (nodeId != null) {
-                        nodeIds = addNodeId(nodeId, nodeIds);
+                        nodeIds = addNodeId(nodeId, nodeIds, nodes);
                     }
                 } else if (value.startsWith(":")) {
                     String firstValue = columnValues.get(column);
