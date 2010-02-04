@@ -42,7 +42,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
-import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -57,6 +56,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticNameConstants;
 import org.jumpmind.symmetric.test.ParameterizedSuite.ParameterExcluder;
 import org.jumpmind.symmetric.util.AppUtils;
+import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.dao.DataAccessException;
@@ -252,14 +252,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String queryIcon = "select icon from test_customer where customer_id = 300";
 
         // Test empty large object
-        rootJdbcTemplate.update(insertCustomerSql, new Object[] { 300, "Eric", "1", "100 Main Street",
-                "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]});
+        Object[] args = new Object[] { 300, "Eric", "1", "100 Main Street", "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]};
+        int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.CLOB, Types.BLOB};
         
-        if (getRootDbDialect() instanceof OracleDbDialect) {   
-            rootJdbcTemplate.update("update test_customer set notes = empty_clob(), icon = empty_blob() where customer_id = 300");
-        }
-
-        getClientEngine().pull();
+        rootJdbcTemplate.update(insertCustomerSql, new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {
@@ -272,7 +268,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         }
         
         // Test null large object
-        rootJdbcTemplate.update("update test_customer set notes = null, icon = null where customer_id = 300");
+        args = new Object[] { null, null };
+        argTypes = new int[] { Types.CLOB, Types.BLOB };
+        rootJdbcTemplate.update("update test_customer set notes = ?, icon = ? where customer_id = 300", new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
         getClientEngine().pull();
 
         if (getRootDbDialect().isClobSyncSupported()) {

@@ -45,22 +45,21 @@ public class StatementBuilder {
     protected String quote;
 
     public StatementBuilder(DmlType type, String tableName, Column[] keys, Column[] columns,
-            boolean isBlobOverrideToBinary, boolean isDateOverrideToTimestamp,
-            String identifierQuoteString) {
+            boolean isDateOverrideToTimestamp, String identifierQuoteString) {
         quote = identifierQuoteString == null ? "" : identifierQuoteString;
         if (type == DmlType.INSERT) {
             sql = buildInsertSql(tableName, columns);
-            types = buildTypes(columns, isBlobOverrideToBinary, isDateOverrideToTimestamp);
+            types = buildTypes(columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.UPDATE) {
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, isBlobOverrideToBinary, isDateOverrideToTimestamp);
+            types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.UPDATE_NO_KEYS) {
             columns = removeKeysFromColumns(keys, columns);
             sql = buildUpdateSql(tableName, keys, columns);
-            types = buildTypes(keys, columns, isBlobOverrideToBinary, isDateOverrideToTimestamp);
+            types = buildTypes(keys, columns, isDateOverrideToTimestamp);
         } else if (type == DmlType.DELETE) {
             sql = buildDeleteSql(tableName, keys);
-            types = buildTypes(keys, isBlobOverrideToBinary, isDateOverrideToTimestamp);
+            types = buildTypes(keys, isDateOverrideToTimestamp);
         } else {
             throw new NotImplementedException("Unimplemented SQL type: " + type);
         }
@@ -81,15 +80,13 @@ public class StatementBuilder {
         return columnsWithoutKeys;
     }
 
-    protected int[] buildTypes(Column[] keys, Column[] columns, boolean isBlobOverrideToBinary,
-            boolean isDateOverrideToTimestamp) {
-        int[] columnTypes = buildTypes(columns, isBlobOverrideToBinary, isDateOverrideToTimestamp);
-        int[] keyTypes = buildTypes(keys, isBlobOverrideToBinary, isDateOverrideToTimestamp);
+    protected int[] buildTypes(Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp) {
+        int[] columnTypes = buildTypes(columns, isDateOverrideToTimestamp);
+        int[] keyTypes = buildTypes(keys, isDateOverrideToTimestamp);
         return ArrayUtils.addAll(columnTypes, keyTypes);
     }
 
-    protected int[] buildTypes(Column[] columns, boolean isBlobOverrideToBinary,
-            boolean isDateOverrideToTimestamp) {
+    protected int[] buildTypes(Column[] columns, boolean isDateOverrideToTimestamp) {
         ArrayList<Integer> list = new ArrayList<Integer>(columns.length);
         for (int i = 0; i < columns.length; i++) {
             if (columns[i] != null) {
@@ -99,9 +96,7 @@ public class StatementBuilder {
         int[] types = new int[list.size()];
         int index = 0;
         for (Integer type : list) {
-            if (type == Types.BLOB && isBlobOverrideToBinary) {
-                type = Types.BINARY;
-            } else if (type == Types.DATE && isDateOverrideToTimestamp) {
+            if (type == Types.DATE && isDateOverrideToTimestamp) {
                 type = Types.TIMESTAMP;
             } else if (type == Types.FLOAT || type == Types.DOUBLE) {
                 type = Types.DECIMAL;

@@ -37,6 +37,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.lob.LobHandler;
 
 public interface IDbDialect {
 
@@ -177,8 +178,6 @@ public interface IDbDialect {
 
     public boolean isBlobSyncSupported();
 
-    public boolean isBlobOverrideToBinary();
-
     public boolean isDateOverrideToTimestamp();
 
     public boolean isClobSyncSupported();
@@ -247,4 +246,6 @@ public interface IDbDialect {
     public String toFormattedTimestamp(Date time);
     
     public void truncateTable(String tableName);
+    
+    public LobHandler getLobHandler();
 }
