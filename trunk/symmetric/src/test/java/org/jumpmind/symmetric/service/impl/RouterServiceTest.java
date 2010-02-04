@@ -449,6 +449,10 @@ public class RouterServiceTest extends AbstractDatabaseTest {
 
     }    
     
+    @Test
+    public void testIsDataGapExpired() {
+
+    }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
         TriggerRouter trigger = getTriggerRouterService().getTriggerRouterForCurrentNode(tableName,

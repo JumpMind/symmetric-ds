@@ -181,7 +181,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (lastDataId == -1 || lastDataId + 1 == dataId || lastDataId == dataId) {
                         lastDataId = dataId;
                     } else {
-                        if (isDataGapExpired(dataId, ref)) {
+                        if (isDataGapExpired(dataId)) {
                             lastDataId = dataId;
                         } else {
                             // detected a gap!
@@ -198,12 +198,10 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
-    protected boolean isDataGapExpired(long dataId, DataRef ref) {
+    protected boolean isDataGapExpired(long dataId) {
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         Date createTime = dataService.findCreateTimeOfEvent(dataId);
-        Date lastRecordedTime = ref.getRefTime();
-        if (lastRecordedTime != null && createTime != null
-                && lastRecordedTime.getTime() - createTime.getTime() > gapTimoutInMs) {
+        if (System.currentTimeMillis() - createTime.getTime() > gapTimoutInMs) {
             return true;
         } else {
             return false;
