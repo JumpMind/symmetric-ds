@@ -74,6 +74,7 @@ final public class ParameterConstants {
     public final static String ROUTING_PEEK_AHEAD_WINDOW = "routing.peek.ahead.window.after.max.size";
     public final static String ROUTING_STALE_DATA_ID_GAP_TIME = "routing.stale.dataid.gap.time.ms";
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
+    public final static String DATA_LOADER_ENABLED = "dataloader.enable";
     public final static String DATA_LOADER_NUM_OF_ACK_RETRIES = "num.of.ack.retries";
     public final static String DATA_LOADER_TIME_BETWEEN_ACK_RETRIES = "time.between.ack.retries.ms";
     public final static String DATA_LOADER_NO_KEYS_IN_UPDATE = "dont.include.keys.in.update.statement";
@@ -81,6 +82,8 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_ENABLE_FALLBACK_INSERT = "dataloader.enable.fallback.insert";
     public final static String DATA_LOADER_ALLOW_MISSING_DELETE = "dataloader.allow.missing.delete";
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
+    
+    public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
 
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";

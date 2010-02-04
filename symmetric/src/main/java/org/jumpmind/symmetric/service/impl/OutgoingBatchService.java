@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -145,9 +146,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         List<OutgoingBatch> keepers = new ArrayList<OutgoingBatch>();
 
         for (NodeChannel channel : channels) {
-            keepers.addAll(batches
+            if (parameterService.is(ParameterConstants.DATA_EXTRACTOR_ENABLED) || channel.getChannelId().equals(Constants.CHANNEL_CONFIG)) {
+                keepers.addAll(batches
                     .getBatchesForChannelWindows(node, channel, configurationService
                             .getNodeGroupChannelWindows(parameterService.getNodeGroupId(), channel.getChannelId())));
+            }
         }
         batches.setBatches(keepers);
         return batches;
