@@ -253,10 +253,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String queryIcon = "select icon from test_customer where customer_id = 300";
 
         // Test empty large object
-        int blobType = Types.BINARY;
-        if (getRootDbDialect() instanceof OracleDbDialect) {
-            blobType = Types.BLOB;
-        }
+        int blobType = getRootDbDialect().getTable(null, null, "test_customer", false).getColumn(11).getTypeCode();
         Object[] args = new Object[] { 300, "Eric", "1", "100 Main Street", "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]};
         int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.CLOB, blobType};
         
