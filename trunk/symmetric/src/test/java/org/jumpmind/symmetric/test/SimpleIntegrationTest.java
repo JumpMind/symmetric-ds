@@ -42,6 +42,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdDbDialect;
+import org.jumpmind.symmetric.db.oracle.OracleDbDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -252,8 +253,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         final String queryIcon = "select icon from test_customer where customer_id = 300";
 
         // Test empty large object
+        int blobType = Types.BINARY;
+        if (getRootDbDialect() instanceof OracleDbDialect) {
+            blobType = Types.BLOB;
+        }
         Object[] args = new Object[] { 300, "Eric", "1", "100 Main Street", "Columbus", "OH", 43082, new Date(), new Date(), "", new byte[0]};
-        int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.CLOB, Types.BLOB};
+        int[] argTypes = new int[] { Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.TIMESTAMP, Types.CLOB, blobType};
         
         rootJdbcTemplate.update(insertCustomerSql, new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
         getClientEngine().pull();
@@ -269,7 +274,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         
         // Test null large object
         args = new Object[] { null, null };
-        argTypes = new int[] { Types.CLOB, Types.BLOB };
+        argTypes = new int[] { Types.CLOB, blobType };
         rootJdbcTemplate.update("update test_customer set notes = ?, icon = ? where customer_id = 300", new ArgTypePreparedStatementSetter(args, argTypes, getRootDbDialect().getLobHandler()));
         getClientEngine().pull();
 
