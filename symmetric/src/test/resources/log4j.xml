@@ -50,6 +50,12 @@
     <category name="org.jumpmind.symmetric.db.SqlScript">
         <priority value="ERROR" />
     </category>
+    
+    <!-- Enable router stats
+    <category name="org.jumpmind.symmetric.service.impl.RouterService">
+        <priority value="DEBUG" />
+    </category>
+     -->
 
     <!-- Enable this to see CSV extract output
     <category name="org.jumpmind.symmetric.util.CsvUtils"> 
