@@ -85,6 +85,7 @@ import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.StatementCallback;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -143,6 +144,8 @@ abstract public class AbstractDbDialect implements IDbDialect {
     protected Set<String> sqlKeywords;
 
     protected String defaultSchema;   
+    
+    protected LobHandler lobHandler;
 
     protected AbstractDbDialect() {
         _defaultSizes = new HashMap<Integer, String>();
@@ -249,10 +252,6 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public BinaryEncoding getBinaryEncoding() {
         return BinaryEncoding.NONE;
-    }
-
-    public boolean isBlobOverrideToBinary() {
-        return false;
     }
 
     public boolean isDateOverrideToTimestamp() {
@@ -1316,5 +1315,21 @@ abstract public class AbstractDbDialect implements IDbDialect {
 
     public void truncateTable(String tableName) {
         jdbcTemplate.update("truncate table " + tableName);
+    }
+
+    /**
+     * @return the lobHandler.
+     */
+    public LobHandler getLobHandler()
+    {
+        return lobHandler;
+    }
+
+    /**
+     * @param lobHandler The lobHandler to set.
+     */
+    public void setLobHandler(LobHandler lobHandler)
+    {
+        this.lobHandler = lobHandler;
     }
 }

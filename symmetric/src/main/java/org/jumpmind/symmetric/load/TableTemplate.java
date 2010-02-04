@@ -33,6 +33,7 @@ import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.load.StatementBuilder.DmlType;
+import org.jumpmind.symmetric.util.ArgTypePreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -279,9 +280,8 @@ public class TableTemplate {
         if (!StringUtils.isBlank(catalog)) {
             tableName = catalog + "." + tableName;
         }
-        return new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames),
-                dbDialect.isBlobOverrideToBinary(), dbDialect.isDateOverrideToTimestamp(), dbDialect
-                        .getIdentifierQuoteString());
+        return new StatementBuilder(type, tableName, keyMetaData, getColumnMetaData(filteredColumnNames), dbDialect
+            .isDateOverrideToTimestamp(), dbDialect.getIdentifierQuoteString());
     }
     
     public Object[] getObjectValues(IDataLoaderContext ctx, String[] values) {
@@ -299,7 +299,7 @@ public class TableTemplate {
                 objectValues = columnFilter.filterColumnsValues(ctx, st.getDmlType(), getTable(), objectValues);
             }
         }
-        return jdbcTemplate.update(st.getSql(), objectValues, st.getTypes());
+        return jdbcTemplate.update(st.getSql(), new ArgTypePreparedStatementSetter(objectValues, st.getTypes(), dbDialect.getLobHandler()));
     }
 
     public void setKeyNames(String[] keyNames) {

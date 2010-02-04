@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ddlutils.model.Table;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractDbDialect;
 import org.jumpmind.symmetric.db.BinaryEncoding;
 import org.jumpmind.symmetric.db.IDbDialect;
@@ -34,6 +35,8 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.BadSqlGrammarException;
+import org.springframework.jdbc.support.lob.OracleLobHandler;
+import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     
@@ -91,11 +94,6 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     }
 
     public boolean isEmptyStringNulled() {
-        return true;
-    }
-
-    @Override
-    public boolean isBlobOverrideToBinary() {
         return true;
     }
 
@@ -181,8 +179,18 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return defaultSchema;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
+        lobHandler = new OracleLobHandler();
+        try {
+            Class clazz = Class.forName(parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
+            NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
+            ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
