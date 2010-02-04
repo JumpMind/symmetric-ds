@@ -73,7 +73,8 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
                 HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
             }
 
-            return new HttpTransportManager(parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT), parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_LEVEL), parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_COMPRESSION_STRATEGY));
+            return new HttpTransportManager(parameterService);
+            
         } else if (Constants.PROTOCOL_INTERNAL.equalsIgnoreCase(transport)) {
             return new InternalTransportManager(configurationService);
         } else {

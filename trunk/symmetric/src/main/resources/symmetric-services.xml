@@ -5,7 +5,9 @@
 
     <import resource="classpath*:/org/jumpmind/symmetric/service/impl/*-service-sql.xml" />
 
-    <bean id="bandwidthService" class="org.jumpmind.symmetric.service.impl.BandwidthService"/>
+    <bean id="bandwidthService" class="org.jumpmind.symmetric.service.impl.BandwidthService">
+        <property name="parameterService" ref="parameterService" />
+    </bean>
     
     <bean id="statisticManager" class="org.jumpmind.symmetric.statistic.StatisticManager">
         <property name="statisticService" ref="statisticService" />

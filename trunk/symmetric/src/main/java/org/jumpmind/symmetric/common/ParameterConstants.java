@@ -90,10 +90,12 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
     public final static String TRANSPORT_HTTP_COMPRESSION_LEVEL = "compression.level";
     public final static String TRANSPORT_HTTP_COMPRESSION_STRATEGY = "compression.strategy";
+    public final static String TRANSPORT_HTTP_BASIC_AUTH_USERNAME = "http.basic.auth.username";
+    public final static String TRANSPORT_HTTP_BASIC_AUTH_PASSWORD = "http.basic.auth.password";
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";
-    
+
     public final static String NODE_SECURITY_CACHE_REFRESH_PERIOD_IN_MS = "cache.node.security.time.ms"; 
 
     public final static String DBPOOL_URL = "db.url";

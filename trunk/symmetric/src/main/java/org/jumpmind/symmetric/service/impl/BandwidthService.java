@@ -21,17 +21,23 @@ package org.jumpmind.symmetric.service.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
+import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
+import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 
 /**
  * @see IBandwidthService
  */
 public class BandwidthService extends AbstractService implements IBandwidthService {
+    
+    private IParameterService parameterService;
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
         double downloadSpeed = -1d;
@@ -46,6 +52,10 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
         return downloadSpeed;
 
     }
+    
+    public void setParameterService(IParameterService parameterService) {
+        this.parameterService = parameterService;
+    }
 
     protected BandwidthTestResults getDownloadResultsFor(String syncUrl, long sampleSize, long maxTestDuration)
             throws IOException {
@@ -55,7 +65,11 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
             BandwidthTestResults bw = new BandwidthTestResults();
             URL u = new URL(String.format("%s/bandwidth?sampleSize=%s", syncUrl, sampleSize));
             bw.start();
-            is = u.openStream();
+            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+            setBasicAuthIfNeeded(conn);
+       
+            conn.connect();
+            is = conn.getInputStream();
             int r;
             while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
                 bw.transmitted(r);
@@ -66,6 +80,14 @@ public class BandwidthService extends AbstractService implements IBandwidthServi
             return bw;
         } finally {
             IOUtils.closeQuietly(is);
+        }
+    }
+
+    protected void setBasicAuthIfNeeded(HttpURLConnection conn) {
+        if (parameterService != null) {
+            HttpTransportManager.setBasicAuthIfNeeded(conn, 
+                parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME),
+                parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD));
         }
     }
 }
