@@ -450,8 +450,8 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }    
     
     @Test
-    public void testIsDataGapExpired() {
-
+    public void testDataGapExpired() {
+        // TODO
     }
 
     protected TriggerRouter getTestRoutingTableTrigger(String tableName) {
