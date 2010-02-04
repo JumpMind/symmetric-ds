@@ -163,9 +163,14 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
     }
 
-    protected Set<String> addNodeId(String nodeId, Set<String> nodeIds) {
+    protected Set<String> addNodeId(String nodeId, Set<String> nodeIds, Set<Node> nodes) {
         nodeIds = nodeIds == null ? new HashSet<String>(1) : nodeIds;
-        nodeIds.add(nodeId);
+        for (Node node : nodes) {
+            if (node.getNodeId().equals(nodeId)) {
+                nodeIds.add(nodeId);
+                break;
+            }
+        }        
         return nodeIds;
     }
 
