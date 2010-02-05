@@ -266,13 +266,9 @@ abstract public class AbstractDbDialect implements IDbDialect {
         return "null";
     }
 
-    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger) {
+    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger, Table table) {
         return sqlTemplate.createInitalLoadSql(
-                node,
-                this,
-                trigger,
-                getTable(trigger.getTrigger().getSourceCatalogName(), trigger.getTrigger().getSourceSchemaName(),
-                        trigger.getTrigger().getSourceTableName(), true)).trim();
+                node, this, trigger, table).trim();
     }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter) {

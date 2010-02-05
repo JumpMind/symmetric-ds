@@ -163,8 +163,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             TriggerRouter triggerRouter = triggerRouters.get(i);
             final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                     .getSymmetricVersion());
-            triggerRouter.getTrigger().setSourceTableName(
-                    dataExtractor.getTableName(triggerRouter.getTrigger().getSourceTableName()));
             
             TriggerHistory triggerHistory = new TriggerHistory(dbDialect.getTable(triggerRouter.getTrigger(),
                     false), triggerRouter.getTrigger());
@@ -240,12 +238,27 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      *            If null, then assume this 'initial load' is part of another
      *            batch.
      */
-    protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, final TriggerHistory hist,
+    protected void writeInitialLoad(final Node node, final TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             final BufferedWriter writer, final OutgoingBatch batch, final DataExtractorContext ctx) {
-        final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter);
-       
+
         final IDataExtractor dataExtractor = ctx != null ? ctx.getDataExtractor() : getDataExtractor(node
                 .getSymmetricVersion());
+
+        // The table to use for the SQL may be different than the configured table if there is a 
+        // legacy table that is swapped out by the dataExtractor.
+        Table tableForSql = dbDialect.getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
+        		dataExtractor.getLegacyTableName(triggerRouter.getTrigger().getSourceTableName()), true);
+        
+        final String sql = dbDialect.createInitalLoadSqlFor(node, triggerRouter, tableForSql);
+        
+        if (!tableForSql.getName().equals(triggerHistory.getSourceTableName())) {
+        	// This is to make legacy tables backwards compatible
+        	String tableName = triggerHistory.getSourceTableName();
+        	triggerHistory = new TriggerHistory(tableForSql, triggerRouter.getTrigger());
+        	triggerHistory.setSourceTableName(tableName);
+        }
+        
+        final TriggerHistory triggerHistory2Use = triggerHistory;
         
         jdbcTemplate.execute(new ConnectionCallback<Object>() {
             public Object doInConnection(Connection conn) throws SQLException, DataAccessException {
@@ -270,8 +283,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         SimpleRouterContext routingContext = new SimpleRouterContext(node.getNodeId(), jdbcTemplate,
                                 channel);
                         while (rs.next()) {
-                            Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, hist
-                                    .getSourceTableName(), null, hist, Constants.CHANNEL_RELOAD, null, null);
+                        	
+                            Data data = new Data(0, null, rs.getString(1), DataEventType.INSERT, triggerHistory2Use
+                                    .getSourceTableName(), null, triggerHistory2Use, Constants.CHANNEL_RELOAD, null, null);
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
                             if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);

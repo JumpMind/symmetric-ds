@@ -121,7 +121,7 @@ public class CsvExtractor13 implements IDataExtractor {
     public void setParameterService(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
-    public String getTableName(String currentTableName) {
+    public String getLegacyTableName(String currentTableName) {
         return currentTableName;
     }
 }

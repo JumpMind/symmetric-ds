@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialBlob;
 
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.db.IDbDialect;
 import org.jumpmind.symmetric.db.db2.Db2DbDialect;
 import org.jumpmind.symmetric.db.derby.DerbyDbDialect;
@@ -155,9 +156,13 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
-        service.getTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        TriggerRouter triggerRouter = service.getTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+
+        Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
+        		triggerRouter.getTrigger().getSourceTableName(), true);
+
         String sql = getDbDialect().createInitalLoadSqlFor(new Node("1", null, "1.0"),
-                service.getTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP));
+                triggerRouter, table);
         List<String> csvStrings = getJdbcTemplate().queryForList(sql, String.class);
         assertTrue(csvStrings.size() > 0);
         String csvString = csvStrings.get(0);

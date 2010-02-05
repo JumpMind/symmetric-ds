@@ -110,7 +110,7 @@ public class SqlTemplate {
                 "", columns, dialect, DataEventType.INSERT).columnString;
         sql = AppUtils.replace("columns", columnsText, sql);
         sql = AppUtils.replace("whereClause", StringUtils.isBlank(trig.getInitialLoadSelect()) ? "1=1" : trig.getInitialLoadSelect(), sql);
-        sql = AppUtils.replace("tableName", trig.getTrigger().getSourceTableName(), sql);
+        sql = AppUtils.replace("tableName", metaData.getName(), sql);
         sql = AppUtils.replace("schemaName", trig.getTrigger().getSourceSchemaName() != null ? trig.getTrigger().getSourceSchemaName() + "." : "", sql);
         sql = AppUtils.replace("primaryKeyWhereString", getPrimaryKeyWhereString(dialect.getInitialLoadTableAlias(), metaData
                 .getPrimaryKeyColumns()), sql);
