@@ -73,7 +73,7 @@ public class MySqlDbDialect extends AbstractDbDialect implements IDbDialect {
     }
     
     @Override
-    protected String findPlatformTableName(String catalogName, String schemaName, String tblName) {
+    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
         List<String> tableNames = jdbcTemplate.queryForList("select distinct(table_name) from information_schema.tables where table_name like '%" + tblName + "%'", String.class);
         if (tableNames.size() > 0 ) {
             return tableNames.get(0);
