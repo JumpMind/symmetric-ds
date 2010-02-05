@@ -28,14 +28,14 @@ where source_table_name = 'price_changes';
          <para>   
             Centrally, the trigger changes will not take effect until the Sync Triggers Job runs.
             Instead of waiting for the Sync Triggers Job to run overnight after making a Trigger
-            change, invoke the syncTriggers() method over JMX or simply restart the SymmetricDS
+            change, you can invoke the syncTriggers() method over JMX or simply restart the SymmetricDS
             server.
         </para>
     </section>
     <section id="ch07-changing-configuration">
         <title>Changing Configuration</title>
         <para>
-            The configuration of the your system as defined in the sym_* tables may be modified at runtime.  By default any changes made to 
+            The configuration of your system as defined in the sym_* tables may be modified at runtime.  By default, any changes made to 
             the sym_* tables (with the exception of sym_node) should be made at the registration server.  The changes will
             be synchronized out to the leaf nodes by SymmetricDS triggers that are automatically created on the tables.
          </para>
@@ -49,7 +49,7 @@ where source_table_name = 'price_changes';
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
             and the underlying tables to determine if database triggers need created or updated.
-            The change activity is recorded on the Trigger Hist table with a reason for the
+            The change activity is recorded on the <link linkend="trigger_hist">trigger_hist</link> table with a reason for the
             change.  The following reasons for a change are possible:
 
             <itemizedlist>
