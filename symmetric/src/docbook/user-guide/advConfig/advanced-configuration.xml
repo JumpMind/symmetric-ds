@@ -17,7 +17,7 @@
         captured <link linkend="data">data</link>.  Data is routed by the Route Job.  It is a single background task that inserts into
         <link linkend="data_event">data event</link> and <link linkend="outgoing_batch">outgoing batch</link>.  The Route Job determines which <link linkend="node">nodes</link>
         data will be sent to, as well as how much data will be batched together for transport.  When the <emphasis>start.route.job</emphasis> SymmetricDS property is set to 
-        <emphasis>true</emphasis>, how often data is routed is controlled by the <emphasis>job.routing.period.time.ms</emphasis>.  Each time data is routed, the 
+        <emphasis>true</emphasis>, the frequency that routing occurs is controlled by the <emphasis>job.routing.period.time.ms</emphasis>.  Each time data is routed, the 
         <link linkend="data_ref">data ref</link> table is updated with the id of the last contiguous data row to have been processed.  This is done so the query to find
         unrouted data is optimal. 
         </para>
@@ -28,7 +28,7 @@
         <emphasis>true</emphasis>, the frequency that data is pushed is controlled by the <emphasis>job.push.period.time.ms</emphasis>.  Data is extracted by channel from the source database's 
         <link linkend="data">data</link> table at an interval controlled by the extract_period_millis column on the <link linkend="channel">channel</link> table.  The last_extract_time is 
         always recorded, by channel, on the <link linkend="node_channel_ctl">node channel control</link> table for the host node's id.  When the Pull and Push Job run, if the extract period
-        has not passed according to the last extract time, then the channel will be skipped.  If the extract_period_millis is set to zero, data extraction will happen every time the jobs run.
+        has not passed according to the last extract time, then the channel will be skipped for this run.  If the extract_period_millis is set to zero, data extraction will happen every time the jobs run.
         </para>
         <para>
         SymmetricDS also provides the ability to configure windows of time when synchronization is allowed.  This is done using the <link linkend="node_group_channel_window">node group channel window</link>
@@ -40,15 +40,14 @@
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
         <para>
-            At times, there may be scenarios where data needs to flow through multiple tiers of nodes that
+             As shown <link linkedn="terminology-node-organization">previously</link>, at times, there may be
+              scenarios where data needs to flow through multiple tiers of nodes that
             are organized in a tree-like network with each tier requiring a different subset of data.  For example,
             you may have a system where the lowest tier may by a computer or device located in a store.  Those devices 
             may connect to a server located physically at that store.  Then the store server may communicate with 
-            a corporate server or even a regional server.
-        </para>
-        <para>
-            The different tiers would be device, store, region and corporate.  A tier is typically represented by a node group.  Each node in 
-            the tier would belong to the node group representing that tier.  
+            a corporate server for example.  In this case, the three tiers would be device, store, and corporate.
+            Each tier is typically represented by a node group.  Each node in 
+            the tier would belong to the node group representing that tier.   
         </para>
         <para>
             A node will always push and pull data to other node groups according to the node group link configuration.  
@@ -62,14 +61,7 @@
             When a node registers and downloads its configuration it is always provided the configuration for all nodes that were 
             <emphasis>created</emphasis> at the node that it is registering with.
         </para>
-        <para>
-            Most tiers will require the SymmetricDS <emphasis>server</emphasis> software.  It must be deployed to any node that is pulled from or pushed to.  If the node only pushes and pulls from other nodes, then only
-            the client software (no HTTP server) is required.
-        </para> 
-        <para>
-            Nodes that service many clients may be deployed as a web farm for scalability purposes.  In this scenario a single node may have multiple SymmetricDS server 
-            instances that are configured the same and are fronted by some type of stateless load balancer. 
-        </para>        
+               
     </section>
     <section id='registration-redirect'>
         <title>Registration Redirect</title>    
@@ -93,7 +85,7 @@
             synchronization does not process changes during an incoming synchronization on the same node unless the trigger 
             was created with the sync_on_incoming_batch flag set.  If the sync_on_incoming_batch flag
             is set, then update loops are prevented by a feature that is available in most database dialects.  
-            During an incoming synchronization the source node_id is put into a database session variable that is 
+            More specifically, during an incoming synchronization the source node_id is put into a database session variable that is 
             available to the database trigger.  Data events are not generated if the target node_id 
             on an outgoing synchronization is equal to the source node_id.  
         </para>     
@@ -110,18 +102,21 @@
         <title>Dead Triggers</title>
         <para>
             Normally a Trigger is specified to capture data changes to a table and send them to
-            a target Node Group.  A dead Trigger is one that does not capture data changes.
+            a target Node Group.  A "dead" Trigger is one that does not capture data changes.
             In other words, the sync_on_insert, sync_on_update, and sync_on_delete properties
-            for the Trigger are all set to false.  Because the Trigger is specified, it will
+            for the Trigger are all set to false.  However, because the Trigger is specified,
+             it <emphasis>will</emphasis>
             be included in the initial load of data for target Nodes.
         </para>
         <para>
-            A dead Trigger might be used to load a read-only lookup table.  It could be used
+            A dead Trigger might be used to load a read-only lookup table, for example.  It could also 
+            be used
             to load a table that needs populated with example or default data.
             Another use is a recovery load of data for tables that have a single direction
             of synchronization.  For example, a retail store records sales transaction that
             synchronize in one direction by trickling back to the central office.
-            If the retail store needs to recover all the sales transactions, they can be sent
+            If the retail store needs to recover all the sales transactions from the central office,
+            they can be sent
             are part of an initial load from the central office by setting up dead Triggers
             that "sync" in that direction.
         </para>
@@ -147,10 +142,10 @@ values
             The following explains how to publish to JMS during synchronization to the target database. 
        </para>
        <para>     
-            The XmlPublisherDataLoaderFilter is a
+            The XmlPublisherDataLoaderFilter is at1
             <link linkend="extensions-data-loader-filter">IDataLoaderFilter</link> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
-            See <link linkend="extensions">extension points</link> for how 
+            See <link linkend="extensions">extension points</link> for information on how 
             to configure an extension point.  If the publish to JMS fails, the batch will be marked in error, 
             the loaded data for the batch will be rolled back
             and the batch will be retried during the next synchronization run.            
@@ -278,7 +273,7 @@ values
             <emphasis>job.purge.period.time.ms</emphasis> property.  The default period is to run every ten minutes.  
         </para>      
         <para>
-            The two retention period properties
+            Two retention period properties
             indicate how much history SymmetricDS will retain before purging.  The <emphasis>purge.retention.minutes</emphasis> property indicates the period
             of history to keep for synchronization tables.  The default value is 5 days.
             The <emphasis>statistic.retention.minutes</emphasis> property
@@ -314,16 +309,16 @@ values
     <section id="clustering">
         <title>Clustering</title>
         <para>
-        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover.
+        A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
         </para>
         <para>
-        Typically, when this is done, a hardware load balancer is used
+        Typically when this is done a hardware load balancer is used
         to round robin client requests to the cluster.  The load balancer should be configured for stateless connections.  Also, the <link linkend='basic-properties'>sync.url</link>
         SymmetricDS property should be set to the URL of the load balancer.  
         </para>
         <para>
         If the cluster will be running any of the SymmetricDS jobs, then the <emphasis>cluster.lock.enabled</emphasis> property should be set to <emphasis>true</emphasis>. 
-        By setting this property to true, SymmetricDS will use a row in the <link linkend="lock">lock</link> table as semaphore to make sure that only one instance at a time
+        By setting this property to true, SymmetricDS will use a row in the <link linkend="lock">lock</link> table as a semaphore to make sure that only one instance at a time
         runs a job.  When a lock is acquired, a row is updated in the lock table with the time of the lock and the server id of the locking job.  The lock time is set back to null
         when the job is finished running.  Another instance of SymmetricDS cannot aquire a lock until the locking instance (according to the server id) releases the lock.  If an 
         instance is terminated while the lock is still held, an instance with the same server id is allowed to reaquire the lock.  If the locking instance remains down, the lock can be 
@@ -332,7 +327,7 @@ values
         </para>
         <para>
         By default, the locking server id is the hostname of the server.  If two clustered instances are running on the same server, then the <emphasis>cluster.server.id</emphasis> property 
-        may be set to indicate the name that the instance should use for it's server id.
+        may be set to indicate the name that the instance should use for its server id.
         </para>
         <para>
         When deploying SymmetricDS to an application server like Tomcat or JBoss, no special session clustering needs to be configured for the application server.  
