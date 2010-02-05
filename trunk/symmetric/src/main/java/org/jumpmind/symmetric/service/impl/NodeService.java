@@ -458,7 +458,10 @@ public class NodeService extends AbstractService implements INodeService {
     }
     
     public void checkForOfflineNodes() {
-        if (offlineServerListeners != null) {
+        // Only check for offline nodes if there is a listener and the
+        // offline detection period is a positive value.  The default value
+        // of -1 disables the feature.
+        if (offlineServerListeners != null && getOfflineNodeDetectionMinutes() > 0) {
             
             List<Node> list = findOfflineNodes();
             if (list.size() > 0) {
