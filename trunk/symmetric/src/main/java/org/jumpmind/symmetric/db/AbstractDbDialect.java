@@ -67,6 +67,7 @@ import org.apache.ddlutils.model.Table;
 import org.apache.ddlutils.model.UniqueIndex;
 import org.apache.ddlutils.platform.DatabaseMetaDataWrapper;
 import org.apache.ddlutils.platform.MetaDataColumnDescriptor;
+import org.apache.ddlutils.platform.SqlBuilder;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.logging.ILog;
 import org.jumpmind.symmetric.common.logging.LogFactory;
@@ -310,7 +311,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
         if (retTable == null || !useCache) {
             synchronized (this.getClass()) {
                 try {
-                    Table table = findTable(catalogName, schemaName, tableName);
+                    Table table = getTable(catalogName, schemaName, tableName);
 
                     if (retTable != null) {
                         cachedModel.removeTable(retTable);
@@ -347,19 +348,19 @@ abstract public class AbstractDbDialect implements IDbDialect {
     /**
      * Returns a new {@link Table} object.
      */
-    protected Table findTable(String catalogName, String schemaName, String tblName) {
+    protected Table getTable(String catalogName, String schemaName, String tblName) {
         if (parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
-            Table table = findTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils.upperCase(schemaName),
+            Table table = getTableCaseSensitive(StringUtils.upperCase(catalogName), StringUtils.upperCase(schemaName),
                     StringUtils.upperCase(tblName));
             if (table == null) {
-                table = findTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils.lowerCase(schemaName),
+                table = getTableCaseSensitive(StringUtils.lowerCase(catalogName), StringUtils.lowerCase(schemaName),
                         StringUtils.lowerCase(tblName));
                 if (table == null) {
-                    table = findTableCaseSensitive(catalogName, schemaName, StringUtils.upperCase(tblName));
+                    table = getTableCaseSensitive(catalogName, schemaName, StringUtils.upperCase(tblName));
                     if (table == null) {
-                        table = findTableCaseSensitive(catalogName, schemaName, StringUtils.lowerCase(tblName));
+                        table = getTableCaseSensitive(catalogName, schemaName, StringUtils.lowerCase(tblName));
                         if (table == null) {
-                            table = findTableCaseSensitive(catalogName, schemaName, findPlatformTableName(catalogName,
+                            table = getTableCaseSensitive(catalogName, schemaName, getPlatformTableName(catalogName,
                                     schemaName, tblName));
                         }
                     }
@@ -367,15 +368,15 @@ abstract public class AbstractDbDialect implements IDbDialect {
             }
             return table;
         } else {
-            return findTableCaseSensitive(catalogName, schemaName, tblName);
+            return getTableCaseSensitive(catalogName, schemaName, tblName);
         }
     }
 
-    protected String findPlatformTableName(String catalogName, String schemaName, String tblName) {
+    protected String getPlatformTableName(String catalogName, String schemaName, String tblName) {
         return tblName;
     }
 
-    protected Table findTableCaseSensitive(String catalogName, String schemaName, final String tblName) {
+    protected Table getTableCaseSensitive(String catalogName, String schemaName, final String tblName) {
         // If we don't provide a default schema or catalog, then on some
         // databases multiple results will be found in the metadata from
         // multiple schemas/catalogs
@@ -789,7 +790,7 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     public String getCreateTableXML(TriggerRouter triggerRouter) {
-        Table table = findTable(null, triggerRouter.getTrigger().getSourceSchemaName(), triggerRouter.getTrigger()
+        Table table = getTable(null, triggerRouter.getTrigger().getSourceSchemaName(), triggerRouter.getTrigger()
                 .getSourceTableName());
         table.setName(triggerRouter.getTargetTable());
         Database db = new Database();
@@ -869,40 +870,42 @@ abstract public class AbstractDbDialect implements IDbDialect {
     }
 
     /**
-     * @return true if sql was executed.
+     * @return true if SQL was executed.
      */
     protected boolean createTablesIfNecessary() {
         Database symmetricTables = readSymmetricSchemaFromXml();
         try {
             log.info("TablesAutoUpdatingStart");
-            Database mergedDb = readPlatformDatabase(true);
-            log.info("TablesExisting", mergedDb.getTableCount());
-            log.info("TablesMerging", symmetricTables.getTableCount());
-            Table[] tables = symmetricTables.getTables();
-            for (Table table : tables) {
-                Table[] existingTables = mergedDb.getTables();
-                for (Table existing : existingTables) {
-                    if (existing.getName().toLowerCase().equals(table.getName().toLowerCase())) {
-                        mergedDb.removeTable(existing);
-                    }
-                }
-                mergedDb.addTable(table);
-            }
-            String alterSql = platform.getAlterTablesSql(getDefaultCatalog(), getDefaultSchema(), null, mergedDb);
+            String alterSql = getAlterSql(symmetricTables);
             if (!StringUtils.isBlank(alterSql)) {
                 new SqlScript(alterSql, jdbcTemplate.getDataSource(), true, platform.getPlatformInfo()
                         .getSqlCommandDelimiter(), null).execute();
-                log.info("TablesAutoUpdatingDone", mergedDb.getTableCount());
                 return true;
             } else {
                 return false;
             }
-
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+    
+    protected String getAlterSql(Database desiredModel) throws IOException {
+    	Database currentModel = new Database();
+    	Table[] tables = desiredModel.getTables();
+    	Database existingModel = readPlatformDatabase(true);
+    	for (Table table : tables) {
+			Table currentVersion = existingModel.findTable(table.getName());
+			if (currentVersion != null) {
+				currentModel.addTable(currentVersion);
+			}
+		}
+    	SqlBuilder builder = platform.getSqlBuilder();
+    	StringWriter writer = new StringWriter();
+    	builder.setWriter(writer);
+    	builder.alterDatabase(currentModel, desiredModel, null);
+    	return writer.toString();
     }
 
     protected Database readSymmetricSchemaFromXml() {
