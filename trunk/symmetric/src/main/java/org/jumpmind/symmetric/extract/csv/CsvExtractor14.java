@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.extract.csv;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -39,6 +40,8 @@ import org.jumpmind.symmetric.util.CsvUtils;
 
 public class CsvExtractor14 implements IDataExtractor {
 
+	private Map<String, String> legacyTableMapping = new HashMap<String, String>();
+	
     protected Map<String, IStreamDataCommand> dictionary = null;
 
     protected IParameterService parameterService;
@@ -46,6 +49,10 @@ public class CsvExtractor14 implements IDataExtractor {
     protected IDbDialect dbDialect;
 
     protected INodeService nodeService;
+
+    public CsvExtractor14() {
+    	legacyTableMapping.put("sym_trigger", "sym_trigger_old");
+    }
 
     public void init(BufferedWriter writer, DataExtractorContext context) throws IOException {
         Node nodeIdentity = nodeService.findIdentity();
@@ -113,8 +120,14 @@ public class CsvExtractor14 implements IDataExtractor {
     public void setNodeService(INodeService nodeService) {
         this.nodeService = nodeService;
     }
-    public String getTableName(String currentTableName) {
-        return currentTableName;
+
+    public String getLegacyTableName(String currentTableName) {
+        String result = currentTableName;
+
+        if (legacyTableMapping.get(currentTableName.toLowerCase()) != null) {
+            result = legacyTableMapping.get(currentTableName.toLowerCase());
+        }
+        return result;
     }
 
 }

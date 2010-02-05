@@ -38,6 +38,10 @@ public interface IDataExtractor {
 
     public void write(BufferedWriter writer, Data data, String routerId, DataExtractorContext context) throws IOException;
 
-    public String getTableName(String currentTableName);
+    /**
+     * Give an opportunity to swap out the table name with a different one for backward compatibility
+     * purposes.
+     */
+    public String getLegacyTableName(String currentTableName);
     
 }

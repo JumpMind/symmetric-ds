@@ -19,6 +19,7 @@
  */
 package org.jumpmind.symmetric.db;
 
+import org.apache.ddlutils.model.Table;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -34,8 +35,8 @@ abstract public class AbstractEmbeddedDbDialect extends AbstractDbDialect implem
      * When returning the raw SQL for use as SQL it needs to be un-escaped.
      */
     @Override
-    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger) {
-        String sql = super.createInitalLoadSqlFor(node, trigger);
+    public String createInitalLoadSqlFor(Node node, TriggerRouter trigger, Table table) {
+        String sql = super.createInitalLoadSqlFor(node, trigger, table);
         sql = sql.replace("''", "'");
         return sql;
     }

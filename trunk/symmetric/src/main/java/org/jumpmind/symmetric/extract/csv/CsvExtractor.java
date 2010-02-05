@@ -105,7 +105,7 @@ public class CsvExtractor extends CsvExtractor16 {
         this.triggerRouterService = triggerRouterService;
     }
     
-    public String getTableName(String currentTableName){
+    public String getLegacyTableName(String currentTableName){
         return currentTableName;
     }
 }
