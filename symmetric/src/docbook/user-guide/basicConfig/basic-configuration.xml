@@ -335,9 +335,9 @@ values('item', 'item', 'item', current_timestamp, current_timestamp);
     <section id="basic-route">
         <title>Simple Router</title>
         <para>
-            The simplest route is a route that sends all the data that is captured by its 
+            The simplest router is a router that sends all the data that is captured by its 
             associated triggers to all the nodes that belong to the target node group defined
-            in the route.  A route is defined as a row in the <link linkend="router">router</link> table.
+            in the router.  A router is defined as a row in the <link linkend="router">router</link> table.
             It is then linked to triggers in the <link linkend="trigger_router">trigger router</link> table.  
         </para>
         <para>
@@ -365,7 +365,7 @@ values('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
         <para>
             Sometimes requirements may exist that require data to be routed based on the current value or the old value of a 
             column in the table that is being routed.  Column routers are configured by setting the router_type column on the <link linkend="router">router</link> table
-            to 'column' and setting the router_expression column to an equality expression that represents the
+            to 'column' and setting the router_expression column to an equality expression that represents
             the expected value of the column.
         </para>
         <para>             
