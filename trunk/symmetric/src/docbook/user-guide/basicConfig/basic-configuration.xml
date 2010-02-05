@@ -413,7 +413,7 @@ values('corp-2-store-id','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', cur
             </itemizedlist>
         </para>   
         <para>
-            Consider a table that needs to be routed to a redirect node defined by it's external_id in the <link linkend="registration_redirect">registration redirect</link> table.  The following 
+            Consider a table that needs to be routed to a redirect node defined by its external_id in the <link linkend="registration_redirect">registration redirect</link> table.  The following 
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
@@ -463,7 +463,7 @@ values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_n
 ]]></programlisting>
          </para>            
         <para>
-            When using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the EXTERNAL_DATA column of the <link linkend="data">data</link> table at the time a trigger 
+            Alternatively, when using an external_select on the <link linkend="trigger">trigger</link> table, data is captured in the EXTERNAL_DATA column of the <link linkend="data">data</link> table at the time a trigger 
             fires.  The EXTERNAL_DATA can then be used for routing by using a router_type of 'column'.  The advantage of this approach is that it is very unlikely that the master Order table
             will have been deleted at the time any DML accures on the OrderLineItem table.  It also is a bit more effcient than the 'subselect' approach, although the triggers produced do run 
             the extra external_select inline with application database updates.  
