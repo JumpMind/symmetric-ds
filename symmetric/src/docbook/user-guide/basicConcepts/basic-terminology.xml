@@ -3,7 +3,8 @@
         <title>Terminology</title>
      
          <para>Before the complete data model is revealed, a few key terms should be explained. Terms such as "nodes", "groups", "links", "channels", "routers", 
-        and "triggers" are fundamental to understanding SymmetricDS.</para>
+        and "triggers" are fundamental to understanding SymmetricDS.  Many of these terms will be revisited and discussed in greater detail
+        in the <link linkend="basic-configuration">Basic Configuration</link> chapter.</para>
         <section id="terminology-nodes">
             <title>Nodes</title>
             <para>
@@ -166,6 +167,8 @@
                 The mapping between the set of triggers and set of routers is many-to-many.  This means that one trigger can capture changes and route
                 to multiple locations.  It also means that one router can be defined an associated with many different triggers.
             </para>
+            <para>Routers will be revisited and discussed in greater detail
+            in the <link linkend="basic-configuration">Basic Configuration</link> chapter.</para>
         </section>
     </section>
     
