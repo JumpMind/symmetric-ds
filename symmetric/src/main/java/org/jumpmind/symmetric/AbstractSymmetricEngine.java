@@ -397,7 +397,8 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
         
         long offlineNodeDetectionPeriodSeconds = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES)*60;
         long heartbeatSeconds = parameterService.getLong(ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
-        if (offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
+        if (offlineNodeDetectionPeriodSeconds > 0 && offlineNodeDetectionPeriodSeconds <= heartbeatSeconds) {
+            // Offline node detection is not disabled (-1) and the value is too small (less than the heartbeat)
             throw new IllegalStateException(
                 "The " + ParameterConstants.OFFLINE_NODE_DETECTION_PERIOD_MINUTES + " property must be a longer period of time than the " +
                 ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC + " property.  Otherwise, nodes will be taken offline before the heartbeat job has a chance to run.");
