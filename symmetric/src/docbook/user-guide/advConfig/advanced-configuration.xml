@@ -142,7 +142,7 @@ values
             The following explains how to publish to JMS during synchronization to the target database. 
        </para>
        <para>     
-            The XmlPublisherDataLoaderFilter is at1
+            The XmlPublisherDataLoaderFilter is a
             <link linkend="extensions-data-loader-filter">IDataLoaderFilter</link> that may be configured to 
             publish specific tables as an XML message to a JMS provider.
             See <link linkend="extensions">extension points</link> for information on how 
