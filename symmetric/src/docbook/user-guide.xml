@@ -53,16 +53,16 @@
         </para>
     </preface>
 
-    <xi:include href="user-guide/intro/overview.xml" />
-    <xi:include href="user-guide/basicConcepts/concepts.xml" />
-    <xi:include href="user-guide/arch/architecture.xml" />
-    <xi:include href="user-guide/basicConfig/basic-configuration.xml" />
-    <xi:include href="user-guide/advConfig/advanced-configuration.xml" />
-    <xi:include href="user-guide/admin/administration.xml" />
-    <xi:include href="user-guide/admin/ip-filtering.xml" />
-    <xi:include href="user-guide/appendix/startup-properties.xml" />
-    <xi:include href="user-guide/appendix/databases.xml" />
-    <xi:include href="user-guide/appendix/data-format.xml" />
-    <xi:include href="user-guide/appendix/version-numbering.xml" />
+    <xi:include href="overview.xml" />
+    <xi:include href="concepts.xml" />
+    <xi:include href="architecture.xml" />
+    <xi:include href="basic-configuration.xml" />
+    <xi:include href="advanced-configuration.xml" />
+    <xi:include href="administration.xml" />
+    <xi:include href="ip-filtering.xml" />
+    <xi:include href="startup-properties.xml" />
+    <xi:include href="databases.xml" />
+    <xi:include href="data-format.xml" />
+    <xi:include href="version-numbering.xml" />
 
 </book>
