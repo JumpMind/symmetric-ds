@@ -755,7 +755,7 @@
                                     <targetDirectory>${docbook.target}/html-single
                                     </targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
-                                    <includes>*.xml</includes>
+                                    <includes>user-guide.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
                                     <htmlCustomization>
                                         ${docbook.build}/resources/xsl/docbook-html.xsl
@@ -790,7 +790,7 @@
                                     <sourceDirectory>${docbook.build}</sourceDirectory>
                                     <targetDirectory>${docbook.target}/html</targetDirectory>
                                     <xincludeSupported>true</xincludeSupported>
-                                    <includes>*.xml</includes>
+                                    <includes>user-guide.xml</includes>
                                     <htmlStylesheet>css/docbook-style.css</htmlStylesheet>
                                     <htmlCustomization>
                                         ${docbook.build}/resources/xsl/docbook-html-chunk.xsl

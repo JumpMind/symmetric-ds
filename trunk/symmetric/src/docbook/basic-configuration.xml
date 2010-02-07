@@ -268,7 +268,8 @@ insert into SYM_CHANNEL
   (channel_id, processing_order, max_batch_size, max_batch_to_send, 
    extract_period_millis, batch_algorithm, enabled, description)
 values
-  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 'retail sale transactions from register');]]></programlisting>
+  ('sale_transaction', 1, 1000, 10,  60000, 'transactional', 1, 
+   'retail sale transactions from register');]]></programlisting>
         </para>
         <para>
             Batching is the grouping of data, by channel, to be transferred and committed at 
@@ -328,7 +329,8 @@ values
             <programlisting>
 <![CDATA[insert into SYM_TRIGGER 
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
-values('item', 'item', 'item', current_timestamp, current_timestamp);
+values
+('item', 'item', 'item', current_timestamp, current_timestamp);
 ]]></programlisting>
         </para>
     </section>
@@ -344,8 +346,11 @@ values('item', 'item', 'item', current_timestamp, current_timestamp);
             The following SQL statement defines a router that will send data from the 'corp' group to the 'store' group.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id,create_time, last_update_time)
-values('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, 
+ create_time, last_update_time)
+values
+('corp-2-store','corp', 'store', 
+ current_timestamp, current_timestamp);
 
 ]]></programlisting>
         </para>
@@ -354,7 +359,8 @@ values('corp-2-store','corp', 'store', current_timestamp, current_timestamp);
             <programlisting>
 <![CDATA[insert into SYM_TRIGGER_ROUTER 
 (trigger_id, router_id, initial_load_order,  create_time, last_update_time)
-values('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
+values
+('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
 
 ]]></programlisting>
         </para>        
@@ -381,8 +387,11 @@ values('item', 'corp-2-store', 1, current_timestamp, current_timestamp);
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-ok','corp', 'store', 'column', 'STATUS=OK', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-ok','corp', 'store', 'column', 
+ 'STATUS=OK', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -391,8 +400,11 @@ values('corp-2-store-ok','corp', 'store', 'column', 'STATUS=OK', current_timesta
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-status','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-status','corp', 'store', 'column', 
+ 'STATUS!=:OLD_STATUS', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -401,8 +413,11 @@ values('corp-2-store-status','corp', 'store', 'column', 'STATUS!=:OLD_STATUS', c
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-id','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-id','corp', 'store', 'column', 
+ 'STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
             Attributes on <link linkend="node">node</link> that can be referenced with tokens include:
@@ -417,8 +432,11 @@ values('corp-2-store-id','corp', 'store', 'column', 'STORE_ID=:EXTERNAL_ID', cur
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-redirect','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-redirect','corp', 'store', 'column', 
+ 'STORE_ID=:REDIRECT_NODE', current_timestamp, current_timestamp);
 ]]></programlisting>                        
          </para>
          <para>
@@ -426,8 +444,10 @@ values('corp-2-store-redirect','corp', 'store', 'column', 'STORE_ID=:REDIRECT_NO
             an example where the STORE_ID column may contain the STORE_ID to route to or the constant of ALL which indicates that all nodes should receive the update.       
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-multiple-matches','corp', 'store', 'column', 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-multiple-matches','corp', 'store', 'column', 
  'STORE_ID=ALL
   STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 ]]></programlisting>                        
@@ -458,8 +478,14 @@ values('corp-2-store-multiple-matches','corp', 'store', 'column',
             SQL statement will insert a column router to accomplish that.            
             <programlisting>
 <![CDATA[insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_node c where c.node_group_id=:NODE_GROUP_ID and c.sync_enabled=1 and c.external_id in (select STORE_ID from order where order_id=:ORDER_ID)', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store','corp', 'store', 'subselect', 
+ 'select c.node_id from sym_node c where c.node_group_id=:NODE_GROUP_ID and 
+   c.sync_enabled=1 and c.external_id in 
+   (select STORE_ID from order where order_id=:ORDER_ID)', 
+ current_timestamp, current_timestamp);
 ]]></programlisting>
          </para>            
         <para>
@@ -475,12 +501,19 @@ values('corp-2-store','corp', 'store', 'subselect', 'select c.node_id from sym_n
             <programlisting>
 <![CDATA[
 insert into SYM_TRIGGER 
-(trigger_id,source_table_name,channel_id,external_select,last_update_time,create_time)
-values('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',current_timestamp, current_timestamp);
+(trigger_id,source_table_name,channel_id,external_select,
+ last_update_time,create_time)
+values
+('orderlineitem', 'orderlineitem', 'orderlineitem','select STORE_ID 
+ from order where order_id=$(curTriggerValue).$(curColumnPrefix)order_id',
+ current_timestamp, current_timestamp);
 
 insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-ext','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-ext','corp', 'store', 'column', 
+ 'EXTERNAL_DATA=:EXTERNAL_ID', current_timestamp, current_timestamp);
 
 ]]></programlisting>
          </para>            
@@ -503,8 +536,12 @@ values('corp-2-store-ext','corp', 'store', 'column', 'EXTERNAL_DATA=:EXTERNAL_ID
             <programlisting>
 <![CDATA[
 insert into SYM_ROUTER 
-(router_id, source_node_group_id, target_node_group_id, router_type, router_expression, create_time, last_update_time)
-values('corp-2-store-bsh','corp', 'store', 'bsh', 'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', current_timestamp, current_timestamp);
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-bsh','corp', 'store', 'bsh', 
+ 'targetNodes.add(STORE_ID + "-" + WORKSTATION_NUMBER);', 
+ current_timestamp, current_timestamp);
 ]]></programlisting>
          </para>
     </section>  

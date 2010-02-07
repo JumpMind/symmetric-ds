@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ch07-administration" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="administration" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -7,7 +7,7 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>Administration</title>
-    <section id="ch07-changing-triggers">
+    <section id="changing-triggers">
         <title>Changing Triggers</title>
         <para>
             A trigger row may be updated using SQL to change a synchronization definition.
@@ -32,7 +32,7 @@ where source_table_name = 'price_changes';
             server.
         </para>
     </section>
-    <section id="ch07-changing-configuration">
+    <section id="changing-configuration">
         <title>Changing Configuration</title>
         <para>
             The configuration of your system as defined in the sym_* tables may be modified at runtime.  By default, any changes made to 
@@ -44,7 +44,7 @@ where source_table_name = 'price_changes';
             to the sym_* tables when the auto syncing feature is disabled.
         </para>
     </section>    
-    <section id="ch07-sync-triggers">
+    <section id="sync-triggers">
         <title>Sync Triggers Job</title>
         <para>
             SymmetricDS examines the current configuration, corresponding database triggers,
@@ -119,11 +119,11 @@ where source_table_name = 'price_changes';
             </variablelist>
         </para>
     </section>
-    <section id="ch07-control-sync">
+    <section id="control-sync">
         <title>Enabling and Disabling Synchronization</title>
         <para></para>
     </section>
-    <section id="ch07-jmx">
+    <section id="admin-jmx">
         <title>Java Management Extensions</title>
         <para>
           Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
@@ -159,7 +159,7 @@ where source_table_name = 'price_changes';
           
         </para>
     </section>
-    <section id="ch07-registration">
+    <section id="registration">
         <title>Opening Registration</title>
         <para>
         Node registration is the act of setting up a new <link linkend="node">node</link> and
@@ -177,15 +177,11 @@ where source_table_name = 'price_changes';
         method which takes a node_id as an argument.
         </para>
     </section>
-    <section id="ch07-batches">
+    <section id="viewing-batches">
         <title>Viewing Batches</title>
         <para></para>
     </section>
-    <section id="ch07-statistics">
-        <title>Statistics</title>
-        <para></para>
-    </section>
-    <section id="ch07-running-service-windows">
+    <section id="running-service-windows">
         <title>Running as a Windows Service</title>
         <para>
             SymmetricDS uses the
@@ -217,7 +213,7 @@ where source_table_name = 'price_changes';
 net stop symmetric</programlisting>
         </para>
     </section>
-    <section id="ch07-running-service-unix">
+    <section id="running-service-unix">
         <title>Running as a Unix Service</title>
         <para>
             SymmetricDS uses the

@@ -163,7 +163,8 @@ values
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
  
-    <bean id="publishingFilter" class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
+    <bean id="publishingFilter" 
+      class="org.jumpmind.symmetric.integrate.XmlPublisherDataLoaderFilter">
         <property name="xmlTagNameToUseForGroup" value="sale"/>
         <property name="tableNamesToPublishAsGroup">
             <list>
@@ -198,7 +199,8 @@ values
         <para>
           The above configuration will publish XML similiar to the following:
             <programlisting><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="0012010-01-220031234" nodeid="00001" time="1264187704155">
+<sale xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  id="0012010-01-220031234" nodeid="00001" time="1264187704155">
   <row entity="SALE_TX" dml="I">
     <data key="STORE_ID">001</data>
     <data key="BUSINESS_DAY">2010-01-22</data>
