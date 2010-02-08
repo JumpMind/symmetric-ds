@@ -44,8 +44,9 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.jumpmind.symmetric.route.IDataRouter;
@@ -208,14 +209,17 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
-    protected Set<Node> findAvailableNodes(TriggerRouter trigger, RouterContext context) {
-        Set<Node> nodes = context.getAvailableNodes().get(trigger);
+    protected Set<Node> findAvailableNodes(TriggerRouter triggerRouter, RouterContext context) {
+        Set<Node> nodes = context.getAvailableNodes().get(triggerRouter);
         if (nodes == null) {
             nodes = new HashSet<Node>();
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-            nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
+            Router router = triggerRouter.getRouter();
+            List<NodeGroupLink> links = configurationService.getGroupLinksFor(router.getSourceNodeGroupId(), router.getTargetNodeGroupId());
+            for (NodeGroupLink nodeGroupLink : links) {
+                nodes.addAll(nodeService.findTargetNodesFor(nodeGroupLink.getDataEventAction()));
+            }
             filterDisabledNodes(nodes);
-            context.getAvailableNodes().put(trigger, nodes);
+            context.getAvailableNodes().put(triggerRouter, nodes);
         }
         return nodes;
     }
