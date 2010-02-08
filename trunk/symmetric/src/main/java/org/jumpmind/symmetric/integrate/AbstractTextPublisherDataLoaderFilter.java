@@ -140,7 +140,7 @@ abstract public class AbstractTextPublisherDataLoaderFilter implements IPublishe
         messagesSinceLastLogOutput++;
         long timeInMsSinceLastLogOutput = System.currentTimeMillis() - lastTimeInMsOutputLogged;
         if (timeInMsSinceLastLogOutput > minTimeInMsBetweenLogOutput) {
-            log.info("TextMessagePubished", beanName, messagesSinceLastLogOutput, timeInMsSinceLastLogOutput);
+            log.info("TextMessagePublished", beanName, messagesSinceLastLogOutput, timeInMsSinceLastLogOutput);
             lastTimeInMsOutputLogged = System.currentTimeMillis();
             messagesSinceLastLogOutput = 0;
         }
