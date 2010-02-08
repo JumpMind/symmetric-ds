@@ -250,7 +250,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     batch.setSqlMessage(e.getMessage());
                     statisticManager.getStatistic(StatisticNameConstants.INCOMING_TRANSPORT_ERROR_COUNT).increment();
                 } else {
-                    log.error("BatchLoadingFailed", batch.getNodeBatchId(), e.getMessage(), e);
+                    log.error("BatchLoadingFailed", e, batch.getNodeBatchId(), e.getMessage());
                     SQLException se = unwrapSqlException(e);
                     if (se != null) {
                         statisticManager.getStatistic(StatisticNameConstants.INCOMING_DATABASE_ERROR_COUNT).increment();
