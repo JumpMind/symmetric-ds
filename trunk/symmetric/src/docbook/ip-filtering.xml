@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter version="5.0" xml:id="ch08-ip-filtering" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.0" xml:id="ip-filtering" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xi="http://www.w3.org/2001/XInclude"
          xmlns:svg="http://www.w3.org/2000/svg"
@@ -7,7 +7,7 @@
          xmlns:mml="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml">
     <title>IP Filtering</title>
-    <section id="ch08-ip-filtering-types">
+    <section id="ip-filtering-types">
         <title>IP Filtering</title>
         <para>
             SymmetricDS supports restricting IP addresses of clients that are allowed to 

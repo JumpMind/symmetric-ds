@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-  <section id="terminology">
+  <section id="basic-terminology">
         <title>Terminology</title>
      
          <para>Before the complete data model is revealed, a few key terms should be explained. Terms such as "nodes", "groups", "links", "channels", "routers", 
