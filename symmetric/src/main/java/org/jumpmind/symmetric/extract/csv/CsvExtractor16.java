@@ -25,6 +25,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
@@ -69,8 +70,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
         String triggerHistId = Integer.toString(data.getTriggerHistory().getTriggerHistoryId()).intern();
         if (!context.getHistoryRecordsWritten().contains(triggerHistId)) {
             
-            CsvUtils.write(out, CsvConstants.TABLE, ", ",
-                       data.getTableName().endsWith("_old")?data.getTableName().substring(0,data.getTableName().length()-4) :data.getTableName());
+            CsvUtils.write(out, CsvConstants.TABLE, ", ", data.getTableName());
             out.newLine();
             CsvUtils.write(out, CsvConstants.KEYS, ", ", data.getTriggerHistory().getPkColumnNames());
             out.newLine();
@@ -82,7 +82,7 @@ public class CsvExtractor16 extends CsvExtractor14 {
             out.newLine();
         }
 
-        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
+        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
             out.newLine();
         }
