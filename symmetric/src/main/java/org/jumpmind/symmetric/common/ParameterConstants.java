@@ -84,6 +84,7 @@ final public class ParameterConstants {
     public final static String DATA_LOADER_MAX_ROWS_BEFORE_COMMIT = "dataloader.max.rows.before.commit";
     
     public final static String DATA_EXTRACTOR_ENABLED = "dataextractor.enable";
+    public final static String DATA_EXTRACTOR_OLD_DATA_ENABLED = "dataextractor.old.data.enable";
 
     public final static String TRANSPORT_HTTP_TIMEOUT = "http.timeout.ms";
     public final static String TRANSPORT_HTTP_USE_COMPRESSION_CLIENT = "http.compression";

@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.extract.csv;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.csv.CsvConstants;
 import org.jumpmind.symmetric.extract.DataExtractorContext;
 import org.jumpmind.symmetric.model.Data;
@@ -77,7 +78,7 @@ public class CsvExtractor extends CsvExtractor16 {
             writeTable(data, routerId, out);
         }
 
-        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null) {
+        if (data.getEventType() == DataEventType.UPDATE && data.getOldData() != null && parameterService.is(ParameterConstants.DATA_EXTRACTOR_OLD_DATA_ENABLED)) {
             CsvUtils.write(out, CsvConstants.OLD, ", ", data.getOldData());
             out.newLine();
         }
