@@ -28,7 +28,10 @@
             <bean class="org.jumpmind.symmetric.route.BshDataRouter">
                 <property name="dbDialect" ref="dbDialect" />
             </bean>
-        </entry>            
+        </entry>
+        <entry key="trigger">
+            <bean class="org.jumpmind.symmetric.route.TriggerDataRouter"/>
+        </entry>                    
 	</util:map>
 
 	<util:map id="batchAlgorithms">

@@ -154,6 +154,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             trigger.setInitialLoadOrder(initialLoadOrder++);
             String initialLoadSelect = rootConfigChannelInitialLoadSelect.get(majorVersion).get(tableName);
             trigger.setInitialLoadSelect(initialLoadSelect);
+            if (tableName.equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER))) {
+            	trigger.getRouter().setRouterType("trigger");
+            }
             triggers.add(trigger);
         }
         return triggers;
