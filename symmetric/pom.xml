@@ -813,7 +813,7 @@
                                             </fileset>
                                         </copy>
                                         <delete file="${docbook.build}/symmetric-schema.xml" />
-                                        <delete file="${basedir}/target/torque/report.symmetric.doc.generation" /> 
+                                        <delete file="${basedir}/torque/report.symmetric.doc.generation" /> 
                                     </postProcess>
                                 </configuration>
                             </execution>
