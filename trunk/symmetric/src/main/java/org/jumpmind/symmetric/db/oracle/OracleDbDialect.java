@@ -41,7 +41,20 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
     
     static final String ORACLE_OBJECT_TYPE = "FUNCTION";
-
+    
+    @SuppressWarnings("unchecked")
+    protected void initLobHandler() {
+        lobHandler = new OracleLobHandler();
+        try {
+            Class clazz = Class.forName(parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
+            NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
+            ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }        
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     protected Integer overrideJdbcTypeForColumn(Map values) {
@@ -179,18 +192,9 @@ public class OracleDbDialect extends AbstractDbDialect implements IDbDialect {
         return defaultSchema;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void initTablesAndFunctionsForSpecificDialect() {
-        lobHandler = new OracleLobHandler();
-        try {
-            Class clazz = Class.forName(parameterService.getString(ParameterConstants.DB_NATIVE_EXTRACTOR));
-            NativeJdbcExtractor nativeJdbcExtractor = (NativeJdbcExtractor) clazz.newInstance();
-            ((OracleLobHandler) lobHandler).setNativeJdbcExtractor(nativeJdbcExtractor);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
 }
