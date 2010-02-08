@@ -144,7 +144,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerRouter> getTriggerRoutersForRegistration(String version, String sourceGroupId, String targetGroupId) {
         int initialLoadOrder = 1;
-        String majorVersion = ""+Version.parseVersion(version)[0];
+        String majorVersion = Integer.toString(Version.parseVersion(version)[0]);
         List<String> tables = rootConfigChannelTableNames.get(majorVersion);
         List<TriggerRouter> triggers = new ArrayList<TriggerRouter>(tables.size());
         for (int j = 0; j < tables.size(); j++) {
@@ -164,7 +164,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected TriggerRouter buildRegistrationTriggerRouter(String version,String tableName, boolean syncChanges, String sourceGroupId,
             String targetGroupId) {
-        String majorVersion = ""+Version.parseVersion(version)[0];
+        String majorVersion = Integer.toString(Version.parseVersion(version)[0]);
         boolean autoSyncConfig = parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
 
         TriggerRouter triggerRouter = new TriggerRouter();
@@ -183,8 +183,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         router.setSourceNodeGroupId(sourceGroupId);
         router.setTargetNodeGroupId(targetGroupId);
 
-        // little trick to force the rebuild of sym triggers every time
-        // there is a new version of symmetricds
+        // little trick to force the rebuild of SymmetricDS triggers every time
+        // there is a new version of SymmetricDS
         trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
         router.setLastUpdateTime(trigger.getLastUpdateTime());
         triggerRouter.setLastUpdateTime(trigger.getLastUpdateTime());
