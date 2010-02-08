@@ -36,11 +36,11 @@ final public class Version {
     static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory
             .getLog(Version.class);
 
-    private static final int MAJOR_INDEX = 0;
+    public static final int MAJOR_INDEX = 0;
 
-    private static final int MINOR_INDEX = 1;
+    public static final int MINOR_INDEX = 1;
 
-    private static final int PATCH_INDEX = 2;
+    public static final int PATCH_INDEX = 2;
 
     private static String version = null;
 
