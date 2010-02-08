@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -72,8 +73,20 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         return jdbcTemplate.query(getSql("groupsLinksSql"), new NodeGroupLinkMapper());
     }
 
-    public List<NodeGroupLink> getGroupLinksFor(String nodeGroupId) {
-        return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { nodeGroupId }, new NodeGroupLinkMapper());
+    public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId) {
+        return jdbcTemplate.query(getSql("groupsLinksForSql"), new Object[] { sourceNodeGroupId }, new NodeGroupLinkMapper());
+    }
+    
+    public List<NodeGroupLink> getGroupLinksFor(String sourceNodeGroupId, String targetNodeGroupId) {
+        List<NodeGroupLink> links = getGroupLinksFor(sourceNodeGroupId);
+        Iterator<NodeGroupLink> it = links.iterator();
+        while (it.hasNext()) {
+            NodeGroupLink nodeGroupLink = (NodeGroupLink) it.next();
+            if (!nodeGroupLink.getTargetNodeGroupId().equals(targetNodeGroupId)) {
+                it.remove();
+            }
+        }
+        return links;        
     }
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
