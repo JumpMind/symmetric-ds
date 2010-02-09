@@ -88,32 +88,32 @@ abstract public class AbstractTransportManager {
 
     protected String getAcknowledgementData(String nodeId, List<IncomingBatch> list) throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (IncomingBatch status : list) {
+        for (IncomingBatch batch : list) {
             Object value = null;
-            if (status.getStatus() == Status.OK || status.getStatus() == Status.SK) {
+            if (batch.getStatus() == Status.OK || batch.getStatus() == Status.SK) {
                 value = WebConstants.ACK_BATCH_OK;
             } else {
-                value = status.getFailedRowNumber();
+                value = batch.getFailedRowNumber();
             }
-            append(builder, WebConstants.ACK_BATCH_NAME + status.getBatchId(), value);
+            append(builder, WebConstants.ACK_BATCH_NAME + batch.getBatchId(), value);
         }
 
         // For backwards compatibility with 1.3 and earlier, the first line is
         // the original acknowledgment data and the second line contains more
         // information
         builder.append("\n");
-        for (IncomingBatch status : list) {
-            long batchId = status.getBatchId();
+        for (IncomingBatch batch : list) {
+            long batchId = batch.getBatchId();
             append(builder, WebConstants.ACK_NODE_ID + batchId, nodeId);
-            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, status.getNetworkMillis());
-            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, status.getFilterMillis());
-            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, status.getDatabaseMillis());
-            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, status.getByteCount());
+            append(builder, WebConstants.ACK_NETWORK_MILLIS + batchId, batch.getNetworkMillis());
+            append(builder, WebConstants.ACK_FILTER_MILLIS + batchId, batch.getFilterMillis());
+            append(builder, WebConstants.ACK_DATABASE_MILLIS + batchId, batch.getDatabaseMillis());
+            append(builder, WebConstants.ACK_BYTE_COUNT + batchId, batch.getByteCount());
 
-            if (status.getStatus() == Status.ER) {
-                append(builder, WebConstants.ACK_SQL_STATE + batchId, status.getSqlState());
-                append(builder, WebConstants.ACK_SQL_CODE + batchId, status.getSqlCode());
-                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, status.getSqlMessage());
+            if (batch.getStatus() == Status.ER) {
+                append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
+                append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
+                append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
             }
         }
         return builder.toString();
