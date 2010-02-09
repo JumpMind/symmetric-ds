@@ -183,7 +183,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
             <list>
                 <bean class="org.springframework.scheduling.timer.ScheduledTimerTask">
                     <!-- run the first time after 1 minute -->
-                    <property name="delay" value="6000" />
+                    <property name="delay" value="60000" />
                     <!-- run once per hour -->
                     <property name="period" value="3600000" />
                     <property name="timerTask">

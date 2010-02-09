@@ -168,6 +168,7 @@ public class SymmetricLauncher {
 
             if (line.hasOption(OPTION_PROPERTIES_GEN)) {
                 generateDefaultProperties(line.getOptionValue(OPTION_PROPERTIES_GEN));
+                System.exit(0);
                 return;
             }
 
@@ -184,6 +185,7 @@ public class SymmetricLauncher {
             if (line.hasOption(OPTION_DDL_GEN)) {
                 testConnection(line);
                 generateDDL(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_DDL_GEN));
+                System.exit(0);
                 return;
             }
 
@@ -191,6 +193,7 @@ public class SymmetricLauncher {
                 testConnection(line);
                 ((IPurgeService) new StandaloneSymmetricEngine(propertiesFile).getApplicationContext().getBean(Constants.PURGE_SERVICE))
                         .purge();
+                System.exit(0);
                 return;
             }
 
@@ -199,14 +202,16 @@ public class SymmetricLauncher {
                 String arg = line.getOptionValue(OPTION_OPEN_REGISTRATION);
                 openRegistration(new StandaloneSymmetricEngine(propertiesFile), arg);
                 System.out.println(Message.get("RegistrationOpened", arg));
+                System.exit(0);
                 return;
             }
 
             if (line.hasOption(OPTION_RELOAD_NODE)) {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_RELOAD_NODE);
-                String message = reloadNode(new StandaloneSymmetricEngine(propertiesFile), arg);
+                String message = reloadNode(new StandaloneSymmetricEngine(propertiesFile), arg);                
                 System.out.println(message);
+                System.exit(0);
                 return;
             }
 
@@ -214,6 +219,7 @@ public class SymmetricLauncher {
                 testConnection(line);
                 String arg = line.getOptionValue(OPTION_DUMP_BATCH);
                 dumpBatch(new StandaloneSymmetricEngine(propertiesFile), arg);
+                System.exit(0);
                 return;
             }
 
@@ -222,30 +228,35 @@ public class SymmetricLauncher {
                 String arg = line.getOptionValue(OPTION_TRIGGER_GEN);
                 boolean gen_always = line.hasOption(OPTION_TRIGGER_GEN_ALWAYS);
                 syncTrigger(new StandaloneSymmetricEngine(propertiesFile), arg, gen_always);
+                System.exit(0);
                 return;
             }
 
             if (line.hasOption(OPTION_AUTO_CREATE)) {
                 testConnection(line);
                 autoCreateDatabase(new StandaloneSymmetricEngine(propertiesFile));
+                System.exit(0);
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_DDL_XML)) {
                 testConnection(line);
                 runDdlXml(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_DDL_XML));
+                System.exit(0);
                 return;
             }
 
             if (line.hasOption(OPTION_RUN_SQL)) {
                 testConnection(line);
                 runSql(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_RUN_SQL));
+                System.exit(0);
                 return;
             }
 
             if (line.hasOption(OPTION_LOAD_BATCH)) {
                 testConnection(line);
                 loadBatch(new StandaloneSymmetricEngine(propertiesFile), line.getOptionValue(OPTION_LOAD_BATCH));
+                System.exit(0);
                 return;
             }
 
@@ -278,6 +289,7 @@ public class SymmetricLauncher {
             exception = exp;
             System.err.println(exp.getMessage());
             printHelp(options);
+            System.exit(-1);
         } catch (Exception ex) {
             exception = ex;
             System.err
@@ -290,6 +302,7 @@ public class SymmetricLauncher {
             System.err
                     .println("-----------------------------------------------------------------------------------------------");
             printHelp(options);
+            System.exit(-1);
         }
     }
 
