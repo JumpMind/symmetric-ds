@@ -44,7 +44,7 @@ public class JobManager implements IJobManager, BeanFactoryAware {
 
     private void startJob(String name) {
         log.info("JobStarting", name);
-        beanFactory.getBean(name);
+        addTimer(name, (Timer)beanFactory.getBean(name));
     }
 
     public synchronized void addTimer(String timerName, Timer timer) {
