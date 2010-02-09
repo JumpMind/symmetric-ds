@@ -308,7 +308,7 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public synchronized void setup() {
         if (!setup) {
-            setupDatabase(true);
+            setupDatabase(false);
             setup = true;
         }
     }
