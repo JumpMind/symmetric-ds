@@ -226,7 +226,7 @@
     <properties>
         <wtp.version>1.5</wtp.version>
         <springframework.version>2.5.6</springframework.version>
-        <derby.version>10.4.2.0</derby.version>
+        <derby.version>10.5.3.0_1</derby.version>
         <docbook.source>${basedir}/src/docbook</docbook.source>
         <docbook.target>${basedir}/target/site/guide/1.x</docbook.target>
     </properties>
