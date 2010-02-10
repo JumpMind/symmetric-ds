@@ -73,6 +73,12 @@ import org.springframework.jdbc.support.JdbcUtils;
  */
 public class RouterService extends AbstractService implements IRouterService {
 
+    private static final String STAT_INSERT_DATA_EVENTS_MS = "insert.data.events.ms";
+
+    private static final String STAT_DATA_ROUTER_MS = "data.router.ms";
+
+    private static final String STAT_READ_DATA_MS = "read.data.ms";
+
     private IClusterService clusterService;
 
     private IDataService dataService;
@@ -173,6 +179,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void findAndSaveNextDataId(final DataRef ref) {
+        long ts = System.currentTimeMillis();
         long lastDataId = (Long) jdbcTemplate.query(getSql("selectDistinctDataIdFromDataEventSql"), new Object[] { ref
                 .getRefDataId() }, new int[] { Types.INTEGER }, new ResultSetExtractor<Long>() {
             public Long extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -193,7 +200,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 return lastDataId;
             }
         });
-        
+        log.debug("RoutedDataRefUpdateTime", System.currentTimeMillis()-ts);
         if (ref.getRefDataId() != lastDataId) {
             dataService.saveDataRef(new DataRef(lastDataId, new Date()));
         }
@@ -266,7 +273,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 long ts = System.currentTimeMillis();
                 if (readData(rs, dataQueue, transactionIdDataId)) {
                     dataCount++;
-                    context.incrementStat(System.currentTimeMillis() - ts, "read.data.ms");
+                    context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
                 } else {
                     // don't count the event if we didn't read it
                     i--;
@@ -292,7 +299,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (readData(rs, dataQueue, transactionIdDataId)) {
                         dataCount++;
                     }
-                    context.incrementStat(System.currentTimeMillis() - ts, "readData");
+                    context.incrementStat(System.currentTimeMillis() - ts, STAT_READ_DATA_MS);
                     if (hasNext) {
                         hasNext = rs.next();
                     }
@@ -324,7 +331,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     long ts = System.currentTimeMillis();
                     Collection<String> nodeIds = dataRouter.routeToNodes(context, dataMetaData, findAvailableNodes(
                             triggerRouter, context), false);
-                    context.incrementStat(System.currentTimeMillis() - ts, "data.router.ms");
+                    context.incrementStat(System.currentTimeMillis() - ts, STAT_DATA_ROUTER_MS);
                     if (!insertDataEvents(context, dataMetaData, nodeIds, triggerRouter)) {                        
                         log.debug("NoNodesToRouteTo", data.getDataId());
                     }
@@ -371,7 +378,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
             }
-            context.incrementStat(System.currentTimeMillis() - ts, "insert.data.events.ms");
+            context.incrementStat(System.currentTimeMillis() - ts, STAT_INSERT_DATA_EVENTS_MS);
             return true;
         } else {
             return false;
