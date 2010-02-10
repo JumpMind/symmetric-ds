@@ -53,19 +53,28 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
         if (Constants.PROTOCOL_HTTP.equalsIgnoreCase(transport)) {
             final String httpSslVerifiedServerNames = parameterService
                     .getString(ParameterConstants.TRANSPORT_HTTPS_VERIFIED_SERVERS);
-            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-                public boolean verify(String s, SSLSession sslsession) {
-                    if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                        String[] names = httpSslVerifiedServerNames.split(",");
-                        for (String string : names) {
-                            if (s != null && s.equals(string.trim())) {
-                                return true;
+            if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                    public boolean verify(String s, SSLSession sslsession) {
+                        boolean verified = false;
+                        if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
+                            if (httpSslVerifiedServerNames.equalsIgnoreCase(Constants.TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL)) {
+                                verified = true;
+                                System.err.println("ALLOWING ALL HOSTS FOR VERIFICATION");
+                            } else {
+                                String[] names = httpSslVerifiedServerNames.split(",");
+                                for (String string : names) {
+                                    if (s != null && s.equals(string.trim())) {
+                                        verified = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
+                        return verified;
                     }
-                    return false;
-                }
-            });
+                });
+            }
             
             // Allow self signed certs based on the parameter value.
             boolean allowSelfSignedCerts = parameterService.is(ParameterConstants.TRANSPORT_HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
