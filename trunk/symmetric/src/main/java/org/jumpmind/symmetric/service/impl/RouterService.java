@@ -200,7 +200,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 return lastDataId;
             }
         });
-        log.debug("RoutedDataRefUpdateTime", System.currentTimeMillis()-ts);
+        long updateTimeInMs = System.currentTimeMillis()-ts;        
+        if (updateTimeInMs > 5000) {
+            log.debug("RoutedDataRefUpdateTime", updateTimeInMs);
+        }
         if (ref.getRefDataId() != lastDataId) {
             dataService.saveDataRef(new DataRef(lastDataId, new Date()));
         }
