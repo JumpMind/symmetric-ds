@@ -318,7 +318,7 @@ public class RouterService extends AbstractService implements IRouterService {
             throws SQLException {
         Long dataId = transactionIdDataId.get(data.getTransactionId());
         context.setEncountedTransactionBoundary(dataId == null ? true : dataId == data.getDataId());
-        List<TriggerRouter> triggerRouters = getTriggerForData(data);
+        List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 Table table = dbDialect.getTable(triggerRouter.getTrigger(), true);
@@ -426,10 +426,16 @@ public class RouterService extends AbstractService implements IRouterService {
         }
     }
 
-    protected List<TriggerRouter> getTriggerForData(Data data) {
-        return triggerRouterService.getTriggerRoutersForCurrentNode(
+    protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
+        List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
                 (data.getTriggerHistory().getTriggerId()));
+        if (triggerRouters.size() == 0) {
+            triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
+                    parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(
+                    (data.getTriggerHistory().getTriggerId()));            
+        }
+        return triggerRouters;
     }
 
     public void addDataRouter(String name, IDataRouter dataRouter) {
