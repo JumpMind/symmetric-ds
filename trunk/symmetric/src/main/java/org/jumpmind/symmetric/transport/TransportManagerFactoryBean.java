@@ -60,7 +60,6 @@ public class TransportManagerFactoryBean implements FactoryBean<ITransportManage
                         if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
                             if (httpSslVerifiedServerNames.equalsIgnoreCase(Constants.TRANSPORT_HTTPS_VERIFIED_SERVERS_ALL)) {
                                 verified = true;
-                                System.err.println("ALLOWING ALL HOSTS FOR VERIFICATION");
                             } else {
                                 String[] names = httpSslVerifiedServerNames.split(",");
                                 for (String string : names) {
