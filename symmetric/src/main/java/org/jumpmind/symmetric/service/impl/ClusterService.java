@@ -105,7 +105,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (isClusteringEnabled()) {
             int count = jdbcTemplate.update(getSql("releaseLockSql"), new Object[] { id, action, serverId });
             if (count == 0) {
-                log.error("ClusterUnlockFailed", id, action, serverId);
+                log.warn("ClusterUnlockFailed", id, action, serverId);
             }
         }
     }
