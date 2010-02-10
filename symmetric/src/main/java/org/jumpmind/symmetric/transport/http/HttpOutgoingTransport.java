@@ -109,12 +109,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link AuthenticationException}
      */
     private HttpURLConnection requestReservation() throws IOException {
-        connection = (HttpURLConnection) url.openConnection();
+        connection = HttpTransportManager.openConnection(url, basicAuthUsername, basicAuthPassword);
         connection.setUseCaches(false);
         connection.setConnectTimeout(httpTimeout);
         connection.setReadTimeout(httpTimeout);
         connection.setRequestMethod("HEAD");
-        HttpTransportManager.setBasicAuthIfNeeded(connection, basicAuthUsername, basicAuthPassword);
         
         analyzeResponseCode(connection.getResponseCode());
         return connection;
@@ -122,7 +121,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public BufferedWriter open() throws IOException {
 
-        connection = (HttpURLConnection) url.openConnection();
+        connection = HttpTransportManager.openConnection(url, basicAuthUsername, basicAuthPassword);
         connection.setDoInput(true);
         connection.setDoOutput(true);
         connection.setUseCaches(false);
@@ -133,7 +132,6 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (useCompression) {
             connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
         }
-        HttpTransportManager.setBasicAuthIfNeeded(connection, basicAuthUsername, basicAuthPassword);
 
         OutputStream out = connection.getOutputStream();
         if (useCompression) {

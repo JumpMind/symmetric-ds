@@ -83,19 +83,25 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected HttpURLConnection sendMessage(URL url, String data) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = openConnection(url, getBasicAuthUsername(), getBasicAuthPassword());
         conn.setRequestMethod("POST");
         conn.setAllowUserInteraction(false);
         conn.setDoOutput(true);
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestProperty("Content-Length", Integer.toString(data.length()));
-        setBasicAuthIfNeeded(conn, getBasicAuthUsername(), getBasicAuthPassword());
         
         writeMessage(conn.getOutputStream(), data);
         return conn;
     }
 
+    public static HttpURLConnection openConnection(URL url, String username, String password) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        setBasicAuthIfNeeded(conn, username, password);
+        
+        return conn;
+    }
+    
     public static void setBasicAuthIfNeeded(HttpURLConnection conn, String username, String password) {
         if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
             String userpassword = username + ":" + password;
@@ -176,12 +182,12 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = HttpTransportManager.openConnection(url, getBasicAuthUsername(), getBasicAuthPassword());
+
         conn.setRequestProperty("accept-encoding", "gzip");
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestMethod("GET");
-        setBasicAuthIfNeeded(conn, getBasicAuthUsername(), getBasicAuthPassword());
         return conn;
     }
 

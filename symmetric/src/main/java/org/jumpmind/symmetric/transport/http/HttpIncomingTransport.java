@@ -107,6 +107,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
           if (connection instanceof HttpURLConnection)
           {
              HttpURLConnection http = (HttpURLConnection) connection;
+
              int stat = http.getResponseCode();
              if (stat >= 300 && stat <= 307 && stat != 306 &&
                 stat != HttpURLConnection.HTTP_NOT_MODIFIED)
@@ -129,7 +130,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
                    throw new SecurityException("illegal URL redirect");
                 }
                 redir = true;
-                connection = (HttpURLConnection)target.openConnection();
+                connection = HttpTransportManager.openConnection(target, getBasicAuthUsername(), getBasicAuthPassword());
+
                 redirects++;
              }
           }
@@ -137,5 +139,13 @@ public class HttpIncomingTransport implements IIncomingTransport {
        while (redir);
        
        return connection;
+    }
+    
+    protected String getBasicAuthUsername() {
+        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME);
+    }
+
+    protected String getBasicAuthPassword() {
+        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
     }
 }
