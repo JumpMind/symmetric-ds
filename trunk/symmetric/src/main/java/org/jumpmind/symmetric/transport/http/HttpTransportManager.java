@@ -145,7 +145,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 conn.addRequestProperty(key, requestProperties.get(key));
             }
         }
-        return new HttpIncomingTransport(conn);
+        return new HttpIncomingTransport(conn, parameterService);
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException {
@@ -155,7 +155,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))));
+        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(registrationUrl, node))), parameterService);
     }
     
     public void setParameterService(IParameterService parameterService) {
