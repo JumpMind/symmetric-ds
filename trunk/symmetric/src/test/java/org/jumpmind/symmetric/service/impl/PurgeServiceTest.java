@@ -191,6 +191,18 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, oldPurgeRetentionPeriod);
     }
     
+    @Test
+    public void testThatPurgeRemovesDataForNodesThatHaveBeenDisabled() {
+        int oldPurgeRetentionPeriod = getParameterService().getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, 10);
+        setupDataForDisabledNode();
+        makeDataOld();
+        assertCounts(1, 1, 1);
+        getSymmetricEngine().purge();
+        assertCounts(0, 0, 0);
+        getParameterService().saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, oldPurgeRetentionPeriod);
+    }
+    
     private void setupPartiallySentData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
@@ -203,11 +215,24 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
         getDataService().insertDataAndDataEventAndOutgoingBatch(data, TestConstants.TEST_CLIENT_EXTERNAL_ID,
                 router.getRouter().getRouterId());
         int dataId = getJdbcTemplate().queryForInt("select max(data_id) from sym_data");
-        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00002", router.getRouter().getRouterId());
         getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00003", router.getRouter().getRouterId());
+        getDataService().insertDataEventAndOutgoingBatch(dataId, data.getChannelId(), "00010", router.getRouter().getRouterId());
         getOutgoingBatchService().markAllAsSentForNode(TestConstants.TEST_CLIENT_NODE);
     }
-
+    
+    private void setupDataForDisabledNode() {
+        cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
+        assertCounts(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
+                false).values().iterator().next().get(0);
+        Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
+                getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
+                TestConstants.TEST_CHANNEL_ID, null, null);
+        data.setDataId(1);
+        getDataService().insertDataAndDataEventAndOutgoingBatch(data, "00002",
+                router.getRouter().getRouterId());
+    }
+    
     private void assertCounts(int count) {
         assertCounts(count, count, count);
     }
