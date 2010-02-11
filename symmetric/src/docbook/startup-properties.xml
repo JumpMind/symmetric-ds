@@ -331,7 +331,56 @@
                             [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>                              
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>https.allow.self.signed.certs</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If this is true, a Symmetric client node to accept self signed
+                            certificates.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                                 
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.username</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If specified, a Symmetric client node will use basic authentication
+                            when communicating with its server node using the given user name.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>http.basic.auth.password</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If specified, the password used for basic authentication.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>https.verified.server.names</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            A list of comma separated server names that will always verify when using https.
+                            This is useful if the URL's hostname and the server's identification hostname 
+                            don't match exactly using the default rules for the JRE.  A special value
+                            of "all" may be specified to allow all hostnames to verify.
+                            [&#xA0;Default:&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
                 <varlistentry>
                     <term>
                         <command>sync.table.prefix</command>
