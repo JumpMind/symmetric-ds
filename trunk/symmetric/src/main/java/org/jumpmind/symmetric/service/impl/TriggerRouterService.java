@@ -132,7 +132,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    protected List<TriggerHistory> getInactiveTriggerHistories() {
+    /**
+     * Get a list of trigger histories that need to be inactivated.
+     */
+    protected List<TriggerHistory> getActiveTriggerHistoriesForInactivation() {
         List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
                 + getSql("inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
         for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
@@ -497,7 +500,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     log.info("TriggersSynchronizing");
                     // make sure channels are read from the database
                     configurationService.reloadChannels();
-                    removeInactiveTriggers(sqlBuffer);
+                    inactivateTriggers(sqlBuffer);
                     updateOrCreateDatabaseTriggers(sqlBuffer, gen_always);
                     triggerRouterCacheByNodeGroupId.clear();
                 } finally {
@@ -510,8 +513,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    protected void removeInactiveTriggers(StringBuilder sqlBuffer) {
-        List<TriggerHistory> triggers = getInactiveTriggerHistories();
+    protected void inactivateTriggers(StringBuilder sqlBuffer) {
+        List<TriggerHistory> triggers = getActiveTriggerHistoriesForInactivation();
         for (TriggerHistory history : triggers) {
             log.info("TriggersRemoving", history.getSourceTableName());
             dbDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history
