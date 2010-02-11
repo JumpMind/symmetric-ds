@@ -196,7 +196,7 @@ abstract public class AbstractTransportManager {
         if (value instanceof String[]) {
             String[] arrayValue = (String[]) value;
             if (arrayValue.length > 0) {
-                value = arrayValue[0];
+                value = StringUtils.trim(arrayValue[0]);                
             }
         }
         return (String) value;
