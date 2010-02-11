@@ -433,7 +433,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
                 parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
                 (data.getTriggerHistory().getTriggerId()));
-        if (triggerRouters.size() == 0) {
+        if (triggerRouters == null || triggerRouters.size() == 0) {
             triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
                     parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(
                     (data.getTriggerHistory().getTriggerId()));            
