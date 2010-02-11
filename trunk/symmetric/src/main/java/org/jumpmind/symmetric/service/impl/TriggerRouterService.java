@@ -134,7 +134,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected List<TriggerHistory> getInactiveTriggerHistories() {
         List<TriggerHistory> hists = jdbcTemplate.query(getSql("allTriggerHistSql")
-                + getSql("inactiveTriggerHistoryWhereSql"), new TriggerHistoryMapper());
+                + getSql("inactiveTriggerHistoryWhereSql"), new Object[] {parameterService.getNodeGroupId()}, new TriggerHistoryMapper());
         for (Iterator<TriggerHistory> iterator = hists.iterator(); iterator.hasNext();) {
             TriggerHistory triggerHistory = iterator.next();
             if (triggerHistory.getSourceTableName().toLowerCase().startsWith(tablePrefix + "_")) {
