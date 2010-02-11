@@ -96,6 +96,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 try {
                     log.info("DataPurgeOutgoingRunning", SimpleDateFormat.getDateTimeInstance().format(
                             retentionCutoff.getTime()));
+                    purgeStrandedBatches();
                     purgeDataRows(retentionCutoff);
                     purgeOutgoingBatch(retentionCutoff);
                 } finally {
@@ -120,6 +121,13 @@ public class PurgeService extends AbstractService implements IPurgeService {
         purgeByMinMax(minMax, getSql("deleteOutgoingBatchSql"), time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         purgeUnroutedDataEvents(time.getTime());
     }
+    
+    private void purgeStrandedBatches() {        
+        int updateStrandedBatchesCount = getSimpleTemplate().update(getSql("updateStrandedBatches"));
+        if (updateStrandedBatchesCount > 0) {
+           log.info("DataPurgeUpdatedStrandedBatches", updateStrandedBatchesCount);
+        }        
+    }
 
     private void purgeUnroutedDataEvents(Date time) {
         Map<String, Object> params = new HashMap<String, Object>();
@@ -133,6 +141,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
         purgeByMinMax(minMax, getSql("deleteDataSql"), time.getTime(), maxNumOfDataIdsToPurgeInTx);
+        purgeByMinMax(minMax, getSql("deleteStrandedData"), time.getTime(), maxNumOfDataIdsToPurgeInTx);
+        
     }
 
     private long[] queryForMinMax(String sql, Object[] params) {

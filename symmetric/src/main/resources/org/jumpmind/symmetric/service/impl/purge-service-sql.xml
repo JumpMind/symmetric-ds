@@ -39,6 +39,22 @@
         select min(data_id), max(data_id) from $[sym.sync.table.prefix]_data
       </value>
     </entry>
+    <entry key="updateStrandedBatches">
+      <value>
+         update $[sym.sync.table.prefix]_outgoing_batch set status='OK' where node_id not
+           in (select node_id from sym_node where sync_enabled=1)
+      </value>
+    </entry>
+    <entry key="deleteStrandedData">
+      <value>
+         delete from $[sym.sync.table.prefix]_data where 
+          data_id between :MIN and :MAX and
+          data_id &lt; (select max(ref_data_id) from $[sym.sync.table.prefix]_data_ref) and
+          create_time &lt; :CUTOFF_TIME and 
+          data_id not in (select e.data_id from $[sym.sync.table.prefix]_data_event e where 
+              e.data_id between :MIN and :MAX)
+      </value>
+    </entry>    
     <entry key="deleteDataSql">
       <value>
         delete from $[sym.sync.table.prefix]_data where 
