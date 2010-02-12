@@ -90,9 +90,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             } else {
                 log.info("DataPushingFailedLock");
             }
-        } else {
-            log.info("DataPushingFailedLock");
-        }
+        } 
         return pushedData && !inError;
     }
 
