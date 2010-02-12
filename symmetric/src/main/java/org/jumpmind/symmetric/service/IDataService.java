@@ -48,7 +48,7 @@ public interface IDataService {
     @Transactional
     public void heartbeat(boolean force);
 
-    public void insertHeartbeatEvent(Node node);
+    public void insertHeartbeatEvent(Node node, boolean isReload);
 
     public long insertData(final Data data);
 
@@ -76,9 +76,9 @@ public interface IDataService {
 
     public Date findCreateTimeOfEvent(long dataId);
 
-    public Data createData(String tableName);
+    public Data createData(String tableName, boolean isReload);
 
-    public Data createData(String tableName, String whereClause);
+    public Data createData(String tableName, String whereClause, boolean isReload);
 
     public Map<String, String> getRowDataAsMap(Data data);
 
