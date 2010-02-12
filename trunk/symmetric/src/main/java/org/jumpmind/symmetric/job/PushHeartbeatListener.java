@@ -23,9 +23,9 @@ public class PushHeartbeatListener implements IHeartbeatListener {
             // the last ones ...
             if (!nodeService.isRegistrationServer()
                     && !outgoingBatchService.isUnsentDataOnChannelForNode(Constants.CHANNEL_CONFIG, me.getNodeId())) {
-                dataService.insertHeartbeatEvent(me);
+                dataService.insertHeartbeatEvent(me, false);
                 for (Node node : children) {
-                    dataService.insertHeartbeatEvent(node);
+                    dataService.insertHeartbeatEvent(node, false);
                 }
             }
         }

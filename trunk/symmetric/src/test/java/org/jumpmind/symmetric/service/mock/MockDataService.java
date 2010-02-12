@@ -54,12 +54,12 @@ public class MockDataService implements IDataService {
     public void addHeartbeatListener(IHeartbeatListener listener) {
     }
 
-    public Data createData(String tableName) {
+    public Data createData(String tableName, boolean isReload) {
 
         return null;
     }
 
-    public Data createData(String tableName, String whereClause) {
+    public Data createData(String tableName, String whereClause, boolean isReload) {
 
         return null;
     }
@@ -109,7 +109,7 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertHeartbeatEvent(Node node) {
+    public void insertHeartbeatEvent(Node node, boolean isReload) {
 
     }
 

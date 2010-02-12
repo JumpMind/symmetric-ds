@@ -27,6 +27,10 @@
         <priority value="INFO" />
     </category>
     
+    <category name="org.jumpmind.symmetric.ddlutils">
+        <priority value="WARN" />
+    </category>    
+    
     <category name="org.jumpmind.symmetric.job.HeartbeatJob">
         <priority value="INFO" />
     </category>    

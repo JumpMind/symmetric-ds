@@ -229,7 +229,7 @@ public class DataService extends AbstractService implements IDataService {
 
         // insert node security so the client doing the initial load knows that
         // an initial load is currently happening
-        insertNodeSecurityUpdate(targetNode);
+        insertNodeSecurityUpdate(targetNode, true);
 
         List<TriggerRouter> triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode
                 .getNodeGroupId(), targetNode.getNodeGroupId());
@@ -260,14 +260,14 @@ public class DataService extends AbstractService implements IDataService {
         }
 
         nodeService.setInitialLoadEnabled(targetNode.getNodeId(), false);
-        insertNodeSecurityUpdate(targetNode);
+        insertNodeSecurityUpdate(targetNode, true);
 
         // remove all incoming events from the node are starting a reload for.
         purgeService.purgeAllIncomingEventsForNode(targetNode.getNodeId());
     }
 
-    private void insertNodeSecurityUpdate(Node node) {
-        Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'");
+    private void insertNodeSecurityUpdate(Node node, boolean isReload) {
+        Data data = createData(tablePrefix + "_node_security", " t.node_id = '" + node.getNodeId() + "'", isReload);
         if (data != null) {
             insertDataAndDataEventAndOutgoingBatch(data, node.getNodeId(), Constants.UNKNOWN_ROUTER_ID);
         }
@@ -336,14 +336,14 @@ public class DataService extends AbstractService implements IDataService {
      * 
      * @param node
      */
-    public void insertHeartbeatEvent(Node node) {
+    public void insertHeartbeatEvent(Node node, boolean isReload) {
         String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
         List<NodeGroupLink> links = configurationService.getGroupLinksFor(parameterService.getNodeGroupId());
         for (NodeGroupLink nodeGroupLink : links) {
             if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
                 TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(tableName, false);
                 if (triggerRouter != null) {
-                    Data data = createData(triggerRouter.getTrigger(), String.format(" t.node_id = '%s'", node.getNodeId()));
+                    Data data = createData(triggerRouter.getTrigger(), String.format(" t.node_id = '%s'", node.getNodeId()), false);
                     insertData(data);
                 } else {
                     log.warn("TableGeneratingEventsFailure", tableName);
@@ -352,20 +352,20 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public Data createData(String tableName) {
-        return createData(tableName, null);
+    public Data createData(String tableName, boolean isReload) {
+        return createData(tableName, null, isReload);
     }
 
-    public Data createData(String tableName, String whereClause) {
+    public Data createData(String tableName, String whereClause, boolean isReload) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
+        TriggerRouter trigger = triggerRouterService.getTriggerRouterForTableForCurrentNode(tableName, false);
         if (trigger != null) {
-            data = createData(trigger.getTrigger(), whereClause);
+            data = createData(trigger.getTrigger(), whereClause, isReload);
         }
         return data;
     }
 
-    public Data createData(Trigger trigger, String whereClause) {
+    public Data createData(Trigger trigger, String whereClause, boolean isReload) {
         Data data = null;
         if (trigger != null) {
             String rowData = null;
@@ -385,7 +385,7 @@ public class DataService extends AbstractService implements IDataService {
             }
             if (history != null) {
                 data = new Data(trigger.getSourceTableName(), DataEventType.UPDATE, rowData, pkData, history,
-                        Constants.CHANNEL_RELOAD, null, null);
+                        isReload ? Constants.CHANNEL_RELOAD : trigger.getChannelId(), null, null);
             }
         }
         return data;

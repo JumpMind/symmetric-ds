@@ -17,6 +17,10 @@
         <priority value="INFO" />
     </category>
 
+    <category name="org.jumpmind.symmetric.ddlutils">
+        <priority value="WARN" />
+    </category>
+    
     <!-- Disable the not found override properties file warnings to avoid confusion -->
     <category name="org.jumpmind.symmetric.config.PropertiesFactoryBean">
         <priority value="ERROR" />
