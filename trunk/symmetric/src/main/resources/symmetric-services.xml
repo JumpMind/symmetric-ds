@@ -112,6 +112,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="outgoingBatchService" ref="outgoingBatchService" />
         <property name="purgeService" ref="purgeService" />
+        <property name="configurationService" ref="configurationService" />
     </bean>
 
     <bean id="pushService" class="org.jumpmind.symmetric.service.impl.PushService" parent="abstractService">

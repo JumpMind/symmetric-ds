@@ -100,7 +100,7 @@ public class MockDataService implements IDataService {
 
     }
 
-    public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes,
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes,
             String routerId) {
 
     }
