@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# symmetric  Startup/shutdown script for SymmetricDS
+#
+# author:    JumpMind, Inc. and others
+#
+# chkconfig: 345 80 20
+# description: SymmetricDS multi-platform database synchronization
+#
+### BEGIN INIT INFO
+# Provides: symmetric-ds
+# Should-Start: $syslog $network
+# Should-Stop: $syslog $network
+# Short-Description: SymmetricDS
+# Description: SymmetricDS multi-platform database synchronization
+### END INIT INFO
+
+SYM_HOME=/usr/local/symmetric
+export SYM_HOME
+
+case "$1" in
+    start)
+        "$SYM_HOME/bin/sym_service" start
+        ;;
+    stop)
+        "$SYM_HOME/bin/sym_service" stop
+        ;;
+  status)
+        "$SYM_HOME/bin/sym_service" status
+        ;;
+  restart)
+        "$SYM_HOME/bin/sym_service" restart
+        ;;
+  *)
+        echo $"Usage: $prog {start|stop|restart|status}"
+        exit 3
+esac
