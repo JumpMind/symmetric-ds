@@ -49,6 +49,8 @@ import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataEventType;
 import org.jumpmind.symmetric.model.DataRef;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.Trigger;
@@ -56,6 +58,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
@@ -79,6 +82,8 @@ public class DataService extends AbstractService implements IDataService {
     private IPurgeService purgeService;
 
     private IClusterService clusterService;
+    
+    private IConfigurationService configurationService;
 
     private IOutgoingBatchService outgoingBatchService;
 
@@ -181,7 +186,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void insertDataAndDataEvent(Data data, String channelId, List<Node> nodes, String routerId) {
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId) {
         long dataId = insertData(data);
         for (Node node : nodes) {
             insertDataEventAndOutgoingBatch(dataId, channelId, node.getNodeId(), routerId);
@@ -283,7 +288,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter trigger = triggerRouterService.getTriggerRouterForCurrentNode(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
         if (trigger == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -306,7 +311,7 @@ public class DataService extends AbstractService implements IDataService {
             return "Unknown node " + nodeId;
         }
 
-        TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForCurrentNode(tableName, sourceNode.getNodeGroupId());
+        TriggerRouter triggerRouter = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
         if (triggerRouter == null) {
             // TODO message bundle
             return "Trigger for table " + tableName + " does not exist from node " + sourceNode.getNodeGroupId();
@@ -333,13 +338,17 @@ public class DataService extends AbstractService implements IDataService {
      */
     public void insertHeartbeatEvent(Node node) {
         String tableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
-        Trigger trigger = new Trigger(tableName);
-        Data data = createData(trigger, String.format(" t.node_id = '%s'", node.getNodeId()));
-        if (data != null) {
-            insertDataAndDataEvent(data, Constants.CHANNEL_CONFIG, nodeService.findNodesToPushTo(),
-                    Constants.UNKNOWN_ROUTER_ID);
-        } else {
-            log.info("TableGeneratingEventsFailure", tableName);
+        List<NodeGroupLink> links = configurationService.getGroupLinksFor(parameterService.getNodeGroupId());
+        for (NodeGroupLink nodeGroupLink : links) {
+            if (nodeGroupLink.getDataEventAction() == NodeGroupLinkAction.P) {
+                TriggerRouter triggerRouter = triggerRouterService.getTriggerRouterForTableForCurrentNode(tableName, false);
+                if (triggerRouter != null) {
+                    Data data = createData(triggerRouter.getTrigger(), String.format(" t.node_id = '%s'", node.getNodeId()));
+                    insertData(data);
+                } else {
+                    log.warn("TableGeneratingEventsFailure", tableName);
+                }                                
+            }
         }
     }
 
@@ -349,7 +358,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public Data createData(String tableName, String whereClause) {
         Data data = null;
-        TriggerRouter trigger = triggerRouterService.getTriggerRouterForCurrentNode(tableName, parameterService.getNodeGroupId());
+        TriggerRouter trigger = triggerRouterService.findTriggerRouterForCurrentNode(tableName);
         if (trigger != null) {
             data = createData(trigger.getTrigger(), whereClause);
         }
@@ -600,4 +609,7 @@ public class DataService extends AbstractService implements IDataService {
         return data;
     }
 
+    public void setConfigurationService(IConfigurationService configurationService) {
+        this.configurationService = configurationService;
+    }
 }

@@ -226,10 +226,10 @@ public abstract class AbstractSymmetricEngine implements ISymmetricEngine {
                     : overridePropertiesResource1);
             System.setProperty(Constants.OVERRIDE_PROPERTIES_FILE_2, overridePropertiesResource2 == null ? ""
                     : overridePropertiesResource2);
-            if (isParentContext) {
+            if (isParentContext || ctx == null) {
                 init(createContext(ctx));
             } else {
-                init(createContext(null));
+                init(ctx);
             }
         }
     }

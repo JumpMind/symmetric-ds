@@ -156,7 +156,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
     @Test
     public void testInitialLoadSql() throws Exception {
         ITriggerRouterService service = getTriggerRouterService();
-        TriggerRouter triggerRouter = service.getTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        TriggerRouter triggerRouter = service.findTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE);
 
         Table table = getDbDialect().getTable(triggerRouter.getTrigger().getSourceCatalogName(), triggerRouter.getTrigger().getSourceSchemaName(),
         		triggerRouter.getTrigger().getSourceTableName(), true);
@@ -189,7 +189,7 @@ public class TriggerRouterServiceTest extends AbstractDatabaseTest {
 
         service.syncTriggers();
 
-        TriggerRouter trigger = service.getTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE, TestConstants.TEST_ROOT_NODE_GROUP);
+        TriggerRouter trigger = service.findTriggerRouterForCurrentNode(TEST_TRIGGERS_TABLE);
         assertEquals(jdbcTemplate.queryForInt("select count(*) from sym_trigger_hist where trigger_id='"
                 + trigger.getTrigger().getTriggerId() + "' and inactive_time is null"), 1,
                 "We expected only one active record in the trigger_hist table for " + TEST_TRIGGERS_TABLE);

@@ -71,8 +71,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupSentData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
@@ -97,8 +96,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupIgnoredData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
@@ -135,8 +133,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupNewData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
@@ -169,8 +166,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupUnroutedData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
@@ -206,8 +202,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupPartiallySentData() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);
@@ -223,8 +218,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
     private void setupDataForDisabledNode() {
         cleanSlate("sym_data", "sym_data_event", "sym_outgoing_batch", "sym_incoming_batch");
         assertCounts(0);
-        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(TestConstants.TEST_ROOT_NODE_GROUP,
-                false).values().iterator().next().get(0);
+        TriggerRouter router = getTriggerRouterService().getTriggerRoutersForCurrentNode(false).values().iterator().next().get(0);
         Data data = new Data(router.getTrigger().getSourceTableName(), DataEventType.INSERT, "", "",
                 getTriggerRouterService().getNewestTriggerHistoryForTrigger(router.getTrigger().getTriggerId()),
                 TestConstants.TEST_CHANNEL_ID, null, null);

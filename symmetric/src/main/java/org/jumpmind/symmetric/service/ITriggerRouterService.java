@@ -45,15 +45,17 @@ public interface ITriggerRouterService {
     
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String configurationTypeId);
 
-    public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(String sourceNodeGroupId, boolean refreshCache);
+    public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
 
-    public Router getRouterByIdForCurrentNode(String sourceNodeGroupId, String routerId, boolean refreshCache);
+    public Router getRouterByIdForCurrentNode(String routerId, boolean refreshCache);
     
     public List<TriggerRouter> getAllTriggerRoutersForCurrentNode(String sourceNodeGroupId);
 
     public List<TriggerRouter> getAllTriggerRoutersForReloadForCurrentNode(String sourceNodeGroupId, String targetNodeGroupId);
 
-    public TriggerRouter getTriggerRouterForCurrentNode(String table, String sourceNodeGroupId);
+    public TriggerRouter findTriggerRouterForCurrentNode(String table);
+    
+    public TriggerRouter getTriggerRouterForTableForCurrentNode(String tableName, boolean refreshCache); 
 
     public TriggerRouter findTriggerRouter(String table, String sourceNodeGroupId, String targetNodeGroupId, String channel);
     

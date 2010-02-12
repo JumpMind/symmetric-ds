@@ -431,11 +431,11 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected List<TriggerRouter> getTriggerRoutersForData(Data data) {
         List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
-                parameterService.getString(ParameterConstants.NODE_GROUP_ID), false).get(
+                false).get(
                 (data.getTriggerHistory().getTriggerId()));
         if (triggerRouters == null || triggerRouters.size() == 0) {
             triggerRouters = triggerRouterService.getTriggerRoutersForCurrentNode(
-                    parameterService.getString(ParameterConstants.NODE_GROUP_ID), true).get(
+                    true).get(
                     (data.getTriggerHistory().getTriggerId()));            
         }
         return triggerRouters;
