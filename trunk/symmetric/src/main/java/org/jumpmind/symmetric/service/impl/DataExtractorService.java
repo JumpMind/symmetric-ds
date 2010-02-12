@@ -289,7 +289,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter, channel);
                             if (routingService.shouldDataBeRouted(routingContext, dataMetaData, oneNodeSet, true)) {
                                 dataExtractor.write(writer, data, triggerRouter.getRouter().getRouterId(), ctxCopy);
-                                batch.incrementDataEventCount();
+                                if (batch != null) {
+                                    batch.incrementDataEventCount();
+                                }
                             }
                         }
                         if (batch != null) {
