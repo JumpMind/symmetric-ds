@@ -32,6 +32,7 @@ import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.test.AbstractDatabaseTest;
 import org.jumpmind.symmetric.test.TestConstants;
 import org.junit.Test;
+import org.mortbay.log.Log;
 
 public class PurgeServiceTest extends AbstractDatabaseTest {
 
@@ -139,7 +140,10 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setDataId(1);
         getDataService().insertData(data);
-        getJdbcTemplate().update("update sym_data_ref set ref_data_id=(select max(data_id)-1 from sym_data)");
+        if (getJdbcTemplate().update("update sym_data_ref set ref_data_id=(select max(data_id)-1 from sym_data)") == 0)  {
+            Log.info("Inserting into sym_data_ref");
+            getJdbcTemplate().update("insert into sym_data_ref values(1, current_timestamp)");
+        }
     }
 
     @Test
