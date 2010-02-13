@@ -36,6 +36,11 @@
         of day falls within the window of time specified.  The configured times are always for the target node's local time.  If the start_time is greater than the end_time, then the window crosses
         over to the next day.
         </para>
+        <para>
+        All data loading may be disabled by setting the <emphasis>dataloader.enable</emphasis> property to false.  This has the effect of not allowing incoming synchronizations, while allowing outgoing
+        synchronizations.  All data extractions may be disabled by setting the <emphasis>dataextractor.enable</emphasis> property to false.  These properties can be controlled by inserting into the 
+        root server's <link linkend="parameter">parameter</link> table.  These properties affect every channel with the exception of the 'config' channel.  
+        </para>
     </section>           
     <section id="multi-tier">
         <title>Multi-Tiered Synchronization</title>
@@ -346,9 +351,6 @@ values
         being leveraged, then the general rules for for Commons Logging apply.
         </para>
     </section> 
-    <section id='statistics'>
-        <title>Statistics</title>    
-    </section>           
     <section id="extensions">
         <title>Extension Points</title>
         <para>
