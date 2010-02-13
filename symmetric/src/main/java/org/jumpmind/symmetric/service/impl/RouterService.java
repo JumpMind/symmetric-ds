@@ -97,14 +97,14 @@ public class RouterService extends AbstractService implements IRouterService {
 
     public boolean shouldDataBeRouted(IRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
-        IDataRouter router = getDataRouter(dataMetaData.getTrigger());
+        IDataRouter router = getDataRouter(dataMetaData.getTriggerRouter());
         Collection<String> nodeIds = router.routeToNodes(context, dataMetaData, nodes, initialLoad);
         for (Node node : nodes) {
-            if (nodeIds == null || !nodeIds.contains(node.getNodeId())) {
-                return false;
+            if (nodeIds != null && nodeIds.contains(node.getNodeId())) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**

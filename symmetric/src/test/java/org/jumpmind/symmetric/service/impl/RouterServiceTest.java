@@ -401,6 +401,75 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     }
     
     @Test
+    public void testColumnMatchOnNull() {
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        
+        TriggerRouter trigger = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger.getRouter().setRouterType("column");
+        trigger.getRouter().setRouterExpression("ROUTING_VARCHAR=NULL");
+        getTriggerRouterService().saveTriggerRouter(trigger);
+
+        getTriggerRouterService().syncTriggers();
+
+        resetBatches();
+
+        update(TEST_TABLE_1, "Not Routed");
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        getRoutingService().routeData();        
+
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        resetBatches();
+
+        update(TEST_TABLE_1, null);
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        getRoutingService().routeData();        
+
+        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+               
+    }
+    
+    @Test
+    public void testColumnMatchOnNotNull() {
+        NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
+        
+        TriggerRouter trigger = getTestRoutingTableTrigger(TEST_TABLE_1);
+        trigger.getRouter().setRouterType("column");
+        trigger.getRouter().setRouterExpression("ROUTING_VARCHAR!=NULL");
+        getTriggerRouterService().saveTriggerRouter(trigger);
+
+        getTriggerRouterService().syncTriggers();
+
+        resetBatches();
+
+        update(TEST_TABLE_1, "Not Routed");
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        getRoutingService().routeData();        
+
+        Assert.assertEquals(1, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        resetBatches();
+
+        update(TEST_TABLE_1, null);
+        
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        getRoutingService().routeData();        
+
+        Assert.assertEquals(0, countBatchesForChannel(getOutgoingBatchService().getOutgoingBatches(NODE_GROUP_NODE_1), testChannel));
+        
+        
+    }
+    
+    
+    
+    @Test
     public void testSyncOnColumnChange() {     
         NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID);
         testChannel.setMaxBatchToSend(100);
@@ -508,14 +577,12 @@ public class RouterServiceTest extends AbstractDatabaseTest {
     protected void insert(final String tableName, final int count, boolean transactional, final String node2disable) {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                SimpleJdbcTemplate t = new SimpleJdbcTemplate(getJdbcTemplate());
                 try {
                     if (node2disable != null) {
                         getDbDialect().disableSyncTriggers(node2disable);
                     }
                     for (int i = 0; i < count; i++) {
-                        t.update(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
-                                NODE_GROUP_NODE_1.getNodeId());
+                        update(tableName, NODE_GROUP_NODE_1.getNodeId());
                     }
                 } finally {
                     if (node2disable != null) {
@@ -531,6 +598,11 @@ public class RouterServiceTest extends AbstractDatabaseTest {
         } else {
             callback.doInTransaction(null);
         }
+    }
+    
+    protected void update(String tableName, String value) {
+        getJdbcTemplate().update(String.format("insert into %s (ROUTING_VARCHAR) values(?)", tableName),
+        value);
     }
     
     protected void execute(final String sql, boolean transactional, final String node2disable) {

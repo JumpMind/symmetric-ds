@@ -39,7 +39,7 @@ public class BshDataRouter extends AbstractDataRouter {
             bind(interpreter, dataMetaData, nodes, targetNodes);
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.bind.ms");
             ts = System.currentTimeMillis();
-            Object returnValue = interpreter.eval(dataMetaData.getTrigger().getRouter().getRouterExpression());
+            Object returnValue = interpreter.eval(dataMetaData.getTriggerRouter().getRouter().getRouterExpression());
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
         } catch (EvalError e) {
