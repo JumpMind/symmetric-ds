@@ -139,6 +139,7 @@ public class PurgeServiceTest extends AbstractDatabaseTest {
                 TestConstants.TEST_CHANNEL_ID, null, null);
         data.setDataId(1);
         getDataService().insertData(data);
+        getJdbcTemplate().update("update sym_data_ref set ref_data_id=(select max(data_id)-1 from sym_data)");
     }
 
     @Test
