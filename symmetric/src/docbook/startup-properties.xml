@@ -299,6 +299,28 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>db.default.schema</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the schema that will be used for metadata lookup. Some dialect automatically 
+                            figure this out using database specific SQL to get the current schema. [&#xA0;Default:&#xA0;&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>         
+                <varlistentry>
+                    <term>
+                        <command>db.metadata.ignore.case</command>
+                    </term>
+                    <listitem>
+                        <para>
+                             Indicates that case should be ignored when looking up references to 
+                             tables using the metadata api. [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>        
+                <varlistentry>
+                    <term>
                         <command>auto.config.database</command>
                     </term>
                     <listitem>
@@ -490,6 +512,17 @@
                         </para>
                     </listitem>
                 </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>web.base.servlet.path</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            The base servlet path for when embedding SymmetricDS with in another web application.
+                            [&#xA0;Default:&#xA0;&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
             </variablelist>
         </para>            
     </section>
@@ -522,7 +555,18 @@
                             [&#xA0;Default:&#xA0;false&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>          
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>auto.update.node.values.from.properties</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Update the node row in the database from the local properties during a heartbeat operation.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                         
                 <varlistentry>
                     <term>
                         <command>http.download.rate.kb</command>
@@ -541,7 +585,8 @@
                     <listitem>
                         <para>
                             This is the number of HTTP concurrent push/pull requests symmetric will accept. This
-                            is controlled by the NodeConcurrencyFilter. [&#xA0;Default:&#xA0;20&#xA0;]
+                            is controlled by the NodeConcurrencyFilter.  The maximum number of database connections 
+                            in the database pool should be set to twice this number.[&#xA0;Default:&#xA0;20&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
@@ -614,15 +659,26 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
-                        <command>dataloader.lookup.target.schema</command>
+                        <command>dataextractor.enabled</command>
                     </term>
                     <listitem>
                         <para>
-                            Use the target schema specified on sym_trigger when loading data.
-                            [&#xA0;Default:&#xA0;false&#xA0;]
+                            Enable or disable all data extraction at a node for all channels other than the config channel.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>
+                </varlistentry>                                
+                <varlistentry>
+                    <term>
+                        <command>dataloader.enabled</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Enable or disable all data loading at a node for all channels other than the config channel.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                
                 <varlistentry>
                     <term>
                         <command>dataloader.enable.fallback.update</command>
@@ -687,7 +743,6 @@
                     </term>
                     <listitem>
                         <para>
-                            Enables clustering of SymmetricDS jobs.
                             [&#xA0;Default:&#xA0;false&#xA0;]
                         </para>
                     </listitem>
@@ -724,7 +779,7 @@
                             [&#xA0;Default:&#xA0;600000s&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>            
+                </varlistentry>       
                 <varlistentry>
                     <term>
                         <command>http.compression</command>
@@ -737,7 +792,72 @@
                             [&#xA0;Default:&#xA0;true&#xA0;]
                         </para>
                     </listitem>
-                </varlistentry>            
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>web.compression.disabled</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Disable compression from occurring on Servlet communication.  This property only
+                            affects the outbound HTTP traffic streamed by the PullServlet and PushServlet.
+                            [&#xA0;Default:&#xA0;false&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>compression.level</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Set the compression level this node will use when compressing synchronization payloads.
+                            Valid values include: NO_COMPRESSION = 0,  BEST_SPEED = 1, BEST_COMPRESSION = 9, DEFAULT_COMPRESSION = -1
+                            [&#xA0;Default:&#xA0;-1&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>compression.strategy</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Set the compression strategy this node will use when compressing synchronization payloads.
+                            Valid values include: FILTERED = 1, HUFFMAN_ONLY = 2, DEFAULT_STRATEGY = 0
+                            [&#xA0;Default:&#xA0;0&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>           
+                <varlistentry>
+                    <term>
+                        <command>stream.to.file.enabled</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            Save data to the file system before transporting it to the client or loading
+                            it to the database if the number of bytes is past a certain threshold.  This allows
+                            for better compression and better use of database and network resources.  Statistics
+                            in the batch tables will be more accurate if this is set to true because each timed
+                            operation is independent of the others.
+                            [&#xA0;Default:&#xA0;true&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry> 
+                <varlistentry>
+                    <term>
+                        <command>stream.to.file.threshold.bytes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            If stream.to.file.enabled is true, then the threshold number of bytes at which a file 
+                            will be written is controlled by this property.  Note that for a synchronization the
+                            entire payload of the synchronization will be buffered in memory up to this number (at
+                            which point it will be written and continue to stream to disk)
+                            [&#xA0;Default:&#xA0;32767&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>                 
                 <varlistentry>
                     <term>
                         <command>job.random.max.start.time.ms</command>
@@ -764,12 +884,32 @@
                 </varlistentry>
                 <varlistentry>
                     <term>
+                        <command>statistic.retention.minutes</command>
+                    </term>
+                    <listitem>
+                        <para>
+                            This is the retention for how long statistic data will be kept in the
+                            SymmetricDS staistic table. Note that data will be purged only if the purge
+                            job is enabled. [&#xA0;Default:&#xA0;7200&#xA0;]
+                        </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>
+                        <command>job.route.period.time.ms</command>
+                    </term>
+                    <listitem>
+                        <para>This is how often the route job will be run. [&#xA0;Default:&#xA0;10000&#xA0;]</para>
+                    </listitem>
+                </varlistentry>                 
+                <varlistentry>
+                    <term>
                         <command>job.push.period.time.ms</command>
                     </term>
                     <listitem>
                         <para>This is how often the push job will be run. [&#xA0;Default:&#xA0;60000&#xA0;]</para>
                     </listitem>
-                </varlistentry>
+                </varlistentry>               
                 <varlistentry>
                     <term>
                         <command>job.pull.period.time.ms</command>
@@ -807,7 +947,7 @@
                     </term>
                     <listitem>
                         <para>
-                            The URL where this Node can connect for registration to receive its configuration.
+                            The URL where this node can connect for registration to receive its configuration.
                             This property is only valid if you use the default IRuntimeConfiguration
                             implementation. [&#xA0;Default:&#xA0;]
                         </para>
@@ -819,8 +959,7 @@
                     </term>
                     <listitem>
                         <para>
-                            The URL where this Node can be contacting for synchronization. This property is only
-                            valid if you use the default IRuntimeConfiguration implementation.
+                            The URL where this node can be contacting for synchronization. 
                             [&#xA0;Default:&#xA0;http://localhost:8080/sync&#xA0;]
                         </para>
                     </listitem>
@@ -831,8 +970,7 @@
                     </term>
                     <listitem>
                         <para>
-                            The Node Group ID for this Node. This property is only valid if you use the default
-                            IRuntimeConfiguration implementation. [&#xA0;Default:&#xA0;default&#xA0;]
+                            The node group id for this node. [&#xA0;Default:&#xA0;default&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
@@ -842,10 +980,9 @@
                     </term>
                     <listitem>
                         <para>
-                            The secondary identifier for this Node that has meaning to the system where it is
-                            deployed. While the Node ID is a generated sequence number, the external ID could have
-                            meaning in the user's domain, such as a retail store number. This property is only
-                            valid if you use the default IRuntimeConfiguration implementation.
+                            The secondary identifier for this node that has meaning to the system where it is
+                            deployed. While the node id is a generated sequence number, the external ID could have
+                            meaning in the user's domain, such as a retail store number. 
                             [&#xA0;Default:&#xA0;]
                         </para>
                     </listitem>

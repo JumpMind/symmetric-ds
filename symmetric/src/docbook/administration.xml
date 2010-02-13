@@ -119,10 +119,6 @@ where source_table_name = 'price_changes';
             </variablelist>
         </para>
     </section>
-    <section id="control-sync">
-        <title>Enabling and Disabling Synchronization</title>
-        <para></para>
-    </section>
     <section id="admin-jmx">
         <title>Java Management Extensions</title>
         <para>
@@ -176,10 +172,6 @@ where source_table_name = 'price_changes';
         If you want to re-register the same node you can use the reOpenRegistration JMX
         method which takes a node_id as an argument.
         </para>
-    </section>
-    <section id="viewing-batches">
-        <title>Viewing Batches</title>
-        <para></para>
     </section>
     <section id="running-service-windows">
         <title>Running as a Windows Service</title>
