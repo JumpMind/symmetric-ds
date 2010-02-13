@@ -71,6 +71,8 @@ import org.jumpmind.symmetric.service.IRegistrationService;
  */
 public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRouter {
 
+    private static final String NULL_VALUE = "NULL";
+
     private IRegistrationService registrationService;
 
     final static String EXPRESSION_KEY = String.format("%s.Expression", ColumnMatchDataRouter.class
@@ -79,7 +81,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
     public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
-        List<Expression> expressions = getExpression(dataMetaData.getTrigger().getRouter()
+        List<Expression> expressions = getExpression(dataMetaData.getTriggerRouter().getRouter()
                 .getRouterExpression(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData);
         
@@ -125,9 +127,11 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
                         nodeIds = toNodeIds(nodes, nodeIds);
                     }
                 } else {
-                    if (e.equals && value.equals(columnValues.get(column))) {
+                    if (e.equals && (value.equals(columnValues.get(column)) || 
+                            (value.equals(NULL_VALUE) && columnValues.get(column) == null))) {
                         nodeIds = toNodeIds(nodes, nodeIds);
-                    } else if (!e.equals && !value.equals(columnValues.get(column))) {
+                    } else if (!e.equals && ((!value.equals(NULL_VALUE) &&!value.equals(columnValues.get(column))) || 
+                            (value.equals(NULL_VALUE) && columnValues.get(column) != null))) {
                         nodeIds = toNodeIds(nodes, nodeIds);
                     }
                 }

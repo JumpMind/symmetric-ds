@@ -61,7 +61,7 @@ public class SubSelectDataRouter extends AbstractDataRouter {
 
     public Collection<String> routeToNodes(IRouterContext routingContext, DataMetaData dataMetaData, Set<Node> nodes,
             boolean initialLoad) {
-        TriggerRouter trigger = dataMetaData.getTrigger();
+        TriggerRouter trigger = dataMetaData.getTriggerRouter();
         String subSelect = trigger.getRouter().getRouterExpression();
         Collection<String> nodeIds = null;
         if (!StringUtils.isBlank(subSelect)) {

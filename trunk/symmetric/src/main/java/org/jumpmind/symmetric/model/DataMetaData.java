@@ -25,13 +25,13 @@ public class DataMetaData {
 
     private Data data;
     private Table table;
-    private TriggerRouter trigger;
+    private TriggerRouter triggerRouter;
     private NodeChannel nodeChannel;
 
     public DataMetaData(Data data, Table table, TriggerRouter trigger, NodeChannel nodeChannel) {
         this.data = data;
         this.table = table;
-        this.trigger = trigger;
+        this.triggerRouter = trigger;
         this.nodeChannel = nodeChannel;
     }
 
@@ -51,12 +51,12 @@ public class DataMetaData {
         this.table = table;
     }
 
-    public TriggerRouter getTrigger() {
-        return trigger;
+    public TriggerRouter getTriggerRouter() {
+        return triggerRouter;
     }
 
-    public void setTrigger(TriggerRouter trigger) {
-        this.trigger = trigger;
+    public void setTriggerRouter(TriggerRouter trigger) {
+        this.triggerRouter = trigger;
     }
 
     public NodeChannel getNodeChannel() {
