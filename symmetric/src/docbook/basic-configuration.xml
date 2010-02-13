@@ -453,7 +453,17 @@ values
 ]]></programlisting>                        
          </para>    
          <para>
-         The NULL keyword may be used to check if a column is null.  If the column is null, then data would be routed to all nodes who qualify for the update.
+         The NULL keyword may be used to check if a column is null.  If the column is null, then data would be routed to all nodes who qualify for the update.  This following is an example 
+         where the STORE_ID column is used to route to a set of nodes who have the same EXTERNA_ID or to all nodes if the STORE_ID is null.
+          <programlisting>
+<![CDATA[insert into SYM_ROUTER 
+(router_id, source_node_group_id, target_node_group_id, router_type, 
+ router_expression, create_time, last_update_time)
+values
+('corp-2-store-multiple-matches','corp', 'store', 'column', 
+ 'STORE_ID=NULL
+  STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
+]]></programlisting>    
          </para>                    
     </section>    
 
