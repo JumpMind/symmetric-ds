@@ -451,7 +451,10 @@ values
  'STORE_ID=ALL
   STORE_ID=:EXTERNAL_ID', current_timestamp, current_timestamp);
 ]]></programlisting>                        
-         </para>                        
+         </para>    
+         <para>
+         The NULL keyword may be used to check if a column is null.  If the column is null, then data would be routed to all nodes who qualify for the update.
+         </para>                    
     </section>    
 
     <section id="basic-route-relational">
