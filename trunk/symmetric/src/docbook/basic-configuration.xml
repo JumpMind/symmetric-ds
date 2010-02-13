@@ -454,7 +454,7 @@ values
          </para>    
          <para>
          The NULL keyword may be used to check if a column is null.  If the column is null, then data will be routed to all nodes who qualify for the update.  This following is an example 
-         where the STORE_ID column is used to route to a set of nodes who have the same EXTERNA_ID or to all nodes if the STORE_ID is null.
+         where the STORE_ID column is used to route to a set of nodes who have a STORE_ID equal to their EXTERNAL_ID, or to all nodes if the STORE_ID is null.
           <programlisting>
 <![CDATA[insert into SYM_ROUTER 
 (router_id, source_node_group_id, target_node_group_id, router_type, 
