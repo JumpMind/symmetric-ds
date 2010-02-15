@@ -29,6 +29,7 @@ import javax.management.ObjectName;
 import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SecurityConstants;
@@ -41,6 +42,10 @@ import org.jumpmind.symmetric.web.SymmetricServlet;
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.mortbay.jetty.security.Constraint;
+import org.mortbay.jetty.security.ConstraintMapping;
+import org.mortbay.jetty.security.HashUserRealm;
+import org.mortbay.jetty.security.SecurityHandler;
 import org.mortbay.jetty.security.SslSocketConnector;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -166,6 +171,8 @@ public class SymmetricWebServer implements ApplicationContextAware {
         ServletHolder servletHolder = new ServletHolder(SymmetricServlet.class);
         servletHolder.setInitOrder(0);
         webContext.addServlet(servletHolder, "/*");
+        
+        setupBasicAuthIfNeeded(webContext);
 
         server.addHandler(webContext);
         server.start();
@@ -180,6 +187,32 @@ public class SymmetricWebServer implements ApplicationContextAware {
         }
 
         return this;
+    }
+
+    protected void setupBasicAuthIfNeeded(Context webContext) {
+        String basicAuthUsername = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_USERNAME);
+        if (StringUtils.isNotBlank(basicAuthUsername) ) {
+            String basicAuthPassword = getEngine().getParameterService().getString(ParameterConstants.EMBEDDED_WEBSERVER_BASIC_AUTH_PASSWORD);
+
+            Constraint constraint = new Constraint();
+            constraint.setName(Constraint.__BASIC_AUTH);;
+            constraint.setRoles(new String[]{SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE});
+            constraint.setAuthenticate(true);
+    
+            ConstraintMapping cm = new ConstraintMapping();
+            cm.setConstraint(constraint);
+            cm.setPathSpec("/*");
+    
+            SecurityHandler sh = new SecurityHandler();
+            
+            HashUserRealm realm = new HashUserRealm();
+            realm.put(basicAuthUsername, basicAuthPassword);
+            realm.addUserToRole(basicAuthUsername, SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE);
+            sh.setUserRealm(realm);
+            
+            sh.setConstraintMappings(new ConstraintMapping[]{cm});
+            webContext.addHandler(sh);
+        }
     }
 
     protected Connector[] getConnectors(int port, int securePort, Mode mode) {
