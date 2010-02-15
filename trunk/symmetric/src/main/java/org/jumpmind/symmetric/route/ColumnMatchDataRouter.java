@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.service.IRegistrationService;
 
 /**
@@ -75,16 +76,15 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
 
     private IRegistrationService registrationService;
 
-    final static String EXPRESSION_KEY = String.format("%s.Expression", ColumnMatchDataRouter.class
+    final static String EXPRESSION_KEY = String.format("%s.Expression.", ColumnMatchDataRouter.class
             .getName());
 
     public Collection<String> routeToNodes(IRouterContext routingContext,
             DataMetaData dataMetaData, Set<Node> nodes, boolean initialLoad) {
         Set<String> nodeIds = null;
-        List<Expression> expressions = getExpression(dataMetaData.getTriggerRouter().getRouter()
-                .getRouterExpression(), routingContext);
+        List<Expression> expressions = getExpressions(dataMetaData.getTriggerRouter().getRouter(), routingContext);
         Map<String, String> columnValues = getDataMap(dataMetaData);
-        
+
         if (columnValues != null) {
             for (Expression e : expressions) {
                 String column = e.tokens[0].trim();
@@ -150,13 +150,15 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
      * we have to do when we have lots of throughput.
      */
     @SuppressWarnings("unchecked")
-    protected List<Expression> getExpression(String routerExpression, IRouterContext context) {
+    protected List<Expression> getExpressions(Router router, IRouterContext context) {
+        final String KEY = EXPRESSION_KEY + router.getRouterId();
         List<Expression> expressions = (List<Expression>) context.getContextCache().get(
-                EXPRESSION_KEY);
+                KEY);
         if (expressions == null) {
             expressions = new ArrayList<Expression>();
+            String routerExpression = router.getRouterExpression();
             if (!StringUtils.isBlank(routerExpression)) {
-                context.getContextCache().put(EXPRESSION_KEY, expressions);
+                context.getContextCache().put(KEY, expressions);
                 String[] expTokens = routerExpression.split("\r\n|\r|\n");
                 if (expTokens != null) {
                     for (String t : expTokens) {
