@@ -271,7 +271,7 @@
                     <listitem>
                         <para>
                             The timeout in seconds for queries running on the database.
-                            [&#xA0;Default:&#xA0;60&#xA0;]
+                            [&#xA0;Default:&#xA0;300&#xA0;]
                         </para>
                     </listitem>
                 </varlistentry>
