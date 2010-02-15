@@ -43,5 +43,7 @@ public class SecurityConstants {
     public static final String SYSPROP_KEYSTORE = "sym.keystore.file";
     
     public static final String SYSPROP_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
+    
+    public static final String EMBEDDED_WEBSERVER_DEFAULT_ROLE="symmetric";
 
 }
